@@ -17,6 +17,7 @@ def end_http_request_processing():
 
 class HTTPError(Exception):
     def __init__(self, status_code, body=None):
+        super(HTTPError, self).__init__()
         self.status_code = status_code
         self.body = body
 
