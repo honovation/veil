@@ -8,7 +8,6 @@ from markupsafe import Markup
 from sandal.component import force_import_module
 from .template import register_template_utility
 from .template import require_current_template_directory_being
-from .template import require_current_template_path_being
 
 # === global state ===
 original_widgets = None
@@ -34,17 +33,11 @@ def on_template_environment_reset():
         widgets.update(original_widgets)
 
 # === handle widget ===
-def widget(func=None, **kwargs):
-    if func:
-        return WidgetDecorator(**kwargs)(func)
-    else:
-        return WidgetDecorator(**kwargs)
+def widget(func):
+    return WidgetDecorator()(func)
 
 
 class WidgetDecorator(object):
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
-
     def __call__(self, func):
         widget = self.register(func)
 
@@ -56,7 +49,7 @@ class WidgetDecorator(object):
 
     def register(self, func):
         widget_name = func.__name__
-        widget = Widget(name=widget_name, func=func, **self.kwargs)
+        widget = Widget(name=widget_name, func=func)
         if widget_name in widgets:
             raise Exception('widget {} already registered by {}'.format(
                 widget_name, widgets[widget_name].registered_by))
@@ -65,12 +58,9 @@ class WidgetDecorator(object):
 
 
 class Widget(object):
-    def __init__(self, name, func, template=None, embedded_widgets=(), **kwargs):
+    def __init__(self, name, func):
         self.name = name
         self.func = func
-        self.template = template
-        self.embedded_widgets = embedded_widgets
-        self.__dict__.update(kwargs)
         self.registered_by = '\n'.join(traceback.format_stack())
 
     def render(self, *args, **kwargs):
@@ -80,12 +70,11 @@ class Widget(object):
             else:
                 kwargs.pop('from_template', None)
             with require_current_template_directory_being(get_widget_template_directory(self.func)):
-                with require_current_template_path_being(self.template):
-                    self.activate()
-                    content = self.func(*args, **kwargs)
-                    if content is None:
-                        return None
-                    return Markup(content)
+                self.activate()
+                content = self.func(*args, **kwargs)
+                if content is None:
+                    return None
+                return Markup(content)
         except:
             LOGGER.error('failed to render widget: {}'.format(self.name))
             raise
@@ -95,9 +84,6 @@ class Widget(object):
             raise Exception('{} called outside page'.format(widget))
         if self.name not in active_widget_names:
             active_widget_names.append(self.name)
-        for widget_name in self.embedded_widgets:
-            if widget_name not in active_widget_names:
-                widgets[widget_name].activate()
 
     def __repr__(self):
         return 'widget {}'.format(self.name)
@@ -107,11 +93,8 @@ def get_widget_template_directory(widget):
     return os.path.dirname(force_import_module(widget.__module__).__file__)
 
 # === handle page ===
-def page(func=None, **kwargs):
-    if func:
-        return PageDecorator(**kwargs)(func)
-    else:
-        return PageDecorator(**kwargs)
+def page(func):
+    return PageDecorator()(func)
 
 
 class PageDecorator(WidgetDecorator):
@@ -123,7 +106,7 @@ class PageDecorator(WidgetDecorator):
         return wrapper
 
     def register(self, func):
-        return Page(name=func.__name__, func=func, **self.kwargs)
+        return Page(name=func.__name__, func=func)
 
 
 class Page(Widget):
@@ -145,9 +128,7 @@ class Page(Widget):
             active_widget_names = None
 
     def activate(self):
-        for widget_name in self.embedded_widgets:
-            if widget_name not in active_widget_names:
-                widgets[widget_name].activate()
+        pass
 
     def __repr__(self):
         return 'page {}'.format(self.name)

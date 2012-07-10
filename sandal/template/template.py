@@ -4,7 +4,6 @@ import traceback
 import os.path
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
-from sandal.component import force_import_module
 from sandal.event import publish_event
 from sandal.const import consts
 
@@ -17,7 +16,6 @@ loaders = {'root': FileSystemLoader('/')}
 template_post_processors = []
 env = None
 current_template_directories = []
-current_template_paths = []
 
 def template_filter(func):
 # syntax sugar for register_template_filter
@@ -74,21 +72,9 @@ def require_current_template_directory_being(template_directory):
         current_template_directories.pop()
 
 
-@contextlib.contextmanager
-def require_current_template_path_being(template_path):
-    current_template_paths.append(template_path)
-    try:
-        yield
-    finally:
-        current_template_paths.pop()
-
-
 def get_template(template_path=None, template_source=None):
     if not template_path and not template_source:
-        if current_template_paths and current_template_paths[-1]:
-            template_path = current_template_paths[-1]
-        else:
-            raise Exception('must specify either template path or template source')
+        raise Exception('must specify either template path or template source')
     if template_path:
         return get_template_from_file(template_path)
     return get_template_from_string(template_source)
