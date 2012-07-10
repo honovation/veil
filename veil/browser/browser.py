@@ -26,8 +26,8 @@ def start_browser(default_netloc=None, http_server=None, browser_type='ie6'):
 
 
 @fixture
-def start_website_and_browser(website, **kwargs):
-    http_server = fixtures.start_website(website, **kwargs)
+def start_website_and_browser(website, website_type='development', **kwargs):
+    http_server = fixtures.start_website(website, website_type=website_type, **kwargs)
     return start_browser(http_server=http_server)
 
 

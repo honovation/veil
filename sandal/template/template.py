@@ -76,8 +76,12 @@ def get_template(template_path=None, template_source=None):
     if not template_path and not template_source:
         raise Exception('must specify either template path or template source')
     if template_path:
-        return get_template_from_file(template_path)
-    return get_template_from_string(template_source)
+        template = get_template_from_file(template_path)
+    else:
+        template = get_template_from_string(template_source)
+    for template_post_processor in template_post_processors:
+        template_post_processor(template_path, template)
+    return template
 
 
 def get_template_from_file(template_path):
@@ -88,8 +92,6 @@ def get_template_from_file(template_path):
         template_path = os.path.join(current_template_directory, template_path)
     template = get_or_create_environment().get_template(
         'root:{}'.format(template_path), globals=dict(utilities, consts=consts))
-    for template_post_processor in template_post_processors:
-        template_post_processor(template_path, template)
     return template
 
 
