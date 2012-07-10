@@ -1,0 +1,5 @@
+*.pyc
+.idea/*
+env/*
+!env/lib/python2.7/site-packages/veil.pth
+
