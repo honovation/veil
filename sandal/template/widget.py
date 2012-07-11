@@ -90,7 +90,7 @@ class Widget(object):
 
 
 def get_widget_template_directory(widget):
-    return os.path.dirname(force_import_module(widget.__module__).__file__)
+    return os.path.dirname(os.path.abspath(force_import_module(widget.__module__).__file__))
 
 # === handle page ===
 def page(func):

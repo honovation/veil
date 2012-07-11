@@ -64,7 +64,7 @@ def process_inline_blocks(template_path, template):
                     template.inline_javascript = 'v-{}/{}'.format(hash, pseudo_file_name)
                 else:
                     template.inline_javascript = 'v-{}'.format(hash)
-                script_tag = '<script type="text/javascript" src="/static/{}"></script>'.format(
+                script_tag = '<script type="text/javascript" src="/static/{}"></script>\r\n'.format(
                     template.inline_javascript)
                 blocks[block_name] = lambda *args, **kwargs: (script_tag)
 
@@ -103,7 +103,7 @@ def process_script_tags(html, active_widgets):
             script_tags.append(script_tag)
     striped_html = ''.join(striped_parts)
     if '</body>' in striped_html:
-        return striped_html.replace('</body>', '{}</body>'.format(''.join(script_tags)))
+        return striped_html.replace('</body>', '{}\r\n</body>'.format(''.join(script_tags)))
     return '{}{}'.format(striped_html, ''.join(script_tags))
 
 

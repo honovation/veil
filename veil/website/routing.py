@@ -73,7 +73,10 @@ class RoutingHTTPHandler(object):
             request = get_current_http_request()
             if route.method.upper() != request.method.upper():
                 return False
-            path_arguments = route.path_template.match(request.path)
+            path = request.path.rstrip('/')
+            if not path:
+                path = '/'
+            path_arguments = route.path_template.match(path)
             if path_arguments is None:
                 return False
             assert getattr(get_current_http_context(), 'route', None) is None
@@ -104,7 +107,7 @@ class RoutingHTTPHandler(object):
 
 
 def get_route_handler_template_directory(route_handler):
-    return os.path.dirname(force_import_module(route_handler.__module__).__file__)
+    return os.path.dirname(os.path.abspath(force_import_module(route_handler.__module__).__file__))
 
 
 def nest_context_managers(*context_managers):

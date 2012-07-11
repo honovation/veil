@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
 from os import getenv
-from ConfigParser import RawConfigParser
 import sys
 import os
 from logging import DEBUG, INFO, WARN, ERROR, CRITICAL, getLogger, StreamHandler, Formatter

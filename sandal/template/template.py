@@ -64,7 +64,8 @@ def require_current_translations_being(translations):
 
 @contextlib.contextmanager
 def require_current_template_directory_being(template_directory):
-    assert os.path.isabs(template_directory)
+    if not os.path.isabs(template_directory):
+        raise Exception('template directory is not absolute: {}'.format(template_directory))
     current_template_directories.append(template_directory)
     try:
         yield

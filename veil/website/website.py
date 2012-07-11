@@ -18,10 +18,10 @@ get_processes_count = register_option('http', 'processes_count', int)
 get_website_type = register_option('website', 'type')
 
 def start_website(website, website_type=None, port=None, host=None, processes_count=None, prevents_xsrf=True, **kwargs):
-    website_type = website_type or get_website_type()
-    port = port or get_port()
-    host = host or get_host()
-    processes_count = processes_count or get_processes_count()
+    website_type = website_type or get_website_type() or 'development'
+    port = port or get_port() or 80
+    host = host or get_host() or 'localhost'
+    processes_count = processes_count or get_processes_count() or 1
     LOGGER.info(
         'starting {} website {} at port {} with {} process(es)...'.format(website_type, website, port, processes_count))
     io_loop = IOLoop.instance()
