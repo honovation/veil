@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ -z "$VEIL_HOME" ] ; then
+    export VEIL_HOME="."
+fi
+if [ ! -d $VEIL_HOME/env/bin ] ; then
+	echo "VEIL_HOME is invalid"
+	exit 1
+fi
+source $VEIL_HOME/env/bin/activate
+python -m veil $@

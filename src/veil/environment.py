@@ -11,7 +11,7 @@ from sandal.const import consts
 
 __all__ = ['VEIL_HOME']
 
-VEIL_HOME = getenv('VEIL_HOME')
+VEIL_HOME = getenv('VEIL_HOME') or os.path.abspath('.')
 assert VEIL_HOME, 'must specify $VEIL_HOME'
 VEIL_HOME = SmartPath(VEIL_HOME)
 
