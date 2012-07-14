@@ -3,8 +3,6 @@ import logging
 from unittest.case import TestCase
 from sandal.collection import DictObject
 
-__all__ = ['fixtures', 'register_fixture', 'fixture', 'UsingFixture', 'get_executing_test']
-
 fixtures = DictObject()
 
 def register_fixture(fixture_name, fixture):

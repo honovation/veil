@@ -7,7 +7,7 @@ import traceback
 from markupsafe import Markup
 from sandal.component import force_import_module
 from .template import register_template_utility
-from .template import require_current_template_directory_being
+from .template import require_current_template_directory_relative_to
 
 # === global state ===
 original_widgets = None
@@ -69,7 +69,7 @@ class Widget(object):
                 kwargs['from_template'] = kwargs['from_template'] if 'from_template' in kwargs else False
             else:
                 kwargs.pop('from_template', None)
-            with require_current_template_directory_being(get_widget_template_directory(self.func)):
+            with require_current_template_directory_relative_to(get_widget_template_directory(self.func)):
                 self.activate()
                 content = self.func(*args, **kwargs)
                 if content is None:
@@ -88,9 +88,6 @@ class Widget(object):
     def __repr__(self):
         return 'widget {}'.format(self.name)
 
-
-def get_widget_template_directory(widget):
-    return os.path.dirname(os.path.abspath(force_import_module(widget.__module__).__file__))
 
 # === handle page ===
 def page(func):

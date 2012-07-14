@@ -11,9 +11,6 @@ except ImportError:
 
     md5 = md5.new
 
-__version__ = '2.2'
-__all__ = ['path']
-
 # Pre-2.3 support.  Are unicode filenames supported?
 _base = str
 _getcwd = os.getcwd
@@ -45,7 +42,7 @@ class TreeWalkWarning(Warning):
     pass
 
 
-class SmartPath(_base):
+class path(_base):
     """ Represents a filesystem path.
 
     For documentation on individual methods, consult their
@@ -933,25 +930,3 @@ class SmartPath(_base):
     if hasattr(os, 'startfile'):
         def startfile(self):
             os.startfile(self)
-
-    # --- Execute
-    def execute(self, capture=False, cwd=None, env=None, **kwargs):
-        import subprocess
-
-        command = self.format(**kwargs)
-        if capture:
-            p = subprocess.Popen(
-                command, shell=True, cwd=cwd, env=env, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-        else:
-            p = subprocess.Popen(command, shell=True, cwd=cwd, env=env)
-        output = p.communicate()[0]
-        if p.returncode:
-            if capture:
-                raise Exception(
-                    'Subprocess return code: {}, command: {}, kwargs: {}, output: {}'.format(
-                        p.returncode, self, kwargs, output))
-            else:
-                raise Exception(
-                    'Subprocess return code: {}, command: {}, kwargs: {}'.format(p.returncode, self, kwargs))
-        if capture:
-            return output

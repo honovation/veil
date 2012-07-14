@@ -4,13 +4,13 @@ import httplib
 import uuid
 from logging import getLogger
 from markupsafe import Markup
-from sandal.encoding import encode_xhtml
 from sandal.template import template_utility
 from .argument import try_get_http_argument
 from .cookie import get_cookie, set_cookie
 from .error import HTTPError
 from .context import get_current_http_request
 from .context import get_current_http_response
+from tornado.escape import xhtml_escape
 
 LOGGER = getLogger(__name__)
 
@@ -49,4 +49,4 @@ def xsrf_token(request=None):
 
 @template_utility
 def xsrf_field():
-    return Markup('<input type="hidden" name="_xsrf" value="{}"/>'.format(encode_xhtml(xsrf_token())))
+    return Markup('<input type="hidden" name="_xsrf" value="{}"/>'.format(xhtml_escape(xsrf_token())))

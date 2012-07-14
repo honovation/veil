@@ -1,0 +1,115 @@
+{% set config = options.nginx %}
+user {{ config.owner or 'root' }} {{ config.group or 'root' }};
+worker_processes {{ config.worker_processes_count or 4 }};
+daemon off;
+
+{% if config.pid_file %}
+pid {{ config.pid_file }};
+{% endif %}
+
+error_log  {{ config.log_directory }}/error.log;
+
+events {
+    worker_connections  {{ config.connections_count_per_worker or 1024 }};
+}
+
+http {
+    sendfile        on;
+
+    keepalive_timeout  65;
+    tcp_nodelay        on;
+    client_max_body_size 20m;
+
+    gzip  on;
+    gzip_disable "MSIE [1-6]\.(?!.*SV1)";
+
+    {% for website in options.websites.values() %}
+    server {
+        server_name  {{ website.server_name }};
+        access_log	{{ config.log_directory }}/{{ website.server_name }}.log;
+        {% for key, value in website.get('properties', {}).items() %}
+        {{ key }} {{ value }};
+        {% endfor %}
+        {% for location, location_properties in website.get('locations', {}).items() %}
+        location {{ location }} {
+            {% for key, value in location_properties.items() %}
+                {% if '_' == key %}
+                    {{ value }}
+                {% else %}
+                    {{ key }} {{ value }};
+                {% endif %}
+            {% endfor %}
+        }
+        {% endfor %}
+    }
+    {% endfor %}
+
+    types {
+        text/html                             html htm shtml;
+        text/css                              css;
+        text/xml                              xml rss;
+        image/gif                             gif;
+        image/jpeg                            jpeg jpg;
+        application/x-javascript              js;
+        application/atom+xml                  atom;
+
+        text/mathml                           mml;
+        text/plain                            txt;
+        text/vnd.sun.j2me.app-descriptor      jad;
+        text/vnd.wap.wml                      wml;
+        text/x-component                      htc;
+
+        image/png                             png;
+        image/tiff                            tif tiff;
+        image/vnd.wap.wbmp                    wbmp;
+        image/x-icon                          ico;
+        image/x-jng                           jng;
+        image/x-ms-bmp                        bmp;
+
+        application/java-archive              jar war ear;
+        application/mac-binhex40              hqx;
+        application/msword                    doc;
+        application/pdf                       pdf;
+        application/postscript                ps eps ai;
+        application/rtf                       rtf;
+        application/vnd.ms-excel              xls;
+        application/vnd.ms-powerpoint         ppt;
+        application/vnd.wap.wmlc              wmlc;
+        application/vnd.wap.xhtml+xml         xhtml;
+        application/x-cocoa                   cco;
+        application/x-java-archive-diff       jardiff;
+        application/x-java-jnlp-file          jnlp;
+        application/x-makeself                run;
+        application/x-perl                    pl pm;
+        application/x-pilot                   prc pdb;
+        application/x-rar-compressed          rar;
+        application/x-redhat-package-manager  rpm;
+        application/x-sea                     sea;
+        application/x-shockwave-flash         swf;
+        application/x-stuffit                 sit;
+        application/x-tcl                     tcl tk;
+        application/x-x509-ca-cert            der pem crt;
+        application/x-xpinstall               xpi;
+        application/zip                       zip;
+
+        application/octet-stream              bin exe dll;
+        application/octet-stream              deb;
+        application/octet-stream              dmg;
+        application/octet-stream              eot;
+        application/octet-stream              iso img;
+        application/octet-stream              msi msp msm;
+
+        audio/midi                            mid midi kar;
+        audio/mpeg                            mp3;
+        audio/x-realaudio                     ra;
+
+        video/3gpp                            3gpp 3gp;
+        video/mpeg                            mpeg mpg;
+        video/quicktime                       mov;
+        video/x-flv                           flv;
+        video/x-mng                           mng;
+        video/x-ms-asf                        asx asf;
+        video/x-ms-wmv                        wmv;
+        video/x-msvideo                       avi;
+    }
+}

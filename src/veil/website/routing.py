@@ -1,12 +1,10 @@
 from __future__ import unicode_literals, print_function, division
-import os.path
 import re
 import contextlib
 import httplib
 from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
-from sandal.component import force_import_module
 from sandal.template import *
 from veil.http import *
 
@@ -69,7 +67,7 @@ class RoutingHTTPHandler(object):
         raise_http_error(httplib.NOT_FOUND)
 
     def try_route(self, route):
-        with require_current_template_directory_being(get_route_handler_template_directory(route.route_handler)):
+        with require_current_template_directory_relative_to(route.route_handler):
             request = get_current_http_request()
             if route.method.upper() != request.method.upper():
                 return False
@@ -104,10 +102,6 @@ class RoutingHTTPHandler(object):
         except:
             LOGGER.error('failed to post-process route: {}'.format(route))
             raise
-
-
-def get_route_handler_template_directory(route_handler):
-    return os.path.dirname(os.path.abspath(force_import_module(route_handler.__module__).__file__))
 
 
 def nest_context_managers(*context_managers):

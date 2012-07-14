@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from .collection import DictObject
+from sandal.collection import DictObject
 
 class Consts(DictObject):
     def __setattr__(self, name, value):

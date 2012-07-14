@@ -6,13 +6,13 @@ from sandal.template import get_template
 from sandal.fixture import UsingFixture
 from sandal.option import init_options
 from sandal.option import reset_options
-from sandal.smart_path import SmartPath
+from sandal.path import *
 from ..routing import route
 
 class StaticFileModuleSmokeTest(UsingFixture):
     def setUp(self):
         super(StaticFileModuleSmokeTest, self).setUp()
-        self.temp_dir = SmartPath(tempfile.gettempdir())
+        self.temp_dir = path(tempfile.gettempdir())
         init_options({
             'website': {
                 'external_static_files_directory': os.path.dirname(__file__),

@@ -14,7 +14,7 @@ def register_option(section, name, type=unicode):
     if old_type and old_type != type:
         raise Exception('{}.{} already registered as {}, can not change to {}'.format(section, name, old_type, type))
     section_option_definitions[name] = type
-    return lambda : get_option(section, name)
+    return lambda: get_option(section, name)
 
 
 def get_option(section, name):
@@ -52,6 +52,21 @@ def init_options(configured_options):
 def reset_options():
     options.clear()
 
+
 def peek_options():
     return dict(options)
+
+
+def merge_options(base, updates):
+    if not base:
+        return updates
+    if isinstance(base, dict) and isinstance(updates, dict):
+        updated = {}
+        for k, v in base.items():
+            updated[k] = merge_options(v, updates.get(k))
+        for k, v in updates.items():
+            if k not in updated:
+                updated[k] = v
+        return updated
+    return base
 

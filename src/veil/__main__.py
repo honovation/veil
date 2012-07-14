@@ -8,20 +8,10 @@ if __dir__ in sys.path:
     sys.path.remove(__dir__) # disable old style relative import
 
 from sandal.script import execute_script
-from sandal.option import init_options
 from sandal.component import scan_components
 from veil.environment import VEIL_HOME
 
 for component_name in scan_components(VEIL_HOME / 'src'):
     __import__(component_name)
-
-init_options({
-    'logging': {
-        'level': 'DEBUG'
-    },
-    'website': {
-
-    }
-})
 
 execute_script(sys.argv[1:])

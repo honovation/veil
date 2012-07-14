@@ -4,8 +4,10 @@ import traceback
 import os.path
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
+from sandal.component import force_import_module
 from sandal.event import publish_event
 from sandal.const import consts
+from sandal.option import peek_options
 
 consts.EVENT_TEMPLATE_ENVIRONMENT_READY = 'template-environment-ready'
 consts.EVENT_TEMPLATE_ENVIRONMENT_RESET = 'template-environment-reset'
@@ -62,6 +64,11 @@ def require_current_translations_being(translations):
         get_or_create_environment().install_null_translations()
 
 
+def require_current_template_directory_relative_to(func):
+    return require_current_template_directory_being(
+        os.path.dirname(os.path.abspath(force_import_module(func.__module__).__file__)))
+
+
 @contextlib.contextmanager
 def require_current_template_directory_being(template_directory):
     if not os.path.isabs(template_directory):
@@ -92,12 +99,13 @@ def get_template_from_file(template_path):
         current_template_directory = current_template_directories[-1]
         template_path = os.path.join(current_template_directory, template_path)
     template = get_or_create_environment().get_template(
-        'root:{}'.format(template_path), globals=dict(utilities, consts=consts))
+        'root:{}'.format(template_path), globals=dict(utilities, consts=consts, options=peek_options()))
     return template
 
 
 def get_template_from_string(template_source):
-    return get_or_create_environment().from_string(template_source, globals=dict(utilities, consts=consts))
+    return get_or_create_environment().from_string(
+        template_source, globals=dict(utilities, consts=consts, options=peek_options()))
 
 
 def get_template_environment():

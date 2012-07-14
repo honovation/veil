@@ -1,15 +1,18 @@
 from __future__ import unicode_literals, print_function, division
 from chardet import universaldetector
-import tornado.escape
 from sandal.collection import DictObject
 
-__all__ = [
-    'detect_file_encoding',
-    'to_unicode'
-]
 
 def to_str(s):
-    return tornado.escape.utf8(s)
+    """Converts a string argument to a byte string.
+
+    If the argument is already a byte string or None, it is returned unchanged.
+    Otherwise it must be a unicode string and is encoded as utf8.
+    """
+    if isinstance(s, (bytes, type(None))):
+        return s
+    assert isinstance(s, unicode)
+    return s.encode("utf-8")
 
 
 def to_unicode(s, encoding=None, detects_encoding=False):
@@ -21,21 +24,13 @@ def to_unicode(s, encoding=None, detects_encoding=False):
         If there is a better one, it will use the one for the transformation,
         otherwise use the specified one or 'utf-8' if not specified.
     """
-    if isinstance(s, unicode):
+    if isinstance(s, (bytes, type(None))):
         return s
     encoding = encoding or 'utf-8'
     if detects_encoding:
         detected_encoding = detect_encoding(s, encoding).encoding
         encoding = detected_encoding or encoding
     return unicode(s, encoding=encoding)
-
-
-def encode_xhtml(s):
-    return tornado.escape.xhtml_escape(s)
-
-
-def decode_xhtml(s):
-    return tornado.escape.xhtml_unescape(s)
 
 
 detector = universaldetector.UniversalDetector()

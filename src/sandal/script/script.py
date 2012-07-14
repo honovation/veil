@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from logging import getLogger
 from sandal.component import get_loading_components
 from inspect import isfunction
+from sandal.template import *
 
 script_handlers = {}
 LOGGER = getLogger(__name__)
@@ -16,7 +17,8 @@ def execute_script(argv, level=None):
     next_level = level[arg]
     if isfunction(next_level):
         script_handler = next_level
-        return script_handler(*argv[1:])
+        with require_current_template_directory_relative_to(script_handler):
+            return script_handler(*argv[1:])
     else:
         return execute_script(argv[1:], next_level)
 

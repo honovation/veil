@@ -4,11 +4,11 @@ import hashlib
 from markupsafe import Markup
 import os.path
 from logging import getLogger
-from sandal.smart_path import SmartPath
-from sandal.encoding import to_str
-from sandal.file import  calculate_file_md5_hash
-from sandal.template import template_utility
-from sandal.option import register_option
+from sandal.path import path as as_path
+from sandal.encoding import *
+from sandal.hash import *
+from sandal.template import *
+from sandal.option import *
 
 LOGGER = getLogger(__name__)
 
@@ -36,7 +36,7 @@ def static_url(path):
 
 def get_static_file_hash(path):
     if static_file_hashes.get(path) is None:
-        static_file_path = SmartPath(get_external_static_files_directory()) / path
+        static_file_path = as_path(get_external_static_files_directory()) / path
         try:
             with open(static_file_path) as f:
                 hash = calculate_file_md5_hash(f)
@@ -56,7 +56,7 @@ def process_inline_blocks(template_path, template):
                 content = delete_first_and_last_non_empty_lines_to_strip_tags_such_as_script(content)
                 content = to_str(content)
                 hash = hashlib.md5(content).hexdigest()
-                inline_static_file = SmartPath(get_inline_static_files_directory()) / hash
+                inline_static_file = as_path(get_inline_static_files_directory()) / hash
                 if not inline_static_file.exists():
                     inline_static_file.write_text(content)
                 if template_path:

@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+from sandal.option import init_options
 from veil.website import *
 from sandal.template import *
 from sandal.script import script
@@ -9,6 +10,14 @@ def home():
 
 @script('demo-web-up')
 def bring_up_demo_website(*argv):
+    init_options({
+        'logging': {
+            'level': 'DEBUG'
+        },
+        'website': {
+
+        }
+    })
     start_website(website='DEMO', port=8080, prevents_xsrf=False)
 
 
