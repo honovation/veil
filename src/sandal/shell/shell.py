@@ -1,10 +1,14 @@
+import logging
 import shlex
 import subprocess
+
+LOGGER = logging.getLogger(__name__)
 
 def shell_execute(command_line, capture=False, **kwargs):
     command_args = shlex.split(command_line)
     if capture:
         kwargs.update(dict(stderr=subprocess.STDOUT, stdout=subprocess.PIPE))
+    LOGGER.info('* exec: {}'.format(command_line))
     process = subprocess.Popen(command_args, **kwargs)
     output = process.communicate()[0]
     if process.returncode:

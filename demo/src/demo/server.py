@@ -8,17 +8,7 @@ from sandal.script import script
 def home():
     return get_template('index.html').render()
 
-@script('demo-web-up')
-def bring_up_demo_website(*argv):
-    init_options({
-        'logging': {
-            'level': 'DEBUG'
-        },
-        'website': {
 
-        }
-    })
-    start_website(website='DEMO', port=8080, prevents_xsrf=False)
 
 
 
