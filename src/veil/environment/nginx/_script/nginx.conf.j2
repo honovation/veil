@@ -1,4 +1,5 @@
 {% set config = options.nginx %}
+{% autoescape false %}
 user {{ config.owner or 'root' }} {{ config.group or 'root' }};
 worker_processes {{ config.worker_processes_count or 4 }};
 daemon off;
@@ -23,24 +24,26 @@ http {
     gzip  on;
     gzip_disable "MSIE [1-6]\.(?!.*SV1)";
 
-    {% for server in config.servers.values() %}
+    {% for server_name, server_properties in config.servers.items() %}
     server {
-        listen {{ server.listen }};
-        server_name  {{ server.name }};
-        access_log	{{ config.log_directory }}/{{ server.name }}.log;
-        {% for key, value in server.get('properties', {}).items() %}
-        {{ key }} {{ value }};
-        {% endfor %}
-        {% for location, location_properties in server.get('locations', {}).items() %}
-        location {{ location }} {
-            {% for key, value in location_properties.items() %}
-                {% if '_' == key %}
-                    {{ value }}
-                {% else %}
-                    {{ key }} {{ value }};
-                {% endif %}
-            {% endfor %}
-        }
+        server_name  {{ server_name }};
+        access_log	{{ config.log_directory }}/{{ server_name }}.log;
+        {% for key, value in server_properties.items() %}
+            {% if 'locations' == key %}
+                {% for location, location_properties in value.items() %}
+                location {{ location }} {
+                    {% for key, value in location_properties.items() %}
+                        {% if '_' == key %}
+                            {{ value }}
+                        {% else %}
+                            {{ key }} {{ value }};
+                        {% endif %}
+                    {% endfor %}
+                }
+                {% endfor %}
+            {% else %}
+                {{ key }} {{ value }};
+            {% endif %}
         {% endfor %}
     }
     {% endfor %}
@@ -114,3 +117,4 @@ http {
         video/x-msvideo                       avi;
     }
 }
+{% endautoescape %}

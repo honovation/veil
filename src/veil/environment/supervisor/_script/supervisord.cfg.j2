@@ -1,5 +1,5 @@
 {% set config = options.supervisor %}
-
+{% autoescape false %}
 ;[unix_http_server]
 ;file=/tmp/supervisor.sock   ; (the path to the socket file)
 ;chmod=0700                 ; sockef file mode (default 0700)
@@ -125,7 +125,7 @@ stopsignal={{ program.stop_signal or 'INT' }}
 ; create one or more 'real' group: sections to create "heterogeneous"
 ; process groups.
 
-{% for group_name, programs in config.groups.items() %}
+{% for group_name, programs in config.get('groups', {}).items() %}
 [group:{{ group_name }}]
 programs= {{ programs | join(',') }}
 {% endfor %}
@@ -138,3 +138,4 @@ programs= {{ programs | join(',') }}
 
 ;[include]
 ;files = relative/directory/*.ini
+{% endautoescape %}
