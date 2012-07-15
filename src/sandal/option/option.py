@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from sandal.event import publish_event
 from sandal.const import consts
+from sandal.collection import *
 
 consts.EVENT_OPTIONS_INITIALIZED = 'options-initialized'
 option_definitions = {}
@@ -54,7 +55,7 @@ def reset_options():
 
 
 def peek_options():
-    return dict(options)
+    return objectify(options)
 
 
 def merge_options(base, updates):

@@ -23,14 +23,14 @@ http {
     gzip  on;
     gzip_disable "MSIE [1-6]\.(?!.*SV1)";
 
-    {% for website in options.websites.values() %}
+    {% for server in config.servers.values() %}
     server {
-        server_name  {{ website.server_name }};
-        access_log	{{ config.log_directory }}/{{ website.server_name }}.log;
-        {% for key, value in website.get('properties', {}).items() %}
+        server_name  {{ server.name }};
+        access_log	{{ config.log_directory }}/{{ server.name }}.log;
+        {% for key, value in server.get('properties', {}).items() %}
         {{ key }} {{ value }};
         {% endfor %}
-        {% for location, location_properties in website.get('locations', {}).items() %}
+        {% for location, location_properties in server.get('locations', {}).items() %}
         location {{ location }} {
             {% for key, value in location_properties.items() %}
                 {% if '_' == key %}

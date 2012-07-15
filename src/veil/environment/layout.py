@@ -4,6 +4,7 @@ import os
 from sandal.event import *
 from sandal.path import *
 from sandal.const import *
+from sandal.collection import *
 from .directory import create_directory
 
 consts.EVENT_ENVIRONMENT_INSTALLING = 'environment-installing'
@@ -18,11 +19,18 @@ VEIL_LOG_DIR = VEIL_HOME / 'log' / VEIL_ENV
 VEIL_ETC_DIR = VEIL_HOME / 'etc' / VEIL_ENV
 
 def init_env():
-    publish_event(consts.EVENT_ENVIRONMENT_INSTALLING, options={
+    publish_event(consts.EVENT_ENVIRONMENT_INSTALLING, options=objectify({
         'nginx': {
-            'log_directory': VEIL_LOG_DIR / 'nginx'
+            'log_directory': VEIL_LOG_DIR / 'nginx',
+            'config_file': VEIL_ETC_DIR / 'nginx.conf'
+        },
+        'supervisor': {
+            'config_file': VEIL_ETC_DIR / 'supervisor.cfg',
+            'logging': {
+                'directory': VEIL_LOG_DIR
+            }
         }
-    })
+    }))
     create_directory(VEIL_HOME / 'log')
     create_directory(VEIL_LOG_DIR)
     create_directory(VEIL_HOME / 'etc')

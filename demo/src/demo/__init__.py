@@ -10,12 +10,29 @@ def init():
     DEMO_WEB_HOST = 'localhost'
     DEMO_WEB_PORT = 8080
     subscribe_event(consts.EVENT_ENVIRONMENT_INSTALLING, lambda options: init_options(merge_options(options, {
-        'websites': {
-            'demo': {
-                'server_name': 'demo.dev.dmright.com',
-                'host': DEMO_WEB_HOST,
-                'port': DEMO_WEB_PORT
+        'nginx': {
+            'servers': {
+                'demo': {
+                    'name': 'demo.dev.dmright.com',
+                    'host': DEMO_WEB_HOST,
+                    'port': DEMO_WEB_PORT
+                }
             }
+        },
+        'supervisor': {
+            'programs': {
+                'demo': {
+                    'command': 'veil demo-web-up'
+                },
+                'nginx': {
+                    'command': 'nginx -c {{ config_file }}',
+                    'args': {
+                        'config_file': options.nginx.config_file
+                    },
+                    'user': 'root'
+                }
+            },
+            'groups': {}
         }
     })))
 
