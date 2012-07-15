@@ -1,8 +1,12 @@
-<html>
-<head>
-<title>Demo</title>
-</head>
-<body>
+{% extends 'master:layout.html' %}
+{% block title %}Veil Demo{% endblock %}
+{% block main %}
 demo
-</body>
-</html>
+{% block inline_javascript %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        alert('hello');
+    });
+</script>
+{% endblock %}
+{% endblock %}

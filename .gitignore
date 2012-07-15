@@ -3,5 +3,6 @@
 demo/etc/*
 demo/env/*
 demo/log/*
+demo/var/*
 !demo/env/lib/python2.7/site-packages/veil.pth
 

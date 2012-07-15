@@ -16,7 +16,6 @@ static_file_hashes = {}
 
 get_inline_static_files_directory = register_option('website', 'inline_static_files_directory')
 get_external_static_files_directory = register_option('website', 'external_static_files_directory')
-get_external_static_files_url_prefix = register_option('website', 'external_static_files_url_prefix')
 
 # === utilities exposed for external usage ===
 @contextlib.contextmanager
@@ -80,6 +79,7 @@ def delete_first_and_last_non_empty_lines_to_strip_tags_such_as_script(content):
 
 
 def generate_pseudo_file_name(template_path):
+    template_path = os.path.abspath(template_path)
     template_dir = os.path.basename(os.path.dirname(template_path))
     template_name = os.path.splitext(os.path.basename(template_path))[0]
     if template_dir.endswith('_web'):
@@ -103,7 +103,7 @@ def process_script_tags(html, active_widgets):
             script_tags.append(script_tag)
     striped_html = ''.join(striped_parts)
     if '</body>' in striped_html:
-        return striped_html.replace('</body>', '{}\r\n</body>'.format(''.join(script_tags)))
+        return striped_html.replace('</body>', '{}\r\n</body>'.format('\r\n'.join(script_tags)))
     return '{}{}'.format(striped_html, ''.join(script_tags))
 
 
