@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from os import getenv
 import os
 from sandal.event import *
+from sandal.option import *
 from sandal.path import *
 from sandal.const import *
 from sandal.collection import *
@@ -35,3 +36,4 @@ def init_env():
     create_directory(VEIL_LOG_DIR)
     create_directory(VEIL_HOME / 'etc')
     create_directory(VEIL_ETC_DIR)
+    return peek_options()

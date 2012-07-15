@@ -1,5 +1,4 @@
 from sandal.script import *
-from sandal.option import *
 from sandal.shell import *
 from sandal.path import *
 from sandal.template import *
@@ -9,8 +8,7 @@ from ...file import create_file
 
 @script('install')
 def install_nginx():
-    init_env()
-    options = peek_options()
+    options = init_env()
     if not path('/usr/sbin/nginx').exists():
         shell_execute('apt-get install nginx-extras')
     if path('/etc/rc0.d/K20nginx').exists():

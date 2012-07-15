@@ -9,8 +9,7 @@ from ...layout import init_env
 
 @script('install')
 def install_supervisor():
-    init_env()
-    options = peek_options()
+    options = init_env()
     try:
         __import__('supervisor')
     except ImportError:
@@ -20,6 +19,11 @@ def install_supervisor():
         format_environment_variables=format_environment_variables
     ))
     create_directory(options.supervisor.logging.directory)
+
+@script('up')
+def bring_up_supervisor():
+    options = init_env()
+    shell_execute('supervisord -c {}'.format(options.supervisor.config_file))
 
 
 def format_command(command, args):

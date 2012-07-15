@@ -20,9 +20,9 @@ password={{ config.inet_http_server.password }}
 
 [supervisord]
 logfile={{ config.logging.directory }}/supervisor.log
-logfile_maxbytes={{ config.logging.max_size }}
-logfile_backups={{ config.logging.backups_count }}
-pidfile={{ config.pid_file }}
+logfile_maxbytes={{ config.logging.max_size or '50MB' }}
+logfile_backups={{ config.logging.backups_count or 10 }}
+pidfile={{ config.pid_file or '/tmp/supervisord.pid' }}
 nodaemon={{ not config.daemonize }}
 
 ; the below section must remain in the config file for RPC
@@ -72,12 +72,12 @@ stdout_logfile={{ config.logging.directory }}/{{ program_name }}.log
 {% if program.logging and program.logging.max_size %}
 stdout_logfile_maxbytes={{ program.logging.max_size }}
 {% else %}
-stdout_logfile_maxbytes={{ config.logging.max_size }}
+stdout_logfile_maxbytes={{ config.logging.max_size or '50MB' }}
 {% endif %}
 {% if program.logging and program.logging.backups_count %}
 stdout_logfile_backups={{ program.logging.backups_count }}
 {% else %}
-stdout_logfile_backups={{ config.logging.backups_count }}
+stdout_logfile_backups={{ config.logging.backups_count or 10 }}
 {% endif %}
 {% if program.expected_exit_codes %}
 exitcodes={{ ','.join(program.expected_exit_codes) }}

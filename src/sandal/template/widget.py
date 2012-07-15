@@ -69,7 +69,7 @@ class Widget(object):
                 kwargs['from_template'] = kwargs['from_template'] if 'from_template' in kwargs else False
             else:
                 kwargs.pop('from_template', None)
-            with require_current_template_directory_relative_to(get_widget_template_directory(self.func)):
+            with require_current_template_directory_relative_to(self.func):
                 self.activate()
                 content = self.func(*args, **kwargs)
                 if content is None:

@@ -13,6 +13,7 @@ def init():
         'nginx': {
             'servers': {
                 'demo': {
+                    'listen': 8080,
                     'name': 'demo.dev.dmright.com',
                     'host': DEMO_WEB_HOST,
                     'port': DEMO_WEB_PORT
@@ -22,15 +23,15 @@ def init():
         'supervisor': {
             'programs': {
                 'demo': {
-                    'command': 'veil demo-web-up'
+                    'command': 'veil demo up'
                 },
-                'nginx': {
-                    'command': 'nginx -c {{ config_file }}',
-                    'args': {
-                        'config_file': options.nginx.config_file
-                    },
-                    'user': 'root'
-                }
+#                'nginx': {
+#                    'command': 'nginx -c {{ config_file }}',
+#                    'args': {
+#                        'config_file': options.nginx.config_file
+#                    },
+#                    'user': 'root'
+#                }
             },
             'groups': {}
         }

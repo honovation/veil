@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from logging import getLogger
+import signal
 from jinja2.loaders import FileSystemLoader
 from tornado.ioloop import IOLoop
 from sandal.option import register_option
@@ -32,6 +33,7 @@ def start_website(website, website_type=None, port=None, host=None, processes_co
     http_server.bind(port, host)
     http_server.start(processes_count)
     LOGGER.info('started {} website'.format(website))
+    signal.signal(signal.SIGINT, lambda *args: io_loop.stop())
     io_loop.start()
 
 

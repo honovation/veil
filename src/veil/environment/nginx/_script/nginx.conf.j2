@@ -25,6 +25,7 @@ http {
 
     {% for server in config.servers.values() %}
     server {
+        listen {{ server.listen }};
         server_name  {{ server.name }};
         access_log	{{ config.log_directory }}/{{ server.name }}.log;
         {% for key, value in server.get('properties', {}).items() %}
