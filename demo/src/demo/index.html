@@ -1,11 +1,18 @@
 {% extends 'master:layout.html' %}
 {% block title %}Veil Demo{% endblock %}
 {% block main %}
-demo
+Items
+<ul id="items">
+</ul>
+<button id="append">Append</button>
 {% block inline_javascript %}
 <script type="text/javascript">
-    $(document).ready(function(){
-        alert('hello');
+    $(document).ready(function () {
+        $('#append').click(function () {
+            $.get('/item', function (html) {
+                $('#items').append(executeAndStripScripts(html));
+            });
+        });
     });
 </script>
 {% endblock %}
