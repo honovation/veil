@@ -1,19 +1,17 @@
+from __future__ import unicode_literals, print_function, division
 import jinja2
 from sandal.script import *
 from sandal.shell import *
-from sandal.option import *
 from sandal.template import *
 from ...file import create_file
 from ...directory import create_directory
 from ...layout import init_env
+from ...python import install_python_package
 
 @script('install')
 def install_supervisor():
     options = init_env()
-    try:
-        __import__('supervisor')
-    except ImportError:
-        shell_execute('pip install supervisor')
+    install_python_package('supervisor')
     create_file(options.supervisor.config_file, get_template('supervisord.cfg.j2').render(
         format_command=format_command,
         format_environment_variables=format_environment_variables

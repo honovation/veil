@@ -4,11 +4,12 @@ import subprocess
 
 LOGGER = logging.getLogger(__name__)
 
-def shell_execute(command_line, capture=False, **kwargs):
+def shell_execute(command_line, capture=False, silent=False, **kwargs):
     command_args = shlex.split(command_line)
-    if capture:
+    if capture or silent:
         kwargs.update(dict(stderr=subprocess.STDOUT, stdout=subprocess.PIPE))
-    LOGGER.info('* exec: {}'.format(command_line))
+    if not silent:
+        LOGGER.info('* exec: {}'.format(command_line))
     process = subprocess.Popen(command_args, **kwargs)
     output = process.communicate()[0]
     if process.returncode:
@@ -22,3 +23,5 @@ def shell_execute(command_line, capture=False, **kwargs):
                     process.returncode, command_args, kwargs))
     if capture:
         return output
+    else:
+        return process

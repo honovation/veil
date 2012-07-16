@@ -7,14 +7,13 @@ from sandal.template import *
 from ...layout import init_env
 from ...directory import create_directory
 from ...file import create_file
+from ...ubuntu import install_ubuntu_package, remove_service_auto_start
 
 @script('install')
 def install_nginx():
     options = init_env()
-    if not path('/usr/sbin/nginx').exists():
-        shell_execute('apt-get install nginx-extras')
-    if path('/etc/rc0.d/K20nginx').exists():
-        shell_execute('update-rc.d -f nginx remove')
+    install_ubuntu_package('nginx-extras')
+    remove_service_auto_start('nginx', '/etc/rc0.d/K20nginx')
     create_directory(options.nginx.log_directory)
     create_file(options.nginx.config_file, get_template('nginx.conf.j2').render())
     DEFAULT_USER = os.getenv('SUDO_USER')
