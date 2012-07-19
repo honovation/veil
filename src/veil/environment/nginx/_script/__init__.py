@@ -1,6 +1,8 @@
 from __future__ import unicode_literals, print_function, division
+import os
 from sandal.script import *
 from sandal.template import *
+from sandal.shell import *
 from ...filesystem import create_directory
 from ...filesystem import create_file
 from ...ubuntu_package import install_ubuntu_package, remove_service_auto_start
@@ -18,3 +20,9 @@ def install_nginx():
         owner=settings.nginx.inline_static_files_owner,
         group=settings.nginx.inline_static_files_group,
         mode=0770)
+
+
+@script('up')
+def bring_up_nginx():
+    settings = get_environment_settings()
+    shell_execute('nginx -c {}'.format(settings.nginx.config_file), pass_control=True)
