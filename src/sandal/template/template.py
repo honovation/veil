@@ -7,7 +7,6 @@ from jinja2.loaders import FileSystemLoader, PrefixLoader
 from sandal.component import force_import_module
 from sandal.event import publish_event
 from sandal.const import consts
-from sandal.option import peek_options
 
 consts.EVENT_TEMPLATE_ENVIRONMENT_READY = 'template-environment-ready'
 consts.EVENT_TEMPLATE_ENVIRONMENT_RESET = 'template-environment-reset'
@@ -99,13 +98,13 @@ def get_template_from_file(template_path):
         current_template_directory = current_template_directories[-1]
         template_path = os.path.join(current_template_directory, template_path)
     template = get_or_create_environment().get_template(
-        'root:{}'.format(template_path), globals=dict(utilities, consts=consts, options=peek_options()))
+        'root:{}'.format(template_path), globals=dict(utilities, consts=consts))
     return template
 
 
 def get_template_from_string(template_source):
     return get_or_create_environment().from_string(
-        template_source, globals=dict(utilities, consts=consts, options=peek_options()))
+        template_source, globals=dict(utilities, consts=consts))
 
 
 def get_template_environment():

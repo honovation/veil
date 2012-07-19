@@ -3,25 +3,27 @@ import jinja2
 from sandal.script import *
 from sandal.shell import *
 from sandal.template import *
-from ...file import create_file
-from ...directory import create_directory
-from ...layout import init_env
-from ...python import install_python_package
+from ...filesystem import create_file
+from ...filesystem import create_directory
+from ...python_package import install_python_package
+from ...setting import get_environment_settings
 
 @script('install')
 def install_supervisor():
-    options = init_env()
+    settings = get_environment_settings()
     install_python_package('supervisor')
-    create_file(options.supervisor.config_file, get_template('supervisord.cfg.j2').render(
+    create_file(settings.supervisor.config_file, get_template('supervisord.cfg.j2').render(
+        config=settings.supervisor,
         format_command=format_command,
         format_environment_variables=format_environment_variables
     ))
-    create_directory(options.supervisor.logging.directory)
+    create_directory(settings.supervisor.logging.directory)
+
 
 @script('up')
 def bring_up_supervisor():
-    options = init_env()
-    shell_execute('supervisord -c {}'.format(options.supervisor.config_file))
+    settings = get_environment_settings()
+    shell_execute('supervisord -c {}'.format(settings.supervisor.config_file))
 
 
 def format_command(command, args):

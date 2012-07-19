@@ -1,14 +1,18 @@
 ######## export begin
 from .layout import VEIL_HOME
-from .layout import VEIL_LAYOUT
+from .nginx import NGINX_BASE_SETTINGS
+from .setting import register_environment_settings_provider
 
 VEIL_HOME = VEIL_HOME
-VEIL_LAYOUT = VEIL_LAYOUT
+NGINX_BASE_SETTINGS = NGINX_BASE_SETTINGS
 
 __all__ = [
-    # from home
+    # from layout
     'VEIL_HOME',
-    'VEIL_LAYOUT'
+    # from nginx
+    'NGINX_BASE_SETTINGS',
+    # from setting
+    register_environment_settings_provider.__name__
 ]
 ######## export end
 

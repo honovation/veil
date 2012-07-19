@@ -1,16 +1,18 @@
 def init():
     from sandal.component import init_component
-    from sandal.const import consts
-    from sandal.event import subscribe_event
-    from sandal.option import init_options
-    from sandal.option import merge_options
+    from veil.environment import NGINX_BASE_SETTINGS
+    from veil.environment import register_environment_settings_provider
 
     init_component(__name__)
 
     DEMO_WEB_HOST = 'localhost'
     DEMO_WEB_PORT = 8080
-    subscribe_event(consts.EVENT_ENVIRONMENT_INSTALLING, lambda options: init_options(merge_options(options, {
+    UNPRIVILIGED_USER = 'dejavu'
+    UNPRIVILIGED_GROUP = 'dejavu'
+    register_environment_settings_provider(lambda: {
         'nginx': {
+            'inline_static_files_owner': UNPRIVILIGED_USER,
+            'inline_static_files_group': UNPRIVILIGED_GROUP,
             'servers': {
                 'demo.dev.dmright.com': {
                     'listen': '127.0.0.1:80',
@@ -33,17 +35,17 @@ def init():
                         proxy_set_header   X-Real-IP        $remote_addr;
                         proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
                         """ % (
-                                options.nginx.uploaded_files_directory,
+                                NGINX_BASE_SETTINGS.nginx.uploaded_files_directory,
                                 DEMO_WEB_HOST,
                                 DEMO_WEB_PORT),
-                        },
+                            },
                         '@after_upload': {
                             'proxy_pass': 'http://{}:{}'.format(DEMO_WEB_HOST, DEMO_WEB_PORT)
                         },
                         # inline static files
                         # /static/v-xxxx/a-b.js
                         '~ ^/static/v-(.*)/': {
-                            'alias': options.nginx.inline_static_files_directory / '$1',
+                            'alias': NGINX_BASE_SETTINGS.nginx.inline_static_files_directory / '$1',
                             'expires': '365d'
                         },
                         # external static files
@@ -54,7 +56,7 @@ def init():
                             expires 365d;
                         }
                         """,
-                            'alias': options.nginx.external_static_files_directory / ''
+                            'alias': NGINX_BASE_SETTINGS.nginx.external_static_files_directory / ''
                         }
                     }
                 }
@@ -68,12 +70,19 @@ def init():
                 'nginx': {
                     'command': 'nginx -c {{ config_file }}',
                     'args': {
-                        'config_file': options.nginx.config_file
+                        'config_file': NGINX_BASE_SETTINGS.nginx.config_file
                     },
                     'user': 'root'
                 }
             }
+        },
+        'postgresql': {
+            'listen_addresses': 'localhost',
+            'port': 5432,
+            'data_owner': UNPRIVILIGED_USER,
+            'user': 'veil',
+            'password': 'p@55word'
         }
-    })))
+    })
 
 init()

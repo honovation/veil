@@ -1,4 +1,3 @@
-{% set config = options.nginx %}
 {% autoescape false %}
 user {{ config.owner or 'root' }} {{ config.group or 'root' }};
 worker_processes {{ config.worker_processes_count or 4 }};

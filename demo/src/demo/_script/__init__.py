@@ -12,8 +12,8 @@ def bring_up_demo():
             'level': 'DEBUG'
         },
         'website': {
-            'inline_static_files_directory': VEIL_LAYOUT.nginx.inline_static_files_directory,
-            'external_static_files_directory': VEIL_LAYOUT.nginx.external_static_files_directory
+            'inline_static_files_directory': NGINX_BASE_SETTINGS.nginx.inline_static_files_directory,
+            'external_static_files_directory': NGINX_BASE_SETTINGS.nginx.external_static_files_directory
         }
     })
     start_website(

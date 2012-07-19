@@ -56,18 +56,3 @@ def reset_options():
 
 def peek_options():
     return objectify(options)
-
-
-def merge_options(base, updates):
-    if not base:
-        return updates
-    if isinstance(base, dict) and isinstance(updates, dict):
-        updated = {}
-        for k, v in base.items():
-            updated[k] = merge_options(v, updates.get(k))
-        for k, v in updates.items():
-            if k not in updated:
-                updated[k] = v
-        return updated
-    return base
-
