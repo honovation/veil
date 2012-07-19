@@ -1,10 +1,12 @@
 ######## export begin
 from .setting import NGINX_BASE_SETTINGS
+from .setting import create_nginx_server_settings
 
 NGINX_BASE_SETTINGS = NGINX_BASE_SETTINGS
 
 __all__ = [
-    'NGINX_BASE_SETTINGS'
+    'NGINX_BASE_SETTINGS',
+    create_nginx_server_settings.__name__
 ]
 ######## export end
 
