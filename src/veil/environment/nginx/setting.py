@@ -14,8 +14,7 @@ NGINX_BASE_SETTINGS = objectify({
     'supervisor': {
         'programs': {
             'nginx': {
-                'command': 'veil environment nginx up',
-                'user': 'root'
+                'command': 'veil environment nginx up'
             }
         }
     }

@@ -19,6 +19,9 @@ def init():
             'programs': {
                 'demo': {
                     'command': 'veil demo up'
+                },
+                'postgresql': {
+                    'user': UNPRIVILIGED_USER
                 }
             }
         },

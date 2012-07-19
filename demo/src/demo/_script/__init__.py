@@ -23,4 +23,6 @@ def bring_up_demo():
 @script('install')
 def install_demo():
     shell_execute('veil environment nginx install')
+    shell_execute('veil environment postgresql client install')
+    shell_execute('veil environment postgresql server install')
     shell_execute('veil environment supervisor install')

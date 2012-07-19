@@ -70,9 +70,7 @@ def install_postgresql_server():
 @script('up')
 def bring_up_postgresql_server():
     settings = get_environment_settings()
-    shell_execute('su {} -c "pg_ctl -D {} start"'.format(
-        settings.postgresql.data_owner,
-        settings.postgresql.data_directory))
+    shell_execute('postgres -D {}'.format(settings.postgresql.data_directory), pass_control=True)
 
 
 @script('down')
@@ -85,7 +83,10 @@ def bring_down_postgresql_server():
 
 @contextlib.contextmanager
 def postgresql_server_running():
-    bring_up_postgresql_server()
+    settings = get_environment_settings()
+    shell_execute('su {} -c "pg_ctl -D {} start"'.format(
+        settings.postgresql.data_owner,
+        settings.postgresql.data_directory))
     time.sleep(5)
     yield
     bring_down_postgresql_server()
