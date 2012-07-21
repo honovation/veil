@@ -5,10 +5,8 @@ import os
 
 LOGGER = logging.getLogger(__name__)
 
-def shell_execute(command_line, capture=False, silent=False, pass_control=False, **kwargs):
+def shell_execute(command_line, capture=False, silent=False, **kwargs):
     command_args = shlex.split(command_line)
-    if pass_control:
-        os.execlp(command_args[0], *command_args)
     if capture or silent:
         kwargs.update(dict(stderr=subprocess.STDOUT, stdout=subprocess.PIPE))
     if not silent:
@@ -28,3 +26,8 @@ def shell_execute(command_line, capture=False, silent=False, pass_control=False,
         return output
     else:
         return process
+
+
+def pass_control_to(command_line):
+    command_args = shlex.split(command_line)
+    os.execlp(command_args[0], *command_args)

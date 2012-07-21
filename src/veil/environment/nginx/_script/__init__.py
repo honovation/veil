@@ -25,4 +25,4 @@ def install_nginx():
 @script('up')
 def bring_up_nginx():
     settings = get_environment_settings()
-    shell_execute('nginx -c {}'.format(settings.nginx.config_file), pass_control=True)
+    pass_control_to('nginx -c {}'.format(settings.nginx.config_file))

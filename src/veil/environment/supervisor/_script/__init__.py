@@ -23,7 +23,7 @@ def install_supervisor():
 @script('up')
 def bring_up_supervisor():
     settings = get_environment_settings()
-    shell_execute('supervisord -c {}'.format(settings.supervisor.config_file), pass_control=True)
+    pass_control_to('supervisord -c {}'.format(settings.supervisor.config_file))
 
 
 def format_command(command, args):

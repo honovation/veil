@@ -70,7 +70,7 @@ def install_postgresql_server():
 @script('up')
 def bring_up_postgresql_server():
     settings = get_environment_settings()
-    shell_execute('postgres -D {}'.format(settings.postgresql.data_directory), pass_control=True)
+    pass_control_to('postgres -D {}'.format(settings.postgresql.data_directory))
 
 
 @script('down')
