@@ -14,6 +14,14 @@ def bring_up_demo():
         'website': {
             'inline_static_files_directory': NGINX_BASE_SETTINGS.nginx.inline_static_files_directory,
             'external_static_files_directory': NGINX_BASE_SETTINGS.nginx.external_static_files_directory
+        },
+        'database': {
+            'type': 'postgresql',
+            'host': 'localhost',
+            'port': 5432,
+            'db_name': 'demo',
+            'user': 'veil',
+            'password': 'p@55word'
         }
     })
     start_website(
