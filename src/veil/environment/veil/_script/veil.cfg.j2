@@ -1,0 +1,64 @@
+{% if config.website %}
+[website]
+type={{ config.website.type }}
+inline_static_files_directory={{ config.website.inline_static_files_directory }}
+external_static_files_directory={{ config.website.external_static_files_directory }}
+{% endif %}
+{% if config.http %}
+[http]
+host={{ config.http.host }}
+port={{ config.http.port }}
+processes_count={{ config.http.processes_count }}
+{% endif %}
+{% if config.security %}
+[security]
+hash_salt={{ config.security.hash_salt }}
+{% endif %}
+{% if config.sendgrid %}
+[sendgrid]
+url={{ config.sendgrid.url }}
+{% endif %}
+{% if config.smtp %}
+[smtp]
+host={{ config.smtp.host }}
+port={{ config.smtp.port }}
+uses_tls={{ config.smtp.uses_tls }}
+user={{ config.smtp.user }}
+password={{ config.smtp.password }}
+{% endif %}
+{% for config_name, database in config.items() if config_name.endswith('database') %}
+{% if database.purpose %}
+[{{ database.purpose }}_database]
+{% else %}
+[database]
+{% endif %}
+type={{ database.type }}
+host={{ database.host }}
+port={{ database.port }}
+db_name={{ database.db_name }}
+user={{ database.user }}
+password={{ database.password }}
+commits_transaction={{ database.commits_transaction  }}
+{% endfor %}
+{% if config.redis %}
+[redis]
+host={{ config.redis.host }}
+port={{ config.redis.port }}
+password={{ config.redis.password }}
+{% endif %}
+{% if config.queue %}
+[queue]
+type={{ config.queue.type }}
+host={{ config.queue.host }}
+port={{ config.queue.port }}
+password={{ config.queue.password }}
+{% endif %}
+{% if config.file_storage %}
+[file_storage]
+type={{ config.file_storage.type }}
+base_directory={{ config.file_storage.base_directory }}
+{% endif %}
+{% if config.logging %}
+[logging]
+level={{ config.logging.level }}
+{% endif %}
