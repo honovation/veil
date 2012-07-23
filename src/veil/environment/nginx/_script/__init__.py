@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import os
-from sandal.script import *
+from veil.script import *
 from sandal.template import *
 from sandal.shell import *
 from ...filesystem import create_directory

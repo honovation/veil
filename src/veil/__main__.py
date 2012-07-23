@@ -8,12 +8,12 @@ if __dir__ in sys.path:
     sys.path.remove(__dir__) # disable old style relative import
 
 import logging
-from sandal.script import execute_script
+from veil.script import execute_script
 from sandal.component import scan_components
 from sandal.option import register_option
 from sandal.event import subscribe_event
 from sandal.const import consts
-from veil.environment import VEIL_HOME
+from veil.layout import VEIL_HOME
 
 get_logging_level = register_option('logging', 'level')
 

@@ -1,9 +1,13 @@
 from __future__ import unicode_literals, print_function, division
+from ConfigParser import RawConfigParser
+import functools
 from logging import getLogger
 import sys
-from sandal.component import get_loading_components
 from inspect import isfunction
+from sandal.component import get_loading_components
 from sandal.template import *
+from sandal.option import *
+from veil.layout import *
 
 script_handlers = {}
 LOGGER = getLogger(__name__)
@@ -33,6 +37,10 @@ class ScriptHandlerDecorator(object):
         self.command = command
 
     def __call__(self, script_handler):
+        @functools.wraps(script_handler)
+        def wrapper(*args, **kwargs):
+            self.load_options()
+            return script_handler(*args, **kwargs)
         component = get_loading_components()[-1]
         component_hierarchy_names = component.__name__.split('.')
         if component.__name__.startswith('veil.'):
@@ -44,5 +52,13 @@ class ScriptHandlerDecorator(object):
         if self.command in level:
             raise Exception('{}=>{} script has already been registered'.format(
                 '=>'.join(component_hierarchy_names), self.command))
-        level[self.command] = script_handler
-        return script_handler
+        level[self.command] = wrapper
+        return wrapper
+
+    def load_options(self):
+        config_parser = RawConfigParser()
+        config_parser.read(VEIL_ETC_DIR / 'veil.cfg')
+        options = {}
+        for section in config_parser.sections():
+            options[section] = dict(config_parser.items(section))
+        init_options(options)

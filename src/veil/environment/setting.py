@@ -1,7 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 import sys
 from sandal.collection import *
-from .layout import create_layout
+from veil.layout import *
+from .filesystem import create_directory
 
 providers = []
 env_settings = {}
@@ -22,6 +23,13 @@ def get_environment_settings():
         create_layout()
     return env_settings
 
+def create_layout():
+    create_directory(VEIL_HOME / 'log')
+    create_directory(VEIL_LOG_DIR)
+    create_directory(VEIL_HOME / 'etc')
+    create_directory(VEIL_ETC_DIR)
+    create_directory(VEIL_HOME / 'var')
+    create_directory(VEIL_VAR_DIR)
 
 def merge_settings(base, updates):
     if not base:

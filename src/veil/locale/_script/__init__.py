@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment import VEIL_HOME
 from sandal.path import *
-from sandal.script import *
+from veil.script import *
 from sandal.const import *
 from sandal.shell import *
 from argparse import ArgumentParser

@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import jinja2
-from sandal.script import *
+from veil.script import *
 from sandal.shell import *
 from sandal.template import *
 from ...filesystem import create_file

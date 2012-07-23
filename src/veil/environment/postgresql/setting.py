@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from ..layout import VEIL_VAR_DIR, VEIL_ETC_DIR
+from veil.layout import *
 
 
 POSTGRESQL_BASE_SETTINGS = {

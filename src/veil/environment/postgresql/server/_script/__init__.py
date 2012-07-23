@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
 import time
-from sandal.script import *
+from veil.script import *
 from sandal.path import *
 from sandal.shell import *
 from sandal.template import *

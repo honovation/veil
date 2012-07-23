@@ -1,5 +1,5 @@
 ######## export begin
-from .layout import VEIL_HOME
+from ..layout import VEIL_HOME
 from .nginx import NGINX_BASE_SETTINGS
 from .nginx import create_nginx_server_settings
 from .setting import register_environment_settings_provider
