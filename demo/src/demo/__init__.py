@@ -41,7 +41,7 @@ def init():
                 'inline_static_files_directory': NGINX_BASE_SETTINGS.nginx.inline_static_files_directory,
                 'external_static_files_directory': NGINX_BASE_SETTINGS.nginx.external_static_files_directory
             },
-            'database': {
+            'demo_database': {
                 'type': 'postgresql',
                 'host': 'localhost',
                 'port': 5432,

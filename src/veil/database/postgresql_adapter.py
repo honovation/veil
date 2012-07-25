@@ -12,14 +12,20 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 class PostgresqlAdapter(object):
-    def __init__(self, autocommit=False, **connection_kwargs):
-        self.connection_kwargs = connection_kwargs
+    def __init__(self, host, port, database, user, password, autocommit=False):
+        self.host = host
+        self.port = port
+        self.database = database
+        self.user = user
+        self.password = password
         self.conn = self._get_conn(autocommit)
 
     def _get_conn(self, autocommit=False):
         conn = None
         try:
-            conn = psycopg2.connect(**self.connection_kwargs)
+            conn = psycopg2.connect(
+                host=self.host, port=self.port, database=self.database,
+                user=self.user, password=self.password)
             conn.set_session(isolation_level=ISOLATION_LEVEL_READ_COMMITTED, autocommit=autocommit)
         except:
             LOGGER.critical('Cannot connect to database', exc_info=1)
@@ -74,4 +80,8 @@ class PostgresqlAdapter(object):
 
     def __repr__(self):
         return 'Postgresql adapter {} with connection parameters {}'.format(
-            self.__class__.__name__, self.connection_kwargs)
+            self.__class__.__name__, dict(
+                host=self.host,
+                port=self.port,
+                database=self.database,
+                user=self.user))

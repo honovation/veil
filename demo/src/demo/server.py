@@ -15,6 +15,7 @@ def item():
     return get_template('item.html').render()
 
 @route('GET', '/db', website='DEMO')
+@transactional(demo_db)
 def query_db():
     return demo_db().list('SELECT * FROM items')
 

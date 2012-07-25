@@ -15,116 +15,41 @@ from sandal.option import peek_options
 
 LOGGER = getLogger(__name__)
 
-# options for database __default__
-get_default_db_type = register_option('database', 'type')
-get_default_db_host = register_option('database', 'host')
-get_default_db_port = register_option('database', 'port', int)
-get_default_db_db_name = register_option('database', 'db_name')
-get_default_db_user = register_option('database', 'user')
-get_default_db_password = register_option('database', 'password')
-get_default_db_commits_transaction = register_option('database', 'commits_transaction', bool)
-
 registry = {} # purpose => open_database
-
-current_schema_stack = [] # top will be used as the schema and set to search path
 connected_databases = {} # purpose => database or category => database or __default__ => database
-search_path_modified_databases = set() # instances executed set search_path to current schema and need to be set search_path back
 
-def register_database(purpose, with_transactional_decorator=False):
-    category = purpose.split('_')[-1]
-    exact_purpose_db_name = '{}_database'.format(purpose) # for example contact_index_database
-    same_category_db_name = '{}_database'.format(category) # for example index_database
-    get_exact_purpose_db_type = register_option(exact_purpose_db_name, 'type')
-    get_exact_purpose_db_host = register_option(exact_purpose_db_name, 'host')
-    get_exact_purpose_db_port = register_option(exact_purpose_db_name, 'port', int)
-    get_exact_purpose_db_db_name = register_option(exact_purpose_db_name, 'db_name')
-    get_exact_purpose_db_user = register_option(exact_purpose_db_name, 'user')
-    get_exact_purpose_db_password = register_option(exact_purpose_db_name, 'password')
-    get_exact_purpose_db_commits_transaction = register_option(exact_purpose_db_name, 'commits_transaction', bool)
-    get_same_category_db_type = register_option(same_category_db_name, 'type')
-    get_same_category_db_host = register_option(same_category_db_name, 'host')
-    get_same_category_db_port = register_option(same_category_db_name, 'port', int)
-    get_same_category_db_db_name = register_option(same_category_db_name, 'db_name')
-    get_same_category_db_user = register_option(same_category_db_name, 'user')
-    get_same_category_db_password = register_option(same_category_db_name, 'password')
-    get_same_category_db_commits_transaction = register_option(same_category_db_name, 'commits_transaction', bool)
+def register_database(purpose):
+    section_name = '{}_database'.format(purpose) # for example contact_index_database
+    get_db_type = register_option(section_name, 'type')
+    get_db_host = register_option(section_name, 'host')
+    get_db_port = register_option(section_name, 'port', int)
+    get_db_database = register_option(section_name, 'database')
+    get_db_user = register_option(section_name, 'user')
+    get_db_password = register_option(section_name, 'password')
+    get_db_commits_transaction = register_option(section_name, 'commits_transaction', bool)
 
     def connect_database_if_not_connected():
         if connected_databases.get(purpose):
             return connected_databases[purpose]
-        if get_exact_purpose_db_host():
-            options = {
-                'type': get_exact_purpose_db_type(),
-                'host': get_exact_purpose_db_host(),
-                'port': get_exact_purpose_db_port(),
-                'db_name': get_exact_purpose_db_db_name(),
-                'user': get_exact_purpose_db_user(),
-                'password': get_exact_purpose_db_password(),
-                'commits_transaction': get_exact_purpose_db_commits_transaction()
-            }
-            connected_databases[purpose] = connect(purpose=purpose, **options)
-            return connected_databases[purpose]
-        if connected_databases.get(category):
-            return connected_databases[category]
-        if get_same_category_db_host():
-            options = {
-                'type': get_same_category_db_type(),
-                'host': get_same_category_db_host(),
-                'port': get_same_category_db_port(),
-                'db_name': get_same_category_db_db_name(),
-                'user': get_same_category_db_user(),
-                'password': get_same_category_db_password(),
-                'commits_transaction': get_same_category_db_commits_transaction()
-            }
-            connected_databases[category] = connect(purpose=category, **options)
-            return connected_databases[category]
-        if not connected_databases.get('__default__'):
-            connected_databases['__default__'] = connect()
-        return connected_databases['__default__']
+        connected_databases[purpose] = connect(
+            purpose=purpose,
+            type=get_db_type(),
+            host=get_db_host(),
+            port=get_db_port(),
+            database=get_db_database(),
+            user=get_db_user(),
+            password=get_db_password(),
+            commits_transaction=get_db_commits_transaction())
+        return connected_databases[purpose]
 
     registry[purpose] = connect_database_if_not_connected
-    if with_transactional_decorator:
-        return lambda : require_database(purpose), lambda method: transactional(purpose, method)
-    else:
-        return lambda : require_database(purpose)
-
-def peek_databases():
-    databases = []
-    for config_name in peek_options():
-        if config_name.endswith('database'):
-            database = register_database(config_name.replace('_database', ''))()
-            databases.append(database)
-    return databases
+    return lambda : require_database(purpose)
 
 def require_database(purpose):
     # connect and set the current schema as search path
     if purpose not in registry:
         raise Exception('database for purpose {} is not registered'.format(purpose))
-    database = registry[purpose]()
-    if get_current_schema() and database not in search_path_modified_databases:
-        database.set_current_schema('{}'.format(get_current_schema()))
-        search_path_modified_databases.add(database)
-    return database
-
-
-@contextlib.contextmanager
-def require_current_database_schema_being(schema):
-    current_schema_stack.append(schema)
-    try:
-        yield
-    finally:
-        try:
-            for database in search_path_modified_databases:
-                database.reset_current_schema()
-        finally:
-            search_path_modified_databases.clear()
-            current_schema_stack.pop()
-
-
-def get_current_schema():
-    if current_schema_stack:
-        return current_schema_stack[-1]
-    return None
+    return registry[purpose]()
 
 
 def close_databases():
@@ -133,19 +58,11 @@ def close_databases():
     connected_databases.clear()
 
 
-def connect(**kwargs):
-    type = kwargs.pop('type', get_default_db_type())
-    kwargs['host'] = kwargs.pop('host', get_default_db_host())
-    kwargs['port'] = kwargs.pop('port', get_default_db_port())
-    kwargs['database'] = kwargs.pop('db_name', get_default_db_db_name())
-    kwargs['user'] = kwargs.pop('user', get_default_db_user())
-    kwargs['password'] = kwargs.pop('password', get_default_db_password())
-    commits_transaction = kwargs.pop('commits_transaction', get_default_db_commits_transaction())
-    purpose = kwargs.pop('purpose', 'default')
+def connect(purpose, type, host, port, database, user, password, commits_transaction):
     if 'postgresql' == type:
-        return Database(purpose, commits_transaction, PostgresqlAdapter(autocommit=commits_transaction, **kwargs))
-    elif 'monetdb' == type:
-        return Database(purpose, commits_transaction, MonetdbAdapter(autocommit=commits_transaction, **kwargs))
+        return Database(purpose, commits_transaction, PostgresqlAdapter(
+            autocommit=commits_transaction, host=host, port=port, database=database,
+            user=user, password=password))
     else:
         raise Exception('unknown database type: {}'.format(type))
 
@@ -169,13 +86,15 @@ def require_transaction_context(db):
             db.enable_autocommit()
 
 
-def transactional(purpose, method):
-    @wraps(method)
-    def wrapper(*args, **kwargs):
-        with require_transaction_context(require_database(purpose)):
-            return method(*args, **kwargs)
+def transactional(database_provider):
+    def wrap_with_transaction_context(method):
+        @wraps(method)
+        def wrapper(*args, **kwargs):
+            with require_transaction_context(database_provider()):
+                return method(*args, **kwargs)
+        return wrapper
 
-    return wrapper
+    return wrap_with_transaction_context
 
 
 class Database(object):
@@ -398,8 +317,8 @@ class Database(object):
         self.close()
 
     def __repr__(self):
-        return 'Database {} and commits_transaction {} opened by {}'.format(
-            self.conn, self.commits_transaction, self.opened_by)
+        return 'Database {} opened by {}'.format(
+            self.purpose, self.opened_by)
 
 
 class ConstValueProvider(object):

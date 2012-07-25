@@ -27,11 +27,7 @@ user={{ config.smtp.user }}
 password={{ config.smtp.password }}
 {% endif %}
 {% for config_name, database in config.items() if config_name.endswith('database') %}
-{% if database.purpose %}
-[{{ database.purpose }}_database]
-{% else %}
-[database]
-{% endif %}
+[{{ config_name }}]
 type={{ database.type }}
 host={{ database.host }}
 port={{ database.port }}
