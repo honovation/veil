@@ -1,26 +1,10 @@
 {% extends 'master:layout.html' %}
+
 {% block title %}Veil Demo{% endblock %}
-{% block stylesheet %}
-<style type="text/css">
-    .having-error {
-        background: red;
-    }
-</style>
-{% endblock %}
+
 {% block main %}
-Items
-<ul id="items">
-</ul>
-{{ widgets.new_item() }}
-{% block inline_javascript %}
-<script type="text/javascript">
-    $(document).ready(function () {
-        $('#append').click(function () {
-            $.get('/item', function (html) {
-                $('#items').append(executeAndStripScripts(html));
-            });
-        });
-    });
-</script>
-{% endblock %}
+    <h3>Items</h3>
+    {{ widgets.list_items() }}
+    <h3>New Item</h3>
+    {{ widgets.new_item() }}
 {% endblock %}

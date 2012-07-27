@@ -18,6 +18,12 @@ def item():
 
 
 @widget
+def list_items():
+    items = impl.list_items()
+    return get_template('list-items.html').render(items=items)
+
+
+@widget
 def new_item(errors=None):
     command = command_for(impl.create_item, errors)
     command.update(get_http_arguments())

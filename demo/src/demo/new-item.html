@@ -1,5 +1,4 @@
 <form id="new-item-widget">
-    <h3>New Item</h3>
     <label class="{{ error_css(errors, 'name') }}">{{ _('Name: ') }}
         <input name="name" type="text" maxlength="64" value="{{ name }}"/>
         {{ error_html(errors, 'name') }}

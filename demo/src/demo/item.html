@@ -1,8 +1,0 @@
-<li>Item!<button class='remove'>remove</button></li>
-{% block inline_javascript %}
-<script type="text/javascript">
-    $('.remove').live('click', function(){
-        $(this).parents('li').remove();
-    });
-</script>
-{% endblock %}
