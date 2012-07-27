@@ -4,7 +4,6 @@ from unittest.case import TestCase
 from sandal.binding import *
 from ..command import command
 from ..command import InvalidCommand
-from ..command import raise_command_error
 from ..command import CommandError
 
 class StrictCommandHandlerTest(TestCase):
@@ -117,4 +116,4 @@ def one_field_two_binders_handler(field=(optional(to_integer), optional(default=
 
 @command
 def raises_command_error_handler():
-    raise_command_error()
+    raise CommandError('')

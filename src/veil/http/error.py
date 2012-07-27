@@ -2,13 +2,10 @@ from __future__ import unicode_literals, print_function, division
 import contextlib
 import httplib
 from logging import getLogger
-from sandal.command import CommandError
+from sandal.command import *
 from .context import get_current_http_response
 
 LOGGER = getLogger(__name__)
-
-def raise_http_error(status_code, body=None):
-    raise HTTPError(status_code, body)
 
 
 def end_http_request_processing():
@@ -32,6 +29,10 @@ def handle_exception():
             response.status_code = e.status_code
         if e.body is not None:
             response.write(e.body)
+        response.finish()
+    except NotFoundError, e:
+        response.status_code = httplib.NOT_FOUND
+        response.write(e.message)
         response.finish()
     except CommandError, e:
         response.status_code = httplib.INTERNAL_SERVER_ERROR

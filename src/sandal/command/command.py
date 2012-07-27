@@ -131,10 +131,6 @@ class InvalidCommand(Exception):
         return str(self.errors)
 
 
-def raise_command_error(message=None):
-    raise CommandError(message)
-
-
 class CommandError(Exception):
     def __init__(self, message):
         super(CommandError, self).__init__()
@@ -157,6 +153,10 @@ class CommandError(Exception):
 
     def __repr__(self):
         return '{}: {}'.format(self.message or 'failed', self.command)
+
+
+class NotFoundError(CommandError):
+    pass
 
 
 def _(*args, **kwargs):

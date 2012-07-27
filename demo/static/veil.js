@@ -46,7 +46,7 @@ veil.resource.get = function (options) {
 
 veil.resource.refreshWidget = function (widget) {
     var _ = {
-        url: widget.data('url'),
+        url: widget.data('refresh-url'),
         onSuccess: function (html) {
             widget.replaceWith(html);
         }
@@ -91,6 +91,27 @@ veil.resource.createFromWidget = function (widget, onSuccess) {
         }
     };
     veil.resource.create(_);
+};
+
+veil.resource.delete = function(options) {
+    var url = options.url;
+    var onSuccess = options.onSuccess;
+    var _ = {
+        type: 'DELETE',
+        url: url,
+        success: onSuccess
+    };
+    $.ajax(_);
+};
+
+veil.resource.deleteFromWidget = function(widget) {
+    var _ = {
+        url: widget.data('delete-url'),
+        onSuccess: function() {
+            widget.remove();
+        }
+    };
+    veil.resource.delete(_);
 };
 
 veil.resource.stripScripts = function (html, executes) {

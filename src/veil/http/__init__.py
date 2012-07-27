@@ -5,7 +5,7 @@ from .context import get_current_http_response
 from .server import create_http_server
 from .server import create_stack_context
 from .server import set_http_status_code
-from .error import raise_http_error
+from .error import HTTPError
 from .error import end_http_request_processing
 from .cookie import get_secure_cookie
 from .cookie import set_secure_cookie
@@ -32,7 +32,7 @@ __all__ = [
     create_stack_context.__name__,
     set_http_status_code.__name__,
     # from error
-    raise_http_error.__name__,
+    HTTPError.__name__,
     end_http_request_processing.__name__,
     # from cookie
     get_secure_cookie.__name__,

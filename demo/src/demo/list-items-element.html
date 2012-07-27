@@ -1,0 +1,13 @@
+<li class="list-items-element-widget" data-delete-url="/resources/items/{{ item.id }}">
+    <button class="remove-item">Remove</button>
+    {{ item.name }}
+</li>
+
+{% block inline_javascript %}
+<script type="text/javascript">
+    $('.list-items-element-widget .remove-item').live('click', function() {
+        var widget = $(this).parents('.list-items-element-widget');
+        veil.resource.deleteFromWidget(widget);
+    });
+</script>
+{% endblock %}

@@ -15,7 +15,7 @@ def create_database(purpose='default'):
             port=get_option(purpose, 'port', int),
             user=get_option(purpose, 'user'),
             database=get_option(purpose, 'database')), capture=True)
-    except ShellExecutionException, e:
+    except ShellExecutionError, e:
         if 'already exists' in e.output:
             pass # ignore
         else:
@@ -29,7 +29,7 @@ def drop_database(purpose='default'):
             port=get_option(purpose, 'port', int),
             user=get_option(purpose, 'user'),
             database=get_option(purpose, 'database')), capture=True)
-    except ShellExecutionException, e:
+    except ShellExecutionError, e:
         if 'not exist' in e.output:
             pass # ignore
         else:

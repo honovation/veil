@@ -64,7 +64,7 @@ class RoutingHTTPHandler(object):
         for route in self.routes:
             if self.try_route(route):
                 return
-        raise_http_error(httplib.NOT_FOUND)
+        raise HTTPError(httplib.NOT_FOUND)
 
     def try_route(self, route):
         with require_current_template_directory_relative_to(route.route_handler):

@@ -18,6 +18,12 @@ def list_items():
     return [Item(**row._asdict()) for row in rows]
 
 
+def delete_item(id):
+    rows_count = demo_db().execute('DELETE FROM items WHERE id=%(id)s', id=id)
+    if not rows_count:
+        raise NotFoundError('no contact attribute definition deleted')
+
+
 class Item(Entity):
     def __init__(self, id, name):
         super(Item, self).__init__(id=id, name=name)

@@ -16,7 +16,7 @@ class BrowserTest(UsingFixture):
 
     def test_forbidden(self):
         def handler():
-            raise_http_error(httplib.FORBIDDEN)
+            raise HTTPError(httplib.FORBIDDEN)
 
         browser = fixtures.start_browser(http_server=fixtures.start_http_server(handler=handler))
         with browser.get('/', expected_status_code=httplib.FORBIDDEN):

@@ -1,6 +1,6 @@
-<ul id="list-items-widget" data-url="/resources/items">
+<ul id="list-items-widget" data-refresh-url="/resources/items">
     {% for item in items %}
-    <li>{{ item.name }}</li>
+    {{ widgets.list_items_element(item) }}
     {% endfor %}
 </ul>
 
