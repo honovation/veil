@@ -43,7 +43,8 @@ def register_database(purpose):
         return connected_databases[purpose]
 
     registry[purpose] = connect_database_if_not_connected
-    return lambda : require_database(purpose)
+    return lambda: require_database(purpose)
+
 
 def require_database(purpose):
     # connect and set the current schema as search path
@@ -60,9 +61,12 @@ def close_databases():
 
 def connect(purpose, type, host, port, database, user, password, commits_transaction):
     if 'postgresql' == type:
-        return Database(purpose, commits_transaction, PostgresqlAdapter(
-            autocommit=commits_transaction, host=host, port=port, database=database,
-            user=user, password=password))
+        adapter = PostgresqlAdapter(
+            autocommit=commits_transaction, host=host, port=port,
+            database=database, user=user, password=password)
+        db = Database(purpose, commits_transaction, adapter)
+        db.database= database
+        return db
     else:
         raise Exception('unknown database type: {}'.format(type))
 
@@ -92,6 +96,7 @@ def transactional(database_provider):
         def wrapper(*args, **kwargs):
             with require_transaction_context(database_provider()):
                 return method(*args, **kwargs)
+
         return wrapper
 
     return wrap_with_transaction_context

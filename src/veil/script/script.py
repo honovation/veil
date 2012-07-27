@@ -53,7 +53,7 @@ class ScriptHandlerDecorator(object):
             raise Exception('{}=>{} script has already been registered'.format(
                 '=>'.join(component_hierarchy_names), self.command))
         level[self.command] = wrapper
-        return wrapper
+        return script_handler
 
     def load_options(self):
         config_parser = RawConfigParser()

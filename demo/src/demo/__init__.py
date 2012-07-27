@@ -28,6 +28,7 @@ def init():
         },
         'postgresql': {
             'listen_addresses': 'localhost',
+            'host': 'localhost',
             'port': 5432,
             'data_owner': UNPRIVILIGED_USER,
             'user': 'veil',
@@ -45,7 +46,7 @@ def init():
                 'type': 'postgresql',
                 'host': 'localhost',
                 'port': 5432,
-                'db_name': 'demo',
+                'database': 'demo',
                 'user': 'veil',
                 'password': 'p@55word'
             }

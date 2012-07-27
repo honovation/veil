@@ -15,11 +15,11 @@ def shell_execute(command_line, capture=False, silent=False, **kwargs):
     output = process.communicate()[0]
     if process.returncode:
         if capture:
-            raise Exception(
+            raise ShellExecutionException(
                 'Subprocess return code: {}, command: {}, kwargs: {}, output: {}'.format(
-                    process.returncode, command_args, kwargs, output))
+                    process.returncode, command_args, kwargs, output), output)
         else:
-            raise Exception(
+            raise ShellExecutionException(
                 'Subprocess return code: {}, command: {}, kwargs: {}'.format(
                     process.returncode, command_args, kwargs))
     if capture:
@@ -31,3 +31,9 @@ def shell_execute(command_line, capture=False, silent=False, **kwargs):
 def pass_control_to(command_line):
     command_args = shlex.split(command_line)
     os.execlp(command_args[0], *command_args)
+
+
+class ShellExecutionException(Exception):
+    def __init__(self, message, output=None):
+        super(ShellExecutionException, self).__init__(message)
+        self.output = output
