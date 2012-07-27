@@ -1,0 +1,40 @@
+<form id="new-item-widget">
+    <h3>New Item</h3>
+    <label class="{{ error_css(errors, 'name') }}">{{ _('Name: ') }}
+        <input name="name" type="text" maxlength="64" value="{{ name }}"/>
+        {{ error_html(errors, 'name') }}
+    </label>
+    <button type="submit">{{ _('Create') }}</button>
+</form>
+{% block inline_javascript %}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#new-item-widget button[type=submit]').live('click', function (e) {
+            e.preventDefault();
+            var widget = $(this).parents('#new-item-widget');
+            createItem(widget);
+        });
+        function createItem(widget) {
+            widget.find('.error-messages').html('');
+            widget.find('.having-error').removeClass('having-error');
+            $.ajax({
+                       type:'POST',
+                       url:'/resources/items',
+                       data:widget.serialize(),
+                       success:function () {
+                           widget[0].reset();
+                       },
+                       error: function() {
+                            alert('failed to create item');
+                       },
+                       statusCode: {
+                           400: function (xhr) {
+                               alert(stripScripts(xhr.responseText));
+                               widget.replaceWith(stripScripts(xhr.responseText));
+                           }
+                       }
+                   });
+        }
+    });
+</script>
+{% endblock %}

@@ -3,6 +3,7 @@
     <title>{% block title %}{% endblock %}</title>
     <script type="text/javascript" src="{{ static_url('jquery.js') }}"></script>
     <script type="text/javascript" src="{{ static_url('veil.js') }}"></script>
+    {% block stylesheet %}{% endblock %}
 </head>
 <body>
 {% block main %}

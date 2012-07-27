@@ -1,10 +1,17 @@
 {% extends 'master:layout.html' %}
 {% block title %}Veil Demo{% endblock %}
+{% block stylesheet %}
+<style type="text/css">
+    .having-error {
+        background: red;
+    }
+</style>
+{% endblock %}
 {% block main %}
 Items
 <ul id="items">
 </ul>
-<button id="append">Append</button>
+{{ widgets.new_item() }}
 {% block inline_javascript %}
 <script type="text/javascript">
     $(document).ready(function () {
