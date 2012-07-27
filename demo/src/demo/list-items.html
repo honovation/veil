@@ -8,8 +8,8 @@
 <script type="text/javascript">
     $(document).ready(function () {
         veil.event.handle(veil.event.EVENT_ITEM_CREATED, function () {
-            veil.resource.refreshWidget($('#list-items-widget'));
+            veil.widget.refresh($('#list-items-widget'));
         });
     });
-</script>
+</script>refreshWidget
 {% endblock %}

@@ -39,19 +39,10 @@ veil.resource = {};
 veil.resource.get = function (options) {
     var url = options.url;
     var onSuccess = options.onSuccess;
+    var executes = options.executes;
     $.get(url, function (html) {
-        onSuccess(veil.resource.stripScripts(html));
+        onSuccess(veil.resource.stripScripts(html, executes));
     });
-};
-
-veil.resource.refreshWidget = function (widget) {
-    var _ = {
-        url: widget.data('refresh-url'),
-        onSuccess: function (html) {
-            widget.replaceWith(html);
-        }
-    };
-    veil.resource.get(_);
 };
 
 veil.resource.create = function (options) {
@@ -73,7 +64,63 @@ veil.resource.create = function (options) {
     $.ajax(_);
 };
 
-veil.resource.createFromWidget = function (widget, onSuccess) {
+veil.resource.delete = function(options) {
+    var url = options.url;
+    var onSuccess = options.onSuccess;
+    var _ = {
+        type: 'DELETE',
+        url: url,
+        success: onSuccess
+    };
+    $.ajax(_);
+};
+
+veil.resource.executedScripts = [];
+veil.resource.stripScripts = function (html, executes) {
+    while (true) {
+        var scriptTag = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi.exec(html);
+        if (scriptTag) {
+            html = html.replace(scriptTag, '');
+            if (executes) {
+                var tempDoc = $($.parseXML('<xml>' + scriptTag + '</xml>'));
+                var url = tempDoc.find('script').attr('src');
+                var script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = url;
+                if ($('body').html().indexOf(url) == -1) {
+                    if ($.inArray(url, veil.resource.executedScripts) == -1) {
+                        veil.resource.executedScripts.push(url);
+                        $('body').append(script);
+                    }
+                }
+            }
+        } else {
+            break;
+        }
+    }
+    return html;
+};
+
+veil.widget = {};
+
+veil.widget.handle = function(widget_selector, child_selector, event, handler) {
+    $(widget_selector + ' ' + child_selector).live(event, function(e) {
+        var widget = $(this).parents(widget_selector);
+        return handler(widget, e);
+    });
+};
+
+veil.widget.deleteResource = function(widget) {
+    var _ = {
+        url: widget.data('delete-url'),
+        onSuccess: function() {
+            widget.remove();
+        }
+    };
+    veil.resource.delete(_);
+};
+
+veil.widget.createResource = function (widget, onSuccess) {
     widget.find('.error-messages').html('');
     widget.find('.having-error').removeClass('having-error');
     var _ = {
@@ -93,43 +140,13 @@ veil.resource.createFromWidget = function (widget, onSuccess) {
     veil.resource.create(_);
 };
 
-veil.resource.delete = function(options) {
-    var url = options.url;
-    var onSuccess = options.onSuccess;
+veil.widget.refresh = function (widget) {
     var _ = {
-        type: 'DELETE',
-        url: url,
-        success: onSuccess
-    };
-    $.ajax(_);
-};
-
-veil.resource.deleteFromWidget = function(widget) {
-    var _ = {
-        url: widget.data('delete-url'),
-        onSuccess: function() {
-            widget.remove();
+        url: widget.data('refresh-url'),
+        executes: true,
+        onSuccess: function (html) {
+            widget.replaceWith(html);
         }
     };
-    veil.resource.delete(_);
-};
-
-veil.resource.stripScripts = function (html, executes) {
-    while (true) {
-        var scriptTag = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi.exec(html);
-        if (scriptTag) {
-            html = html.replace(scriptTag, '');
-            if (executes) {
-                var tempDoc = $($.parseXML('<xml>' + scriptTag + '</xml>'));
-                var url = tempDoc.find('script').attr('src');
-                var script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.src = url;
-                $('body').append(script);
-            }
-        } else {
-            break;
-        }
-    }
-    return html;
+    veil.resource.get(_);
 };

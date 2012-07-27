@@ -5,9 +5,6 @@
 
 {% block inline_javascript %}
 <script type="text/javascript">
-    $('.list-items-element-widget .remove-item').live('click', function() {
-        var widget = $(this).parents('.list-items-element-widget');
-        veil.resource.deleteFromWidget(widget);
-    });
+    veil.widget.handle('.list-items-element-widget', '.remove-item', 'click', veil.widget.deleteResource);
 </script>
 {% endblock %}

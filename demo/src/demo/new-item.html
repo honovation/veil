@@ -9,13 +9,10 @@
 {% block inline_javascript %}
 <script type="text/javascript">
     veil.event.EVENT_ITEM_CREATED = 'item-created';
-
-    $(document).ready(function () {
-        $('#new-item-widget button[type=submit]').live('click', function (e) {
-            e.preventDefault();
-            veil.resource.createFromWidget($('#new-item-widget'), function () {
-                veil.event.trigger(veil.event.EVENT_ITEM_CREATED);
-            });
+    veil.widget.handle('#new-item-widget', 'button[type=submit]', 'click', function(widget, e) {
+        e.preventDefault();
+        veil.widget.createResource(widget, function() {
+            veil.event.trigger(veil.event.EVENT_ITEM_CREATED);
         });
     });
 </script>
