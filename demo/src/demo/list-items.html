@@ -1,5 +1,15 @@
-<ul>
+<ul id="list-items-widget" data-url="/resources/items">
     {% for item in items %}
     <li>{{ item.name }}</li>
     {% endfor %}
 </ul>
+
+{% block inline_javascript %}
+<script type="text/javascript">
+    $(document).ready(function () {
+        veil.event.handle(veil.event.EVENT_ITEM_CREATED, function () {
+            veil.resource.refreshWidget($('#list-items-widget'));
+        });
+    });
+</script>
+{% endblock %}

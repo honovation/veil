@@ -11,12 +11,7 @@ def home():
     return get_template('index.html').render()
 
 
-@route('GET', '/item', website='DEMO')
-@widget
-def item():
-    return get_template('item.html').render()
-
-
+@route('GET', '/resources/items', website='DEMO')
 @widget
 def list_items():
     items = impl.list_items()

@@ -26,7 +26,6 @@ def register_database(purpose):
     get_db_database = register_option(section_name, 'database')
     get_db_user = register_option(section_name, 'user')
     get_db_password = register_option(section_name, 'password')
-    get_db_commits_transaction = register_option(section_name, 'commits_transaction', bool)
 
     def connect_database_if_not_connected():
         if connected_databases.get(purpose):
@@ -38,8 +37,7 @@ def register_database(purpose):
             port=get_db_port(),
             database=get_db_database(),
             user=get_db_user(),
-            password=get_db_password(),
-            commits_transaction=get_db_commits_transaction())
+            password=get_db_password())
         return connected_databases[purpose]
 
     registry[purpose] = connect_database_if_not_connected
@@ -59,12 +57,12 @@ def close_databases():
     connected_databases.clear()
 
 
-def connect(purpose, type, host, port, database, user, password, commits_transaction):
+def connect(purpose, type, host, port, database, user, password):
     if 'postgresql' == type:
         adapter = PostgresqlAdapter(
-            autocommit=commits_transaction, host=host, port=port,
+            host=host, port=port,
             database=database, user=user, password=password)
-        db = Database(purpose, commits_transaction, adapter)
+        db = Database(purpose, adapter)
         db.database= database
         return db
     else:
@@ -103,10 +101,9 @@ def transactional(database_provider):
 
 
 class Database(object):
-    def __init__(self, purpose, commits_transaction, conn):
+    def __init__(self, purpose, conn):
         self.purpose = purpose
         self.opened_by = str('\n').join(traceback.format_stack())
-        self.commits_transaction = True if commits_transaction is None else commits_transaction
         self.conn = conn
         self.last_sql = None
 
@@ -133,12 +130,11 @@ class Database(object):
             LOGGER.exception('Cannot rollback database transaction')
 
     def commit_transaction(self):
-        if self.commits_transaction:
-            try:
-                self.conn.commit_transaction()
-            except:
-                LOGGER.exception('Cannot commit database transaction')
-                raise
+        try:
+            self.conn.commit_transaction()
+        except:
+            LOGGER.exception('Cannot commit database transaction')
+            raise
 
     def close(self):
         try:
