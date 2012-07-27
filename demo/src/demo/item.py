@@ -6,8 +6,8 @@ from veil.database import *
 
 demo_db = register_database('demo')
 
-@command
 @transactional(demo_db)
+@command
 def create_item(name=not_empty):
     item_id = demo_db().insert('items', returns_id=True, name=name)
     return Item(item_id, name)
