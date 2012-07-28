@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.script import *
-from ....ubuntu_package import install_ubuntu_package
-from ....python_package import install_python_package
+from veil.environment import *
 
 @script('install')
 def install_postgresql_client():

@@ -3,11 +3,7 @@ from veil.script import *
 from sandal.path import *
 from sandal.shell import *
 from sandal.template import *
-from ....ubuntu_package import install_ubuntu_package, remove_service_auto_start
-from ....filesystem import delete_file
-from ....filesystem import create_symbolic_link
-from ....filesystem import create_file
-from ....setting import get_environment_settings
+from veil.environment import *
 from .launcher import postgresql_server_running
 
 @script('install')

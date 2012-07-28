@@ -1,6 +1,6 @@
 ######## export begin
-from .client import register_database
-from .client import transactional
+from .database import register_database
+from .database import transactional
 
 __all__ = [
     # from database

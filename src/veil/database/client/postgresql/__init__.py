@@ -1,11 +1,9 @@
 ######## export begin
-from .client import register_database
-from .client import transactional
+from .adapter import PostgresqlAdapter
 
 __all__ = [
-    # from database
-    register_database.__name__,
-    transactional.__name__
+    # from adapter
+    PostgresqlAdapter.__name__
 ]
 ######## export end
 

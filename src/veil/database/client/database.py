@@ -1,5 +1,4 @@
 from __future__ import unicode_literals, print_function, division
-import contextlib
 import functools
 import inspect
 import traceback
@@ -7,11 +6,8 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
-import sys
 from sandal.option import register_option
-from .postgresql_adapter import PostgresqlAdapter
-from .monetdb_adapter import MonetdbAdapter
-from sandal.option import peek_options
+from .postgresql import PostgresqlAdapter
 
 LOGGER = getLogger(__name__)
 

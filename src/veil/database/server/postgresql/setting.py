@@ -11,7 +11,7 @@ POSTGRESQL_BASE_SETTINGS = {
     'supervisor': {
         'programs': {
             'postgresql': {
-                'command': 'veil environment postgresql server up'
+                'command': 'veil database server postgresql up'
             }
         }
     }
