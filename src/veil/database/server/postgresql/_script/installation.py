@@ -8,7 +8,7 @@ from .launcher import postgresql_server_running
 
 @script('install')
 def install_postgresql_server():
-    settings = get_environment_settings()
+    settings = get_deployment_settings()
     install_ubuntu_package('postgresql-9.1')
     pg_bin_dir = path('/usr/lib/postgresql/9.1/bin')
     assert pg_bin_dir.exists()

@@ -4,7 +4,7 @@ from gettext import NullTranslations
 from logging import getLogger
 from babel.core import Locale
 from babel.support import Translations
-from veil.environment import VEIL_HOME
+from veil.environment.layout import VEIL_HOME
 from sandal.template import require_current_translations_being
 from sandal.const import consts
 

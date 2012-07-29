@@ -1,19 +1,19 @@
 from __future__ import unicode_literals, print_function, division
 import sys
 from sandal.collection import *
-from veil.layout import *
+from veil.environment.layout import *
 from .filesystem import create_directory
 
 providers = []
 env_settings = {}
 
-def register_environment_settings_provider(provider):
+def register_deployment_settings_provider(provider):
     if env_settings:
         raise Exception('environment settings has already been initialized: {}'.format(env_settings))
     providers.append(provider)
 
 
-def get_environment_settings():
+def get_deployment_settings():
     global env_settings
     if not env_settings:
         for provider in providers:

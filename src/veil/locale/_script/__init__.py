@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.environment import VEIL_HOME
+from veil.environment.layout import VEIL_HOME
 from sandal.path import *
 from veil.script import *
 from sandal.const import *

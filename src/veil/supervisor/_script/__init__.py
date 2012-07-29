@@ -6,11 +6,11 @@ from sandal.template import *
 from ...filesystem import create_file
 from ...filesystem import create_directory
 from ...python_package import install_python_package
-from ...setting import get_environment_settings
+from ...setting import get_deployment_settings
 
 @script('install')
 def install_supervisor():
-    settings = get_environment_settings()
+    settings = get_deployment_settings()
     install_python_package('supervisor')
     create_file(settings.supervisor.config_file, get_template('supervisord.cfg.j2').render(
         config=settings.supervisor,
@@ -22,7 +22,7 @@ def install_supervisor():
 
 @script('up')
 def bring_up_supervisor():
-    settings = get_environment_settings()
+    settings = get_deployment_settings()
     pass_control_to('supervisord -c {}'.format(settings.supervisor.config_file))
 
 
