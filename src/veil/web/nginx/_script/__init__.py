@@ -3,10 +3,11 @@ import os
 from veil.script import *
 from sandal.template import *
 from sandal.shell import *
-from ...filesystem import create_directory
-from ...filesystem import create_file
-from ...ubuntu_package import install_ubuntu_package, remove_service_auto_start
-from ...setting import get_environment_settings
+from veil.environment import create_directory
+from veil.environment import create_file
+from veil.environment import remove_service_auto_start
+from veil.environment import install_ubuntu_package
+from veil.environment import get_environment_settings
 
 @script('install')
 def install_nginx():

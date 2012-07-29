@@ -13,7 +13,7 @@ def bring_up_demo():
 @script('install')
 def install_demo():
     shell_execute('veil environment veil-cfg generate')
-    shell_execute('veil environment nginx install')
+    shell_execute('veil web nginx install')
     shell_execute('veil database client postgresql install')
     shell_execute('veil database server postgresql install')
     shell_execute('veil environment supervisor install')
