@@ -3,7 +3,7 @@ import contextlib
 import time
 from veil.script import *
 from sandal.shell import *
-from veil.environment import *
+from veil.environment.deployment import *
 
 @script('up')
 def bring_up_postgresql_server():

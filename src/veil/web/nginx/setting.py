@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from sandal.collection import *
-from veil.layout import *
+from veil.environment.layout import *
 
 nginx_config_file = VEIL_ETC_DIR / 'nginx.conf'
 NGINX_BASE_SETTINGS = objectify({

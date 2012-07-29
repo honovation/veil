@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.layout import *
+from veil.environment.layout import *
 
 
 POSTGRESQL_BASE_SETTINGS = {
@@ -11,7 +11,7 @@ POSTGRESQL_BASE_SETTINGS = {
     'supervisor': {
         'programs': {
             'postgresql': {
-                'command': 'veil database server postgresql up'
+                'command': 'veil database postgresql server up'
             }
         }
     }

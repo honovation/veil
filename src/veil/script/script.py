@@ -1,13 +1,10 @@
 from __future__ import unicode_literals, print_function, division
-from ConfigParser import RawConfigParser
 import functools
 from logging import getLogger
 import sys
 from inspect import isfunction
 from sandal.component import get_loading_components
 from sandal.template import *
-from sandal.option import *
-from veil.environment.layout import *
 
 script_handlers = {}
 LOGGER = getLogger(__name__)
@@ -39,8 +36,8 @@ class ScriptHandlerDecorator(object):
     def __call__(self, script_handler):
         @functools.wraps(script_handler)
         def wrapper(*args, **kwargs):
-            self.load_options()
             return script_handler(*args, **kwargs)
+
         level_names = get_current_level_names()
         level = script_handlers
         for level_name in level_names:
@@ -52,13 +49,6 @@ class ScriptHandlerDecorator(object):
         level[self.command] = wrapper
         return script_handler
 
-    def load_options(self):
-        config_parser = RawConfigParser()
-        config_parser.read(VEIL_ETC_DIR / 'veil.cfg')
-        options = {}
-        for section in config_parser.sections():
-            options[section] = dict(config_parser.items(section))
-        init_options(options)
 
 def get_current_level_names():
     components = get_loading_components()

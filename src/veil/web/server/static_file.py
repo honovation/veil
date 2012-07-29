@@ -8,7 +8,7 @@ from sandal.path import path as as_path
 from sandal.encoding import *
 from sandal.hash import *
 from sandal.template import *
-from sandal.option import *
+from veil.environment.runtime import *
 
 LOGGER = getLogger(__name__)
 

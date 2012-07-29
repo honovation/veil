@@ -5,11 +5,7 @@ import uuid
 from logging import getLogger
 from markupsafe import Markup
 from sandal.template import template_utility
-from .argument import try_get_http_argument
-from .cookie import get_cookie, set_cookie
-from .error import HTTPError
-from .context import get_current_http_request
-from .context import get_current_http_response
+from veil.web.tornado import *
 from tornado.escape import xhtml_escape
 
 LOGGER = getLogger(__name__)
@@ -25,7 +21,7 @@ def prevent_xsrf():
             set_cookie(name='_xsrf', value=token, response=response)
         request._xsrf_token = token
     if 'GET' != request.method.upper():
-        token = try_get_http_argument('_xsrf') or request.headers.get('X-XSRF', None)
+        token = get_http_argument('_xsrf', optional=True) or request.headers.get('X-XSRF', None)
         if not token:
             response.status_code = httplib.FORBIDDEN
             LOGGER.warn('XSRF token missing, request: {}'.format(request))

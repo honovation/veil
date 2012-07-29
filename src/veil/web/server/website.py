@@ -3,13 +3,14 @@ from logging import getLogger
 import signal
 from jinja2.loaders import FileSystemLoader
 from tornado.ioloop import IOLoop
-from sandal.option import register_option
+from veil.environment.runtime import register_option
 from sandal.template import get_template_environment
 from sandal.template import register_template_loader
 from veil.web.tornado import *
 from .locale import install_translations
 from .routing import  RoutingHTTPHandler, get_routes
 from .static_file import clear_static_file_hashes
+from .xsrf import prevent_xsrf
 from . import reloading
 
 LOGGER = getLogger(__name__)
@@ -28,8 +29,9 @@ def start_website(website, website_type=None, port=None, host=None, processes_co
     io_loop = IOLoop.instance()
     if 'development' == website_type:
         reloading.start(io_loop)
-    http_handler = create_website_http_handler(website, website_type=website_type, **kwargs)
-    http_server = create_http_server(http_handler, io_loop=io_loop, prevents_xsrf=prevents_xsrf)
+    http_handler = create_website_http_handler(
+        website, website_type=website_type, prevents_xsrf=prevents_xsrf, **kwargs)
+    http_server = create_http_server(http_handler, io_loop=io_loop)
     http_server.bind(port, host)
     http_server.start(processes_count)
     LOGGER.info('started {} website'.format(website))
@@ -38,10 +40,11 @@ def start_website(website, website_type=None, port=None, host=None, processes_co
 
 
 def create_website_http_handler(website, website_type=None, context_managers=(),
-                                master_template_dir=None, locale_provider=None):
+                                master_template_dir=None, locale_provider=None, prevents_xsrf=True):
     website_type = website_type or get_website_type()
     locale_provider = locale_provider or (lambda : None)
-    all_context_managers = [create_stack_context(install_translations, locale_provider)]
+    all_context_managers = [prevent_xsrf] if prevents_xsrf else []
+    all_context_managers.append(create_stack_context(install_translations, locale_provider))
     if master_template_dir:
         register_template_loader('master', FileSystemLoader(master_template_dir))
     if 'development' == website_type:

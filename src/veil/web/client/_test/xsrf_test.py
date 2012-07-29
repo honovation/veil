@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import httplib
-from veil.web.tornado import get_current_http_response, xsrf_token
+from veil.web.tornado import get_current_http_response
+from veil.web.server import xsrf_token
 from sandal.fixture import fixtures
 from sandal.fixture import UsingFixture
 

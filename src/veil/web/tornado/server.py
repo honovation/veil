@@ -17,12 +17,11 @@ from .context import HTTPContext
 from .context import require_current_http_context_being
 from .context import get_current_http_response
 from .error import handle_exception
-from .xsrf import prevent_xsrf
 
 LOGGER = getLogger(__name__)
 
-def create_http_server(handler, prevents_xsrf=True, **kwargs):
-    return HTTPServer(HTTPHandler(handler, prevents_xsrf=prevents_xsrf), **kwargs)
+def create_http_server(handler, **kwargs):
+    return HTTPServer(HTTPHandler(handler), **kwargs)
 
 
 class HTTPHandler(object):
@@ -36,11 +35,7 @@ class HTTPHandler(object):
             with create_stack_context(handle_exception):
                 with normalize_arguments():
                     with tunnel_put_and_delete():
-                        if self.prevents_xsrf:
-                            with prevent_xsrf():
-                                self.handler()
-                        else:
-                            self.handler()
+                        self.handler()
         if request.files:
             LOGGER.debug('handled file upload to {}'.format(request.uri))
         else:

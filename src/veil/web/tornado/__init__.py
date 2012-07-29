@@ -15,7 +15,6 @@ from .cookie import clear_cookies
 from .cookie import clear_cookie
 from .cookie import set_cookie
 from .redirection import redirect_to
-from .xsrf import xsrf_token
 from .argument import get_http_argument
 from .argument import get_http_arguments
 from .argument import get_http_file
@@ -44,8 +43,6 @@ __all__ = [
     set_cookie.__name__,
     # from redirection
     redirect_to.__name__,
-    # from xsrf
-    xsrf_token.__name__,
     # from argument
     get_http_argument.__name__,
     get_http_arguments.__name__,

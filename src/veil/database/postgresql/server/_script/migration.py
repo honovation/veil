@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from sandal.option import *
+from veil.environment.runtime import *
 from sandal.shell import *
 from veil.script import *
-from veil.layout import VEIL_HOME
+from veil.environment.layout import VEIL_HOME
 
 LOGGER = logging.getLogger(__name__)
 

@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from sandal.shell import *
 from veil.web.server import *
-from veil.environment import *
+from veil.environment.layout import *
 from veil.script import *
 
 @script('up')
@@ -12,8 +12,8 @@ def bring_up_demo():
 
 @script('install')
 def install_demo():
-    shell_execute('veil environment veil-cfg generate')
+    shell_execute('veil generate-configuration')
     shell_execute('veil web nginx install')
-    shell_execute('veil database client postgresql install')
-    shell_execute('veil database server postgresql install')
-    shell_execute('veil environment supervisor install')
+    shell_execute('veil database postgresql client install')
+    shell_execute('veil database postgresql server install')
+    shell_execute('veil supervisor install')

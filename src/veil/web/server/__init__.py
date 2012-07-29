@@ -5,6 +5,7 @@ from .routing import route
 from .routing import async_route
 from .routing import public_route
 from .routing import is_public_route
+from .xsrf import xsrf_token
 
 __all__ = [
     # from website
@@ -14,7 +15,9 @@ __all__ = [
     route.__name__,
     async_route.__name__,
     public_route.__name__,
-    is_public_route.__name__
+    is_public_route.__name__,
+    # from xsrf
+    xsrf_token.__name__
 ]
 ######## export end
 

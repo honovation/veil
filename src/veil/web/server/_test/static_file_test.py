@@ -4,8 +4,8 @@ import os.path
 from sandal.fixture import fixtures
 from sandal.template import get_template
 from sandal.fixture import UsingFixture
-from sandal.option import init_options
-from sandal.option import reset_options
+from veil.environment.runtime import init_options
+from veil.environment.runtime import reset_options
 from sandal.path import *
 from ..routing import route
 

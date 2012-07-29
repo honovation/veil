@@ -3,10 +3,7 @@ import jinja2
 from veil.script import *
 from sandal.shell import *
 from sandal.template import *
-from ...filesystem import create_file
-from ...filesystem import create_directory
-from ...python_package import install_python_package
-from ...setting import get_deployment_settings
+from veil.environment.deployment import *
 
 @script('install')
 def install_supervisor():

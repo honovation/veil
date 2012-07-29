@@ -26,7 +26,7 @@ case "$1" in
         exec $@
         ;;
     up)
-        exec veil environment supervisor up
+        exec veil supervisor up
         ;;
     *)
         exec python -m veil $@

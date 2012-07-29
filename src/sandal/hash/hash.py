@@ -2,7 +2,6 @@ from __future__ import unicode_literals, print_function, division
 import hashlib
 import hmac
 from logging import getLogger
-from sandal.option import register_option
 
 LOGGER = getLogger(__name__)
 

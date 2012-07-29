@@ -10,7 +10,7 @@ __all__ = [
 
 def init():
     from sandal.component import init_component
-    from ..setting import register_deployment_settings_provider
+    from veil.environment.deployment import register_deployment_settings_provider
 
     init_component(__name__)
     register_deployment_settings_provider(lambda: SUPERVISOR_BASE_SETTINGS)
