@@ -1,22 +1,22 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
 import httplib
-from sandal.fixture import fixtures
-from sandal.fixture import UsingFixture
+from sandal.test import TestCase
 from veil.web.tornado import *
+from veil.web.client import *
 from ..routing import route
 
 context = None
 
 __import__('veil.web.client')
 
-class WebsiteTest(UsingFixture):
+class WebsiteTest(TestCase):
     def test_routing(self):
         @route('GET', '/hello', website='test')
         def hello():
             return 'hello'
 
-        browser = fixtures.start_website_and_browser('test')
+        browser = start_website_and_browser('test')
         browser.get('/', expected_status_code=httplib.NOT_FOUND)
         self.assertEqual('hello', browser.get('/hello').response_text)
 
@@ -35,8 +35,8 @@ class WebsiteTest(UsingFixture):
             finally:
                 context = None
 
-        browser = fixtures.start_website_and_browser(
-            'test', context_managers=[create_stack_context(set_context_being, 'hello')])
+        browser = start_website_and_browser(
+            'test', additional_context_managers=[create_stack_context(set_context_being, 'hello')])
         self.assertEqual('hello', browser.get('/context').response_text)
 
 

@@ -6,13 +6,11 @@ from tornado.ioloop import IOLoop
 from tornado.stack_context import  NullContext
 import sys
 import time
-from sandal.fixture import fixture
-from sandal.fixture import get_executing_test
+from sandal.test import get_executing_test
 
 LOGGER = getLogger(__name__)
 lock = threading.Lock()
 
-@fixture
 def require_io_loop_executor():
     lock.acquire()
     try:

@@ -1,31 +1,42 @@
 from __future__ import unicode_literals, print_function, division
 import httplib
-from veil.web.tornado import get_current_http_response
-from veil.web.server import xsrf_token
-from sandal.fixture import fixtures
-from sandal.fixture import UsingFixture
+from veil.web.server import *
+from sandal.test import TestCase
+from ..browser import Browser
 
-class XsrfTest(UsingFixture):
+class XsrfTest(TestCase):
     def test_form_submission(self):
-        def handler():
-            get_current_http_response().write(xsrf_token())
-            get_current_http_response().finish()
-        browser = fixtures.start_browser(http_server=fixtures.start_http_server(handler=handler))
+        @route('GET', '/', website='test')
+        def show_xsrf_token():
+            return xsrf_token()
+
+        @route('POST', '/', website='test')
+        def dummy():
+            pass
+
+        http_server = start_test_website('test', prevents_xsrf=True)
+        browser = Browser('localhost:{}'.format(http_server.port))
         browser.post('/', auto_xsrf=False, expected_status_code=httplib.FORBIDDEN)
         with browser.get('/'):
             _xsrf = browser.page.response_text
-        browser.post('/', auto_xsrf=False, arguments={'_xsrf':_xsrf})
-        browser.post('/', auto_xsrf=False, arguments={'_xsrf':'123'}, expected_status_code=httplib.FORBIDDEN)
+        browser.post('/', auto_xsrf=False, arguments={'_xsrf': _xsrf})
+        browser.post('/', auto_xsrf=False, arguments={'_xsrf': '123'}, expected_status_code=httplib.FORBIDDEN)
 
     def test_ajax(self):
-        def handler():
-            get_current_http_response().write('hello')
-            get_current_http_response().finish()
-        browser = fixtures.start_browser(http_server=fixtures.start_http_server(handler=handler))
+        @route('GET', '/', website='test')
+        def say_hello():
+            return 'hello'
+
+        @route('POST', '/', website='test')
+        def say_yes():
+            return 'yes'
+
+        http_server = start_test_website('test', prevents_xsrf=True)
+        browser = Browser('localhost:{}'.format(http_server.port))
         self.assertNotIn('_xsrf', browser.cookies)
         self.assertEqual('hello', browser.get('/').response_text)
         self.assertIsNotNone(browser.cookies['_xsrf'].value)
-        self.assertEqual('hello', browser.post(
+        self.assertEqual('yes', browser.post(
             '/', auto_xsrf=False, headers={'X-XSRF': browser.cookies['_xsrf'].value}).response_text)
 
 

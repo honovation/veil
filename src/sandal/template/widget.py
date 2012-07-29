@@ -6,6 +6,7 @@ import os.path
 import traceback
 from markupsafe import Markup
 from sandal.component import force_import_module
+from sandal.test import *
 from .template import register_template_utility
 from .template import require_current_template_directory_relative_to
 
@@ -21,13 +22,14 @@ def register_page_post_processor(page_post_processor):
     page_post_processors.append(page_post_processor)
 
 
-def on_template_environment_ready():
+@test_bootstrapper
+def remember_original_widgets():
+    get_executing_test().addCleanup(reset_widgets)
     global original_widgets
     if not original_widgets:
         original_widgets = dict(widgets)
 
-
-def on_template_environment_reset():
+def reset_widgets():
     widgets.clear()
     if original_widgets:
         widgets.update(original_widgets)

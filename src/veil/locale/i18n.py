@@ -4,9 +4,10 @@ from gettext import NullTranslations
 from logging import getLogger
 from babel.core import Locale
 from babel.support import Translations
-from veil.environment.layout import VEIL_HOME
 from sandal.template import require_current_translations_being
 from sandal.const import consts
+from sandal.test import get_executing_test
+from veil.environment.layout import VEIL_HOME
 
 LOGGER = getLogger(__name__)
 consts.LOCALE_DIR = VEIL_HOME / 'locale'
@@ -52,6 +53,7 @@ def load_translations(locale):
 def get_current_locale():
     return current_locales[-1] if current_locales else None
 
+
 def get_default_locale():
     return DEFAULT_LOCALE
 
@@ -61,3 +63,15 @@ def _(*args, **kwargs):
     from __builtin__ import _
 
     return _(*args, **kwargs)
+
+
+def install_null_translation():
+    import __builtin__
+
+    def clean_up():
+        del __builtin__.__dict__['_']
+
+    executing_test = get_executing_test(optional=True)
+    if executing_test:
+        executing_test.addCleanup(clean_up)
+    NullTranslations().install(unicode=True)

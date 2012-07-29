@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from markupsafe import Markup
-from sandal.template.template import template_utility
+from .template import template_utility
 
 @template_utility
 def error_html(all_errors, field=None):

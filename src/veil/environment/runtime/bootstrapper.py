@@ -1,7 +1,12 @@
 from __future__ import unicode_literals, print_function, division
+import logging
+from sandal.test import *
 from .option import register_option
 from .option import init_options
 
+LOGGER = logging.getLogger(__name__)
+
+@test_bootstrapper
 def bootstrap_runtime():
     import sys
     import os.path
@@ -40,8 +45,17 @@ def bootstrap_runtime():
         __import__(component_name)
 
     config_parser = RawConfigParser()
-    config_parser.read(VEIL_ETC_DIR / 'veil.cfg')
+    veil_cfg = VEIL_ETC_DIR / 'veil.cfg'
+    executing_test = get_executing_test(optional=True)
+    if executing_test and not veil_cfg.exists():
+        raise Exception('{} not exists'.format(veil_cfg))
+    config_parser.read(veil_cfg)
     options = {}
     for section in config_parser.sections():
         options[section] = dict(config_parser.items(section))
-    init_options(options)
+    if options:
+        if executing_test and hasattr(executing_test, 'options'):
+            options.update(executing_test.options)
+        init_options(options)
+    else:
+        LOGGER.warn('options is empty')

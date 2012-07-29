@@ -2,7 +2,8 @@
 from .context import get_current_http_context
 from .context import get_current_http_request
 from .context import get_current_http_response
-from .server import create_http_server
+from .server import start_http_server
+from .server import start_test_http_server
 from .server import create_stack_context
 from .server import set_http_status_code
 from .error import HTTPError
@@ -20,6 +21,7 @@ from .argument import get_http_arguments
 from .argument import get_http_file
 from .argument import get_http_files
 from .argument import clear_http_arguments
+from .executor import require_io_loop_executor
 
 __all__ = [
     # from context
@@ -27,7 +29,8 @@ __all__ = [
     get_current_http_request.__name__,
     get_current_http_response.__name__,
     # from http_server
-    create_http_server.__name__,
+    start_http_server.__name__,
+    start_test_http_server.__name__,
     create_stack_context.__name__,
     set_http_status_code.__name__,
     # from error
@@ -48,7 +51,9 @@ __all__ = [
     get_http_arguments.__name__,
     get_http_file.__name__,
     get_http_files.__name__,
-    clear_http_arguments.__name__
+    clear_http_arguments.__name__,
+    # from executor
+    require_io_loop_executor.__name__
 ]
 ######## export end
 

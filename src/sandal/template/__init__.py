@@ -9,7 +9,7 @@ from .template import require_current_template_directory_being
 from .template import require_current_template_directory_relative_to
 from .template import get_template
 from .template import get_template_environment
-from .template import reset_template_environment
+from .template import clear_template_caches
 from .template import register_template_post_processor
 from .widget import widget
 from .widget import page
@@ -31,20 +31,14 @@ __all__ = [
         # from widget
         widget.__name__,
         page.__name__,
-        reset_template_environment.__name__,
+        clear_template_caches.__name__,
         register_page_post_processor.__name__
 ]
 ######## export end
 
 def init():
     from sandal.component import init_component
-    from sandal.event import subscribe_event
-    from sandal.const import consts
-    from .widget import on_template_environment_ready
-    from .widget import on_template_environment_reset
 
     init_component(__name__)
-    subscribe_event(consts.EVENT_TEMPLATE_ENVIRONMENT_READY, on_template_environment_ready)
-    subscribe_event(consts.EVENT_TEMPLATE_ENVIRONMENT_RESET, on_template_environment_reset)
 
 init()

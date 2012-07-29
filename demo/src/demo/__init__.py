@@ -1,5 +1,6 @@
 def init():
     from sandal.component import init_component
+    from veil.environment.layout import VEIL_ENV
     from veil.environment.deployment import register_deployment_settings_provider
     from veil.web.nginx import create_nginx_server_settings
     from veil.web.nginx import NGINX_BASE_SETTINGS
@@ -10,6 +11,8 @@ def init():
     DEMO_WEB_PORT = 8080
     UNPRIVILIGED_USER = 'dejavu'
     UNPRIVILIGED_GROUP = 'dejavu'
+    if 'test' == VEIL_ENV:
+        DEMO_WEB_PORT = 10000
     register_deployment_settings_provider(lambda: {
         'nginx': {
             'inline_static_files_owner': UNPRIVILIGED_USER,
@@ -37,6 +40,10 @@ def init():
         'veil': {
             'logging': {
                 'level': 'DEBUG'
+            },
+            'http': {
+                'host': DEMO_WEB_HOST,
+                'port': DEMO_WEB_PORT
             },
             'website': {
                 'inline_static_files_directory': NGINX_BASE_SETTINGS.nginx.inline_static_files_directory,

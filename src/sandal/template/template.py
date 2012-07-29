@@ -7,9 +7,7 @@ from jinja2.loaders import FileSystemLoader, PrefixLoader
 from sandal.component import force_import_module
 from sandal.event import publish_event
 from sandal.const import consts
-
-consts.EVENT_TEMPLATE_ENVIRONMENT_READY = 'template-environment-ready'
-consts.EVENT_TEMPLATE_ENVIRONMENT_RESET = 'template-environment-reset'
+from sandal.test import get_executing_test
 
 filters = {}
 utilities = {}
@@ -122,11 +120,18 @@ def get_or_create_environment():
     env.filters.update(filters)
     env.install_null_translations()
     env.created_by = str('\n').join(traceback.format_stack())
-    publish_event(consts.EVENT_TEMPLATE_ENVIRONMENT_READY)
+    executing_test = get_executing_test(optional=True)
+    if executing_test:
+        executing_test.addCleanup(reset_template_environment)
     return env
 
 
 def reset_template_environment():
     global env
     env = None
-    publish_event(consts.EVENT_TEMPLATE_ENVIRONMENT_RESET)
+
+
+@contextlib.contextmanager
+def clear_template_caches():
+    get_template_environment().cache = {}
+    yield

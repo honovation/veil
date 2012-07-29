@@ -10,7 +10,10 @@ import re
 import tornado
 from tornado.httpserver import HTTPServer
 from tornado.stack_context import StackContext
+from tornado.ioloop import IOLoop
 from sandal.encoding import to_str
+from sandal.test import *
+from veil.environment.runtime import *
 from .argument import normalize_arguments
 from .argument import tunnel_put_and_delete
 from .context import HTTPContext
@@ -18,7 +21,31 @@ from .context import require_current_http_context_being
 from .context import get_current_http_response
 from .error import handle_exception
 
+get_port = register_option('http', 'port', int)
+get_host = register_option('http', 'host')
+get_processes_count = register_option('http', 'processes_count', int)
 LOGGER = getLogger(__name__)
+
+def start_http_server(handler, io_loop=None, **kwargs):
+    io_loop = io_loop or IOLoop.instance()
+    http_server = create_http_server(handler, io_loop=io_loop, **kwargs)
+    host = get_host() or 'localhost'
+    port = get_port() or 80
+    http_server.bind(port, host)
+    http_server.start(get_processes_count() or 1)
+    io_loop.start()
+
+
+def start_test_http_server(handler):
+    http_server = create_http_server(handler)
+    host = get_host() or 'localhost'
+    port = get_port() or 80
+    http_server.host = host
+    http_server.port = port
+    http_server.listen(port, host)
+    get_executing_test().addCleanup(http_server.stop)
+    return http_server
+
 
 def create_http_server(handler, **kwargs):
     return HTTPServer(HTTPHandler(handler), **kwargs)

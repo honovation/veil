@@ -6,6 +6,7 @@ from .i18n import get_locale
 from .i18n import get_current_locale
 from .i18n import get_default_locale
 from .i18n import _
+from .i18n import install_null_translation
 
 __all__ = [
         # from i18n
@@ -15,7 +16,8 @@ __all__ = [
                 get_locale.__name__,
         get_current_locale.__name__,
         get_default_locale.__name__,
-        _.__name__
+        _.__name__,
+        install_null_translation.__name__
 ]
 ######## export end
 

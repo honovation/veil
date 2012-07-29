@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 from pyquery import PyQuery
-from sandal.fixture import UsingFixture
+from sandal.test import TestCase
 from ..form import FormMixin
 
-class SerializeFormTest(UsingFixture):
+class SerializeFormTest(TestCase):
     def test_empty_form(self):
         form = FormMixin().serialize_form(form_element=PyQuery('<form action="/hello"></form>'))
         self.assertEqual('/hello', form.action)

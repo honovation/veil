@@ -9,8 +9,9 @@ import urlparse
 from logging import getLogger
 from pyquery import PyQuery
 from sandal.encoding import to_str, to_unicode
-from sandal.fixture import fixture, fixtures
-from sandal.fixture import get_executing_test
+from sandal.test import get_executing_test
+from veil.web.tornado import *
+from veil.web.server import *
 from .action import ActionMixin
 from .form import FormMixin
 from .query import QueryMixin
@@ -18,26 +19,17 @@ from .select import SelectMixin
 
 LOGGER = getLogger(__name__)
 
-@fixture
-def start_browser(default_netloc=None, http_server=None, browser_type='ie6'):
-    assert default_netloc or http_server
-    default_netloc = default_netloc or 'localhost:{}'.format(http_server.port)
-    return Browser(default_netloc, browser_type)
-
-
-@fixture
-def start_website_and_browser(website, website_type='development', **kwargs):
-    http_server = fixtures.start_website(website, website_type=website_type, **kwargs)
-    return start_browser(http_server=http_server)
+def start_website_and_browser(website, **kwargs):
+    http_server = start_test_website(website, **kwargs)
+    return Browser('localhost:{}'.format(http_server.port))
 
 
 class Browser(QueryMixin, ActionMixin, FormMixin, SelectMixin):
-    def __init__(self, default_netloc, browser_type):
+    def __init__(self, default_netloc):
         self.default_netloc = default_netloc
         self.cookie_jar = CookieJar()
         self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookie_jar), SilentHTTPErrorProcessor())
         self.pages = []
-        self.browser_type = browser_type
         self.fetching = Lock()
 
     @property
@@ -112,7 +104,7 @@ class Browser(QueryMixin, ActionMixin, FormMixin, SelectMixin):
         self.fetching.acquire()
         Thread(target=self.fetch_in_another_thread, args=(request,)).start()
         try:
-            page = fixtures.require_io_loop_executor().execute()
+            page = require_io_loop_executor().execute()
         except:
             LOGGER.error('failed to fetch {}'.format(url))
             raise
@@ -121,7 +113,7 @@ class Browser(QueryMixin, ActionMixin, FormMixin, SelectMixin):
 
     def fetch_in_another_thread(self, request):
         try:
-            io_loop_executor = fixtures.require_io_loop_executor()
+            io_loop_executor = require_io_loop_executor()
             with io_loop_executor:
                 response = self.opener.open(request, timeout=5)
                 response.data = response.read()

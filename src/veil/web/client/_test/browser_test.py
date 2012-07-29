@@ -1,16 +1,17 @@
 from __future__ import unicode_literals, print_function, division
 import httplib
 from veil.web.tornado import *
-from sandal.fixture import fixtures
-from sandal.fixture import UsingFixture
+from sandal.test import TestCase
+from ..browser import Browser
 
-class BrowserTest(UsingFixture):
+class BrowserTest(TestCase):
     def test_ok(self):
         def handler():
             get_current_http_response().write('hello')
             get_current_http_response().finish()
 
-        browser = fixtures.start_browser(http_server=fixtures.start_http_server(handler=handler))
+        http_server = start_test_http_server(handler=handler)
+        browser = Browser('localhost:{}'.format(http_server.port))
         with browser.get('/'):
             self.assertEqual('hello', browser.page.response_text)
 
@@ -18,7 +19,8 @@ class BrowserTest(UsingFixture):
         def handler():
             raise HTTPError(httplib.FORBIDDEN)
 
-        browser = fixtures.start_browser(http_server=fixtures.start_http_server(handler=handler))
+        http_server = start_test_http_server(handler=handler)
+        browser = Browser('localhost:{}'.format(http_server.port))
         with browser.get('/', expected_status_code=httplib.FORBIDDEN):
             self.assertEqual(httplib.FORBIDDEN, browser.page.status_code)
 
@@ -30,7 +32,8 @@ class BrowserTest(UsingFixture):
             else:
                 redirect_to('/hello')
 
-        browser = fixtures.start_browser(http_server=fixtures.start_http_server(handler=handler))
+        http_server = start_test_http_server(handler=handler)
+        browser = Browser('localhost:{}'.format(http_server.port))
         with browser.get('/', expected_status_code=httplib.FOUND):
             self.assertEqual('hello', browser.follow_redirect().response_text)
 
@@ -42,7 +45,8 @@ class BrowserTest(UsingFixture):
             set_cookie(name='val', value=unicode(val))
             get_current_http_response().finish()
 
-        browser = fixtures.start_browser(http_server=fixtures.start_http_server(handler=handler))
+        http_server = start_test_http_server(handler=handler)
+        browser = Browser('localhost:{}'.format(http_server.port))
         self.assertEqual('0', browser.get('/').response_text)
         self.assertEqual('1', browser.get('/').response_text)
         self.assertEqual('2', browser.get('/').response_text)

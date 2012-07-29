@@ -6,10 +6,25 @@ from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
 from sandal.template import *
+from sandal.test import *
 from veil.web.tornado import *
 
 LOGGER = getLogger(__name__)
+original_routes = {}
 routes = {}
+
+@test_bootstrapper
+def remember_original_routes():
+    get_executing_test().addCleanup(reset_routes)
+    global original_routes
+    if not original_routes:
+        original_routes = dict(routes)
+
+
+def reset_routes():
+    routes.clear()
+    if original_routes:
+        routes.update(original_routes)
 
 
 def route(method, path_template, website=None, tags=(), **path_template_params):

@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from unittest.case import TestCase
+from sandal.test import TestCase
 from ..routing import PathTemplate
 
 class PathTemplateTest(TestCase):

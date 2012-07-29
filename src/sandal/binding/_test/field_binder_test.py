@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import __builtin__
-from unittest.case import TestCase
+from sandal.test import TestCase
 from sandal.binding.field_binder import *
 import datetime
 

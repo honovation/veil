@@ -25,19 +25,12 @@ def get_option(section, name):
     if not type:
         raise Exception('option {}.{} has not been registered'.format(section, name))
     value = options.get(section, {}).get(name)
-    if value is None:
-        if int == type:
-            return 0
-        elif bool == type:
-            return False
-        else:
-            return None
     if unicode == type:
         return unicode(value)
     if int == type:
-        return int(value)
+        return int(value) if value else 0
     if bool == type:
-        return 'true' == value.lower()
+        return 'true' == value.lower() if value else False
     raise Exception('unknown option type: {}'.format(type))
 
 

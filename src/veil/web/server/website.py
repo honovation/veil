@@ -3,10 +3,9 @@ from logging import getLogger
 import signal
 from jinja2.loaders import FileSystemLoader
 from tornado.ioloop import IOLoop
-from veil.environment.runtime import register_option
-from sandal.template import get_template_environment
-from sandal.template import register_template_loader
+from sandal.template import *
 from veil.web.tornado import *
+from veil.environment.runtime import *
 from .locale import install_translations
 from .routing import  RoutingHTTPHandler, get_routes
 from .static_file import clear_static_file_hashes
@@ -14,43 +13,36 @@ from .xsrf import prevent_xsrf
 from . import reloading
 
 LOGGER = getLogger(__name__)
-get_port = register_option('http', 'port', int)
-get_host = register_option('http', 'host')
-get_processes_count = register_option('http', 'processes_count', int)
-get_website_type = register_option('website', 'type')
+get_reloads_module = register_option('website', 'reloads_module', bool)
+get_recalculates_static_file_hash = register_option('website', 'recalculates_static_file_hash', bool)
+get_clears_template_cache = register_option('website', 'clears_template_cache', bool)
+get_prevents_xsrf = register_option('website', 'prevents_xsrf', bool)
+get_master_template_directory = register_option('website', 'master_template_directory')
 
-def start_website(website, website_type=None, port=None, host=None, processes_count=None, prevents_xsrf=True, **kwargs):
-    website_type = website_type or get_website_type() or 'development'
-    port = port or get_port() or 80
-    host = host or get_host() or 'localhost'
-    processes_count = processes_count or get_processes_count() or 1
-    LOGGER.info(
-        'starting {} website {} at port {} with {} process(es)...'.format(website_type, website, port, processes_count))
+def start_test_website(website, **kwargs):
+    http_handler = create_website_http_handler(website, **kwargs)
+    return start_test_http_server(handler=http_handler)
+
+
+def start_website(website, **kwargs):
     io_loop = IOLoop.instance()
-    if 'development' == website_type:
+    if get_reloads_module():
         reloading.start(io_loop)
-    http_handler = create_website_http_handler(
-        website, website_type=website_type, prevents_xsrf=prevents_xsrf, **kwargs)
-    http_server = create_http_server(http_handler, io_loop=io_loop)
-    http_server.bind(port, host)
-    http_server.start(processes_count)
-    LOGGER.info('started {} website'.format(website))
-    signal.signal(signal.SIGINT, lambda *args: io_loop.stop())
-    io_loop.start()
+    http_handler = create_website_http_handler(website, **kwargs)
+    start_http_server(http_handler, io_loop=io_loop)
 
 
-def create_website_http_handler(website, website_type=None, context_managers=(),
-                                master_template_dir=None, locale_provider=None, prevents_xsrf=True):
-    website_type = website_type or get_website_type()
-    locale_provider = locale_provider or (lambda : None)
-    all_context_managers = [prevent_xsrf] if prevents_xsrf else []
-    all_context_managers.append(create_stack_context(install_translations, locale_provider))
-    if master_template_dir:
-        register_template_loader('master', FileSystemLoader(master_template_dir))
-    if 'development' == website_type:
-        all_context_managers.append(create_stack_context(
-            clear_static_file_hashes
-        ))
-        get_template_environment().cache = {}
-    all_context_managers.extend(context_managers)
-    return RoutingHTTPHandler(get_routes(website), all_context_managers)
+def create_website_http_handler(website, additional_context_managers=(), prevents_xsrf=None, locale_provider=None):
+    locale_provider = locale_provider or (lambda: None)
+    register_template_loader('master', FileSystemLoader(get_master_template_directory()))
+    context_managers = [prevent_xsrf] if get_prevents_xsrf() else []
+    context_managers.append(create_stack_context(install_translations, locale_provider))
+    prevents_xsrf = prevents_xsrf if prevents_xsrf is not None else get_prevents_xsrf()
+    if prevents_xsrf:
+        context_managers.append(prevent_xsrf)
+    if get_recalculates_static_file_hash():
+        context_managers.append(clear_static_file_hashes)
+    if get_clears_template_cache():
+        context_managers.append(clear_template_caches)
+    context_managers.extend(additional_context_managers)
+    return RoutingHTTPHandler(get_routes(website), context_managers)

@@ -1,5 +1,6 @@
 ######## export begin
 from .website import start_website
+from .website import start_test_website
 from .website import create_website_http_handler
 from .routing import route
 from .routing import async_route
@@ -10,6 +11,7 @@ from .xsrf import xsrf_token
 __all__ = [
     # from website
     start_website.__name__,
+    start_test_website.__name__,
     create_website_http_handler.__name__,
     # from routing
     route.__name__,

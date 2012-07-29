@@ -2,22 +2,23 @@ from __future__ import unicode_literals, print_function, division
 import threading
 import urllib2
 from veil.web.tornado import *
-from sandal.fixture import fixtures
-from sandal.fixture import UsingFixture
+from sandal.test import TestCase
+from ..executor import require_io_loop_executor
+from ..server import start_test_http_server
 
-class ServerTest(UsingFixture):
+class ServerTest(TestCase):
     def test(self):
         def handler():
             get_current_http_response().write('hello')
             get_current_http_response().finish()
 
-        self.http_server=fixtures.start_http_server(handler=handler)
+        self.http_server = start_test_http_server(handler=handler)
         threading.Thread(target=self.fetch_in_another_thread).start()
-        response = fixtures.require_io_loop_executor().execute()
+        response = require_io_loop_executor().execute()
         self.assertEqual('hello', response.data)
 
     def fetch_in_another_thread(self):
-        io_loop_executor = fixtures.require_io_loop_executor()
+        io_loop_executor = require_io_loop_executor()
         with io_loop_executor:
             response = urllib2.urlopen('http://localhost:{}'.format(self.http_server.port))
             response.data = response.read()

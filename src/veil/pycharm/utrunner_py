@@ -1,0 +1,70 @@
+import sys
+import os.path
+from logging import getLogger
+from unittest.suite import TestSuite
+from unittest.loader import TestLoader
+from sandal.component import force_import_module
+from nose_helper import ContextSuite
+from tcunittest import TeamcityTestRunner
+
+LOGGER = getLogger(__name__)
+
+def main():
+    for arg in sys.argv[1:-1]:
+        arg = arg.strip()
+    if not len(arg):
+        return
+
+    a = arg.split("::")
+    if len(a) == 1:
+        raise Exception('test file or folder not supported')
+
+    elif len(a) == 2:
+        run_test_case(module_name=to_module_name(a[0]), test_case_name=a[1])
+    else:
+        test_case_name = a[1]
+        if test_case_name:
+            run_test_method(module_name=to_module_name(a[0]), test_case_name=test_case_name, test_method_name=a[2])
+        else:
+            raise Exception('test function not supported')
+
+def run_test_case(module_name, test_case_name):
+    LOGGER.debug("/ from testcase " + test_case_name + " in " + module_name)
+    module = force_import_module(module_name)
+    tests = TestLoader().loadTestsFromTestCase(getattr(module, test_case_name))
+    run_test(TestSuite(tests))
+
+def run_test_method(module_name, test_case_name, test_method_name):
+    LOGGER.debug("/ from method " + test_method_name + " in testcase " + test_case_name + " in " + module_name)
+    module = force_import_module(module_name)
+    test_case = getattr(module, test_case_name)
+    run_test(test_case(test_method_name))
+
+def run_test(test):
+    TeamcityTestRunner().run(test)
+
+def to_module_name(file_name):
+    file_path = os.path.abspath(file_name)
+    possible_module_names = {}
+    for path in sys.path:
+        if file_path.startswith(path) and path != os.path.abspath('.'):
+            module_name = file_path[len(path) + 1:-3].replace('/', '.')
+            if is_valid_module_name(path, module_name):
+                possible_module_names[path] = module_name
+    if possible_module_names:
+        return possible_module_names[max(possible_module_names.keys())]
+    else:
+        raise Exception('can not infer module name from file path {}'.format(file_path))
+
+def is_valid_module_name(path, module_name):
+    package_names = module_name.split('.')[:-1]
+    for i in xrange(0, len(package_names)):
+        path_sections = [path]
+        path_sections.extend(package_names[:i+1])
+        path_sections.append('__init__.py')
+        if not os.path.exists(os.path.join(*path_sections)):
+            return False
+    return True
+
+if __name__ == '__main__':
+    main()
