@@ -6,8 +6,6 @@ from sandal.option import register_option
 
 LOGGER = getLogger(__name__)
 
-get_hash_salt = register_option('security', 'hash_salt')
-
 def encode_token(*parts):
     parts = [unicode(p) for p in parts]
     parts.append(get_hmac(*parts, strong=False))
@@ -30,8 +28,8 @@ def get_password_hash(password):
 
 
 def get_hmac(*parts, **kwargs):
-    strong = kwargs.get('strong', True)
-    salt = kwargs.get('salt', get_hash_salt())
+    strong = kwargs.pop('strong', True)
+    salt = kwargs.pop('salt')
     digestmod = hashlib.sha256 if strong else hashlib.sha1
     msg = '|'.join([str(part) for part in parts])
     return hmac.new(str(salt), msg, digestmod).hexdigest()
@@ -42,8 +40,8 @@ def verify_hmac(hmac, *parts, **kwargs):
 
 
 def get_check_code(*parts, **kwargs):
-    size = kwargs.get('size', 6)
-    salt = kwargs.get('salt', get_hash_salt())
+    size = kwargs.pop('size', 6)
+    salt = kwargs.pop('salt')
     msg = '|'.join([str(part) for part in parts])
     return hex(hash(str(salt) + msg))[-size:]
 
