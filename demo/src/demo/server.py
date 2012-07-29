@@ -2,8 +2,8 @@ from __future__ import unicode_literals, print_function, division
 import httplib
 from sandal.template import *
 from sandal.command import *
-from veil.website import *
-from veil.http import *
+from veil.web.server import *
+from veil.web.tornado import *
 from .item import create_item
 from .item import list_items
 from .item import delete_item

@@ -3,12 +3,12 @@ import contextlib
 import httplib
 from sandal.fixture import fixtures
 from sandal.fixture import UsingFixture
-from veil.http import *
+from veil.web.tornado import *
 from ..routing import route
 
 context = None
 
-__import__('veil.browser')
+__import__('veil.web.client')
 
 class WebsiteTest(UsingFixture):
     def test_routing(self):

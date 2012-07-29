@@ -6,7 +6,7 @@ from tornado.ioloop import IOLoop
 from sandal.option import register_option
 from sandal.template import get_template_environment
 from sandal.template import register_template_loader
-from veil.http import *
+from veil.web.tornado import *
 from .locale import install_translations
 from .routing import  RoutingHTTPHandler, get_routes
 from .static_file import clear_static_file_hashes

@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
-from veil.http import *
+from veil.web.tornado import *
 from veil.locale import *
 
 @contextlib.contextmanager

@@ -42,16 +42,16 @@ class ScriptHandlerDecorator(object):
             self.load_options()
             return script_handler(*args, **kwargs)
         component = get_loading_components()[-1]
-        component_hierarchy_names = component.__name__.split('.')
+        level_names = component.__name__.split('.')
         if component.__name__.startswith('veil.'):
-            component_hierarchy_names = component_hierarchy_names[1:]
+            level_names = level_names[1:]
         level = script_handlers
-        for component_name in component_hierarchy_names:
-            if not component_name.startswith('_'):
-                level = level.setdefault(component_name.replace('_', '-'), {})
+        for level_name in level_names:
+            if not level_name.startswith('_'):
+                level = level.setdefault(level_name.replace('_', '-'), {})
         if self.command in level:
             raise Exception('{}=>{} script has already been registered'.format(
-                '=>'.join(component_hierarchy_names), self.command))
+                '=>'.join(level_names), self.command))
         level[self.command] = wrapper
         return script_handler
 

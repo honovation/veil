@@ -6,7 +6,7 @@ from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
 from sandal.template import *
-from veil.http import *
+from veil.web.tornado import *
 
 LOGGER = getLogger(__name__)
 routes = {}

@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from sandal.shell import *
-from veil.website import *
+from veil.web.server import *
 from veil.environment import *
 from veil.script import *
 

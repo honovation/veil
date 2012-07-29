@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import threading
 import urllib2
-from veil.http import *
+from veil.web.tornado import *
 from sandal.fixture import fixtures
 from sandal.fixture import UsingFixture
 
