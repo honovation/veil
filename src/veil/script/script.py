@@ -41,10 +41,7 @@ class ScriptHandlerDecorator(object):
         def wrapper(*args, **kwargs):
             self.load_options()
             return script_handler(*args, **kwargs)
-        component = get_loading_components()[-1]
-        level_names = component.__name__.split('.')
-        if component.__name__.startswith('veil.'):
-            level_names = level_names[1:]
+        level_names = get_current_level_names()
         level = script_handlers
         for level_name in level_names:
             if not level_name.startswith('_'):
@@ -62,3 +59,13 @@ class ScriptHandlerDecorator(object):
         for section in config_parser.sections():
             options[section] = dict(config_parser.items(section))
         init_options(options)
+
+def get_current_level_names():
+    components = get_loading_components()
+    if not components:
+        return []
+    component = components[-1]
+    level_names = component.__name__.split('.')
+    if component.__name__.startswith('veil.'):
+        level_names = level_names[1:]
+    return level_names
