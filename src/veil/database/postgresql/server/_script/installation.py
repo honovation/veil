@@ -3,7 +3,7 @@ from veil.script import *
 from sandal.path import *
 from sandal.shell import *
 from sandal.template import *
-from veil.environment import *
+from veil.environment.deployment import *
 from .launcher import postgresql_server_running
 
 @script('install')

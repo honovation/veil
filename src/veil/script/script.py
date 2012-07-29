@@ -7,7 +7,7 @@ from inspect import isfunction
 from sandal.component import get_loading_components
 from sandal.template import *
 from sandal.option import *
-from veil.layout import *
+from veil.environment.layout import *
 
 script_handlers = {}
 LOGGER = getLogger(__name__)

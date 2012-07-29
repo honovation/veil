@@ -7,7 +7,7 @@ from functools import wraps
 from logging import getLogger
 import uuid
 from sandal.option import register_option
-from .postgresql import PostgresqlAdapter
+from ..postgresql import PostgresqlAdapter
 
 LOGGER = getLogger(__name__)
 

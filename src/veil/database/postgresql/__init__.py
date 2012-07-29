@@ -1,10 +1,14 @@
 ######## export begin
 from .setting import POSTGRESQL_BASE_SETTINGS
+from .adapter import PostgresqlAdapter
 
 POSTGRESQL_BASE_SETTINGS = POSTGRESQL_BASE_SETTINGS
 
 __all__ = [
-    'POSTGRESQL_BASE_SETTINGS'
+    # from setting
+    'POSTGRESQL_BASE_SETTINGS',
+    # from adapter
+    PostgresqlAdapter.__name__
 ]
 ######## export end
 
