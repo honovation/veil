@@ -1,8 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from sandal.collection import *
-from sandal.binding import *
-from sandal.command import *
-from veil.database import *
+from veil.profile.model import *
 
 demo_db = register_database('demo')
 
