@@ -3,8 +3,11 @@ from veil.backend.shell import *
 from veil.backend.path import *
 
 def install_ubuntu_package(package_name):
-    if shell_execute('dpkg -L {}'.format(package_name), silent=True).returncode:
-        shell_execute('apt-get -y install {}'.format(package_name))
+    try:
+        shell_execute('dpkg -L {}'.format(package_name), capture=True, silent=True)
+    except ShellExecutionError, e:
+        if 'not installed' in e.output:
+            shell_execute('apt-get -y install {}'.format(package_name))
 
 
 def remove_service_auto_start(service_name, test_file):

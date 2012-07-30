@@ -37,6 +37,9 @@ def init():
             'user': 'veil',
             'password': 'p@55word'
         },
+        'redis': {
+            'owner': UNPRIVILIGED_USER
+        },
         'veil': {
             'logging': {
                 'level': 'DEBUG'

@@ -10,6 +10,7 @@ from .launcher import postgresql_server_running
 def install_postgresql_server():
     settings = get_deployment_settings()
     install_ubuntu_package('postgresql-9.1')
+    remove_service_auto_start('postgresql', '/etc/rc0.d/K21postgresql')
     pg_bin_dir = path('/usr/lib/postgresql/9.1/bin')
     assert pg_bin_dir.exists()
     global_bin_dir = path('/usr/bin')
@@ -18,7 +19,6 @@ def install_postgresql_server():
     create_symbolic_link(global_bin_dir / 'initdb', to='{}/initdb'.format(pg_bin_dir))
     create_symbolic_link(global_bin_dir / 'pg_ctl', to='{}/pg_ctl'.format(pg_bin_dir))
     create_symbolic_link(global_bin_dir / 'postgres', to='{}/postgres'.format(pg_bin_dir))
-    remove_service_auto_start('postgresql', '/etc/rc0.d/K21postgresql')
     pg_data_dir = settings.postgresql.data_directory
     assert pg_data_dir, 'must specify postgresql data directory'
     pg_data_dir = path(pg_data_dir)
