@@ -1,12 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 import sys
 from veil.environment.runtime import *
-from veil.script import execute_script
+from veil.frontend.script import execute_script
 
 bootstrap_runtime()
-__import__('veil._script')
-__import__('veil.web')
-__import__('veil.database')
-__import__('veil.supervisor')
-__import__('veil.pycharm')
+__import__('veil.frontend.web')
+__import__('veil.backend.rdbms')
+__import__('veil.environment.runtime')
+__import__('veil.environment.deployment')
+__import__('veil.environment.development')
 execute_script(sys.argv[1:])

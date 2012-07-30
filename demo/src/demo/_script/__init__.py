@@ -1,8 +1,8 @@
 from __future__ import unicode_literals, print_function, division
-from sandal.shell import *
-from veil.web.server import *
+from veil.backend.shell import *
+from veil.frontend.web.server import *
 from veil.environment.layout import *
-from veil.script import *
+from veil.frontend.script import *
 
 @script('up')
 def bring_up_demo():

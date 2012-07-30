@@ -1,0 +1,133 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, print_function, division
+import __builtin__
+from veil.model.test import TestCase
+from veil.model.binding.field_binder import *
+import datetime
+
+class FieldBinderTest(TestCase):
+    def setUp(self):
+        super(FieldBinderTest, self).setUp()
+        __builtin__.__dict__['_'] = lambda msg: msg
+
+    def test_duplicate_validator(self):
+        with self.assertRaises(Invalid):
+            not_duplicate(['USD', 'USD'])
+
+    def test_well_formed_email(self):
+        with self.assertRaises(Invalid):
+            is_email('')
+        with self.assertRaises(Invalid):
+            is_email('@google.com')
+        with self.assertRaises(Invalid):
+            is_email('john.smith+home_work@google')
+        good_email = 'john.smith+home_work-02=yahoo.com@gmail.com'
+        self.assertEquals(good_email, is_email(good_email))
+
+    def test_is_mobile(self):
+        with self.assertRaises(Invalid):
+            is_mobile('')
+        good_phone = '13588888888'
+        self.assertEquals(good_phone, is_mobile(good_phone))
+        good_phone = '15988888888'
+        self.assertEquals(good_phone, is_mobile(good_phone))
+        good_phone = '013588888888'
+        self.assertEquals(good_phone, is_mobile(good_phone))
+        good_phone = '015988888888'
+        self.assertEquals(good_phone, is_mobile(good_phone))
+
+    def test_is_landline(self):
+        with self.assertRaises(Invalid):
+            is_landline('')
+        good_phone = '110'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '8888888'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '88888888'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '8888888-123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '88888888-23435'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '0871-8888888-123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '023-88888888-23435'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '86-0871-8888888-123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '8888888_123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '88888888_23435'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '0871_8888888_123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '023_88888888_23435'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '86_0871_8888888_123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '8888888－123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '88888888－23435'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '0871－8888888－123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '023－88888888－23435'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '86－0871－8888888－123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '8888888—123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '88888888—23435'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '0871—8888888—123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '023—88888888—23435'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '86—0871—8888888—123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '86 0871 8888888 123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+        good_phone = '86.0871.8888888.123'
+        self.assertEquals(good_phone, is_landline(good_phone))
+
+    def test_validate_date(self):
+        converted = to_date()('2007-7-30')
+        self.assertEquals(datetime.date(2007, 07, 30), converted)
+        converted = to_date(format='%m/%d/%Y')('07/30/2007')
+        self.assertEquals(datetime.date(2007, 07, 30), converted)
+
+        with self.assertRaises(Invalid):
+            to_date(format='%m/%d/%Y')('07-30-2007')
+
+    def test_validate_time(self):
+        converted = to_time('07:30 pm')
+        self.assertEquals(datetime.time(19, 30), converted)
+
+        with self.assertRaises(Invalid):
+            to_time('07.30')
+
+    def test_validate_datetime(self):
+        self.assertEquals(datetime.datetime(2011, 07, 01, 0, 10), to_datetime()('2011-07-01 00:10:00'))
+        with self.assertRaises(Invalid):
+            to_datetime()('2011-07-01 00:10')
+        with self.assertRaises(Invalid):
+            to_datetime(format='%Y-%m-%d')('2011-10-13 10:11')
+
+    def test_validate_datetime_from_iso8601(self):
+        converted = to_datetime_with_minute_precision_from_iso8601('2011-07-01 00:10 +08:00')
+        self.assertEquals(datetime.datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.FixedOffset(480)), converted)
+        converted = to_datetime_with_minute_precision_from_iso8601('2011-07-01 00:10 +0800')
+        self.assertEquals(datetime.datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.FixedOffset(480)), converted)
+        converted = to_datetime_with_minute_precision_from_iso8601('2011-07-01 00:10+0800')
+        self.assertEquals(datetime.datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.FixedOffset(480)), converted)
+        converted = to_datetime_with_minute_precision_from_iso8601('2011-07-01 00:10 -08:00')
+        self.assertEquals(datetime.datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.FixedOffset(-480)), converted)
+
+        with self.assertRaises(Invalid):
+            to_datetime_with_minute_precision_from_iso8601('2011-07-01 +08:00')
+        with self.assertRaises(Invalid):
+            to_datetime_with_minute_precision_from_iso8601('2011-07-01 00 +08:00')
+        with self.assertRaises(Invalid):
+            to_datetime_with_minute_precision_from_iso8601('2011-07-01 00:10:00 +08:00')
+        with self.assertRaises(Invalid):
+            to_datetime_with_minute_precision_from_iso8601('2011-07-01 00:10 08:00')

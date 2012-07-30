@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from sandal.shell import *
+from veil.backend.shell import *
 
 def install_python_package(package_name, test_package=None):
     test_package = test_package or package_name

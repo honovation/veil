@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import sys
-from sandal.collection import *
+from veil.model.collection import *
 from veil.environment.layout import *
 from .filesystem import create_directory
 

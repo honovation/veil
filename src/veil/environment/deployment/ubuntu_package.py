@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
-from sandal.shell import *
-from sandal.path import *
+from veil.backend.shell import *
+from veil.backend.path import *
 
 def install_ubuntu_package(package_name):
     if shell_execute('dpkg -L {}'.format(package_name), silent=True).returncode:

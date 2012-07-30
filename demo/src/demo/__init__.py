@@ -1,9 +1,9 @@
 def init():
-    from sandal.component import init_component
+    from veil.component import init_component
     from veil.environment.layout import VEIL_ENV
     from veil.environment.deployment import register_deployment_settings_provider
-    from veil.web.nginx import create_nginx_server_settings
-    from veil.web.nginx import NGINX_BASE_SETTINGS
+    from veil.frontend.web.nginx import create_nginx_server_settings
+    from veil.frontend.web.nginx import NGINX_BASE_SETTINGS
 
     init_component(__name__)
 

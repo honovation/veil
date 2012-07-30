@@ -1,5 +1,5 @@
 import httplib
-from sandal.template import *
-from sandal.command import *
-from veil.web.server import *
-from veil.web.tornado import *
+from veil.frontend.template import *
+from veil.model.command import *
+from veil.frontend.web.server import *
+from veil.frontend.web.tornado import *

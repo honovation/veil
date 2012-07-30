@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
-from sandal.event import publish_event
-from sandal.const import consts
-from sandal.collection import *
+from veil.model.event import publish_event
+from veil.model.const import consts
+from veil.model.collection import *
 
 consts.EVENT_OPTIONS_INITIALIZED = 'options-initialized'
 option_definitions = {}
