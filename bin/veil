@@ -28,6 +28,9 @@ case "$1" in
     up)
         exec veil supervisor up
         ;;
+    self-check)
+        exec veil :test environment development self-check
+        ;;
     *)
         exec python -m veil $@
 esac

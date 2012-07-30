@@ -13,7 +13,7 @@ LOGGER = getLogger(__name__)
 original_routes = {}
 routes = {}
 
-@test_bootstrapper
+@test_hook
 def remember_original_routes():
     get_executing_test().addCleanup(reset_routes)
     global original_routes

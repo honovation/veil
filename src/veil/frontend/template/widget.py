@@ -22,7 +22,7 @@ def register_page_post_processor(page_post_processor):
     page_post_processors.append(page_post_processor)
 
 
-@test_bootstrapper
+@test_hook
 def remember_original_widgets():
     get_executing_test().addCleanup(reset_widgets)
     global original_widgets

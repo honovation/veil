@@ -3,14 +3,13 @@ import unittest.case
 
 executing_test = None
 bootstrappers = []
-bootstrapped = False
 
-def register_test_bootstrapper(bootstrapper):
+def register_test_hook(bootstrapper):
     bootstrappers.append(bootstrapper)
 
 
-def test_bootstrapper(func):
-    register_test_bootstrapper(func)
+def test_hook(func):
+    register_test_hook(func)
     return func
 
 
@@ -27,11 +26,8 @@ def get_executing_test(optional=False):
 
 class TestCase(unittest.case.TestCase):
     def setUp(self):
-        global bootstrapped
         super(TestCase, self).setUp()
         set_executing_test(self)
         self.addCleanup(lambda: set_executing_test(None))
-        if not bootstrapped:
-            for bootstrapper in bootstrappers:
-                bootstrapper()
-            bootstrapped = True
+        for bootstrapper in bootstrappers:
+            bootstrapper()

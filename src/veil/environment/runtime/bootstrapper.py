@@ -7,7 +7,7 @@ from .option import init_options
 LOGGER = logging.getLogger(__name__)
 boostrapped = False
 
-@test_bootstrapper
+@test_hook
 def bootstrap_runtime():
     global boostrapped
     if boostrapped:
