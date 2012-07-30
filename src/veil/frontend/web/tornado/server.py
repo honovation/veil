@@ -29,7 +29,7 @@ LOGGER = getLogger(__name__)
 def start_http_server(handler, io_loop=None, **kwargs):
     io_loop = io_loop or IOLoop.instance()
     http_server = create_http_server(handler, io_loop=io_loop, **kwargs)
-    host = get_host() or 'localhost'
+    host = get_host() or '127.0.0.1'
     port = get_port() or 80
     http_server.bind(port, host)
     http_server.start(get_processes_count() or 1)
@@ -38,7 +38,7 @@ def start_http_server(handler, io_loop=None, **kwargs):
 
 def start_test_http_server(handler):
     http_server = create_http_server(handler)
-    host = get_host() or 'localhost'
+    host = get_host() or '127.0.0.1'
     port = get_port() or 80
     http_server.host = host
     http_server.port = port

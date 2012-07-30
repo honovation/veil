@@ -5,9 +5,15 @@ from .option import register_option
 from .option import init_options
 
 LOGGER = logging.getLogger(__name__)
+boostrapped = False
 
 @test_bootstrapper
 def bootstrap_runtime():
+    global boostrapped
+    if boostrapped:
+        return
+    else:
+        boostrapped = True
     import sys
     import os.path
 
@@ -54,8 +60,7 @@ def bootstrap_runtime():
     for section in config_parser.sections():
         options[section] = dict(config_parser.items(section))
     if options:
-        if executing_test and hasattr(executing_test, 'options'):
-            options.update(executing_test.options)
         init_options(options)
     else:
         LOGGER.warn('options is empty')
+

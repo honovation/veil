@@ -5,18 +5,19 @@ from veil.frontend.template import get_template
 from veil.model.test import TestCase
 from veil.frontend.web.client import *
 from veil.backend.path import *
+from veil.environment.runtime import *
 from ..routing import route
 
 class StaticFileModuleSmokeTest(TestCase):
-    @property
-    def options(self):
+    def setUp(self):
+        super(StaticFileModuleSmokeTest, self).setUp()
         self.temp_dir = path(tempfile.gettempdir())
-        return {
+        update_options({
             'website': {
                 'external_static_files_directory': os.path.dirname(__file__),
                 'inline_static_files_directory': self.temp_dir
             }
-        }
+        })
 
     def test_static_url(self):
         @route('GET', '/using_static_url', website='test')

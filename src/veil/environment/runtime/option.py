@@ -2,10 +2,12 @@ from __future__ import unicode_literals, print_function, division
 from veil.model.event import publish_event
 from veil.model.const import consts
 from veil.model.collection import *
+from veil.model.test import *
 
 consts.EVENT_OPTIONS_INITIALIZED = 'options-initialized'
 option_definitions = {}
 options = {}
+original_options = {}
 
 def register_option(section, name, type=unicode):
     if type not in [unicode, int, bool]:
@@ -26,7 +28,7 @@ def get_option(section, name):
         raise Exception('option {}.{} has not been registered'.format(section, name))
     value = options.get(section, {}).get(name)
     if unicode == type:
-        return unicode(value)
+        return unicode(value) if value else ''
     if int == type:
         return int(value) if value else 0
     if bool == type:
@@ -40,12 +42,15 @@ def init_options(configured_options):
     if options:
         raise Exception('options already initialized')
     options.update(configured_options)
+    original_options.update(configured_options)
     publish_event(consts.EVENT_OPTIONS_INITIALIZED)
 
 
 def reset_options():
     options.clear()
+    options.update(original_options)
 
 
-def peek_options():
-    return objectify(options)
+def update_options(updates):
+    get_executing_test().addCleanup(reset_options)
+    options.update(updates)
