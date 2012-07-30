@@ -20,10 +20,12 @@ daemonize yes
 
 # When run as a daemon, Redis write a pid file in /var/run/redis.pid by default.
 # You can specify a custom pid file location here.
+{% if config.pidfile %}
 pidfile {{ config.pidfile }}
+{% endif %}
 
 # Accept connections on the specified port, default is 6379
-port {{ config.port }}
+port {{ config.port or 6379 }}
 
 # If you want you can bind a single interface, if the bind option is not
 # specified all the interfaces will listen for connections.

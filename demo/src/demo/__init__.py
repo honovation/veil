@@ -1,6 +1,6 @@
 def init():
     from veil.component import init_component
-    from veil.environment.layout import VEIL_ENV
+    from veil.environment.layout import VEIL_ENV, VEIL_HOME
     from veil.environment.deployment import register_deployment_settings_provider
     from veil.frontend.web.nginx import create_nginx_server_settings
     from veil.frontend.web.nginx import NGINX_BASE_SETTINGS
@@ -50,7 +50,8 @@ def init():
             },
             'website': {
                 'inline_static_files_directory': NGINX_BASE_SETTINGS.nginx.inline_static_files_directory,
-                'external_static_files_directory': NGINX_BASE_SETTINGS.nginx.external_static_files_directory
+                'external_static_files_directory': NGINX_BASE_SETTINGS.nginx.external_static_files_directory,
+                'master_template_directory': VEIL_HOME / 'src' / 'demo'
             },
             'demo_database': {
                 'type': 'postgresql',

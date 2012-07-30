@@ -3,6 +3,7 @@ from veil.frontend.script import *
 from veil.backend.path import *
 from veil.frontend.template import *
 from veil.environment.deployment import *
+from veil.backend.shell import *
 
 @script('install')
 def install_redis_server():
@@ -20,3 +21,9 @@ def install_redis_server():
     assert redis_configfile, 'must specify redis configuration file'
     redis_configfile = path(redis_configfile)
     create_file(redis_configfile, content=get_template('redis.conf.j2').render(config=settings.redis))
+
+
+@script('up')
+def bring_up_redis_server():
+    settings = get_deployment_settings()
+    pass_control_to('redis-server {}'.format(settings.redis.configfile))

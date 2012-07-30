@@ -26,7 +26,7 @@ case "$1" in
         exec $@
         ;;
     up)
-        exec veil supervisor up
+        exec veil environment runtime supervisor up
         ;;
     self-check)
         exec veil :test environment development self-check

@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.model.event import publish_event
 from veil.model.const import consts
-from veil.model.collection import *
 from veil.model.test import *
 
 consts.EVENT_OPTIONS_INITIALIZED = 'options-initialized'

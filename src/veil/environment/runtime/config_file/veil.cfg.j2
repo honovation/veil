@@ -3,6 +3,11 @@
 type={{ config.website.type }}
 inline_static_files_directory={{ config.website.inline_static_files_directory }}
 external_static_files_directory={{ config.website.external_static_files_directory }}
+reloads_module={{ config.website.reloads_module }}
+recalculates_static_file_hash={{ config.website.recalculates_static_file_hash }}
+clears_template_cache={{ config.website.clears_template_cache }}
+prevents_xsrf={{ config.website.prevents_xsrf }}
+master_template_directory={{ config.website.master_template_directory }}
 {% endif %}
 {% if config.http %}
 [http]

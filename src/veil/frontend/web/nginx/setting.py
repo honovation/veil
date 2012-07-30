@@ -14,7 +14,7 @@ NGINX_BASE_SETTINGS = objectify({
     'supervisor': {
         'programs': {
             'nginx': {
-                'command': 'veil web nginx up'
+                'command': 'veil frontend web nginx up'
             }
         }
     }

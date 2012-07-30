@@ -1,11 +1,11 @@
 ######## export begin
-from .setting import POSTGRESQL_BASE_SETTINGS
+from .server import POSTGRESQL_BASE_SETTINGS
 from .client import PostgresqlAdapter
 
 POSTGRESQL_BASE_SETTINGS = POSTGRESQL_BASE_SETTINGS
 
 __all__ = [
-    # from setting
+    # from server
     'POSTGRESQL_BASE_SETTINGS',
     # from client
     PostgresqlAdapter.__name__
@@ -14,9 +14,7 @@ __all__ = [
 
 def init():
     from veil.component import init_component
-    from veil.environment.deployment import register_deployment_settings_provider
 
     init_component(__name__)
-    register_deployment_settings_provider(lambda: POSTGRESQL_BASE_SETTINGS)
 
 init()
