@@ -6,9 +6,9 @@ from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
 from veil.frontend.template import *
-from veil.model.test import *
+from sandal.test import *
 from veil.frontend.web.tornado import *
-from veil.component import *
+from sandal.component import *
 
 LOGGER = getLogger(__name__)
 original_routes = {}

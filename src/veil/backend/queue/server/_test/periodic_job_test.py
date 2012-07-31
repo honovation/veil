@@ -3,7 +3,7 @@ import calendar
 from datetime import timedelta, datetime
 import pytz
 from unittest.case import TestCase
-from veil.model.clock import require_current_time_being
+from sandal.clock import require_current_time_being
 from ..periodic_job import TimedeltaSchedule
 from ..periodic_job import CroniterSchedule
 

@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.model.test import TestCase
+from sandal.test import TestCase
 from ..collection import single_or_none
 from ..collection import first_or_none
 from ..collection import single

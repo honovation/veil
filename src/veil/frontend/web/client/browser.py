@@ -8,8 +8,8 @@ import urllib2
 import urlparse
 from logging import getLogger
 from pyquery import PyQuery
-from veil.model.encoding import to_str, to_unicode
-from veil.model.test import get_executing_test
+from veil.frontend.encoding import to_str, to_unicode
+from sandal.test import get_executing_test
 from veil.frontend.web.tornado import *
 from veil.frontend.web.server import *
 from .action import ActionMixin

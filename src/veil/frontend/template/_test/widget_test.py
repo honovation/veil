@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from ..widget import widget, page
 from ..template import get_template
-from veil.model.test import TestCase
+from sandal.test import TestCase
 
 class WidgetModuleSmokeTest(TestCase):
     def test(self):

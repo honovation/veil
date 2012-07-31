@@ -3,7 +3,7 @@ import functools
 from logging import getLogger
 import sys
 from inspect import isfunction
-from veil.component import get_loading_components
+from sandal.component import get_loading_components
 from veil.frontend.template import *
 
 script_handlers = {}

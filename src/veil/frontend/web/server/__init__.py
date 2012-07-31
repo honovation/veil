@@ -24,7 +24,7 @@ __all__ = [
 ######## export end
 
 def init():
-    from veil.component import init_component
+    from sandal.component import init_component
     from static_file import process_script_tags
     from static_file import process_inline_blocks
     from veil.frontend.template import register_page_post_processor

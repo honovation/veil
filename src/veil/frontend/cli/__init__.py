@@ -10,7 +10,7 @@ __all__ = [
 ######## export end
 
 def init():
-    from veil.component import init_component
+    from sandal.component import init_component
 
     init_component(__name__)
 

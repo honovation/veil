@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import threading
 import urllib2
 from veil.frontend.web.tornado import *
-from veil.model.test import TestCase
+from sandal.test import TestCase
 from ..executor import require_io_loop_executor
 from ..server import start_test_http_server
 

@@ -5,7 +5,7 @@ from logging import getLogger
 from babel.core import Locale
 from babel.support import Translations
 from veil.frontend.template import require_current_translations_being
-from veil.model.test import get_executing_test
+from sandal.test import get_executing_test
 from veil.environment.layout import VEIL_HOME
 
 LOGGER = getLogger(__name__)

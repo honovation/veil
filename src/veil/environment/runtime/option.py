@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.model.event import publish_event
-from veil.model.test import *
+from sandal.test import *
 
 EVENT_OPTIONS_INITIALIZED = 'options-initialized'
 option_definitions = {}

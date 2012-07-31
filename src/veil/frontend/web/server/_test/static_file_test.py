@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import tempfile
 import os.path
 from veil.frontend.template import get_template
-from veil.model.test import TestCase
+from sandal.test import TestCase
 from veil.frontend.web.client import *
 from veil.backend.path import *
 from veil.environment.runtime import *

@@ -4,7 +4,7 @@ import pyres
 import pyres.worker
 import pyres.job
 import pyres.scheduler
-from veil.component import *
+from sandal.component import *
 from veil.environment.runtime import *
 from veil.frontend.cli import *
 from veil.frontend.locale import *

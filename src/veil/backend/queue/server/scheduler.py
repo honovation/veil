@@ -3,7 +3,7 @@ from logging import getLogger
 from math import ceil
 import time
 import signal
-from veil.model.clock import get_current_timestamp
+from sandal.clock import get_current_timestamp
 from .periodic_job import schedules
 from .job import enqueue
 

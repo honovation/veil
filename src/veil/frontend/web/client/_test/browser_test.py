@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import httplib
 from veil.frontend.web.tornado import *
-from veil.model.test import TestCase
+from sandal.test import TestCase
 from ..browser import Browser
 
 class BrowserTest(TestCase):

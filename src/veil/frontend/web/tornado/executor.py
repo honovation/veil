@@ -6,7 +6,7 @@ from tornado.ioloop import IOLoop
 from tornado.stack_context import  NullContext
 import sys
 import time
-from veil.model.test import get_executing_test
+from sandal.test import get_executing_test
 
 LOGGER = getLogger(__name__)
 lock = threading.Lock()

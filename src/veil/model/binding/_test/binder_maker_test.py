@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import __builtin__
-from veil.model.test import TestCase
+from sandal.test import TestCase
 from ..binder_maker import each
 from ..field_binder import clamp_length, not_empty
 from ..invalid import Invalid

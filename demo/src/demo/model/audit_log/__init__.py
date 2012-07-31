@@ -7,7 +7,7 @@ __all__ = [
 ######## export end
 
 def init():
-    from veil.component import init_component
+    from sandal.component import init_component
     from veil.model.event import subscribe_event
     from demo.model.item import EVENT_ITEM_CREATED
     from demo.model.item import EVENT_ITEM_DELETED

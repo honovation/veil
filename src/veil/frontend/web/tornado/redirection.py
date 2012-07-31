@@ -4,7 +4,7 @@ import urlparse
 import re
 from .context import get_current_http_response
 from .error import end_http_request_processing
-from veil.model.encoding import to_str
+from veil.frontend.encoding import to_str
 
 def redirect_to(url, permanent=False, response=None):
     response = response or get_current_http_response()

@@ -5,8 +5,8 @@ from inspect import getargspec
 import os.path
 import traceback
 from markupsafe import Markup
-from veil.component import force_import_module
-from veil.model.test import *
+from sandal.component import force_import_module
+from sandal.test import *
 from .template import register_template_utility
 from .template import require_current_template_directory_relative_to
 

@@ -9,7 +9,7 @@ __all__ = [
 ######## export end
 
 def init():
-    from veil.component import init_component
+    from sandal.component import init_component
     from veil.environment.deployment import register_deployment_settings_provider
     from .setting import NGINX_BASE_SETTINGS
 

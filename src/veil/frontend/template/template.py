@@ -4,8 +4,8 @@ import traceback
 import os.path
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
-from veil.component import force_import_module
-from veil.model.test import get_executing_test
+from sandal.component import force_import_module
+from sandal.test import get_executing_test
 
 filters = {}
 utilities = {}

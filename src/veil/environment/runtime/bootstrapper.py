@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from veil.model.test import *
+from sandal.test import *
 from .option import register_option
 from .option import init_options
 from .option import EVENT_OPTIONS_INITIALIZED
@@ -24,7 +24,7 @@ def bootstrap_runtime():
 
     import logging
     from ConfigParser import RawConfigParser
-    from veil.component import scan_components
+    from sandal.component import scan_components
     from veil.model.event import subscribe_event
     from veil.environment.layout import VEIL_HOME
     from veil.environment.layout import VEIL_ETC_DIR
