@@ -9,8 +9,8 @@ from veil.frontend.template import *
 script_handlers = {}
 LOGGER = getLogger(__name__)
 
-def execute_script(argv, level=None):
-    level = level or script_handlers
+def execute_script(*argv, **kwargs):
+    level = kwargs.get('level', script_handlers)
     arg = argv[0] if argv else None
     if arg not in level:
         LOGGER.error('{} is unknown, choose from: {}'.format(arg, level.keys()))
@@ -21,7 +21,7 @@ def execute_script(argv, level=None):
         with require_current_template_directory_relative_to(script_handler):
             return script_handler(*argv[1:])
     else:
-        return execute_script(argv[1:], next_level)
+        return execute_script(level=next_level, *argv[1:])
 
 
 def script(command):
