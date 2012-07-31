@@ -5,8 +5,6 @@ import os.path
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
 from veil.component import force_import_module
-from veil.model.event import publish_event
-from veil.model.const import consts
 from veil.model.test import get_executing_test
 
 filters = {}
@@ -96,13 +94,13 @@ def get_template_from_file(template_path):
         current_template_directory = current_template_directories[-1]
         template_path = os.path.join(current_template_directory, template_path)
     template = get_or_create_environment().get_template(
-        'root:{}'.format(template_path), globals=dict(utilities, consts=consts))
+        'root:{}'.format(template_path), globals=dict(utilities))
     return template
 
 
 def get_template_from_string(template_source):
     return get_or_create_environment().from_string(
-        template_source, globals=dict(utilities, consts=consts))
+        template_source, globals=dict(utilities))
 
 
 def get_template_environment():

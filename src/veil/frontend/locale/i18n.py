@@ -5,12 +5,11 @@ from logging import getLogger
 from babel.core import Locale
 from babel.support import Translations
 from veil.frontend.template import require_current_translations_being
-from veil.model.const import consts
 from veil.model.test import get_executing_test
 from veil.environment.layout import VEIL_HOME
 
 LOGGER = getLogger(__name__)
-consts.LOCALE_DIR = VEIL_HOME / 'locale'
+LOCALE_DIR = VEIL_HOME / 'locale'
 
 def get_locale(*codes):
     locale = None
@@ -47,7 +46,7 @@ def require_current_locale_being_default():
 
 
 def load_translations(locale):
-    return Translations.load(consts.LOCALE_DIR, locales=locale)
+    return Translations.load(LOCALE_DIR, locales=locale)
 
 
 def get_current_locale():

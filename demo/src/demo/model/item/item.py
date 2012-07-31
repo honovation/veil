@@ -6,8 +6,8 @@ demo_db = register_database('demo')
 @transactional(demo_db)
 @command
 def create_item(name=not_empty):
-    item_id = demo_db().insert('items', returns_id=True, name=name)
-    return Item(item_id, name)
+    id = demo_db().insert('items', returns_id=True, name=name)
+    return Item(id, name)
 
 
 def list_items():

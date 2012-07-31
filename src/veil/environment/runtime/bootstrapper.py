@@ -3,6 +3,7 @@ import logging
 from veil.model.test import *
 from .option import register_option
 from .option import init_options
+from .option import EVENT_OPTIONS_INITIALIZED
 
 LOGGER = logging.getLogger(__name__)
 boostrapped = False
@@ -25,7 +26,6 @@ def bootstrap_runtime():
     from ConfigParser import RawConfigParser
     from veil.component import scan_components
     from veil.model.event import subscribe_event
-    from veil.model.const import consts
     from veil.environment.layout import VEIL_HOME
     from veil.environment.layout import VEIL_ETC_DIR
 
@@ -45,7 +45,7 @@ def bootstrap_runtime():
         logger.addHandler(handler)
 
     configure_logging('INFO')
-    subscribe_event(consts.EVENT_OPTIONS_INITIALIZED, configure_logging)
+    subscribe_event(EVENT_OPTIONS_INITIALIZED, configure_logging)
 
     for component_name in scan_components(VEIL_HOME / 'src'):
         __import__(component_name)

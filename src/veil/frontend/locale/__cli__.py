@@ -1,18 +1,18 @@
 from __future__ import unicode_literals, print_function, division
+from argparse import ArgumentParser
 from veil.environment.layout import VEIL_HOME
 from veil.backend.path import *
 from veil.frontend.cli import *
-from veil.model.const import *
 from veil.backend.shell import *
-from argparse import ArgumentParser
+from .i18n import LOCALE_DIR
 
 @script('extract')
 def extract_translation():
-    consts.LOCALE_DIR.mkdir()
+    LOCALE_DIR.mkdir()
     shell_execute('pybabel extract --omit-header -o {output} -F {mapping_file} {input}'.format(
         input=VEIL_HOME / 'src',
-        output=consts.LOCALE_DIR / 'messages.po',
-        mapping_file=consts.LOCALE_DIR / 'BABEL_MAPPING_FILE'
+        output=LOCALE_DIR / 'messages.po',
+        mapping_file=LOCALE_DIR / 'BABEL_MAPPING_FILE'
     ))
 
 
@@ -26,8 +26,8 @@ def execute_init_translation(*argv):
 
 def init_translation(locale):
     shell_execute('pybabel init -d {output} -i {input} -l {locale}'.format(
-        input=consts.LOCALE_DIR / 'messages.po',
-        output=consts.LOCALE_DIR,
+        input=LOCALE_DIR / 'messages.po',
+        output=LOCALE_DIR,
         locale=locale
     ))
 
@@ -42,8 +42,8 @@ def execute_update_translation(*argv):
 
 def update_translation(locale):
     shell_execute('pybabel update -i {input} -d {output} -l {locale}'.format(
-        input=consts.LOCALE_DIR / 'messages.po',
-        output=consts.LOCALE_DIR,
+        input=LOCALE_DIR / 'messages.po',
+        output=LOCALE_DIR,
         locale=locale
     ))
 
@@ -58,6 +58,6 @@ def execute_compile_translation(*argv):
 
 def compile_translation(locale):
     shell_execute('pybabel compile -d {input} -l {locale} -f'.format(
-        input=consts.LOCALE_DIR,
+        input=LOCALE_DIR,
         locale=locale
     ))

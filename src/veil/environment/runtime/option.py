@@ -1,9 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 from veil.model.event import publish_event
-from veil.model.const import consts
 from veil.model.test import *
 
-consts.EVENT_OPTIONS_INITIALIZED = 'options-initialized'
+EVENT_OPTIONS_INITIALIZED = 'options-initialized'
 option_definitions = {}
 options = {}
 original_options = {}
@@ -42,7 +41,7 @@ def init_options(configured_options):
         raise Exception('options already initialized')
     options.update(configured_options)
     original_options.update(configured_options)
-    publish_event(consts.EVENT_OPTIONS_INITIALIZED)
+    publish_event(EVENT_OPTIONS_INITIALIZED)
 
 
 def reset_options():
