@@ -6,7 +6,7 @@ import pyres.job
 import pyres.scheduler
 from veil.component import *
 from veil.environment.runtime import *
-from veil.frontend.script import *
+from veil.frontend.cli import *
 from veil.frontend.locale import *
 from ..scheduler import PeriodicJobScheduler
 from ..job import register_job_context_manager

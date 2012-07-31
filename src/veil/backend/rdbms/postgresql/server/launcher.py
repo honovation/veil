@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
 import time
-from veil.frontend.script import *
+from veil.frontend.cli import *
 from veil.backend.shell import *
 from veil.environment.deployment import *
 

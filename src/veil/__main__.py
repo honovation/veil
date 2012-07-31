@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import sys
 from veil.environment.runtime import *
-from veil.frontend.script import execute_script
+from veil.frontend.cli import execute_script
 
 bootstrap_runtime()
 __import__('veil.frontend.web')

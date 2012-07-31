@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import os
 from veil.backend.shell import *
 from veil.backend.path import *
-from veil.frontend.script import *
+from veil.frontend.cli import *
 
 CURRENT_DIR = path(os.path.dirname(__file__))
 

@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment.layout import VEIL_HOME
 from veil.backend.path import *
-from veil.frontend.script import *
+from veil.frontend.cli import *
 from veil.model.const import *
 from veil.backend.shell import *
 from argparse import ArgumentParser
