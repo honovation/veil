@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.backend.shell import *
-from veil.backend.path import *
+from sandal.path import *
 
 def install_ubuntu_package(package_name):
     try:

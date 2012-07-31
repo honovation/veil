@@ -4,7 +4,7 @@ import hashlib
 from markupsafe import Markup
 import os.path
 from logging import getLogger
-from veil.backend.path import path as as_path
+from sandal.path import path as as_path
 from veil.frontend.encoding import *
 from sandal.hash import *
 from veil.frontend.template import *

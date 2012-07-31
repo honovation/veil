@@ -4,7 +4,7 @@ import os.path
 from veil.frontend.template import get_template
 from sandal.test import TestCase
 from veil.frontend.web.client import *
-from veil.backend.path import *
+from sandal.path import *
 from veil.environment.runtime import *
 from ..routing import route
 
