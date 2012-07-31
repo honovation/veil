@@ -13,4 +13,6 @@ def install_pyres():
     install_python_package('pyres')
     install_python_package('croniter')
     install_python_package('resweb')
-    create_file(settings.resweb.config_file, content=get_template('resweb.cfg.j2').render(config=settings.resweb))
+    create_file(settings.resweb.config_file, content=get_template('resweb.cfg.j2').render(
+        queue_config=settings.queue,
+        config=settings.resweb))

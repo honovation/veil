@@ -4,24 +4,27 @@ from veil.model.collection import *
 from veil.environment.layout import *
 from .filesystem import create_directory
 
-providers = []
-env_settings = {}
+providers = {}
+pass_names = ['base', 'user', 'final']
+settings = {}
 
-def register_deployment_settings_provider(provider):
-    if env_settings:
-        raise Exception('environment settings has already been initialized: {}'.format(env_settings))
-    providers.append(provider)
+def register_deployment_settings_provider(provider, pass_name='user'):
+    assert pass_name in pass_names
+    if settings:
+        raise Exception('environment settings has already been initialized: {}'.format(settings))
+    providers.setdefault(pass_name, []).append(provider)
 
 
 def get_deployment_settings():
-    global env_settings
-    if not env_settings:
-        for provider in providers:
-            settings = provider()
-            env_settings = merge_settings(env_settings, settings)
-        env_settings = objectify(env_settings)
+    global settings
+    if not settings:
+        for pass_name in pass_names:
+            last_pass_settings = objectify(settings)
+            for provider in providers.get(pass_name, []):
+                settings = merge_settings(settings, provider(last_pass_settings))
+        settings = objectify(settings)
         create_layout()
-    return env_settings
+    return settings
 
 def create_layout():
     create_directory(VEIL_HOME / 'log')

@@ -7,12 +7,11 @@ POSTGRESQL_BASE_SETTINGS = {
         'data_directory': VEIL_VAR_DIR / 'postgresql',
         'config_directory': VEIL_ETC_DIR,
         'unix_socket_directory': '/tmp'
-    },
-    'supervisor': {
-        'programs': {
-            'postgresql': {
-                'command': 'veil backend rdbms postgresql server up'
-            }
-        }
     }
 }
+
+def postgresql_program(updates=None):
+    program = {'command': 'veil backend rdbms postgresql server up'}
+    if updates:
+        program.update(updates)
+    return program

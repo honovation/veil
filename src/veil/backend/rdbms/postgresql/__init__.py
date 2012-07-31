@@ -1,14 +1,12 @@
 ######## export begin
-from .server import POSTGRESQL_BASE_SETTINGS
 from .client import PostgresqlAdapter
-
-POSTGRESQL_BASE_SETTINGS = POSTGRESQL_BASE_SETTINGS
+from .server import postgresql_program
 
 __all__ = [
-    # from server
-    'POSTGRESQL_BASE_SETTINGS',
     # from client
-    PostgresqlAdapter.__name__
+    PostgresqlAdapter.__name__,
+    # from server
+    postgresql_program.__name__
 ]
 ######## export end
 

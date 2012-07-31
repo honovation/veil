@@ -62,3 +62,10 @@ base_directory={{ config.file_storage.base_directory }}
 [logging]
 level={{ config.logging.level }}
 {% endif %}
+{% if config.queue %}
+[queue]
+host={{ config.queue.host }}
+port={{ config.queue.port }}
+password = {{ config.queue.password }}
+worker_interval = {{ config.queue.worker_interval }}
+{% endif %}

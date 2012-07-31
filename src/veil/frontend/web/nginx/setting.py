@@ -10,17 +10,15 @@ NGINX_BASE_SETTINGS = objectify({
         'uploaded_files_directory': VEIL_VAR_DIR / 'uploaded-files',
         'inline_static_files_directory': VEIL_VAR_DIR / 'inline-static-files',
         'external_static_files_directory': VEIL_HOME / 'static'
-    },
-    'supervisor': {
-        'programs': {
-            'nginx': {
-                'command': 'veil frontend web nginx up'
-            }
-        }
     }
 })
 
-def create_nginx_server_settings(backend_host, backend_port):
+def nginx_program():
+    return {
+        'command': 'veil frontend web nginx up'
+    }
+
+def nginx_reverse_proxy_server(backend_host, backend_port):
     return {
         'demo.dev.dmright.com': {
             'listen': '127.0.0.1:80',
