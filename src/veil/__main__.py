@@ -5,7 +5,7 @@ from veil.frontend.cli import execute_script
 
 bootstrap_runtime()
 __import__('veil.frontend.web')
-__import__('veil.frontend.queue')
+__import__('veil.backend.queue')
 __import__('veil.backend.rdbms')
 __import__('veil.backend.redis')
 __import__('veil.environment.runtime')

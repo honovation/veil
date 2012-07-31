@@ -35,17 +35,17 @@ def resweb_program():
 
 def delayed_job_scheduler_program():
     return  {
-        'command': 'veil frontend queue delayed-job-scheduler-up'
+        'command': 'veil backend queue server delayed-job-scheduler-up'
     }
 
 
 def periodic_job_scheduler_program():
     return {
-        'command': 'veil frontend queue periodic-job-scheduler-up'
+        'command': 'veil backend queue server periodic-job-scheduler-up'
     }
 
 
 def job_worker_program(*queues):
     return {
-        'command': 'veil frontend queue worker-up {}'.format(' '.join(queues))
+        'command': 'veil backend queue server worker-up {}'.format(' '.join(queues))
     }

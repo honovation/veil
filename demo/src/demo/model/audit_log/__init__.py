@@ -11,8 +11,8 @@ def init():
     from veil.model.event import subscribe_event
     from demo.model.item import EVENT_ITEM_CREATED
     from demo.model.item import EVENT_ITEM_DELETED
-    from .audit_log import on_item_created
-    from .audit_log import on_item_deleted
+    from .__queue__ import on_item_created
+    from .__queue__ import on_item_deleted
 
     init_component(__name__)
     subscribe_event(EVENT_ITEM_CREATED, on_item_created)

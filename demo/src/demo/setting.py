@@ -2,10 +2,10 @@ from __future__ import unicode_literals, print_function, division
 from veil.environment.layout import VEIL_ENV, VEIL_HOME
 from veil.frontend.web.nginx import nginx_reverse_proxy_server
 from veil.frontend.web.nginx import nginx_program
-from veil.frontend.queue import queue_program
-from veil.frontend.queue import resweb_program
-from veil.frontend.queue import delayed_job_scheduler_program
-from veil.frontend.queue import job_worker_program
+from veil.backend.queue import queue_program
+from veil.backend.queue import resweb_program
+from veil.backend.queue import delayed_job_scheduler_program
+from veil.backend.queue import job_worker_program
 from veil.backend.rdbms import postgresql_program
 from veil.backend.redis import redis_program
 
@@ -71,6 +71,9 @@ def demo_settings_provider(setting):
                 'database': 'demo',
                 'user': 'veil',
                 'password': 'p@55word'
+            },
+            'queue': {
+                'type': 'redis'
             }
         }
     }
