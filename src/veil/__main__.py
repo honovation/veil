@@ -5,6 +5,7 @@ from veil.frontend.script import execute_script
 
 bootstrap_runtime()
 __import__('veil.frontend.web')
+__import__('veil.frontend.pyres')
 __import__('veil.backend.rdbms')
 __import__('veil.backend.redis')
 __import__('veil.environment.runtime')
