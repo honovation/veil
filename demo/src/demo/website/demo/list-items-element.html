@@ -5,6 +5,11 @@
 
 {% block inline_javascript %}
 <script type="text/javascript">
-    veil.widget.handle('.list-items-element-widget', '.remove-item', 'click', veil.widget.deleteResource);
+    veil.widget.handle('.list-items-element-widget', '.remove-item', 'click', function(widget){
+        veil.widget.deleteResource(widget, function(){
+            var handlers = veil.event.DELEGATIONS[veil.event.EVENT_ITEM_DELETED];
+            veil.event.trigger(veil.event.EVENT_ITEM_DELETED);
+        });
+    });
 </script>
 {% endblock %}

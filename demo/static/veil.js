@@ -1,12 +1,16 @@
+$.ajaxSetup({headers:{'X-XSRF':$.cookie('_xsrf')}});
+
 var veil = veil || {};
 
 veil.event = {};
 
 veil.event.handle = function (eventName, handler) {
+    console.log('handle ' + eventName);
     $(document).bind(eventName, handler);
 };
 
 veil.event.trigger = function (eventName, args) {
+    console.log('trigger ' + eventName);
     $(document).trigger(eventName, args);
 
     if (veil.event.hasDelegation(eventName)) {
@@ -110,11 +114,12 @@ veil.widget.handle = function(widget_selector, child_selector, event, handler) {
     });
 };
 
-veil.widget.deleteResource = function(widget) {
+veil.widget.deleteResource = function(widget, onSuccess) {
     var _ = {
         url: widget.data('delete-url'),
         onSuccess: function() {
             widget.remove();
+            onSuccess();
         }
     };
     veil.resource.delete(_);

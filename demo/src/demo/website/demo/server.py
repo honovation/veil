@@ -1,8 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.web import *
-from demo.model.item import create_item
-from demo.model.item import list_items
-from demo.model.item import delete_item
+from demo.model.item import *
+from demo.model.audit_log import *
 
 @route('GET', '/')
 def home_page():
@@ -42,6 +41,13 @@ def create_item_action():
 def delete_item_action():
     id = get_http_argument('id')
     delete_item(id)
+
+
+@route('GET', '/resources/audit-logs')
+@widget
+def list_audit_logs_widget():
+    audit_logs = list_audit_logs()
+    return get_template('list-audit-logs.html').render(audit_logs=audit_logs)
 
 
 

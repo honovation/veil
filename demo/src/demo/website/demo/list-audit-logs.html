@@ -1,0 +1,17 @@
+<ul id="list-audit-logs-widget" data-refresh-url="/resources/audit-logs">
+    {% for audit_log in audit_logs %}
+    <li>{{ audit_log.created_at }}: {{ audit_log.log }}</li>
+    {% endfor %}
+</ul>
+{% block inline_javascript %}
+<script type="text/javascript">
+    $(document).ready(function () {
+        veil.event.handle(veil.event.EVENT_ITEM_CREATED, function () {
+            veil.widget.refresh($('#list-audit-logs-widget'));
+        });
+        veil.event.handle(veil.event.EVENT_ITEM_DELETED, function () {
+            veil.widget.refresh($('#list-audit-logs-widget'));
+        });
+    });
+</script>
+{% endblock %}

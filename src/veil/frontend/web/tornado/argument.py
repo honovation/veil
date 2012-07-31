@@ -1,12 +1,14 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
 import httplib
+import logging
 import re
 from veil.model.collection import DictObject
 from veil.model.encoding import to_unicode
 from .error import  HTTPError
 from .context import get_current_http_request
 
+LOGGER = logging.getLogger(__name__)
 
 @contextlib.contextmanager
 def normalize_arguments():

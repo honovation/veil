@@ -35,8 +35,7 @@ def start_website(website, **kwargs):
 def create_website_http_handler(website, additional_context_managers=(), prevents_xsrf=None, locale_provider=None):
     locale_provider = locale_provider or (lambda: None)
     register_template_loader('master', FileSystemLoader(get_master_template_directory()))
-    context_managers = [prevent_xsrf] if get_prevents_xsrf() else []
-    context_managers.append(create_stack_context(install_translations, locale_provider))
+    context_managers = [create_stack_context(install_translations, locale_provider)]
     prevents_xsrf = prevents_xsrf if prevents_xsrf is not None else get_prevents_xsrf()
     if prevents_xsrf:
         context_managers.append(prevent_xsrf)

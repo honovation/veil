@@ -6,5 +6,5 @@ CREATE TABLE items (
 CREATE TABLE audit_logs (
   id SERIAL PRIMARY KEY,
   log VARCHAR,
-  created_at TIMESTAMP WITH TIMEZONE
+  created_at TIMESTAMP WITH TIME ZONE
 );

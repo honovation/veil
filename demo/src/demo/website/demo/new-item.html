@@ -1,5 +1,6 @@
 <form id="new-item-widget" method="POST" action="/resources/items"
       data-error-message="{{ _('Failed to create item') }}">
+    {{ xsrf_field() }}
     <label class="{{ error_css(errors, 'name') }}">{{ _('Name: ') }}
         <input name="name" type="text" maxlength="64" value="{{ name }}"/>
         {{ error_html(errors, 'name') }}
@@ -8,7 +9,6 @@
 </form>
 {% block inline_javascript %}
 <script type="text/javascript">
-    veil.event.EVENT_ITEM_CREATED = 'item-created';
     veil.widget.handle('#new-item-widget', 'button[type=submit]', 'click', function(widget, e) {
         e.preventDefault();
         veil.widget.createResource(widget, function() {
