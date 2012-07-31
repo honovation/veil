@@ -7,5 +7,6 @@ from veil.environment.deployment import *
 def install_pyres():
     install_ubuntu_package('python2.7-dev')
     execute_script('backend', 'redis', 'client', 'install')
+    execute_script('backend', 'redis', 'server', 'install', 'queue')
     install_python_package('pyres')
     install_python_package('croniter')

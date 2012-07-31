@@ -40,6 +40,9 @@ def init():
         'redis': {
             'owner': UNPRIVILIGED_USER
         },
+        'queue': {
+            'owner': UNPRIVILIGED_USER
+        },
         'veil': {
             'logging': {
                 'level': 'DEBUG'
