@@ -55,7 +55,5 @@ def get_current_level_names():
     if not components:
         return []
     component = components[-1]
-    level_names = component.__name__.split('.')
-    if component.__name__.startswith('veil.'):
-        level_names = level_names[1:]
+    level_names = component.__name__.split('.')[1:]
     return level_names

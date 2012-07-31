@@ -22,7 +22,7 @@ def init():
     register_deployment_settings_provider(lambda settings: {
         'supervisor': {
             'programs': {
-                'demo': {'command': 'veil demo up'},
+                'demo': {'command': 'veil website demo up'},
                 'postgresql': postgresql_program({'user': UNPRIVILIGED_USER}),
                 'redis': redis_program(),
                 'nginx': nginx_program(),
@@ -60,7 +60,7 @@ def init():
                 'port': DEMO_WEB_PORT
             },
             'website': {
-                'master_template_directory': VEIL_HOME / 'src' / 'demo'
+                'master_template_directory': VEIL_HOME / 'src' / 'demo' / 'website' / 'demo'
             },
             'demo_database': {
                 'type': 'postgresql',

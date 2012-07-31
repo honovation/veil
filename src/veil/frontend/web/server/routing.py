@@ -8,6 +8,7 @@ from urllib import unquote
 from veil.frontend.template import *
 from veil.model.test import *
 from veil.frontend.web.tornado import *
+from veil.component import *
 
 LOGGER = getLogger(__name__)
 original_routes = {}
@@ -31,7 +32,7 @@ def route(method, path_template, website=None, tags=(), **path_template_params):
     def create_and_register_route(route_handler):
         _website = website
         if not _website:
-            _website = infer_website_from_module_name(route_handler.__module__)
+            _website = infer_website()
         if not _website:
             raise Exception('website not specified for route: {}'.format(route_handler))
         new_route = Route(page(route_handler), method, path_template, tags=tags, **path_template_params)
@@ -41,13 +42,8 @@ def route(method, path_template, website=None, tags=(), **path_template_params):
     return create_and_register_route
 
 
-def infer_website_from_module_name(qualified_module_name):
-    module_name = qualified_module_name.split('.')[-1]
-    if module_name.startswith('_'):
-        module_name = module_name[1:]
-    if module_name.endswith('_web'):
-        return module_name.replace('_web', '').upper()
-    return None
+def infer_website():
+    return get_loading_components()[-1].__name__.split('.')[-1].upper()
 
 
 def async_route(*args, **kwargs):

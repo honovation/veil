@@ -1,15 +1,15 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.web import *
-from .item import create_item
-from .item import list_items
-from .item import delete_item
+from demo.model.item import create_item
+from demo.model.item import list_items
+from demo.model.item import delete_item
 
-@route('GET', '/', website='DEMO')
+@route('GET', '/')
 def home_page():
     return get_template('index.html').render()
 
 
-@route('GET', '/resources/items', website='DEMO')
+@route('GET', '/resources/items')
 @widget
 def list_items_widget():
     items = list_items()
@@ -28,7 +28,7 @@ def new_item_widget(errors=None):
     return get_template('new-item.html').render(**command)
 
 
-@route('POST', '/resources/items', website='DEMO')
+@route('POST', '/resources/items')
 def create_item_action():
     http_arguments = get_http_arguments()
     try:
@@ -38,7 +38,7 @@ def create_item_action():
         return new_item_widget(e.errors)
 
 
-@route('DELETE', '/resources/items/{{ id }}', id='\d+', website='DEMO')
+@route('DELETE', '/resources/items/{{ id }}', id='\d+')
 def delete_item_action():
     id = get_http_argument('id')
     delete_item(id)

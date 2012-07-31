@@ -4,7 +4,7 @@ import sys
 import traceback
 import os
 
-__all__ = ['init_component', 'force_get_all_loaded_modules', 'force_import_module']
+__all__ = ['init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_components']
 
 encapsulated_modules = {}
 components = {}
