@@ -3,6 +3,8 @@ from veil.environment.layout import *
 
 REDIS_BASE_SETTINGS = {
     'redis': {
+        'host': 'localhost',
+        'port': 6379,
         'dbdir': VEIL_VAR_DIR / 'redis',
         'configfile': VEIL_ETC_DIR / 'redis.conf'
     }

@@ -40,18 +40,19 @@ database={{ database.database }}
 user={{ database.user }}
 password={{ database.password }}
 {% endfor %}
-{% if config.redis %}
-[redis]
-host={{ config.redis.host }}
-port={{ config.redis.port }}
-password={{ config.redis.password }}
-{% endif %}
+{% for config_name, redis in config.items() if config_name.endswith('redis') %}
+[{{ config_name }}]
+host={{ redis.host }}
+port={{ redis.port }}
+password={{ redis.password }}
+{% endfor %}
 {% if config.queue %}
 [queue]
 type={{ config.queue.type }}
 host={{ config.queue.host }}
 port={{ config.queue.port }}
 password={{ config.queue.password }}
+worker_interval = {{ config.queue.worker_interval }}
 {% endif %}
 {% if config.file_storage %}
 [file_storage]
@@ -61,11 +62,4 @@ base_directory={{ config.file_storage.base_directory }}
 {% if config.logging %}
 [logging]
 level={{ config.logging.level }}
-{% endif %}
-{% if config.queue %}
-[queue]
-host={{ config.queue.host }}
-port={{ config.queue.port }}
-password = {{ config.queue.password }}
-worker_interval = {{ config.queue.worker_interval }}
 {% endif %}

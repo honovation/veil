@@ -72,6 +72,10 @@ def demo_settings_provider(setting):
                 'user': 'veil',
                 'password': 'p@55word'
             },
+            'demo_redis': {
+                'host': setting.redis.host,
+                'port': setting.redis.port
+            },
             'queue': {
                 'type': 'redis'
             }

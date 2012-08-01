@@ -11,7 +11,6 @@ instances = {} # purpose => instance (a.k.a Redis class instance)
 def register_redis(purpose):
     if purpose not in registry:
         registry[purpose] = register_redis_options(purpose)
-        instances[purpose] = {}
     return lambda: require_redis(purpose)
 
 

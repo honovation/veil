@@ -5,12 +5,10 @@ var veil = veil || {};
 veil.event = {};
 
 veil.event.handle = function (eventName, handler) {
-    console.log('handle ' + eventName);
     $(document).bind(eventName, handler);
 };
 
 veil.event.trigger = function (eventName, args) {
-    console.log('trigger ' + eventName);
     $(document).trigger(eventName, args);
 
     if (veil.event.hasDelegation(eventName)) {

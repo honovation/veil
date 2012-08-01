@@ -27,6 +27,10 @@ def delete_item(id):
         raise NotFoundError('no contact attribute definition deleted')
 
 
+def count_items():
+    return demo_db().get_scalar('SELECT COUNT(*) FROM items')
+
+
 class Item(Entity):
     def __init__(self, id, name):
         super(Item, self).__init__(id=id, name=name)

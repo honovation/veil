@@ -12,7 +12,8 @@ def home_page():
 @widget
 def list_items_widget():
     items = list_items()
-    return get_template('list-items.html').render(items=items)
+    items_count = get_items_count()
+    return get_template('list-items.html').render(items=items, items_count=items_count)
 
 
 @widget

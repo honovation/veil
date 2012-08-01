@@ -1,8 +1,11 @@
-<ul id="list-items-widget" data-refresh-url="/resources/items">
-    {% for item in items %}
-    {{ widgets.list_items_element(item) }}
-    {% endfor %}
-</ul>
+<div id="list-items-widget" data-refresh-url="/resources/items">
+    <span>Count: {{ items_count }}</span>
+    <ul>
+        {% for item in items %}
+        {{ widgets.list_items_element(item) }}
+        {% endfor %}
+    </ul>
+</div>
 
 {% block inline_javascript %}
 <script type="text/javascript">
