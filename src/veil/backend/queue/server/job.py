@@ -1,7 +1,9 @@
 from __future__ import unicode_literals, print_function, division
+from datetime import datetime
 from inspect import isfunction
 import contextlib
 from logging import getLogger
+import pytz
 
 LOGGER = getLogger(__name__)
 context_managers = []
@@ -13,11 +15,17 @@ def register_job_context_manager(context_manager):
 
 def enqueue(resq, job_handler, **payload):
     assert getattr(job_handler, 'queue'), 'must decorate job handler {} with @job to enqueue'.format(job_handler)
+    for value in payload.values():
+        if isinstance(value, datetime):
+            assert pytz.utc == value.tzinfo, 'must provide datetime in pytz.utc timezone'
     resq.enqueue(job_handler, payload)
 
 
 def enqueue_at(resq, job_handler, scheduled_at, **payload):
     assert getattr(job_handler, 'queue'), 'must decorate job handler {} with @job to enqueue'.format(job_handler)
+    for value in payload.values():
+        if isinstance(value, datetime):
+            assert pytz.utc == value.tzinfo, 'must provide datetime in pytz.utc timezone'
     resq.enqueue_at(scheduled_at, job_handler, payload)
 
 
@@ -41,6 +49,10 @@ class JobHandlerDecorator(object):
 
 def perform(job_handler, payload):
     with nest_context_managers(*context_managers):
+        # restore datetime as utc timezone
+        for key, value in payload.items():
+            if isinstance(value, datetime):
+                payload[key] = value.replace(tzinfo=pytz.utc)
         return job_handler(**payload)
 
 
