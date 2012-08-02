@@ -1,17 +1,11 @@
-######## export begin
-from .script import script
-from .script import execute_script
+import sandal.component
 
-__all__ = [
-    # from script
-    script.__name__,
-    execute_script.__name__
-]
-######## export end
+with sandal.component.init_component(__name__):
+    from .script import script
+    from .script import execute_script
 
-def init():
-    from sandal.component import init_component
-
-    init_component(__name__)
-
-init()
+    __all__ = [
+        # from script
+        script.__name__,
+        execute_script.__name__
+    ]

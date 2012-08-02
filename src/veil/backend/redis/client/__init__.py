@@ -1,15 +1,9 @@
-######## export begin
-from .client import register_redis
+import sandal.component
 
-__all__ = [
-    # from client
-    register_redis.__name__
-]
-######## export end
+with sandal.component.init_component(__name__):
+    from .client import register_redis
 
-def init():
-    from sandal.component import init_component
-
-    init_component(__name__)
-
-init()
+    __all__ = [
+        # from client
+        register_redis.__name__
+    ]

@@ -1,19 +1,13 @@
-######## export begin
-from .shell import shell_execute
-from .shell import pass_control_to
-from .shell import ShellExecutionError
+import sandal.component
 
-__all__ = [
-    # from shell
-    shell_execute.__name__,
-    pass_control_to.__name__,
-    ShellExecutionError.__name__
-]
-######## export end
+with sandal.component.init_component(__name__):
+    from .shell import shell_execute
+    from .shell import pass_control_to
+    from .shell import ShellExecutionError
 
-def init():
-    from sandal.component import init_component
-
-    init_component(__name__)
-
-init()
+    __all__ = [
+        # from shell
+        shell_execute.__name__,
+        pass_control_to.__name__,
+        ShellExecutionError.__name__
+    ]

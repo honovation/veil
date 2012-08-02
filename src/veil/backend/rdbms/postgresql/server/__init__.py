@@ -1,17 +1,16 @@
-######## export begin
-from .setting import postgresql_program
+import sandal.component
 
-__all__ = [
-    postgresql_program.__name__
-]
-######## export end
+with sandal.component.init_component(__name__):
+    from .setting import postgresql_program
 
-def init():
-    from sandal.component import init_component
-    from veil.environment.deployment import register_deployment_settings_provider
-    from .setting import POSTGRESQL_BASE_SETTINGS
+    __all__ = [
+        postgresql_program.__name__
+    ]
 
-    init_component(__name__)
-    register_deployment_settings_provider(lambda settings: POSTGRESQL_BASE_SETTINGS, 'base')
+    def init():
+        from veil.environment.deployment import register_deployment_settings_provider
+        from .setting import POSTGRESQL_BASE_SETTINGS
 
-init()
+        register_deployment_settings_provider(lambda settings: POSTGRESQL_BASE_SETTINGS, 'base')
+
+    init()

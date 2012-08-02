@@ -1,18 +1,12 @@
-######## export begin
-from .client import PostgresqlAdapter
-from .server import postgresql_program
+import sandal.component
 
-__all__ = [
-    # from client
-    PostgresqlAdapter.__name__,
-    # from server
-    postgresql_program.__name__
-]
-######## export end
+with sandal.component.init_component(__name__):
+    from .client import PostgresqlAdapter
+    from .server import postgresql_program
 
-def init():
-    from sandal.component import init_component
-
-    init_component(__name__)
-
-init()
+    __all__ = [
+        # from client
+        PostgresqlAdapter.__name__,
+        # from server
+        postgresql_program.__name__
+    ]

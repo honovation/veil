@@ -1,6 +1,3 @@
-def init():
-    from sandal.component import init_component
+import sandal.component
 
-    init_component(__name__)
-
-init()
+sandal.component.init_component(__name__)

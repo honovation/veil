@@ -1,15 +1,9 @@
-######## export begin
-from .adapter import PostgresqlAdapter
+import sandal.component
 
-__all__ = [
-    # from adapter
-    PostgresqlAdapter.__name__
-]
-######## export end
+with sandal.component.init_component(__name__):
+    from .adapter import PostgresqlAdapter
 
-def init():
-    from sandal.component import init_component
-
-    init_component(__name__)
-
-init()
+    __all__ = [
+        # from adapter
+        PostgresqlAdapter.__name__
+    ]

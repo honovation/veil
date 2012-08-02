@@ -1,15 +1,9 @@
-######## export begin
-from .path import path
+import sandal.component
 
-__all__ = [
-    # from path
-    path.__name__
-]
-######## export end
+with sandal.component.init_component(__name__):
+    from .path import path
 
-def init():
-    from sandal.component import init_component
-
-    init_component(__name__)
-
-init()
+    __all__ = [
+        # from path
+        path.__name__
+    ]

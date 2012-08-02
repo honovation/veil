@@ -1,17 +1,11 @@
-######## export begin
-from .database import register_database
-from .database import transactional
+import sandal.component
 
-__all__ = [
-    # from database
-    register_database.__name__,
-    transactional.__name__
-]
-######## export end
+with sandal.component.init_component(__name__):
+    from .database import register_database
+    from .database import transactional
 
-def init():
-    from sandal.component import init_component
-
-    init_component(__name__)
-
-init()
+    __all__ = [
+        # from database
+        register_database.__name__,
+        transactional.__name__
+    ]

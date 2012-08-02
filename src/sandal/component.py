@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import contextlib
 import importlib
 import sys
 import traceback
@@ -28,6 +29,7 @@ def scan_components(dir_path, package_name=None):
     return component_names
 
 
+@contextlib.contextmanager
 def init_component(qualified_module_name):
     component = sys.modules[qualified_module_name]
     components[component.__name__] = component
@@ -35,6 +37,7 @@ def init_component(qualified_module_name):
         loading_components.append(component)
         loader = ComponentLoader(component)
         loader.load_component()
+        yield
         loader.encapsulate_loaded_packages_and_modules()
     finally:
         loading_components.pop()
@@ -104,7 +107,8 @@ class ComponentLoader(object):
             encapsulated_modules[package.__name__] = package
             sys.modules[package.__name__] = None
             for module_name in self.packages[package]:
-                delattr(package, module_name)
+                if hasattr(package, module_name):
+                    delattr(package, module_name)
 
 
 def find_sub_package_names(package):
@@ -140,7 +144,28 @@ def load_module(*module_name_segments):
     qualified_module_name = '.'.join(module_name_segments)
     try:
         return importlib.import_module(qualified_module_name)
-    except ImportError:
-        print('failed to load module {}'.format(qualified_module_name))
-        traceback.print_exc()
-        raise
+    except ImportError, e:
+        if os.getenv('VEIL_VERBOSE'):
+            print('failed to load module {}, {}'.format(qualified_module_name, e.message))
+            traceback.print_exc()
+        module = DummyModule(qualified_module_name)
+        sys.modules[qualified_module_name] = module
+        return module
+
+
+class DummyModule(object):
+    def __init__(self, qualified_module_name):
+        self.__name__ = qualified_module_name
+
+    def __getattr__(self, item):
+        return DummyModuleMember(self.__name__, item)
+
+
+class DummyModuleMember(object):
+    def __init__(self, qualified_module_name, name):
+        self.qualified_module_name = qualified_module_name
+        self.__name__ = name
+
+    def __call__(self, *args, **kwargs):
+        raise Exception('module {} did not load properly'.format(self.qualified_module_name))
+

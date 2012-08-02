@@ -1,19 +1,18 @@
-######## export begin
-from .setting import nginx_reverse_proxy_server
-from .setting import nginx_program
+import sandal.component
 
-__all__ = [
-    nginx_reverse_proxy_server.__name__,
-    nginx_program.__name__
-]
-######## export end
+with sandal.component.init_component(__name__):
+    from .setting import nginx_reverse_proxy_server
+    from .setting import nginx_program
 
-def init():
-    from sandal.component import init_component
-    from veil.environment.deployment import register_deployment_settings_provider
-    from .setting import NGINX_BASE_SETTINGS
+    __all__ = [
+        nginx_reverse_proxy_server.__name__,
+        nginx_program.__name__
+    ]
 
-    init_component(__name__)
-    register_deployment_settings_provider(lambda settings: NGINX_BASE_SETTINGS, 'base')
+    def init():
+        from veil.environment.deployment import register_deployment_settings_provider
+        from .setting import NGINX_BASE_SETTINGS
 
-init()
+        register_deployment_settings_provider(lambda settings: NGINX_BASE_SETTINGS, 'base')
+
+    init()

@@ -1,9 +1,10 @@
-def init():
-    from sandal.component import init_component
-    from veil.environment.deployment import register_deployment_settings_provider
-    from .setting import demo_settings_provider
+import sandal.component
 
-    init_component(__name__)
-    register_deployment_settings_provider(demo_settings_provider)
+with sandal.component.init_component(__name__):
+    def init():
+        from veil.environment.deployment import register_deployment_settings_provider
+        from .setting import demo_settings_provider
 
-init()
+        register_deployment_settings_provider(demo_settings_provider)
+
+    init()
