@@ -10,4 +10,5 @@ def install_demo():
     execute_script('backend', 'rdbms', 'postgresql', 'server', 'install')
     execute_script('backend', 'redis', 'client', 'install')
     execute_script('backend', 'redis', 'server', 'install')
+    execute_script('backend', 'queue', 'client', 'install')
     execute_script('backend', 'queue', 'server', 'install')

@@ -5,10 +5,11 @@ import httplib
 from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
-from veil.frontend.template import *
 from sandal.test import *
-from veil.frontend.web.tornado import *
 from sandal.component import *
+from sandal.handler import *
+from veil.frontend.template import *
+from veil.frontend.web.tornado import *
 
 LOGGER = getLogger(__name__)
 original_routes = {}
@@ -30,6 +31,7 @@ def reset_routes():
 
 def route(method, path_template, website=None, tags=(), **path_template_params):
     def create_and_register_route(route_handler):
+        route_handler = decorate_handler(route_handler)
         _website = website
         if not _website:
             _website = infer_website()
@@ -78,27 +80,26 @@ class RoutingHTTPHandler(object):
         raise HTTPError(httplib.NOT_FOUND)
 
     def try_route(self, route):
-        with require_current_template_directory_relative_to(route.route_handler):
-            request = get_current_http_request()
-            if route.method.upper() != request.method.upper():
-                return False
-            path = request.path.rstrip('/')
-            if not path:
-                path = '/'
-            path_arguments = route.path_template.match(path)
-            if path_arguments is None:
-                return False
-            assert getattr(get_current_http_context(), 'route', None) is None
-            try:
-                get_current_http_context().route = route
-                if self.context_managers:
-                    with nest_context_managers(*self.context_managers):
-                        self.execute_route(route, path_arguments)
-                else:
+        request = get_current_http_request()
+        if route.method.upper() != request.method.upper():
+            return False
+        path = request.path.rstrip('/')
+        if not path:
+            path = '/'
+        path_arguments = route.path_template.match(path)
+        if path_arguments is None:
+            return False
+        assert getattr(get_current_http_context(), 'route', None) is None
+        try:
+            get_current_http_context().route = route
+            if self.context_managers:
+                with nest_context_managers(*self.context_managers):
                     self.execute_route(route, path_arguments)
-            finally:
-                get_current_http_context().route = None
-            return True
+            else:
+                self.execute_route(route, path_arguments)
+        finally:
+            get_current_http_context().route = None
+        return True
 
     def execute_route(self, route, path_arguments):
         request = get_current_http_request()

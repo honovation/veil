@@ -6,6 +6,7 @@ from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
 from sandal.component import force_import_module
 from sandal.test import get_executing_test
+from sandal.handler import *
 
 filters = {}
 utilities = {}
@@ -59,11 +60,6 @@ def require_current_translations_being(translations):
         get_or_create_environment().install_null_translations()
 
 
-def require_current_template_directory_relative_to(func):
-    return require_current_template_directory_being(
-        os.path.dirname(os.path.abspath(force_import_module(func.__module__).__file__)))
-
-
 @contextlib.contextmanager
 def require_current_template_directory_being(template_directory):
     if not os.path.isabs(template_directory):
@@ -89,9 +85,15 @@ def get_template(template_path=None, template_source=None):
 
 def get_template_from_file(template_path):
     if not os.path.isabs(template_path):
-        if not current_template_directories:
-            raise Exception('unable to get {} from unknown template directory'.format(template_path))
-        current_template_directory = current_template_directories[-1]
+        if current_template_directories:
+            current_template_directory = current_template_directories[-1]
+        else:
+            handler = get_executing_handler()
+            if handler:
+                current_template_directory = os.path.dirname(
+                    os.path.abspath(force_import_module(handler.__module__).__file__))
+            else:
+                raise Exception('unable to get {} from unknown template directory'.format(template_path))
         template_path = os.path.join(current_template_directory, template_path)
     template = get_or_create_environment().get_template(
         'root:{}'.format(template_path), globals=dict(utilities))

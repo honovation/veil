@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import getpass
 from os import getenv
 import os
 from sandal.path import *
@@ -12,3 +13,6 @@ VEIL_ENV = getenv('VEIL_ENV') or 'development'
 VEIL_LOG_DIR = VEIL_HOME / 'log' / VEIL_ENV
 VEIL_ETC_DIR = VEIL_HOME / 'etc' / VEIL_ENV
 VEIL_VAR_DIR = VEIL_HOME / 'var' / VEIL_ENV
+
+CURRENT_USER = os.getenv('SUDO_USER') or getpass.getuser()
+CURRENT_USER_GROUP = CURRENT_USER

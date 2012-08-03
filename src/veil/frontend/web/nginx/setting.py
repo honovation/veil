@@ -5,11 +5,14 @@ from veil.environment.layout import *
 nginx_config_file = VEIL_ETC_DIR / 'nginx.conf'
 NGINX_BASE_SETTINGS = objectify({
     'nginx': {
+        'owner': CURRENT_USER,
+        'owner_group': CURRENT_USER_GROUP,
         'log_directory': VEIL_LOG_DIR / 'nginx',
         'config_file': nginx_config_file,
         'uploaded_files_directory': VEIL_VAR_DIR / 'uploaded-files',
         'inline_static_files_directory': VEIL_VAR_DIR / 'inline-static-files',
-        'external_static_files_directory': VEIL_HOME / 'static'
+        'external_static_files_directory': VEIL_HOME / 'static',
+        'servers': {}
     }
 })
 

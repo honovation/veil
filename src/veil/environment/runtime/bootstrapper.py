@@ -62,5 +62,5 @@ def bootstrap_runtime():
     if options:
         init_options(options)
     else:
-        LOGGER.warn('options is empty')
+        LOGGER.debug('options is empty')
 

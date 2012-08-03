@@ -4,7 +4,7 @@ from logging import getLogger
 import sys
 from inspect import isfunction
 from sandal.component import get_loading_components
-from veil.frontend.template import *
+from sandal.handler import *
 
 script_handlers = {}
 LOGGER = getLogger(__name__)
@@ -18,8 +18,7 @@ def execute_script(*argv, **kwargs):
     next_level = level[arg]
     if isfunction(next_level):
         script_handler = next_level
-        with require_current_template_directory_relative_to(script_handler):
-            return script_handler(*argv[1:])
+        return script_handler(*argv[1:])
     else:
         return execute_script(level=next_level, *argv[1:])
 
@@ -34,6 +33,7 @@ class ScriptHandlerDecorator(object):
         self.command = command
 
     def __call__(self, script_handler):
+        script_handler = decorate_handler(script_handler)
         @functools.wraps(script_handler)
         def wrapper(*args, **kwargs):
             return script_handler(*args, **kwargs)

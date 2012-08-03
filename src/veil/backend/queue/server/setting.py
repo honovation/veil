@@ -7,6 +7,8 @@ DEFAULT_QUEUE_PORT = 6380
 
 PYRES_BASE_SETTINGS = {
     'queue': {
+        'owner': CURRENT_USER,
+        'owner_group': CURRENT_USER_GROUP,
         'dbdir': VEIL_VAR_DIR / 'queue',
         'configfile': VEIL_ETC_DIR / 'queue.conf',
         'bind': DEFAULT_QUEUE_HOST,

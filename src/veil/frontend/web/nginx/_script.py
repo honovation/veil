@@ -14,8 +14,8 @@ def install_nginx():
     create_file(settings.nginx.config_file, get_template('nginx.conf.j2').render(config=settings.nginx))
     create_directory(
         settings.nginx.inline_static_files_directory,
-        owner=settings.nginx.inline_static_files_owner,
-        group=settings.nginx.inline_static_files_group,
+        owner=settings.nginx.owner,
+        group=settings.nginx.owner_group,
         mode=0770)
 
 

@@ -5,7 +5,7 @@ from veil.frontend.template import *
 
 
 @script('install')
-def install_pyres():
+def install_queue_server():
     settings = get_deployment_settings()
     install_ubuntu_package('python2.7-dev')
     execute_script('backend', 'redis', 'client', 'install')

@@ -2,13 +2,11 @@ from __future__ import unicode_literals, print_function, division
 import functools
 from logging import getLogger
 from inspect import getargspec
-import os.path
 import traceback
 from markupsafe import Markup
-from sandal.component import force_import_module
 from sandal.test import *
+from sandal.handler import *
 from .template import register_template_utility
-from .template import require_current_template_directory_relative_to
 
 # === global state ===
 original_widgets = None
@@ -36,7 +34,7 @@ def reset_widgets():
 
 # === handle widget ===
 def widget(func):
-    return WidgetDecorator()(func)
+    return WidgetDecorator()(decorate_handler(func))
 
 
 class WidgetDecorator(object):
@@ -71,12 +69,11 @@ class Widget(object):
                 kwargs['from_template'] = kwargs['from_template'] if 'from_template' in kwargs else False
             else:
                 kwargs.pop('from_template', None)
-            with require_current_template_directory_relative_to(self.func):
-                self.activate()
-                content = self.func(*args, **kwargs)
-                if content is None:
-                    return None
-                return Markup(content)
+            self.activate()
+            content = self.func(*args, **kwargs)
+            if content is None:
+                return None
+            return Markup(content)
         except:
             LOGGER.error('failed to render widget: {}'.format(self.name))
             raise
