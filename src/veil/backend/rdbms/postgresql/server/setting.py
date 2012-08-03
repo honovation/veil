@@ -4,6 +4,10 @@ from veil.environment.layout import *
 
 POSTGRESQL_BASE_SETTINGS = {
     'postgresql': {
+        'listen_addresses': 'localhost',
+        'host': 'localhost',
+        'port': 5432,
+        'owner': CURRENT_USER,
         'data_directory': VEIL_VAR_DIR / 'postgresql',
         'config_directory': VEIL_ETC_DIR,
         'unix_socket_directory': '/tmp'

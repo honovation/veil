@@ -38,7 +38,6 @@ def demo_settings_provider(setting):
             'listen_addresses': 'localhost',
             'host': 'localhost',
             'port': 5432,
-            'data_owner': UNPRIVILIGED_USER,
             'user': 'veil',
             'password': 'p@55word'
         },

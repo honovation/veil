@@ -19,17 +19,13 @@ def install_postgresql_server():
     create_symbolic_link(global_bin_dir / 'initdb', to='{}/initdb'.format(pg_bin_dir))
     create_symbolic_link(global_bin_dir / 'pg_ctl', to='{}/pg_ctl'.format(pg_bin_dir))
     create_symbolic_link(global_bin_dir / 'postgres', to='{}/postgres'.format(pg_bin_dir))
-    pg_data_dir = settings.postgresql.data_directory
-    assert pg_data_dir, 'must specify postgresql data directory'
-    pg_data_dir = path(pg_data_dir)
-    pg_data_owner = settings.postgresql.data_owner
-    assert pg_data_owner, 'must specify postgresql data owner'
+    pg_data_dir = path(settings.postgresql.data_directory)
     no_user = False
     if not pg_data_dir.exists():
         old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.dirname()), capture=True).strip()
         shell_execute('chmod 777 {}'.format(pg_data_dir.dirname()))
         shell_execute('su {pg_data_owner} -c "initdb -A md5 -U {pg_data_owner} -W {pg_data_dir}"'.format(
-            pg_data_owner=pg_data_owner, pg_data_dir=pg_data_dir
+            pg_data_owner=settings.postgresql.owner, pg_data_dir=pg_data_dir
         ))
         shell_execute('chmod {} {}'.format(old_permission, pg_data_dir.dirname()))
         delete_file(pg_data_dir / 'postgresql.conf')
@@ -56,6 +52,6 @@ def install_postgresql_server():
             shell_execute('psql -h {} -p {} -U {} -W -d postgres -c "{}"'.format(
                 settings.postgresql.host,
                 settings.postgresql.port,
-                pg_data_owner,
+                settings.postgresql.owner,
                 "CREATE USER {} WITH PASSWORD '{}' CREATEDB SUPERUSER".format(pg_user, pg_password)
             ))

@@ -15,7 +15,7 @@ def bring_up_postgresql_server():
 def bring_down_postgresql_server():
     settings = get_deployment_settings()
     shell_execute('su {} -c "pg_ctl -D {} stop"'.format(
-        settings.postgresql.data_owner,
+        settings.postgresql.owner,
         settings.postgresql.data_directory))
 
 
@@ -23,7 +23,7 @@ def bring_down_postgresql_server():
 def postgresql_server_running():
     settings = get_deployment_settings()
     shell_execute('su {} -c "pg_ctl -D {} start"'.format(
-        settings.postgresql.data_owner,
+        settings.postgresql.owner,
         settings.postgresql.data_directory))
     time.sleep(5)
     yield

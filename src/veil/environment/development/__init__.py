@@ -1,3 +1,4 @@
 import sandal.component
 
-sandal.component.init_component(__name__)
+with sandal.component.init_component(__name__):
+    pass

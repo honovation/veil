@@ -1,10 +1,15 @@
 from __future__ import unicode_literals, print_function, division
 from argparse import ArgumentParser
 from veil.environment.layout import VEIL_HOME
-from sandal.path import *
+from veil.environment.deployment import *
 from veil.frontend.cli import *
 from veil.backend.shell import *
 from .i18n import LOCALE_DIR
+
+@script('install')
+def install_locale_support():
+    install_python_package('babel')
+
 
 @script('extract')
 def extract_translation():

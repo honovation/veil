@@ -9,7 +9,7 @@ LOGGER = logging.getLogger(__name__)
 boostrapped = False
 
 @test_hook
-def bootstrap_runtime():
+def bootstrap_runtime(option_updates=None):
     global boostrapped
     if boostrapped:
         return
@@ -24,9 +24,7 @@ def bootstrap_runtime():
 
     import logging
     from ConfigParser import RawConfigParser
-    from sandal.component import scan_components
     from veil.model.event import subscribe_event
-    from veil.environment.layout import VEIL_HOME
     from veil.environment.layout import VEIL_ETC_DIR
 
 
@@ -47,9 +45,6 @@ def bootstrap_runtime():
     configure_logging('INFO')
     subscribe_event(EVENT_OPTIONS_INITIALIZED, configure_logging)
 
-    for component_name in scan_components(VEIL_HOME / 'src'):
-        __import__(component_name)
-
     config_parser = RawConfigParser()
     veil_cfg = VEIL_ETC_DIR / 'veil.cfg'
     executing_test = get_executing_test(optional=True)
@@ -59,6 +54,8 @@ def bootstrap_runtime():
     options = {}
     for section in config_parser.sections():
         options[section] = dict(config_parser.items(section))
+    if option_updates:
+        options.update(option_updates)
     if options:
         init_options(options)
     else:

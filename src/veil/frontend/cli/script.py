@@ -10,30 +10,35 @@ script_handlers = {}
 LOGGER = getLogger(__name__)
 
 def execute_script(*argv, **kwargs):
+    on_script_executing = kwargs.get('on_script_executing', None)
     level = kwargs.get('level', script_handlers)
     arg = argv[0] if argv else None
     if arg not in level:
-        LOGGER.error('{} is unknown, choose from: {}'.format(arg, level.keys()))
+        print('{} is unknown, choose from: {}'.format(arg, level.keys()))
         sys.exit(1)
     next_level = level[arg]
     if isfunction(next_level):
         script_handler = next_level
+        if on_script_executing:
+            on_script_executing(script_handler)
         return script_handler(*argv[1:])
     else:
-        return execute_script(level=next_level, *argv[1:])
+        return execute_script(level=next_level, on_script_executing=on_script_executing, *argv[1:])
 
 
-def script(command):
+def script(command, options=None):
 # syntax sugar for ScriptHandlerDecorator
-    return ScriptHandlerDecorator(command)
+    return ScriptHandlerDecorator(command, options or {})
 
 
 class ScriptHandlerDecorator(object):
-    def __init__(self, command):
+    def __init__(self, command, options):
         self.command = command
+        self.options = options
 
     def __call__(self, script_handler):
         script_handler = decorate_handler(script_handler)
+        script_handler.options = self.options
         @functools.wraps(script_handler)
         def wrapper(*args, **kwargs):
             return script_handler(*args, **kwargs)

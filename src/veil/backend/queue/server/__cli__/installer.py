@@ -10,6 +10,7 @@ def install_queue_server():
     install_ubuntu_package('python2.7-dev')
     execute_script('backend', 'redis', 'client', 'install')
     execute_script('backend', 'redis', 'server', 'install', 'queue')
+    install_python_package('pytz')
     install_python_package('pyres')
     install_python_package('croniter')
     install_python_package('resweb')
