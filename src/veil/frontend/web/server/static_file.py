@@ -125,6 +125,8 @@ def relocate_javascript_and_stylesheet_tags(orig_html):
         return orig_html
     if not orig_html.strip():
         return orig_html
+    if '</html>' not in orig_html:
+        return orig_html
     fragments = []
     javascript_fragments = []
     stylesheet_fragments = []

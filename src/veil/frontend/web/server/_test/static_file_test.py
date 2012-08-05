@@ -13,15 +13,19 @@ class RelocateJavascriptAndStylesheetTagsTest(TestCase):
     def test_javascript_tag_relocated_before_body_end(self):
         self.assertEqual(
             """
+            <html>
             <body>
             <p></p>
             <script>test</script>\r\n</body>
+            </html>
             """.strip(), relocate_javascript_and_stylesheet_tags(
             """
+            <html>
             <body>
             <script>test</script>
             <p/>
             </body>
+            </html>
             """
         ).strip())
 
