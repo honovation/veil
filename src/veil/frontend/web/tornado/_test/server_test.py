@@ -1,10 +1,10 @@
 from __future__ import unicode_literals, print_function, division
 import threading
 import urllib2
-from veil.frontend.web.tornado import *
 from sandal.test import TestCase
 from ..executor import require_io_loop_executor
 from ..server import start_test_http_server
+from ..context import get_current_http_response
 
 class ServerTest(TestCase):
     def test(self):

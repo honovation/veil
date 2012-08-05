@@ -3,10 +3,10 @@ import tempfile
 import os.path
 from veil.frontend.template import get_template
 from sandal.test import TestCase
-from veil.frontend.web.client import *
 from sandal.path import *
 from veil.environment.runtime import *
-from ..routing import route
+from veil.frontend.web.server import *
+from ..browser import start_website_and_browser
 
 class StaticFileModuleSmokeTest(TestCase):
     def setUp(self):

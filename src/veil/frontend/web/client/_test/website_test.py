@@ -3,8 +3,8 @@ import contextlib
 import httplib
 from sandal.test import TestCase
 from veil.frontend.web.tornado import *
-from veil.frontend.web.client import *
-from ..routing import route
+from veil.frontend.web.server import *
+from ..browser import start_website_and_browser
 
 context = None
 
