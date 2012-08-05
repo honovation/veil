@@ -25,12 +25,12 @@ with sandal.component.init_component(__name__):
     ]
 
     def init():
-        from static_file import process_script_tags
+        from static_file import relocate_javascript_and_stylesheet_tags
         from static_file import process_inline_blocks
         from veil.frontend.template import register_page_post_processor
         from veil.frontend.template import register_template_post_processor
 
         register_template_post_processor(process_inline_blocks)
-        register_page_post_processor(process_script_tags)
+        register_page_post_processor(relocate_javascript_and_stylesheet_tags)
 
     init()

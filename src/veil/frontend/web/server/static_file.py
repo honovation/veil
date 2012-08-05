@@ -1,12 +1,14 @@
 from __future__ import unicode_literals, print_function, division
+from cStringIO import StringIO
 import contextlib
 import hashlib
 from markupsafe import Markup
 import os.path
 from logging import getLogger
+from lxml import etree
 from sandal.path import path as as_path
-from veil.frontend.encoding import *
 from sandal.hash import *
+from veil.frontend.encoding import *
 from veil.frontend.template import *
 from veil.environment.runtime import *
 
@@ -115,24 +117,70 @@ def generate_pseudo_file_name(template_path, suffix):
     else:
         return '{}-{}.{}'.format(template_dir.replace('_', '-'), template_name, suffix)
 
-# === combine and move <script> to the bottom ===
-def process_script_tags(html, active_widgets):
-    SCRIPT_TAG_END = '></script>'
-    splitted_parts = html.split('<script')
-    striped_parts = [splitted_parts[0]]
-    script_tags = []
-    for part in splitted_parts[1:]:
-        if SCRIPT_TAG_END not in part:
-            raise Exception('<script> tag should come in pair and without content: {}'.format(part))
-        end_pos = part.find(SCRIPT_TAG_END) + len(SCRIPT_TAG_END)
-        striped_parts.append(part[end_pos:])
-        script_tag = '<script{}'.format(part[:end_pos])
-        if script_tag not in script_tags:
-            script_tags.append(script_tag)
-    striped_html = ''.join(striped_parts)
-    if '</body>' in striped_html:
-        return striped_html.replace('</body>', '{}\r\n</body>'.format('\r\n'.join(script_tags)))
-    return '{}{}'.format(striped_html, ''.join(script_tags))
+
+# === combine & move <script> to the bottom ===
+# === combine & move <style> to the top ===
+def relocate_javascript_and_stylesheet_tags(orig_html):
+    if not orig_html:
+        return orig_html
+    if not orig_html.strip():
+        return orig_html
+    fragments = []
+    javascript_fragments = []
+    stylesheet_fragments = []
+    head_end_index = None
+    body_end_index = None
+    context = etree.iterparse(StringIO(orig_html), ('start', 'end', 'start-ns', 'end-ns'))
+    for action, element in context:
+        if 'end' == action and 'body' == element.tag:
+            body_end_index = len(fragments)
+        if 'end' == action and 'head' == element.tag:
+            head_end_index = len(fragments)
+        if 'script' == element.tag:
+            if 'start' == action:
+                javascript_fragment = '{}{}</script>'.format(format_start_tag(element), element.text or '')
+                if javascript_fragment not in javascript_fragments:
+                    javascript_fragments.append(javascript_fragment)
+            continue
+        if 'style' == element.tag:
+            if 'start' == action:
+                stylesheet_fragment = '{}{}</style>'.format(format_start_tag(element), element.text or '')
+                if stylesheet_fragment not in stylesheet_fragments:
+                    stylesheet_fragments.append(stylesheet_fragment)
+            continue
+        if 'link' == element.tag and 'stylesheet' == element.attrib.get('rel'):
+            if 'start' == action:
+                stylesheet_fragment = '{}{}</link>'.format(format_start_tag(element), element.text or '')
+                if stylesheet_fragment not in stylesheet_fragments:
+                    stylesheet_fragments.append(stylesheet_fragment)
+            continue
+        fragments.extend(to_fragments(action, element))
+    if stylesheet_fragments:
+        stylesheet_fragments[-1] = '{}\r\n'.format(stylesheet_fragments[-1])
+    fragments.insert(head_end_index or 0, '\n'.join(stylesheet_fragments))
+    if javascript_fragments:
+        javascript_fragments[-1] = '{}\r\n'.format(javascript_fragments[-1])
+    fragments.insert(body_end_index + 1 if body_end_index else len(fragments) - 1, '\n'.join(javascript_fragments))
+    return ''.join(fragments)
+
+def to_fragments(action, element):
+    fragments = []
+    if 'start' == action:
+        fragments.append(format_start_tag(element))
+        if element.text:
+            fragments.append(element.text)
+    elif 'end' == action:
+        fragments.append('</{}>'.format(element.tag))
+        if element.tail:
+            fragments.append(element.tail)
+    return fragments
+
+def format_start_tag(element):
+    if element.attrib:
+        return '<{} {}>'.format(element.tag, ' '.join(
+            ['{}="{}"'.format(k, v) for k, v in element.attrib.items()]))
+    else:
+        return '<{}>'.format(element.tag)
 
 
 def as_markup(text):

@@ -114,10 +114,8 @@ class Page(Widget):
         try:
             html = super(Page, self).render(*args, **kwargs)
             if html is not None:
-                active_widgets = [widgets[widget_name] for widget_name in active_widget_names]
-                active_widgets.append(self)
                 for page_post_processor in page_post_processors:
-                    html = page_post_processor(html, active_widgets)
+                    html = page_post_processor(html)
                 return html
             return html
         finally:
