@@ -43,11 +43,13 @@ def merge_settings(base, updates):
             try:
                 updated[k] = merge_settings(v, updates.get(k))
             except:
-                raise Exception('can not merge: {}\r\n{}'.format(k, sys.exc_info[1]))
+                raise Exception('can not merge: {}\r\n{}'.format(k, sys.exc_info()[1]))
         for k, v in updates.items():
             if k not in updated:
                 updated[k] = v
         return updated
+    if base == updates:
+        return base
     if updates:
         raise Exception('can not merge {} with {}'.format(base, updates))
     return base
