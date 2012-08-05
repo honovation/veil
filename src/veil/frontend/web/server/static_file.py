@@ -46,6 +46,11 @@ def get_static_file_hash(path):
 
 # === write inline static files after template loaded ===
 def process_inline_blocks(template_path, template):
+    process_inline_javascript(template, template_path)
+    process_inline_stylesheet(template, template_path)
+
+
+def process_inline_javascript(template, template_path):
     if not hasattr(template, 'inline_javascript'):
         template.inline_javascript = ''
         blocks = template.blocks
@@ -59,13 +64,36 @@ def process_inline_blocks(template_path, template):
                 if not inline_static_file.exists():
                     inline_static_file.write_text(content)
                 if template_path:
-                    pseudo_file_name = generate_pseudo_file_name(template_path)
+                    pseudo_file_name = generate_pseudo_file_name(template_path, 'js')
                     template.inline_javascript = 'v-{}/{}'.format(hash, pseudo_file_name)
                 else:
                     template.inline_javascript = 'v-{}'.format(hash)
-                script_tag = '<script type="text/javascript" src="/static/{}"></script>\r\n'.format(
+                html_tag = '<script type="text/javascript" src="/static/{}"></script>\r\n'.format(
                     template.inline_javascript)
-                blocks[block_name] = lambda *args, **kwargs: (script_tag)
+                blocks[block_name] = lambda *args, **kwargs: (html_tag)
+
+
+def process_inline_stylesheet(template, template_path):
+    if not hasattr(template, 'inline_stylesheet'):
+        template.inline_stylesheet = ''
+        blocks = template.blocks
+        for block_name in blocks.keys():
+            if 'inline_stylesheet' == block_name:
+                content = ''.join(list(blocks[block_name](template.new_context())))
+                content = delete_first_and_last_non_empty_lines_to_strip_tags_such_as_script(content)
+                content = to_str(content)
+                hash = hashlib.md5(content).hexdigest()
+                inline_static_file = as_path(get_inline_static_files_directory()) / hash
+                if not inline_static_file.exists():
+                    inline_static_file.write_text(content)
+                if template_path:
+                    pseudo_file_name = generate_pseudo_file_name(template_path, 'css')
+                    template.inline_stylesheet = 'v-{}/{}'.format(hash, pseudo_file_name)
+                else:
+                    template.inline_stylesheet = 'v-{}'.format(hash)
+                html_tag = '<link rel="stylesheet" type="text/css" media="screen" href="/static/{}"/>\r\n'.format(
+                    template.inline_stylesheet)
+                blocks[block_name] = lambda *args, **kwargs: (html_tag)
 
 
 def delete_first_and_last_non_empty_lines_to_strip_tags_such_as_script(content):
@@ -78,14 +106,14 @@ def delete_first_and_last_non_empty_lines_to_strip_tags_such_as_script(content):
     return '\n'.join(lines[1:-1])
 
 
-def generate_pseudo_file_name(template_path):
+def generate_pseudo_file_name(template_path, suffix):
     template_path = os.path.abspath(template_path)
     template_dir = os.path.basename(os.path.dirname(template_path))
     template_name = os.path.splitext(os.path.basename(template_path))[0]
     if template_dir.endswith('_web'):
-        return '{}.js'.format(template_name)
+        return '{}.{}'.format(template_name, suffix)
     else:
-        return '{}-{}.js'.format(template_dir.replace('_', '-'), template_name)
+        return '{}-{}.{}'.format(template_dir.replace('_', '-'), template_name, suffix)
 
 # === combine and move <script> to the bottom ===
 def process_script_tags(html, active_widgets):
