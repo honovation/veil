@@ -2,6 +2,8 @@ $.ajaxSetup({headers:{'X-XSRF':$.cookie('_xsrf')}});
 
 var veil = veil || {};
 
+veil.log = console.log;
+
 veil.event = {};
 
 veil.event.handle = function (eventName, handler) {
@@ -41,9 +43,8 @@ veil.resource = {};
 veil.resource.get = function (options) {
     var url = options.url;
     var onSuccess = options.onSuccess;
-    var executes = options.executes;
     $.get(url, function (html) {
-        onSuccess(veil.resource.stripScripts(html, executes));
+        onSuccess(veil.widget.processWidget(html));
     });
 };
 
@@ -75,32 +76,6 @@ veil.resource.delete = function(options) {
         success: onSuccess
     };
     $.ajax(_);
-};
-
-veil.resource.executedScripts = [];
-veil.resource.stripScripts = function (html, executes) {
-    while (true) {
-        var scriptTag = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi.exec(html);
-        if (scriptTag) {
-            html = html.replace(scriptTag, '');
-            if (executes) {
-                var tempDoc = $($.parseXML('<xml>' + scriptTag + '</xml>'));
-                var url = tempDoc.find('script').attr('src');
-                var script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.src = url;
-                if ($('body').html().indexOf(url) == -1) {
-                    if ($.inArray(url, veil.resource.executedScripts) == -1) {
-                        veil.resource.executedScripts.push(url);
-                        $('body').append(script);
-                    }
-                }
-            }
-        } else {
-            break;
-        }
-    }
-    return html;
 };
 
 veil.widget = {};
@@ -137,7 +112,7 @@ veil.widget.createResource = function (widget, onSuccess) {
             veil.showMessage(widget.data('error-message'));
         },
         onValidationError:function (xhr) {
-            widget.replaceWith(veil.resource.stripScripts(xhr.responseText));
+            widget.replaceWith(veil.widget.processWidget(xhr.responseText));
         }
     };
     veil.resource.create(_);
@@ -146,10 +121,67 @@ veil.widget.createResource = function (widget, onSuccess) {
 veil.widget.refresh = function (widget) {
     var _ = {
         url: widget.data('refresh-url'),
-        executes: true,
         onSuccess: function (html) {
             widget.replaceWith(html);
         }
     };
     veil.resource.get(_);
+};
+
+veil.widget.loadedJavascripts = [];
+veil.widget.loadedStylesheets = [];
+veil.widget.toXML = function(xmlDocument) {
+    if (window.ActiveXObject){
+        return xmlDocument.xml;
+    } else{
+        return (new XMLSerializer()).serializeToString(xmlDocument);
+    }
+};
+veil.widget.processWidget = function (html, executes) {
+    function loadJavascript(url) {
+        if ($('body').html().indexOf(url) == -1) {
+            if ($.inArray(url, veil.resource.loadedJavascripts) == -1) {
+                veil.widget.loadedJavascripts.push(url);
+                var script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = url;
+                $('body').append(script);
+            }
+        }
+    }
+    function loadStylesheet(url) {
+        if ($('body').html().indexOf(url) == -1) {
+            if ($.inArray(url, veil.resource.loadedStylesheets) == -1) {
+                veil.widget.loadedStylesheets.push(url);
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.type = 'text/css';
+                link.href = url;
+                $('body').append(link);
+            }
+        }
+    }
+    var doc = $.parseXML('<html>' + html + '</html>');
+    $(doc).find('script').each(function() {
+        var $script = $(this);
+        if ($script.attr('src')) {
+            loadJavascript($script.attr('src'));
+        } else {
+            veil.log('can only load javascript from url');
+        }
+        $script.remove();
+    });
+    $(doc).find('style').each(function() {
+        var $style = $(this);
+        veil.log('can only load stylesheet from url');
+        $style.remove();
+    });
+    $(doc).find('link').each(function() {
+        var $link = $(this);
+        if ('stylesheet' == $link.attr('rel')) {
+            loadStylesheet($link.attr('href'));
+            $link.remove();
+        }
+    });
+    return veil.widget.toXML(doc);
 };
