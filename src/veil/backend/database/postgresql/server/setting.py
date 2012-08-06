@@ -15,7 +15,7 @@ POSTGRESQL_BASE_SETTINGS = {
 }
 
 def postgresql_program(updates=None):
-    program = {'command': 'veil backend rdbms postgresql server up'}
+    program = {'command': 'veil backend database postgresql server up'}
     if updates:
         program.update(updates)
     return program

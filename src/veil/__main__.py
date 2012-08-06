@@ -6,7 +6,7 @@ from veil.frontend.cli import execute_script
 __import__('veil.frontend.template')
 __import__('veil.frontend.web.nginx')
 __import__('veil.backend.queue')
-__import__('veil.backend.rdbms')
+__import__('veil.backend.database')
 __import__('veil.backend.redis')
 __import__('veil.environment.runtime')
 __import__('veil.environment.deployment')

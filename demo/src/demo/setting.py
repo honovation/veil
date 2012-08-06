@@ -6,7 +6,7 @@ from veil.backend.queue import queue_program
 from veil.backend.queue import resweb_program
 from veil.backend.queue import delayed_job_scheduler_program
 from veil.backend.queue import job_worker_program
-from veil.backend.rdbms import postgresql_program
+from veil.backend.database import postgresql_program
 from veil.backend.redis import redis_program
 
 def demo_settings_provider(setting):
