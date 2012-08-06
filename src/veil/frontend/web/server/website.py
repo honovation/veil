@@ -29,7 +29,7 @@ def start_website(website, **kwargs):
     if get_reloads_module():
         reloading.start(io_loop)
     http_handler = create_website_http_handler(website, **kwargs)
-    io_loop.add_callback(lambda: print('!!!'))
+    io_loop.add_callback(lambda: LOGGER.info('started website {}'.format(website)))
     start_http_server(http_handler, io_loop=io_loop)
 
 

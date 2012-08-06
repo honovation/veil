@@ -33,6 +33,7 @@ def start_http_server(handler, io_loop=None, **kwargs):
     port = get_port() or 80
     http_server.bind(port, host)
     http_server.start(get_processes_count() or 1)
+    io_loop.add_callback(lambda: LOGGER.info('http listen at {}:{}'.format(host, port)))
     io_loop.start()
 
 
