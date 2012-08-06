@@ -148,24 +148,26 @@ def load_module(*module_name_segments):
         if os.getenv('VEIL_VERBOSE'):
             print('failed to load module {}, {}'.format(qualified_module_name, e.message))
             traceback.print_exc()
-        module = DummyModule(qualified_module_name)
+        module = DummyModule(qualified_module_name, e)
         sys.modules[qualified_module_name] = module
         return module
 
 
 class DummyModule(object):
-    def __init__(self, qualified_module_name):
+    def __init__(self, qualified_module_name, error):
         self.__name__ = qualified_module_name
+        self.error = error
 
     def __getattr__(self, item):
-        return DummyModuleMember(self.__name__, item)
+        return DummyModuleMember(self, item)
 
 
 class DummyModuleMember(object):
-    def __init__(self, qualified_module_name, name):
-        self.qualified_module_name = qualified_module_name
+    def __init__(self, dummy_module, name):
+        self.dummy_module = dummy_module
         self.__name__ = name
 
     def __call__(self, *args, **kwargs):
-        raise Exception('module {} did not load properly'.format(self.qualified_module_name))
+        raise Exception('module {} did not load properly, due to {}'.format(
+            self.dummy_module.__name__, self.dummy_module.error.message))
 
