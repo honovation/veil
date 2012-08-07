@@ -132,7 +132,7 @@ def relocate_javascript_and_stylesheet_tags(orig_html):
     stylesheet_fragments = []
     head_end_index = None
     body_end_index = None
-    context = etree.iterparse(StringIO(orig_html), ('start', 'end', 'start-ns', 'end-ns'))
+    context = etree.iterparse(StringIO(orig_html.encode('utf8')), ('start', 'end', 'start-ns', 'end-ns'), encoding='utf8')
     for action, element in context:
         if 'end' == action and 'body' == element.tag:
             body_end_index = len(fragments)
