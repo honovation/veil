@@ -21,7 +21,7 @@ def nginx_program():
         'command': 'veil frontend web nginx up'
     }
 
-def nginx_reverse_proxy_server(backend_host, backend_port):
+def nginx_reverse_proxy_server(server_name, backend_host, backend_port):
     return {
         'demo.dev.dmright.com': {
             'listen': '127.0.0.1:80',

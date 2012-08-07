@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import logging
+import sys
 from sandal.test import *
 from .option import register_option
 from .option import init_options
@@ -55,9 +56,28 @@ def bootstrap_runtime(option_updates=None):
     for section in config_parser.sections():
         options[section] = dict(config_parser.items(section))
     if option_updates:
-        options.update(option_updates)
+        options = merge_options(options, option_updates)
     if options:
         init_options(options)
     else:
         LOGGER.debug('options is empty')
 
+def merge_options(base, updates):
+    if not base:
+        return updates
+    if isinstance(base, dict) and isinstance(updates, dict):
+        updated = {}
+        for k, v in base.items():
+            try:
+                updated[k] = merge_options(v, updates.get(k))
+            except:
+                raise Exception('can not merge: {}\r\n{}'.format(k, sys.exc_info()[1]))
+        for k, v in updates.items():
+            if k not in updated:
+                updated[k] = v
+        return updated
+    if base == updates:
+        return base
+    if updates:
+        raise Exception('can not merge {} with {}'.format(base, updates))
+    return base
