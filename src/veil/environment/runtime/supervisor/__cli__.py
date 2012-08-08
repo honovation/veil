@@ -5,7 +5,7 @@ from veil.backend.shell import *
 from veil.frontend.template import *
 from veil.environment.deployment import *
 
-@script('install')
+@deployment_script('install')
 def install_supervisor():
     settings = get_deployment_settings()
     install_python_package('supervisor')
@@ -17,7 +17,7 @@ def install_supervisor():
     create_directory(settings.supervisor.logging.directory)
 
 
-@script('up')
+@deployment_script('up')
 def bring_up_supervisor():
     settings = get_deployment_settings()
     pass_control_to('supervisord -c {}'.format(settings.supervisor.config_file))

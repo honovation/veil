@@ -4,7 +4,7 @@ from veil.environment.deployment import *
 from veil.frontend.template import *
 
 
-@script('install')
+@deployment_script('install')
 def install_queue_server():
     settings = get_deployment_settings()
     install_ubuntu_package('python2.7-dev')

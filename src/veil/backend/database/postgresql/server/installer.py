@@ -6,7 +6,7 @@ from veil.frontend.template import *
 from veil.environment.deployment import *
 from .launcher import postgresql_server_running
 
-@script('install')
+@deployment_script('install')
 def install_postgresql_server():
     settings = get_deployment_settings()
     install_ubuntu_package('postgresql-9.1')

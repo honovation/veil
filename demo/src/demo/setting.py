@@ -32,7 +32,7 @@ def demo_settings_provider(setting):
         'nginx': {
             'inline_static_files_owner': UNPRIVILIGED_USER,
             'inline_static_files_group': UNPRIVILIGED_GROUP,
-            'servers': nginx_reverse_proxy_server(DEMO_WEB_HOST, DEMO_WEB_PORT)
+            'servers': nginx_reverse_proxy_server('veil-demo', DEMO_WEB_HOST, DEMO_WEB_PORT)
         },
         'postgresql': {
             'listen_addresses': 'localhost',
