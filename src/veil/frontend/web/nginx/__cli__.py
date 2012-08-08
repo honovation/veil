@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import os
+from sandal.path import path
 from veil.frontend.cli import *
 from veil.frontend.template import *
 from veil.backend.shell import *
@@ -17,6 +18,18 @@ def install_nginx():
         owner=settings.nginx.owner,
         group=settings.nginx.owner_group,
         mode=0770)
+    uploaded_files_directory = path(settings.nginx.uploaded_files_directory)
+    create_directory(
+        uploaded_files_directory,
+        owner=settings.nginx.owner,
+        group=settings.nginx.owner_group,
+        mode=0770)
+    for i in range(10):
+        create_directory(
+            uploaded_files_directory / str(i),
+            owner=settings.nginx.owner,
+            group=settings.nginx.owner_group,
+            mode=0770)
 
 
 @deployment_script('up')

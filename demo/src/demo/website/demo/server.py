@@ -55,3 +55,7 @@ def list_audit_logs_widget():
 def item_edit_page():
     return get_template('item-edit.html').render(item=get_item(get_http_argument('id')))
 
+
+@route('PUT', '/item/{{ id }}', id='\d+')
+def update_item_action():
+    return get_http_argument('image.path')
