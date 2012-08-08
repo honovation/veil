@@ -51,4 +51,7 @@ def list_audit_logs_widget():
     return get_template('list-audit-logs.html').render(audit_logs=audit_logs)
 
 
+@route('GET', '/item/{{ id }}/edit', id='\d+')
+def item_edit_page():
+    return get_template('item-edit.html').render(item=get_item(get_http_argument('id')))
 

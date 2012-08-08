@@ -11,12 +11,17 @@ EVENT_ITEM_DELETED = 'item-deleted'
 def create_item(name=not_empty):
     id = demo_db().insert('items', returns_id=True, name=name)
     publish_event(EVENT_ITEM_CREATED, item_id=id)
-    return Item(id, name)
+    return Item(id, name, None)
 
 
 def list_items():
     rows = demo_db().list('SELECT * FROM items')
     return [Item(**row._asdict()) for row in rows]
+
+
+def get_item(id):
+    row = demo_db().get('SELECT * FROM items WHERE id=%(id)s', id=id)
+    return Item(**row._asdict())
 
 
 def delete_item(id):
@@ -32,5 +37,5 @@ def count_items():
 
 
 class Item(Entity):
-    def __init__(self, id, name):
-        super(Item, self).__init__(id=id, name=name)
+    def __init__(self, id, name, image_url):
+        super(Item, self).__init__(id=id, name=name, image_url=image_url)

@@ -1,6 +1,7 @@
 CREATE TABLE items (
   id SERIAL PRIMARY KEY,
-  name VARCHAR
+  name VARCHAR,
+  image_url VARCHAR
 );
 
 CREATE TABLE audit_logs (

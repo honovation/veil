@@ -1,6 +1,6 @@
 <li class="list-items-element-widget" data-delete-url="/resources/items/{{ item.id }}">
     <button class="remove-item">Remove</button>
-    {{ item.name }}
+    <a href="/item/{{ item.id }}/edit">{{ item.name }}</a>
 </li>
 
 {% block inline_javascript %}
