@@ -4,7 +4,7 @@ import traceback
 import os.path
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
-from sandal.component import force_import_module
+from sandal.component import force_import_module, is_dummy_function
 from sandal.test import get_executing_test
 from sandal.handler import *
 
@@ -48,7 +48,8 @@ def register_template_loader(prefix, loader):
 
 
 def register_template_post_processor(template_post_processor):
-    template_post_processors.append(template_post_processor)
+    if not is_dummy_function(template_post_processor):
+        template_post_processors.append(template_post_processor)
 
 
 @contextlib.contextmanager
