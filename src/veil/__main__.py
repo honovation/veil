@@ -11,6 +11,7 @@ __import__('veil.backend.redis')
 __import__('veil.environment.runtime')
 __import__('veil.environment.deployment')
 __import__('veil.development')
+__import__('veil.supervisor')
 __import__('__veil__')
 execute_script(
     on_script_executing=lambda script_handler: bootstrap_runtime(script_handler.options),
