@@ -15,11 +15,14 @@ with sandal.component.init_component(__name__):
     from .widget import page
     from .widget import register_page_post_processor
 
+    if sandal.component.is_dummy_function(template_utility):
+        template_utility = lambda func: func
+
     __all__ = [
             # from template
             template_filter.__name__,
             register_template_filter.__name__,
-            template_utility.__name__,
+            'template_utility',
             register_template_utility.__name__,
             register_template_loader.__name__,
             require_current_translations_being.__name__,
