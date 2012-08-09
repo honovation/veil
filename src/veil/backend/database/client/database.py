@@ -6,6 +6,7 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
+from veil.model.collection import *
 from veil.environment.runtime import register_option
 from ..postgresql import PostgresqlAdapter
 
@@ -148,7 +149,7 @@ class Database(object):
         return self._executemany(sql, seq_of_parameters)
 
     def list(self, sql, **kwargs):
-        return self._query(sql, **kwargs)
+        return [DictObject(**row._asdict()) for row in self._query(sql, **kwargs)]
 
     def list_scalar(self, sql, **kwargs):
         rows = self._query(sql, returns_named_tuple=False, **kwargs)
@@ -163,7 +164,7 @@ class Database(object):
             return None
         if len(rows) > 1:
             LOGGER.warning('More than one rows returned with the sql: {}'.format(self.last_sql))
-        return rows[0]
+        return DictObject(**rows[0]._asdict())
 
     def get_scalar(self, sql, **kwargs):
         rows = self._query(sql, returns_named_tuple=False, **kwargs)
