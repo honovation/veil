@@ -168,6 +168,6 @@ class DummyModuleMember(object):
         self.__name__ = name
 
     def __call__(self, *args, **kwargs):
-        raise Exception('module {} did not load properly, due to {}'.format(
+        raise ImportError('module {} did not load properly, due to {}'.format(
             self.dummy_module.__name__, self.dummy_module.error.message))
 
