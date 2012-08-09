@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
 import httplib
-from sandal.test import TestCase
+from veil.development.test import TestCase
 from veil.frontend.web.tornado import *
 from veil.frontend.web.server import *
 from ..browser import start_website_and_browser

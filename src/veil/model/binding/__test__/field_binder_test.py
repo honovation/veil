@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import __builtin__
-from sandal.test import TestCase
+from veil.development.test import TestCase
 from veil.model.binding.field_binder import *
 import datetime
 

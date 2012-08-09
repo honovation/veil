@@ -5,7 +5,7 @@ import os.path
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
 from sandal.component import force_import_module, is_dummy_function
-from sandal.test import get_executing_test
+from veil.development.test import get_executing_test
 from sandal.handler import *
 
 filters = {}

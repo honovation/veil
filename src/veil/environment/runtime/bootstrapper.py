@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import sys
-from sandal.test import *
+from veil.development.test import *
 from .option import register_option
 from .option import init_options
 from .option import EVENT_OPTIONS_INITIALIZED

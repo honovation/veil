@@ -5,7 +5,7 @@ import httplib
 from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
-from sandal.test import *
+from veil.development.test import *
 from sandal.component import *
 from sandal.handler import *
 from veil.frontend.template import *

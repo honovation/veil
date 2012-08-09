@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import httplib
 from veil.frontend.web.server import *
-from sandal.test import TestCase
+from veil.development.test import TestCase
 from ..browser import Browser
 
 class XsrfTest(TestCase):

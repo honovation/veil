@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
 import tempfile
-from sandal.test import TestCase
+from veil.development.test import TestCase
 from sandal.path import path
 from veil.environment.runtime import *
 from .bucket import register_bucket

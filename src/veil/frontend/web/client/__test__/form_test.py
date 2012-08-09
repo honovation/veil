@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from pyquery import PyQuery
-from sandal.test import TestCase
+from veil.development.test import TestCase
 from ..form import FormMixin
 
 class SerializeFormTest(TestCase):

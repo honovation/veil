@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from sandal.test import TestCase
+from veil.development.test import TestCase
 from ..static_file import relocate_javascript_and_stylesheet_tags
 
 class RelocateJavascriptAndStylesheetTagsTest(TestCase):

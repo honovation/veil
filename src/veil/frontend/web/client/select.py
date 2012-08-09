@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from sandal.test import get_executing_test
+from veil.development.test import get_executing_test
 
 class SelectMixin(object):
     def select(self, name, **kwargs):

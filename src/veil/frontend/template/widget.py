@@ -4,7 +4,7 @@ from logging import getLogger
 from inspect import getargspec
 import traceback
 from markupsafe import Markup
-from sandal.test import *
+from veil.development.test import *
 from sandal.handler import *
 from .template import register_template_utility
 
