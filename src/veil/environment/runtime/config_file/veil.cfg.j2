@@ -46,6 +46,11 @@ host={{ redis.host }}
 port={{ redis.port }}
 password={{ redis.password }}
 {% endfor %}
+{% for config_name, bucket in config.items() if config_name.endswith('bucket') %}
+[{{ config_name }}]
+type={{ bucket.type }}
+base_directory={{ bucket.base_directory }}
+{% endfor %}
 {% if config.queue %}
 [queue]
 type={{ config.queue.type }}

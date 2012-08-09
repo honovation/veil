@@ -21,4 +21,4 @@ def create_layout():
     create_directory(VEIL_HOME / 'etc')
     create_directory(VEIL_ETC_DIR)
     create_directory(VEIL_HOME / 'var')
-    create_directory(VEIL_VAR_DIR)
+    create_directory(VEIL_VAR_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP)

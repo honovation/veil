@@ -3,6 +3,7 @@ import jinja2
 from veil.frontend.cli import *
 from veil.backend.shell import *
 from veil.frontend.template import *
+from veil.environment.layout import *
 from veil.environment.deployment import *
 
 @deployment_script('install')
@@ -11,6 +12,7 @@ def install_supervisor():
     install_python_package('supervisor')
     create_file(settings.supervisor.config_file, get_template('supervisord.cfg.j2').render(
         config=settings.supervisor,
+        CURRENT_USER=CURRENT_USER,
         format_command=format_command,
         format_environment_variables=format_environment_variables
     ))

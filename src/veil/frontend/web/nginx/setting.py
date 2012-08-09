@@ -18,7 +18,8 @@ NGINX_BASE_SETTINGS = objectify({
 
 def nginx_program():
     return {
-        'command': 'veil frontend web nginx up'
+        'command': 'veil frontend web nginx up',
+        'user': 'root'
     }
 
 def nginx_reverse_proxy_server(server_name, backend_host, backend_port):

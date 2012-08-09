@@ -56,7 +56,7 @@ class FilesystemBucket(Bucket):
         path = self.base_directory.joinpath(key)
         directory = path.parent
         assert directory.abspath().startswith(self.base_directory.abspath())
-        directory.makedirs(mode=0700)
+        directory.makedirs(mode=0770)
         with path.open('wb') as f:
             for chunk in iter_file_in_chunks(file):
                 f.write(chunk)

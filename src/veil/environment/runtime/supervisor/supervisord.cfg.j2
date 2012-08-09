@@ -46,6 +46,8 @@ supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 [program:{{ program_name }}]
 {% if program.user %}
 user={{ program.user }}
+{% else %}
+user={{ CURRENT_USER }}
 {% endif %}
 {% if program.environment_variables %}
 environment={{ format_environment_variables(program.environment_variables) }}
