@@ -2,14 +2,14 @@ from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
 import tempfile
 from veil.development.test import TestCase
-from sandal.path import path
+from sandal.path import as_path
 from veil.environment.runtime import *
 from .bucket import register_bucket
 
 class FilesystemBucketTest(TestCase):
     def setUp(self):
         super(FilesystemBucketTest, self).setUp()
-        self.temp_dir = path(tempfile.gettempdir())
+        self.temp_dir = as_path(tempfile.gettempdir())
         update_options({
             'test_bucket': {
                 'type': 'filesystem',

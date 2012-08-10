@@ -1,9 +1,12 @@
 import sandal.component
 
 with sandal.component.init_component(__name__):
-    from .path import path
+    from .path import Path
+
+    as_path = Path
 
     __all__ = [
         # from path
-        path.__name__
+        Path.__name__,
+        'as_path'
     ]

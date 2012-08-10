@@ -4,7 +4,7 @@ from sandal.path import *
 from veil.frontend.cli import *
 from .runner import test_package
 
-CURRENT_DIR = path(os.path.dirname(__file__))
+CURRENT_DIR = as_path(os.path.dirname(__file__))
 
 @script('self-check')
 def self_check():

@@ -11,7 +11,7 @@ from ..browser import start_website_and_browser
 class StaticFileModuleSmokeTest(TestCase):
     def setUp(self):
         super(StaticFileModuleSmokeTest, self).setUp()
-        self.temp_dir = path(tempfile.gettempdir())
+        self.temp_dir = as_path(tempfile.gettempdir())
         update_options({
             'website': {
                 'external_static_files_directory': os.path.dirname(__file__),

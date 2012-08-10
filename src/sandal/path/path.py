@@ -42,7 +42,7 @@ class TreeWalkWarning(Warning):
     pass
 
 
-class path(_base):
+class Path(_base):
     """ Represents a filesystem path.
 
     For documentation on individual methods, consult their

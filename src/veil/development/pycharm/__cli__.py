@@ -4,7 +4,7 @@ from veil.backend.shell import *
 from sandal.path import *
 from veil.frontend.cli import *
 
-CURRENT_DIR = path(os.path.dirname(__file__))
+CURRENT_DIR = as_path(os.path.dirname(__file__))
 
 @script('rebuild-index')
 def rebuild_index():
@@ -14,9 +14,9 @@ def rebuild_index():
 
 @script('patch-utrunner')
 def patch_utrunner(pycharm_dir):
-    build_txt = (path(pycharm_dir) / 'build.txt')
+    build_txt = (as_path(pycharm_dir) / 'build.txt')
     if not build_txt.exists():
         raise Exception('please create link to pycharm under $VEIL_HOME/env')
     patched_utrunner_py = CURRENT_DIR / 'utrunner_py'
-    utrunner_py = path(pycharm_dir) / 'helpers' / 'pycharm' / 'utrunner.py'
+    utrunner_py = as_path(pycharm_dir) / 'helpers' / 'pycharm' / 'utrunner.py'
     shell_execute('cp {} {}'.format(patched_utrunner_py, utrunner_py))

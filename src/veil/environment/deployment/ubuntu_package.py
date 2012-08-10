@@ -11,6 +11,6 @@ def install_ubuntu_package(package_name):
 
 
 def remove_service_auto_start(service_name, test_file):
-    if path(test_file).exists():
+    if as_path(test_file).exists():
         shell_execute('service {} stop'.format(service_name))
         shell_execute('update-rc.d -f {} remove'.format(service_name))

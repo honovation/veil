@@ -7,7 +7,7 @@ from sandal.path import *
 VEIL_HOME = getenv('VEIL_HOME') or '.'
 VEIL_HOME = os.path.abspath(VEIL_HOME)
 assert VEIL_HOME, 'must specify $VEIL_HOME'
-VEIL_HOME = path(VEIL_HOME)
+VEIL_HOME = as_path(VEIL_HOME)
 
 VEIL_ENV = getenv('VEIL_ENV') or 'development'
 VEIL_LOG_DIR = VEIL_HOME / 'log' / VEIL_ENV

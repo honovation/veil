@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from sandal.path import path as as_path
+from sandal.path import as_path
 from veil.environment.runtime import *
 
 LOGGER = logging.getLogger(__name__)

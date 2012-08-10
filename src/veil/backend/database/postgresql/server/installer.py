@@ -11,15 +11,15 @@ def install_postgresql_server():
     settings = get_deployment_settings()
     install_ubuntu_package('postgresql-9.1')
     remove_service_auto_start('postgresql', '/etc/rc0.d/K21postgresql')
-    pg_bin_dir = path('/usr/lib/postgresql/9.1/bin')
+    pg_bin_dir = as_path('/usr/lib/postgresql/9.1/bin')
     assert pg_bin_dir.exists()
-    global_bin_dir = path('/usr/bin')
+    global_bin_dir = as_path('/usr/bin')
     create_symbolic_link(global_bin_dir / 'psql', to='{}/psql'.format(pg_bin_dir))
     create_symbolic_link(global_bin_dir / 'pg_dump', to='{}/pg_dump'.format(pg_bin_dir))
     create_symbolic_link(global_bin_dir / 'initdb', to='{}/initdb'.format(pg_bin_dir))
     create_symbolic_link(global_bin_dir / 'pg_ctl', to='{}/pg_ctl'.format(pg_bin_dir))
     create_symbolic_link(global_bin_dir / 'postgres', to='{}/postgres'.format(pg_bin_dir))
-    pg_data_dir = path(settings.postgresql.data_directory)
+    pg_data_dir = as_path(settings.postgresql.data_directory)
     no_user = False
     if not pg_data_dir.exists():
         old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.dirname()), capture=True).strip()
@@ -34,7 +34,7 @@ def install_postgresql_server():
         no_user = True
     pg_config_dir = settings.postgresql.config_directory
     assert pg_config_dir, 'must specify postgresql config directory'
-    pg_config_dir = path(pg_config_dir)
+    pg_config_dir = as_path(pg_config_dir)
     create_file(
         pg_config_dir / 'postgresql.conf',
         content=get_template('postgresql.conf.j2').render(config=settings.postgresql))
