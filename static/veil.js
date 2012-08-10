@@ -65,6 +65,25 @@ veil.resource.create = function (options) {
     $.ajax(_);
 };
 
+veil.resource.update = function (options) {
+    var url = options.url;
+    var data = options.data;
+    var onSuccess = options.onSuccess;
+    var onError = options.onError;
+    var onValidationError = options.onValidationError;
+    var _ = {
+        type:'PUT',
+        url:url,
+        data:data,
+        success:onSuccess,
+        error:onError,
+        statusCode:{
+            400:onValidationError
+        }
+    };
+    $.ajax(_);
+};
+
 veil.resource.delete = function(options) {
     var url = options.url;
     var onSuccess = options.onSuccess;
@@ -116,6 +135,28 @@ veil.widget.createResource = function (widget, onSuccess) {
         }
     };
     veil.resource.create(_);
+};
+
+veil.widget.updateResource = function (widget, onSuccess) {
+    widget.find('.error-messages').html('');
+    widget.find('.having-error').removeClass('having-error');
+    var _ = {
+        url:widget.attr('action'),
+        data:widget.serialize(),
+        onSuccess:function () {
+            widget[0].reset();
+            onSuccess();
+        },
+        onError:function () {
+            if (widget.data('error-message')) {
+                veil.showMessage(widget.data('error-message'));
+            }
+        },
+        onValidationError:function (xhr) {
+            widget.replaceWith(veil.widget.processWidget(xhr.responseText));
+        }
+    };
+    veil.resource.update(_);
 };
 
 veil.widget.refresh = function (widget) {
