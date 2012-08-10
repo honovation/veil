@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import functools
+import sys
 from logging import getLogger
 from inspect import getargspec
 import traceback
@@ -75,7 +76,9 @@ class Widget(object):
                 return None
             return Markup(content)
         except:
-            LOGGER.error('failed to render widget: {}'.format(self.name))
+            type, value, traceback = sys.exc_info()
+            if not getattr(value, 'EXPECTED_WIDGET_ERROR', None):
+                LOGGER.error('failed to render widget: {}'.format(self.name))
             raise
 
     def activate(self):
