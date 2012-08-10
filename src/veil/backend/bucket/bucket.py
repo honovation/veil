@@ -52,6 +52,9 @@ class Bucket(object):
     def get_url(self, key):
         raise NotImplementedError()
 
+    def delete(self, key):
+        raise NotImplementedError()
+
 
 class FilesystemBucket(Bucket):
     def __init__(self, base_directory, base_url):
@@ -76,6 +79,12 @@ class FilesystemBucket(Bucket):
 
     def get_url(self, key):
         return '{}/{}'.format(self.base_url, key)
+
+    def delete(self, key):
+        assert key is not None
+        path = self.base_directory.joinpath(key)
+        assert path.abspath().startswith(self.base_directory.abspath())
+        path.remove()
 
 
 def iter_file_in_chunks(file_object, chunk_size=8192):
