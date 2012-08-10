@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.model.collection import *
 from veil.environment.layout import *
+from veil.environment.deployment import *
 
 nginx_config_file = VEIL_ETC_DIR / 'nginx.conf'
 NGINX_BASE_SETTINGS = objectify({
@@ -22,13 +23,13 @@ def nginx_program():
         'user': 'root'
     }
 
-def nginx_reverse_proxy_server(server_name, backend_host, backend_port):
-    return {
-        'demo.dev.dmright.com': {
-            'listen': '127.0.0.1:80',
-            'locations': {
-                '/': {
-                    '_': """
+
+def nginx_reverse_proxy_server(server_name, backend_host, backend_port, overrides=None):
+    settings = {
+        'listen': '127.0.0.1:80',
+        'locations': {
+            '/': {
+                '_': """
                         if ($content_type ~* multipart/form-data) {
                             upload_pass @after_upload;
                             upload_store %s 1;
@@ -45,29 +46,31 @@ def nginx_reverse_proxy_server(server_name, backend_host, backend_port):
                         proxy_set_header   X-Real-IP        $remote_addr;
                         proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
                         """ % (
-                        NGINX_BASE_SETTINGS.nginx.uploaded_files_directory,
-                        backend_host,
-                        backend_port),
-                    },
-                '@after_upload': {
-                    'proxy_pass': 'http://{}:{}'.format(backend_host, backend_port)
+                    NGINX_BASE_SETTINGS.nginx.uploaded_files_directory,
+                    backend_host,
+                    backend_port),
                 },
-                # inline static files
-                # /static/v-xxxx/a-b.js
-                '~ ^/static/v-(.*)/': {
-                    'alias': NGINX_BASE_SETTINGS.nginx.inline_static_files_directory / '$1',
-                    'expires': '365d'
-                },
-                # external static files
-                # /static/a/b/c.js?v=xxxx
-                '/static/': {
-                    '_': """
+            '@after_upload': {
+                'proxy_pass': 'http://{}:{}'.format(backend_host, backend_port)
+            },
+            # inline static files
+            # /static/v-xxxx/a-b.js
+            '~ ^/static/v-(.*)/': {
+                'alias': NGINX_BASE_SETTINGS.nginx.inline_static_files_directory / '$1',
+                'expires': '365d'
+            },
+            # external static files
+            # /static/a/b/c.js?v=xxxx
+            '/static/': {
+                '_': """
                         if ($args ~* v=(.+)) {
                             expires 365d;
                         }
                         """,
-                    'alias': NGINX_BASE_SETTINGS.nginx.external_static_files_directory / ''
-                }
+                'alias': NGINX_BASE_SETTINGS.nginx.external_static_files_directory / ''
             }
         }
     }
+    if overrides:
+        settings = merge_settings(settings, overrides)
+    return {server_name: settings}

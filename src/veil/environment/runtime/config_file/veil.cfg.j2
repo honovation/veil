@@ -50,6 +50,7 @@ password={{ redis.password }}
 [{{ config_name }}]
 type={{ bucket.type }}
 base_directory={{ bucket.base_directory }}
+base_url={{ bucket.base_url }}
 {% endfor %}
 {% if config.queue %}
 [queue]

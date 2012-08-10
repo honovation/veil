@@ -16,11 +16,13 @@ def register_bucket(purpose):
 def register_bucket_options(purpose):
     get_type = register_option('{}_bucket'.format(purpose), 'type')
     get_base_directory = register_option('{}_bucket'.format(purpose), 'base_directory')
+    get_base_url = register_option('{}_bucket'.format(purpose), 'base_url')
 
     def get_bucket_options():
         return {
             'type': get_type(),
-            'base_directory': get_base_directory()
+            'base_directory': get_base_directory(),
+            'base_url': get_base_url()
         }
 
     return get_bucket_options
@@ -33,7 +35,8 @@ def require_bucket(purpose):
         bucket_options = registry[purpose]()
         bucket_type = bucket_options['type']
         if 'filesystem' == bucket_type:
-            instances[purpose] = FilesystemBucket(bucket_options['base_directory'])
+            instances[purpose] = FilesystemBucket(
+                bucket_options['base_directory'], bucket_options['base_url'])
         else:
             raise NotImplementedError('unknown bucket type: {}'.format(bucket_type))
     return instances[purpose]
@@ -46,11 +49,15 @@ class Bucket(object):
     def retrieve(self, key):
         raise NotImplementedError()
 
+    def get_url(self, key):
+        raise NotImplementedError()
+
 
 class FilesystemBucket(Bucket):
-    def __init__(self, base_directory):
+    def __init__(self, base_directory, base_url):
         super(FilesystemBucket, self).__init__()
         self.base_directory = as_path(base_directory)
+        self.base_url = base_url
 
     def store(self, key, file):
         path = self.base_directory.joinpath(key)
@@ -66,6 +73,9 @@ class FilesystemBucket(Bucket):
         path = self.base_directory.joinpath(key)
         assert path.abspath().startswith(self.base_directory.abspath())
         return open(path, 'rb')
+
+    def get_url(self, key):
+        return '{}/{}'.format(self.base_url, key)
 
 
 def iter_file_in_chunks(file_object, chunk_size=8192):
