@@ -16,12 +16,12 @@ def create_item(name=not_empty):
 
 def list_items():
     rows = demo_db().list('SELECT * FROM items')
-    return [Item(**row._asdict()) for row in rows]
+    return [Item(**row) for row in rows]
 
 
 def get_item(id):
     row = demo_db().get('SELECT * FROM items WHERE id=%(id)s', id=id)
-    return Item(**row._asdict())
+    return Item(**row)
 
 
 def delete_item(id):

@@ -10,7 +10,7 @@ def create_audit_log(log=not_empty, created_at=optional()):
 
 def list_audit_logs():
     rows = demo_db().list('SELECT * FROM audit_logs ORDER BY created_at DESC')
-    return [AuditLog(**row._asdict()) for row in rows]
+    return [AuditLog(**row) for row in rows]
 
 
 class AuditLog(Entity):

@@ -22,6 +22,17 @@ PYRES_BASE_SETTINGS = {
     }
 }
 
+def ensure_veil_settings_consistent(settings):
+    return {
+        'veil': {
+            'queue': {
+                'host': settings.queue.bind,
+                'port': settings.queue.port,
+                'password': settings.queue.password
+            }
+        }
+    }
+
 def queue_program():
     return redis_program('queue')
 

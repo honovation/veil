@@ -158,6 +158,9 @@ def load_module(*module_name_segments):
         module = DummyModule(qualified_module_name, e)
         sys.modules[qualified_module_name] = module
         return module
+    except:
+        print('failed to load {}'.format(loading_components))
+        raise
 
 
 class DummyModule(object):

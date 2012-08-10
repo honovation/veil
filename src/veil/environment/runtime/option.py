@@ -1,11 +1,8 @@
 from __future__ import unicode_literals, print_function, division
-from veil.model.event import publish_event
-from veil.development.test import *
+from veil.environment.deployment import *
 
-EVENT_OPTIONS_INITIALIZED = 'options-initialized'
 option_definitions = {}
-options = {}
-original_options = {}
+option_updates = {}
 
 def register_option(section, name, type=unicode):
     if type not in [unicode, int, bool]:
@@ -19,6 +16,8 @@ def register_option(section, name, type=unicode):
 
 
 def get_option(section, name):
+    options = dict(get_deployment_settings().get('veil', None))
+    options = merge_settings(options, option_updates)
     if not options:
         raise Exception('options have not been initialized')
     type = option_definitions.get(section, {}).get(name)
@@ -28,27 +27,20 @@ def get_option(section, name):
     if unicode == type:
         return unicode(value) if value else ''
     if int == type:
+        if isinstance(value, int):
+            return value
         return int(value) if value else 0
     if bool == type:
+        if isinstance(value, bool):
+            return value
         return 'true' == value.lower() if value else False
     raise Exception('unknown option type: {}'.format(type))
 
 
-def init_options(configured_options):
-    if not configured_options:
-        raise Exception('options is empty')
-    if options:
-        raise Exception('options already initialized')
-    options.update(configured_options)
-    original_options.update(configured_options)
-    publish_event(EVENT_OPTIONS_INITIALIZED)
-
-
 def reset_options():
-    options.clear()
-    options.update(original_options)
+    option_updates.clear()
 
 
 def update_options(updates):
-    get_executing_test().addCleanup(reset_options)
-    options.update(updates)
+#    get_executing_test().addCleanup(reset_options)
+    option_updates.update(updates)

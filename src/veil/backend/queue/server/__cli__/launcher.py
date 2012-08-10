@@ -30,27 +30,23 @@ def component_aware_safe_str_to_class(qualified_class_name):
 patch_pyres_job_to_load_component_encapsulated_job_handler_class()
 
 @script('worker-up')
-def execute_bring_up_worker(*argv):
+def bring_up_worker(*argv):
     argument_parser = ArgumentParser('Bring up pyres worker')
     argument_parser.add_argument('queues', metavar='queue', type=str, nargs='+', help='where to pick job from')
     args = argument_parser.parse_args(argv)
-    bring_up_worker(queues=args.queues)
-
-
-def bring_up_worker(queues):
     register_job_context_manager(require_current_locale_being_default)
     pyres.worker.Worker.run(
-        queues=queues, interval=get_worker_interval(),
+        queues=args.queues, interval=get_worker_interval(),
         server=pyres.ResQ('{}:{}'.format(get_queue_host(), get_queue_port()), get_queue_password()))
 
 @script('delayed-job-scheduler-up')
-def execute_bring_up_delayed_job_scheduler(*argv):
+def ebring_up_delayed_job_scheduler(*argv):
     pyres.scheduler.Scheduler.run(
         pyres.ResQ('{}:{}'.format(get_queue_host(), get_queue_port()), get_queue_password()))
 
 
 @script('periodic-job-scheduler-up')
-def execute_bring_up_periodic_job_scheduler(*argv):
+def bring_up_periodic_job_scheduler(*argv):
     PeriodicJobScheduler(
         pyres.ResQ('{}:{}'.format(get_queue_host(), get_queue_port()), get_queue_password())).run()
 

@@ -29,7 +29,9 @@ with sandal.component.init_component(__name__):
     def init():
         from veil.environment.deployment import register_deployment_settings_provider
         from .setting import PYRES_BASE_SETTINGS
+        from .setting import ensure_veil_settings_consistent
 
         register_deployment_settings_provider(lambda settings: PYRES_BASE_SETTINGS, 'base')
+        register_deployment_settings_provider(ensure_veil_settings_consistent, 'final')
 
     init()

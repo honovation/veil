@@ -4,7 +4,6 @@ from veil.frontend.cli import *
 @script('install')
 def install_demo():
     execute_script('frontend', 'template', 'install')
-    execute_script('environment', 'runtime', 'config-file', 'generate')
     execute_script('supervisor', 'install')
     execute_script('frontend', 'web', 'nginx', 'install')
     execute_script('backend', 'database', 'postgresql', 'client', 'install')

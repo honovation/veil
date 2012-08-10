@@ -1,8 +1,10 @@
 from __future__ import unicode_literals, print_function, division
 import unittest.case
+from veil import init_components
+from veil.environment.runtime import bootstrap_runtime
 
 executing_test = None
-bootstrappers = []
+bootstrappers = [init_components, bootstrap_runtime]
 
 def register_test_hook(bootstrapper):
     bootstrappers.append(bootstrapper)

@@ -74,3 +74,14 @@ def nginx_reverse_proxy_server(server_name, backend_host, backend_port, override
     if overrides:
         settings = merge_settings(settings, overrides)
     return {server_name: settings}
+
+
+def ensure_veil_settings_consistent(settings):
+    return {
+        'veil': {
+            'website': {
+                'inline_static_files_directory': settings.nginx.inline_static_files_directory,
+                'external_static_files_directory': settings.nginx.external_static_files_directory,
+                }
+        }
+    }

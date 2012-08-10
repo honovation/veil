@@ -5,12 +5,14 @@ import sys
 from inspect import isfunction
 from sandal.component import get_loading_components
 from sandal.handler import *
+from veil.environment.deployment import *
+from veil.environment.runtime import *
+from veil.environment.layout import *
 
 script_handlers = {}
 LOGGER = getLogger(__name__)
 
 def execute_script(*argv, **kwargs):
-    on_script_executing = kwargs.get('on_script_executing', None)
     level = kwargs.get('level', script_handlers)
     arg = argv[0] if argv else None
     if arg not in level:
@@ -19,26 +21,27 @@ def execute_script(*argv, **kwargs):
     next_level = level[arg]
     if isfunction(next_level):
         script_handler = next_level
-        if on_script_executing:
-            on_script_executing(script_handler)
+        if script_handler.deployment_settings_provider:
+            register_deployment_settings_provider(script_handler.deployment_settings_provider)
+        bootstrap_runtime()
         return script_handler(*argv[1:])
     else:
-        return execute_script(level=next_level, on_script_executing=on_script_executing, *argv[1:])
+        return execute_script(level=next_level, *argv[1:])
 
 
-def script(command, options=None):
+def script(command, deployment_settings_provider=None):
 # syntax sugar for ScriptHandlerDecorator
-    return ScriptHandlerDecorator(command, options or {})
+    return ScriptHandlerDecorator(command, deployment_settings_provider)
 
 
 class ScriptHandlerDecorator(object):
-    def __init__(self, command, options):
+    def __init__(self, command, deployment_settings_provider):
         self.command = command
-        self.options = options
+        self.deployment_settings_provider = deployment_settings_provider
 
     def __call__(self, script_handler):
         script_handler = decorate_handler(script_handler)
-        script_handler.options = self.options
+        script_handler.deployment_settings_provider = self.deployment_settings_provider
         @functools.wraps(script_handler)
         def wrapper(*args, **kwargs):
             return script_handler(*args, **kwargs)
@@ -62,3 +65,24 @@ def get_current_level_names():
     component = components[-1]
     level_names = component.__name__.split('.')[1:]
     return level_names
+
+
+
+# create basic layout before deployment
+def deployment_script(*args, **kwargs):
+    decorator = script(*args, **kwargs)
+    def decorate(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            create_layout()
+            return func(*args, **kwargs)
+        return decorator(wrapper)
+    return decorate
+
+def create_layout():
+    create_directory(VEIL_HOME / 'log')
+    create_directory(VEIL_LOG_DIR)
+    create_directory(VEIL_HOME / 'etc')
+    create_directory(VEIL_ETC_DIR)
+    create_directory(VEIL_HOME / 'var')
+    create_directory(VEIL_VAR_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP)

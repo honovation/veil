@@ -11,7 +11,6 @@ with sandal.component.init_component(__name__):
     from .filesystem import delete_file
     from .filesystem import create_directory
     from .filesystem import create_symbolic_link
-    from .script import deployment_script
 
     __all__ = [
         # from setting
@@ -27,7 +26,5 @@ with sandal.component.init_component(__name__):
         create_file.__name__,
         delete_file.__name__,
         create_directory.__name__,
-        create_symbolic_link.__name__,
-        # from script
-        deployment_script.__name__
+        create_symbolic_link.__name__
     ]
