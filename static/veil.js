@@ -40,9 +40,7 @@ veil.showMessage = function (message) {
 
 veil.resource = {};
 
-veil.resource.get = function (options) {
-    var url = options.url;
-    var onSuccess = options.onSuccess;
+veil.resource.get = function (url, onSuccess) {
     $.get(url, function (html) {
         onSuccess(veil.widget.processWidget(html));
     });
@@ -121,13 +119,9 @@ veil.widget.createResource = function (widget, onSuccess) {
 };
 
 veil.widget.refresh = function (widget) {
-    var _ = {
-        url: widget.data('refresh-url'),
-        onSuccess: function (html) {
-            widget.replaceWith(html);
-        }
-    };
-    veil.resource.get(_);
+    veil.resource.get(widget.data('refresh-url'), function (html) {
+        widget.replaceWith(html);
+    });
 };
 
 veil.widget.loadedJavascripts = [];
@@ -139,7 +133,7 @@ veil.widget.toXML = function(xmlDocument) {
         return (new XMLSerializer()).serializeToString(xmlDocument);
     }
 };
-veil.widget.processWidget = function (html, executes) {
+veil.widget.processWidget = function (html) {
     function loadJavascript(url) {
         if ($('body').html().indexOf(url) == -1) {
             if ($.inArray(url, veil.resource.loadedJavascripts) == -1) {
@@ -185,5 +179,5 @@ veil.widget.processWidget = function (html, executes) {
             $link.remove();
         }
     });
-    return veil.widget.toXML(doc);
+    return veil.widget.toXML(doc).replace('<html>', '').replace('</html>', '').replace('<html/>', '');
 };

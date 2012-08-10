@@ -24,7 +24,7 @@ def to_unicode(s, encoding=None, detects_encoding=False):
         If there is a better one, it will use the one for the transformation,
         otherwise use the specified one or 'utf-8' if not specified.
     """
-    if isinstance(s, (bytes, type(None))):
+    if isinstance(s, unicode):
         return s
     encoding = encoding or 'utf-8'
     if detects_encoding:

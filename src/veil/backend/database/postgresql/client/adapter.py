@@ -5,6 +5,7 @@ import psycopg2
 from psycopg2.extensions import  ISOLATION_LEVEL_READ_COMMITTED
 from psycopg2.extras import NamedTupleCursor
 from psycopg2.extensions import cursor as NormalCursor
+from veil.frontend.encoding import *
 
 LOGGER = getLogger(__name__)
 
@@ -69,7 +70,7 @@ class PostgresqlAdapter(object):
         return self.conn.cursor(cursor_factory=cursor_factory, **kwargs)
 
     def get_last_sql(self, cursor):
-        return cursor.query
+        return to_unicode(cursor.query)
 
     def set_current_schema(self, schema):
         with closing(self.cursor()) as c:

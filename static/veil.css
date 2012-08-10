@@ -1,3 +1,9 @@
 .having-error {
     background: red;
 }
+#main-navi{
+    font-size: 1.4em;
+}
+#main-navi li.active{
+    font-weight: bold;
+}
