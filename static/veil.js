@@ -102,14 +102,16 @@ veil.widget.createResource = function (widget, onSuccess) {
     widget.find('.error-messages').html('');
     widget.find('.having-error').removeClass('having-error');
     var _ = {
-        url:'/resources/items',
+        url:widget.attr('action'),
         data:widget.serialize(),
         onSuccess:function () {
             widget[0].reset();
             onSuccess();
         },
         onError:function () {
-            veil.showMessage(widget.data('error-message'));
+            if (widget.data('error-message')) {
+                veil.showMessage(widget.data('error-message'));
+            }
         },
         onValidationError:function (xhr) {
             widget.replaceWith(veil.widget.processWidget(xhr.responseText));
