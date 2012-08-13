@@ -231,7 +231,7 @@ veil.widget.processWidget = function (html) {
                 errors.each(function () {
                     var error = this;
                     $('<span class="label label-warning"><i class="icon-info-sign"></i>'
-                          + error + '</span>').insertAfter(
+                          + error + '</span>').insertBefore(
                         $form.find('[name=' + field + ']')
                     );
                 });
