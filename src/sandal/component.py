@@ -41,6 +41,8 @@ def init_component(qualified_module_name):
         loader = ComponentLoader(component)
         loader.load_component()
         yield
+        if hasattr(component, 'init'):
+            component.init()
         loader.encapsulate_loaded_packages_and_modules()
     finally:
         loading_components.pop()

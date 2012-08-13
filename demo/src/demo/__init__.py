@@ -6,5 +6,3 @@ with sandal.component.init_component(__name__):
         from .setting import demo_settings_provider
 
         register_deployment_settings_provider(demo_settings_provider)
-
-    init()

@@ -16,5 +16,3 @@ with sandal.component.init_component(__name__):
 
         subscribe_event(EVENT_ITEM_CREATED, on_item_created)
         subscribe_event(EVENT_ITEM_DELETED, on_item_deleted)
-
-    init()

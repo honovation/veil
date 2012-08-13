@@ -32,5 +32,3 @@ with sandal.component.init_component(__name__):
 
         register_template_post_processor(process_inline_blocks)
         register_page_post_processor(relocate_javascript_and_stylesheet_tags)
-
-    init()

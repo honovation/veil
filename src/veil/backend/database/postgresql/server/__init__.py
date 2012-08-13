@@ -12,5 +12,3 @@ with sandal.component.init_component(__name__):
         from .setting import POSTGRESQL_BASE_SETTINGS
 
         register_deployment_settings_provider(lambda settings: POSTGRESQL_BASE_SETTINGS, 'base')
-
-    init()

@@ -33,5 +33,3 @@ with sandal.component.init_component(__name__):
 
         register_deployment_settings_provider(lambda settings: PYRES_BASE_SETTINGS, 'base')
         register_deployment_settings_provider(ensure_veil_settings_consistent, 'final')
-
-    init()
