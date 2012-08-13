@@ -7,36 +7,31 @@ import os
 
 __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_components',
-    'is_dummy_function']
+    'is_dummy_function', 'get_component_dependencies']
 
 encapsulated_modules = {}
 components = {}
 loading_components = []
 errors = {}
-
-def scan_components(dir_path, package_name=None):
-    file_names = os.listdir(dir_path)
-    component_names = []
-    for file_name in file_names:
-        sub_dir_path = os.path.join(dir_path, file_name)
-        if os.path.isdir(sub_dir_path):
-            init_py_path = os.path.join(sub_dir_path, '__init__.py')
-            if os.path.exists(init_py_path):
-                with open(init_py_path) as f:
-                    is_component = 'init_component' in f.read()
-                sub_package_name = '{}.{}'.format(package_name, file_name) if package_name else file_name
-                if is_component:
-                    component_names.append(sub_package_name)
-                else:
-                    component_names.extend(scan_components(sub_dir_path, sub_package_name))
-    return component_names
-
+dependencies = {}
 
 @contextlib.contextmanager
 def init_component(qualified_module_name):
     component = sys.modules[qualified_module_name]
+    if loading_components:
+        loading_component_name = loading_components[-1].__name__
+        if not loading_component_name.startswith(qualified_module_name):
+            dependencies.setdefault(loading_component_name, []).append(qualified_module_name)
+    if qualified_module_name in components:
+        try:
+            yield
+        except ImportError:
+            pass # second time import will reference encapsulated module
+        sys.modules[qualified_module_name] = components[qualified_module_name]
+        return
     components[component.__name__] = component
     try:
+        remove_loaded_components(qualified_module_name)
         loading_components.append(component)
         loader = ComponentLoader(component)
         loader.load_component()
@@ -44,8 +39,26 @@ def init_component(qualified_module_name):
         if hasattr(component, 'init'):
             component.init()
         loader.encapsulate_loaded_packages_and_modules()
+    except:
+        raise
     finally:
         loading_components.pop()
+        restore_loaded_components()
+
+
+def get_component_dependencies():
+    return dependencies
+
+
+def remove_loaded_components(qualified_module_name):
+    for component_name in components.keys():
+        if component_name != qualified_module_name and component_name in sys.modules:
+            del sys.modules[component_name]
+
+
+def restore_loaded_components():
+    for component_name, component in components.items():
+        sys.modules[component_name] = component
 
 
 def get_loading_components():
@@ -117,6 +130,8 @@ class ComponentLoader(object):
         for package in self.packages.keys():
             encapsulated_modules[package.__name__] = package
             sys.modules[package.__name__] = None
+            if package.__name__ in components:
+                del components[package.__name__]
             for module_name in self.packages[package]:
                 if hasattr(package, module_name):
                     delattr(package, module_name)
@@ -188,6 +203,7 @@ class DummyModuleMember(object):
             errors.setdefault(loading_components[-1], []).append(error)
         else:
             raise error
+
 
 def is_dummy_function(func):
     return isinstance(func, DummyModuleMember)
