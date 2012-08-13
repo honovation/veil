@@ -9,3 +9,4 @@ CURRENT_DIR = as_path(os.path.dirname(__file__))
 @script('self-check')
 def self_check():
     test_package('veil.')
+    execute_script('development', 'test', 'check-dependencies')

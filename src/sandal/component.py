@@ -7,7 +7,8 @@ import os
 
 __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_components',
-    'is_dummy_function', 'get_component_dependencies', 'assert_component_loaded']
+    'is_dummy_function', 'get_component_dependencies', 'assert_component_loaded',
+    'assert_component_dependencies']
 
 encapsulated_modules = {}
 components = {}
@@ -58,6 +59,16 @@ def assert_component_loaded(component_name, visited_component_names=None):
         raise Exception('component {} did not load successfully'.format(component_name))
     for dependency in dependencies.get(component_name, ()):
         assert_component_loaded(dependency, list(visited_component_names))
+
+
+def assert_component_dependencies(component_name, expected_dependencies):
+    actual_dependencies = dependencies[component_name]
+    for expected_dependency in expected_dependencies:
+        for actual_dependency in list(actual_dependencies):
+            if actual_dependency.startswith(expected_dependency):
+                actual_dependencies.remove(actual_dependency)
+    if actual_dependencies:
+        raise Exception('{} should not reference {}'.format(component_name, actual_dependencies))
 
 
 def get_component_dependencies():
