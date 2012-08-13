@@ -1,3 +1,6 @@
+body {
+    padding-top: 80px;
+}
 .having-error {
     background: red;
 }

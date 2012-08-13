@@ -7,7 +7,7 @@ def error_html(all_errors, field=None):
     field_errors = get_field_errors(all_errors, field) if field else all_errors
     if not field_errors:
         return ''
-    lines = ['<span class="label label-warning"><i class="icon-info-sign"></i>  ']
+    lines = ['<span class="label label-warning"><i class="icon-info-sign icon-white"></i>  ']
     for field_error in field_errors:
         lines.append(field_error)
     lines.append('</span>')
