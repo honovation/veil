@@ -7,7 +7,7 @@ import os
 
 __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_components',
-    'is_dummy_function', 'get_component_dependencies']
+    'is_dummy_function', 'get_component_dependencies', 'assert_component_loaded']
 
 encapsulated_modules = {}
 components = {}
@@ -46,6 +46,14 @@ def init_component(qualified_module_name):
         restore_loaded_components()
 
 
+def assert_component_loaded(component_name):
+    if component_name in errors:
+        print(errors[component_name][0])
+        raise Exception('component {} did not load successfully'.format(component_name))
+    for dependency in dependencies.get(component_name, ()):
+        assert_component_loaded(dependency)
+
+
 def get_component_dependencies():
     return dependencies
 
@@ -63,6 +71,10 @@ def restore_loaded_components():
 
 def get_loading_components():
     return loading_components
+
+
+def record_error(error):
+    errors.setdefault(loading_components[-1].__name__, []).append(traceback.format_exc())
 
 
 def force_get_all_loaded_modules():
@@ -110,7 +122,7 @@ class ComponentLoader(object):
                 if sub_package not in components.values():
                     self.load_sub_packages_and_modules(sub_package)
             except ImportError, e:
-                errors.setdefault(loading_components[-1], []).append(e)
+                record_error(e)
 
 
     def load_sub_modules(self, package):
@@ -121,7 +133,7 @@ class ComponentLoader(object):
                 sub_module = load_module(package.__name__, sub_module_name)
                 self.modules.append(sub_module)
             except ImportError, e:
-                errors.setdefault(loading_components[-1], []).append(e)
+                record_error(e)
 
     def encapsulate_loaded_packages_and_modules(self):
         for module in self.modules:
@@ -171,7 +183,7 @@ def load_module(*module_name_segments):
     try:
         return importlib.import_module(qualified_module_name)
     except ImportError, e:
-        errors.setdefault(loading_components[-1], []).append(e)
+        record_error(e)
         module = DummyModule(qualified_module_name, e)
         sys.modules[qualified_module_name] = module
         return module
@@ -200,7 +212,7 @@ class DummyModuleMember(object):
                 self.dummy_module.__name__,
                 self.dummy_module.error.message))
         if loading_components:
-            errors.setdefault(loading_components[-1], []).append(error)
+            record_error(error)
         else:
             raise error
 
