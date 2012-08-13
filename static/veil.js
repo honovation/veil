@@ -84,30 +84,30 @@ veil.resource.update = function (options) {
     $.ajax(_);
 };
 
-veil.resource.delete = function(options) {
+veil.resource.delete = function (options) {
     var url = options.url;
     var onSuccess = options.onSuccess;
     var _ = {
-        type: 'DELETE',
-        url: url,
-        success: onSuccess
+        type:'DELETE',
+        url:url,
+        success:onSuccess
     };
     $.ajax(_);
 };
 
 veil.widget = {};
 
-veil.widget.handle = function(widget_selector, child_selector, event, handler) {
-    $(widget_selector + ' ' + child_selector).live(event, function(e) {
+veil.widget.handle = function (widget_selector, child_selector, event, handler) {
+    $(widget_selector + ' ' + child_selector).live(event, function (e) {
         var widget = $(this).parents(widget_selector);
         return handler(widget, e);
     });
 };
 
-veil.widget.deleteResource = function(widget, onSuccess) {
+veil.widget.deleteResource = function (widget, onSuccess) {
     var _ = {
-        url: widget.data('delete-url'),
-        onSuccess: function() {
+        url:widget.data('delete-url'),
+        onSuccess:function () {
             widget.remove();
             onSuccess();
         }
@@ -167,10 +167,10 @@ veil.widget.refresh = function (widget) {
 
 veil.widget.loadedJavascripts = [];
 veil.widget.loadedStylesheets = [];
-veil.widget.toXML = function(xmlDocument) {
-    if (window.ActiveXObject){
+veil.widget.toXML = function (xmlDocument) {
+    if (window.ActiveXObject) {
         return xmlDocument.xml;
-    } else{
+    } else {
         return (new XMLSerializer()).serializeToString(xmlDocument);
     }
 };
@@ -186,6 +186,7 @@ veil.widget.processWidget = function (html) {
             }
         }
     }
+
     function loadStylesheet(url) {
         if ($('body').html().indexOf(url) == -1) {
             if ($.inArray(url, veil.resource.loadedStylesheets) == -1) {
@@ -198,8 +199,9 @@ veil.widget.processWidget = function (html) {
             }
         }
     }
+
     var doc = $.parseXML('<html>' + html + '</html>');
-    $(doc).find('script').each(function() {
+    $(doc).find('script').each(function () {
         var $script = $(this);
         if ($script.attr('src')) {
             loadJavascript($script.attr('src'));
@@ -208,16 +210,32 @@ veil.widget.processWidget = function (html) {
         }
         $script.remove();
     });
-    $(doc).find('style').each(function() {
+    $(doc).find('style').each(function () {
         var $style = $(this);
         veil.log('can only load stylesheet from url');
         $style.remove();
     });
-    $(doc).find('link').each(function() {
+    $(doc).find('link').each(function () {
         var $link = $(this);
         if ('stylesheet' == $link.attr('rel')) {
             loadStylesheet($link.attr('href'));
             $link.remove();
+        }
+    });
+    $(doc).find('[data-errors]').each(function () {
+        var $form = $(this);
+        var all_errors = $form.data('errors');
+        for (var field in all_errors) {
+            if (all_errors.hasOwnProperty(field)) {
+                var errors = $(all_errors[field]);
+                errors.each(function () {
+                    var error = this;
+                    $('<span class="label label-warning"><i class="icon-info-sign"></i>'
+                          + error + '</span>').insertAfter(
+                        $form.find('[name=' + field + ']')
+                    );
+                });
+            }
         }
     });
     return veil.widget.toXML(doc).replace('<html>', '').replace('</html>', '').replace('<html/>', '');
