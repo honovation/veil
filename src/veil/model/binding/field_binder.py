@@ -26,7 +26,7 @@ def anything(value):
 def is_not(v):
     def bind(value):
         if value == bind.v:
-            raise Invalid('{}{}'.format(_('must not be: '), bind.v))
+            raise Invalid('{}{}'.format(_('不能是：'), bind.v))
         return value
     bind.v = v
     return bind
@@ -35,20 +35,20 @@ def is_not(v):
 def not_empty(value):
     if value is not None and value != '':
         return value
-    raise Invalid(_('must not be empty'))
+    raise Invalid(_('不能为空'))
 
 
 def is_list(value):
     if isinstance(value, (list, tuple)):
         return value
-    raise Invalid(_('not list'))
+    raise Invalid(_('值不为列表'))
 
 
 def one_of(seq):
     assert seq is not None
     def bind(value):
         if value not in bind.seq:
-            raise Invalid(_('must be one of valid values'))
+            raise Invalid(_('值不在范围之内'))
         return value
     bind.seq = seq
     return bind
@@ -56,19 +56,19 @@ def one_of(seq):
 
 def is_email(value):
     if _EMAIL_PATTERN.match(value) is None:
-        raise Invalid(_('not a well-formed email'))
+        raise Invalid(_('不是有效的电子邮件地址'))
     return value
 
 
 def is_mobile(value):
     if _MOBILE_PATTERN.match(value) is None:
-        raise Invalid(_('not a well-formed mobile'))
+        raise Invalid(_('不是有效的移动电话号码'))
     return value
 
 
 def is_landline(value):
     if _LANDLIINE_PATTERN.match(value) is None:
-        raise Invalid(_('not a well-formed mobile'))
+        raise Invalid(_('不是有效的座机号码'))
     return value
 
 
@@ -76,14 +76,14 @@ def to_integer(value):
     try:
         return int(value)
     except (TypeError, ValueError):
-        raise Invalid(_('not an integer'))
+        raise Invalid(_('不是整数'))
 
 
 def to_float(value):
     try:
         return float(value)
     except (TypeError, ValueError):
-        raise Invalid(_('not a float'))
+        raise Invalid(_('不是小数'))
 
 
 def to_bool(value):
@@ -96,7 +96,7 @@ def to_time(value):
     try:
         dt = datetime.strptime(value, '%I:%M %p')
     except ValueError:
-        raise Invalid(_('Invalid time format'))
+        raise Invalid(_('不是有效的时间'))
     else:
         return time(dt.hour, dt.minute)
 
@@ -108,7 +108,7 @@ def to_date(format='%Y-%m-%d'):
         try:
             dt = datetime.strptime(value, bind.format)
         except ValueError:
-            raise Invalid(_('Invalid date format'))
+            raise Invalid(_('不是有效的日期'))
         else:
             return dt.date()
     bind.format = format
@@ -119,7 +119,7 @@ def to_datetime_via_parse(value):
     try:
         return parse(value, yearfirst=True)
     except ValueError:
-        raise Invalid(_('Invalid datetime format'))
+        raise Invalid(_('不是有效的日期时间'))
 
 
 def to_datetime(format='%Y-%m-%d %H:%M:%S'):
@@ -130,7 +130,7 @@ def to_datetime(format='%Y-%m-%d %H:%M:%S'):
             try:
                 return datetime.strptime(value, bind.format)
             except ValueError:
-                raise Invalid(_('Invalid datetime format'))
+                raise Invalid(_('不是有效的日期时间'))
     bind.format = format
     return bind
 
@@ -157,14 +157,14 @@ def to_datetime_with_minute_precision_from_iso8601(value):
         return datetime(int(groups['year']), int(groups['month']), int(groups['day']), int(groups['hour']),
             int(groups['minute']), tzinfo=tz)
     except:
-        raise Invalid(_('Invalid ISO8601 datetime format'))
+        raise Invalid(_('不是有效的日期时间'))
 
 
 def to_timezone(value):
     try:
         return timezone(value)
     except UnknownTimeZoneError:
-        raise Invalid(_('Invalid timezone'))
+        raise Invalid(_('不是有效的时区'))
 
 
 def clamp_length(min=None, max=None):
@@ -175,9 +175,9 @@ def clamp_length(min=None, max=None):
     def bind(value):
         value_length = len(value)
         if bind.min is not None and value_length < bind.min:
-            raise Invalid(_('too short'))
+            raise Invalid(_('值超出范围'))
         if bind.max is not None and value_length > bind.max:
-            raise Invalid(_('too long'))
+            raise Invalid(_('值超出范围'))
         return value
     bind.min = min
     bind.max = max
@@ -186,5 +186,5 @@ def clamp_length(min=None, max=None):
 
 def not_duplicate(value):
     if len(set(value)) != len(value):
-        raise Invalid(_('Duplicate item not allowed'))
+        raise Invalid(_('有重复值'))
     return value

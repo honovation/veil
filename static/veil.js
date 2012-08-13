@@ -116,8 +116,7 @@ veil.widget.deleteResource = function (widget, onSuccess) {
 };
 
 veil.widget.createResource = function (widget, onSuccess) {
-    widget.find('.error-messages').html('');
-    widget.find('.having-error').removeClass('having-error');
+    veil.widget.clearErrorMessages(widget);
     var _ = {
         url:widget.attr('action'),
         data:widget.serialize(),
@@ -126,20 +125,20 @@ veil.widget.createResource = function (widget, onSuccess) {
             onSuccess();
         },
         onError:function () {
-            if (widget.data('error-message')) {
-                veil.showMessage(widget.data('error-message'));
-            }
+            veil.widget.showErrorMessage(widget, '操作失败');
         },
         onValidationError:function (xhr) {
-            widget.replaceWith(veil.widget.processWidget(xhr.responseText));
+            var new_widget = $(veil.widget.processWidget(xhr.responseText));
+            widget.replaceWith(new_widget);
+            widget = new_widget;
+            veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
         }
     };
     veil.resource.create(_);
 };
 
 veil.widget.updateResource = function (widget, onSuccess) {
-    widget.find('.error-messages').html('');
-    widget.find('.having-error').removeClass('having-error');
+    veil.widget.clearErrorMessages(widget);
     var _ = {
         url:widget.attr('action'),
         data:widget.serialize(),
@@ -148,15 +147,28 @@ veil.widget.updateResource = function (widget, onSuccess) {
             onSuccess();
         },
         onError:function () {
-            if (widget.data('error-message')) {
-                veil.showMessage(widget.data('error-message'));
-            }
+            veil.widget.showErrorMessage(widget, '操作失败');
         },
         onValidationError:function (xhr) {
-            widget.replaceWith(veil.widget.processWidget(xhr.responseText));
+            var new_widget = $(veil.widget.processWidget(xhr.responseText));
+            widget.replaceWith(new_widget);
+            widget = new_widget;
+            veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
         }
     };
     veil.resource.update(_);
+};
+
+veil.widget.showErrorMessage = function(widget, defaultErrorMessage) {
+    var errorMessage = widget.data('error-message') || defaultErrorMessage;
+    widget.prepend(
+        '<span class="error-message label label-warning">' +
+            '<i class="icon-info-sign"></i>' +
+            errorMessage + '</span>');
+};
+
+veil.widget.clearErrorMessages = function(widget) {
+    widget.find('.error-message').remove();
 };
 
 veil.widget.refresh = function (widget) {
@@ -230,7 +242,7 @@ veil.widget.processWidget = function (html) {
                 var errors = $(all_errors[field]);
                 errors.each(function () {
                     var error = this;
-                    $('<span class="label label-warning"><i class="icon-info-sign"></i>'
+                    $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>'
                           + error + '</span>').insertBefore(
                         $form.find('[name=' + field + ']')
                     );
