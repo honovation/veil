@@ -8,12 +8,16 @@ from logging import getLogger
 import uuid
 from veil.model.collection import *
 from veil.environment.runtime import register_option
-from ..postgresql import PostgresqlAdapter
 
 LOGGER = getLogger(__name__)
 
 registry = {} # purpose => open_database
 connected_databases = {} # purpose => database or category => database or __default__ => database
+adapter_classes = {} # database type => adapter class
+
+def register_adapter_class(type, adapter_class):
+    adapter_classes[type] = adapter_classes
+
 
 def register_database(purpose):
     section_name = '{}_database'.format(purpose) # for example contact_index_database
@@ -55,12 +59,12 @@ def close_databases():
 
 
 def connect(purpose, type, host, port, database, user, password):
-    if 'postgresql' == type:
-        adapter = PostgresqlAdapter(
+    if type in adapter_classes:
+        adapter = adapter_classes[type](
             host=host, port=port,
             database=database, user=user, password=password)
         db = Database(purpose, adapter)
-        db.database= database
+        db.database = database
         return db
     else:
         raise Exception('unknown database type: {}'.format(type))

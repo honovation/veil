@@ -12,3 +12,9 @@ with sandal.component.init_component(__name__):
         # from postgresql
         postgresql_program.__name__
     ]
+
+    def init():
+        from .postgresql import PostgresqlAdapter
+        from .client import register_adapter_class
+
+        register_adapter_class('postgresql', PostgresqlAdapter)

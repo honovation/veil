@@ -46,12 +46,18 @@ def init_component(qualified_module_name):
         restore_loaded_components()
 
 
-def assert_component_loaded(component_name):
+def assert_component_loaded(component_name, visited_component_names=None):
+    if not visited_component_names:
+        visited_component_names = [component_name]
+    else:
+        visited_component_names.append(component_name)
+        if component_name in visited_component_names[:-1]:
+            raise Exception('circular dependency detected: {}'.format(visited_component_names))
     if component_name in errors:
         print(errors[component_name][0])
         raise Exception('component {} did not load successfully'.format(component_name))
     for dependency in dependencies.get(component_name, ()):
-        assert_component_loaded(dependency)
+        assert_component_loaded(dependency, list(visited_component_names))
 
 
 def get_component_dependencies():
