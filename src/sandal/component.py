@@ -55,7 +55,8 @@ def assert_component_loaded(component_name, visited_component_names=None):
         if component_name in visited_component_names[:-1]:
             raise Exception('circular dependency detected: {}'.format(visited_component_names))
     if component_name in errors:
-        print(errors[component_name][0])
+        for error in errors[component_name]:
+            print(error)
         raise Exception('component {} did not load successfully'.format(component_name))
     for dependency in dependencies.get(component_name, ()):
         assert_component_loaded(dependency, list(visited_component_names))
