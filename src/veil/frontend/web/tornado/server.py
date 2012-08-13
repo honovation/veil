@@ -40,7 +40,7 @@ def start_http_server(handler, io_loop=None, **kwargs):
 def start_test_http_server(handler):
     http_server = create_http_server(handler)
     host = get_host() or '127.0.0.1'
-    port = get_port() or 80
+    port = get_port() or 8080
     http_server.host = host
     http_server.port = port
     http_server.listen(port, host)
