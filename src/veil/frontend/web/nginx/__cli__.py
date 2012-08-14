@@ -6,7 +6,7 @@ from veil.frontend.template import *
 from veil.backend.shell import *
 from veil.environment.deployment import *
 
-@deployment_script('install')
+@installation_script('install')
 def install_nginx():
     settings = get_deployment_settings()
     install_ubuntu_package('nginx-extras')
@@ -32,7 +32,7 @@ def install_nginx():
             mode=0770)
 
 
-@deployment_script('up')
+@installation_script('up')
 def bring_up_nginx():
     settings = get_deployment_settings()
     pass_control_to('nginx -c {}'.format(settings.nginx.config_file))

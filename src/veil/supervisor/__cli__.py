@@ -1,12 +1,11 @@
 from __future__ import unicode_literals, print_function, division
-import jinja2
 from veil.frontend.cli import *
 from veil.backend.shell import *
 from veil.frontend.template import *
 from veil.environment.layout import *
 from veil.environment.deployment import *
 
-@deployment_script('install')
+@installation_script('install')
 def install_supervisor():
     settings = get_deployment_settings()
     install_python_package('supervisor')
@@ -19,14 +18,14 @@ def install_supervisor():
     create_directory(settings.supervisor.logging.directory)
 
 
-@deployment_script('up')
+@installation_script('up')
 def bring_up_supervisor():
     settings = get_deployment_settings()
     pass_control_to('supervisord -c {}'.format(settings.supervisor.config_file))
 
 
 def format_command(command, args):
-    return jinja2.Environment().from_string(command).render(**args or {})
+    return get_template(template_source=command).render(**args or {})
 
 
 def format_environment_variables(environment_variables):

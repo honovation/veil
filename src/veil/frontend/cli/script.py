@@ -42,6 +42,7 @@ class ScriptHandlerDecorator(object):
     def __call__(self, script_handler):
         script_handler = decorate_handler(script_handler)
         script_handler.deployment_settings_provider = self.deployment_settings_provider
+
         @functools.wraps(script_handler)
         def wrapper(*args, **kwargs):
             return script_handler(*args, **kwargs)
@@ -67,17 +68,20 @@ def get_current_level_names():
     return level_names
 
 
-
 # create basic layout before deployment
-def deployment_script(*args, **kwargs):
+def installation_script(*args, **kwargs):
     decorator = script(*args, **kwargs)
+
     def decorate(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             create_layout()
             return func(*args, **kwargs)
+
         return decorator(wrapper)
+
     return decorate
+
 
 def create_layout():
     create_directory(VEIL_HOME / 'log')

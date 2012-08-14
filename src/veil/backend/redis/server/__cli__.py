@@ -5,7 +5,7 @@ from veil.frontend.template import *
 from veil.environment.deployment import *
 from veil.backend.shell import *
 
-@deployment_script('install')
+@installation_script('install')
 def install_redis_server(purpose='redis'):
     settings = get_deployment_settings()
     config = getattr(settings, purpose)
@@ -17,7 +17,7 @@ def install_redis_server(purpose='redis'):
     create_file(redis_configfile, content=get_template('redis.conf.j2').render(config=config))
 
 
-@deployment_script('up')
+@installation_script('up')
 def bring_up_redis_server(purpose='redis'):
     settings = get_deployment_settings()
     config = getattr(settings, purpose)
