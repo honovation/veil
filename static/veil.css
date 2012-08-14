@@ -1,12 +1,20 @@
 body {
     padding-top: 80px;
 }
-.having-error {
-    background: red;
-}
-#main-navi{
+
+#main-navi {
     font-size: 1.4em;
 }
-#main-navi li.active{
+
+#main-navi li.active {
     font-weight: bold;
+}
+
+legend {
+    margin-bottom: 8px;
+}
+
+legend + * {
+    -webkit-margin-top-collapse: separate;
+    margin-top: 8px;
 }
