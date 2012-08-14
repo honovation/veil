@@ -4,4 +4,6 @@ import sandal.component
 
 @script('check-dependencies')
 def check_dependencies():
-    sandal.component.assert_component_dependencies('demo.model.item', ['veil.backend.redis', 'veil.model'])
+    sandal.component.assert_component_dependencies('demo.model.item', [
+        'veil.backend.redis', 'veil.model', 'veil.profile.model',
+        'veil.backend.database', 'sandal.clock'])

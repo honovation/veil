@@ -1,11 +1,13 @@
-def init_components():
-    __import__('veil.frontend.template')
-    __import__('veil.frontend.web.nginx')
-    __import__('veil.backend.queue')
-    __import__('veil.backend.database')
-    __import__('veil.backend.redis')
-    __import__('veil.environment.runtime')
-    __import__('veil.environment.deployment')
-    __import__('veil.development')
-    __import__('veil.supervisor')
-    __import__('__veil__')
+import sandal.component
+init_components = lambda : sandal.component.init_components([
+    'veil.frontend.template',
+    'veil.frontend.web.nginx',
+    'veil.backend.queue',
+    'veil.backend.database',
+    'veil.backend.redis',
+    'veil.environment.runtime',
+    'veil.environment.deployment',
+    'veil.development',
+    'veil.supervisor',
+    '__veil__'
+])

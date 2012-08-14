@@ -16,24 +16,31 @@ loading_components = []
 errors = {}
 dependencies = {}
 
+def init_components(component_names):
+    for component_name in component_names:
+        __import__(component_name)
+    for component_name, component in components.items():
+        sys.modules[component_name] = component
+
+
 @contextlib.contextmanager
-def init_component(qualified_module_name):
-    component = sys.modules[qualified_module_name]
+def init_component(component_name):
+    component = sys.modules[component_name]
     if loading_components:
         loading_component_name = loading_components[-1].__name__
-        if not loading_component_name.startswith(qualified_module_name):
-            dependencies.setdefault(loading_component_name, []).append(qualified_module_name)
-    if qualified_module_name in components:
+        if not loading_component_name.startswith(component_name):
+            dependencies.setdefault(loading_component_name, set()).add(component_name)
+    if component_name in components:
         try:
             yield
         except ImportError:
             pass # second time import will reference encapsulated module
-        sys.modules[qualified_module_name] = components[qualified_module_name]
+        sys.modules[component_name] = components[component_name]
         return
     components[component.__name__] = component
     try:
-        remove_loaded_components(qualified_module_name)
         loading_components.append(component)
+        remove_loaded_components()
         loader = ComponentLoader(component)
         loader.load_component()
         yield
@@ -43,8 +50,8 @@ def init_component(qualified_module_name):
     except:
         raise
     finally:
+        remove_loaded_components()
         loading_components.pop()
-        restore_loaded_components()
 
 
 def assert_component_loaded(component_name, visited_component_names=None):
@@ -76,15 +83,12 @@ def get_component_dependencies():
     return dependencies
 
 
-def remove_loaded_components(qualified_module_name):
-    for component_name in components.keys():
-        if component_name != qualified_module_name and component_name in sys.modules:
-            del sys.modules[component_name]
-
-
-def restore_loaded_components():
-    for component_name, component in components.items():
-        sys.modules[component_name] = component
+def remove_loaded_components():
+    loaded_components = set(components.values())
+    loaded_components = loaded_components - set(loading_components)
+    for loaded_component in loaded_components:
+        if loaded_component.__name__ in sys.modules:
+            del sys.modules[loaded_component.__name__]
 
 
 def get_loading_components():
