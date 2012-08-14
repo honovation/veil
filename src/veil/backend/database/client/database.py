@@ -16,7 +16,7 @@ connected_databases = {} # purpose => database or category => database or __defa
 adapter_classes = {} # database type => adapter class
 
 def register_adapter_class(type, adapter_class):
-    adapter_classes[type] = adapter_classes
+    adapter_classes[type] = adapter_class
 
 
 def register_database(purpose):
@@ -60,6 +60,7 @@ def close_databases():
 
 def connect(purpose, type, host, port, database, user, password):
     if type in adapter_classes:
+        LOGGER.error('adapter class: {}'.format(adapter_classes[type]))
         adapter = adapter_classes[type](
             host=host, port=port,
             database=database, user=user, password=password)
