@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.environment.layout import VEIL_ENV, VEIL_HOME
+from veil.environment import VEIL_ENV, VEIL_HOME
 from veil.frontend.web.nginx import nginx_reverse_proxy_server
 from veil.frontend.web.nginx import nginx_program
 from veil.backend.queue import queue_program

@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.environment.layout import *
+from veil.environment import *
 
 
 SUPERVISOR_BASE_SETTINGS = {

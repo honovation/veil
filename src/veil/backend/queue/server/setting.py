@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.environment.layout import *
+from veil.environment import *
 from veil.backend.redis import *
 
 DEFAULT_QUEUE_HOST = '127.0.0.1'

@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.frontend.cli import *
 from veil.backend.shell import *
 from veil.frontend.template import *
-from veil.environment.layout import *
+from veil.environment import *
 from veil.environment.deployment import *
 
 @installation_script('install')

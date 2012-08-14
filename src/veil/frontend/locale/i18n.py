@@ -6,7 +6,7 @@ from babel.core import Locale
 from babel.support import Translations
 from veil.frontend.template import require_current_translations_being
 from veil.development.test import get_executing_test
-from veil.environment.layout import VEIL_HOME
+from veil.environment import VEIL_HOME
 
 LOGGER = getLogger(__name__)
 LOCALE_DIR = VEIL_HOME / 'locale'

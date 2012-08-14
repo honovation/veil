@@ -3,7 +3,7 @@ import logging
 from veil.environment.runtime import *
 from veil.backend.shell import *
 from veil.frontend.cli import *
-from veil.environment.layout import VEIL_HOME
+from veil.environment import VEIL_HOME
 
 LOGGER = logging.getLogger(__name__)
 

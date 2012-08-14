@@ -7,7 +7,7 @@ from sandal.component import get_loading_components, get_component_dependencies
 from sandal.handler import *
 from veil.environment.deployment import *
 from veil.environment.runtime import *
-from veil.environment.layout import *
+from veil.environment import *
 
 script_handlers = {}
 LOGGER = getLogger(__name__)
