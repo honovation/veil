@@ -3,7 +3,7 @@ import functools
 from logging import getLogger
 import sys
 from inspect import isfunction
-from sandal.component import get_loading_components
+from sandal.component import get_loading_components, get_component_dependencies
 from sandal.handler import *
 from veil.environment.deployment import *
 from veil.environment.runtime import *
@@ -11,6 +11,15 @@ from veil.environment.layout import *
 
 script_handlers = {}
 LOGGER = getLogger(__name__)
+
+def is_script_defined(*argv):
+    current_level = script_handlers
+    for arg in argv:
+        current_level = current_level.get(arg, None)
+        if not current_level:
+            return False
+    return True
+
 
 def execute_script(*argv, **kwargs):
     level = kwargs.get('level', script_handlers)
@@ -73,14 +82,25 @@ def installation_script(*args, **kwargs):
     decorator = script(*args, **kwargs)
 
     def decorate(func):
+        component_name = get_loading_components()[-1].__name__
+
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             create_layout()
+            for dependency in get_component_dependencies()[component_name]:
+                install_dependency(dependency)
             return func(*args, **kwargs)
 
         return decorator(wrapper)
 
     return decorate
+
+
+def install_dependency(dependency):
+    args = list(dependency.split('.'))[1:]
+    args.append('install')
+    if is_script_defined(*args):
+        execute_script(*args)
 
 
 def create_layout():
