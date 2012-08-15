@@ -32,6 +32,8 @@ class CommandHandlerDecorator(object):
         self.extra_command_fields_binders = extra_command_fields_binders
 
     def __call__(self, command_handler):
+        if not getargspec(command_handler).args:
+            raise Exception('@command should decorate command handler directly')
         command_binder = create_command_binder(command_handler, self.extra_command_fields_binders or {})
 
         @functools.wraps(command_handler)

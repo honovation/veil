@@ -60,7 +60,6 @@ def close_databases():
 
 def connect(purpose, type, host, port, database, user, password):
     if type in adapter_classes:
-        LOGGER.error('adapter class: {}'.format(adapter_classes[type]))
         adapter = adapter_classes[type](
             host=host, port=port,
             database=database, user=user, password=password)

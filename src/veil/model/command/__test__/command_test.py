@@ -87,7 +87,7 @@ class InvalidCommandHandlerTest(TestCase):
 class RaiseCommandErrorTest(TestCase):
     def test(self):
         with self.assertRaises(CommandError):
-            raises_command_error_handler()
+            raises_command_error_handler('abc')
 
 @command
 def strict_handler(field1=not_empty, field2=not_empty):
@@ -115,5 +115,5 @@ def one_field_two_binders_handler(field=(optional(to_integer), optional(default=
     return field
 
 @command
-def raises_command_error_handler():
-    raise CommandError('')
+def raises_command_error_handler(dummy=not_empty):
+    raise CommandError(dummy)
