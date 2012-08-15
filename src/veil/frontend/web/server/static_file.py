@@ -138,7 +138,7 @@ def relocate_javascript_and_stylesheet_tags(orig_html):
             body_end_index = len(fragments)
         if 'end' == action and 'head' == element.tag:
             head_end_index = len(fragments)
-        if 'script' == element.tag:
+        if 'script' == element.tag and 'text/plain' != element.attrib.get('type', None):
             if 'start' == action:
                 javascript_fragment = '{}{}</script>'.format(format_start_tag(element), element.text or '')
                 if javascript_fragment not in javascript_fragments:

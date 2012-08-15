@@ -215,6 +215,9 @@ veil.widget.processWidget = function (html) {
     var doc = $.parseXML('<html>' + html + '</html>');
     $(doc).find('script').each(function () {
         var $script = $(this);
+        if ('text/plain' == $script.attr('type')) {
+            return
+        }
         if ($script.attr('src')) {
             loadJavascript($script.attr('src'));
         } else {
