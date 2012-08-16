@@ -3,20 +3,6 @@ from veil.model.collection import *
 from veil.environment import *
 from veil.environment.setting import *
 
-nginx_config_file = VEIL_ETC_DIR / 'nginx.conf'
-NGINX_BASE_SETTINGS = objectify({
-    'nginx': {
-        'owner': CURRENT_USER,
-        'owner_group': CURRENT_USER_GROUP,
-        'log_directory': VEIL_LOG_DIR / 'nginx',
-        'config_file': nginx_config_file,
-        'uploaded_files_directory': VEIL_VAR_DIR / 'uploaded-files',
-        'inline_static_files_directory': VEIL_VAR_DIR / 'inline-static-files',
-        'external_static_files_directory': VEIL_HOME / 'static',
-        'servers': {}
-    }
-})
-
 def nginx_program():
     return {
         'command': 'veil frontend web nginx up',
@@ -24,8 +10,23 @@ def nginx_program():
     }
 
 
-def nginx_reverse_proxy_server(server_name, backend_host, backend_port, overrides=None):
+def nginx_settings(**updates):
     settings = {
+        'owner': CURRENT_USER,
+        'owner_group': CURRENT_USER_GROUP,
+        'log_directory': VEIL_LOG_DIR / 'nginx',
+        'config_file': VEIL_ETC_DIR / 'nginx.conf',
+        'uploaded_files_directory': VEIL_VAR_DIR / 'uploaded-files',
+        'inline_static_files_directory': VEIL_VAR_DIR / 'inline-static-files',
+        'external_static_files_directory': VEIL_HOME / 'static',
+        'servers': {}
+    }
+    settings.update(updates)
+    return objectify({'nginx': settings})
+
+
+def add_reverse_proxy_server(settings, server_name, backend_host, backend_port, **updates):
+    server_settings = {
         'listen': '127.0.0.1:80',
         'locations': {
             '/': {
@@ -46,7 +47,7 @@ def nginx_reverse_proxy_server(server_name, backend_host, backend_port, override
                         proxy_set_header   X-Real-IP        $remote_addr;
                         proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
                         """ % (
-                    NGINX_BASE_SETTINGS.nginx.uploaded_files_directory,
+                    settings.nginx.uploaded_files_directory,
                     backend_host,
                     backend_port),
                 },
@@ -56,7 +57,7 @@ def nginx_reverse_proxy_server(server_name, backend_host, backend_port, override
             # inline static files
             # /static/v-xxxx/a-b.js
             '~ ^/static/v-(.*)/': {
-                'alias': NGINX_BASE_SETTINGS.nginx.inline_static_files_directory / '$1',
+                'alias': settings.nginx.inline_static_files_directory / '$1',
                 'expires': '365d'
             },
             # external static files
@@ -67,21 +68,23 @@ def nginx_reverse_proxy_server(server_name, backend_host, backend_port, override
                             expires 365d;
                         }
                         """,
-                'alias': NGINX_BASE_SETTINGS.nginx.external_static_files_directory / ''
+                'alias': settings.nginx.external_static_files_directory / ''
             }
         }
     }
-    if overrides:
-        settings = merge_settings(settings, overrides)
-    return {server_name: settings}
+    if updates:
+        server_settings = merge_settings(server_settings, updates)
+    settings.nginx.servers[server_name] = server_settings
 
 
-def ensure_veil_settings_consistent(settings):
-    return {
+def copy_nginx_settings_to_veil(settings):
+    if 'nginx' not in settings:
+        return settings
+    return merge_settings(settings, {
         'veil': {
             'website': {
                 'inline_static_files_directory': settings.nginx.inline_static_files_directory,
                 'external_static_files_directory': settings.nginx.external_static_files_directory,
                 }
         }
-    }
+    }, overrides=True)

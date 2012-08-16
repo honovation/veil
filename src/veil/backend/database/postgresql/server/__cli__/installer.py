@@ -7,9 +7,11 @@ from veil.environment.setting import *
 from .launcher import postgresql_server_running
 
 @installation_script()
-def install_postgresql_server(purpose='postgresql'):
+def install_postgresql_server(purpose=None):
+    if not purpose:
+        return
     settings = get_settings()
-    config = getattr(settings, purpose)
+    config = getattr(settings, '{}_postgresql'.format(purpose))
     install_ubuntu_package('postgresql-9.1')
     remove_service_auto_start('postgresql', '/etc/rc0.d/K21postgresql')
     pg_bin_dir = as_path('/usr/lib/postgresql/9.1/bin')
@@ -33,9 +35,8 @@ def install_postgresql_server(purpose='postgresql'):
         delete_file(pg_data_dir / 'pg_hba.conf')
         delete_file(pg_data_dir / 'pg_ident.conf')
         no_user = True
-    pg_config_dir = config.config_directory
-    assert pg_config_dir, 'must specify postgresql config directory'
-    pg_config_dir = as_path(pg_config_dir)
+    pg_config_dir = as_path(config.config_directory)
+    create_directory(pg_config_dir)
     create_file(
         pg_config_dir / 'postgresql.conf',
         content=get_template('postgresql.conf.j2').render(config=config))

@@ -2,7 +2,7 @@ import sandal.component
 
 with sandal.component.init_component(__name__):
     def init():
-        from veil.environment.setting import register_settings_provider
-        from .setting import demo_settings_provider
+        from veil.environment.setting import add_settings
+        from .setting import demo_settings
 
-        register_settings_provider(demo_settings_provider)
+        add_settings(demo_settings())

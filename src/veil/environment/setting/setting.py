@@ -2,32 +2,31 @@ from __future__ import unicode_literals, print_function, division
 import sys
 from veil.model.collection import *
 
-providers = {}
-pass_names = ['base', 'user', 'final']
+initialized = False
 settings = {}
+coordinators = []
 
-def register_settings_provider(provider, pass_name='user'):
-    assert pass_name in pass_names
-    if settings:
-        raise Exception('environment settings has already been initialized: {}'.format(settings))
-    providers.setdefault(pass_name, []).append(provider)
+def add_settings(additional_settings, overrides=False):
+    global settings
+    if initialized:
+        raise Exception('settings has already been initialized: {}'.format(settings))
+    settings = merge_settings(settings, additional_settings, overrides=overrides)
 
 
-def get_base_settings():
-    base_settings = {}
-    for provider in providers.get('base', []):
-        base_settings = merge_settings(base_settings, provider({}))
-    return base_settings
+def register_settings_coordinator(coordinator):
+    coordinators.append(coordinator)
 
 
 def get_settings():
+    global initialized
     global settings
-    if not settings:
-        for pass_name in pass_names:
-            last_pass_settings = objectify(settings)
-            for provider in providers.get(pass_name, []):
-                settings = merge_settings(settings, provider(last_pass_settings))
+    if not initialized:
+        initialized = True
         settings = objectify(settings)
+    for coordinator in coordinators:
+        settings = coordinator(settings)
+        if not isinstance(settings, DictObject):
+            raise Exception('{} should return DictObject'.format(coordinator))
     return settings
 
 
@@ -35,7 +34,7 @@ def merge_settings(base, updates, overrides=False):
     if not base:
         return updates
     if isinstance(base, dict) and isinstance(updates, dict):
-        updated = {}
+        updated = DictObject()
         for k, v in base.items():
             try:
                 updated[k] = merge_settings(v, updates.get(k), overrides=overrides)

@@ -99,6 +99,7 @@ def get_loading_component():
 
 
 def record_error(error):
+    traceback.print_exc()
     errors.setdefault(loading_components[-1].__name__, []).append(traceback.format_exc())
 
 

@@ -1,10 +1,10 @@
 from __future__ import unicode_literals, print_function, division
-from veil.frontend.cli import *
 from veil.backend.shell import *
 from veil.frontend.template import *
 from veil.environment import *
 from veil.environment.setting import *
 from veil.environment.installation import *
+from veil.frontend.cli import script
 
 @installation_script()
 def install_supervisor():

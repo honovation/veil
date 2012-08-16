@@ -15,5 +15,5 @@ def install_queue_server():
     install_python_package('croniter')
     install_python_package('resweb')
     create_file(settings.resweb.config_file, content=get_template('resweb.cfg.j2').render(
-        queue_config=settings.queue,
+        queue_config=settings.queue_redis,
         config=settings.resweb))

@@ -30,12 +30,12 @@ def execute_script(*argv, **kwargs):
     next_level = level[arg]
     if isfunction(next_level):
         script_handler = next_level
-        if script_handler.deployment_settings_provider:
-            register_settings_provider(script_handler.deployment_settings_provider)
+        if script_handler.user_settings:
+            add_settings(script_handler.user_settings, overrides=True)
         user_settings = os.getenv('VEIL_SCRIPT_USER_SETTINGS')
         user_settings = json.loads(user_settings) if user_settings else None
         if user_settings:
-            register_settings_provider(lambda settings: user_settings)
+            add_settings(user_settings, overrides=True)
         bootstrap_runtime()
         try:
             executing_script_handlers.append(script_handler)
@@ -52,19 +52,19 @@ def get_executing_script_handler():
         return None
 
 
-def script(command, deployment_settings_provider=None):
+def script(command, user_settings=None):
 # syntax sugar for ScriptHandlerDecorator
-    return ScriptHandlerDecorator(command, deployment_settings_provider)
+    return ScriptHandlerDecorator(command, user_settings)
 
 
 class ScriptHandlerDecorator(object):
-    def __init__(self, command, deployment_settings_provider):
+    def __init__(self, command, user_settings):
         self.command = command
-        self.deployment_settings_provider = deployment_settings_provider
+        self.user_settings = user_settings
 
     def __call__(self, script_handler):
         script_handler = script_handler
-        script_handler.deployment_settings_provider = self.deployment_settings_provider
+        script_handler.user_settings = self.user_settings
 
         @functools.wraps(script_handler)
         def wrapper(*args, **kwargs):

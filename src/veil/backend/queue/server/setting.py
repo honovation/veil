@@ -1,37 +1,33 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment import *
+from veil.environment.setting import *
 from veil.backend.redis import *
 
-DEFAULT_QUEUE_HOST = '127.0.0.1'
-DEFAULT_QUEUE_PORT = 6380
-
-PYRES_BASE_SETTINGS = {
-    'queue': {
-        'owner': CURRENT_USER,
-        'owner_group': CURRENT_USER_GROUP,
-        'dbdir': VEIL_VAR_DIR / 'queue',
-        'configfile': VEIL_ETC_DIR / 'queue.conf',
-        'bind': DEFAULT_QUEUE_HOST,
-        'port': DEFAULT_QUEUE_PORT,
-        'password': ''
-    },
-    'resweb': {
-        'config_file': VEIL_ETC_DIR / 'resweb.cfg',
-        'server_host': 'localhost',
-        'server_port': 5000
+def pyres_settings(config_file=None, server_host=None, server_port=None, **updates):
+    updates['port'] = updates.get('port', 6380)
+    settings = redis_settings('queue', **updates)
+    settings.resweb = {
+        'config_file': config_file or VEIL_ETC_DIR / 'resweb.cfg',
+        'server_host': server_host or 'localhost',
+        'server_port': server_port or 7070
     }
-}
+    return settings
 
-def ensure_veil_settings_consistent(settings):
-    return {
+
+def copy_queue_settings_to_veil(settings):
+    if 'queue_redis' not in settings:
+        return settings
+    return merge_settings(settings, {
         'veil': {
             'queue': {
-                'host': settings.queue.bind,
-                'port': settings.queue.port,
-                'password': settings.queue.password
+                'type': 'redis',
+                'host': settings.queue_redis.bind,
+                'port': settings.queue_redis.port,
+                'password': settings.queue_redis.password
             }
         }
-    }
+    }, overrides=True)
+
 
 def queue_program():
     return redis_program('queue')

@@ -5,6 +5,7 @@ with sandal.component.init_component(__name__):
     from .job import enqueue
     from .job import enqueue_at
     from .periodic_job import periodic_job
+    from .setting import pyres_settings
     from .setting import queue_program
     from .setting import resweb_program
     from .setting import delayed_job_scheduler_program
@@ -19,6 +20,7 @@ with sandal.component.init_component(__name__):
         # from periodic_job
         periodic_job.__name__,
         # from setting
+        pyres_settings.__name__,
         queue_program.__name__,
         resweb_program.__name__,
         delayed_job_scheduler_program.__name__,
@@ -27,9 +29,7 @@ with sandal.component.init_component(__name__):
     ]
 
     def init():
-        from veil.environment.setting import register_settings_provider
-        from .setting import PYRES_BASE_SETTINGS
-        from .setting import ensure_veil_settings_consistent
+        from veil.environment.setting import register_settings_coordinator
+        from .setting import copy_queue_settings_to_veil
 
-        register_settings_provider(lambda settings: PYRES_BASE_SETTINGS, 'base')
-        register_settings_provider(ensure_veil_settings_consistent, 'final')
+        register_settings_coordinator(copy_queue_settings_to_veil)

@@ -7,9 +7,11 @@ from veil.backend.shell import *
 from veil.environment.installation import *
 
 @installation_script()
-def install_redis_server(purpose='redis'):
+def install_redis_server(purpose=None):
+    if not purpose:
+        return
     settings = get_settings()
-    config = getattr(settings, purpose)
+    config = getattr(settings, '{}_redis'.format(purpose))
     install_ubuntu_package('redis-server')
     remove_service_auto_start('redis-server', '/etc/rc0.d/K20redis-server')
     redis_dbdir = as_path(config.dbdir)
@@ -19,7 +21,7 @@ def install_redis_server(purpose='redis'):
 
 
 @script('up')
-def bring_up_redis_server(purpose='redis'):
+def bring_up_redis_server(purpose='default'):
     settings = get_settings()
-    config = getattr(settings, purpose)
+    config = getattr(settings, '{}_redis'.format(purpose))
     pass_control_to('redis-server {}'.format(config.configfile))
