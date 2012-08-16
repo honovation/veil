@@ -3,7 +3,7 @@ from cStringIO import StringIO
 import tempfile
 from veil.development.test import TestCase
 from sandal.path import as_path
-from veil.environment.runtime import *
+from veil.environment.setting import *
 from .bucket import register_bucket
 
 class FilesystemBucketTest(TestCase):

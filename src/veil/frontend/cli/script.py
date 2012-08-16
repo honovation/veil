@@ -6,8 +6,8 @@ import json
 from inspect import isfunction
 from sandal.component import get_loading_components
 from sandal.handler import *
-from veil.environment.deployment import *
-from veil.environment.runtime import *
+from veil.environment.setting import *
+from veil.environment.setting import *
 from veil.environment import *
 
 script_handlers = {}
@@ -32,11 +32,11 @@ def execute_script(*argv, **kwargs):
     if isfunction(next_level):
         script_handler = next_level
         if script_handler.deployment_settings_provider:
-            register_deployment_settings_provider(script_handler.deployment_settings_provider)
+            register_settings_provider(script_handler.deployment_settings_provider)
         user_settings = os.getenv('VEIL_SCRIPT_USER_SETTINGS')
         user_settings = json.loads(user_settings) if user_settings else None
         if user_settings:
-            register_deployment_settings_provider(lambda settings: user_settings)
+            register_settings_provider(lambda settings: user_settings)
         bootstrap_runtime()
         return script_handler(*argv[1:])
     else:

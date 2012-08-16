@@ -9,7 +9,7 @@ import re
 import time
 from veil.frontend.encoding import to_str
 from sandal.hash import get_hmac
-from veil.environment.runtime import *
+from veil.environment.setting import *
 from .context import get_current_http_request
 from .context import get_current_http_response
 

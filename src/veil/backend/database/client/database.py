@@ -7,7 +7,7 @@ from functools import wraps
 from logging import getLogger
 import uuid
 from veil.model.collection import *
-from veil.environment.runtime import register_option
+from veil.environment.setting import register_option
 
 LOGGER = getLogger(__name__)
 

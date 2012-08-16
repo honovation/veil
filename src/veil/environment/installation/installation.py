@@ -3,7 +3,7 @@ import functools
 import json
 from sandal.component import get_loading_components, get_component_dependencies
 from veil.backend.shell import *
-from veil.environment.deployment import *
+from veil.environment.setting import *
 from veil.environment import *
 from veil.frontend.cli import *
 from .filesystem import create_directory
@@ -21,7 +21,7 @@ def installation_script(deployment_settings_provider=None):
                 return func(*args, **kwargs)
             create_layout()
             if deployment_settings_provider:
-                user_settings = deployment_settings_provider(get_deployment_base_settings())
+                user_settings = deployment_settings_provider(get_base_settings())
             else:
                 user_settings = {}
             os.environ['VEIL_SCRIPT_USER_SETTINGS'] = json.dumps(user_settings)

@@ -5,8 +5,8 @@ init_components = lambda : sandal.component.init_components([
     'veil.backend.queue',
     'veil.backend.database',
     'veil.backend.redis',
-    'veil.environment.runtime',
-    'veil.environment.deployment',
+    'veil.environment.setting',
+    'veil.environment.setting',
     'veil.development',
     'veil.supervisor',
     '__veil__'

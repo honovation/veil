@@ -3,12 +3,12 @@ from sandal.path import *
 from veil.environment.installation import *
 from veil.backend.shell import *
 from veil.frontend.template import *
-from veil.environment.deployment import *
+from veil.environment.setting import *
 from .launcher import postgresql_server_running
 
 @installation_script()
 def install_postgresql_server():
-    settings = get_deployment_settings()
+    settings = get_settings()
     install_ubuntu_package('postgresql-9.1')
     remove_service_auto_start('postgresql', '/etc/rc0.d/K21postgresql')
     pg_bin_dir = as_path('/usr/lib/postgresql/9.1/bin')

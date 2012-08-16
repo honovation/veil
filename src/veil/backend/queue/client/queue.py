@@ -7,7 +7,7 @@ from redis.client import Redis
 from pyres import ResQ
 from veil.backend.queue import server
 from sandal.clock import get_current_time
-from veil.environment.runtime import register_option
+from veil.environment.setting import register_option
 
 LOGGER = getLogger(__name__)
 

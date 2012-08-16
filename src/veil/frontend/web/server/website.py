@@ -5,7 +5,7 @@ from jinja2.loaders import FileSystemLoader
 from tornado.ioloop import IOLoop
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
-from veil.environment.runtime import *
+from veil.environment.setting import *
 from .locale import install_translations
 from .routing import  RoutingHTTPHandler, get_routes
 from .static_file import clear_static_file_hashes

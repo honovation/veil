@@ -2,7 +2,7 @@ import sandal.component
 
 with sandal.component.init_component(__name__):
     def init():
-        from veil.environment.deployment import register_deployment_settings_provider
+        from veil.environment.setting import register_settings_provider
         from .setting import SUPERVISOR_BASE_SETTINGS
 
-        register_deployment_settings_provider(lambda settings: SUPERVISOR_BASE_SETTINGS, 'base')
+        register_settings_provider(lambda settings: SUPERVISOR_BASE_SETTINGS, 'base')

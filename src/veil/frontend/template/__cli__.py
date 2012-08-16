@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.environment.deployment import *
+from veil.environment.setting import *
 from veil.environment.installation import *
 
 @installation_script()

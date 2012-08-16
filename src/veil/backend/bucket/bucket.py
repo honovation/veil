@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 from sandal.path import as_path
-from veil.environment.runtime import *
+from veil.environment.setting import *
 
 LOGGER = logging.getLogger(__name__)
 registry = {} # purpose => get_bucket_options

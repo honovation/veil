@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
-from veil.environment.deployment import *
+from .setting import merge_settings
+from .setting import get_settings
 
 option_definitions = {}
 option_updates = {}
@@ -16,7 +17,7 @@ def register_option(section, name, type=unicode):
 
 
 def get_option(section, name):
-    options = dict(get_deployment_settings().get('veil', None))
+    options = dict(get_settings().get('veil', None))
     options = merge_settings(options, option_updates)
     if not options:
         raise Exception('options have not been initialized')

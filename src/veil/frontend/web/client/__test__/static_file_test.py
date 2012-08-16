@@ -4,7 +4,7 @@ import os.path
 from veil.frontend.template import get_template
 from veil.development.test import TestCase
 from sandal.path import *
-from veil.environment.runtime import *
+from veil.environment.setting import *
 from veil.frontend.web.server import *
 from ..browser import start_website_and_browser
 

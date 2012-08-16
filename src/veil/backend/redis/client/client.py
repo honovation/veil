@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division, absolute_import
 from redis.client import Redis
 from logging import getLogger
-from veil.environment.runtime import *
+from veil.environment.setting import *
 
 LOGGER = getLogger(__name__)
 

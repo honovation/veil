@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.model.collection import *
 from veil.environment import *
-from veil.environment.deployment import *
+from veil.environment.setting import *
 
 nginx_config_file = VEIL_ETC_DIR / 'nginx.conf'
 NGINX_BASE_SETTINGS = objectify({

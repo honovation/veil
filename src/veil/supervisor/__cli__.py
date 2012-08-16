@@ -3,12 +3,12 @@ from veil.frontend.cli import *
 from veil.backend.shell import *
 from veil.frontend.template import *
 from veil.environment import *
-from veil.environment.deployment import *
+from veil.environment.setting import *
 from veil.environment.installation import *
 
 @installation_script()
 def install_supervisor():
-    settings = get_deployment_settings()
+    settings = get_settings()
     install_python_package('supervisor')
     create_file(settings.supervisor.config_file, get_template('supervisord.cfg.j2').render(
         config=settings.supervisor,
@@ -21,7 +21,7 @@ def install_supervisor():
 
 @script('up')
 def bring_up_supervisor():
-    settings = get_deployment_settings()
+    settings = get_settings()
     pass_control_to('supervisord -c {}'.format(settings.supervisor.config_file))
 
 

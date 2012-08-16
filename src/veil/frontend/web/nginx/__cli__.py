@@ -3,12 +3,12 @@ from sandal.path import *
 from veil.frontend.cli import *
 from veil.frontend.template import *
 from veil.backend.shell import *
-from veil.environment.deployment import *
+from veil.environment.setting import *
 from veil.environment.installation import *
 
 @installation_script()
 def install_nginx():
-    settings = get_deployment_settings()
+    settings = get_settings()
     install_ubuntu_package('nginx-extras')
     remove_service_auto_start('nginx', '/etc/rc0.d/K20nginx')
     create_directory(settings.nginx.log_directory)
@@ -34,5 +34,5 @@ def install_nginx():
 
 @script('up')
 def bring_up_nginx():
-    settings = get_deployment_settings()
+    settings = get_settings()
     pass_control_to('nginx -c {}'.format(settings.nginx.config_file))

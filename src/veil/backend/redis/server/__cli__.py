@@ -2,13 +2,13 @@ from __future__ import unicode_literals, print_function, division
 from veil.frontend.cli import *
 from sandal.path import *
 from veil.frontend.template import *
-from veil.environment.deployment import *
+from veil.environment.setting import *
 from veil.backend.shell import *
 from veil.environment.installation import *
 
 @installation_script()
 def install_redis_server(purpose='redis'):
-    settings = get_deployment_settings()
+    settings = get_settings()
     config = getattr(settings, purpose)
     install_ubuntu_package('redis-server')
     remove_service_auto_start('redis-server', '/etc/rc0.d/K20redis-server')
@@ -20,6 +20,6 @@ def install_redis_server(purpose='redis'):
 
 @script('up')
 def bring_up_redis_server(purpose='redis'):
-    settings = get_deployment_settings()
+    settings = get_settings()
     config = getattr(settings, purpose)
     pass_control_to('redis-server {}'.format(config.configfile))

@@ -13,7 +13,7 @@ from tornado.stack_context import StackContext
 from tornado.ioloop import IOLoop
 from veil.frontend.encoding import to_str
 from veil.development.test import *
-from veil.environment.runtime import *
+from veil.environment.setting import *
 from .argument import normalize_arguments
 from .argument import tunnel_put_and_delete
 from .context import HTTPContext

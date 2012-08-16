@@ -8,7 +8,7 @@ with sandal.component.init_component(__name__):
     ]
 
     def init():
-        from veil.environment.deployment import register_deployment_settings_provider
+        from veil.environment.setting import register_settings_provider
         from .setting import POSTGRESQL_BASE_SETTINGS
 
-        register_deployment_settings_provider(lambda settings: POSTGRESQL_BASE_SETTINGS, 'base')
+        register_settings_provider(lambda settings: POSTGRESQL_BASE_SETTINGS, 'base')

@@ -10,7 +10,7 @@ from sandal.path import as_path
 from sandal.hash import *
 from veil.frontend.encoding import *
 from veil.frontend.template import *
-from veil.environment.runtime import *
+from veil.environment.setting import *
 
 LOGGER = getLogger(__name__)
 
