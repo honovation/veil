@@ -31,14 +31,14 @@ def get_settings():
     return settings
 
 
-def merge_settings(base, updates):
+def merge_settings(base, updates, overrides=False):
     if not base:
         return updates
     if isinstance(base, dict) and isinstance(updates, dict):
         updated = {}
         for k, v in base.items():
             try:
-                updated[k] = merge_settings(v, updates.get(k))
+                updated[k] = merge_settings(v, updates.get(k), overrides=overrides)
             except:
                 raise Exception('can not merge: {}\r\n{}'.format(k, sys.exc_info()[1]))
         for k, v in updates.items():
@@ -48,5 +48,8 @@ def merge_settings(base, updates):
     if base == updates:
         return base
     if updates:
-        raise Exception('can not merge {} with {}'.format(base, updates))
+        if overrides:
+            return updates
+        else:
+            raise Exception('can not merge {} with {}'.format(base, updates))
     return base

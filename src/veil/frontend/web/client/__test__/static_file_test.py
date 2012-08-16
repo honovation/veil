@@ -31,16 +31,16 @@ class StaticFileModuleSmokeTest(TestCase):
     def test_script_tag_moved(self):
         @route('GET', '/one_script_tag', website='test')
         def one_script_tag():
-            return '<script></script>test'
+            return '<html><script></script><p>test</p></html>'
         browser = start_website_and_browser('test')
-        self.assertEqual('test<script></script>', browser.get('/one_script_tag').response_text)
+        self.assertEqual('<html><p>test</p><script></script>\r\n</html>', browser.get('/one_script_tag').response_text)
 
     def test_script_tag_combined(self):
         @route('GET', '/two_script_tags', website='test')
         def two_script_tags():
-            return 'test<script></script><script></script>'
+            return '<html>test<script></script><script></script></html>'
         browser = start_website_and_browser('test')
-        self.assertEqual('test<script></script>', browser.get('/two_script_tags').response_text)
+        self.assertEqual('<html>test<script></script>\r\n</html>', browser.get('/two_script_tags').response_text)
 
     def test_inline_javascript(self):
         @route('GET', '/inline_javascript', website='test')

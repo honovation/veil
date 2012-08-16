@@ -18,7 +18,7 @@ def register_option(section, name, type=unicode):
 
 def get_option(section, name):
     options = dict(get_settings().get('veil', None))
-    options = merge_settings(options, option_updates)
+    options = merge_settings(options, option_updates, overrides=True)
     if not options:
         raise Exception('options have not been initialized')
     type = option_definitions.get(section, {}).get(name)
@@ -43,5 +43,7 @@ def reset_options():
 
 
 def update_options(updates):
-#    get_executing_test().addCleanup(reset_options)
+    from veil.development.test import get_executing_test
+
+    get_executing_test().addCleanup(reset_options)
     option_updates.update(updates)
