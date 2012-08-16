@@ -6,7 +6,7 @@ from veil.backend.shell import *
 from veil.environment.installation import *
 from .i18n import LOCALE_DIR
 
-@installation_script('install')
+@installation_script()
 def install_locale_support():
     install_python_package('babel')
 

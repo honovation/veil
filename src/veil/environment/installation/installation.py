@@ -9,7 +9,7 @@ from veil.frontend.cli import *
 from .filesystem import create_directory
 
 # create basic layout before deployment
-def installation_script(deployment_settings_provider=None):
+def installation_script(user_settings=None):
     decorator = script('install')
 
     def decorate(func):
@@ -20,11 +20,7 @@ def installation_script(deployment_settings_provider=None):
             if os.getenv('VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'):
                 return func(*args, **kwargs)
             create_layout()
-            if deployment_settings_provider:
-                user_settings = deployment_settings_provider(get_base_settings())
-            else:
-                user_settings = {}
-            os.environ['VEIL_SCRIPT_USER_SETTINGS'] = json.dumps(user_settings)
+            os.environ['VEIL_SCRIPT_USER_SETTINGS'] = json.dumps(user_settings or {})
             for dependency in get_transitive_dependencies(component_name):
                 install_dependency(dependency)
             env = os.environ.copy()
