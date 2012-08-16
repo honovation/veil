@@ -6,6 +6,7 @@ from veil.backend.shell import *
 from veil.environment.deployment import *
 from veil.environment import *
 from veil.frontend.cli import *
+from .filesystem import create_directory
 
 # create basic layout before deployment
 def installation_script(deployment_settings_provider=None):

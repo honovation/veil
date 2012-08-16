@@ -1,8 +1,7 @@
 from __future__ import unicode_literals, print_function, division
-from veil.frontend.cli import *
-from veil.environment.deployment import *
+from veil.environment.installation import *
 
 
-@script('install')
+@installation_script('install')
 def install_tornado():
     install_python_package('tornado')

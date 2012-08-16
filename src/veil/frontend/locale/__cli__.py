@@ -1,12 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 from argparse import ArgumentParser
 from veil.environment import VEIL_HOME
-from veil.environment.deployment import *
 from veil.frontend.cli import *
 from veil.backend.shell import *
+from veil.environment.installation import *
 from .i18n import LOCALE_DIR
 
-@script('install')
+@installation_script('install')
 def install_locale_support():
     install_python_package('babel')
 
