@@ -6,7 +6,7 @@ from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
 from sandal.component import force_import_module, is_dummy_function
 from veil.development.test import get_executing_test
-from sandal.handler import *
+from veil.frontend.cli import get_executing_script_handler
 
 filters = {}
 utilities = {}
@@ -72,6 +72,11 @@ def require_current_template_directory_being(template_directory):
         current_template_directories.pop()
 
 
+def require_current_template_directory_relative_to(func):
+    return require_current_template_directory_being(
+        os.path.dirname(os.path.abspath(force_import_module(func.__module__).__file__)))
+
+
 def get_template(template_path=None, template_source=None):
     if not template_path and not template_source:
         raise Exception('must specify either template path or template source')
@@ -89,7 +94,7 @@ def get_template_from_file(template_path):
         if current_template_directories:
             current_template_directory = current_template_directories[-1]
         else:
-            handler = get_executing_handler()
+            handler = get_executing_script_handler()
             if handler:
                 current_template_directory = os.path.dirname(
                     os.path.abspath(force_import_module(handler.__module__).__file__))

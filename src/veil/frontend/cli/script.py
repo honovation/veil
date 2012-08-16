@@ -5,13 +5,12 @@ import sys
 import json
 from inspect import isfunction
 from sandal.component import get_loading_components
-from sandal.handler import *
-from veil.environment.setting import *
 from veil.environment.setting import *
 from veil.environment import *
 
 script_handlers = {}
 LOGGER = getLogger(__name__)
+executing_script_handlers = []
 
 def is_script_defined(*argv):
     current_level = script_handlers
@@ -38,9 +37,19 @@ def execute_script(*argv, **kwargs):
         if user_settings:
             register_settings_provider(lambda settings: user_settings)
         bootstrap_runtime()
-        return script_handler(*argv[1:])
+        try:
+            executing_script_handlers.append(script_handler)
+            return script_handler(*argv[1:])
+        finally:
+            executing_script_handlers.pop()
     else:
         return execute_script(level=next_level, *argv[1:])
+
+def get_executing_script_handler():
+    if executing_script_handlers:
+        return executing_script_handlers[-1]
+    else:
+        return None
 
 
 def script(command, deployment_settings_provider=None):
@@ -54,7 +63,7 @@ class ScriptHandlerDecorator(object):
         self.deployment_settings_provider = deployment_settings_provider
 
     def __call__(self, script_handler):
-        script_handler = decorate_handler(script_handler)
+        script_handler = script_handler
         script_handler.deployment_settings_provider = self.deployment_settings_provider
 
         @functools.wraps(script_handler)

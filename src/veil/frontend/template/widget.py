@@ -6,8 +6,8 @@ from inspect import getargspec
 import traceback
 from markupsafe import Markup
 from veil.development.test import *
-from sandal.handler import *
 from .template import register_template_utility
+from .template import require_current_template_directory_relative_to
 
 # === global state ===
 original_widgets = None
@@ -35,7 +35,7 @@ def reset_widgets():
 
 # === handle widget ===
 def widget(func):
-    return WidgetDecorator()(decorate_handler(func))
+    return WidgetDecorator()(func)
 
 
 class WidgetDecorator(object):
@@ -71,10 +71,11 @@ class Widget(object):
             else:
                 kwargs.pop('from_template', None)
             self.activate()
-            content = self.func(*args, **kwargs)
-            if content is None:
-                return None
-            return Markup(content)
+            with require_current_template_directory_relative_to(self.func):
+                content = self.func(*args, **kwargs)
+                if content is None:
+                    return None
+                return Markup(content)
         except:
             type, value, traceback = sys.exc_info()
             if not getattr(value, 'EXPECTED_WIDGET_ERROR', None):
