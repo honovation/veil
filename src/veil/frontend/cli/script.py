@@ -4,7 +4,7 @@ from logging import getLogger
 import sys
 import json
 from inspect import isfunction
-from sandal.component import get_loading_components
+from sandal.component import get_loading_component
 from veil.environment.setting import *
 from veil.environment import *
 
@@ -83,10 +83,9 @@ class ScriptHandlerDecorator(object):
 
 
 def get_current_level_names():
-    components = get_loading_components()
-    if not components:
+    component = get_loading_component()
+    if not component:
         return []
-    component = components[-1]
     level_names = component.__name__.split('.')[1:]
     return level_names
 

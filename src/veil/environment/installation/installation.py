@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import functools
 import json
-from sandal.component import get_loading_components, get_component_dependencies
+from sandal.component import get_loading_component, get_component_dependencies
 from veil.backend.shell import *
 from veil.environment.setting import *
 from veil.environment import *
@@ -13,7 +13,7 @@ def installation_script(deployment_settings_provider=None):
     decorator = script('install')
 
     def decorate(func):
-        component_name = get_loading_components()[-1].__name__
+        component_name = get_loading_component().__name__
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):

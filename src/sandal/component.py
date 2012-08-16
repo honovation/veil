@@ -6,7 +6,7 @@ import traceback
 import os
 
 __all__ = [
-    'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_components',
+    'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_component',
     'is_dummy_function', 'get_component_dependencies', 'assert_component_loaded',
     'assert_component_dependencies']
 
@@ -91,8 +91,11 @@ def remove_loaded_components():
             del sys.modules[loaded_component.__name__]
 
 
-def get_loading_components():
-    return loading_components
+def get_loading_component():
+    if loading_components:
+        return loading_components[-1]
+    else:
+        return None
 
 
 def record_error(error):

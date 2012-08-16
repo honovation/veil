@@ -13,6 +13,7 @@ from veil.frontend.web.tornado import *
 LOGGER = getLogger(__name__)
 original_routes = {}
 routes = {}
+website_components = {}
 
 @test_hook
 def remember_original_routes():
@@ -35,6 +36,10 @@ def route(method, path_template, website=None, tags=(), **path_template_params):
             _website = infer_website()
         if not _website:
             raise Exception('website not specified for route: {}'.format(route_handler))
+        if _website in website_components:
+            assert website_components[_website] == get_loading_component()
+        else:
+            website_components[_website] = get_loading_component()
         new_route = Route(page(route_handler), method, path_template, tags=tags, **path_template_params)
         routes.setdefault(_website, []).append(new_route)
         return route_handler
@@ -43,7 +48,7 @@ def route(method, path_template, website=None, tags=(), **path_template_params):
 
 
 def infer_website():
-    return get_loading_components()[-1].__name__.split('.')[-1].upper()
+    return get_loading_component().__name__.split('.')[-1].upper()
 
 
 def async_route(*args, **kwargs):
@@ -63,6 +68,7 @@ def is_public_route(route):
 
 
 def get_routes(website):
+    assert_component_loaded(website_components[website].__name__)
     return routes.get(website, ())
 
 
