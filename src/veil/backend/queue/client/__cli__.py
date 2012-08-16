@@ -6,6 +6,5 @@ from veil.environment.deployment import *
 @script('install')
 def install_queue_client():
     install_ubuntu_package('python2.7-dev')
-    execute_script('backend', 'redis', 'client', 'install')
     install_python_package('pytz')
     install_python_package('pyres')

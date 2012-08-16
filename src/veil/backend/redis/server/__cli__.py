@@ -4,8 +4,9 @@ from sandal.path import *
 from veil.frontend.template import *
 from veil.environment.deployment import *
 from veil.backend.shell import *
+from veil.environment.installation import *
 
-@installation_script('install')
+@installation_script()
 def install_redis_server(purpose='redis'):
     settings = get_deployment_settings()
     config = getattr(settings, purpose)
@@ -17,7 +18,7 @@ def install_redis_server(purpose='redis'):
     create_file(redis_configfile, content=get_template('redis.conf.j2').render(config=config))
 
 
-@installation_script('up')
+@script('up')
 def bring_up_redis_server(purpose='redis'):
     settings = get_deployment_settings()
     config = getattr(settings, purpose)

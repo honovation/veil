@@ -1,15 +1,15 @@
 from __future__ import unicode_literals, print_function, division
-from veil.frontend.cli import *
+from veil.environment.installation import *
 from veil.environment.deployment import *
 from veil.frontend.template import *
+from veil.backend.shell import *
 
 
-@installation_script('install')
+@installation_script()
 def install_queue_server():
+    shell_execute('veil backend redis server install queue')
     settings = get_deployment_settings()
     install_ubuntu_package('python2.7-dev')
-    execute_script('backend', 'redis', 'client', 'install')
-    execute_script('backend', 'redis', 'server', 'install', 'queue')
     install_python_package('pytz')
     install_python_package('pyres')
     install_python_package('croniter')

@@ -13,6 +13,13 @@ def register_deployment_settings_provider(provider, pass_name='user'):
     providers.setdefault(pass_name, []).append(provider)
 
 
+def get_deployment_base_settings():
+    base_settings = {}
+    for provider in providers.get('base', []):
+        base_settings = merge_settings(base_settings, provider({}))
+    return base_settings
+
+
 def get_deployment_settings():
     global settings
     if not settings:
@@ -22,6 +29,7 @@ def get_deployment_settings():
                 settings = merge_settings(settings, provider(last_pass_settings))
         settings = objectify(settings)
     return settings
+
 
 def merge_settings(base, updates):
     if not base:

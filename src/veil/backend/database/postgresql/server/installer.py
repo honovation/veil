@@ -1,12 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 from sandal.path import *
-from veil.frontend.cli import *
+from veil.environment.installation import *
 from veil.backend.shell import *
 from veil.frontend.template import *
 from veil.environment.deployment import *
 from .launcher import postgresql_server_running
 
-@installation_script('install')
+@installation_script()
 def install_postgresql_server():
     settings = get_deployment_settings()
     install_ubuntu_package('postgresql-9.1')

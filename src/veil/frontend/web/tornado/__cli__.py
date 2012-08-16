@@ -6,4 +6,3 @@ from veil.environment.deployment import *
 @script('install')
 def install_tornado():
     install_python_package('tornado')
-    execute_script('frontend', 'encoding', 'install')

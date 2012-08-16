@@ -2,8 +2,9 @@ from __future__ import unicode_literals, print_function, division
 import functools
 from logging import getLogger
 import sys
+import json
 from inspect import isfunction
-from sandal.component import get_loading_components, get_component_dependencies
+from sandal.component import get_loading_components
 from sandal.handler import *
 from veil.environment.deployment import *
 from veil.environment.runtime import *
@@ -32,6 +33,10 @@ def execute_script(*argv, **kwargs):
         script_handler = next_level
         if script_handler.deployment_settings_provider:
             register_deployment_settings_provider(script_handler.deployment_settings_provider)
+        user_settings = os.getenv('VEIL_SCRIPT_USER_SETTINGS')
+        user_settings = json.loads(user_settings) if user_settings else None
+        if user_settings:
+            register_deployment_settings_provider(lambda settings: user_settings)
         bootstrap_runtime()
         return script_handler(*argv[1:])
     else:
@@ -76,37 +81,3 @@ def get_current_level_names():
     level_names = component.__name__.split('.')[1:]
     return level_names
 
-
-# create basic layout before deployment
-def installation_script(*args, **kwargs):
-    decorator = script(*args, **kwargs)
-
-    def decorate(func):
-        component_name = get_loading_components()[-1].__name__
-
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            create_layout()
-            for dependency in get_component_dependencies()[component_name]:
-                install_dependency(dependency)
-            return func(*args, **kwargs)
-
-        return decorator(wrapper)
-
-    return decorate
-
-
-def install_dependency(dependency):
-    args = list(dependency.split('.'))[1:]
-    args.append('install')
-    if is_script_defined(*args):
-        execute_script(*args)
-
-
-def create_layout():
-    create_directory(VEIL_HOME / 'log')
-    create_directory(VEIL_LOG_DIR)
-    create_directory(VEIL_HOME / 'etc')
-    create_directory(VEIL_ETC_DIR)
-    create_directory(VEIL_HOME / 'var')
-    create_directory(VEIL_VAR_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP)

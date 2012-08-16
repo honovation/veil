@@ -5,13 +5,13 @@ from veil.frontend.cli import *
 from veil.backend.shell import *
 from veil.environment.deployment import *
 
-@installation_script('up')
+@script('up')
 def bring_up_postgresql_server():
     settings = get_deployment_settings()
     pass_control_to('postgres -D {}'.format(settings.postgresql.data_directory))
 
 
-@installation_script('down')
+@script('down')
 def bring_down_postgresql_server():
     settings = get_deployment_settings()
     shell_execute('su {} -c "pg_ctl -D {} stop"'.format(

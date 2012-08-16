@@ -1,9 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment.installation import *
-
-__import__('veil.supervisor')
-__import__('demo.website')
+from veil.environment.deployment import *
 
 @installation_script()
-def install_demo():
-    pass
+def install():
+    install_python_package('python-dateutil')
