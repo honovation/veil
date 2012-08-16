@@ -20,13 +20,13 @@ LOGGER = getLogger(__name__)
 def register_page_post_processor(page_post_processor):
     page_post_processors.append(page_post_processor)
 
-
 @test_hook
 def remember_original_widgets():
     get_executing_test().addCleanup(reset_widgets)
     global original_widgets
     if not original_widgets:
         original_widgets = dict(widgets)
+
 
 def reset_widgets():
     widgets.clear()
@@ -119,7 +119,7 @@ class Page(Widget):
             html = super(Page, self).render(*args, **kwargs)
             if html is not None:
                 for page_post_processor in page_post_processors:
-                    html = page_post_processor(html)
+                    html = page_post_processor(self.func, html)
                 return html
             return html
         finally:

@@ -5,7 +5,7 @@ import hashlib
 from markupsafe import Markup
 import os.path
 from logging import getLogger
-from lxml import etree
+import lxml.html
 from sandal.path import as_path
 from sandal.hash import *
 from veil.frontend.encoding import *
@@ -46,146 +46,80 @@ def get_static_file_hash(path):
             LOGGER.error('Could not open static file {}'.format(static_file_path))
     return static_file_hashes.get(path)
 
-# === write inline static files after template loaded ===
-def process_inline_blocks(template_path, template):
-    process_inline_javascript(template, template_path)
-    process_inline_stylesheet(template, template_path)
 
-
-def process_inline_javascript(template, template_path):
-    if not hasattr(template, 'inline_javascript'):
-        template.inline_javascript = ''
-        blocks = template.blocks
-        for block_name in blocks.keys():
-            if 'inline_javascript' == block_name:
-                content = ''.join(list(blocks[block_name](template.new_context())))
-                content = delete_first_and_last_non_empty_lines_to_strip_tags_such_as_script(content)
-                content = to_str(content)
-                hash = hashlib.md5(content).hexdigest()
-                inline_static_file = as_path(get_inline_static_files_directory()) / hash
-                if not inline_static_file.exists():
-                    inline_static_file.write_text(content)
-                if template_path:
-                    pseudo_file_name = generate_pseudo_file_name(template_path, 'js')
-                    template.inline_javascript = 'v-{}/{}'.format(hash, pseudo_file_name)
-                else:
-                    template.inline_javascript = 'v-{}'.format(hash)
-                html_tag = '<script type="text/javascript" src="/static/{}"></script>\r\n'.format(
-                    template.inline_javascript)
-                blocks[block_name] = lambda *args, **kwargs: (html_tag)
-
-
-def process_inline_stylesheet(template, template_path):
-    if not hasattr(template, 'inline_stylesheet'):
-        template.inline_stylesheet = ''
-        blocks = template.blocks
-        for block_name in blocks.keys():
-            if 'inline_stylesheet' == block_name:
-                content = ''.join(list(blocks[block_name](template.new_context())))
-                content = delete_first_and_last_non_empty_lines_to_strip_tags_such_as_script(content)
-                content = to_str(content)
-                hash = hashlib.md5(content).hexdigest()
-                inline_static_file = as_path(get_inline_static_files_directory()) / hash
-                if not inline_static_file.exists():
-                    inline_static_file.write_text(content)
-                if template_path:
-                    pseudo_file_name = generate_pseudo_file_name(template_path, 'css')
-                    template.inline_stylesheet = 'v-{}/{}'.format(hash, pseudo_file_name)
-                else:
-                    template.inline_stylesheet = 'v-{}'.format(hash)
-                html_tag = '<link rel="stylesheet" type="text/css" media="screen" href="/static/{}"/>\r\n'.format(
-                    template.inline_stylesheet)
-                blocks[block_name] = lambda *args, **kwargs: (html_tag)
-
-
-def delete_first_and_last_non_empty_lines_to_strip_tags_such_as_script(content):
-    lines = content.splitlines()
-    while True:
-        if not lines[0]:
-            del lines[0]
-        else:
-            break
-    return '\n'.join(lines[1:-1])
-
-
-def generate_pseudo_file_name(template_path, suffix):
-    template_path = os.path.abspath(template_path)
-    template_dir = os.path.basename(os.path.dirname(template_path))
-    template_name = os.path.splitext(os.path.basename(template_path))[0]
-    if template_dir.endswith('_web'):
-        return '{}.{}'.format(template_name, suffix)
-    else:
-        return '{}-{}.{}'.format(template_dir.replace('_', '-'), template_name, suffix)
-
-
+def process_javascript_and_stylesheet_tags(page_handler, html):
 # === combine & move <script> to the bottom ===
-# === combine & move <style> to the top ===
-def relocate_javascript_and_stylesheet_tags(orig_html):
-    if not orig_html:
-        return orig_html
-    if not orig_html.strip():
-        return orig_html
-    if '</html>' not in orig_html:
-        return orig_html
-    fragments = []
-    javascript_fragments = []
-    stylesheet_fragments = []
-    head_end_index = None
-    body_end_index = None
-    context = etree.iterparse(StringIO(orig_html.encode('utf8')), ('start', 'end', 'start-ns', 'end-ns'), encoding='utf8')
-    for action, element in context:
-        if 'end' == action and 'body' == element.tag:
-            body_end_index = len(fragments)
-        if 'end' == action and 'head' == element.tag:
-            head_end_index = len(fragments)
-        if 'script' == element.tag and 'text/plain' != element.attrib.get('type', None):
-            if 'start' == action:
-                javascript_fragment = '{}{}</script>'.format(format_start_tag(element), element.text or '')
-                if javascript_fragment not in javascript_fragments:
-                    javascript_fragments.append(javascript_fragment)
-            continue
-        if 'style' == element.tag:
-            if 'start' == action:
-                stylesheet_fragment = '{}{}</style>'.format(format_start_tag(element), element.text or '')
-                if stylesheet_fragment not in stylesheet_fragments:
-                    stylesheet_fragments.append(stylesheet_fragment)
-            continue
-        if 'link' == element.tag and 'stylesheet' == element.attrib.get('rel'):
-            if 'start' == action:
-                stylesheet_fragment = '{}{}</link>'.format(format_start_tag(element), element.text or '')
-                if stylesheet_fragment not in stylesheet_fragments:
-                    stylesheet_fragments.append(stylesheet_fragment)
-            continue
-        fragments.extend(to_fragments(action, element))
-    if stylesheet_fragments:
-        stylesheet_fragments[-1] = '{}\r\n'.format(stylesheet_fragments[-1])
-    fragments.insert(head_end_index or 0, '\n'.join(stylesheet_fragments))
-    if javascript_fragments:
-        javascript_fragments[-1] = '{}\r\n'.format(javascript_fragments[-1])
-    fragments.insert(body_end_index + 1 if body_end_index else len(fragments) - 1, '\n'.join(javascript_fragments))
-    return ''.join(fragments)
-
-def to_fragments(action, element):
-    fragments = []
-    if 'start' == action:
-        fragments.append(format_start_tag(element))
-        if element.text:
-            fragments.append(element.text)
-    elif 'end' == action:
-        fragments.append('</{}>'.format(element.tag))
-        if element.tail:
-            fragments.append(element.tail)
-    return fragments
-
-def format_start_tag(element):
-    if element.attrib:
-        return '<{} {}>'.format(element.tag, ' '.join(
-            ['{}="{}"'.format(k, v) for k, v in element.attrib.items()]))
+# === combine & move <link rel="stylesheet"> to the top ===
+# === combine & externalize inline <script> ===
+# === combine & externalize inline <style> ===
+    if not html:
+        return html
+    if not html.strip():
+        return html
+    flag = html.strip()[:10].lstrip().lower()
+    if flag.startswith('<html') or flag.startswith('<!doctype'):
+        fragment = lxml.html.document_fromstring(html)
     else:
-        return '<{}>'.format(element.tag)
+        fragment = lxml.html.fragment_fromstring(html, 'dummy-wrapper')
+    script_elements = []
+    link_elements = []
+    inline_js_texts = []
+    inline_css_texts = []
+    for element in fragment.iterdescendants('script'):
+        if 'text/plain' == element.get('type', None):
+            continue
+        if element.get('src', None):
+            script_elements.append(element)
+        else:
+            inline_js_text = element.text_content().strip()
+            if inline_js_text and inline_js_text not in inline_js_texts:
+                inline_js_texts.append(inline_js_text)
+        remove_element(element)
+    for element in fragment.iterdescendants('style'):
+        inline_css_text = element.text_content().strip()
+        if inline_css_text and inline_css_text not in inline_css_texts:
+            inline_css_texts.append(inline_css_text)
+        remove_element(element)
+    for element in fragment.iterdescendants('link'):
+        if 'stylesheet' == element.get('rel', None):
+            link_elements.append(element)
+            remove_element(element)
+    if inline_js_texts:
+        script_elements.append(fragment.makeelement('script', attrib={
+            'type': 'text/javascript',
+            'src': '/static/{}'.format(write_inline_static_file(page_handler, 'js', '\r\n'.join(inline_js_texts)))
+        }))
+    if inline_css_texts:
+        link_elements.append(fragment.makeelement('link', attrib={
+            'rel': 'stylesheet',
+            'type': 'text/css',
+            'href': '/static/{}'.format(write_inline_static_file(page_handler, 'css', '\r\n'.join(inline_css_texts)))
+        }))
+    for element in script_elements:
+        body_element = fragment.find('body')
+        if body_element:
+            body_element.append(element)
+        else:
+            fragment.append(element)
+    for i, element in enumerate(link_elements):
+        head_element = fragment.find('head')
+        if head_element:
+            head_element.append(element)
+        else:
+            fragment.insert(i, element)
+    return Markup(lxml.html.tostring(fragment).replace(
+        '<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', ''))
 
 
-def as_markup(text):
-    if text is None:
-        return None
-    return Markup(text)
+def remove_element(element):
+    element.getparent().remove(element)
+
+
+def write_inline_static_file(page_handler, suffix, content):
+    hash = hashlib.md5(content).hexdigest()
+    inline_static_file = as_path(get_inline_static_files_directory()) / hash
+    if not inline_static_file.exists():
+        inline_static_file.write_text(content)
+    page_name = page_handler.__name__.replace('_widget', '').replace('_page', '').replace('_', '-')
+    pseudo_file_name = '{}.{}'.format(page_name, suffix)
+    return 'v-{}/{}'.format(hash, pseudo_file_name)

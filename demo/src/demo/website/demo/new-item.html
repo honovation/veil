@@ -7,7 +7,6 @@
     </label>
     <button type="submit">{{ _('Create') }}</button>
 </form>
-{% block inline_javascript %}
 <script type="text/javascript">
     veil.widget.handle('#new-item-widget', 'button[type=submit]', 'click', function(widget, e) {
         e.preventDefault();
@@ -16,4 +15,3 @@
         });
     });
 </script>
-{% endblock %}

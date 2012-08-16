@@ -3,7 +3,6 @@
     <li>{{ audit_log.created_at }}: {{ audit_log.log }}</li>
     {% endfor %}
 </ul>
-{% block inline_javascript %}
 <script type="text/javascript">
     $(document).ready(function () {
         veil.event.handle(veil.event.EVENT_ITEM_CREATED, function () {
@@ -14,4 +13,3 @@
         });
     });
 </script>
-{% endblock %}

@@ -68,7 +68,8 @@ def is_public_route(route):
 
 
 def get_routes(website):
-    assert_component_loaded(website_components[website].__name__)
+    if website_components.get(website, None):
+        assert_component_loaded(website_components[website].__name__)
     return routes.get(website, ())
 
 

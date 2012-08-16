@@ -2,8 +2,6 @@
     <button class="remove-item">Remove</button>
     <a href="/item/{{ item.id }}/edit">{{ item.name }}</a>
 </li>
-
-{% block inline_javascript %}
 <script type="text/javascript">
     veil.widget.handle('.list-items-element-widget', '.remove-item', 'click', function(widget){
         veil.widget.deleteResource(widget, function(){
@@ -12,11 +10,8 @@
         });
     });
 </script>
-{% endblock %}
-{% block inline_stylesheet %}
 <style type="text/css">
     .list-items-element-widget {
         color: red;
     }
 </style>
-{% endblock %}

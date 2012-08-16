@@ -11,7 +11,6 @@ from veil.frontend.cli import get_executing_script_handler
 filters = {}
 utilities = {}
 loaders = {'root': FileSystemLoader('/')}
-template_post_processors = []
 env = None
 current_template_directories = []
 
@@ -47,11 +46,6 @@ def register_template_loader(prefix, loader):
     loaders[prefix] = loader
 
 
-def register_template_post_processor(template_post_processor):
-    if not is_dummy_function(template_post_processor):
-        template_post_processors.append(template_post_processor)
-
-
 @contextlib.contextmanager
 def require_current_translations_being(translations):
     get_or_create_environment().install_gettext_translations(translations)
@@ -84,8 +78,6 @@ def get_template(template_path=None, template_source=None):
         template = get_template_from_file(template_path)
     else:
         template = get_template_from_string(template_source)
-    for template_post_processor in template_post_processors:
-        template_post_processor(template_path, template)
     return template
 
 

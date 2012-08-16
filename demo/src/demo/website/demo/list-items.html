@@ -6,8 +6,6 @@
         {% endfor %}
     </ul>
 </div>
-
-{% block inline_javascript %}
 <script type="text/javascript">
     $(document).ready(function () {
         veil.event.handle(veil.event.EVENT_ITEM_CREATED, function () {
@@ -15,12 +13,8 @@
         });
     });
 </script>
-{% endblock %}
-
-{% block inline_stylesheet %}
 <style type="text/css">
     #list-items-widget {
         margin: 8px;
     }
 </style>
-{% endblock %}

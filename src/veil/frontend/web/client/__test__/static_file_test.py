@@ -46,10 +46,9 @@ class StaticFileModuleSmokeTest(TestCase):
         @route('GET', '/inline_javascript', website='test')
         def inline_javascript():
             return get_template(template_source="""
-            {% block inline_javascript %}
             <script>
             Hello!
-            </script>{% endblock %}
+            </script>
             """).render()
 
         browser = start_website_and_browser('test')
