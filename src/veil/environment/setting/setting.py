@@ -31,7 +31,7 @@ def get_settings():
 
 
 def merge_settings(base, updates, overrides=False):
-    if not base:
+    if base is None:
         return updates
     if isinstance(base, dict) and isinstance(updates, dict):
         updated = DictObject()
@@ -46,7 +46,7 @@ def merge_settings(base, updates, overrides=False):
         return updated
     if base == updates:
         return base
-    if updates:
+    if updates is not None:
         if overrides:
             return updates
         else:
