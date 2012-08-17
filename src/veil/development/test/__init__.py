@@ -1,6 +1,6 @@
-import sandal.component
+import veil.component
 
-with sandal.component.init_component(__name__):
+with veil.component.init_component(__name__):
     from .case import TestCase
     from .case import get_executing_test
     from .case import test_hook

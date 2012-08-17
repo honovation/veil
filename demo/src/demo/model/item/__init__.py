@@ -1,6 +1,6 @@
-import sandal.component
+import veil.component
 
-with sandal.component.init_component(__name__):
+with veil.component.init_component(__name__):
     from .item import create_item
     from .item import delete_item
     from .item import list_items

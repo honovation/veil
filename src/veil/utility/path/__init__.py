@@ -1,6 +1,6 @@
-import sandal.component
+import veil.component
 
-with sandal.component.init_component(__name__):
+with veil.component.init_component(__name__):
     from .path import Path
 
     as_path = Path

@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.frontend.cli import *
-from sandal.path import *
+from veil.utility.path import *
 from veil.frontend.template import *
 from veil.environment.setting import *
 from veil.backend.shell import *

@@ -1,6 +1,6 @@
-import sandal.component
+import veil.component
 
-with sandal.component.init_component(__name__):
+with veil.component.init_component(__name__):
     from .hash import encode_token
     from .hash import decode_token
     from .hash import get_password_hash

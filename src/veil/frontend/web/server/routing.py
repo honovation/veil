@@ -6,7 +6,7 @@ from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
 from veil.development.test import *
-from sandal.component import *
+from veil.component import *
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
 

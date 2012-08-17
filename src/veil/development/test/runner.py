@@ -4,7 +4,7 @@ from unittest.loader import TestLoader
 from unittest.suite import TestSuite
 from unittest.runner import TextTestResult
 from threading import Timer
-from sandal.component import force_get_all_loaded_modules
+from veil.component import force_get_all_loaded_modules
 import cProfile
 
 def profile_package(*module_name_prefixes):

@@ -1,6 +1,6 @@
-import sandal.component
+import veil.component
 
-with sandal.component.init_component(__name__):
+with veil.component.init_component(__name__):
     from .i18n import require_current_locale_being
     from .i18n import require_current_locale_being_default
     from .i18n import load_translations

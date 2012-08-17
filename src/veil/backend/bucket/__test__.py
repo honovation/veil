@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
 import tempfile
 from veil.development.test import TestCase
-from sandal.path import as_path
+from veil.utility.path import as_path
 from veil.environment.setting import *
 from .bucket import register_bucket
 

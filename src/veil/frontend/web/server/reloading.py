@@ -27,7 +27,7 @@ import sys
 import types
 
 from tornado import ioloop
-from sandal.component import force_get_all_loaded_modules
+from veil.component import force_get_all_loaded_modules
 
 try:
     import signal

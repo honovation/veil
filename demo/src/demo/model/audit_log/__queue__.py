@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from sandal.clock import *
+from veil.utility.clock import *
 from veil.backend.queue import *
 from .audit_log import create_audit_log
 

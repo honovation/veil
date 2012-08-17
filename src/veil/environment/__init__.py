@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import getpass
 from os import getenv
 import os
-from sandal.path import *
+from veil.utility.path import *
 
 VEIL_HOME = getenv('VEIL_HOME') or '.'
 VEIL_HOME = os.path.abspath(VEIL_HOME)

@@ -6,8 +6,8 @@ from markupsafe import Markup
 import os.path
 from logging import getLogger
 import lxml.html
-from sandal.path import as_path
-from sandal.hash import *
+from veil.utility.path import as_path
+from veil.utility.hash import *
 from veil.frontend.encoding import *
 from veil.frontend.template import *
 from veil.environment.setting import *
@@ -97,13 +97,13 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
         }))
     for element in script_elements:
         body_element = fragment.find('body')
-        if body_element:
+        if body_element is not None:
             body_element.append(element)
         else:
             fragment.append(element)
     for i, element in enumerate(link_elements):
         head_element = fragment.find('head')
-        if head_element:
+        if head_element is not None:
             head_element.append(element)
         else:
             fragment.insert(i, element)

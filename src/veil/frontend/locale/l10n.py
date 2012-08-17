@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import babel.dates
 import pytz
 from veil.frontend.template import template_filter
-from sandal.clock import get_current_time
+from veil.utility.clock import get_current_time
 from .i18n import get_current_locale, _
 
 DEFAULT_CLIENT_TIMEZONE = pytz.timezone('Asia/Shanghai')

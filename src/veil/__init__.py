@@ -1,5 +1,5 @@
-import sandal.component
-init_components = lambda : sandal.component.init_components([
+import veil.component
+init_components = lambda : veil.component.init_components([
     'veil.frontend.template',
     'veil.frontend.web.nginx',
     'veil.backend.queue',

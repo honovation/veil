@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from datetime import timedelta
 from collections import defaultdict
 from croniter.croniter import croniter
-from sandal.clock import get_current_timestamp
+from veil.utility.clock import get_current_timestamp
 from .job import JobHandlerDecorator
 
 schedules = defaultdict(set) # schedule => set(job_handler)

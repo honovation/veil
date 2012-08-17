@@ -3,7 +3,7 @@ import os.path
 from logging import getLogger
 from unittest.suite import TestSuite
 from unittest.loader import TestLoader
-from sandal.component import force_import_module
+from veil.component import force_import_module
 from nose_helper import ContextSuite
 from tcunittest import TeamcityTestRunner
 

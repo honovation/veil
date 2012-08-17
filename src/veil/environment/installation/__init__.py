@@ -1,6 +1,6 @@
-import sandal.component
+import veil.component
 
-with sandal.component.init_component(__name__):
+with veil.component.init_component(__name__):
     from .installation import installation_script
     from .ubuntu_package import install_ubuntu_package
     from .ubuntu_package import remove_service_auto_start

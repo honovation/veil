@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from sandal.path import *
+from veil.utility.path import *
 from veil.frontend.cli import *
 from veil.frontend.template import *
 from veil.backend.shell import *

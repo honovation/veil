@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import os
 import tempfile
-from sandal.path import *
+from veil.utility.path import *
 from veil.environment.setting import *
 from veil.development.test import TestCase
 from veil.frontend.template import *

@@ -1,5 +1,5 @@
-import sandal.component
-with sandal.component.init_component(__name__):
+import veil.component
+with veil.component.init_component(__name__):
     from .template import template_filter
     from .template import register_template_filter
     from .template import template_utility
@@ -15,7 +15,7 @@ with sandal.component.init_component(__name__):
     from .widget import page
     from .widget import register_page_post_processor
 
-    if sandal.component.is_dummy_function(template_utility):
+    if veil.component.is_dummy_function(template_utility):
         template_utility = lambda func: func
 
     __all__ = [

@@ -1,6 +1,6 @@
-import sandal.component
+import veil.component
 
-with sandal.component.init_component(__name__):
+with veil.component.init_component(__name__):
     from .invalid import Invalid
     from .field_binder import not_empty
     from .field_binder import one_of

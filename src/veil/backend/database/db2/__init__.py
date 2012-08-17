@@ -1,6 +1,6 @@
-import sandal.component
+import veil.component
 
-with sandal.component.init_component(__name__):
+with veil.component.init_component(__name__):
     def init():
         from .adapter import DB2Adapter
         from veil.backend.database.client import register_adapter_class

@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import functools
 import json
-from sandal.component import get_loading_component, get_component_dependencies
+from veil.component import get_loading_component, get_component_dependencies
 from veil.backend.shell import *
 from veil.environment.setting import *
 from veil.environment import *

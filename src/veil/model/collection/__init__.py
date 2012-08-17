@@ -1,6 +1,6 @@
-import sandal.component
+import veil.component
 
-with sandal.component.init_component(__name__):
+with veil.component.init_component(__name__):
     from .collection import filter_single_or_none
     from .collection import single_or_none
     from .collection import filter_single

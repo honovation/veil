@@ -1,6 +1,6 @@
-import sandal.component
+import veil.component
 
-with sandal.component.init_component(__name__):
+with veil.component.init_component(__name__):
     from .clock import require_current_time_being
     from .clock import get_current_time
     from .clock import get_current_timestamp

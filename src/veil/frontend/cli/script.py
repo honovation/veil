@@ -4,7 +4,7 @@ from logging import getLogger
 import sys
 import json
 from inspect import isfunction
-from sandal.component import get_loading_component
+from veil.component import get_loading_component
 from veil.environment.setting import *
 from veil.environment import *
 
