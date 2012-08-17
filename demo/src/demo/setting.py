@@ -5,7 +5,7 @@ from veil.backend.queue import queue_program
 from veil.backend.queue import resweb_program
 from veil.backend.queue import delayed_job_scheduler_program
 from veil.backend.queue import job_worker_program
-from veil.backend.database import *
+from veil.backend.database.postgresql import *
 from veil.backend.redis import *
 from veil.model.collection import *
 from veil.supervisor import *

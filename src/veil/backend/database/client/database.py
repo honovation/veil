@@ -59,6 +59,7 @@ def close_databases():
 
 
 def connect(purpose, type, host, port, database, user, password):
+    __import__('veil.backend.database.{}'.format(type))
     if type in adapter_classes:
         adapter = adapter_classes[type](
             host=host, port=port,
