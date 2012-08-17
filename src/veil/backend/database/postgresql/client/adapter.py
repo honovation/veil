@@ -3,7 +3,6 @@ from contextlib import closing
 from logging import getLogger
 import psycopg2
 from psycopg2.extensions import  ISOLATION_LEVEL_READ_COMMITTED
-from veil.frontend.encoding import *
 from veil.model.collection import *
 from psycopg2.extras import NamedTupleCursor
 
@@ -71,9 +70,6 @@ class PostgresqlAdapter(object):
             return ReturningDictObjectCursor(cursor)
         else:
             return cursor
-
-    def get_last_sql(self, cursor):
-        return to_unicode(cursor.query)
 
     def set_current_schema(self, schema):
         with closing(self.cursor()) as c:

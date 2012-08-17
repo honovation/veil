@@ -107,7 +107,6 @@ class Database(object):
         self.purpose = purpose
         self.opened_by = str('\n').join(traceback.format_stack())
         self.conn = conn
-        self.last_sql = None
 
     @property
     def autocommit(self):
@@ -159,27 +158,27 @@ class Database(object):
     def list_scalar(self, sql, **kwargs):
         rows = self._query(sql, returns_dict_object=False, **kwargs)
         if rows and len(rows[0]) > 1:
-            raise Exception('More than one columns returned with the sql: {}'.format(self.last_sql))
+            raise Exception('More than one columns returned with the sql: {}'.format(sql))
         return [row[0] for row in rows]
 
     def get(self, sql, **kwargs):
         rows = self._query(sql, **kwargs)
         if not rows:
-            LOGGER.debug('No rows returned with the sql: {}'.format(self.last_sql))
+            LOGGER.debug('No rows returned with the sql: {}'.format(sql))
             return None
         if len(rows) > 1:
-            LOGGER.warning('More than one rows returned with the sql: {}'.format(self.last_sql))
+            LOGGER.warning('More than one rows returned with the sql: {}'.format(sql))
         return rows[0]
 
     def get_scalar(self, sql, **kwargs):
         rows = self._query(sql, returns_dict_object=False, **kwargs)
         if not rows:
-            LOGGER.debug('No rows returned with the sql: {}'.format(self.last_sql))
+            LOGGER.debug('No rows returned with the sql: {}'.format(sql))
             return None
         if len(rows) > 1:
-            LOGGER.warning('More than one rows returned with the sql: {}'.format(self.last_sql))
+            LOGGER.warning('More than one rows returned with the sql: {}'.format(sql))
         if len(rows[0]) > 1:
-            raise Exception('More than one columns returned with the sql: {}'.format(self.last_sql))
+            raise Exception('More than one columns returned with the sql: {}'.format(sql))
         return rows[0][0]
 
     def insert(self, table, objects=None, returns_id=False, should_insert=None, **value_providers):
@@ -260,7 +259,6 @@ class Database(object):
             except:
                 LOGGER.error('failed to execute {} with {}'.format(sql, kwargs))
                 raise
-            self.last_sql = self.conn.get_last_sql(cursor)
             return cursor.rowcount
 
     def _executemany(self, sql, seq_of_parameters):
@@ -270,7 +268,6 @@ class Database(object):
             except:
                 LOGGER.error('failed to execute {} with {}'.format(sql, seq_of_parameters))
                 raise
-            self.last_sql = self.conn.get_last_sql(cursor)
             return cursor.rowcount
 
     def _query(self, sql, returns_dict_object=True, **kwargs):
@@ -280,7 +277,6 @@ class Database(object):
             except:
                 LOGGER.error('failed to execute {} with {}'.format(sql, kwargs))
                 raise
-            self.last_sql = self.conn.get_last_sql(cursor)
             return cursor.fetchall()
 
     def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, **kwargs):
@@ -293,7 +289,6 @@ class Database(object):
             if db_fetch_size:
                 cursor.itersize = db_fetch_size
             cursor.execute(sql, kwargs)
-            self.last_sql = self.conn.get_last_sql(cursor)
             rows = cursor.fetchmany(batch_size)
             while len(rows) > 0:
                 yield rows

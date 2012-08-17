@@ -63,10 +63,6 @@ class DB2Adapter(object):
         else:
             return cursor
 
-    def get_last_sql(self, cursor):
-        return ''
-
-
     def set_current_schema(self, schema):
         with closing(self.cursor()) as c:
             c.execute('SET search_path TO {}'.format(schema))
