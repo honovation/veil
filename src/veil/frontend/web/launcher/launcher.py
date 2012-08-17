@@ -1,16 +1,15 @@
 from __future__ import unicode_literals, print_function, division
 from logging import getLogger
-import signal
 from jinja2.loaders import FileSystemLoader
 from tornado.ioloop import IOLoop
 from veil.frontend.template import *
-from veil.frontend.web.tornado import *
 from veil.environment.setting import *
-from .locale import install_translations
-from .routing import  RoutingHTTPHandler, get_routes
-from .static_file import clear_static_file_hashes
-from .xsrf import prevent_xsrf
-from . import reloading
+from ..tornado import *
+from ..locale import *
+from ..routing import  *
+from ..static_file import *
+from ..xsrf import *
+from ..reloading import *
 
 LOGGER = getLogger(__name__)
 get_reloads_module = register_option('website', 'reloads_module', bool)
@@ -27,7 +26,7 @@ def start_test_website(website, **kwargs):
 def start_website(website, **kwargs):
     io_loop = IOLoop.instance()
     if get_reloads_module():
-        reloading.start(io_loop)
+        start_reloading_check(io_loop)
     http_handler = create_website_http_handler(website, **kwargs)
     io_loop.add_callback(lambda: LOGGER.info('started website {}'.format(website)))
     start_http_server(http_handler, io_loop=io_loop)

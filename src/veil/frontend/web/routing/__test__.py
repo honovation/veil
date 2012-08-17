@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.development.test import TestCase
-from ..routing import PathTemplate
+from .routing import PathTemplate
 
 class PathTemplateTest(TestCase):
     def test_simple_template(self):

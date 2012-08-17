@@ -36,7 +36,7 @@ except ImportError:
 
 LOGGER = getLogger(__name__)
 
-def start(io_loop=None, check_time=500):
+def start_reloading_check(io_loop=None, check_time=500):
     """Restarts the process automatically when a module is modified.
 
     We run on the I/O loop, and restarting is a destructive operation,

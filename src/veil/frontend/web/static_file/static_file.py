@@ -1,14 +1,11 @@
 from __future__ import unicode_literals, print_function, division
-from cStringIO import StringIO
 import contextlib
 import hashlib
 from markupsafe import Markup
-import os.path
 from logging import getLogger
 import lxml.html
 from veil.utility.path import as_path
 from veil.utility.hash import *
-from veil.frontend.encoding import *
 from veil.frontend.template import *
 from veil.environment.setting import *
 

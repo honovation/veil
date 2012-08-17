@@ -4,8 +4,7 @@ import tempfile
 from veil.utility.path import *
 from veil.environment.setting import *
 from veil.development.test import TestCase
-from veil.frontend.template import *
-from ..static_file import process_javascript_and_stylesheet_tags
+from .static_file import process_javascript_and_stylesheet_tags
 
 class ProcessJavascriptAndStylesheetTagsTest(TestCase):
     def setUp(self):
@@ -25,7 +24,7 @@ class ProcessJavascriptAndStylesheetTagsTest(TestCase):
         self.assertEqual(
             '<p>a<span class="test">b</span>c</p>',
             process_javascript_and_stylesheet_tags(None, '<p>a<span class="test">b</span>c</p>'))
-#
+
     def test_javascript_tag_relocated_before_body_end(self):
         processed_html = process_javascript_and_stylesheet_tags(None,
             """

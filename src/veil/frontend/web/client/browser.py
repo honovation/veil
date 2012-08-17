@@ -11,7 +11,7 @@ from pyquery import PyQuery
 from veil.frontend.encoding import to_str, to_unicode
 from veil.development.test import get_executing_test
 from veil.frontend.web.tornado import *
-from veil.frontend.web.server import *
+from veil.frontend.web.launcher import *
 from .action import ActionMixin
 from .form import FormMixin
 from .query import QueryMixin

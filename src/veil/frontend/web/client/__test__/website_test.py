@@ -3,7 +3,7 @@ import contextlib
 import httplib
 from veil.development.test import TestCase
 from veil.frontend.web.tornado import *
-from veil.frontend.web.server import *
+from veil.frontend.web.routing import *
 from ..browser import start_website_and_browser
 
 context = None
