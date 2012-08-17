@@ -14,7 +14,7 @@ from ..job import register_job_context_manager
 get_queue_host = register_option('queue', 'host')
 get_queue_port = register_option('queue', 'port', int)
 get_queue_password = register_option('queue', 'password')
-get_worker_interval = register_option('queue', 'worker_interval', int)
+get_worker_interval = register_option('queue', 'worker_interval', int, default=5)
 
 def patch_pyres_job_to_load_component_encapsulated_job_handler_class():
     pyres.job.Job.safe_str_to_class = staticmethod(component_aware_safe_str_to_class)

@@ -14,7 +14,7 @@ from .context import get_current_http_request
 from .context import get_current_http_response
 
 LOGGER = getLogger(__name__)
-get_cookie_secret = register_option('http', 'cookie_secret')
+get_cookie_secret = register_option('http', 'cookie_secret', default='secret')
 
 def get_secure_cookie(name, default=None, value=None, request=None):
     if value is None: value = get_cookie(name, request=request)

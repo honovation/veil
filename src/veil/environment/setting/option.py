@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import traceback
 from .setting import merge_settings
 from .setting import get_settings
 from veil.model.collection import *
@@ -16,18 +17,10 @@ def register_option(section, name, type=unicode, default=None):
     old_type = section_option_definitions.get(name, {}).get('type')
     if old_type and old_type != type:
         raise Exception('{}.{} already registered as {}, can not change to {}'.format(section, name, old_type, type))
-    if default is None:
-        if unicode == type:
-            default = ''
-        elif int == type:
-            default = 0
-        elif bool == type:
-            default = False
-        else:
-            raise NotImplementedError('{} type is not supported'.format(type))
     section_option_definitions[name] = objectify({
         'type': type,
-        'default': default
+        'default': default,
+        'defined_by': traceback.format_stack()
     })
     return lambda: get_option(section, name)
 
@@ -49,12 +42,17 @@ def init_options():
     for section, section_definitions in option_definitions.items():
         for name, definition in section_definitions.items():
             options.setdefault(section, {})
-            value = decide_option_value(options[section].get(name), definition)
+            try:
+                value = decide_option_value(options[section].get(name), definition)
+            except ValueError, e:
+                raise Exception('option {}.{}: {}'.format(section, name, e.message))
             options[section][name] = value
     original_options = options
 
 
 def decide_option_value(raw_value, definition):
+    if raw_value is None and definition.default is None:
+        raise ValueError('can not be empty')
     if unicode == definition.type:
         return unicode(raw_value) if raw_value else definition.default
     if int == definition.type:
@@ -65,7 +63,7 @@ def decide_option_value(raw_value, definition):
         if isinstance(raw_value, bool):
             return raw_value
         return 'true' == raw_value.lower() if raw_value else definition.default
-    raise Exception('unknown option type: {}'.format(definition.type))
+    raise ValueError('unknown option type: {}'.format(definition.type))
 
 
 def reset_options():

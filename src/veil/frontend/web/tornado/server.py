@@ -23,7 +23,7 @@ from .error import handle_exception
 
 get_port = register_option('http', 'port', int)
 get_host = register_option('http', 'host')
-get_processes_count = register_option('http', 'processes_count', int)
+get_processes_count = register_option('http', 'processes_count', int, default=1)
 LOGGER = getLogger(__name__)
 
 def start_http_server(handler, io_loop=None, **kwargs):
