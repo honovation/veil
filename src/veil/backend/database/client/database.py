@@ -154,10 +154,10 @@ class Database(object):
         return self._executemany(sql, seq_of_parameters)
 
     def list(self, sql, **kwargs):
-        return [DictObject(**row._asdict()) for row in self._query(sql, **kwargs)]
+        return self._query(sql, **kwargs)
 
     def list_scalar(self, sql, **kwargs):
-        rows = self._query(sql, returns_named_tuple=False, **kwargs)
+        rows = self._query(sql, returns_dict_object=False, **kwargs)
         if rows and len(rows[0]) > 1:
             raise Exception('More than one columns returned with the sql: {}'.format(self.last_sql))
         return [row[0] for row in rows]
@@ -169,10 +169,10 @@ class Database(object):
             return None
         if len(rows) > 1:
             LOGGER.warning('More than one rows returned with the sql: {}'.format(self.last_sql))
-        return DictObject(**rows[0]._asdict())
+        return rows[0]
 
     def get_scalar(self, sql, **kwargs):
-        rows = self._query(sql, returns_named_tuple=False, **kwargs)
+        rows = self._query(sql, returns_dict_object=False, **kwargs)
         if not rows:
             LOGGER.debug('No rows returned with the sql: {}'.format(self.last_sql))
             return None
@@ -254,7 +254,7 @@ class Database(object):
         return self._query_large_result_set(sql, batch_size, db_fetch_size, **kwargs)
 
     def _execute(self, sql, **kwargs):
-        with closing(self.conn.cursor(returns_named_tuple=False)) as cursor:
+        with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
                 cursor.execute(sql, kwargs)
             except:
@@ -264,7 +264,7 @@ class Database(object):
             return cursor.rowcount
 
     def _executemany(self, sql, seq_of_parameters):
-        with closing(self.conn.cursor(returns_named_tuple=False)) as cursor:
+        with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
                 cursor.executemany(sql, seq_of_parameters)
             except:
@@ -273,8 +273,8 @@ class Database(object):
             self.last_sql = self.conn.get_last_sql(cursor)
             return cursor.rowcount
 
-    def _query(self, sql, returns_named_tuple=True, **kwargs):
-        with closing(self.conn.cursor(returns_named_tuple=returns_named_tuple)) as cursor:
+    def _query(self, sql, returns_dict_object=True, **kwargs):
+        with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
             try:
                 cursor.execute(sql, kwargs)
             except:
@@ -283,13 +283,13 @@ class Database(object):
             self.last_sql = self.conn.get_last_sql(cursor)
             return cursor.fetchall()
 
-    def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_named_tuple=True, **kwargs):
+    def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, **kwargs):
         """
         Run a query with potentially large result set using server-side cursor
         """
         # psycopg2 named cursor is implemented as 'DECLARE name CURSOR WITHOUT HOLD FOR query' and should be within a transaction and not be used in autocommit mode
         with require_transaction_context(self):
-            cursor = self.conn.cursor(name=self._unique_cursor_name(), returns_named_tuple=returns_named_tuple)
+            cursor = self.conn.cursor(name=self._unique_cursor_name(), returns_dict_object=returns_dict_object)
             if db_fetch_size:
                 cursor.itersize = db_fetch_size
             cursor.execute(sql, kwargs)

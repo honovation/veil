@@ -1,18 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 from contextlib import closing
 from logging import getLogger
-import psycopg2
-from psycopg2.extensions import  ISOLATION_LEVEL_READ_COMMITTED
-from veil.frontend.encoding import *
+import ibm_db_dbi
 from veil.model.collection import *
-from psycopg2.extras import NamedTupleCursor
 
 LOGGER = getLogger(__name__)
 
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
-
-class PostgresqlAdapter(object):
+class DB2Adapter(object):
     def __init__(self, host, port, database, user, password):
         self.host = host
         self.port = port
@@ -24,10 +18,9 @@ class PostgresqlAdapter(object):
     def _get_conn(self):
         conn = None
         try:
-            conn = psycopg2.connect(
-                host=self.host, port=self.port, database=self.database,
-                user=self.user, password=self.password)
-            conn.set_session(isolation_level=ISOLATION_LEVEL_READ_COMMITTED, autocommit=True)
+            conn = ibm_db_dbi.connect(
+                'DRIVER={IBM DB2 ODBC DRIVER};DATABASE=%s;HOSTNAME=%s;PORT=%s; PROTOCOL=TCPIP;UID=%s;PWD=%s;' %
+                (self.database, self.host, self.port, self.user, self.password))
         except:
             LOGGER.critical('Cannot connect to database', exc_info=1)
             try:
@@ -42,9 +35,7 @@ class PostgresqlAdapter(object):
             return conn
 
     def _reconnect_when_needed(self):
-        if self.conn.closed:
-            LOGGER.warn('Detected database connection had been closed, reconnect now')
-            self.conn = self._get_conn()
+        pass
 
     @property
     def autocommit(self):
@@ -66,14 +57,15 @@ class PostgresqlAdapter(object):
 
     def cursor(self, returns_dict_object=True, **kwargs):
         self._reconnect_when_needed()
-        cursor = self.conn.cursor(cursor_factory=NamedTupleCursor, **kwargs)
+        cursor = self.conn.cursor(**kwargs)
         if returns_dict_object:
             return ReturningDictObjectCursor(cursor)
         else:
             return cursor
 
     def get_last_sql(self, cursor):
-        return to_unicode(cursor.query)
+        return ''
+
 
     def set_current_schema(self, schema):
         with closing(self.cursor()) as c:
@@ -83,7 +75,7 @@ class PostgresqlAdapter(object):
         self.set_current_schema('public')
 
     def __repr__(self):
-        return 'Postgresql adapter {} with connection parameters {}'.format(
+        return 'DB2 adapter {} with connection parameters {}'.format(
             self.__class__.__name__, dict(
                 host=self.host,
                 port=self.port,
@@ -96,17 +88,26 @@ class ReturningDictObjectCursor(object):
         self.cursor = cursor
 
     def fetchone(self):
-        return DictObject(**self.cursor.fetchone()._asdict())
+        return self.to_dict_object(self.cursor.fetchone())
 
     def fetchmany(self, size=None):
-        return [DictObject(**row._asdict()) for row in self.cursor.fetchmany(size)]
+        return [self.to_dict_object(row) for row in self.cursor.fetchmany(size)]
 
     def fetchall(self):
-        return [DictObject(**row._asdict()) for row in self.cursor.fetchall()]
+        return [self.to_dict_object(row) for row in self.cursor.fetchall()]
+
+    def to_dict_object(self, row):
+        o = DictObject()
+        for i, cell in enumerate(row):
+            o[self.get_column_name(i)] = cell
+        return o
+
+    def get_column_name(self, i):
+        return self.cursor.description[i][0].lower()
 
     def __iter__(self):
         while 1:
-            yield DictObject(**self.cursor.next()._asdict())
+            yield self.to_dict_object(self.cursor.next())
 
     def __getattr__(self, attr):
         if attr in self.__dict__:
