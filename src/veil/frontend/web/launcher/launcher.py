@@ -12,10 +12,10 @@ from ..xsrf import *
 from ..reloading import *
 
 LOGGER = getLogger(__name__)
-get_reloads_module = register_option('website', 'reloads_module', bool)
-get_recalculates_static_file_hash = register_option('website', 'recalculates_static_file_hash', bool)
-get_clears_template_cache = register_option('website', 'clears_template_cache', bool)
-get_prevents_xsrf = register_option('website', 'prevents_xsrf', bool)
+get_reloads_module = register_option('website', 'reloads_module', bool, default=True)
+get_recalculates_static_file_hash = register_option('website', 'recalculates_static_file_hash', bool, default=True)
+get_clears_template_cache = register_option('website', 'clears_template_cache', bool, default=True)
+get_prevents_xsrf = register_option('website', 'prevents_xsrf', bool, default=True)
 get_master_template_directory = register_option('website', 'master_template_directory')
 
 def start_test_website(website, **kwargs):

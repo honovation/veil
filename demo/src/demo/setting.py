@@ -27,10 +27,6 @@ def demo_settings():
             },
             'website': {
                 'master_template_directory': VEIL_HOME / 'src' / 'demo' / 'website' / 'demo',
-                'reloads_module': True,
-                'recalculates_static_file_hash': True,
-                'clears_template_cache': True,
-                'prevents_xsrf': True
             }
         }
     })

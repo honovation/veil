@@ -1,6 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 import httplib
 from veil.frontend.web.routing import *
+from veil.frontend.web.xsrf import *
+from veil.frontend.web.launcher import *
 from veil.development.test import TestCase
 from ..browser import Browser
 
