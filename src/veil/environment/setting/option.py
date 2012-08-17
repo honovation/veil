@@ -4,9 +4,12 @@ from .setting import get_settings
 from veil.model.collection import *
 
 option_definitions = {}
-option_updates = {}
+options = None
+original_options = None
 
 def register_option(section, name, type=unicode, default=None):
+    if options is not None:
+        raise Exception('options have already been initialized')
     if type not in [unicode, int, bool]:
         raise Exception('unknown option type: {}'.format(type))
     section_option_definitions = option_definitions.setdefault(section, {})
@@ -30,33 +33,50 @@ def register_option(section, name, type=unicode, default=None):
 
 
 def get_option(section, name):
-    options = dict(get_settings().get('veil', None))
-    options = merge_settings(options, option_updates, overrides=True)
-    if not options:
-        raise Exception('options have not been initialized')
+    init_options()
     definition = option_definitions.get(section, {}).get(name)
     if not definition:
         raise Exception('option {}.{} has not been registered'.format(section, name))
-    value = options.get(section, {}).get(name)
+    return options[section][name]
+
+
+def init_options():
+    global options
+    global original_options
+    if options is not None:
+        return
+    options = dict(get_settings().get('veil', None))
+    for section, section_definitions in option_definitions.items():
+        for name, definition in section_definitions.items():
+            options.setdefault(section, {})
+            value = decide_option_value(options[section].get(name), definition)
+            options[section][name] = value
+    original_options = options
+
+
+def decide_option_value(raw_value, definition):
     if unicode == definition.type:
-        return unicode(value) if value else definition.default
+        return unicode(raw_value) if raw_value else definition.default
     if int == definition.type:
-        if isinstance(value, int):
-            return value
-        return int(value) if value else definition.default
+        if isinstance(raw_value, int):
+            return raw_value
+        return int(raw_value) if raw_value else definition.default
     if bool == definition.type:
-        if isinstance(value, bool):
-            return value
-        return 'true' == value.lower() if value else definition.default
+        if isinstance(raw_value, bool):
+            return raw_value
+        return 'true' == raw_value.lower() if raw_value else definition.default
     raise Exception('unknown option type: {}'.format(definition.type))
 
 
 def reset_options():
-    option_updates.clear()
+    options.clear()
+    options.update(original_options)
 
 
 def update_options(updates):
     from veil.development.test import get_executing_test
 
     get_executing_test().addCleanup(reset_options)
-    option_updates.update(updates)
+    new_options = merge_settings(options, updates, overrides=True)
+    options.clear()
+    options.update(new_options)

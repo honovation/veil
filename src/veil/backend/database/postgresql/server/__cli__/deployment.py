@@ -26,7 +26,7 @@ def drop_database(purpose='default'):
     try:
         shell_execute('dropdb -h {host} -p {port} -U {user} {database}'.format(
             host=get_option(purpose, 'host'),
-            port=get_option(purpose, 'port', int),
+            port=get_option(purpose, 'port'),
             user=get_option(purpose, 'user'),
             database=get_option(purpose, 'database')), capture=True)
     except ShellExecutionError, e:
@@ -40,7 +40,7 @@ def migrate(purpose='default'):
     sql_path = VEIL_HOME / 'db' / purpose / '001-baseline.sql'
     shell_execute('psql -h {host} -p {port} -U {user} -f {sql_path} {database}'.format(
         host=get_option(purpose, 'host'),
-        port=get_option(purpose, 'port', int),
+        port=get_option(purpose, 'port'),
         user=get_option(purpose, 'user'),
         database=get_option(purpose, 'database'),
         sql_path=sql_path))
@@ -52,5 +52,5 @@ def reset(purpose='default'):
     migrate(purpose)
 
 
-def get_option(purpose, key, type=unicode):
-    return register_option('{}_database'.format(purpose), key, type)()
+def get_option(purpose, key):
+    return get_settings()['{}_postgresql'.format(purpose)][key]
