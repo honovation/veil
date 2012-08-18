@@ -4,6 +4,15 @@ var veil = veil || {};
 
 veil.log = console.log;
 
+executed = [];
+veil.executeOnce = function(hash, func) {
+    if ($.inArray(hash, executed) != -1) {
+        return
+    }
+    executed.push(hash);
+    func();
+};
+
 veil.event = {};
 
 veil.event.handle = function (eventName, handler) {

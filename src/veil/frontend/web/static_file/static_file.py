@@ -70,7 +70,7 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
         else:
             inline_js_text = element.text_content().strip()
             if inline_js_text and inline_js_text not in inline_js_texts:
-                inline_js_texts.append(inline_js_text)
+                inline_js_texts.append(wrap_js_to_ensure_load_once(inline_js_text))
         remove_element(element)
     for element in fragment.iterdescendants('style'):
         inline_css_text = element.text_content().strip()
@@ -106,6 +106,11 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
             fragment.insert(i, element)
     return Markup(lxml.html.tostring(fragment).replace(
         '<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', ''))
+
+
+def wrap_js_to_ensure_load_once(js):
+    hash = hashlib.md5(js).hexdigest()
+    return "veil.executeOnce('%s', function(){\r\n%s\r\n});" % (hash, js)
 
 
 def remove_element(element):
