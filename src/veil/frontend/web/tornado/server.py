@@ -13,7 +13,6 @@ from tornado.stack_context import StackContext
 from tornado.ioloop import IOLoop
 from veil.frontend.encoding import to_str
 from veil.development.test import *
-from veil.environment.setting import *
 from .argument import normalize_arguments
 from .argument import tunnel_put_and_delete
 from .context import HTTPContext
@@ -21,26 +20,19 @@ from .context import require_current_http_context_being
 from .context import get_current_http_response
 from .error import handle_exception
 
-get_port = register_option('http', 'port', int)
-get_host = register_option('http', 'host')
-get_processes_count = register_option('http', 'processes_count', int, default=1)
 LOGGER = getLogger(__name__)
 
-def start_http_server(handler, io_loop=None, **kwargs):
+def start_http_server(handler, io_loop=None, host='127.0.0.1', port=8080, processes_count=1):
     io_loop = io_loop or IOLoop.instance()
-    http_server = create_http_server(handler, io_loop=io_loop, **kwargs)
-    host = get_host() or '127.0.0.1'
-    port = get_port() or 80
+    http_server = create_http_server(handler, io_loop=io_loop)
     http_server.bind(port, host)
-    http_server.start(get_processes_count() or 1)
+    http_server.start(processes_count)
     io_loop.add_callback(lambda: LOGGER.info('http listen at {}:{}'.format(host, port)))
     io_loop.start()
 
 
-def start_test_http_server(handler):
+def start_test_http_server(handler, host='127.0.0.1', port=8080):
     http_server = create_http_server(handler)
-    host = get_host() or '127.0.0.1'
-    port = get_port() or 8080
     http_server.host = host
     http_server.port = port
     http_server.listen(port, host)
@@ -53,9 +45,8 @@ def create_http_server(handler, **kwargs):
 
 
 class HTTPHandler(object):
-    def __init__(self, handler, prevents_xsrf=True):
+    def __init__(self, handler):
         self.handler = handler
-        self.prevents_xsrf = prevents_xsrf
 
     def __call__(self, request):
         http_context = HTTPContext(request, HTTPResponse(request))

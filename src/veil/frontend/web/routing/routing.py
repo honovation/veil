@@ -14,6 +14,11 @@ LOGGER = getLogger(__name__)
 original_routes = {}
 routes = {}
 website_components = {}
+website_initializers = []
+
+def register_website_initializer(initializer):
+    website_initializers.append(initializer)
+
 
 @test_hook
 def remember_original_routes():
@@ -40,6 +45,8 @@ def route(method, path_template, website=None, tags=(), **path_template_params):
             assert website_components[_website] == get_loading_component()
         else:
             website_components[_website] = get_loading_component()
+            for initializer in website_initializers:
+                initializer(_website)
         new_route = Route(page(route_handler), method, path_template, tags=tags, **path_template_params)
         routes.setdefault(_website, []).append(new_route)
         return route_handler

@@ -9,19 +9,25 @@ import re
 import time
 from veil.frontend.encoding import to_str
 from veil.utility.hash import get_hmac
-from veil.environment.setting import *
 from .context import get_current_http_request
 from .context import get_current_http_response
 
 LOGGER = getLogger(__name__)
-get_cookie_secret = register_option('http', 'cookie_secret', default='secret')
+secure_cookie_salt = None
+
+def set_secure_cookie_salt(value):
+    global  secure_cookie_salt
+    secure_cookie_salt = value
+
 
 def get_secure_cookie(name, default=None, value=None, request=None):
     if value is None: value = get_cookie(name, request=request)
     if not value: return default
     parts = value.split('|')
     if len(parts) != 3: return default
-    signature = get_hmac(name, parts[0], parts[1], strong=False, salt=get_cookie_secret())
+    if not secure_cookie_salt:
+        raise Exception('secret salt not set')
+    signature = get_hmac(name, parts[0], parts[1], strong=False, salt=secure_cookie_salt)
     if not _time_independent_equals(parts[2], signature):
         LOGGER.warning('Invalid cookie signature %r', value)
         return default
@@ -44,7 +50,9 @@ def set_secure_cookie(response=None, cookie=None, **kwargs):
 def create_secure_cookie(name, value, expires_days=30, **kwargs):
     timestamp = str(int(time.time()))
     value = base64.b64encode(value)
-    signature = get_hmac(name, value, timestamp, strong=False, salt=get_cookie_secret())
+    if not secure_cookie_salt:
+        raise Exception('secret salt not set')
+    signature = get_hmac(name, value, timestamp, strong=False, salt=secure_cookie_salt)
     value = '|'.join([value, timestamp, signature])
     return create_cookie(name=name, value=value, expires_days=expires_days, **kwargs)
 

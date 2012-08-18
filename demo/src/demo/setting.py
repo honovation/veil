@@ -21,11 +21,9 @@ def demo_settings():
             'logging': {
                 'level': 'DEBUG'
             },
-            'http': {
+            'demo_website': {
                 'host': DEMO_WEB_HOST,
-                'port': DEMO_WEB_PORT
-            },
-            'website': {
+                'port': DEMO_WEB_PORT,
                 'master_template_directory': VEIL_HOME / 'src' / 'demo' / 'website' / 'demo',
             }
         }
