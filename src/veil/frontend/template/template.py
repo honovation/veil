@@ -4,7 +4,7 @@ import traceback
 import os.path
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
-from veil.component import force_import_module, is_dummy_function
+from veil.component import force_import_module, is_dummy_module_member
 from veil.development.test import get_executing_test
 from veil.frontend.cli import get_executing_script_handler
 

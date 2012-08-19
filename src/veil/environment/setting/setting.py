@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import sys
 from veil.model.collection import *
+from veil.component import  *
 
 initialized = False
 settings = {}
@@ -8,6 +9,8 @@ coordinators = []
 
 def add_settings(additional_settings, overrides=False):
     global settings
+    if is_dummy_module_member(additional_settings):
+        return
     if initialized:
         raise Exception('settings has already been initialized: {}'.format(settings))
     settings = merge_settings(settings, additional_settings, overrides=overrides)

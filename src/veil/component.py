@@ -7,7 +7,7 @@ import os
 
 __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_component',
-    'is_dummy_function', 'get_component_dependencies', 'assert_component_loaded',
+    'is_dummy_module_member', 'get_component_dependencies', 'assert_component_loaded',
     'assert_component_dependencies']
 
 encapsulated_modules = {}
@@ -99,7 +99,6 @@ def get_loading_component():
 
 
 def record_error(error):
-    traceback.print_exc()
     errors.setdefault(loading_components[-1].__name__, []).append(traceback.format_exc())
 
 
@@ -243,6 +242,6 @@ class DummyModuleMember(object):
             raise error
 
 
-def is_dummy_function(func):
+def is_dummy_module_member(func):
     return isinstance(func, DummyModuleMember)
 

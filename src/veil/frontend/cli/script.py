@@ -2,11 +2,9 @@ from __future__ import unicode_literals, print_function, division
 import functools
 from logging import getLogger
 import sys
-import json
 from inspect import isfunction
 from veil.component import get_loading_component
 from veil.environment.setting import *
-from veil.environment import *
 
 script_handlers = {}
 LOGGER = getLogger(__name__)
@@ -30,12 +28,6 @@ def execute_script(*argv, **kwargs):
     next_level = level[arg]
     if isfunction(next_level):
         script_handler = next_level
-        if script_handler.user_settings:
-            add_settings(script_handler.user_settings, overrides=True)
-        user_settings = os.getenv('VEIL_SCRIPT_USER_SETTINGS')
-        user_settings = json.loads(user_settings) if user_settings else None
-        if user_settings:
-            add_settings(user_settings, overrides=True)
         bootstrap_runtime()
         try:
             executing_script_handlers.append(script_handler)
@@ -52,19 +44,17 @@ def get_executing_script_handler():
         return None
 
 
-def script(command, user_settings=None):
+def script(command):
 # syntax sugar for ScriptHandlerDecorator
-    return ScriptHandlerDecorator(command, user_settings)
+    return ScriptHandlerDecorator(command)
 
 
 class ScriptHandlerDecorator(object):
-    def __init__(self, command, user_settings):
+    def __init__(self, command):
         self.command = command
-        self.user_settings = user_settings
 
     def __call__(self, script_handler):
         script_handler = script_handler
-        script_handler.user_settings = self.user_settings
 
         @functools.wraps(script_handler)
         def wrapper(*args, **kwargs):

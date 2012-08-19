@@ -7,11 +7,14 @@ from veil.environment.installation import *
 from veil.frontend.cli import script
 
 @installation_script()
-def install_supervisor():
+def install_supervisor(*active_programs):
+    if not active_programs:
+        return
     settings = get_settings()
     install_python_package('supervisor')
     create_file(settings.supervisor.config_file, get_template('supervisord.cfg.j2').render(
         config=settings.supervisor,
+        active_programs=active_programs,
         CURRENT_USER=CURRENT_USER,
         format_command=format_command,
         format_environment_variables=format_environment_variables

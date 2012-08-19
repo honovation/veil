@@ -42,7 +42,7 @@ supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 ; create one or more 'real' program: sections to be able to control them under
 ; supervisor.
 
-{% for program_name, program in config.programs.items() if program %}
+{% for program_name, program in config.programs.items() if program and program_name in active_programs %}
 [program:{{ program_name }}]
 {% if program.user %}
 user={{ program.user }}

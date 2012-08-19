@@ -38,5 +38,6 @@ def register_website_options(website):
     return get_website_options
 
 def get_website_option(website, name):
+    website = website.lower()
     return registry[website]()[name]
 
