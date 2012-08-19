@@ -41,8 +41,10 @@ def route(method, path_template, website=None, tags=(), **path_template_params):
             _website = infer_website()
         if not _website:
             raise Exception('website not specified for route: {}'.format(route_handler))
+        _website = _website.upper()
         if _website in website_components:
-            assert website_components[_website] == get_loading_component()
+            if get_loading_component():
+                assert website_components[_website] == get_loading_component()
         else:
             website_components[_website] = get_loading_component()
             for initializer in website_initializers:
@@ -75,6 +77,7 @@ def is_public_route(route):
 
 
 def get_routes(website):
+    website = website.upper()
     if website_components.get(website, None):
         assert_component_loaded(website_components[website].__name__)
     return routes.get(website, ())

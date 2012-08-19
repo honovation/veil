@@ -7,6 +7,7 @@ init_components = lambda : veil.component.init_components([
     'veil.environment.setting',
     'veil.environment.setting',
     'veil.development.browser',
+    'veil.development.pycharm',
     'veil.development.test',
     'veil.supervisor',
     '__veil__'

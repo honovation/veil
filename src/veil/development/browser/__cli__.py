@@ -4,6 +4,10 @@ from veil.environment.installation import *
 from veil.backend.shell import *
 
 @installation_script()
-def install_pyqt4():
+def install_spynner():
     install_ubuntu_package('python-qt4')
-    shell_execute(os.path.join(os.path.dirname(__file__), 'link-qt4-to-virtualenv.sh'))
+    try:
+        import PyQt4
+    except ImportError:
+        shell_execute(os.path.join(os.path.dirname(__file__), 'link-pyqt4-to-virtualenv.sh'))
+    install_python_package('spynner')

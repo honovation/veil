@@ -4,6 +4,7 @@ from veil.environment.setting import *
 registry = {} # website => get_website_options
 
 def register_website(website):
+    website = website.lower()
     if website not in registry:
         registry[website] = register_website_options(website)
     return registry[website]

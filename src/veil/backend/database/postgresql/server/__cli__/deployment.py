@@ -12,7 +12,7 @@ def create_database(purpose='default'):
     try:
         shell_execute('createdb -h {host} -p {port} -U {user} {database}'.format(
             host=get_option(purpose, 'host'),
-            port=get_option(purpose, 'port', int),
+            port=get_option(purpose, 'port'),
             user=get_option(purpose, 'user'),
             database=get_option(purpose, 'database')), capture=True)
     except ShellExecutionError, e:

@@ -78,7 +78,7 @@ class IOLoopExecutor(object):
         return result
 
     def stop(self, return_value=None, failure=None):
-        assert return_value or failure
+        assert return_value is not None or failure
         self.failure = failure
         self.return_value = return_value
         self.stopped = True
