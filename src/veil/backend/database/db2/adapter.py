@@ -1,7 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
 import logging
+import re
 import ibm_db_dbi
+import ibm_db
 from veil.model.collection import *
 
 LOGGER = logging.getLogger(__name__)
@@ -21,9 +23,9 @@ class DB2Adapter(object):
     def _get_conn(self):
         conn = None
         try:
-            conn = ibm_db_dbi.connect(
-                'DRIVER={IBM DB2 ODBC DRIVER};DATABASE=%s;HOSTNAME=%s;PORT=%s; PROTOCOL=TCPIP;UID=%s;PWD=%s;' %
-                (self.database, self.host, self.port, self.user, self.password))
+            connection_string = 'DRIVER={IBM DB2 ODBC DRIVER};DATABASE=%s;HOSTNAME=%s;PORT=%s; PROTOCOL=TCPIP;UID=%s;PWD=%s;' % (
+                self.database, self.host, self.port, self.user, self.password)
+            conn = ibm_db_dbi.connect(connection_string)
         except:
             LOGGER.critical('Cannot connect to database', exc_info=1)
             try:
@@ -42,11 +44,11 @@ class DB2Adapter(object):
 
     @property
     def autocommit(self):
-        return self.conn.autocommit
+        return ibm_db.autocommit(self.conn.conn_handler)
 
     @autocommit.setter
     def autocommit(self, on_off):
-        self.conn.autocommit = on_off
+        self.conn.set_autocommit(on_off)
 
     def rollback_transaction(self):
         self.conn.rollback()
@@ -55,12 +57,12 @@ class DB2Adapter(object):
         self.conn.commit()
 
     def close(self):
-        if not self.conn.closed:
-            self.conn.close()
+        self.conn.close()
 
     def cursor(self, returns_dict_object=True, **kwargs):
         self._reconnect_when_needed()
         cursor = self.conn.cursor(**kwargs)
+        cursor = NamedParameterCursor(cursor)
         if returns_dict_object:
             return ReturningDictObjectCursor(cursor)
         else:
@@ -73,6 +75,42 @@ class DB2Adapter(object):
                 port=self.port,
                 database=self.database,
                 user=self.user))
+
+
+class NamedParameterCursor(object):
+    PARAMETER_REGEX = re.compile(r'%\((.*?)\)s')
+
+    def __init__(self, cursor):
+        self.cursor = cursor
+
+    def execute(self, sql, kwargs=None):
+        if not kwargs:
+            return self.cursor.execute(sql)
+        sql, args = self.translate_parameters(sql, kwargs)
+        return self.cursor.execute(sql, args)
+
+    def executemany(self, sql, kwargs=None):
+        if not kwargs:
+            return self.cursor.executemany(sql)
+        sql, args = self.translate_parameters(sql, kwargs)
+        return self.cursor.executemany(sql, args)
+
+    def translate_parameters(self, sql, kwargs):
+        param_names = []
+
+        def replace_placeholder(match):
+            param_name = match.group(1).strip()
+            param_names.append(param_name)
+            return '?'
+
+        sql = self.PARAMETER_REGEX.sub(replace_placeholder, sql)
+        args = tuple(kwargs[param_name] for param_name in param_names)
+        return sql, args
+
+    def __getattr__(self, attr):
+        if attr in self.__dict__:
+            return getattr(self, attr)
+        return getattr(self.cursor, attr)
 
 
 class ReturningDictObjectCursor(object):
