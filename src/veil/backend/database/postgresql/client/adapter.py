@@ -5,6 +5,7 @@ import psycopg2
 from psycopg2.extensions import  ISOLATION_LEVEL_READ_COMMITTED
 from veil.model.collection import *
 from psycopg2.extras import NamedTupleCursor
+from psycopg2.extensions import cursor as NormalCursor
 
 LOGGER = getLogger(__name__)
 
@@ -68,7 +69,7 @@ class PostgresqlAdapter(object):
 
     def cursor(self, returns_dict_object=True, **kwargs):
         self._reconnect_when_needed()
-        cursor = self.conn.cursor(cursor_factory=NamedTupleCursor, **kwargs)
+        cursor = self.conn.cursor(cursor_factory=NamedTupleCursor if returns_dict_object else NormalCursor, **kwargs)
         if returns_dict_object:
             return ReturningDictObjectCursor(cursor)
         else:
