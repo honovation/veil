@@ -12,13 +12,16 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 class PostgresqlAdapter(object):
-    def __init__(self, host, port, database, user, password):
+    def __init__(self, host, port, database, user, password, schema):
         self.host = host
         self.port = port
         self.database = database
         self.user = user
         self.password = password
         self.conn = self._get_conn()
+        if schema:
+            with closing(self.cursor()) as c:
+                c.execute('SET search_path TO {}'.format(schema))
 
     def _get_conn(self):
         conn = None
@@ -70,13 +73,6 @@ class PostgresqlAdapter(object):
             return ReturningDictObjectCursor(cursor)
         else:
             return cursor
-
-    def set_current_schema(self, schema):
-        with closing(self.cursor()) as c:
-            c.execute('SET search_path TO {}'.format(schema))
-
-    def reset_current_schema(self):
-        self.set_current_schema('public')
 
     def __repr__(self):
         return 'Postgresql adapter {} with connection parameters {}'.format(

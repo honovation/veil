@@ -1,19 +1,22 @@
 from __future__ import unicode_literals, print_function, division
-from contextlib import closing
-from logging import getLogger
+import contextlib
+import logging
 import ibm_db_dbi
 from veil.model.collection import *
 
-LOGGER = getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 class DB2Adapter(object):
-    def __init__(self, host, port, database, user, password):
+    def __init__(self, host, port, database, user, password, schema):
         self.host = host
         self.port = port
         self.database = database
         self.user = user
         self.password = password
         self.conn = self._get_conn()
+        if schema:
+            with contextlib.closing(self.cursor()) as c:
+                c.execute('SET SCHEMA {}'.format(schema))
 
     def _get_conn(self):
         conn = None
@@ -62,13 +65,6 @@ class DB2Adapter(object):
             return ReturningDictObjectCursor(cursor)
         else:
             return cursor
-
-    def set_current_schema(self, schema):
-        with closing(self.cursor()) as c:
-            c.execute('SET search_path TO {}'.format(schema))
-
-    def reset_current_schema(self):
-        self.set_current_schema('public')
 
     def __repr__(self):
         return 'DB2 adapter {} with connection parameters {}'.format(

@@ -27,6 +27,7 @@ def register_database(purpose):
     get_db_database = register_option(section_name, 'database')
     get_db_user = register_option(section_name, 'user')
     get_db_password = register_option(section_name, 'password')
+    get_db_schema = register_option(section_name, 'schema', default='')
 
     def connect_database_if_not_connected():
         if connected_databases.get(purpose):
@@ -38,7 +39,8 @@ def register_database(purpose):
             port=get_db_port(),
             database=get_db_database(),
             user=get_db_user(),
-            password=get_db_password())
+            password=get_db_password(),
+            schema=get_db_schema())
         return connected_databases[purpose]
 
     registry[purpose] = connect_database_if_not_connected
@@ -58,12 +60,13 @@ def close_databases():
     connected_databases.clear()
 
 
-def connect(purpose, type, host, port, database, user, password):
+def connect(purpose, type, host, port, database, user, password, schema):
     __import__('veil.backend.database.{}'.format(type))
     if type in adapter_classes:
         adapter = adapter_classes[type](
             host=host, port=port,
-            database=database, user=user, password=password)
+            database=database, user=user,
+            password=password, schema=schema)
         db = Database(purpose, adapter)
         db.database = database
         return db
@@ -296,12 +299,6 @@ class Database(object):
             cursor.close()
             # if exception happen before close, the whole transaction should be rolled back by the caller
             # if we close the cursor when sql execution error, the actuall error will be covered by unable to close cursor itself
-
-    def set_current_schema(self, schema):
-        self.conn.set_current_schema(schema)
-
-    def reset_current_schema(self):
-        self.conn.reset_current_schema()
 
     @staticmethod
     def _unique_cursor_name():
