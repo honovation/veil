@@ -9,15 +9,13 @@ from veil.development.test import *
 from veil.component import *
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
+from veil.model.event import *
 
 LOGGER = getLogger(__name__)
 original_routes = {}
 routes = {}
 website_components = {}
-website_initializers = []
-
-def register_website_initializer(initializer):
-    website_initializers.append(initializer)
+EVENT_NEW_WEBSITE = 'new-website'
 
 
 @test_hook
@@ -47,8 +45,7 @@ def route(method, path_template, website=None, tags=(), **path_template_params):
                 assert website_components[_website] == get_loading_component()
         else:
             website_components[_website] = get_loading_component()
-            for initializer in website_initializers:
-                initializer(_website)
+            publish_event(EVENT_NEW_WEBSITE, website=_website)
         new_route = Route(page(route_handler), method, path_template, tags=tags, **path_template_params)
         routes.setdefault(_website, []).append(new_route)
         return route_handler

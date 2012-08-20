@@ -10,9 +10,3 @@ with veil.component.init_component(__name__):
         nginx_settings.__name__,
         nginx_program.__name__
     ]
-
-    def init():
-        from veil.environment.setting import register_settings_coordinator
-        from .setting import copy_nginx_settings_to_veil
-
-        register_settings_coordinator(copy_nginx_settings_to_veil)

@@ -9,16 +9,14 @@ from ..routing import  *
 from ..static_file import *
 from ..xsrf import *
 from ..reloading import *
-from .option import get_website_option
+from .setting import get_website_option
 
 LOGGER = getLogger(__name__)
 
 
 def start_test_website(website, **kwargs):
     http_handler = create_website_http_handler(website, **kwargs)
-    secure_cookie_salt = get_website_option(website, 'secure_cookie_salt')
-    if secure_cookie_salt:
-        set_secure_cookie_salt(secure_cookie_salt)
+    init_website(website)
     return start_test_http_server(
         http_handler,
         host=get_website_option(website, 'host'),
@@ -31,14 +29,20 @@ def start_website(website, **kwargs):
         start_reloading_check(io_loop)
     http_handler = create_website_http_handler(website, **kwargs)
     io_loop.add_callback(lambda: LOGGER.info('started website {}'.format(website)))
-    secure_cookie_salt = get_website_option(website, 'secure_cookie_salt')
-    if secure_cookie_salt:
-        set_secure_cookie_salt(secure_cookie_salt)
+    init_website(website)
     start_http_server(
         http_handler, io_loop=io_loop,
         host=get_website_option(website, 'host'),
         port=get_website_option(website, 'port'),
         processes_count=get_website_option(website, 'processes_count'))
+
+
+def init_website(website):
+    secure_cookie_salt = get_website_option(website, 'secure_cookie_salt')
+    if secure_cookie_salt:
+        set_secure_cookie_salt(secure_cookie_salt)
+    set_inline_static_files_directory(get_website_option(website, 'inline_static_files_directory'))
+    set_external_static_files_directory(get_website_option(website, 'external_static_files_directory'))
 
 
 def create_website_http_handler(website, additional_context_managers=(), locale_provider=None):

@@ -1,7 +1,20 @@
 from __future__ import unicode_literals, print_function, division
+from veil.environment import *
 from veil.environment.setting import *
+from veil.model.collection import *
 
 registry = {} # website => get_website_options
+
+def website_settings(website, **updates):
+    settings = objectify({
+        'domain': '{}.dev.dmright.com'.format(website),
+        'inline_static_files_directory': VEIL_VAR_DIR / 'inline-static-files',
+        'external_static_files_directory': VEIL_HOME / 'static',
+        'host': 'localhost'
+    })
+    settings = merge_settings(settings, updates)
+    return {'veil': {'{}_website'.format(website): settings}}
+
 
 def register_website(website):
     website = website.lower()
@@ -21,6 +34,9 @@ def register_website_options(website):
     get_host = register_option(section, 'host')
     get_port = register_option(section, 'port', int)
     get_processes_count = register_option(section, 'processes_count', default=1)
+    get_inline_static_files_directory = register_option(section, 'inline_static_files_directory')
+    get_external_static_files_directory = register_option(section, 'external_static_files_directory')
+    get_domain = register_option(section, 'domain')
 
     def get_website_options():
         return {
@@ -32,10 +48,14 @@ def register_website_options(website):
             'secure_cookie_salt': get_secure_cookie_salt(),
             'host': get_host(),
             'port': get_port(),
-            'processes_count': get_processes_count()
+            'processes_count': get_processes_count(),
+            'inline_static_files_directory': get_inline_static_files_directory(),
+            'external_static_files_directory': get_external_static_files_directory(),
+            'domain': get_domain()
         }
 
     return get_website_options
+
 
 def get_website_option(website, name):
     website = website.lower()

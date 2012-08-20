@@ -3,7 +3,7 @@ from veil.environment import *
 from veil.environment.setting import *
 from veil.backend.redis import *
 
-def pyres_settings(config_file=None, server_host=None, server_port=None, **updates):
+def queue_settings(config_file=None, server_host=None, server_port=None, **updates):
     updates['port'] = updates.get('port', 6380)
     settings = redis_settings('queue', **updates)
     settings.resweb = {

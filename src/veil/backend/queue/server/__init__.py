@@ -5,7 +5,7 @@ with veil.component.init_component(__name__):
     from .job import enqueue
     from .job import enqueue_at
     from .periodic_job import periodic_job
-    from .setting import pyres_settings
+    from .setting import queue_settings
     from .setting import queue_program
     from .setting import resweb_program
     from .setting import delayed_job_scheduler_program
@@ -20,7 +20,7 @@ with veil.component.init_component(__name__):
         # from periodic_job
         periodic_job.__name__,
         # from setting
-        pyres_settings.__name__,
+        queue_settings.__name__,
         queue_program.__name__,
         resweb_program.__name__,
         delayed_job_scheduler_program.__name__,

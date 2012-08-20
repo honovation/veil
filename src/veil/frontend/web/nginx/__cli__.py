@@ -13,11 +13,6 @@ def install_nginx():
     remove_service_auto_start('nginx', '/etc/rc0.d/K20nginx')
     create_directory(settings.nginx.log_directory)
     create_file(settings.nginx.config_file, get_template('nginx.conf.j2').render(config=settings.nginx))
-    create_directory(
-        settings.nginx.inline_static_files_directory,
-        owner=settings.nginx.owner,
-        group=settings.nginx.owner_group,
-        mode=0770)
     uploaded_files_directory = as_path(settings.nginx.uploaded_files_directory)
     create_directory(
         uploaded_files_directory,

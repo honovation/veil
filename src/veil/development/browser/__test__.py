@@ -2,20 +2,12 @@ from __future__ import unicode_literals, print_function, division
 from veil.development.test import *
 from veil.frontend.template import *
 from veil.frontend.web import *
-from veil.model.collection import *
 from .browser import browsing
 from .browser import interact_with_page
 
 register_website('test')
 
-TEST_WEBSITE_SETTINGS = objectify({
-    'veil': {
-        'test_website': {
-            'host': 'localhost',
-            'port': 10000
-        }
-    }
-})
+TEST_WEBSITE_SETTINGS = website_settings('test', host='localhost', port=10000)
 
 class Spike(TestCase):
     def test(self):

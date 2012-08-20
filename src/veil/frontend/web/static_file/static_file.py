@@ -7,16 +7,24 @@ import lxml.html
 from veil.utility.path import as_path
 from veil.utility.hash import *
 from veil.frontend.template import *
-from veil.environment.setting import *
 
 LOGGER = getLogger(__name__)
 
 static_file_hashes = {}
+inline_static_files_directory = None
+external_static_files_directory = None
 
-get_inline_static_files_directory = register_option('website', 'inline_static_files_directory')
-get_external_static_files_directory = register_option('website', 'external_static_files_directory')
 
-# === utilities exposed for external usage ===
+def set_inline_static_files_directory(value):
+    global inline_static_files_directory
+    inline_static_files_directory = value
+
+
+def set_external_static_files_directory(value):
+    global external_static_files_directory
+    external_static_files_directory = value
+
+
 @contextlib.contextmanager
 def clear_static_file_hashes():
     static_file_hashes.clear()
@@ -34,7 +42,7 @@ def static_url(path):
 
 def get_static_file_hash(path):
     if static_file_hashes.get(path) is None:
-        static_file_path = as_path(get_external_static_files_directory()) / path
+        static_file_path = as_path(external_static_files_directory) / path
         try:
             with open(static_file_path) as f:
                 hash = calculate_file_md5_hash(f)
@@ -119,7 +127,7 @@ def remove_element(element):
 
 def write_inline_static_file(page_handler, suffix, content):
     hash = hashlib.md5(content).hexdigest()
-    inline_static_file = as_path(get_inline_static_files_directory()) / hash
+    inline_static_file = as_path(inline_static_files_directory) / hash
     if not inline_static_file.exists():
         inline_static_file.write_text(content)
     page_name = page_handler.__name__.replace('_widget', '').replace('_page', '').replace('_', '-')

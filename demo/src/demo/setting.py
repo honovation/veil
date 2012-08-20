@@ -1,10 +1,9 @@
 from __future__ import unicode_literals, print_function, division
-from veil.environment import VEIL_ENV, VEIL_HOME
+from veil.environment import *
+from veil.environment.setting import *
+from veil.frontend.web.launcher import *
 from veil.frontend.web.nginx import *
-from veil.backend.queue import queue_program
-from veil.backend.queue import resweb_program
-from veil.backend.queue import delayed_job_scheduler_program
-from veil.backend.queue import job_worker_program
+from veil.backend.queue import *
 from veil.backend.database.postgresql import *
 from veil.backend.redis import *
 from veil.model.collection import *
@@ -20,19 +19,14 @@ def demo_settings():
         'veil': {
             'logging': {
                 'level': 'DEBUG'
-            },
-            'demo_website': {
-                'host': DEMO_WEB_HOST,
-                'port': DEMO_WEB_PORT,
-                'master_template_directory': VEIL_HOME / 'src' / 'demo' / 'website' / 'demo',
             }
         }
     })
-    settings.update(redis_settings('demo'))
-    settings.update(nginx_settings())
-    settings.update(postgresql_settings('demo', user='veil', password='p@55word'))
-    settings.update(pyres_settings())
-    settings.update(supervisor_settings(programs={
+    settings = merge_settings(settings, redis_settings('demo'))
+    settings = merge_settings(settings, nginx_settings())
+    settings = merge_settings(settings, postgresql_settings('demo', user='veil', password='p@55word'))
+    settings = merge_settings(settings, queue_settings())
+    settings = merge_settings(settings, supervisor_settings(programs={
         'demo': {'command': 'veil website demo up'},
         'postgresql': postgresql_program('demo'),
         'redis': redis_program('demo'),
@@ -42,5 +36,8 @@ def demo_settings():
         'delayed_job_scheduler': delayed_job_scheduler_program(),
         'job_worker': job_worker_program('demo')
     }))
-    add_reverse_proxy_server(settings, 'veil-demo', DEMO_WEB_HOST, DEMO_WEB_PORT)
+    settings = merge_settings(settings, website_settings(
+        'demo', host=DEMO_WEB_HOST, port=DEMO_WEB_PORT,
+        master_template_directory=VEIL_HOME / 'src' / 'demo' / 'website' / 'demo'))
+    add_reverse_proxy_server(settings, 'demo')
     return settings
