@@ -8,7 +8,7 @@ from veil.environment import VEIL_HOME
 LOGGER = logging.getLogger(__name__)
 
 @script('create-database')
-def create_database(purpose='default'):
+def create_database(purpose):
     try:
         shell_execute('createdb -h {host} -p {port} -U {user} {database}'.format(
             host=get_option(purpose, 'host'),
@@ -22,7 +22,7 @@ def create_database(purpose='default'):
             raise
 
 @script('drop-database')
-def drop_database(purpose='default'):
+def drop_database(purpose):
     try:
         shell_execute('dropdb -h {host} -p {port} -U {user} {database}'.format(
             host=get_option(purpose, 'host'),
@@ -36,7 +36,7 @@ def drop_database(purpose='default'):
             raise
 
 @script('migrate')
-def migrate(purpose='default'):
+def migrate(purpose):
     sql_path = VEIL_HOME / 'db' / purpose / '001-baseline.sql'
     shell_execute('psql -h {host} -p {port} -U {user} -f {sql_path} {database}'.format(
         host=get_option(purpose, 'host'),
@@ -46,7 +46,7 @@ def migrate(purpose='default'):
         sql_path=sql_path))
 
 @script('reset')
-def reset(purpose='default'):
+def reset(purpose):
     drop_database(purpose)
     create_database(purpose)
     migrate(purpose)

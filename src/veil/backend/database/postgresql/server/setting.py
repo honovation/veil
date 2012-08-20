@@ -4,14 +4,14 @@ from veil.environment.setting import *
 from veil.model.collection import *
 
 
-def postgresql_program(purpose='default', updates=None):
+def postgresql_program(purpose, updates=None):
     program = {'command': 'veil backend database postgresql server up {}'.format(purpose)}
     if updates:
         program.update(updates)
     return program
 
 
-def postgresql_settings(purpose='default', **updates):
+def postgresql_settings(purpose, **updates):
     settings = {
         'listen_addresses': 'localhost',
         'host': 'localhost',

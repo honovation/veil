@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
-from veil.frontend.web import *
 from veil.frontend.cli import *
+from .launcher import start_website
 
 @script('up')
-def bring_up_demo():
-    start_website(website='DEMO')
+def bring_up_website(website):
+    start_website(website)

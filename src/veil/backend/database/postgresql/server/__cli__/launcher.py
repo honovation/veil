@@ -6,16 +6,20 @@ from veil.backend.shell import *
 from veil.environment.setting import *
 
 @script('up')
-def bring_up_postgresql_server(purpose='default'):
+def bring_up_postgresql_server(purpose):
     settings = get_settings()
     config = getattr(settings, '{}_postgresql'.format(purpose))
     pass_control_to('postgres -D {}'.format(config.data_directory))
 
 
 @script('down')
-def bring_down_postgresql_server(purpose='default', config=None):
+def bring_down_postgresql_server(purpose):
     settings = get_settings()
-    config = config or getattr(settings, '{}_postgresql'.format(purpose))
+    config = getattr(settings, '{}_postgresql'.format(purpose))
+    _bring_down_postgresql_server(config)
+
+
+def _bring_down_postgresql_server(config):
     shell_execute('su {} -c "pg_ctl -D {} stop"'.format(
         config.owner, config.data_directory))
 
@@ -26,4 +30,4 @@ def postgresql_server_running(config):
         config.owner, config.data_directory))
     time.sleep(5)
     yield
-    bring_down_postgresql_server(config=config)
+    _bring_down_postgresql_server(config=config)

@@ -5,6 +5,13 @@ from veil.model.collection import *
 
 registry = {} # website => get_website_options
 
+def website_program(website, **updates):
+    program = {'command': 'veil frontend web launcher up {}'.format(website)}
+    if updates:
+        program.update(updates)
+    return program
+
+
 def website_settings(website, **updates):
     settings = objectify({
         'domain': '{}.dev.dmright.com'.format(website),

@@ -27,7 +27,7 @@ def demo_settings():
     settings = merge_settings(settings, postgresql_settings('demo', user='veil', password='p@55word'))
     settings = merge_settings(settings, queue_settings())
     settings = merge_settings(settings, supervisor_settings(programs={
-        'demo': {'command': 'veil website demo up'},
+        'demo': website_program('demo'),
         'postgresql': postgresql_program('demo'),
         'redis': redis_program('demo'),
         'nginx': nginx_program(),
