@@ -6,13 +6,12 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
-from veil.model.collection import *
 from veil.environment.setting import register_option
 
 LOGGER = getLogger(__name__)
 
-registry = {} # purpose => open_database
-connected_databases = {} # purpose => database or category => database or __default__ => database
+registry = {} # purpose => get_database_options
+instances = {} # purpose => instance
 adapter_classes = {} # database type => adapter class
 
 def register_adapter_class(type, adapter_class):
@@ -20,44 +19,48 @@ def register_adapter_class(type, adapter_class):
 
 
 def register_database(purpose):
-    section_name = '{}_database'.format(purpose) # for example contact_index_database
-    get_db_type = register_option(section_name, 'type')
-    get_db_host = register_option(section_name, 'host')
-    get_db_port = register_option(section_name, 'port', int)
-    get_db_database = register_option(section_name, 'database')
-    get_db_user = register_option(section_name, 'user')
-    get_db_password = register_option(section_name, 'password')
-    get_db_schema = register_option(section_name, 'schema', default='')
-
-    def connect_database_if_not_connected():
-        if connected_databases.get(purpose):
-            return connected_databases[purpose]
-        connected_databases[purpose] = connect(
-            purpose=purpose,
-            type=get_db_type(),
-            host=get_db_host(),
-            port=get_db_port(),
-            database=get_db_database(),
-            user=get_db_user(),
-            password=get_db_password(),
-            schema=get_db_schema())
-        return connected_databases[purpose]
-
-    registry[purpose] = connect_database_if_not_connected
+    if purpose not in registry:
+        registry[purpose] = register_database_options(purpose)
     return lambda: require_database(purpose)
 
 
+def register_database_options(purpose):
+    section = '{}_database'.format(purpose) # for example contact_index_database
+    get_db_type = register_option(section, 'type')
+    get_db_host = register_option(section, 'host')
+    get_db_port = register_option(section, 'port', int)
+    get_db_database = register_option(section, 'database')
+    get_db_user = register_option(section, 'user')
+    get_db_password = register_option(section, 'password')
+    get_db_schema = register_option(section, 'schema', default='')
+
+    def get_database_options():
+        return {
+            'type': get_db_type(),
+            'host': get_db_host(),
+            'port': get_db_port(),
+            'database': get_db_database(),
+            'user': get_db_user(),
+            'password': get_db_password(),
+            'schema': get_db_schema()
+        }
+
+    return get_database_options
+
+
 def require_database(purpose):
-    # connect and set the current schema as search path
     if purpose not in registry:
         raise Exception('database for purpose {} is not registered'.format(purpose))
-    return registry[purpose]()
+    if purpose not in instances:
+        get_database_options = registry[purpose]
+        instances[purpose] = connect(purpose=purpose, **get_database_options())
+    return instances[purpose]
 
 
 def close_databases():
-    for database in connected_databases.values():
+    for database in instances.values():
         database.close()
-    connected_databases.clear()
+    instances.clear()
 
 
 def connect(purpose, type, host, port, database, user, password, schema):
