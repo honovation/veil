@@ -9,7 +9,7 @@ register_website('test')
 
 TEST_WEBSITE_SETTINGS = website_settings('test', host='localhost', port=10000)
 
-class Spike(TestCase):
+class BrowsingTest(TestCase):
     def test(self):
         @route('GET', '/', website='test')
         def home():

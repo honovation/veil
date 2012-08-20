@@ -221,7 +221,8 @@ veil.widget.processWidget = function (html) {
         }
     }
 
-    var doc = $.parseXML('<html>' + html + '</html>');
+    var doc = $.parseXML('<dummy-wrapper>' + html + '</dummy-wrapper>');
+
     $(doc).find('script').each(function () {
         var $script = $(this);
         if ('text/plain' == $script.attr('type')) {
@@ -262,5 +263,5 @@ veil.widget.processWidget = function (html) {
             }
         }
     });
-    return veil.widget.toXML(doc).replace('<html>', '').replace('</html>', '').replace('<html/>', '');
+    return veil.widget.toXML(doc).replace('<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', '');
 };

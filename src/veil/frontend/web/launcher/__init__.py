@@ -6,13 +6,15 @@ with veil.component.init_component(__name__):
     from .setting import register_website
     from .setting import website_settings
     from .setting import website_program
+    from .setting import get_website_option
 
     __all__ = [
         start_website.__name__,
         start_test_website.__name__,
         register_website.__name__,
         website_settings.__name__,
-        website_program.__name__
+        website_program.__name__,
+        get_website_option.__name__
     ]
 
     def init():

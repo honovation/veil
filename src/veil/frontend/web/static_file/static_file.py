@@ -4,6 +4,7 @@ import hashlib
 from markupsafe import Markup
 from logging import getLogger
 import lxml.html
+from veil.frontend.web.tornado import *
 from veil.utility.path import as_path
 from veil.utility.hash import *
 from veil.frontend.template import *
@@ -57,6 +58,10 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
 # === combine & move <link rel="stylesheet"> to the top ===
 # === combine & externalize inline <script> ===
 # === combine & externalize inline <style> ===
+    http_response = get_current_http_response()
+    if http_response:
+        if 'text/html' not in http_response.headers.get('Content-Type', ''):
+            return html
     if not html:
         return html
     if not html.strip():
@@ -74,6 +79,7 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
         if 'text/plain' == element.get('type', None):
             continue
         if element.get('src', None):
+            element.text = ' '
             script_elements.append(element)
         else:
             inline_js_text = element.text_content().strip()
@@ -90,10 +96,12 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
             link_elements.append(element)
             remove_element(element)
     if inline_js_texts:
-        script_elements.append(fragment.makeelement('script', attrib={
+        script_element = fragment.makeelement('script', attrib={
             'type': 'text/javascript',
             'src': '/static/{}'.format(write_inline_static_file(page_handler, 'js', '\r\n'.join(inline_js_texts)))
-        }))
+        })
+        script_element.text = ' '
+        script_elements.append(script_element)
     if inline_css_texts:
         link_elements.append(fragment.makeelement('link', attrib={
             'rel': 'stylesheet',
@@ -112,7 +120,7 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
             head_element.append(element)
         else:
             fragment.insert(i, element)
-    return Markup(lxml.html.tostring(fragment).replace(
+    return Markup(lxml.html.tostring(fragment, method='xml').replace(
         '<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', ''))
 
 

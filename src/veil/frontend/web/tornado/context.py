@@ -4,18 +4,23 @@ import contextlib
 http_contexts = []
 
 
-def get_current_http_context():
+def get_current_http_context(optional=False):
     if not http_contexts:
-        raise Exception('not inside http context')
+        if optional:
+            return None
+        else:
+            raise Exception('not inside http context')
     return http_contexts[-1]
 
 
-def get_current_http_request():
-    return get_current_http_context().request
+def get_current_http_request(optional=False):
+    context =get_current_http_context(optional=optional)
+    return context.request if context else None
 
 
-def get_current_http_response():
-    return get_current_http_context().response
+def get_current_http_response(optional=False):
+    context =get_current_http_context(optional=optional)
+    return context.response if context else None
 
 
 @contextlib.contextmanager
