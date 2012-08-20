@@ -5,6 +5,10 @@ from veil.environment.installation import *
 
 @installation_script()
 def install_db2_client():
+    install_ubuntu_package('libaio1')
+    install_ubuntu_package('libstdc++6-4.4-dev')
+    install_ubuntu_package('libstdc++6-4.4-pic')
+    install_ubuntu_package('libstdc++5')
     install_db2_driver()
     try:
         import ibm_db
@@ -19,5 +23,6 @@ def install_db2_client():
 def install_db2_driver():
     if os.path.exists('/opt/db2-clidriver'):
         return
-    shell_execute('wget http://dependency-veil.googlecode.com/svn/trunk/db2-clidriver.tar.gz -O /tmp/db2-clidriver.tar.gz')
+    shell_execute(
+        'wget http://dependency-veil.googlecode.com/svn/trunk/db2-clidriver.tar.gz -O /tmp/db2-clidriver.tar.gz')
     shell_execute('tar xzf /tmp/db2-clidriver.tar.gz -C /opt')
