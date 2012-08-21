@@ -9,8 +9,16 @@ veil.failTest = function (message) {
     throw new Error(message);
 };
 veil.assertEqual = function (expected, actual) {
-    if (expected != actual) {
-        veil.failTest('expected: ' + expected + ', actual: ' + actual);
+    var expectedVal = expected;
+    if ($.isFunction(expected)) {
+        expectedVal = expected();
+    }
+    var actualVal = actual;
+    if ($.isFunction(actual)) {
+        actualVal = actual();
+    }
+    if (expectedVal != actualVal) {
+        veil.failTest('expected: ' + expectedVal + ', actual: ' + actualVal + ', ' + expected + ' != ' + actual);
     }
 };
 veil.waitUntil = function (condition, onCondition, timeout) {
