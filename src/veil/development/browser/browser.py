@@ -2,9 +2,12 @@ from __future__ import unicode_literals, print_function, division
 import functools
 import logging
 import threading
+import time
 import lxml.html
 import os.path
 import spynner
+import selenium.webdriver
+import os
 from veil.utility.path import *
 from veil.development.test import *
 from veil.frontend.template import *
@@ -32,8 +35,8 @@ def browsing(website, url, **browsing_args):
 def start_website_and_browser(website, url, interact_with_pages, timeout=60, visible=False):
     @route('POST', '/-test/stop', website=website)
     def stop_test():
-        stop_browser()
         require_io_loop_executor().stop(get_http_arguments())
+        stop_browser()
 
     @route('POST', '/-test/fail', website=website)
     def fail_test():
@@ -57,32 +60,61 @@ def start_website_and_browser(website, url, interact_with_pages, timeout=60, vis
 
 
 def start_browser(url, visible):
+    get_executing_test().addCleanup(stop_browser)
+    start_chrome_browser(url, visible)
+
+
+def start_chrome_browser(url, visible):
     test = get_executing_test()
-    test.browser = spynner.Browser(debug_level=spynner.DEBUG)
-    test.addCleanup(stop_browser)
+    old_cwd = os.getcwd()
+    os.chdir('/tmp')
+    test.chrome_browser = selenium.webdriver.Chrome()
+    os.chdir(old_cwd)
+    test.chrome_browser.get(url)
+    while test.chrome_browser:
+        time.sleep(0.1)
+        check_is_test_failed(test)
+
+
+def start_spynner_browser(url, visible):
+    test = get_executing_test()
+    test.spynner_browser = spynner.Browser(debug_level=spynner.DEBUG)
     if visible:
-        test.browser.show(maximized=False)
+        test.spynner_browser.show(maximized=False)
     try:
-        test.browser.load(url)
+        test.spynner_browser.load(url)
     except:
-        raise
-    try:
-        while test.browser:
-            message = getattr(test, 'error', None)
-            if message is None:
-                test.browser._events_loop()
-            else:
-                stop_browser()
-                require_io_loop_executor().stop(message)
-                test.fail(message)
-    except:
-        raise
+        pass
+    while test.spynner_browser:
+        test.spynner_browser._events_loop()
+        check_is_test_failed(test)
+
+
+def check_is_test_failed(test):
+    message = getattr(test, 'error', None)
+    if message is not None:
+        stop_browser()
+        require_io_loop_executor().stop(message)
+        test.fail(message)
 
 
 def stop_browser():
-    browser = get_executing_test().browser
+    stop_chrome_browser()
+
+
+def stop_chrome_browser():
+    test = get_executing_test()
+    browser = test.chrome_browser
     if browser:
-        get_executing_test().browser = None
+        test.chrome_browser = None
+        browser.close()
+
+
+def stop_spynner_browser():
+    test = get_executing_test()
+    browser = test.spynner_browser
+    if browser:
+        test.spynner_browser = None
         browser.close()
 
 
@@ -94,11 +126,6 @@ def inject_page_interaction(html):
         return html
     page_interaction_requested.release()
     page_interaction_ready.acquire()
-    test = get_executing_test()
-    if getattr(test, 'page_interaction_index', None):
-        test.page_interaction_index += 1
-    else:
-        test.page_interaction_index = 1
     fragment = lxml.html.document_fromstring(html)
     script = fragment.makeelement(
         'script', attrib={

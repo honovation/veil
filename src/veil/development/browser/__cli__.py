@@ -11,3 +11,4 @@ def install_spynner():
     except ImportError:
         shell_execute(os.path.join(os.path.dirname(__file__), 'link-pyqt4-to-virtualenv.sh'))
     install_python_package('spynner')
+    install_python_package('selenium')
