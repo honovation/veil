@@ -1,10 +1,8 @@
 from __future__ import unicode_literals, print_function, division
-import selenium.webdriver
 from veil.development.test import *
 from veil.frontend.template import *
 from veil.frontend.web import *
-from .browser import browsing
-from .browser import interact_with_page
+from .browser import start_website_and_browser
 
 register_website('test')
 
@@ -25,16 +23,14 @@ class BrowsingTest(TestCase):
             </html>
             """).render()
 
-        @browsing('test', '/')
-        def interact_with_pages():
-            interact_with_page(
-                """
-                setTimeout(function(){
-                    document.getElementById('form').submit();
-                }, 1000);
-                """)
+        start_website_and_browser(
+            'test', '/',
+            ["""
+            setTimeout(function(){
+                document.getElementById('form').submit();
+            }, 1000);
+            """])
 
-        interact_with_pages()
 
 
 
