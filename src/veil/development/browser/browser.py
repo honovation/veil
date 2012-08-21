@@ -36,8 +36,12 @@ def start_website_and_browser(website, url, interact_with_pages, timeout=60, vis
         require_io_loop_executor().stop(get_http_arguments())
 
     @route('POST', '/-test/fail', website=website)
-    def stop_test():
+    def fail_test():
         get_executing_test().error = get_http_argument('message')
+
+    @route('POST', '/-test/log', website=website)
+    def log_from_test():
+        LOGGER.info(get_http_argument('message'))
 
     @route('GET', '/-test/veil-test.js', website=website)
     def veil_test_js():

@@ -1,5 +1,6 @@
-var veil = veil || {};
-
+veil.log = function (message) {
+    $.post('/-test/log', {message:message});
+};
 veil.stopTest = function () {
     $.post('/-test/stop');
 };
@@ -12,10 +13,10 @@ veil.assertEqual = function (expected, actual) {
         veil.failTest('expected: ' + expected + ', actual: ' + actual);
     }
 };
-veil.waitUntil = function(condition, onCondition, timeout) {
+veil.waitUntil = function (condition, onCondition, timeout) {
     timeout = timeout || 1000;
     var elapsed = 0;
-    var intervalId = setInterval(function(){
+    var intervalId = setInterval(function () {
         elapsed += 500;
         if (condition()) {
             clearInterval(intervalId);
@@ -26,4 +27,8 @@ veil.waitUntil = function(condition, onCondition, timeout) {
             }
         }
     }, 500);
+};
+veil.dump = function (element) {
+    element = element || $('body');
+    veil.log(element.html());
 };
