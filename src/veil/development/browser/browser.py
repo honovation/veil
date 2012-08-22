@@ -15,7 +15,7 @@ from veil.backend.shell import *
 
 LOGGER = logging.getLogger(__name__)
 
-def start_website_and_browser(website, url, page_interactions, timeout=60):
+def start_website_and_browser(website, url, page_interactions, timeout=60, browser='spynner'):
     @route('POST', '/-test/stop', website=website)
     def stop_test():
         require_io_loop_executor().stop(get_http_arguments())
@@ -51,6 +51,7 @@ def start_website_and_browser(website, url, page_interactions, timeout=60):
         get_current_http_response().set_header('Content-Type', 'text/javascript; charset=utf-8')
         return (as_path(__file__).dirname() / 'veil.js').text()
 
+    get_executing_test().browser_type = browser
     page_interactions = list(reversed(page_interactions))
     register_page_post_processor(lambda page_handler, html: inject_page_interaction(html, page_interactions))
     start_test_website(website)
@@ -60,8 +61,14 @@ def start_website_and_browser(website, url, page_interactions, timeout=60):
 
 
 def start_browser(url):
-    get_executing_test().addCleanup(stop_browser)
-    start_chrome_browser(url)
+    test = get_executing_test()
+    test.addCleanup(stop_browser)
+    if 'spynner' == test.browser_type:
+        start_spynner_browser(url)
+    elif 'chrome' == test.browser_type:
+        start_chrome_browser(url)
+    else:
+        raise NotImplementedError('unknown browser type: {}'.format(test.browser_type))
 
 
 def start_chrome_browser(url):
@@ -99,7 +106,13 @@ def check_is_test_failed(test):
 
 
 def stop_browser():
-    stop_chrome_browser()
+    test = get_executing_test()
+    if 'spynner' == test.browser_type:
+        stop_spynner_browser()
+    elif 'chrome' == test.browser_type:
+        stop_chrome_browser()
+    else:
+        raise NotImplementedError('unknown browser type: {}'.format(test.browser_type))
 
 
 def stop_chrome_browser():
