@@ -12,3 +12,6 @@ def install_spynner():
         shell_execute(os.path.join(os.path.dirname(__file__), 'link-pyqt4-to-virtualenv.sh'))
     install_python_package('spynner')
     install_python_package('selenium')
+    if not os.path.exists('/usr/bin/chromedriver'):
+        shell_execute('wget http://chromedriver.googlecode.com/files/chromedriver_linux64_21.0.1180.4.zip -O /tmp/chromedriver_linux64_21.0.1180.4.zip')
+        shell_execute('unzip /tmp/chromedriver_linux64_21.0.1180.4.zip -d /usr/bin')
