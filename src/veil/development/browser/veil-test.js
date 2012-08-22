@@ -1,3 +1,7 @@
+window.onerror = function (message, url, lineNumber) {
+    $.post('/-test/fail', {message:message + ', url: ' + url + ', line#: ' + lineNumber});
+    return false;
+};
 veil.log = function (message) {
     $.post('/-test/log', {message:message});
 };
@@ -5,7 +9,6 @@ veil.stopTest = function () {
     $.post('/-test/stop');
 };
 veil.failTest = function (message) {
-    $.post('/-test/fail', {message:message});
     throw new Error(message);
 };
 veil.assertEqual = function (expected, actual) {

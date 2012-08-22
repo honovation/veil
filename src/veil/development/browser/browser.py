@@ -22,7 +22,9 @@ def start_website_and_browser(website, url, page_interactions, timeout=60):
 
     @route('POST', '/-test/fail', website=website)
     def fail_test():
-        get_executing_test().error = get_http_argument('message')
+        message = get_http_argument('message')
+        LOGGER.error(message)
+        get_executing_test().error = message
 
     @route('POST', '/-test/log', website=website)
     def log_from_test():
@@ -32,6 +34,21 @@ def start_website_and_browser(website, url, page_interactions, timeout=60):
     def veil_test_js():
         get_current_http_response().set_header('Content-Type', 'text/javascript; charset=utf-8')
         return (as_path(__file__).dirname() / 'veil-test.js').text()
+
+    @route('GET', '/-test/jquery.js', website=website)
+    def jquery_js():
+        get_current_http_response().set_header('Content-Type', 'text/javascript; charset=utf-8')
+        return (as_path(__file__).dirname() / 'jquery.js').text()
+
+    @route('GET', '/-test/jquery-cookie.js', website=website)
+    def jquery_cookie_js():
+        get_current_http_response().set_header('Content-Type', 'text/javascript; charset=utf-8')
+        return (as_path(__file__).dirname() / 'jquery-cookie.js').text()
+
+    @route('GET', '/-test/veil.js', website=website)
+    def veil_js():
+        get_current_http_response().set_header('Content-Type', 'text/javascript; charset=utf-8')
+        return (as_path(__file__).dirname() / 'veil.js').text()
 
     page_interactions = list(reversed(page_interactions))
     register_page_post_processor(lambda page_handler, html: inject_page_interaction(html, page_interactions))
@@ -105,6 +122,8 @@ def inject_page_interaction(html, page_interactions):
     if 'XMLHttpRequest' == request.headers.get('X-Requested-With', None):
         return html
     if request.path.startswith('/-test/'):
+        return html
+    if not page_interactions:
         return html
     fragment = lxml.html.document_fromstring(html)
     script = fragment.makeelement(

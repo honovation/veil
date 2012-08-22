@@ -7,30 +7,42 @@ from .browser import start_website_and_browser
 register_website('test')
 
 TEST_WEBSITE_SETTINGS = website_settings('test', host='localhost', port=10000)
+PAGE_CONTENT =\
+"""
+<html>
+<head>
+<script src="/-test/jquery.js">&nbsp;</script>
+<script src="/-test/jquery-cookie.js">&nbsp;</script>
+<script src="/-test/veil.js">&nbsp;</script>
+</head>
+<body>
+</body>
+</html>
+"""
 
 class BrowsingTest(TestCase):
-    def test(self):
+    def test_fail(self):
         @route('GET', '/', website='test')
         def home():
-            return get_template(template_source=\
-            """
-            <html>
-            <body>
-            <form id="form" method="post" action="/-test/stop">
-                {{ xsrf_field() }}
-            </form>
-            </body>
-            </html>
-            """).render()
+            return PAGE_CONTENT
+
+        with self.assertRaises(AssertionError):
+            start_website_and_browser(
+                'test', '/',
+                ["""
+            veil.assertEqual(1, 2);
+            """])
+
+    def test_stop(self):
+        @route('GET', '/', website='test')
+        def home():
+            return PAGE_CONTENT
 
         start_website_and_browser(
             'test', '/',
             ["""
-            setTimeout(function(){
-                document.getElementById('form').submit();
-            }, 1000);
+            veil.stopTest();
             """])
-
 
 
 

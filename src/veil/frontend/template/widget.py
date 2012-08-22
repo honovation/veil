@@ -92,7 +92,7 @@ class Widget(object):
                 content = self.func(*args, **kwargs)
                 if content is None:
                     return None
-                return Markup(content)
+                return Markup(content.decode('utf8'))
         except:
             type, value, traceback = sys.exc_info()
             if not getattr(value, 'EXPECTED_WIDGET_ERROR', None):
