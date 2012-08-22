@@ -20,7 +20,14 @@ def nginx_settings(**updates):
         'servers': {}
     }
     settings.update(updates)
-    return objectify({'nginx': settings})
+    return objectify({
+        'nginx': settings,
+        'supervisor': {
+            'programs': {
+                'nginx': nginx_program()
+            }
+        }
+    })
 
 
 def add_reverse_proxy_server(settings, website, **updates):

@@ -14,7 +14,7 @@ REDIS_BASE_SETTINGS = {
     }
 }
 
-def redis_program(purpose='default'):
+def redis_program(purpose):
     return {
         'command': 'veil backend redis server up {}'.format(purpose)
     }
@@ -31,7 +31,14 @@ def redis_settings(purpose, **updates):
         'configfile': VEIL_ETC_DIR / '{}_redis.conf'.format(purpose)
     }
     settings.update(updates)
-    return objectify({'{}_redis'.format(purpose): settings})
+    return objectify({
+        '{}_redis'.format(purpose): settings,
+        'supervisor': {
+            'programs': {
+                '{}_redis'.format(purpose): redis_program(purpose)
+            }
+        }
+    })
 
 
 def copy_redis_settings_to_veil(settings):

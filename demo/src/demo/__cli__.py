@@ -9,7 +9,7 @@ __import__('demo.website')
 def install_demo():
     shell_execute('veil backend database postgresql server install demo')
     active_programs = [
-        'demo', 'postgresql', 'redis', 'nginx', 'queue',
+        'demo_website', 'demo_postgresql', 'demo_redis', 'nginx', 'queue_redis',
         'resweb', 'delayed_job_scheduler', 'job_worker']
     if 'test' == VEIL_ENV:
         active_programs.remove('demo')

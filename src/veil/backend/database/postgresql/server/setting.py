@@ -23,7 +23,14 @@ def postgresql_settings(purpose, **updates):
         'database': purpose
     }
     settings.update(updates)
-    return objectify({'{}_postgresql'.format(purpose): settings})
+    return objectify({
+        '{}_postgresql'.format(purpose): settings,
+        'supervisor': {
+            'programs': {
+                '{}_postgresql'.format(purpose): postgresql_program(purpose)
+            }
+        }
+    })
 
 
 def copy_postgresql_settings_into_veil(settings):

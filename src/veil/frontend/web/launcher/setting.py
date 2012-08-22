@@ -20,7 +20,14 @@ def website_settings(website, **updates):
         'host': 'localhost'
     })
     settings = merge_settings(settings, updates)
-    return {'veil': {'{}_website'.format(website): settings}}
+    return {
+        'veil': {'{}_website'.format(website): settings},
+        'supervisor': {
+            'programs': {
+                '{}_website'.format(website): website_program(website)
+            }
+        }
+    }
 
 
 def register_website(website):

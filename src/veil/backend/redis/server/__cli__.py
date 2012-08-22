@@ -21,7 +21,7 @@ def install_redis_server(purpose=None):
 
 
 @script('up')
-def bring_up_redis_server(purpose='default'):
+def bring_up_redis_server(purpose):
     settings = get_settings()
     config = getattr(settings, '{}_redis'.format(purpose))
     pass_control_to('redis-server {}'.format(config.configfile))
