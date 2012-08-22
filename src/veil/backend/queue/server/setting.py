@@ -40,6 +40,8 @@ def copy_queue_settings_to_veil(settings):
                 'host': settings.queue_redis.bind,
                 'port': settings.queue_redis.port,
                 'password': settings.queue_redis.password
+            } if 'test' != VEIL_ENV else {
+                'type': 'immediate'
             }
         }
     }, overrides=True)

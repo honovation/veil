@@ -12,9 +12,9 @@ from veil.environment.setting import register_option
 LOGGER = getLogger(__name__)
 
 get_type = register_option('queue', 'type')
-get_host = register_option('queue', 'host')
-get_port = register_option('queue', 'port', int)
-get_password = register_option('queue', 'password')
+get_host = register_option('queue', 'host', default='')
+get_port = register_option('queue', 'port', int, default=0)
+get_password = register_option('queue', 'password', default='')
 
 _current_queue = None
 

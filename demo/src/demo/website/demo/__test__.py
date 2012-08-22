@@ -10,9 +10,10 @@ class DemoWebsiteTest(TestCase):
             'demo', '/',
             ["""
             before = $('.list-items-element-widget').length;
+            veil.assertEqual(0, before);
             $('input[name=name]').val('hello');
             $('#new-item-widget button[type=submit]').click();
             veil.waitUntil(function(){
-                return $('.list-items-element-widget').length == before + 1;
+                return $('.list-items-element-widget').length == 1;
             }, veil.stopTest);
             """])

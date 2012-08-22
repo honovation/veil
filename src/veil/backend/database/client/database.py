@@ -6,7 +6,8 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
-from veil.environment.setting import register_option
+from veil.development.test import *
+from veil.environment.setting import *
 
 LOGGER = getLogger(__name__)
 
@@ -72,6 +73,11 @@ def connect(purpose, type, host, port, database, user, password, schema):
             password=password, schema=schema)
         db = Database(purpose, adapter)
         db.database = database
+        executing_test = get_executing_test(optional=True)
+        if executing_test:
+            db.disable_autocommit()
+            db.commit_transaction = lambda: None
+            executing_test.addCleanup(db.rollback_transaction)
         return db
     else:
         raise Exception('unknown database type: {}'.format(type))
