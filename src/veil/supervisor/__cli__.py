@@ -8,9 +8,18 @@ from veil.frontend.cli import script
 
 @installation_script()
 def install_supervisor(*active_programs):
-    if not active_programs:
-        return
     settings = get_settings()
+    all_programs = settings.supervisor.programs.keys()
+    if 'development' == VEIL_ENV:
+        active_programs = all_programs
+    elif 'test' == VEIL_ENV:
+        active_programs = list(all_programs)
+        for program in all_programs:
+            if program.endswith('_website'):
+                active_programs.remove(program)
+    else:
+        if not active_programs:
+            return
     install_python_package('supervisor')
     create_file(settings.supervisor.config_file, get_template('supervisord.cfg.j2').render(
         config=settings.supervisor,
