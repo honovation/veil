@@ -3,6 +3,7 @@ from veil.utility.path import *
 from veil.frontend.cli import *
 from veil.frontend.template import *
 from veil.backend.shell import *
+from veil.environment import *
 from veil.environment.setting import *
 from veil.environment.installation import *
 
@@ -11,7 +12,7 @@ def install_nginx():
     settings = get_settings()
     install_ubuntu_package('nginx-extras')
     remove_service_auto_start('nginx', '/etc/rc0.d/K20nginx')
-    create_directory(settings.nginx.log_directory)
+    create_directory(settings.nginx.log_directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     create_file(settings.nginx.config_file, get_template('nginx.conf.j2').render(config=settings.nginx))
     uploaded_files_directory = as_path(settings.nginx.uploaded_files_directory)
     create_directory(

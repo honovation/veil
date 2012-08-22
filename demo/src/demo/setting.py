@@ -11,10 +11,6 @@ from veil.supervisor import *
 from veil.backend.queue.server import *
 
 def demo_settings():
-    DEMO_WEB_HOST = 'localhost'
-    DEMO_WEB_PORT = 8080
-    if 'test' == VEIL_ENV:
-        DEMO_WEB_PORT = 10000
     settings = objectify({
         'veil': {
             'logging': {
@@ -25,12 +21,10 @@ def demo_settings():
     settings = merge_settings(settings, redis_settings('demo'))
     settings = merge_settings(settings, nginx_settings())
     settings = merge_settings(settings, postgresql_settings('demo', user='veil', password='p@55word'))
-    settings = merge_settings(settings, queue_settings())
+    settings = merge_settings(settings, queue_settings(workers={'demo': 1}))
     settings = merge_settings(settings, website_settings(
-        'demo', host=DEMO_WEB_HOST, port=DEMO_WEB_PORT,
+        'demo', port=5010,
         master_template_directory=VEIL_HOME / 'src' / 'demo' / 'website' / 'demo'))
     add_reverse_proxy_server(settings, 'demo')
-    settings = merge_settings(settings, supervisor_settings(programs={
-        'job_worker': job_worker_program('demo')
-    }))
+    settings = merge_settings(settings, supervisor_settings())
     return settings

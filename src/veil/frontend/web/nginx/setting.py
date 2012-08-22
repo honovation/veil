@@ -3,11 +3,11 @@ from veil.model.collection import *
 from veil.environment import *
 from veil.environment.setting import *
 
-def nginx_program():
-    return {
-        'command': 'veil frontend web nginx up',
-        'user': 'root'
+def nginx_program(**updates):
+    settings = {
+        'command': 'veil frontend web nginx up'
     }
+    return merge_settings(settings, updates)
 
 
 def nginx_settings(**updates):
@@ -16,6 +16,7 @@ def nginx_settings(**updates):
         'owner_group': CURRENT_USER_GROUP,
         'log_directory': VEIL_LOG_DIR / 'nginx',
         'config_file': VEIL_ETC_DIR / 'nginx.conf',
+        'pid_file': VEIL_VAR_DIR / 'nginx.pid',
         'uploaded_files_directory': VEIL_VAR_DIR / 'uploaded-files',
         'servers': {}
     }
@@ -35,7 +36,11 @@ def add_reverse_proxy_server(settings, website, **updates):
     if ':' in website_config.domain:
         server_name, listen_port = website_config.domain.split(':')
     else:
-        server_name, listen_port = website_config.domain, 80
+        server_name, listen_port = website_config.domain, 8080
+    listen_port = int(listen_port)
+    if 'test' == VEIL_ENV:
+        listen_port += 1
+    website_config.domain = '{}:{}'.format(server_name, listen_port)
     server_settings = {
         'listen': listen_port,
         'locations': {

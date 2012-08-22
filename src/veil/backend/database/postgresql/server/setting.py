@@ -12,7 +12,7 @@ def postgresql_program(purpose, updates=None):
 
 
 def postgresql_settings(purpose, **updates):
-    settings = {
+    settings = objectify({
         'listen_addresses': 'localhost',
         'host': 'localhost',
         'port': 5432,
@@ -21,8 +21,10 @@ def postgresql_settings(purpose, **updates):
         'config_directory': VEIL_ETC_DIR / '{}_postgresql'.format(purpose),
         'unix_socket_directory': '/tmp',
         'database': purpose
-    }
-    settings.update(updates)
+    })
+    settings = merge_settings(settings, updates, overrides=True)
+    if 'test' == VEIL_ENV:
+        settings.port += 1
     return objectify({
         '{}_postgresql'.format(purpose): settings,
         'supervisor': {

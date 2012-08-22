@@ -10,13 +10,8 @@ from veil.frontend.cli import script
 def install_supervisor(*active_programs):
     settings = get_settings()
     all_programs = settings.supervisor.programs.keys()
-    if 'development' == VEIL_ENV:
+    if VEIL_ENV in ['development', 'test']:
         active_programs = all_programs
-    elif 'test' == VEIL_ENV:
-        active_programs = list(all_programs)
-        for program in all_programs:
-            if program.endswith('_website'):
-                active_programs.remove(program)
     else:
         if not active_programs:
             return
@@ -28,7 +23,7 @@ def install_supervisor(*active_programs):
         format_command=format_command,
         format_environment_variables=format_environment_variables
     ))
-    create_directory(settings.supervisor.logging.directory)
+    create_directory(settings.supervisor.logging.directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
 
 
 @script('up')

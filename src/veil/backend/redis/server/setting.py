@@ -21,7 +21,7 @@ def redis_program(purpose):
 
 
 def redis_settings(purpose, **updates):
-    settings = {
+    settings = objectify({
         'owner': CURRENT_USER,
         'owner_group': CURRENT_USER_GROUP,
         'bind': '127.0.0.1',
@@ -29,8 +29,10 @@ def redis_settings(purpose, **updates):
         'password': '',
         'dbdir': VEIL_VAR_DIR / '{}_redis'.format(purpose),
         'configfile': VEIL_ETC_DIR / '{}_redis.conf'.format(purpose)
-    }
-    settings.update(updates)
+    })
+    settings = merge_settings(settings, updates, overrides=True)
+    if 'test' == VEIL_ENV:
+        settings.port += 1
     return objectify({
         '{}_redis'.format(purpose): settings,
         'supervisor': {

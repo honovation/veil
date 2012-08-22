@@ -56,7 +56,7 @@ def collect_transitive_dependencies(component_name, dependencies):
 
 def create_layout():
     create_directory(VEIL_HOME / 'log')
-    create_directory(VEIL_LOG_DIR)
+    create_directory(VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     create_directory(VEIL_HOME / 'etc')
     create_directory(VEIL_ETC_DIR)
     create_directory(VEIL_HOME / 'var')

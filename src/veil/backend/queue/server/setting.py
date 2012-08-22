@@ -3,8 +3,8 @@ from veil.environment import *
 from veil.environment.setting import *
 from veil.backend.redis import *
 
-def queue_settings(config_file=None, server_host=None, server_port=None, **updates):
-    updates['port'] = updates.get('port', 6380)
+def queue_settings(config_file=None, server_host=None, server_port=None, workers=None, **updates):
+    updates['port'] = updates.get('port', 6389)
     settings = redis_settings('queue', **updates)
     settings = merge_settings(settings, {
         'resweb': {
@@ -21,6 +21,12 @@ def queue_settings(config_file=None, server_host=None, server_port=None, **updat
             }
         }
     })
+    workers = workers or None
+    for queue_name, workers_count in workers.items():
+        for i in range(1, workers_count + 1):
+            settings.supervisor.programs['{}_worker{}'.format(queue_name, i)] = job_worker_program(queue_name)
+    if 'test' == VEIL_ENV:
+        settings.supervisor.programs.clear()
     return settings
 
 
