@@ -26,6 +26,7 @@ veil.assertEqual = function (expected, actual) {
 };
 veil.waitUntil = function (condition, onCondition, timeout) {
     timeout = timeout || 1000;
+    onCondition = onCondition || veil.stopTest
     var elapsed = 0;
     var intervalId = setInterval(function () {
         elapsed += 500;

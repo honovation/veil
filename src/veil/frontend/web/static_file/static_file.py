@@ -135,7 +135,10 @@ def remove_element(element):
 
 def write_inline_static_file(page_handler, suffix, content):
     hash = hashlib.md5(content).hexdigest()
-    inline_static_file = as_path(inline_static_files_directory) / hash
+    dir = as_path(inline_static_files_directory)
+    if not dir.exists():
+        dir.mkdir(0755)
+    inline_static_file = dir / hash
     if not inline_static_file.exists():
         inline_static_file.write_text(content)
     page_name = page_handler.__name__.replace('_widget', '').replace('_page', '').replace('_', '-')

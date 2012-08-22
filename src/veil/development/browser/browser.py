@@ -136,6 +136,11 @@ def inject_page_interaction(html, page_interactions):
     fragment.find('body').append(script)
     script = fragment.makeelement(
         'script', attrib={'type': 'text/javascript'})
-    script.text = page_interactions.pop()
+    script.text = \
+    """
+    $(document).ready(function() {
+        %s
+    });
+    """ % page_interactions.pop()
     fragment.find('body').append(script)
     return lxml.html.tostring(fragment, method='xml')
