@@ -6,6 +6,7 @@ from inspect import getargspec
 import traceback
 from markupsafe import Markup
 from veil.development.test import *
+from veil.frontend.encoding import *
 from .template import register_template_utility
 from .template import require_current_template_directory_relative_to
 
@@ -92,7 +93,7 @@ class Widget(object):
                 content = self.func(*args, **kwargs)
                 if content is None:
                     return None
-                return Markup(content.decode('utf8'))
+                return Markup(to_unicode(content))
         except:
             type, value, traceback = sys.exc_info()
             if not getattr(value, 'EXPECTED_WIDGET_ERROR', None):
