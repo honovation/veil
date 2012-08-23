@@ -7,19 +7,19 @@ from threading import Timer
 from veil.component import force_get_all_loaded_modules
 import cProfile
 
-def profile_package(*module_name_prefixes):
+def profile_package(*package_names):
     import __builtin__
 
-    __builtin__.__dict__['test'] = lambda: test_package(*module_name_prefixes)
+    __builtin__.__dict__['test'] = lambda: test_package(*package_names)
     cProfile.run('test()')
 
 
-def test_package(*module_name_prefixes):
+def test_package(*package_names):
     tests = []
     test_loader = TestLoader()
     for module_name, module in force_get_all_loaded_modules().items():
-        for module_name_prefix in module_name_prefixes:
-            if module_name.startswith(module_name_prefix):
+        for package_name in package_names:
+            if module_name.startswith('{}.'.format(package_name)):
                 test = test_loader.loadTestsFromModule(module)
                 tests.extend(test)
     test_result = TextTestRunner(failfast=True, resultclass=TimedTextTestResult).run(TestSuite(tests))

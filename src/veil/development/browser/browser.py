@@ -86,7 +86,7 @@ def start_chrome_browser(url):
         try:
             time.sleep(0.1)
         except KeyboardInterrupt:
-            stop_test()
+            test.error = 'keyboard interrupt'
         check_is_test_failed(test)
 
 
@@ -103,7 +103,7 @@ def start_spynner_browser(url, visible=False):
         try:
             test.spynner_browser._events_loop()
         except KeyboardInterrupt:
-            stop_test()
+            test.error = 'keyboard interrupt'
         check_is_test_failed(test)
 
 
