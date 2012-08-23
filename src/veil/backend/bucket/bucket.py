@@ -7,16 +7,19 @@ LOGGER = logging.getLogger(__name__)
 registry = {} # purpose => get_bucket_options
 instances = {} # purpose => instance
 
-def register_bucket(purpose):
+def register_bucket(purpose, optional=False):
     if purpose not in registry:
-        registry[purpose] = register_bucket_options(purpose)
+        registry[purpose] = register_bucket_options(purpose, optional)
     return lambda: require_bucket(purpose)
 
 
-def register_bucket_options(purpose):
-    get_type = register_option('{}_bucket'.format(purpose), 'type')
-    get_base_directory = register_option('{}_bucket'.format(purpose), 'base_directory')
-    get_base_url = register_option('{}_bucket'.format(purpose), 'base_url')
+def register_bucket_options(purpose, optional):
+    get_type = register_option(
+        '{}_bucket'.format(purpose), 'type', default='' if optional else None)
+    get_base_directory = register_option(
+        '{}_bucket'.format(purpose), 'base_directory', default='' if optional else None)
+    get_base_url = register_option(
+        '{}_bucket'.format(purpose), 'base_url', default='' if optional else None)
 
     def get_bucket_options():
         return {

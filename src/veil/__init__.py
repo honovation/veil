@@ -6,6 +6,7 @@ init_components = lambda : veil.component.init_components([
     'veil.backend.database.postgresql',
     'veil.backend.database.db2',
     'veil.backend.redis',
+    'veil.backend.bucket',
     'veil.environment.setting',
     'veil.environment.setting',
     'veil.development.browser',

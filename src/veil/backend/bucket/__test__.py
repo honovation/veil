@@ -6,6 +6,8 @@ from veil.utility.path import as_path
 from veil.environment.setting import *
 from .bucket import register_bucket
 
+bucket = register_bucket('test', optional=True)
+
 class FilesystemBucketTest(TestCase):
     def setUp(self):
         super(FilesystemBucketTest, self).setUp()
@@ -18,12 +20,10 @@ class FilesystemBucketTest(TestCase):
         })
 
     def test_happy_path(self):
-        bucket = register_bucket('test')
         bucket().store('a/b/c', StringIO('d'))
         self.assertEqual('d', bucket().retrieve('a/b/c').read())
 
     def test_hacking(self):
-        bucket = register_bucket('test')
         with self.assertRaises(AssertionError):
             bucket().retrieve('/etc/sudoers').read()
         with self.assertRaises(AssertionError):
