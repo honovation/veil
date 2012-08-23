@@ -4,9 +4,9 @@ from gettext import NullTranslations
 from logging import getLogger
 from babel.core import Locale
 from babel.support import Translations
-from veil.frontend.template import require_current_translations_being
-from veil.development.test import get_executing_test
-from veil.environment import VEIL_HOME
+from veil.development.test import *
+from veil.frontend.template import *
+from veil.environment import *
 
 LOGGER = getLogger(__name__)
 LOCALE_DIR = VEIL_HOME / 'locale'
@@ -63,7 +63,7 @@ def _(*args, **kwargs):
 
     return _(*args, **kwargs)
 
-
+@test_hook
 def install_null_translation():
     import __builtin__
 
