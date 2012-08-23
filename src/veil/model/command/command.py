@@ -3,22 +3,15 @@ import functools
 from inspect import getargspec, isfunction
 from veil.model.binding import *
 from veil.model.collection import *
-from veil.development.test import *
-
-test_datas = {}
-
-@test_hook
-def clear_test_datas():
-    get_executing_test().addCleanup(test_datas.clear)
 
 
-def command(binders=None, test_data_providers=None):
+def command(binders):
 # syntax sugar for CommandHandlerDecorator
     if isfunction(binders):
         command_handler = binders
         return CommandHandlerDecorator()(command_handler)
     else:
-        return CommandHandlerDecorator(binders, test_data_providers)
+        return CommandHandlerDecorator(binders)
 
 
 def command_for(command_handler, errors=None, **command_values):
@@ -35,9 +28,8 @@ def command_for(command_handler, errors=None, **command_values):
 
 
 class CommandHandlerDecorator(object):
-    def __init__(self, extra_command_fields_binders=None, test_data_providers=None):
+    def __init__(self, extra_command_fields_binders=None):
         self.extra_command_fields_binders = extra_command_fields_binders
-        self.test_data_providers = test_data_providers or {}
 
     def __call__(self, command_handler):
         if not getargspec(command_handler).args:
@@ -46,23 +38,11 @@ class CommandHandlerDecorator(object):
 
         @functools.wraps(command_handler)
         def wrapper(*positional_args, **keyword_args):
-            is_test_data = keyword_args.pop('is_test_data', False)
             raw_command = args_to_raw_command(positional_args, keyword_args, command_handler)
-            if get_executing_test(optional=True):
-                signature = generate_signature(raw_command)
-                if is_test_data:
-                    if signature in test_datas:
-                        return test_datas[signature]
-                for field, test_data_provider in self.test_data_providers.items():
-                    if field not in raw_command:
-                        raw_command[field] = test_data_provider()
             command = raw_command_to_command(raw_command, command_binder)
             positional_args, keyword_args = command_to_args(command, command_handler)
             try:
-                obj = command_handler(*positional_args, **keyword_args)
-                if get_executing_test(optional=True) and is_test_data:
-                    test_datas[signature] = obj
-                return obj
+                return command_handler(*positional_args, **keyword_args)
             except Invalid, e:
                 raise InvalidCommand(e.fields_errors)
             except CommandError, e:

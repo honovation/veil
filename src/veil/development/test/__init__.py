@@ -6,6 +6,7 @@ with veil.component.init_component(__name__):
     from .case import test_hook
     from .runner import profile_package
     from .runner import test_package
+    from .test_data import test_data
 
     __all__ = [
         # from case
@@ -14,5 +15,7 @@ with veil.component.init_component(__name__):
         test_hook.__name__,
         # from runner
         profile_package.__name__,
-        test_package.__name__
+        test_package.__name__,
+        # from test_data
+        test_data.__name__
     ]
