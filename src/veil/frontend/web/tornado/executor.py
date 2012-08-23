@@ -22,18 +22,6 @@ def require_io_loop_executor():
         lock.release()
 
 
-@contextlib.contextmanager
-def stop_on_exception(io_loop_executor):
-    try:
-        yield
-    except GeneratorExit:
-        pass
-    except:
-        LOGGER.debug('caught exception', exc_info=1)
-        io_loop_executor.stop(failure=sys.exc_info())
-        raise
-
-
 class IOLoopExecutor(object):
     def __init__(self, io_loop):
         self.io_loop = io_loop
@@ -56,7 +44,7 @@ class IOLoopExecutor(object):
                     try:
                         raise Exception('Async operation timed out after {} seconds'.format(timeout))
                     except:
-                        self.stop(failure = sys.exc_info())
+                        self.stop(failure=sys.exc_info())
 
                 self.io_loop.add_timeout(time.time() + timeout, timeout_func)
             while True:
@@ -78,19 +66,10 @@ class IOLoopExecutor(object):
         return result
 
     def stop(self, return_value=None, failure=None):
-        assert return_value is not None or failure
         self.failure = failure
         self.return_value = return_value
         self.stopped = True
         if self.running:
             self.io_loop.stop()
             self.running = False
-
-    def __enter__(self):
-        self.context = stop_on_exception(self)
-        return self.context.__enter__()
-
-
-    def __exit__(self, type, value, traceback):
-        return self.context.__exit__(type, value, traceback)
 

@@ -48,7 +48,7 @@ def init_options():
                 raise Exception('option {}.{}: {}, defined by: {}'.format(
                     section, name, e.message, definition.defined_by))
             options[section][name] = value
-    original_options = options
+    original_options = dict(options)
 
 
 def decide_option_value(raw_value, definition):
