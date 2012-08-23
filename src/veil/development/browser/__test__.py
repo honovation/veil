@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.development.test import *
-from veil.frontend.template import *
-from veil.frontend.web import *
+from veil.profile.web import *
 from .browser import start_website_and_browser
 
 register_website('test')

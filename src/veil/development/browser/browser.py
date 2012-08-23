@@ -10,8 +10,7 @@ import selenium.webdriver
 import os
 from veil.utility.path import *
 from veil.development.test import *
-from veil.frontend.template import *
-from veil.frontend.web import *
+from veil.profile.web import *
 from veil.backend.shell import *
 
 LOGGER = logging.getLogger(__name__)
