@@ -12,10 +12,8 @@ def self_check():
     package_names = ['veil']
     import __veil__
 
-    for member_name in dir(__veil__):
-        member = getattr(__veil__, member_name)
-        if hasattr(member, '__path__'):
-            package_names.append(member.__name__)
+    for component in __veil__.COMPONENTS:
+        package_names.append(component.__name__)
     test_package(*package_names)
     check_dependencies()
 

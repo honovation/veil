@@ -5,6 +5,7 @@ import threading
 import urllib
 import urllib2
 from .launcher import start_test_website
+from veil.development.test import *
 from veil.frontend.web.tornado import *
 
 def start_website_and_client(website):
@@ -42,8 +43,15 @@ class WebClient(object):
 
 
     def __enter__(self):
-        threading.Thread(target=self.io_loop_executor.execute).start()
+        threading.Thread(target=self.execute_io_loop).start()
         return self
+
+    def execute_io_loop(self):
+        self.io_loop_finished = threading.Lock()
+        get_executing_test().addCleanup(self.io_loop_finished.acquire)
+        with self.io_loop_finished:
+            self.io_loop_executor.execute()
+
 
 
     def __exit__(self, type, value, traceback):
