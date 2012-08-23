@@ -55,7 +55,13 @@ def require_database(purpose):
     if purpose not in instances:
         get_database_options = registry[purpose]
         instances[purpose] = connect(purpose=purpose, **get_database_options())
-    return instances[purpose]
+    db = instances[purpose]
+    executing_test = get_executing_test(optional=True)
+    if executing_test:
+        db.disable_autocommit()
+        db.commit_transaction = lambda: None
+        executing_test.addCleanup(db.rollback_transaction)
+    return db
 
 
 def close_databases():
@@ -73,11 +79,6 @@ def connect(purpose, type, host, port, database, user, password, schema):
             password=password, schema=schema)
         db = Database(purpose, adapter)
         db.database = database
-        executing_test = get_executing_test(optional=True)
-        if executing_test:
-            db.disable_autocommit()
-            db.commit_transaction = lambda: None
-            executing_test.addCleanup(db.rollback_transaction)
         return db
     else:
         raise Exception('unknown database type: {}'.format(type))
