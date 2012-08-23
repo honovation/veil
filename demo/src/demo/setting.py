@@ -3,7 +3,6 @@ from veil.environment import *
 from veil.environment.setting import *
 from veil.frontend.web.launcher import *
 from veil.frontend.web.nginx import *
-from veil.backend.queue import *
 from veil.backend.database.postgresql import *
 from veil.backend.redis import *
 from veil.model.collection import *

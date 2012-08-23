@@ -6,7 +6,7 @@ from .browser import start_website_and_browser
 
 register_website('test')
 
-TEST_WEBSITE_SETTINGS = website_settings('test', host='localhost', port=10000)
+TEST_WEBSITE_SETTINGS = website_settings('test', host='localhost', port=10000, domain='')
 PAGE_CONTENT =\
 """
 <html>
@@ -30,8 +30,8 @@ class BrowsingTest(TestCase):
             start_website_and_browser(
                 'test', '/',
                 ["""
-            veil.assertEqual(1, 2);
-            """])
+                veil.assertEqual(1, 2);
+                """])
 
     def test_stop(self):
         @route('GET', '/', website='test')

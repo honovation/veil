@@ -7,8 +7,9 @@ import email.utils
 from logging import getLogger
 import re
 import time
-from veil.frontend.encoding import to_str
-from veil.utility.hash import get_hmac
+from veil.development.test import *
+from veil.frontend.encoding import *
+from veil.utility.hash import *
 from .context import get_current_http_request
 from .context import get_current_http_response
 
@@ -17,6 +18,14 @@ secure_cookie_salt = None
 
 def set_secure_cookie_salt(value):
     global  secure_cookie_salt
+
+    executing_test = get_executing_test(optional=True)
+    if executing_test:
+        def reset():
+            global secure_cookie_salt
+            secure_cookie_salt = None
+
+        executing_test.addCleanup(reset)
     secure_cookie_salt = value
 
 

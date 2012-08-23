@@ -4,6 +4,7 @@ import hashlib
 from markupsafe import Markup
 from logging import getLogger
 import lxml.html
+from veil.development.test import *
 from veil.frontend.web.tornado import *
 from veil.utility.path import as_path
 from veil.utility.hash import *
@@ -18,11 +19,25 @@ external_static_files_directory = None
 
 def set_inline_static_files_directory(value):
     global inline_static_files_directory
+    executing_test = get_executing_test(optional=True)
+    if executing_test:
+        def reset():
+            global inline_static_files_directory
+            inline_static_files_directory = None
+
+        executing_test.addCleanup(reset)
     inline_static_files_directory = value
 
 
 def set_external_static_files_directory(value):
     global external_static_files_directory
+    executing_test = get_executing_test(optional=True)
+    if executing_test:
+        def reset():
+            global external_static_files_directory
+            external_static_files_directory = None
+
+        executing_test.addCleanup(reset)
     external_static_files_directory = value
 
 
@@ -42,6 +57,7 @@ def static_url(path):
 
 
 def get_static_file_hash(path):
+    assert external_static_files_directory
     if static_file_hashes.get(path) is None:
         static_file_path = as_path(external_static_files_directory) / path
         try:
@@ -58,7 +74,7 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
 # === combine & move <link rel="stylesheet"> to the top ===
 # === combine & externalize inline <script> ===
 # === combine & externalize inline <style> ===
-    http_response = get_current_http_response()
+    http_response = get_current_http_response(optional=True)
     if http_response:
         if 'text/html' not in http_response.headers.get('Content-Type', ''):
             return html
@@ -134,6 +150,7 @@ def remove_element(element):
 
 
 def write_inline_static_file(page_handler, suffix, content):
+    assert inline_static_files_directory
     hash = hashlib.md5(content).hexdigest()
     dir = as_path(inline_static_files_directory)
     if not dir.exists():

@@ -23,7 +23,7 @@ def website_settings(website, port, **updates):
         'host': 'localhost',
         'port': port
     })
-    settings = merge_settings(settings, updates)
+    settings = merge_settings(settings, updates, overrides=True)
     return {
         'veil': {'{}_website'.format(website): settings},
         'supervisor': {

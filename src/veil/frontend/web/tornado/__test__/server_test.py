@@ -19,7 +19,6 @@ class ServerTest(TestCase):
 
     def fetch_in_another_thread(self):
         io_loop_executor = require_io_loop_executor()
-        with io_loop_executor:
-            response = urllib2.urlopen('http://localhost:{}'.format(self.http_server.port))
-            response.data = response.read()
-            io_loop_executor.stop(response)
+        response = urllib2.urlopen('http://localhost:{}'.format(self.http_server.port))
+        response.data = response.read()
+        io_loop_executor.stop(response)

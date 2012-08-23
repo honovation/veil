@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import threading
 import time
+import signal
 import lxml.html
 import os.path
 import spynner
@@ -15,11 +16,10 @@ from veil.backend.shell import *
 
 LOGGER = logging.getLogger(__name__)
 
-def start_website_and_browser(website, url, page_interactions, timeout=60, browser='spynner'):
+def start_website_and_browser(website, path, page_interactions, timeout=60, browser='spynner'):
     @route('POST', '/-test/stop', website=website)
-    def stop_test():
-        require_io_loop_executor().stop(get_http_arguments())
-        stop_browser()
+    def _stop_test():
+        stop_test()
 
     @route('POST', '/-test/fail', website=website)
     def fail_test():
@@ -54,8 +54,12 @@ def start_website_and_browser(website, url, page_interactions, timeout=60, brows
     get_executing_test().browser_type = browser
     page_interactions = list(reversed(page_interactions))
     register_page_post_processor(lambda page_handler, html: inject_page_interaction(html, page_interactions))
-    start_test_website(website)
-    url = 'http://{}{}'.format(get_website_option(website, 'domain'), url)
+    http_server = start_test_website(website)
+    domain = get_website_option(website, 'domain')
+    if domain:
+        url = 'http://{}{}'.format(domain, path)
+    else:
+        url = 'http://{}:{}{}'.format(http_server.host, http_server.port, path)
     threading.Thread(target=lambda: require_io_loop_executor().execute(timeout=timeout)).start()
     start_browser(url)
 
@@ -79,7 +83,10 @@ def start_chrome_browser(url):
     os.chdir(old_cwd)
     test.chrome_browser.get(url)
     while test.chrome_browser:
-        time.sleep(0.1)
+        try:
+            time.sleep(0.1)
+        except KeyboardInterrupt:
+            stop_test()
         check_is_test_failed(test)
 
 
@@ -93,7 +100,10 @@ def start_spynner_browser(url, visible=False):
     except:
         pass
     while test.spynner_browser:
-        test.spynner_browser._events_loop()
+        try:
+            test.spynner_browser._events_loop()
+        except KeyboardInterrupt:
+            stop_test()
         check_is_test_failed(test)
 
 
@@ -103,6 +113,11 @@ def check_is_test_failed(test):
         stop_browser()
         require_io_loop_executor().stop(message)
         test.fail(message)
+
+
+def stop_test():
+    require_io_loop_executor().stop()
+    stop_browser()
 
 
 def stop_browser():
@@ -149,7 +164,7 @@ def inject_page_interaction(html, page_interactions):
     fragment.find('body').append(script)
     script = fragment.makeelement(
         'script', attrib={'type': 'text/javascript'})
-    script.text = \
+    script.text =\
     """
     $(document).ready(function() {
         %s
