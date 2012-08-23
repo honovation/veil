@@ -32,9 +32,12 @@ def init_component(component_name):
             dependencies.setdefault(loading_component_name, set()).add(component_name)
     if component_name in components:
         try:
+            loading_components.append(component)
             yield
         except ImportError:
             pass # second time import will reference encapsulated module
+        finally:
+            loading_components.pop()
         sys.modules[component_name] = components[component_name]
         return
     components[component.__name__] = component
