@@ -172,7 +172,7 @@ veil.widget.showErrorMessage = function(widget, defaultErrorMessage) {
     var errorMessage = widget.data('error-message') || defaultErrorMessage;
     widget.prepend(
         '<span class="error-message label label-warning">' +
-            '<i class="icon-info-sign"></i>' +
+            '<i class="icon-info-sign">&nbsp;</i>' +
             errorMessage + '</span>');
 };
 
