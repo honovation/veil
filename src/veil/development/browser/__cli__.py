@@ -10,6 +10,9 @@ def install_spynner():
         import PyQt4
     except ImportError:
         shell_execute(os.path.join(os.path.dirname(__file__), 'link-pyqt4-to-virtualenv.sh'))
+    # spynner depends on lxml
+    install_ubuntu_package('libxml2-dev')
+    install_ubuntu_package('libxslt1-dev')
     install_python_package('spynner')
     install_python_package('selenium')
     if not os.path.exists('/usr/bin/chromedriver'):

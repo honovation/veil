@@ -34,6 +34,7 @@ def installation_script():
 
 def install_dependency(component_name):
     args = list(component_name.split('.'))[1:]
+    args = [arg.replace('_', '-') for arg in args]
     args.append('install')
     if is_script_defined(*args):
         env = os.environ.copy()

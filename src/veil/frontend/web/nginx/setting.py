@@ -5,7 +5,8 @@ from veil.environment.setting import *
 
 def nginx_program(**updates):
     settings = {
-        'command': 'veil frontend web nginx up'
+        'command': 'veil frontend web nginx up',
+        'user': 'root'
     }
     return merge_settings(settings, updates)
 
@@ -36,7 +37,7 @@ def add_reverse_proxy_server(settings, website, **updates):
     if ':' in website_config.domain:
         server_name, listen_port = website_config.domain.split(':')
     else:
-        server_name, listen_port = website_config.domain, 8080
+        server_name, listen_port = website_config.domain, 80
     listen_port = int(listen_port)
     if 'test' == VEIL_ENV:
         listen_port += 1

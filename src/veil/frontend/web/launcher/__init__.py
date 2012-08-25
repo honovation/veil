@@ -1,6 +1,7 @@
 import veil.component
 
 with veil.component.init_component(__name__):
+    __import__('veil.frontend.web.nginx')
     from .launcher import start_website
     from .launcher import start_test_website
     from .setting import register_website

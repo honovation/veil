@@ -241,6 +241,7 @@ class DummyModuleMember(object):
                 self.dummy_module.error.message))
         if loading_components:
             record_error(error)
+            return self
         else:
             raise error
 

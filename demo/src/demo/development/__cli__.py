@@ -3,6 +3,7 @@ from veil.backend.shell import *
 from veil.environment.installation import *
 
 __import__('demo.website.demo')
+__import__('veil.backend.database.postgresql')
 
 @installation_script()
 def install():
