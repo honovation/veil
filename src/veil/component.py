@@ -101,8 +101,9 @@ def get_loading_component():
         return None
 
 
-def record_error(error):
-    errors.setdefault(loading_components[-1].__name__, []).append(traceback.format_exc())
+def record_error(message=None):
+    message = message or traceback.format_exc()
+    errors.setdefault(loading_components[-1].__name__, []).append(message)
 
 
 def force_get_all_loaded_modules():
@@ -150,7 +151,7 @@ class ComponentLoader(object):
                 if sub_package not in components.values():
                     self.load_sub_packages_and_modules(sub_package)
             except ImportError, e:
-                record_error(e)
+                record_error()
 
 
     def load_sub_modules(self, package):
@@ -161,7 +162,7 @@ class ComponentLoader(object):
                 sub_module = load_module(package.__name__, sub_module_name)
                 self.modules.append(sub_module)
             except ImportError, e:
-                record_error(e)
+                record_error()
 
     def encapsulate_loaded_packages_and_modules(self):
         for module in self.modules:
@@ -211,7 +212,7 @@ def load_module(*module_name_segments):
     try:
         return importlib.import_module(qualified_module_name)
     except ImportError, e:
-        record_error(e)
+        record_error()
         module = DummyModule(qualified_module_name, e)
         sys.modules[qualified_module_name] = module
         return module
@@ -240,7 +241,7 @@ class DummyModuleMember(object):
                 self.dummy_module.__name__,
                 self.dummy_module.error.message))
         if loading_components:
-            record_error(error)
+            record_error(error.message)
             return self
         else:
             raise error
