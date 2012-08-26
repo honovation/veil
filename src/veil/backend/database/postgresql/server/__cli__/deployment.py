@@ -10,10 +10,9 @@ LOGGER = logging.getLogger(__name__)
 @script('create-database')
 def create_database(purpose):
     try:
-        shell_execute('createdb -h {host} -p {port} -U {user} {database}'.format(
+        shell_execute('createdb -h {host} -p {port} {database}'.format(
             host=get_option(purpose, 'host'),
             port=get_option(purpose, 'port'),
-            user=get_option(purpose, 'user'),
             database=get_option(purpose, 'database')), capture=True)
     except ShellExecutionError, e:
         if 'already exists' in e.output:
@@ -24,10 +23,9 @@ def create_database(purpose):
 @script('drop-database')
 def drop_database(purpose):
     try:
-        shell_execute('dropdb -h {host} -p {port} -U {user} {database}'.format(
+        shell_execute('dropdb -h {host} -p {port} {database}'.format(
             host=get_option(purpose, 'host'),
             port=get_option(purpose, 'port'),
-            user=get_option(purpose, 'user'),
             database=get_option(purpose, 'database')), capture=True)
     except ShellExecutionError, e:
         if 'not exist' in e.output:
