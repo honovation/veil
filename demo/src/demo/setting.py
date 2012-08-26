@@ -19,7 +19,8 @@ def demo_settings():
     })
     settings = merge_settings(settings, redis_settings('demo'))
     settings = merge_settings(settings, nginx_settings())
-    settings = merge_settings(settings, postgresql_settings('demo', user='veil', password='p@55word'))
+    settings = merge_settings(settings, postgresql_settings(
+        'demo', user='veil', password='p@55word', owner_password='p@55word'))
     settings = merge_settings(settings, queue_settings(workers={'demo': 1}))
     settings = merge_settings(settings, website_settings(
         'demo', port=5010,

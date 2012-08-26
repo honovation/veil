@@ -29,5 +29,7 @@ def postgresql_server_running(config):
     shell_execute('su {} -c "pg_ctl -D {} start"'.format(
         config.owner, config.data_directory))
     time.sleep(5)
-    yield
-    _bring_down_postgresql_server(config=config)
+    try:
+        yield
+    finally:
+        _bring_down_postgresql_server(config=config)

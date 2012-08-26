@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import os
 from veil.utility.path import *
 from veil.environment.installation import *
 from veil.backend.shell import *
@@ -27,9 +28,13 @@ def install_postgresql_server(purpose=None):
     if not pg_data_dir.exists():
         old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.dirname()), capture=True).strip()
         shell_execute('chmod 777 {}'.format(pg_data_dir.dirname()))
-        shell_execute('su {pg_data_owner} -c "initdb -A md5 -U {pg_data_owner} -W {pg_data_dir}"'.format(
-            pg_data_owner=config.owner, pg_data_dir=pg_data_dir
-        ))
+        create_file('/tmp/pg-owner-password', config.owner_password)
+        try:
+            shell_execute('su {pg_data_owner} -c "initdb -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-owner-password {pg_data_dir}"'.format(
+                pg_data_owner=config.owner, pg_data_dir=pg_data_dir
+            ))
+        finally:
+            delete_file('/tmp/pg-owner-password')
         shell_execute('chmod {} {}'.format(old_permission, pg_data_dir.dirname()))
         delete_file(pg_data_dir / 'postgresql.conf')
         delete_file(pg_data_dir / 'pg_hba.conf')
@@ -51,9 +56,9 @@ def install_postgresql_server(purpose=None):
         pg_password = config.password
         assert pg_password, 'must specify postgresql user password'
         with postgresql_server_running(config):
-            shell_execute('psql -h {} -p {} -U {} -W -d postgres -c "{}"'.format(
-                config.host,
-                config.port,
-                config.owner,
-                "CREATE USER {} WITH PASSWORD '{}' CREATEDB SUPERUSER".format(pg_user, pg_password)
-            ))
+            env = os.environ.copy()
+            env['PGPASSWORD'] = config.owner_password
+            shell_execute('psql -h {} -p {} -U {} -d postgres -c "{}"'.format(
+                config.host, config.port, config.owner,
+                "CREATE USER {} WITH PASSWORD '{}'".format(pg_user, pg_password)
+            ), env=env)
