@@ -154,7 +154,7 @@ class Route(object):
 
 
 class PathTemplate(object):
-    PATH_TEMPLATE_PARAMETER_REGEX = re.compile(r'\{\{(.*?)\}\}')
+    REGEX_PATH_TEMPLATE_PARAMETER = re.compile(r'\{\{(.*?)\}\}')
 
     def __init__(self, template, template_params):
         self.validate(template, template_params)
@@ -163,7 +163,7 @@ class PathTemplate(object):
 
     @classmethod
     def validate(cls, template, template_params):
-        matches = cls.PATH_TEMPLATE_PARAMETER_REGEX.findall(template)
+        matches = cls.REGEX_PATH_TEMPLATE_PARAMETER.findall(template)
         present_params = list(match.strip() for match in matches)
         if set(present_params) != set(template_params.keys()):
             raise Exception('{} present, actually provided {}'.format(present_params, template_params))
@@ -175,7 +175,7 @@ class PathTemplate(object):
             return '(?P<{}>{})'.format(param_name, param_regex)
 
         path_regex = self.template.replace('.', '\.') + '$'
-        path_regex = self.PATH_TEMPLATE_PARAMETER_REGEX.sub(replace_placeholder, path_regex)
+        path_regex = self.REGEX_PATH_TEMPLATE_PARAMETER.sub(replace_placeholder, path_regex)
         return path_regex
 
     def get_compiled_regex(self):

@@ -16,7 +16,7 @@ class ProcessJavascriptAndStylesheetTagsTest(TestCase):
 
     def test_no_tag(self):
         self.assertEqual('', unicode(process_javascript_and_stylesheet_tags(None, '')))
-        self.assertEqual('<html><body/></html>', unicode(process_javascript_and_stylesheet_tags(
+        self.assertEqual('<html><body></body></html>', unicode(process_javascript_and_stylesheet_tags(
             None, '<html><body/></html>')))
         self.assertEqual(
             '<p>a<span class="test">b</span>c</p>',
@@ -35,8 +35,8 @@ class ProcessJavascriptAndStylesheetTagsTest(TestCase):
         self.assertEqual(
             """
             <html><body>
-            <p/>
-            <script src="abc"> </script></body></html>
+            <p></p>
+            <script src="abc"></script></body></html>
             """.strip(), unicode(processed_html))
 
     def test_stylesheet_tag_relocated_before_head_end(self):
@@ -52,7 +52,7 @@ class ProcessJavascriptAndStylesheetTagsTest(TestCase):
         ).strip()
         self.assertEqual(
             """
-            <html><head><title>hello</title><link rel="stylesheet" type="text/css" media="screen" href="a.css"/></head></html>
+            <html><head><title>hello</title><link rel="stylesheet" type="text/css" media="screen" href="a.css"></link></head></html>
             """.strip(), unicode(processed_html))
 
     def test_inline_script(self):
@@ -66,7 +66,7 @@ class ProcessJavascriptAndStylesheetTagsTest(TestCase):
         processed_html = unicode(process_javascript_and_stylesheet_tags(test_page, test_page()).strip())
         self.assertEqual(
             """
-            <script src="/static/v-bde00465b10c6f9c285cec1f03fe311e/test.js" type="text/javascript"> </script>
+            <script src="/static/v-bde00465b10c6f9c285cec1f03fe311e/test.js" type="text/javascript"></script>
             """.strip(), processed_html)
         self.assertIn('test2', (self.temp_dir / 'bde00465b10c6f9c285cec1f03fe311e').text())
 
@@ -80,7 +80,7 @@ class ProcessJavascriptAndStylesheetTagsTest(TestCase):
         processed_html = unicode(process_javascript_and_stylesheet_tags(test_page, test_page()).strip())
         self.assertEqual(
             """
-            <link href="/static/v-0f0e03094c8ea974cf442bdc461b7b14/test.css" type="text/css" rel="stylesheet"/>
+            <link href="/static/v-0f0e03094c8ea974cf442bdc461b7b14/test.css" rel="stylesheet" type="text/css"></link>
             """.strip(), processed_html)
         self.assertEqual('test\ntest2', (self.temp_dir / '0f0e03094c8ea974cf442bdc461b7b14').text())
 

@@ -10,9 +10,9 @@ PAGE_CONTENT =\
 """
 <html>
 <head>
-<script src="/-test/jquery.js">&nbsp;</script>
-<script src="/-test/jquery-cookie.js">&nbsp;</script>
-<script src="/-test/veil.js">&nbsp;</script>
+<script src="/-test/jquery.js"></script>
+<script src="/-test/jquery-cookie.js"></script>
+<script src="/-test/veil.js"></script>
 </head>
 <body>
 </body>

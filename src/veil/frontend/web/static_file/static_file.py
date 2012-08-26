@@ -1,8 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
 import hashlib
-from markupsafe import Markup
-from logging import getLogger
+import re
+import markupsafe
+import logging
 import lxml.html
 from veil.development.test import *
 from veil.frontend.web.tornado import *
@@ -10,7 +11,8 @@ from veil.utility.path import as_path
 from veil.utility.hash import *
 from veil.frontend.template import *
 
-LOGGER = getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
+REGEX_CLOSED_TAG = re.compile(r'<([^>]*?)/>')
 
 static_file_hashes = {}
 inline_static_files_directory = None
@@ -95,7 +97,6 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
         if 'text/plain' == element.get('type', None):
             continue
         if element.get('src', None):
-            element.text = ' '
             script_elements.append(element)
         else:
             inline_js_text = element.text_content().strip()
@@ -116,7 +117,6 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
             'type': 'text/javascript',
             'src': '/static/{}'.format(write_inline_static_file(page_handler, 'js', '\r\n'.join(inline_js_texts)))
         })
-        script_element.text = ' '
         script_elements.append(script_element)
     if inline_css_texts:
         link_elements.append(fragment.makeelement('link', attrib={
@@ -136,8 +136,10 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
             head_element.append(element)
         else:
             fragment.insert(i, element)
-    return Markup(lxml.html.tostring(fragment, method='xml').replace(
-        '<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', ''))
+    processed_html = lxml.html.tostring(fragment, method='xml').replace(
+        '<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', '')
+    post_processed_html = REGEX_CLOSED_TAG.sub(open_closed_tag, processed_html)
+    return markupsafe.Markup(post_processed_html)
 
 
 def wrap_js_to_ensure_load_once(js):
@@ -161,3 +163,9 @@ def write_inline_static_file(page_handler, suffix, content):
     page_name = page_handler.__name__.replace('_widget', '').replace('_page', '').replace('_', '-')
     pseudo_file_name = '{}.{}'.format(page_name, suffix)
     return 'v-{}/{}'.format(hash, pseudo_file_name)
+
+
+def open_closed_tag(match):
+    tag_and_attributes = match.group(1).strip()
+    tag = tag_and_attributes.split(' ')[0]
+    return '<{}></{}>'.format(tag_and_attributes, tag)
