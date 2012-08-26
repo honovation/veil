@@ -93,7 +93,7 @@ veil.resource.update = function (options) {
     $.ajax(_);
 };
 
-veil.resource.delete = function (options) {
+veil.resource.del = function (options) {
     var url = options.url;
     var onSuccess = options.onSuccess;
     var _ = {
@@ -113,7 +113,7 @@ veil.widget.handle = function (widget_selector, child_selector, event, handler) 
     });
 };
 
-veil.widget.deleteResource = function (widget, onSuccess) {
+veil.widget.delResource = function (widget, onSuccess) {
     var _ = {
         url:widget.data('delete-url'),
         onSuccess:function () {
@@ -121,7 +121,7 @@ veil.widget.deleteResource = function (widget, onSuccess) {
             onSuccess();
         }
     };
-    veil.resource.delete(_);
+    veil.resource.del(_);
 };
 
 veil.widget.createResource = function (widget, onSuccess) {
