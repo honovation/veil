@@ -138,7 +138,7 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
             fragment.insert(i, element)
     processed_html = lxml.html.tostring(fragment, method='xml').replace(
         '<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', '')
-    post_processed_html = REGEX_CLOSED_TAG.sub(open_closed_tag, processed_html)
+    post_processed_html = open_closed_tags(processed_html)
     return markupsafe.Markup(post_processed_html)
 
 
@@ -164,6 +164,8 @@ def write_inline_static_file(page_handler, suffix, content):
     pseudo_file_name = '{}.{}'.format(page_name, suffix)
     return 'v-{}/{}'.format(hash, pseudo_file_name)
 
+def open_closed_tags(html):
+    return REGEX_CLOSED_TAG.sub(open_closed_tag, html)
 
 def open_closed_tag(match):
     tag_and_attributes = match.group(1).strip()

@@ -8,7 +8,7 @@ import os
 __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_component',
     'is_dummy_module_member', 'get_component_dependencies', 'assert_component_loaded',
-    'assert_component_dependencies']
+    'assert_component_dependencies', 'get_component_of_module', 'is_component_loaded']
 
 encapsulated_modules = {}
 components = {}
@@ -70,6 +70,29 @@ def assert_component_loaded(component_name, visited_component_names=None):
         raise Exception('component {} did not load successfully'.format(component_name))
     for dependency in dependencies.get(component_name, ()):
         assert_component_loaded(dependency, list(visited_component_names))
+
+
+def is_component_loaded(component_name, visited_component_names=None):
+    if not visited_component_names:
+        visited_component_names = [component_name]
+    else:
+        visited_component_names.append(component_name)
+        if component_name in visited_component_names[:-1]:
+            raise Exception('circular dependency detected: {}'.format(visited_component_names))
+    if component_name in errors:
+        return False
+    for dependency in dependencies.get(component_name, ()):
+        if not is_component_loaded(dependency, list(visited_component_names)):
+            return False
+    return True
+
+
+def get_component_of_module(module_name):
+    matched_component_names = []
+    for component_name in components:
+        if module_name.startswith(component_name):
+            matched_component_names.append(component_name)
+    return max(matched_component_names)
 
 
 def assert_component_dependencies(component_name, expected_dependencies):

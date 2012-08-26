@@ -4,6 +4,8 @@ from unittest.loader import TestLoader
 from unittest.suite import TestSuite
 from unittest.runner import TextTestResult
 from threading import Timer
+from veil.component import get_component_of_module
+from veil.component import is_component_loaded
 from veil.component import force_get_all_loaded_modules
 import cProfile
 
@@ -20,11 +22,21 @@ def test_package(*package_names):
     for module_name, module in force_get_all_loaded_modules().items():
         for package_name in package_names:
             if module_name.startswith('{}.'.format(package_name)):
-                test = test_loader.loadTestsFromModule(module)
-                tests.extend(test)
+                module_tests = test_loader.loadTestsFromModule(module)
+                module_tests = [t for t in module_tests if is_test_suite_loaded(t)]
+                tests.extend(module_tests)
     test_result = TextTestRunner(failfast=True, resultclass=TimedTextTestResult).run(TestSuite(tests))
     if not test_result.wasSuccessful():
         raise Exception('test failed')
+
+
+def is_test_suite_loaded(suite):
+    if 'LoadTestsFailure' == suite.__class__.__name__:
+        return False
+    for test in suite:
+        if not is_component_loaded(get_component_of_module(test.__module__)):
+            return False
+    return True
 
 
 class TimedTextTestResult(TextTestResult):

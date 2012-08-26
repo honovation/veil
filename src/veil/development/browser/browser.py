@@ -12,6 +12,7 @@ from veil.utility.path import *
 from veil.development.test import *
 from veil.profile.web import *
 from veil.backend.shell import *
+from veil.frontend.web.static_file import *
 
 LOGGER = logging.getLogger(__name__)
 
@@ -159,7 +160,6 @@ def inject_page_interaction(html, page_interactions):
             'type': 'text/javascript',
             'src': '/-test/veil-test.js'
         })
-    script.text = ' '
     fragment.find('body').append(script)
     script = fragment.makeelement(
         'script', attrib={'type': 'text/javascript'})
@@ -170,4 +170,4 @@ def inject_page_interaction(html, page_interactions):
     });
     """ % page_interactions.pop()
     fragment.find('body').append(script)
-    return lxml.html.tostring(fragment, method='xml')
+    return open_closed_tags(lxml.html.tostring(fragment, method='xml'))
