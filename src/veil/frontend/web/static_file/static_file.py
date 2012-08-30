@@ -10,6 +10,7 @@ from veil.frontend.web.tornado import *
 from veil.utility.path import as_path
 from veil.utility.hash import *
 from veil.frontend.template import *
+from veil.frontend.encoding import *
 
 LOGGER = logging.getLogger(__name__)
 REGEX_CLOSED_TAG = re.compile(r'<([^>]*?)/>')
@@ -85,10 +86,11 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
     if not html.strip():
         return html
     flag = html.strip()[:10].lstrip().lower()
+    parser = lxml.html.XHTMLParser(strip_cdata=False)
     if flag.startswith('<html') or flag.startswith('<!doctype'):
-        fragment = lxml.html.document_fromstring(html)
+        fragment = lxml.html.document_fromstring(html, parser=parser)
     else:
-        fragment = lxml.html.fragment_fromstring(html, 'dummy-wrapper')
+        fragment = lxml.html.fragment_fromstring(html, 'dummy-wrapper', parser=parser)
     script_elements = []
     link_elements = []
     inline_js_texts = []
@@ -136,7 +138,9 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
             head_element.append(element)
         else:
             fragment.insert(i, element)
-    processed_html = lxml.html.tostring(fragment, method='xml').replace(
+    processed_html = lxml.html.tostring(fragment, method='xml', encoding='utf-8')
+    processed_html = to_unicode(processed_html)
+    post_processed_html = processed_html.replace(
         '<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', '')
     post_processed_html = open_closed_tags(processed_html)
     return markupsafe.Markup(post_processed_html)
