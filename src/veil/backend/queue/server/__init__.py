@@ -5,11 +5,11 @@ with veil.component.init_component(__name__):
     from .job import enqueue
     from .job import enqueue_at
     from .periodic_job import periodic_job
-    from .setting import queue_settings
-    from .setting import resweb_program
-    from .setting import delayed_job_scheduler_program
-    from .setting import periodic_job_scheduler_program
-    from .setting import job_worker_program
+    from .queue_server_setting import queue_settings
+    from .queue_server_setting import resweb_program
+    from .queue_server_setting import delayed_job_scheduler_program
+    from .queue_server_setting import periodic_job_scheduler_program
+    from .queue_server_setting import job_worker_program
 
     __all__ = [
         # from job
@@ -28,6 +28,6 @@ with veil.component.init_component(__name__):
 
     def init():
         from veil.environment.setting import register_settings_coordinator
-        from .setting import copy_queue_settings_to_veil
+        from .queue_server_setting import copy_queue_settings_to_veil
 
         register_settings_coordinator(copy_queue_settings_to_veil)

@@ -1,9 +1,7 @@
 from __future__ import unicode_literals, print_function, division
-from veil.frontend.cli import *
 from veil.utility.path import *
 from veil.frontend.template import *
 from veil.environment.setting import *
-from veil.backend.shell import *
 from veil.environment.installation import *
 
 @installation_script()
@@ -18,10 +16,3 @@ def install_redis_server(purpose=None):
     create_directory(redis_dbdir, owner=config.owner, group=config.owner_group, mode=0770)
     redis_configfile = as_path(config.configfile)
     create_file(redis_configfile, content=get_template('redis.conf.j2').render(config=config))
-
-
-@script('up')
-def bring_up_redis_server(purpose):
-    settings = get_settings()
-    config = getattr(settings, '{}_redis'.format(purpose))
-    pass_control_to('redis-server {}'.format(config.configfile))

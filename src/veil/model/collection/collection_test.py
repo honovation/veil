@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 from unittest.case import TestCase
-from ..collection import single_or_none
-from ..collection import first_or_none
-from ..collection import single
-from ..collection import DictObject
+from .collection import single_or_none
+from .collection import first_or_none
+from .collection import single
+from .collection import DictObject
 
 class SingleOrNoneTest(TestCase):
     def test(self):

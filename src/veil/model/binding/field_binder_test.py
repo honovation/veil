@@ -2,7 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 import __builtin__
 from veil.development.test import TestCase
-from veil.model.binding.field_binder import *
+from .field_binder import *
 import datetime
 
 class FieldBinderTest(TestCase):
@@ -91,6 +91,7 @@ class FieldBinderTest(TestCase):
         self.assertEquals(good_phone, is_landline(good_phone))
 
     def test_validate_date(self):
+        datetime.date(2007, 07, 30)
         converted = to_date()('2007-7-30')
         self.assertEquals(datetime.date(2007, 07, 30), converted)
         converted = to_date(format='%m/%d/%Y')('07/30/2007')

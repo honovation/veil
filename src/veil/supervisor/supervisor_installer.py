@@ -1,10 +1,8 @@
 from __future__ import unicode_literals, print_function, division
-from veil.backend.shell import *
 from veil.frontend.template import *
 from veil.environment import *
 from veil.environment.setting import *
 from veil.environment.installation import *
-from veil.frontend.cli import script
 
 @installation_script()
 def install_supervisor(*active_programs):
@@ -24,12 +22,6 @@ def install_supervisor(*active_programs):
         format_environment_variables=format_environment_variables
     ))
     create_directory(settings.supervisor.logging.directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
-
-
-@script('up')
-def bring_up_supervisor():
-    settings = get_settings()
-    pass_control_to('supervisord -c {}'.format(settings.supervisor.config_file))
 
 
 def format_command(command, args):

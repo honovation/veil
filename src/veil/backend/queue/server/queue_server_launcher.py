@@ -8,8 +8,8 @@ from veil.component import *
 from veil.environment.setting import *
 from veil.frontend.cli import *
 from veil.frontend.locale import *
-from ..scheduler import PeriodicJobScheduler
-from ..job import register_job_context_manager
+from .scheduler import PeriodicJobScheduler
+from .job import register_job_context_manager
 
 get_queue_host = register_option('queue', 'host')
 get_queue_port = register_option('queue', 'port', int)

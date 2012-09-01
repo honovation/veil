@@ -2,9 +2,9 @@ from __future__ import unicode_literals, print_function, division
 import __builtin__
 from veil.development.test import TestCase
 from veil.model.binding import *
-from ..command import command
-from ..command import InvalidCommand
-from ..command import CommandError
+from .command import command
+from .command import InvalidCommand
+from .command import CommandError
 
 class StrictCommandHandlerTest(TestCase):
     def setUp(self):

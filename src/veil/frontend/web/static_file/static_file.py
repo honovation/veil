@@ -142,7 +142,7 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
     processed_html = to_unicode(processed_html)
     post_processed_html = processed_html.replace(
         '<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', '')
-    post_processed_html = open_closed_tags(processed_html)
+    post_processed_html = open_closed_tags(post_processed_html)
     return markupsafe.Markup(post_processed_html)
 
 

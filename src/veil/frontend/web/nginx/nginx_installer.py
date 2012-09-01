@@ -1,8 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.utility.path import *
-from veil.frontend.cli import *
 from veil.frontend.template import *
-from veil.backend.shell import *
 from veil.environment import *
 from veil.environment.setting import *
 from veil.environment.installation import *
@@ -26,9 +24,3 @@ def install_nginx():
             owner=settings.nginx.owner,
             group=settings.nginx.owner_group,
             mode=0770)
-
-
-@script('up')
-def bring_up_nginx():
-    settings = get_settings()
-    pass_control_to('nginx -c {}'.format(settings.nginx.config_file))

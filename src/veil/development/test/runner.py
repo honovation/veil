@@ -4,10 +4,34 @@ from unittest.loader import TestLoader
 from unittest.suite import TestSuite
 from unittest.runner import TextTestResult
 from threading import Timer
+import cProfile
+import os
 from veil.component import get_component_of_module
 from veil.component import is_component_loaded
 from veil.component import force_get_all_loaded_modules
-import cProfile
+from veil.component import assert_component_dependencies
+from veil.utility.path import *
+from veil.frontend.cli import *
+
+CURRENT_DIR = as_path(os.path.dirname(__file__))
+
+@script('self-check')
+def self_check():
+    package_names = ['veil']
+    import __veil__
+
+    for component in __veil__.COMPONENTS:
+        package_names.append(component.__name__)
+    test_package(*package_names)
+    check_dependencies()
+
+
+def check_dependencies():
+    import __veil__
+
+    for component_name, dependencies in __veil__.ARCHITECTURE.items():
+        assert_component_dependencies(
+            component_name, dependencies)
 
 def profile_package(*package_names):
     import __builtin__

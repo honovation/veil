@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.development.test import TestCase
-from ..event import publish_event
-from ..assertion import assert_event_published
+from .event import publish_event
+from .assertion import assert_event_published
 
 class EventModuleSmokeTest(TestCase):
     def test(self):

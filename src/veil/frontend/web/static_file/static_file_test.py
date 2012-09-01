@@ -34,9 +34,12 @@ class ProcessJavascriptAndStylesheetTagsTest(TestCase):
             """).strip()
         self.assertEqual(
             """
-            <html><body>
+            <html>
+            <body>
             <p></p>
-            <script src="abc"></script></body></html>
+            <script src="abc"></script>
+            </body>
+            </html>
             """.strip(), unicode(processed_html))
 
     def test_stylesheet_tag_relocated_before_head_end(self):
@@ -52,7 +55,12 @@ class ProcessJavascriptAndStylesheetTagsTest(TestCase):
         ).strip()
         self.assertEqual(
             """
-            <html><head><title>hello</title><link rel="stylesheet" type="text/css" media="screen" href="a.css"></link></head></html>
+            <html>
+            <head>
+            <title>hello</title>
+            <link rel="stylesheet" type="text/css" media="screen" href="a.css"></link>
+            </head>
+            </html>
             """.strip(), unicode(processed_html))
 
     def test_inline_script(self):

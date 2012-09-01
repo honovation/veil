@@ -1,8 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 import __builtin__
 from veil.development.test import TestCase
-from veil.model.binding.field_binder import not_empty, clamp_length
-from veil.model.binding.object_binder import *
+from .field_binder import not_empty, clamp_length
+from .object_binder import *
 
 class ObjectBinderTest(TestCase):
     def setUp(self):
