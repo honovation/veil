@@ -1,9 +1,9 @@
 import veil.component
 
 with veil.component.init_component(__name__):
-    from .setting import add_reverse_proxy_server
-    from .setting import nginx_settings
-    from .setting import nginx_program
+    from .nginx_setting import add_reverse_proxy_server
+    from .nginx_setting import nginx_settings
+    from .nginx_setting import nginx_program
 
     __all__ = [
         add_reverse_proxy_server.__name__,

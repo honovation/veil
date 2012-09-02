@@ -2,18 +2,21 @@ from __future__ import unicode_literals, print_function, division
 from logging import getLogger
 from jinja2.loaders import FileSystemLoader
 from tornado.ioloop import IOLoop
-from veil.development.test import *
 from veil.frontend.template import *
+from veil.frontend.cli import *
 from ..tornado import *
 from ..locale import *
 from ..routing import  *
 from ..static_file import *
 from ..xsrf import *
 from ..reloading import *
-from .setting import get_website_option
+from .web_setting import get_website_option
 
 LOGGER = getLogger(__name__)
 
+@script('up')
+def bring_up_website(website):
+    start_website(website)
 
 def start_test_website(website, **kwargs):
     http_handler = create_website_http_handler(website, **kwargs)
