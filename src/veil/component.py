@@ -189,8 +189,9 @@ class ComponentLoader(object):
 
     def encapsulate_loaded_packages_and_modules(self):
         for module in self.modules:
-            encapsulated_modules[module.__name__] = module
-            sys.modules[module.__name__] = None
+            if not(self.is_public_module(module)):
+                encapsulated_modules[module.__name__] = module
+                sys.modules[module.__name__] = None
         for package in self.packages.keys():
             encapsulated_modules[package.__name__] = package
             sys.modules[package.__name__] = None
@@ -199,6 +200,10 @@ class ComponentLoader(object):
             for module_name in self.packages[package]:
                 if hasattr(package, module_name):
                     delattr(package, module_name)
+
+    def is_public_module(self, module):
+        module_name = module.__name__.split('.')[-1]
+        return module_name.startswith('__') and module_name.endswith('__')
 
 
 def find_sub_package_names(package):
