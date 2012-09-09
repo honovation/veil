@@ -76,6 +76,8 @@ def get_current_level_names():
     component = get_loading_component()
     if not component:
         return []
-    level_names = component.__name__.split('.')[1:]
+    level_names = component.__name__.split('.')
+    if level_names and 'veil' == level_names[0]:
+        level_names = level_names[1:]
     return level_names
 
