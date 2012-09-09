@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from unittest.case import TestCase
-from ..job import job
+from .job import job
 
 class JobTest(TestCase):
     def test(self):

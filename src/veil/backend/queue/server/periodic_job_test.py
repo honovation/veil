@@ -4,8 +4,8 @@ from datetime import timedelta, datetime
 import pytz
 from unittest.case import TestCase
 from veil.utility.clock import require_current_time_being
-from ..periodic_job import TimedeltaSchedule
-from ..periodic_job import CroniterSchedule
+from .periodic_job import TimedeltaSchedule
+from .periodic_job import CroniterSchedule
 
 
 class TimedeltaScheduleTest(TestCase):
