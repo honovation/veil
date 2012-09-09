@@ -13,6 +13,7 @@ with veil.component.init_component(__name__):
     from .template import clear_template_caches
     from .widget import widget
     from .widget import require_current_widget_namespace_being
+    from .widget import import_widget
 
     if veil.component.is_dummy_module_member(template_utility):
         template_utility = lambda func: func
@@ -32,5 +33,6 @@ with veil.component.init_component(__name__):
             # from widget
             widget.__name__,
             clear_template_caches.__name__,
-            require_current_widget_namespace_being.__name__
+            require_current_widget_namespace_being.__name__,
+            import_widget.__name__
     ]

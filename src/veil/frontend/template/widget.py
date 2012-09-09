@@ -39,27 +39,23 @@ def widget(func):
 
 class WidgetDecorator(object):
     def __call__(self, func):
-        widget = self.register(func)
-
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            return widget.render(*args, **kwargs)
-
-        return wrapper
-
-    def register(self, func):
         widget_name = func.__name__.replace('_widget', '')
         widget = Widget(name=widget_name, func=func)
         if widget_name in widgets:
             raise Exception('widget {} already registered by {}'.format(
                 widget_name, widgets[widget_name].registered_by))
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            return widget.render(*args, **kwargs)
+
         loading_component = veil.component.get_loading_component()
         if loading_component:
             namespace = loading_component.__name__
         else:
             namespace = None
-        widgets.setdefault(namespace, {})[widget_name] = widget
-        return widget
+        widgets.setdefault(namespace, {})[widget_name] = wrapper
+        return wrapper
 
 
 class Widget(object):
@@ -89,6 +85,16 @@ class Widget(object):
         return 'widget {}'.format(self.name)
 
 
+def import_widget(widget_handler):
+    loading_component = veil.component.get_loading_component()
+    if loading_component:
+        namespace = loading_component.__name__
+    else:
+        namespace = None
+    widget_name = widget_handler.__name__.replace('_widget', '')
+    widgets.setdefault(namespace, {})[widget_name] = widget_handler
+
+
 # === export widgets as template utility ===
 @contextlib.contextmanager
 def require_current_widget_namespace_being(namespace):
@@ -98,18 +104,19 @@ def require_current_widget_namespace_being(namespace):
     finally:
         current_widget_template_spaces.pop()
 
+
 class WidgetLookup(object):
     def __init__(self, optional=False):
         self.optional = optional
 
     def __getattr__(self, name):
-        widget = widgets.get(current_widget_template_spaces[-1], {}).get(name, None)
-        if not widget:
+        widget_handler = widgets.get(current_widget_template_spaces[-1], {}).get(name, None)
+        if not widget_handler:
             if self.optional:
                 return lambda *args, **kwargs: ''
             else:
                 raise Exception('widget {} not found'.format(name))
-        return append_from_template_flag(widget.render)
+        return append_from_template_flag(widget_handler)
 
 
 def append_from_template_flag(widget):

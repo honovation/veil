@@ -77,6 +77,10 @@ def route(method, path_template, website=None, tags=(), **path_template_params):
         website=website, tags=tags, **path_template_params)
 
 
+def route_for(website):
+    return functools.partial(route, website=website)
+
+
 def infer_website():
     return get_loading_component().__name__.split('.')[-1].upper()
 
