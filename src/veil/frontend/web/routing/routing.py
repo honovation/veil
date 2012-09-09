@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import functools
 import re
 import contextlib
 import httplib
@@ -10,7 +11,7 @@ from veil.component import *
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
 from veil.model.event import *
-from .page_post_processor import page_post_processors
+from .page_post_processor import post_process_page
 
 LOGGER = getLogger(__name__)
 original_routes = {}
@@ -33,25 +34,47 @@ def reset_routes():
         routes.update(original_routes)
 
 
-def route(method, path_template, website=None, tags=(), **path_template_params):
-    def create_and_register_route(route_handler):
-        _website = website
-        if not _website:
-            _website = infer_website()
-        if not _website:
-            raise Exception('website not specified for route: {}'.format(route_handler))
-        _website = _website.upper()
-        if _website in website_components:
-            if get_loading_component():
-                assert website_components[_website] == get_loading_component()
+class RouteDecorator(object):
+    def __init__(self, method, path_template, website=None, tags=(), **path_template_params):
+        self.method = method
+        self.path_template = path_template
+        self.website = (website or infer_website()).upper()
+        self.tags = tags
+        self.path_template_params = path_template_params
+        loading_component = get_loading_component()
+        if loading_component:
+            self.widget_namespace = loading_component.__name__
         else:
-            website_components[_website] = get_loading_component()
-            publish_event(EVENT_NEW_WEBSITE, website=_website)
-        new_route = Route(route_handler, method, path_template, tags=tags, **path_template_params)
-        routes.setdefault(_website, []).append(new_route)
-        return route_handler
+            self.widget_namespace = None
+        publish_new_website_event(self.website)
 
-    return create_and_register_route
+    def __call__(self, func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            with require_current_template_directory_relative_to(func):
+                with require_current_widget_namespace_being(self.widget_namespace):
+                    return func(*args, **kwargs)
+
+        new_route = Route(
+            route_handler=wrapper, method=self.method, path_template=self.path_template,
+            tags=self.tags, **self.path_template_params)
+        routes.setdefault(self.website, []).append(new_route)
+        return wrapper
+
+
+def publish_new_website_event(website):
+    if website in website_components:
+        if get_loading_component():
+            website_components[website].add(get_loading_component())
+    else:
+        website_components.setdefault(website, set()).add(get_loading_component())
+        publish_event(EVENT_NEW_WEBSITE, website=website)
+
+
+def route(method, path_template, website=None, tags=(), **path_template_params):
+    return RouteDecorator(
+        method=method, path_template=path_template,
+        website=website, tags=tags, **path_template_params)
 
 
 def infer_website():
@@ -76,8 +99,10 @@ def is_public_route(route):
 
 def get_routes(website):
     website = website.upper()
-    if website_components.get(website, None):
-        assert_component_loaded(website_components[website].__name__)
+    components = website_components.get(website, ())
+    for component in components:
+        if component:
+            assert_component_loaded(component.__name__)
     return routes.get(website, ())
 
 
@@ -93,27 +118,26 @@ class RoutingHTTPHandler(object):
         raise HTTPError(httplib.NOT_FOUND)
 
     def try_route(self, route):
-        with require_current_template_directory_relative_to(route.route_handler):
-            request = get_current_http_request()
-            if route.method.upper() != request.method.upper():
-                return False
-            path = request.path.rstrip('/')
-            if not path:
-                path = '/'
-            path_arguments = route.path_template.match(path)
-            if path_arguments is None:
-                return False
-            assert getattr(get_current_http_context(), 'route', None) is None
-            try:
-                get_current_http_context().route = route
-                if self.context_managers:
-                    with nest_context_managers(*self.context_managers):
-                        self.execute_route(route, path_arguments)
-                else:
+        request = get_current_http_request()
+        if route.method.upper() != request.method.upper():
+            return False
+        path = request.path.rstrip('/')
+        if not path:
+            path = '/'
+        path_arguments = route.path_template.match(path)
+        if path_arguments is None:
+            return False
+        assert getattr(get_current_http_context(), 'route', None) is None
+        try:
+            get_current_http_context().route = route
+            if self.context_managers:
+                with nest_context_managers(*self.context_managers):
                     self.execute_route(route, path_arguments)
-            finally:
-                get_current_http_context().route = None
-            return True
+            else:
+                self.execute_route(route, path_arguments)
+        finally:
+            get_current_http_context().route = None
+        return True
 
     def execute_route(self, route, path_arguments):
         request = get_current_http_request()
@@ -122,8 +146,7 @@ class RoutingHTTPHandler(object):
         data = route.route_handler()
         try:
             if data is not None:
-                for page_post_processor in page_post_processors:
-                    data = page_post_processor(route.route_handler, data)
+                data = post_process_page(route.route_handler, data)
                 response.write(data)
             if 'ASYNC' not in route.tags:
                 response.finish()

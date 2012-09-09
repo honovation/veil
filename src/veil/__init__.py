@@ -1,6 +1,7 @@
 import veil.component
 init_components = lambda : veil.component.init_components([
     'veil.frontend.template',
+    'veil.frontend.locale',
     'veil.frontend.web.nginx',
     'veil.backend.database.client',
     'veil.backend.database.postgresql',

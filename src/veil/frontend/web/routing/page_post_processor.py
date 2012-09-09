@@ -1,12 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-import functools
-import sys
-from logging import getLogger
-from inspect import getargspec
-import traceback
-from markupsafe import Markup
 from veil.development.test import *
-from veil.frontend.encoding import *
 
 original_page_post_processors = None
 page_post_processors = []
@@ -28,3 +21,9 @@ def reset_page_post_processors():
 
 def register_page_post_processor(page_post_processor):
     page_post_processors.append(page_post_processor)
+
+
+def post_process_page(route_handler, data):
+    for page_post_processor in page_post_processors:
+        data = page_post_processor(route_handler, data)
+    return data

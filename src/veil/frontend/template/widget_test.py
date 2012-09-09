@@ -1,7 +1,8 @@
 from __future__ import unicode_literals, print_function, division
+from veil.development.test import TestCase
 from .widget import widget
 from .template import get_template
-from veil.development.test import TestCase
+from .widget import require_current_widget_namespace_being
 
 class WidgetModuleSmokeTest(TestCase):
     def test(self):
@@ -13,4 +14,5 @@ class WidgetModuleSmokeTest(TestCase):
         def some_widget():
             return 'hello'
 
-        self.assertIn('hello', some_page())
+        with require_current_widget_namespace_being(None):
+            self.assertIn('hello', some_page())

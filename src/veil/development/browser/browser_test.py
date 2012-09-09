@@ -32,6 +32,7 @@ class BrowsingTest(TestCase):
                 veil.assertEqual(1, 2);
                 """])
 
+
     def test_stop(self):
         @route('GET', '/', website='test')
         def home():

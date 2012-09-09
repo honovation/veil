@@ -5,6 +5,8 @@ from logging import getLogger
 from inspect import getargspec
 import traceback
 from markupsafe import Markup
+import contextlib
+import veil.component
 from veil.development.test import *
 from veil.frontend.encoding import *
 from .template import register_template_utility
@@ -13,6 +15,7 @@ from .template import require_current_template_directory_relative_to
 # === global state ===
 original_widgets = None
 widgets = {}
+current_widget_template_spaces = []
 
 LOGGER = getLogger(__name__)
 
@@ -50,7 +53,12 @@ class WidgetDecorator(object):
         if widget_name in widgets:
             raise Exception('widget {} already registered by {}'.format(
                 widget_name, widgets[widget_name].registered_by))
-        widgets[widget_name] = widget
+        loading_component = veil.component.get_loading_component()
+        if loading_component:
+            namespace = loading_component.__name__
+        else:
+            namespace = None
+        widgets.setdefault(namespace, {})[widget_name] = widget
         return widget
 
 
@@ -82,17 +90,26 @@ class Widget(object):
 
 
 # === export widgets as template utility ===
+@contextlib.contextmanager
+def require_current_widget_namespace_being(namespace):
+    current_widget_template_spaces.append(namespace)
+    try:
+        yield
+    finally:
+        current_widget_template_spaces.pop()
+
 class WidgetLookup(object):
     def __init__(self, optional=False):
         self.optional = optional
 
     def __getattr__(self, name):
-        if name not in widgets:
+        widget = widgets.get(current_widget_template_spaces[-1], {}).get(name, None)
+        if not widget:
             if self.optional:
                 return lambda *args, **kwargs: ''
             else:
                 raise Exception('widget {} not found'.format(name))
-        return append_from_template_flag(widgets[name].render)
+        return append_from_template_flag(widget.render)
 
 
 def append_from_template_flag(widget):
