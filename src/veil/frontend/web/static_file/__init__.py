@@ -15,6 +15,6 @@ with veil.component.init_component(__name__):
 
     def init():
         from .static_file import process_javascript_and_stylesheet_tags
-        from veil.frontend.template import register_page_post_processor
+        from veil.frontend.web.routing import register_page_post_processor
 
         register_page_post_processor(process_javascript_and_stylesheet_tags)

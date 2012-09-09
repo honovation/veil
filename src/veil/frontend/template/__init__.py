@@ -12,8 +12,6 @@ with veil.component.init_component(__name__):
     from .template import get_template_environment
     from .template import clear_template_caches
     from .widget import widget
-    from .widget import page
-    from .widget import register_page_post_processor
 
     if veil.component.is_dummy_module_member(template_utility):
         template_utility = lambda func: func
@@ -32,7 +30,5 @@ with veil.component.init_component(__name__):
             get_template_environment.__name__,
             # from widget
             widget.__name__,
-            page.__name__,
-            clear_template_caches.__name__,
-            register_page_post_processor.__name__
+            clear_template_caches.__name__
     ]

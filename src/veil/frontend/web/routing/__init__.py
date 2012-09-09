@@ -8,6 +8,7 @@ with veil.component.init_component(__name__):
     from .routing import RoutingHTTPHandler
     from .routing import get_routes
     from .routing import EVENT_NEW_WEBSITE
+    from .page_post_processor import register_page_post_processor
 
     EVENT_NEW_WEBSITE = EVENT_NEW_WEBSITE
 
@@ -19,5 +20,7 @@ with veil.component.init_component(__name__):
         is_public_route.__name__,
         RoutingHTTPHandler.__name__,
         get_routes.__name__,
-        'EVENT_NEW_WEBSITE'
+        'EVENT_NEW_WEBSITE',
+        # from page_post_processor
+        register_page_post_processor.__name__
     ]

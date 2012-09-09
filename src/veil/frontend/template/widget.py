@@ -13,30 +13,8 @@ from .template import require_current_template_directory_relative_to
 # === global state ===
 original_widgets = None
 widgets = {}
-active_widget_names = None
-original_page_post_processors = None
-page_post_processors = []
 
 LOGGER = getLogger(__name__)
-
-@test_hook
-def remember_original_page_post_processors():
-    get_executing_test().addCleanup(reset_page_post_processors)
-    global original_page_post_processors
-    if not original_page_post_processors:
-        original_page_post_processors = list(page_post_processors)
-
-
-def reset_page_post_processors():
-    global page_post_processors
-    page_post_processors = []
-    if original_page_post_processors:
-        page_post_processors.extend(original_page_post_processors)
-
-
-def register_page_post_processor(page_post_processor):
-    page_post_processors.append(page_post_processor)
-
 
 @test_hook
 def remember_original_widgets():
@@ -88,7 +66,6 @@ class Widget(object):
                 kwargs['from_template'] = kwargs['from_template'] if 'from_template' in kwargs else False
             else:
                 kwargs.pop('from_template', None)
-            self.activate()
             with require_current_template_directory_relative_to(self.func):
                 content = self.func(*args, **kwargs)
                 if content is None:
@@ -100,54 +77,9 @@ class Widget(object):
                 LOGGER.error('failed to render widget: {}'.format(self.name))
             raise
 
-    def activate(self):
-        if active_widget_names is None:
-            raise Exception('{} called outside page'.format(widget))
-        if self.name not in active_widget_names:
-            active_widget_names.append(self.name)
-
     def __repr__(self):
         return 'widget {}'.format(self.name)
 
-
-# === handle page ===
-def page(func):
-    return PageDecorator()(func)
-
-
-class PageDecorator(WidgetDecorator):
-    def __call__(self, func):
-        if getattr(func, 'is_page', False):
-            return func
-        wrapper = super(PageDecorator, self).__call__(func)
-        wrapper.is_page = True
-        return wrapper
-
-    def register(self, func):
-        return Page(name=func.__name__, func=func)
-
-
-class Page(Widget):
-    def render(self, *args, **kwargs):
-        global active_widget_names
-        if active_widget_names:
-            raise Exception('page can not be nested, there are active widgets: {}'.format(active_widget_names))
-        active_widget_names = []
-        try:
-            html = super(Page, self).render(*args, **kwargs)
-            if html is not None:
-                for page_post_processor in page_post_processors:
-                    html = page_post_processor(self.func, html)
-                return html
-            return html
-        finally:
-            active_widget_names = None
-
-    def activate(self):
-        pass
-
-    def __repr__(self):
-        return 'page {}'.format(self.name)
 
 # === export widgets as template utility ===
 class WidgetLookup(object):

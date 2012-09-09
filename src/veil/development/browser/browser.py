@@ -12,6 +12,7 @@ from veil.utility.path import *
 from veil.development.test import *
 from veil.profile.web import *
 from veil.frontend.web.static_file import *
+from veil.frontend.web.routing import *
 
 LOGGER = logging.getLogger(__name__)
 

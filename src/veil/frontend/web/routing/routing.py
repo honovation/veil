@@ -10,6 +10,7 @@ from veil.component import *
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
 from veil.model.event import *
+from .page_post_processor import page_post_processors
 
 LOGGER = getLogger(__name__)
 original_routes = {}
@@ -46,7 +47,7 @@ def route(method, path_template, website=None, tags=(), **path_template_params):
         else:
             website_components[_website] = get_loading_component()
             publish_event(EVENT_NEW_WEBSITE, website=_website)
-        new_route = Route(page(route_handler), method, path_template, tags=tags, **path_template_params)
+        new_route = Route(route_handler, method, path_template, tags=tags, **path_template_params)
         routes.setdefault(_website, []).append(new_route)
         return route_handler
 
@@ -121,6 +122,8 @@ class RoutingHTTPHandler(object):
         data = route.route_handler()
         try:
             if data is not None:
+                for page_post_processor in page_post_processors:
+                    data = page_post_processor(route.route_handler, data)
                 response.write(data)
             if 'ASYNC' not in route.tags:
                 response.finish()
