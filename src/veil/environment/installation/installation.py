@@ -24,7 +24,7 @@ def installation_script():
                 install_dependency(dependency)
             env = os.environ.copy()
             env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'] = 'TRUE'
-            shell_execute('veil {} install'.format(' '.join(component_name.split('.')[1:])), env=env)
+            shell_execute('veil {} install'.format(' '.join(to_cli_handler_levels(component_name))), env=env)
             return None
 
         return decorator(wrapper)
@@ -33,13 +33,20 @@ def installation_script():
 
 
 def install_dependency(component_name):
-    args = list(component_name.split('.'))[1:]
-    args = [arg.replace('_', '-') for arg in args]
+    args = to_cli_handler_levels(component_name)
     args.append('install')
     if is_script_defined(*args):
         env = os.environ.copy()
         env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'] = 'TRUE'
         shell_execute('veil {}'.format(' '.join(args)), env=env)
+
+
+def to_cli_handler_levels(component_name):
+    args = list(component_name.split('.'))
+    if args and 'veil' == args[0]:
+        args = args[1:]
+    args = [arg.replace('_', '-') for arg in args]
+    return args
 
 
 def get_transitive_dependencies(component_name):

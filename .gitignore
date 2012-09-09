@@ -1,8 +1,14 @@
 *.pyc
 .idea/*
 demo/etc/*
-demo/env/*
 demo/log/*
 demo/var/*
+demo/env/*
+!demo/env/lib/
+demo/env/lib/*
+!demo/env/lib/python2.7/
+demo/env/lib/python2.7/*
+!demo/env/lib/python2.7/site-packages/
+demo/env/lib/python2.7/site-packages/*
 !demo/env/lib/python2.7/site-packages/veil.pth
 
