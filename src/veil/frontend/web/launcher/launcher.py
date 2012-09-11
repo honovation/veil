@@ -14,6 +14,11 @@ from .web_setting import get_website_option
 
 LOGGER = getLogger(__name__)
 
+additional_context_managers = {}
+
+def register_website_context_manager(website, context_manager):
+    additional_context_managers.setdefault(website.lower(), []).append(context_manager)
+
 @script('up')
 def bring_up_website(website):
     start_website(website)
@@ -39,7 +44,7 @@ def start_website(website, **kwargs):
         processes_count=get_website_option(website, 'processes_count'))
 
 
-def create_website_http_handler(website, additional_context_managers=(), locale_provider=None):
+def create_website_http_handler(website, locale_provider=None):
     locale_provider = locale_provider or (lambda: None)
     secure_cookie_salt = get_website_option(website, 'secure_cookie_salt')
     if secure_cookie_salt:
@@ -49,13 +54,13 @@ def create_website_http_handler(website, additional_context_managers=(), locale_
     master_template_directory = get_website_option(website, 'master_template_directory')
     if master_template_directory:
         register_template_loader('master', FileSystemLoader(master_template_directory))
-    context_managers = [create_stack_context(install_translations, locale_provider)]
+    website_context_managers = [create_stack_context(install_translations, locale_provider)]
     if get_website_option(website, 'prevents_xsrf'):
-        context_managers.append(prevent_xsrf)
+        website_context_managers.append(prevent_xsrf)
     if get_website_option(website, 'recalculates_static_file_hash'):
-        context_managers.append(clear_static_file_hashes)
+        website_context_managers.append(clear_static_file_hashes)
     if get_website_option(website, 'clears_template_cache'):
-        context_managers.append(clear_template_caches)
-    context_managers.extend(additional_context_managers)
-    return RoutingHTTPHandler(get_routes(website), context_managers)
+        website_context_managers.append(clear_template_caches)
+    website_context_managers.extend(additional_context_managers.get(website, []))
+    return RoutingHTTPHandler(get_routes(website), website_context_managers)
 

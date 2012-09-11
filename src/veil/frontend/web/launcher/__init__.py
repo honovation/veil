@@ -4,6 +4,7 @@ with veil.component.init_component(__name__):
     __import__('veil.frontend.web.nginx')
     from .launcher import start_website
     from .launcher import start_test_website
+    from .launcher import register_website_context_manager
     from .web_setting import register_website
     from .web_setting import website_settings
     from .web_setting import website_program
@@ -11,12 +12,16 @@ with veil.component.init_component(__name__):
     from .client import start_website_and_client
 
     __all__ = [
+        # from launcher
         start_website.__name__,
         start_test_website.__name__,
+        register_website_context_manager.__name__,
+        # from web_setting
         register_website.__name__,
         website_settings.__name__,
         website_program.__name__,
         get_website_option.__name__,
+        # from client
         start_website_and_client.__name__
     ]
 
