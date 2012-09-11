@@ -1,5 +1,3 @@
-$.ajaxSetup({headers:{'X-XSRF':$.cookie('_xsrf')}});
-
 var veil = veil || {};
 
 veil.log = console.log;

@@ -42,7 +42,7 @@ veil.waitUntil = function (condition, onCondition, timeout) {
 };
 veil.dump = function (element) {
     element = element || $('body');
-    veil.log(element.html());
+    veil.log('Page dump: ' + element.html());
 };
 veil.clickLink = function (locator) {
     window.location = $(locator).attr('href');

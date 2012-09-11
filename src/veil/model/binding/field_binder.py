@@ -183,6 +183,21 @@ def clamp_length(min=None, max=None):
     bind.max = max
     return bind
 
+def clamp(min=None, max=None):
+    """
+    clamp a value between minimum and maximum lengths (either
+    of which are optional).
+    """
+    def bind(value):
+        if bind.min is not None and value < bind.min:
+            raise Invalid(_('值超出范围'))
+        if bind.max is not None and value > bind.max:
+            raise Invalid(_('值超出范围'))
+        return value
+    bind.min = min
+    bind.max = max
+    return bind
+
 
 def not_duplicate(value):
     if len(set(value)) != len(value):

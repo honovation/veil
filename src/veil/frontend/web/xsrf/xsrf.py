@@ -18,7 +18,7 @@ def prevent_xsrf():
         token = get_cookie(name='_xsrf', request=request)
         if not token:
             token = uuid.uuid4().get_hex()
-            set_cookie(name='_xsrf', value=token, response=response)
+            LOGGER.debug('assign XSRF token {} from {} {}'.format(token, request.method, request.path))
         request._xsrf_token = token
     if 'GET' != request.method.upper():
         token = get_http_argument('_xsrf', optional=True) or request.headers.get('X-XSRF', None)

@@ -5,6 +5,7 @@ with veil.component.init_component(__name__):
     from .field_binder import not_empty
     from .field_binder import one_of
     from .field_binder import clamp_length
+    from .field_binder import clamp
     from .field_binder import not_duplicate
     from .field_binder import anything
     from .field_binder import is_not
@@ -32,6 +33,7 @@ with veil.component.init_component(__name__):
         not_empty.__name__,
         one_of.__name__,
         clamp_length.__name__,
+        clamp.__name__,
         not_duplicate.__name__,
         anything.__name__,
         is_not.__name__,

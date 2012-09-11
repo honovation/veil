@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division, absolute_impo
 from redis.client import Redis
 from logging import getLogger
 from veil.environment.setting import *
+from veil.development.test import *
 
 LOGGER = getLogger(__name__)
 
@@ -36,4 +37,7 @@ def require_redis(purpose):
     if purpose not in instances:
         get_redis_options = registry[purpose]
         instances[purpose] = Redis(**get_redis_options())
+    executing_test = get_executing_test(optional=True)
+    if executing_test:
+        executing_test.addCleanup(lambda :instances[purpose].flushall())
     return instances[purpose]
