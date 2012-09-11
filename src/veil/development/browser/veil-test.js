@@ -44,3 +44,6 @@ veil.dump = function (element) {
     element = element || $('body');
     veil.log(element.html());
 };
+veil.clickLink = function (locator) {
+    window.location = $(locator).attr('href');
+};

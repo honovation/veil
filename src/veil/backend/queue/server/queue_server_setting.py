@@ -17,7 +17,8 @@ def queue_settings(config_file=None, server_host=None, server_port=None, workers
         'supervisor': {
             'programs': {
                 'resweb': resweb_program(),
-                'delayed_job_scheduler': delayed_job_scheduler_program()
+                'delayed_job_scheduler': delayed_job_scheduler_program(),
+                'periodic_job_scheduler': periodic_job_scheduler_program()
             }
         }
     })
