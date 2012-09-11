@@ -24,14 +24,14 @@ def website_settings(website, port, **updates):
         'port': port
     })
     settings = merge_settings(settings, updates, overrides=True)
-    return {
+    return objectify({
         'veil': {'{}_website'.format(website): settings},
         'supervisor': {
             'programs': {
                 '{}_website'.format(website): website_program(website)
             }
         } if 'test' != VEIL_ENV else {}
-    }
+    })
 
 
 def register_website(website):

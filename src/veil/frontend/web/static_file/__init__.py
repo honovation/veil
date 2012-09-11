@@ -4,13 +4,15 @@ with veil.component.init_component(__name__):
     from .static_file import clear_static_file_hashes
     from .static_file import set_inline_static_files_directory
     from .static_file import set_external_static_files_directory
-    from .static_file import open_closed_tags
+    from .static_file import register_script_elements_processor
+    from .static_file import static_url
 
     __all__ = [
         clear_static_file_hashes.__name__,
         set_inline_static_files_directory.__name__,
         set_external_static_files_directory.__name__,
-        open_closed_tags.__name__
+        register_script_elements_processor.__name__,
+        static_url.__name__
     ]
 
     def init():

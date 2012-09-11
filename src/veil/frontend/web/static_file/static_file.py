@@ -18,6 +18,31 @@ REGEX_CLOSED_TAG = re.compile(r'<([^>]*?)/>')
 static_file_hashes = {}
 inline_static_files_directory = None
 external_static_files_directory = None
+script_elements_processors = []
+original_script_elements_processors = []
+
+def register_script_elements_processor(processor):
+    script_elements_processors.append(processor)
+
+
+def clear_script_elements_processors():
+    global script_elements_processors
+    script_elements_processors = []
+
+
+@test_hook
+def remember_script_elements_processors():
+    get_executing_test().addCleanup(reset_script_elements_processors)
+    global original_script_elements_processors
+    if not original_script_elements_processors:
+        original_script_elements_processors = list(script_elements_processors)
+
+
+def reset_script_elements_processors():
+    global script_elements_processors
+    script_elements_processors = []
+    if original_script_elements_processors:
+        script_elements_processors.extend(original_script_elements_processors)
 
 
 def set_inline_static_files_directory(value):
@@ -126,8 +151,16 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
             'type': 'text/css',
             'href': '/static/{}'.format(write_inline_static_file(page_handler, 'css', '\r\n'.join(inline_css_texts)))
         }))
+    for processor in script_elements_processors:
+        script_elements = processor(parser, script_elements)
+    inserted_external_script_paths = set()
     for element in script_elements:
         body_element = fragment.find('body')
+        external_script_path = element.get('src', None)
+        if external_script_path:
+            if external_script_path in inserted_external_script_paths:
+                continue
+            inserted_external_script_paths.add(external_script_path)
         if body_element is not None:
             body_element.append(element)
         else:
@@ -168,8 +201,10 @@ def write_inline_static_file(page_handler, suffix, content):
     pseudo_file_name = '{}.{}'.format(page_name, suffix)
     return 'v-{}/{}'.format(hash, pseudo_file_name)
 
+
 def open_closed_tags(html):
     return REGEX_CLOSED_TAG.sub(open_closed_tag, html)
+
 
 def open_closed_tag(match):
     tag_and_attributes = match.group(1).strip()

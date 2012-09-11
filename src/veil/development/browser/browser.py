@@ -4,6 +4,7 @@ import threading
 import time
 import traceback
 import lxml.html
+import lxml.etree
 import os.path
 import spynner
 import selenium.webdriver
@@ -52,7 +53,9 @@ def start_website_and_browser(website, path, page_interactions, timeout=60, brow
         return (as_path(__file__).dirname() / 'veil.js').text()
 
     page_interactions = list(reversed(page_interactions))
-    register_page_post_processor(lambda page_handler, html: inject_page_interaction(html, page_interactions))
+    register_script_elements_processor(
+        lambda parser, script_elements: inject_page_interaction(parser, script_elements, page_interactions))
+#    register_page_post_processor(lambda page_handler, html: inject_page_interaction(html, page_interactions))
     http_server = start_test_website(website)
     domain = get_website_option(website, 'domain')
     if domain:
@@ -168,23 +171,22 @@ def stop_webdriver():
         webdriver.close()
 
 
-def inject_page_interaction(html, page_interactions):
+def inject_page_interaction(parser, script_elements, page_interactions):
     global latest_page
     request = get_current_http_request()
     if 'XMLHttpRequest' == request.headers.get('X-Requested-With', None):
-        return html
+        return script_elements
     if request.path.startswith('/-test/'):
-        return html
+        return script_elements
     if not page_interactions:
-        return html
-    fragment = lxml.html.document_fromstring(html)
-    script = fragment.makeelement(
+        return script_elements
+    new_script_elements = list(script_elements)
+    new_script_elements.append(parser.makeelement(
         'script', attrib={
             'type': 'text/javascript',
             'src': '/-test/veil-test.js'
-        })
-    fragment.find('body').append(script)
-    script = fragment.makeelement(
+        }))
+    script = parser.makeelement(
         'script', attrib={'type': 'text/javascript'})
     script.text =\
     """
@@ -192,6 +194,5 @@ def inject_page_interaction(html, page_interactions):
         %s
     });
     """ % page_interactions.pop()
-    fragment.find('body').append(script)
-    latest_page = open_closed_tags(lxml.html.tostring(fragment, method='xml'))
-    return latest_page
+    new_script_elements.append(script)
+    return new_script_elements

@@ -39,9 +39,10 @@ def add_reverse_proxy_server(settings, website, **updates):
     else:
         server_name, listen_port = website_config.domain, 80
     listen_port = int(listen_port)
-    if 'test' == VEIL_ENV:
+    if 'test' == VEIL_ENV and not website_config.get('domain_modified_due_to_test_env', False):
         listen_port += 1
     website_config.domain = '{}:{}'.format(server_name, listen_port)
+    website_config.domain_modified_due_to_test_env = True
     server_settings = {
         'listen': listen_port,
         'locations': {
@@ -73,7 +74,7 @@ def add_reverse_proxy_server(settings, website, **updates):
             # inline static files
             # /static/v-xxxx/a-b.js
             '~ ^/static/v-(.*)/': {
-                'alias': website_config.inline_static_files_directory / '$1',
+                'alias': as_path(website_config.inline_static_files_directory) / '$1',
                 'expires': '365d'
             },
             # external static files
@@ -84,10 +85,11 @@ def add_reverse_proxy_server(settings, website, **updates):
                             expires 365d;
                         }
                         """,
-                'alias': website_config.external_static_files_directory / ''
+                'alias': as_path(website_config.external_static_files_directory) / ''
             }
         }
     }
     if updates:
         server_settings = merge_settings(server_settings, updates)
     settings.nginx.servers[server_name] = server_settings
+    return settings

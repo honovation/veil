@@ -56,6 +56,7 @@ def create_website_http_handler(website, locale_provider=None):
         register_template_loader('master', FileSystemLoader(master_template_directory))
     website_context_managers = [create_stack_context(install_translations, locale_provider)]
     if get_website_option(website, 'prevents_xsrf'):
+        register_script_elements_processor(xsrf_script_elements_processor)
         website_context_managers.append(prevent_xsrf)
     if get_website_option(website, 'recalculates_static_file_hash'):
         website_context_managers.append(clear_static_file_hashes)

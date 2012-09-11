@@ -6,6 +6,7 @@ from veil.development.test import TestCase
 from .static_file import set_inline_static_files_directory
 from .static_file import set_external_static_files_directory
 from .static_file import process_javascript_and_stylesheet_tags
+from .static_file import clear_script_elements_processors
 
 class ProcessJavascriptAndStylesheetTagsTest(TestCase):
     def setUp(self):
@@ -13,6 +14,7 @@ class ProcessJavascriptAndStylesheetTagsTest(TestCase):
         self.temp_dir = as_path(tempfile.gettempdir())
         set_external_static_files_directory(os.path.dirname(__file__))
         set_inline_static_files_directory(self.temp_dir)
+        clear_script_elements_processors()
 
     def test_no_tag(self):
         self.assertEqual('', unicode(process_javascript_and_stylesheet_tags(None, '')))

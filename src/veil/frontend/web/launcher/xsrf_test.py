@@ -19,10 +19,6 @@ class XsrfTest(TestCase):
         })
 
     def test_form_submission(self):
-        @route('GET', '/', website='test')
-        def show_xsrf_token():
-            return xsrf_token()
-
         @route('POST', '/', website='test')
         def dummy():
             pass
@@ -30,24 +26,18 @@ class XsrfTest(TestCase):
         client = start_website_and_client('test')
         with client:
             client.post('/', expects=httplib.FORBIDDEN)
-            client.post('/', form={'_xsrf': client.get('/').read()})
+            client.set_cookie('_xsrf', 'abc')
+            client.post('/', form={'_xsrf': 'abc'})
             client.post('/', form={'_xsrf': '123'}, expects=httplib.FORBIDDEN)
 
     def test_ajax(self):
-        @route('GET', '/', website='test')
-        def say_hello():
-            return 'hello'
-
         @route('POST', '/', website='test')
         def say_yes():
             return 'yes'
 
         client = start_website_and_client('test')
         with client:
-            self.assertNotIn('_xsrf', client.cookies)
-            self.assertEqual('hello', client.get('/').read())
-            _xsrf = client.cookies['_xsrf'].value
-            self.assertIsNotNone(_xsrf)
-            self.assertEqual('yes', client.post('/', headers={'X-XSRF': _xsrf}).read())
+            client.set_cookie('_xsrf', 'abc')
+            self.assertIn('yes', client.post('/', headers={'X-XSRF': 'abc'}).read())
 
 

@@ -11,5 +11,9 @@
 <body>
 {% block main %}
 {% endblock %}
+<script type="text/javascript">
+    $.cookie('_xsrf', '{{ xsrf_token() }}', {path: '/'});
+    $.ajaxSetup({headers:{'X-XSRF':$.cookie('_xsrf')}});
+</script>
 </body>
 </html>

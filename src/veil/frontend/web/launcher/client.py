@@ -41,6 +41,13 @@ class WebClient(object):
     def cookies(self):
         return dict((cookie.name, cookie) for cookie in self.cookie_jar)
 
+    def set_cookie(self, key, value):
+        cookie = cookielib.Cookie(version=0, name=key, value=value, port=None, port_specified=False,
+            domain=u'localhost.local', domain_specified=False, domain_initial_dot=False, path='/',
+            path_specified=True, secure=False, expires=None, discard=True, comment=None, comment_url=None,
+            rest={}, rfc2109=False)
+        self.cookie_jar.set_cookie(cookie)
+
 
     def __enter__(self):
         threading.Thread(target=self.execute_io_loop).start()
