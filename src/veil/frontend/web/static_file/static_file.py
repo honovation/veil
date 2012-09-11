@@ -112,9 +112,11 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
         return html
     flag = html.strip()[:10].lstrip().lower()
     parser = lxml.html.XHTMLParser(strip_cdata=False)
+    is_full_page = True
     if flag.startswith('<html') or flag.startswith('<!doctype'):
         fragment = lxml.html.document_fromstring(html, parser=parser)
     else:
+        is_full_page = False
         fragment = lxml.html.fragment_fromstring(html, 'dummy-wrapper', parser=parser)
     script_elements = []
     link_elements = []
@@ -151,8 +153,9 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
             'type': 'text/css',
             'href': '/static/{}'.format(write_inline_static_file(page_handler, 'css', '\r\n'.join(inline_css_texts)))
         }))
-    for processor in script_elements_processors:
-        script_elements = processor(parser, script_elements)
+    if is_full_page:
+        for processor in script_elements_processors:
+            script_elements = processor(parser, script_elements)
     inserted_external_script_paths = set()
     for element in script_elements:
         body_element = fragment.find('body')
