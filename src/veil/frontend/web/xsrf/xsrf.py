@@ -7,7 +7,6 @@ from markupsafe import Markup
 from veil.frontend.template import template_utility
 from veil.frontend.web.tornado import *
 from tornado.escape import xhtml_escape
-from veil.frontend.web.static_file import static_url
 
 LOGGER = getLogger(__name__)
 
@@ -17,7 +16,9 @@ def prevent_xsrf():
     response = get_current_http_response()
     if not hasattr(request, '_xsrf_token'):
         token = get_cookie(name='_xsrf', request=request)
+        request.is_new_xsrf_token = False
         if not token:
+            request.is_new_xsrf_token = True
             token = uuid.uuid4().get_hex()
             LOGGER.debug('assign XSRF token {} from {} {}'.format(token, request.method, request.path))
         request._xsrf_token = token
@@ -37,33 +38,12 @@ def prevent_xsrf():
     yield
 
 
-def xsrf_script_elements_processor(parser, script_elements):
-    script = parser.makeelement(
-        'script', attrib={'type': 'text/javascript'})
-    script.text =\
-    """
-    $.cookie('_xsrf', '%s', {path: '/'});
-    $.ajaxSetup({headers:{'X-XSRF':$.cookie('_xsrf')}});
-    """ % xsrf_token()
-    new_script_elements = [
-        parser.makeelement(
-            'script', attrib={
-                'type': 'text/javascript',
-                'src': static_url('jquery.js')
-            }),
-        parser.makeelement(
-            'script', attrib={
-                'type': 'text/javascript',
-                'src': static_url('jquery-cookie.js')
-            }),
-        parser.makeelement(
-            'script', attrib={
-                'type': 'text/javascript',
-                'src': static_url('veil.js')
-            }),
-        script]
-    new_script_elements.extend(script_elements)
-    return new_script_elements
+def set_xsrf_cookie_for_page(route_handler, data):
+    if get_current_http_request().is_new_xsrf_token:
+        if data and '<html' in data.lower():
+            # only set to page to avoid concurrent http request issue
+            set_cookie(name='_xsrf', value=xsrf_token())
+    return data
 
 
 @template_utility

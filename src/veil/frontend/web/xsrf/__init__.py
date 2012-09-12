@@ -3,11 +3,11 @@ import veil.component
 with veil.component.init_component(__name__):
     from .xsrf import xsrf_token
     from .xsrf import prevent_xsrf
-    from .xsrf import xsrf_script_elements_processor
+    from .xsrf import set_xsrf_cookie_for_page
 
     __all__ = [
         # from xsrf
         xsrf_token.__name__,
         prevent_xsrf.__name__,
-        xsrf_script_elements_processor.__name__
+        set_xsrf_cookie_for_page.__name__
     ]
