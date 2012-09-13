@@ -273,3 +273,23 @@ veil.widget.processWidget = function (html) {
     });
     return veil.widget.toXML(doc).replace('<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', '');
 };
+
+function processErrors() {
+    var $form = $('#register-form');
+    var all_errors = $form.data('errors');
+    for (var field in all_errors) {
+        if (all_errors.hasOwnProperty(field)) {
+            var errors = $(all_errors[field]);
+            errors.each(function () {
+                var error = this;
+                var label_of_element = $form.find('[name=' + field + ']').parent('label');
+                if(label_of_element.length==0){
+                    label_of_element = $form.find('label[for='+field+']');
+                }
+                label_of_element.append(
+                    ('<span class="error-message label label-warning"><i class="icon-info-sign"></i>'
+                    + error + '</span>')
+                )
+            });
+        }
+    }}
