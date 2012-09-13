@@ -7,6 +7,8 @@ from veil.environment.installation import *
 @installation_script()
 def install_supervisor(*active_programs):
     settings = get_settings()
+    if not getattr(settings, 'supervisor', None):
+        return
     all_programs = settings.supervisor.programs.keys()
     if VEIL_ENV in ['development', 'test']:
         active_programs = all_programs

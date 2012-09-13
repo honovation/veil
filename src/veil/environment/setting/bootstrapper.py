@@ -7,7 +7,7 @@ from .option import register_option
 LOGGER = logging.getLogger(__name__)
 boostrapped = False
 
-get_logging_level = register_option('logging', 'level')
+get_logging_level = register_option('logging', 'level', default='DEBUG')
 
 def bootstrap_runtime():
     global boostrapped

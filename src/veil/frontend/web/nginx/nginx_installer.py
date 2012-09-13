@@ -8,6 +8,8 @@ from veil.environment.installation import *
 @installation_script()
 def install_nginx():
     settings = get_settings()
+    if not getattr(settings, 'nginx', None):
+        return
     install_ubuntu_package('nginx-extras')
     remove_service_auto_start('nginx', '/etc/rc0.d/K20nginx')
     create_directory(settings.nginx.log_directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP)

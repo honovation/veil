@@ -1,0 +1,8 @@
+if [ -z `readlink $0` ] ; then
+    BIN_DIR=$(cd `dirname $0` && pwd)
+else
+    BIN_DIR=$(dirname $(readlink $0))
+fi
+VEIL_SRC_DIR=$(dirname $BIN_DIR)/src
+virtualenv env
+echo -e "$VEIL_SRC_DIR\n$(pwd)" > env/lib/python2.7/site-packages/veil.pth

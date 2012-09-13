@@ -8,7 +8,8 @@ import os
 __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_component',
     'is_dummy_module_member', 'get_component_dependencies', 'assert_component_loaded',
-    'assert_component_dependencies', 'get_component_of_module', 'is_component_loaded']
+    'assert_component_dependencies', 'get_component_of_module', 'is_component_loaded',
+    'get_loaded_components']
 
 encapsulated_modules = {}
 components = {}
@@ -137,6 +138,9 @@ def force_get_all_loaded_modules():
         if module and not module_name.startswith('veil.'):
             all_loaded_modules[module_name] = module
     return all_loaded_modules
+
+def get_loaded_components():
+    return components
 
 
 def force_import_module(module_name):

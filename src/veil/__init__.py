@@ -8,11 +8,14 @@ init_components = lambda : veil.component.init_components([
     'veil.backend.database.db2',
     'veil.backend.redis',
     'veil.backend.bucket',
-    'veil.environment.setting',
+    'veil.environment.installation',
     'veil.environment.setting',
     'veil.development.browser',
     'veil.development.pycharm',
     'veil.development.test',
-    'veil.supervisor',
-    '__veil__'
+    'veil.supervisor'
 ])
+try:
+    __import__('__veil__')
+except:
+    pass

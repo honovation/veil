@@ -1,12 +1,17 @@
 from __future__ import unicode_literals, print_function, division
 import functools
-import json
-from veil.component import get_loading_component, get_component_dependencies
+from veil.component import get_loading_component
+from veil.component import get_component_dependencies
+from veil.component import get_loaded_components
 from veil.backend.shell import *
-from veil.environment.setting import *
 from veil.environment import *
 from veil.frontend.cli import *
 from .filesystem import create_directory
+
+@script('install-all')
+def install_all():
+    for component_name in get_loaded_components():
+        install_dependency(component_name)
 
 # create basic layout before deployment
 def installation_script():

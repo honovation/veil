@@ -1,5 +1,6 @@
 *.pyc
 .idea/*
+env/*
 demo/etc/*
 demo/log/*
 demo/var/*

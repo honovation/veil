@@ -38,7 +38,7 @@ def init_options():
     global original_options
     if options is not None:
         return
-    options = dict(get_settings().get('veil', None))
+    options = dict(get_settings().get('veil', {}))
     for section, section_definitions in option_definitions.items():
         for name, definition in section_definitions.items():
             options.setdefault(section, {})
