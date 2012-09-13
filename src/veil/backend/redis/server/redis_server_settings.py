@@ -32,7 +32,7 @@ def redis_settings(purpose, **updates):
     })
     settings = merge_settings(settings, updates, overrides=True)
     if 'test' == VEIL_ENV:
-        settings.port += 1
+        settings.port = int(settings.port) + 1
     return objectify({
         '{}_redis'.format(purpose): settings,
         'supervisor': {

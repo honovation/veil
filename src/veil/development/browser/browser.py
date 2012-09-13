@@ -15,7 +15,6 @@ from veil.profile.web import *
 from veil.frontend.web.static_file import *
 
 LOGGER = logging.getLogger(__name__)
-latest_page = None
 
 def start_website_and_browser(website, path, page_interactions, timeout=60, browser='spynner'):
     @route('POST', '/-test/stop', website=website)
@@ -141,7 +140,6 @@ def check_is_test_failed(test):
     message = getattr(test, 'error', None)
     if message is not None:
         stop_browser()
-        LOGGER.info('Latest page: {}'.format(latest_page))
         test.fail(message)
 
 
@@ -172,7 +170,6 @@ def stop_webdriver():
 
 
 def inject_page_interaction(parser, script_elements, page_interactions):
-    global latest_page
     request = get_current_http_request()
     if 'XMLHttpRequest' == request.headers.get('X-Requested-With', None):
         return script_elements
