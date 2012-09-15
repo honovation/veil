@@ -15,7 +15,7 @@ from .template import require_current_template_directory_relative_to
 # === global state ===
 original_widgets = None
 widgets = {}
-current_widget_template_spaces = []
+current_widget_template_namespaces = []
 
 LOGGER = getLogger(__name__)
 
@@ -63,6 +63,11 @@ class Widget(object):
         self.name = name
         self.func = func
         self.registered_by = '\n'.join(traceback.format_stack())
+        loading_component = veil.component.get_loading_component()
+        if loading_component:
+            self.namespace = loading_component.__name__
+        else:
+            self.namespace = None
 
     def render(self, *args, **kwargs):
         try:
@@ -71,10 +76,11 @@ class Widget(object):
             else:
                 kwargs.pop('from_template', None)
             with require_current_template_directory_relative_to(self.func):
-                content = self.func(*args, **kwargs)
-                if content is None:
-                    return None
-                return Markup(to_unicode(content))
+                with require_current_widget_namespace_being(self.namespace):
+                    content = self.func(*args, **kwargs)
+                    if content is None:
+                        return None
+                    return Markup(to_unicode(content))
         except:
             type, value, traceback = sys.exc_info()
             if not getattr(value, 'EXPECTED_WIDGET_ERROR', None):
@@ -98,11 +104,11 @@ def import_widget(widget_handler):
 # === export widgets as template utility ===
 @contextlib.contextmanager
 def require_current_widget_namespace_being(namespace):
-    current_widget_template_spaces.append(namespace)
+    current_widget_template_namespaces.append(namespace)
     try:
         yield
     finally:
-        current_widget_template_spaces.pop()
+        current_widget_template_namespaces.pop()
 
 
 class WidgetLookup(object):
@@ -110,7 +116,7 @@ class WidgetLookup(object):
         self.optional = optional
 
     def __getattr__(self, name):
-        widget_handler = widgets.get(current_widget_template_spaces[-1], {}).get(name, None)
+        widget_handler = widgets.get(current_widget_template_namespaces[-1], {}).get(name, None)
         if not widget_handler:
             if self.optional:
                 return lambda *args, **kwargs: ''

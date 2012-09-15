@@ -250,6 +250,7 @@ def load_module(*module_name_segments):
         return module
     except:
         print('failed to load {}'.format(loading_components))
+        traceback.print_exc()
         raise
 
 
