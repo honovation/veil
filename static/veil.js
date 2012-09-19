@@ -176,6 +176,14 @@ veil.widget.showErrorMessage = function(widget, defaultErrorMessage) {
             errorMessage + '</span>');
 };
 
+veil.widget.showFieldErrorMessage = function(widget) {
+    var allErrorMessage = widget.data('errors');
+    for (var field in allErrorMessage) {
+        widget.prepend('<span class="error-message label label-warning">' +
+        '<i class="icon-info-sign"></i>' + allErrorMessage[field] + '</span>');
+    }
+}
+
 veil.widget.clearErrorMessages = function(widget) {
     widget.find('.error-message').remove();
 };
