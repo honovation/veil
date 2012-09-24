@@ -33,6 +33,8 @@ def nginx_settings(**updates):
 
 
 def add_reverse_proxy_server(settings, website, **updates):
+    if not getattr(settings, 'nginx', None):
+        return settings
     website_config = getattr(settings.veil, '{}_website'.format(website))
     if ':' in website_config.domain:
         server_name, listen_port = website_config.domain.split(':')

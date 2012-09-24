@@ -39,5 +39,7 @@ def require_redis(purpose):
         instances[purpose] = Redis(**get_redis_options())
     executing_test = get_executing_test(optional=True)
     if executing_test:
-        executing_test.addCleanup(lambda :instances[purpose].flushall())
+        def flush():
+            instances[purpose].flushall()
+        executing_test.addCleanup(flush)
     return instances[purpose]

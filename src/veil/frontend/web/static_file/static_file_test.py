@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import os
 import tempfile
 from veil.utility.path import *
-from veil.development.test import TestCase
+from veil.development.test import *
 from .static_file import set_inline_static_files_directory
 from .static_file import set_external_static_files_directory
 from .static_file import process_javascript_and_stylesheet_tags
