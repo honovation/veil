@@ -185,6 +185,8 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
     post_processed_html = processed_html.replace(
         '<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', '')
     post_processed_html = open_closed_tags(post_processed_html)
+    if is_full_page:
+        post_processed_html = '<!DOCTYPE html>\n{}'.format(post_processed_html)
     return markupsafe.Markup(post_processed_html)
 
 
