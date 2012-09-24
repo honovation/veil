@@ -24,7 +24,11 @@ def component_aware_safe_str_to_class(qualified_class_name):
     segments = qualified_class_name.split('.')
     class_name = segments[-1]
     qualified_module_name = '.'.join(segments[:-1])
-    return getattr(force_import_module(qualified_module_name), class_name)
+    module = force_import_module(qualified_module_name)
+    if hasattr(module, class_name):
+        return getattr(module, class_name)
+    else:
+        raise Exception('Can not find {} in {}'.format(class_name, qualified_module_name))
 
 
 patch_pyres_job_to_load_component_encapsulated_job_handler_class()
@@ -40,7 +44,7 @@ def bring_up_worker(*argv):
         server=pyres.ResQ('{}:{}'.format(get_queue_host(), get_queue_port()), get_queue_password()))
 
 @script('delayed-job-scheduler-up')
-def ebring_up_delayed_job_scheduler(*argv):
+def bring_up_delayed_job_scheduler(*argv):
     pyres.scheduler.Scheduler.run(
         pyres.ResQ('{}:{}'.format(get_queue_host(), get_queue_port()), get_queue_password()))
 

@@ -5,6 +5,7 @@ import re
 import markupsafe
 import logging
 import lxml.html
+import lxml.etree
 from veil.development.test import *
 from veil.frontend.web.tornado import *
 from veil.utility.path import as_path
@@ -113,11 +114,16 @@ def process_javascript_and_stylesheet_tags(page_handler, html):
     flag = html.strip()[:10].lstrip().lower()
     parser = lxml.html.XHTMLParser(strip_cdata=False)
     is_full_page = True
-    if flag.startswith('<html') or flag.startswith('<!doctype'):
-        fragment = lxml.html.document_fromstring(html, parser=parser)
-    else:
-        is_full_page = False
-        fragment = lxml.html.fragment_fromstring(html, 'dummy-wrapper', parser=parser)
+    try:
+        if flag.startswith('<html') or flag.startswith('<!doctype'):
+            fragment = lxml.html.document_fromstring(html, parser=parser)
+        else:
+            is_full_page = False
+            fragment = lxml.html.fragment_fromstring(html, 'dummy-wrapper', parser=parser)
+    except lxml.etree.XMLSyntaxError, e:
+        LOGGER.error('Failed to parse html: \n{}'.format(
+            '\n'.join(['{}: {}'.format(i+1, line) for i, line in enumerate(html.split('\n'))])))
+        raise
     script_elements = []
     link_elements = []
     inline_js_texts = []
