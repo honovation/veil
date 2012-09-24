@@ -81,7 +81,10 @@ class FilesystemBucket(Bucket):
         return open(self.to_path(key), 'rb')
 
     def get_url(self, key):
-        return '{}/{}'.format(self.base_url, key)
+        if key:
+            return '{}/{}'.format(self.base_url, key)
+        else:
+            return None
 
     def delete(self, key):
         self.to_path(key).remove()
