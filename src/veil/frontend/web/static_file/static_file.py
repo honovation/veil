@@ -93,13 +93,11 @@ def process_stylesheet(page_handler, html):
 
 
 def process_javascript(page_handler, html):
-    html, js_urls, js_texts = process_script_elements(html)
+    html, script_elements, js_texts = process_script_elements(html)
     if js_texts:
         combined_js_text = '\n'.join([wrap_js_to_ensure_load_once(js_text) for js_text in js_texts])
-        js_urls.append('/static/{}'.format(write_inline_static_file(page_handler, 'js', combined_js_text)))
-    script_elements = []
-    for js_url in js_urls:
-        script_elements.append('<script type="text/javascript" src="{}"></script>'.format(js_url))
+        url = '/static/{}'.format(write_inline_static_file(page_handler, 'js', combined_js_text))
+        script_elements.append('<script type="text/javascript" src="{}"></script>'.format(url))
 
     def append_script_elements_before_body_end_tag(match):
         return Markup('{}\n{}'.format('\n'.join(script_elements), match.group(0)))

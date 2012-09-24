@@ -7,7 +7,7 @@ def process_link_elements(html):
     css_elements = []
 
     def on_link_element(match):
-        if 'rel="stylesheet"' not in match.group(1):
+        if 'rel="stylesheet' not in match.group(1):
             return match.group(0)
         css_elements.append(match.group(0))
         return ''
