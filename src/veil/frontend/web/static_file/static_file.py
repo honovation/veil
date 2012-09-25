@@ -3,6 +3,7 @@ import contextlib
 import hashlib
 import re
 import logging
+from markupsafe import Markup
 from veil.development.test import *
 from veil.utility.path import as_path
 from veil.utility.hash import *
@@ -74,22 +75,20 @@ def get_static_file_hash(path):
 
 
 def process_stylesheet(page_handler, html):
-    html, css_urls = process_link_elements(html)
+    html, link_elements = process_link_elements(html)
     html, css_texts = process_style_elements(html)
     if css_texts:
         combined_css_text = '\n'.join(css_texts)
-        css_urls.append('/static/{}'.format(write_inline_static_file(page_handler, 'css', combined_css_text)))
-    link_elements = []
-    for css_url in css_urls:
-        link_elements.append('<link rel="stylesheet" type="text/css" href="{}"/>'.format(css_url))
+        url = '/static/{}'.format(write_inline_static_file(page_handler, 'css', combined_css_text))
+        link_elements.append('<link rel="stylesheet" type="text/css" media="screen" href="{}"/>'.format(url))
 
     def append_link_elements_before_head_end_tag(match):
-        return '{}\n{}'.format('\n'.join(link_elements), match.group(0))
+        return Markup('{}\n{}'.format('\n'.join(link_elements), match.group(0)))
 
     if link_elements:
         html, found = RE_HEAD_END_TAG.subn(append_link_elements_before_head_end_tag, html, 1)
         if not found:
-            html = '{}\n{}'.format('\n'.join(link_elements), html)
+            html = '{}\n{}'.format(Markup('\n'.join(link_elements)), html)
     return html
 
 
@@ -103,12 +102,12 @@ def process_javascript(page_handler, html):
         script_elements.append('<script type="text/javascript" src="{}"></script>'.format(js_url))
 
     def append_script_elements_before_body_end_tag(match):
-        return '{}\n{}'.format('\n'.join(script_elements), match.group(0))
+        return Markup('{}\n{}'.format('\n'.join(script_elements), match.group(0)))
 
     if script_elements:
         html, found = RE_BODY_END_TAG.subn(append_script_elements_before_body_end_tag, html, 1)
         if not found:
-            html = '{}\n{}'.format(html, '\n'.join(script_elements))
+            html = '{}\n{}'.format(html, Markup('\n'.join(script_elements)))
     return html
 
 

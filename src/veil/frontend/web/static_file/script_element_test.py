@@ -68,7 +68,7 @@ class ScriptElementTest(TestCase):
         self.assertEqual([''], js_texts)
 
     def test_external_urls(self):
-        html = '<script type="text/javascript" src=/test.js>abc</script>'
+        html = '<script type="text/javascript" src="/test.js">abc</script>'
         html, js_urls, js_texts = process_script_elements(html)
         self.assertEqual('', html)
         self.assertEqual(['/test.js'], js_urls)
