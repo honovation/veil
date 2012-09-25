@@ -129,9 +129,8 @@ def to_datetime(format='%Y-%m-%d %H:%M:%S'):
         else:
             try:
                 dt = datetime.strptime(value, bind.format)
-                tz = pytz.timezone('Asia/Shanghai')
-                dt = tz.localize(dt)
-                return dt.astimezone(tz).astimezone(pytz.utc)
+                dt = dt.replace(tzinfo=pytz.timezone('Asia/Shanghai'))
+                return dt.astimezone(pytz.utc)
             except ValueError:
                 raise Invalid(_('不是有效的日期时间'))
     bind.format = format

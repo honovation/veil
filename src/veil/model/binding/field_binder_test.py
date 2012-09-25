@@ -108,7 +108,9 @@ class FieldBinderTest(TestCase):
             to_time('07.30')
 
     def test_validate_datetime(self):
-        self.assertEquals(datetime.datetime(2011, 07, 01, 0, 10), to_datetime()('2011-07-01 00:10:00'))
+        self.assertEquals(
+            datetime.datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.timezone('Asia/Shanghai')).astimezone(pytz.utc),
+            to_datetime()('2011-07-01 00:10:00'))
         with self.assertRaises(Invalid):
             to_datetime()('2011-07-01 00:10')
         with self.assertRaises(Invalid):
