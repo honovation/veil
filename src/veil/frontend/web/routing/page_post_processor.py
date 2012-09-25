@@ -5,6 +5,8 @@ from veil.frontend.web.tornado import *
 original_page_post_processors = None
 page_post_processors = []
 
+TAG_NO_POST_PROCESS = 'no-post-process'
+
 @test_hook
 def remember_original_page_post_processors():
     get_executing_test().addCleanup(reset_page_post_processors)
@@ -25,21 +27,8 @@ def register_page_post_processor(page_post_processor):
 
 
 def post_process_page(route_handler, data):
-    if not is_full_page(data):
+    if TAG_NO_POST_PROCESS in get_current_http_context().route.tags:
         return data
     for page_post_processor in page_post_processors:
         data = page_post_processor(route_handler, data)
     return data
-
-
-def is_full_page(html):
-    http_response = get_current_http_response(optional=True)
-    if http_response:
-        if 'text/html' not in http_response.headers.get('Content-Type', ''):
-            return False
-    if not html:
-        return False
-    if not html.strip():
-        return False
-    flag = html.strip()[:10].lstrip().lower()
-    return flag.startswith('<html') or flag.startswith('<!doctype')

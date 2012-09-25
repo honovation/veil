@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import functools
 import logging
 import threading
 import time
@@ -13,37 +14,39 @@ from veil.profile.web import *
 
 LOGGER = logging.getLogger(__name__)
 
+no_post_process_route = functools.partial(route, tags=(TAG_NO_POST_PROCESS,))
+
 def start_website_and_browser(website, path, page_interactions, timeout=60, browser='spynner'):
-    @route('POST', '/-test/stop', website=website)
+    @no_post_process_route('POST', '/-test/stop', website=website, tags=())
     def stop_test():
         stop_browser()
 
-    @route('POST', '/-test/fail', website=website)
+    @no_post_process_route('POST', '/-test/fail', website=website)
     def fail_test():
         message = get_http_argument('message')
         LOGGER.error(message)
         get_executing_test().error = message
 
-    @route('POST', '/-test/log', website=website)
+    @no_post_process_route('POST', '/-test/log', website=website)
     def log_from_test():
         LOGGER.info(get_http_argument('message'))
 
-    @route('GET', '/-test/veil-test.js', website=website)
+    @no_post_process_route('GET', '/-test/veil-test.js', website=website)
     def veil_test_js():
         get_current_http_response().set_header('Content-Type', 'text/javascript; charset=utf-8')
         return (as_path(__file__).dirname() / 'veil-test.js').text()
 
-    @route('GET', '/-test/jquery.js', website=website)
+    @no_post_process_route('GET', '/-test/jquery.js', website=website)
     def jquery_js():
         get_current_http_response().set_header('Content-Type', 'text/javascript; charset=utf-8')
         return (as_path(__file__).dirname() / 'jquery.js').text()
 
-    @route('GET', '/-test/jquery-cookie.js', website=website)
+    @no_post_process_route('GET', '/-test/jquery-cookie.js', website=website)
     def jquery_cookie_js():
         get_current_http_response().set_header('Content-Type', 'text/javascript; charset=utf-8')
         return (as_path(__file__).dirname() / 'jquery-cookie.js').text()
 
-    @route('GET', '/-test/veil.js', website=website)
+    @no_post_process_route('GET', '/-test/veil.js', website=website)
     def veil_js():
         get_current_http_response().set_header('Content-Type', 'text/javascript; charset=utf-8')
         return (as_path(__file__).dirname() / 'veil.js').text()
@@ -167,8 +170,6 @@ def stop_webdriver():
 def inject_page_interaction(html, page_interactions):
     request = get_current_http_request()
     if 'XMLHttpRequest' == request.headers.get('X-Requested-With', None):
-        return html
-    if request.path.startswith('/-test/'):
         return html
     if not page_interactions:
         return html

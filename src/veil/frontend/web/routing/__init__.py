@@ -10,8 +10,10 @@ with veil.component.init_component(__name__):
     from .routing import get_routes
     from .routing import EVENT_NEW_WEBSITE
     from .page_post_processor import register_page_post_processor
+    from .page_post_processor import TAG_NO_POST_PROCESS
 
     EVENT_NEW_WEBSITE = EVENT_NEW_WEBSITE
+    TAG_NO_POST_PROCESS=TAG_NO_POST_PROCESS
 
     __all__ = [
         # from routing
@@ -24,5 +26,6 @@ with veil.component.init_component(__name__):
         get_routes.__name__,
         'EVENT_NEW_WEBSITE',
         # from page_post_processor
-        register_page_post_processor.__name__
+        register_page_post_processor.__name__,
+        'TAG_NO_POST_PROCESS'
     ]
