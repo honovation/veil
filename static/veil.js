@@ -203,6 +203,16 @@ veil.widget.toXML = function (xmlDocument) {
         return (new XMLSerializer()).serializeToString(xmlDocument);
     }
 };
+var RE_SCRIPT = /<script.*?><\/script>/ig;
+var RE_SRC_ATTRIBUTE = /.*?src="(.*?)"/i;
+veil.widget._processWidget = function(html) {
+    var js_urls = [];
+    html = html.replace(RE_SCRIPT, function(script_element) {
+        console.log('!!! ' + script_element.replace(RE_SRC_ATTRIBUTE, '$1'));
+        return '';
+    });
+    return html;
+};
 veil.widget.processWidget = function (html) {
     function loadJavascript(url) {
         if ($('body').html().indexOf(url) == -1) {
