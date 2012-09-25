@@ -2,48 +2,23 @@ from __future__ import unicode_literals, print_function, division
 import contextlib
 import hashlib
 import re
-import markupsafe
 import logging
-import lxml.html
-import lxml.etree
 from veil.development.test import *
-from veil.frontend.web.tornado import *
 from veil.utility.path import as_path
 from veil.utility.hash import *
 from veil.frontend.template import *
 from veil.frontend.encoding import *
+from .script_element import process_script_elements
+from .link_element import process_link_elements
+from .style_element import process_style_elements
 
 LOGGER = logging.getLogger(__name__)
-REGEX_CLOSED_TAG = re.compile(r'<([^>]*?)/>')
+RE_BODY_END_TAG = re.compile(r'</body>', re.IGNORECASE)
+RE_HEAD_END_TAG = re.compile(r'</head>', re.IGNORECASE)
 
 static_file_hashes = {}
 inline_static_files_directory = None
 external_static_files_directory = None
-script_elements_processors = []
-original_script_elements_processors = []
-
-def register_script_elements_processor(processor):
-    script_elements_processors.append(processor)
-
-
-def clear_script_elements_processors():
-    global script_elements_processors
-    script_elements_processors = []
-
-
-@test_hook
-def remember_script_elements_processors():
-    get_executing_test().addCleanup(reset_script_elements_processors)
-    global original_script_elements_processors
-    if not original_script_elements_processors:
-        original_script_elements_processors = list(script_elements_processors)
-
-
-def reset_script_elements_processors():
-    global script_elements_processors
-    script_elements_processors = []
-    if original_script_elements_processors:
-        script_elements_processors.extend(original_script_elements_processors)
 
 
 def set_inline_static_files_directory(value):
@@ -98,105 +73,48 @@ def get_static_file_hash(path):
     return static_file_hashes.get(path)
 
 
-def process_javascript_and_stylesheet_tags(page_handler, html):
-# === combine & move <script> to the bottom ===
-# === combine & move <link rel="stylesheet"> to the top ===
-# === combine & externalize inline <script> ===
-# === combine & externalize inline <style> ===
-    http_response = get_current_http_response(optional=True)
-    if http_response:
-        if 'text/html' not in http_response.headers.get('Content-Type', ''):
-            return html
-    if not html:
-        return html
-    if not html.strip():
-        return html
-    flag = html.strip()[:10].lstrip().lower()
-    parser = lxml.html.XHTMLParser(strip_cdata=False)
-    is_full_page = True
-    try:
-        if flag.startswith('<html') or flag.startswith('<!doctype'):
-            fragment = lxml.html.document_fromstring(html, parser=parser)
-        else:
-            is_full_page = False
-            fragment = lxml.html.fragment_fromstring(html, 'dummy-wrapper', parser=parser)
-    except lxml.etree.XMLSyntaxError, e:
-        LOGGER.error('Failed to parse html: \n{}'.format(
-            '\n'.join(['{}: {}'.format(i+1, line) for i, line in enumerate(html.split('\n'))])))
-        raise
-    script_elements = []
+def process_stylesheet(page_handler, html):
+    html, css_urls = process_link_elements(html)
+    html, css_texts = process_style_elements(html)
+    if css_texts:
+        combined_css_text = '\n'.join(css_texts)
+        css_urls.append('/static/{}'.format(write_inline_static_file(page_handler, 'css', combined_css_text)))
     link_elements = []
-    inline_js_texts = []
-    inline_css_texts = []
-    for element in fragment.iterdescendants('script'):
-        if 'text/plain' == element.get('type', None):
-            continue
-        if element.get('src', None):
-            script_elements.append(element)
-        else:
-            inline_js_text = element.text_content().strip()
-            if inline_js_text and inline_js_text not in inline_js_texts:
-                inline_js_texts.append(wrap_js_to_ensure_load_once(inline_js_text))
-        remove_element(element)
-    for element in fragment.iterdescendants('style'):
-        inline_css_text = element.text_content().strip()
-        if inline_css_text and inline_css_text not in inline_css_texts:
-            inline_css_texts.append(inline_css_text)
-        remove_element(element)
-    for element in fragment.iterdescendants('link'):
-        if 'stylesheet' == element.get('rel', None):
-            link_elements.append(element)
-            remove_element(element)
-    if inline_js_texts:
-        script_element = fragment.makeelement('script', attrib={
-            'type': 'text/javascript',
-            'src': '/static/{}'.format(write_inline_static_file(page_handler, 'js', '\r\n'.join(inline_js_texts)))
-        })
-        script_elements.append(script_element)
-    if inline_css_texts:
-        link_elements.append(fragment.makeelement('link', attrib={
-            'rel': 'stylesheet',
-            'type': 'text/css',
-            'href': '/static/{}'.format(write_inline_static_file(page_handler, 'css', '\r\n'.join(inline_css_texts)))
-        }))
-    if is_full_page:
-        for processor in script_elements_processors:
-            script_elements = processor(parser, script_elements)
-    inserted_external_script_paths = set()
-    for element in script_elements:
-        body_element = fragment.find('body')
-        external_script_path = element.get('src', None)
-        if external_script_path:
-            if external_script_path in inserted_external_script_paths:
-                continue
-            inserted_external_script_paths.add(external_script_path)
-        if body_element is not None:
-            body_element.append(element)
-        else:
-            fragment.append(element)
-    for i, element in enumerate(link_elements):
-        head_element = fragment.find('head')
-        if head_element is not None:
-            head_element.append(element)
-        else:
-            fragment.insert(i, element)
-    processed_html = lxml.html.tostring(fragment, method='xml', encoding='utf-8')
-    processed_html = to_unicode(processed_html)
-    post_processed_html = processed_html.replace(
-        '<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', '')
-    post_processed_html = open_closed_tags(post_processed_html)
-    if is_full_page:
-        post_processed_html = '<!DOCTYPE html>\n{}'.format(post_processed_html)
-    return markupsafe.Markup(post_processed_html)
+    for css_url in css_urls:
+        link_elements.append('<link rel="stylesheet" type="text/css" href="{}"/>'.format(css_url))
+
+    def append_link_elements_before_head_end_tag(match):
+        return '{}\n{}'.format('\n'.join(link_elements), match.group(0))
+
+    if link_elements:
+        html, found = RE_HEAD_END_TAG.subn(append_link_elements_before_head_end_tag, html, 1)
+        if not found:
+            html = '{}\n{}'.format('\n'.join(link_elements), html)
+    return html
+
+
+def process_javascript(page_handler, html):
+    html, js_urls, js_texts = process_script_elements(html)
+    if js_texts:
+        combined_js_text = '\n'.join([wrap_js_to_ensure_load_once(js_text) for js_text in js_texts])
+        js_urls.append('/static/{}'.format(write_inline_static_file(page_handler, 'js', combined_js_text)))
+    script_elements = []
+    for js_url in js_urls:
+        script_elements.append('<script type="text/javascript" src="{}"></script>'.format(js_url))
+
+    def append_script_elements_before_body_end_tag(match):
+        return '{}\n{}'.format('\n'.join(script_elements), match.group(0))
+
+    if script_elements:
+        html, found = RE_BODY_END_TAG.subn(append_script_elements_before_body_end_tag, html, 1)
+        if not found:
+            html = '{}\n{}'.format(html, '\n'.join(script_elements))
+    return html
 
 
 def wrap_js_to_ensure_load_once(js):
     hash = hashlib.md5(to_str(js)).hexdigest()
     return "veil.executeOnce('%s', function(){\r\n%s\r\n});" % (hash, js)
-
-
-def remove_element(element):
-    element.getparent().remove(element)
 
 
 def write_inline_static_file(page_handler, suffix, content):
@@ -211,13 +129,3 @@ def write_inline_static_file(page_handler, suffix, content):
     page_name = page_handler.__name__.replace('_widget', '').replace('_page', '').replace('_', '-')
     pseudo_file_name = '{}.{}'.format(page_name, suffix)
     return 'v-{}/{}'.format(hash, pseudo_file_name)
-
-
-def open_closed_tags(html):
-    return REGEX_CLOSED_TAG.sub(open_closed_tag, html)
-
-
-def open_closed_tag(match):
-    tag_and_attributes = match.group(1).strip()
-    tag = tag_and_attributes.split(' ')[0]
-    return '<{}></{}>'.format(tag_and_attributes, tag)

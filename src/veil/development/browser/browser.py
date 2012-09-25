@@ -3,8 +3,6 @@ import logging
 import threading
 import time
 import traceback
-import lxml.html
-import lxml.etree
 import os.path
 import spynner
 import selenium.webdriver
@@ -12,7 +10,6 @@ import os
 from veil.utility.path import *
 from veil.development.test import *
 from veil.profile.web import *
-from veil.frontend.web.static_file import *
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,9 +49,7 @@ def start_website_and_browser(website, path, page_interactions, timeout=60, brow
         return (as_path(__file__).dirname() / 'veil.js').text()
 
     page_interactions = list(reversed(page_interactions))
-    register_script_elements_processor(
-        lambda parser, script_elements: inject_page_interaction(parser, script_elements, page_interactions))
-#    register_page_post_processor(lambda page_handler, html: inject_page_interaction(html, page_interactions))
+    register_page_post_processor(lambda page_handler, html: inject_page_interaction(html, page_interactions))
     http_server = start_test_website(website)
     domain = get_website_option(website, 'domain')
     if domain:
@@ -169,27 +164,20 @@ def stop_webdriver():
         webdriver.close()
 
 
-def inject_page_interaction(parser, script_elements, page_interactions):
+def inject_page_interaction(html, page_interactions):
     request = get_current_http_request()
     if 'XMLHttpRequest' == request.headers.get('X-Requested-With', None):
-        return script_elements
+        return html
     if request.path.startswith('/-test/'):
-        return script_elements
+        return html
     if not page_interactions:
-        return script_elements
-    new_script_elements = list(script_elements)
-    new_script_elements.append(parser.makeelement(
-        'script', attrib={
-            'type': 'text/javascript',
-            'src': '/-test/veil-test.js'
-        }))
-    script = parser.makeelement(
-        'script', attrib={'type': 'text/javascript'})
-    script.text =\
-    """
-    $(document).ready(function() {
-        %s
-    });
-    """ % page_interactions.pop()
-    new_script_elements.append(script)
-    return new_script_elements
+        return html
+    return html.replace('</body>', '{}\n</body>'.format(
+        """
+        <script type="text/javascript" src="/-test/veil-test.js"></script>
+        <script type="text/javascript">$(document).ready(function() {
+            %s
+        });
+        </script>
+        """ % page_interactions.pop()
+    ))
