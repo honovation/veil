@@ -15,16 +15,16 @@ veil.executeOnce = function(hash, func) {
 
 veil.event = {};
 
-veil.event.handle = function (eventName, handler) {
+veil.event.subscribe = function (eventName, handler) {
     $(document).bind(eventName, handler);
 };
 
-veil.event.trigger = function (eventName, args) {
+veil.event.publish = function (eventName, args) {
     $(document).trigger(eventName, args);
 
     if (veil.event.hasDelegation(eventName)) {
         $(veil.event.DELEGATIONS[eventName]).each(function () {
-            veil.event.trigger(this, args);
+            veil.event.publish(this, args);
         });
     }
 };
@@ -141,7 +141,6 @@ veil.widget.createResource = function (widget, onSuccess) {
             widget.replaceWith(new_widget);
             widget = new_widget;
             veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
-            veil.widget.showFieldErrorMessage(widget);
         }
     };
     veil.resource.create(_);
@@ -164,7 +163,6 @@ veil.widget.updateResource = function (widget, onSuccess) {
             widget.replaceWith(new_widget);
             widget = new_widget;
             veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
-            veil.widget.showFieldErrorMessage(widget);
         }
     };
     veil.resource.update(_);
@@ -179,18 +177,10 @@ veil.widget.showErrorMessage = function(widget, defaultErrorMessage) {
 };
 
 veil.widget.showFieldErrorMessage = function(widget) {
-    var allErrors = widget.data('errors');
-    for (var field in allErrors) {
-        if (allErrors.hasOwnProperty(field)) {
-            var errors = $(allErrors[field]);
-            errors.each(function () {
-                var error = this;
-                $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>'
-                      + error + '</span>').insertBefore(
-                    widget.find('[name=' + field + ']')
-                );
-            });
-        }
+    var allErrorMessage = widget.data('errors');
+    for (var field in allErrorMessage) {
+        widget.prepend('<span class="error-message label label-warning">' +
+        '<i class="icon-info-sign"></i>' + allErrorMessage[field] + '</span>');
     }
 };
 
@@ -203,11 +193,27 @@ veil.widget.refresh = function (widget) {
         widget.replaceWith(html);
     });
 };
+
 veil.widget.loadedJavascripts = [];
 veil.widget.loadedStylesheets = [];
-veil.widget.RE_SCRIPT = /<script.*?><\/script>/ig;
-veil.widget.RE_LINK = /<link.*?><\/link>/ig;
-veil.widget.processWidget = function(html) {
+veil.widget.toXML = function (xmlDocument) {
+    if (window.ActiveXObject) {
+        return xmlDocument.xml;
+    } else {
+        return (new XMLSerializer()).serializeToString(xmlDocument);
+    }
+};
+var RE_SCRIPT = /<script.*?><\/script>/ig;
+var RE_SRC_ATTRIBUTE = /.*?src="(.*?)"/i;
+veil.widget._processWidget = function(html) {
+    var js_urls = [];
+    html = html.replace(RE_SCRIPT, function(script_element) {
+        console.log('!!! ' + script_element.replace(RE_SRC_ATTRIBUTE, '$1'));
+        return '';
+    });
+    return html;
+};
+veil.widget.processWidget = function (html) {
     function loadJavascript(url) {
         if ($('body').html().indexOf(url) == -1) {
             if ($.inArray(url, veil.resource.loadedJavascripts) == -1) {
@@ -219,6 +225,7 @@ veil.widget.processWidget = function(html) {
             }
         }
     }
+
     function loadStylesheet(url) {
         if ($('body').html().indexOf(url) == -1) {
             if ($.inArray(url, veil.resource.loadedStylesheets) == -1) {
@@ -231,22 +238,48 @@ veil.widget.processWidget = function(html) {
             }
         }
     }
-    html = html.replace(veil.widget.RE_SCRIPT, function(scriptElement) {
-        loadJavascript($(scriptElement).attr('src'));
-        return '';
-    });
-    html = html.replace(veil.widget.RE_LINK, function(linkElement) {
-        var $linkElement = $(linkElement);
-        if ('stylesheet' != $linkElement.attr('rel')) {
-            return linkElement;
+
+    var doc = $.parseXML('<dummy-wrapper>' + html + '</dummy-wrapper>');
+
+    $(doc).find('script').each(function () {
+        var $script = $(this);
+        if ('text/plain' == $script.attr('type')) {
+            return
         }
-        var url = $linkElement.attr('href');
-        if (url) {
-            loadStylesheet(url);
-            return '';
+        if ($script.attr('src')) {
+            loadJavascript($script.attr('src'));
         } else {
-            return linkElement;
+            veil.log('can only load javascript from url');
+        }
+        $script.remove();
+    });
+    $(doc).find('style').each(function () {
+        var $style = $(this);
+        veil.log('can only load stylesheet from url');
+        $style.remove();
+    });
+    $(doc).find('link').each(function () {
+        var $link = $(this);
+        if ('stylesheet' == $link.attr('rel')) {
+            loadStylesheet($link.attr('href'));
+            $link.remove();
         }
     });
-    return html;
+    $(doc).find('[data-errors]').each(function () {
+        var $form = $(this);
+        var all_errors = $form.data('errors');
+        for (var field in all_errors) {
+            if (all_errors.hasOwnProperty(field)) {
+                var errors = $(all_errors[field]);
+                errors.each(function () {
+                    var error = this;
+                    $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>'
+                          + error + '</span>').insertBefore(
+                        $form.find('[name=' + field + ']')
+                    );
+                });
+            }
+        }
+    });
+    return veil.widget.toXML(doc).replace('<dummy-wrapper>', '').replace('</dummy-wrapper>', '').replace('<dummy-wrapper/>', '');
 };
