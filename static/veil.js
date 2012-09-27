@@ -216,6 +216,7 @@ veil.widget.refresh = function (widget) {
     veil.resource.get({
         url: widget.data('refreshUrl'),
         onSuccess: function (html) {
+            html = veil.widget.processWidget(html);
             widget.replaceWith(html);
         }
     });
@@ -223,7 +224,7 @@ veil.widget.refresh = function (widget) {
 veil.widget.loadedJavascripts = [];
 veil.widget.loadedStylesheets = [];
 veil.widget.RE_SCRIPT = /<script.*?><\/script>/ig;
-veil.widget.RE_LINK = /<link.*?><\/link>/ig;
+veil.widget.RE_LINK = /<link.*?\/?>(<\/link>)?/ig;
 veil.widget.processWidget = function(html) {
     function loadJavascript(url) {
         if ($('body').html().indexOf(url) == -1) {
