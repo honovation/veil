@@ -49,10 +49,21 @@ veil.showMessage = function (message) {
 
 veil.resource = {};
 
-veil.resource.get = function (url, onSuccess) {
-    $.get(url, function (html) {
-        onSuccess(veil.widget.processWidget(html));
-    });
+veil.resource.get = function (options) {
+    var url = options.url;
+    var onSuccess = options.onSuccess;
+    var onValidationError = options.onValidationError;
+    var dataType = options.dataType;
+    var _ = {
+        type:'GET',
+        url:url,
+        dataType:dataType,
+        success:onSuccess,
+        statusCode:{
+            400:onValidationError
+        }
+    };
+    $.ajax(_);
 };
 
 veil.resource.create = function (options) {
@@ -202,8 +213,11 @@ veil.widget.clearErrorMessages = function(widget) {
 };
 
 veil.widget.refresh = function (widget) {
-    veil.resource.get(widget.data('refresh-url'), function (html) {
-        widget.replaceWith(html);
+    veil.resource.get({
+        url: widget.data('refreshUrl'),
+        onSuccess: function (html) {
+            widget.replaceWith(html);
+        }
     });
 };
 veil.widget.loadedJavascripts = [];
