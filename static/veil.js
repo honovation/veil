@@ -15,16 +15,16 @@ veil.executeOnce = function(hash, func) {
 
 veil.event = {};
 
-veil.event.handle = function (eventName, handler) {
+veil.event.subscribe = function (eventName, handler) {
     $(document).bind(eventName, handler);
 };
 
-veil.event.trigger = function (eventName, args) {
+veil.event.publish = function (eventName, args) {
     $(document).trigger(eventName, args);
 
     if (veil.event.hasDelegation(eventName)) {
         $(veil.event.DELEGATIONS[eventName]).each(function () {
-            veil.event.trigger(this, args);
+            veil.event.publish(this, args);
         });
     }
 };

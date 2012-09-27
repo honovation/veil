@@ -22,8 +22,11 @@ def reset_page_post_processors():
         page_post_processors.extend(original_page_post_processors)
 
 
-def register_page_post_processor(page_post_processor):
-    page_post_processors.append(page_post_processor)
+def register_page_post_processor(page_post_processor, insert_to_head=False):
+    if insert_to_head:
+        page_post_processors.insert(0, page_post_processor)
+    else:
+        page_post_processors.append(page_post_processor)
 
 
 def post_process_page(route_handler, data):
