@@ -171,27 +171,27 @@ class Database(object):
     def list_scalar(self, sql, **kwargs):
         rows = self._query(sql, returns_dict_object=False, **kwargs)
         if rows and len(rows[0]) > 1:
-            raise Exception('More than one columns returned with the sql: {}'.format(sql))
+            raise Exception('More than one columns returned with the sql {} {}'.format(sql, kwargs))
         return [row[0] for row in rows]
 
     def get(self, sql, **kwargs):
         rows = self._query(sql, **kwargs)
         if not rows:
-            LOGGER.debug('No rows returned with the sql: {}'.format(sql))
+            LOGGER.debug('No rows returned with the sql {} {}'.format(sql, kwargs))
             return None
         if len(rows) > 1:
-            LOGGER.warning('More than one rows returned with the sql: {}'.format(sql))
+            LOGGER.warning('More than one rows returned with the sql {} {}'.format(sql, kwargs))
         return rows[0]
 
     def get_scalar(self, sql, **kwargs):
         rows = self._query(sql, returns_dict_object=False, **kwargs)
         if not rows:
-            LOGGER.debug('No rows returned with the sql: {}'.format(sql))
+            LOGGER.debug('No rows returned with the sql {} {}'.format(sql, kwargs))
             return None
         if len(rows) > 1:
-            LOGGER.warning('More than one rows returned with the sql: {}'.format(sql))
+            LOGGER.warning('More than one rows returned with the sql {} {}'.format(sql, kwargs))
         if len(rows[0]) > 1:
-            raise Exception('More than one columns returned with the sql: {}'.format(sql))
+            raise Exception('More than one columns returned with the sql {} {}'.format(sql, kwargs))
         return rows[0][0]
 
     def insert(self, table, objects=None, returns_id=False, should_insert=None, **value_providers):
