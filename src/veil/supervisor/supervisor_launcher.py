@@ -7,6 +7,7 @@ from veil.frontend.cli import script
 @script('up')
 def bring_up_supervisor():
     settings = get_settings()
+    shell_execute('find . -type f -name "*.pyc" -delete')
     pass_control_to('supervisord -c {}'.format(settings.supervisor.config_file))
 
 
