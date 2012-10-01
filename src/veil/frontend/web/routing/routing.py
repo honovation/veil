@@ -35,24 +35,27 @@ def reset_routes():
 
 
 class RouteDecorator(object):
-    def __init__(self, method, path_template, website=None, tags=(), **path_template_params):
+    def __init__(self, method, path_template, website=None, tags=(), delegates_to=None, **path_template_params):
         self.method = method
         self.path_template = path_template
         self.website = (website or infer_website()).upper()
         self.tags = tags
+        self.delegates_to = delegates_to
         self.path_template_params = path_template_params
-        loading_component = get_loading_component()
-        if loading_component:
-            self.widget_namespace = loading_component.__name__
-        else:
-            self.widget_namespace = None
         publish_new_website_event(self.website)
 
     def __call__(self, func):
+        target = self.delegates_to or func
+        loading_component = get_loading_component()
+        if loading_component:
+            widget_namespace = loading_component.__name__
+        else:
+            widget_namespace = None
+
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            with require_current_template_directory_relative_to(func):
-                with require_current_widget_namespace_being(self.widget_namespace):
+            with require_current_template_directory_relative_to(target):
+                with require_current_widget_namespace_being(widget_namespace):
                     return func(*args, **kwargs)
 
         new_route = Route(
@@ -71,10 +74,11 @@ def publish_new_website_event(website):
         publish_event(EVENT_NEW_WEBSITE, website=website)
 
 
-def route(method, path_template, website=None, tags=(), **path_template_params):
+def route(method, path_template, website=None, tags=(), delegates_to=None, **path_template_params):
     return RouteDecorator(
         method=method, path_template=path_template,
-        website=website, tags=tags, **path_template_params)
+        website=website, tags=tags, delegates_to=delegates_to,
+        **path_template_params)
 
 
 def route_for(website):
