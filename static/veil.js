@@ -5,7 +5,7 @@ var veil = veil || {};
 veil.log = console.log;
 
 executed = [];
-veil.executeOnce = function(hash, func) {
+veil.executeOnce = function (hash, func) {
     if ($.inArray(hash, executed) != -1) {
         return
     }
@@ -142,7 +142,7 @@ veil.widget.createResource = function (widget, onSuccess, dataType) {
     var _ = {
         url:widget.attr('action'),
         data:widget.serialize(),
-        dataType: dataType,
+        dataType:dataType,
         onSuccess:function (s) {
             widget[0].reset();
             onSuccess(s);
@@ -184,7 +184,7 @@ veil.widget.updateResource = function (widget, onSuccess) {
     veil.resource.update(_);
 };
 
-veil.widget.showErrorMessage = function(widget, defaultErrorMessage) {
+veil.widget.showErrorMessage = function (widget, defaultErrorMessage) {
     var errorMessage = widget.data('error-message') || defaultErrorMessage;
     widget.prepend(
         '<span class="error-message label label-warning">' +
@@ -192,7 +192,7 @@ veil.widget.showErrorMessage = function(widget, defaultErrorMessage) {
             errorMessage + '</span>');
 };
 
-veil.widget.showFieldErrorMessage = function(widget) {
+veil.widget.showFieldErrorMessage = function (widget) {
     var allErrors = widget.data('errors');
     for (var field in allErrors) {
         if (allErrors.hasOwnProperty(field)) {
@@ -200,7 +200,7 @@ veil.widget.showFieldErrorMessage = function(widget) {
             errors.each(function () {
                 var error = this;
                 $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>'
-                      + error + '</span>').insertBefore(
+                    + error + '</span>').insertBefore(
                     widget.find('[name=' + field + ']')
                 );
             });
@@ -208,26 +208,34 @@ veil.widget.showFieldErrorMessage = function(widget) {
     }
 };
 
-veil.widget.clearErrorMessages = function(widget) {
+veil.widget.clearErrorMessages = function (widget) {
     widget.find('.error-message').remove();
 };
 
-veil.widget.refresh = function (widget) {
-    if (widget.data('refreshUrl')) {
+veil.widget.refresh = function (widget, onSuccess) {
+    var refreshUrl = widget.data('refreshUrl');
+    if (refreshUrl) {
         veil.resource.get({
-            url: widget.data('refreshUrl'),
-            onSuccess: function (html) {
+            url:refreshUrl,
+            onSuccess:function (html) {
                 var html = veil.widget.processWidget(html);
                 widget.replaceWith(html);
+                var refreshedWidget = $('[data-refresh-url="' + refreshUrl + '"]');
+                if (!refreshedWidget) {
+                    veil.log('widget disappeared after refreshed from: ' + refreshUrl);
+                }
+                if (onSuccess && refreshedWidget) {
+                    onSuccess(refreshedWidget)
+                }
             }
         });
     }
 };
 
-veil.widget.get = function(url, onSuccess) {
+veil.widget.get = function (url, onSuccess) {
     veil.resource.get({
-        url: url,
-        onSuccess: function (html) {
+        url:url,
+        onSuccess:function (html) {
             var html = veil.widget.processWidget(html);
             onSuccess(html);
         }
@@ -238,7 +246,7 @@ veil.widget.loadedJavascripts = [];
 veil.widget.loadedStylesheets = [];
 veil.widget.RE_SCRIPT = /<script.*?><\/script>/ig;
 veil.widget.RE_LINK = /<link.*?\/?>(<\/link>)?/ig;
-veil.widget.processWidget = function(html) {
+veil.widget.processWidget = function (html) {
     function loadJavascript(url) {
         if ($('body').html().indexOf(url) == -1) {
             if ($.inArray(url, veil.resource.loadedJavascripts) == -1) {
@@ -250,6 +258,7 @@ veil.widget.processWidget = function(html) {
             }
         }
     }
+
     function loadStylesheet(url) {
         if ($('body').html().indexOf(url) == -1) {
             if ($.inArray(url, veil.resource.loadedStylesheets) == -1) {
@@ -262,11 +271,12 @@ veil.widget.processWidget = function(html) {
             }
         }
     }
-    html = html.replace(veil.widget.RE_SCRIPT, function(scriptElement) {
+
+    html = html.replace(veil.widget.RE_SCRIPT, function (scriptElement) {
         loadJavascript($(scriptElement).attr('src'));
         return '';
     });
-    html = html.replace(veil.widget.RE_LINK, function(linkElement) {
+    html = html.replace(veil.widget.RE_LINK, function (linkElement) {
         var $linkElement = $(linkElement);
         if ('stylesheet' != $linkElement.attr('rel')) {
             return linkElement;
