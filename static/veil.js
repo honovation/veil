@@ -54,9 +54,11 @@ veil.resource.get = function (options) {
     var onSuccess = options.onSuccess;
     var onValidationError = options.onValidationError;
     var dataType = options.dataType;
+    var data=options.data;
     var _ = {
         type:'GET',
         url:url,
+        data:data,
         dataType:dataType,
         success:onSuccess,
         statusCode:{
@@ -122,7 +124,7 @@ veil.widget = {};
 veil.widget.handle = function (widget_selector, child_selector, event, handler) {
     $(widget_selector + ' ' + child_selector).live(event, function (e) {
         var widget = $(this).parents(widget_selector);
-        return handler(widget, e);
+        return handler.apply(this, [widget, e]);
     });
 };
 
@@ -182,6 +184,29 @@ veil.widget.updateResource = function (widget, onSuccess) {
         }
     };
     veil.resource.update(_);
+};
+
+veil.widget.getResource = function (widget, onSuccess) {
+    veil.widget.clearErrorMessages(widget);
+    var _ = {
+        url:widget.attr('action'),
+        data:widget.serialize(),
+        onSuccess:function (html) {
+            widget[0].reset();
+            onSuccess(veil.widget.processWidget(html));
+        },
+        onError:function () {
+            veil.widget.showErrorMessage(widget, '操作失败');
+        },
+        onValidationError:function (xhr) {
+            var new_widget = $(veil.widget.processWidget(xhr.responseText));
+            widget.replaceWith(new_widget);
+            widget = new_widget;
+            veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
+            veil.widget.showFieldErrorMessage(widget);
+        }
+    };
+    veil.resource.get(_);
 };
 
 veil.widget.showErrorMessage = function (widget, defaultErrorMessage) {
