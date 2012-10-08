@@ -153,11 +153,13 @@ veil.widget.createResource = function (widget, onSuccess, dataType) {
             veil.widget.showErrorMessage(widget, '操作失败');
         },
         onValidationError:function (xhr) {
-            var new_widget = $(veil.widget.processWidget(xhr.responseText));
-            widget.replaceWith(new_widget);
-            widget = new_widget;
-            veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
-            veil.widget.showFieldErrorMessage(widget);
+            veil.widget.processWidget(xhr.responseText, function(html){
+                var newWidget = $(html);
+                widget.replaceWith(newWidget);
+                widget = newWidget;
+                veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
+                veil.widget.showFieldErrorMessage(widget);
+            });
         }
     };
     veil.resource.create(_);
@@ -176,11 +178,13 @@ veil.widget.updateResource = function (widget, onSuccess) {
             veil.widget.showErrorMessage(widget, '操作失败');
         },
         onValidationError:function (xhr) {
-            var new_widget = $(veil.widget.processWidget(xhr.responseText));
-            widget.replaceWith(new_widget);
-            widget = new_widget;
-            veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
-            veil.widget.showFieldErrorMessage(widget);
+            veil.widget.processWidget(xhr.responseText, function(html){
+                var newWidget = $(html);
+                widget.replaceWith(newWidget);
+                widget = newWidget;
+                veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
+                veil.widget.showFieldErrorMessage(widget);
+            });
         }
     };
     veil.resource.update(_);
@@ -193,17 +197,19 @@ veil.widget.getResource = function (widget, onSuccess) {
         data:widget.serialize(),
         onSuccess:function (html) {
             widget[0].reset();
-            onSuccess(veil.widget.processWidget(html));
+            veil.widget.processWidget(html, onSuccess);
         },
         onError:function () {
             veil.widget.showErrorMessage(widget, '操作失败');
         },
         onValidationError:function (xhr) {
-            var new_widget = $(veil.widget.processWidget(xhr.responseText));
-            widget.replaceWith(new_widget);
-            widget = new_widget;
-            veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
-            veil.widget.showFieldErrorMessage(widget);
+            veil.widget.processWidget(xhr.responseText, function(html){
+                var newWidget = $(html);
+                widget.replaceWith(newWidget);
+                widget = newWidget;
+                veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
+                veil.widget.showFieldErrorMessage(widget);
+            });
         }
     };
     veil.resource.get(_);
@@ -237,21 +243,24 @@ veil.widget.clearErrorMessages = function (widget) {
     widget.find('.error-message').remove();
 };
 
-veil.widget.refresh = function (widget, onSuccess) {
-    var refreshUrl = widget.data('refreshUrl');
+veil.widget.refresh = function (widget, options) {
+    options = options || {};
+    var refreshUrl = widget.data('refreshUrl') || options.refreshUrl;
+    var onSuccess = options.onSuccess;
     if (refreshUrl) {
         veil.resource.get({
             url:refreshUrl,
             onSuccess:function (html) {
-                var html = veil.widget.processWidget(html);
-                widget.replaceWith(html);
-                var refreshedWidget = $('[data-refresh-url="' + refreshUrl + '"]');
-                if (!refreshedWidget) {
-                    veil.log('widget disappeared after refreshed from: ' + refreshUrl);
-                }
-                if (onSuccess && refreshedWidget) {
-                    onSuccess(refreshedWidget)
-                }
+                veil.widget.processWidget(html, function(html) {
+                    widget.replaceWith(html);
+                    var refreshedWidget = $('[data-refresh-url="' + refreshUrl + '"]');
+                    if (!refreshedWidget) {
+                        veil.log('widget disappeared after refreshed from: ' + refreshUrl);
+                    }
+                    if (onSuccess && refreshedWidget) {
+                        onSuccess(refreshedWidget)
+                    }
+                });
             }
         });
     }
@@ -261,8 +270,7 @@ veil.widget.get = function (url, onSuccess) {
     veil.resource.get({
         url:url,
         onSuccess:function (html) {
-            var html = veil.widget.processWidget(html);
-            onSuccess(html);
+            veil.widget.processWidget(html, onSuccess);
         }
     });
 };
@@ -271,7 +279,8 @@ veil.widget.loadedJavascripts = [];
 veil.widget.loadedStylesheets = [];
 veil.widget.RE_SCRIPT = /<script.*?><\/script>/ig;
 veil.widget.RE_LINK = /<link.*?\/?>(<\/link>)?/ig;
-veil.widget.processWidget = function (html) {
+veil.widget.initializers = [];
+veil.widget.processWidget = function (html, processHtml) {
     function loadJavascript(url) {
         if ($('body').html().indexOf(url) == -1) {
             if ($.inArray(url, veil.resource.loadedJavascripts) == -1) {
@@ -296,9 +305,9 @@ veil.widget.processWidget = function (html) {
             }
         }
     }
-
+    var javascriptUrls = [];
     html = html.replace(veil.widget.RE_SCRIPT, function (scriptElement) {
-        loadJavascript($(scriptElement).attr('src'));
+        javascriptUrls.push($(scriptElement).attr('src'));
         return '';
     });
     html = html.replace(veil.widget.RE_LINK, function (linkElement) {
@@ -314,5 +323,11 @@ veil.widget.processWidget = function (html) {
             return linkElement;
         }
     });
-    return html;
+    processHtml(html);
+    $(javascriptUrls).each(function() {
+        loadJavascript(this);
+    });
+    $(veil.widget.initializers).each(function() {
+        this();
+    });
 };
