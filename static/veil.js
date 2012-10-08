@@ -2,7 +2,9 @@ $.ajaxSetup({headers:{'X-XSRF':$.cookie('_xsrf')}});
 
 var veil = veil || {};
 
-veil.log = console.log;
+veil.log = function(message) {
+    console.log(message);
+};
 
 executed = [];
 veil.executeOnce = function (hash, func) {

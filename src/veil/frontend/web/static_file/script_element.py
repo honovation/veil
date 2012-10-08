@@ -12,7 +12,8 @@ def process_script_elements(html):
         if 'text/plain' in match.group(1):
             return match.group(0)
         if RE_SRC_ATTRIBUTE.search(match.group(1)):
-            script_elements.append(match.group(0))
+            if match.group(0) not in script_elements:
+                script_elements.append(match.group(0))
         else:
             if match.group(2) not in js_texts:
                 js_texts.append(match.group(2))
