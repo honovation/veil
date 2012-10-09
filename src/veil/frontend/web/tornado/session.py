@@ -35,14 +35,23 @@ class Session:
         self.redis().hset(session_id, key, value)
         self.redis().expire(session_id, SESSION_TIMEOUT)
 
+    def clear(self):
+        session_id = self.get_session_id()
+        if session_id:
+            self.redis().delete(session_id)
+        clear_cookie( self.get_session_id_cookie_name())
+
     def get_session_id(self, create_if_not_exists=False):
-        session_id_cookie_name = '{}_session_id'.format(self.website)
+        session_id_cookie_name = self.get_session_id_cookie_name()
         session_id = get_cookie(session_id_cookie_name)
         if not session_id and create_if_not_exists:
             session_id = self.create_session_id()
             expires = datetime.datetime.utcnow() + datetime.timedelta(seconds=SESSION_TIMEOUT)
             set_cookie(name=session_id_cookie_name,value=session_id, expires = expires)
         return session_id
+
+    def get_session_id_cookie_name(self):
+        return '{}_session_id'.format(self.website)
 
     def create_session_id(self):
         return '{}-{}'.format(datetime.datetime.now().strftime("%Y%m%d%H%M%S"), str(uuid.uuid4()).replace('-', ''))
