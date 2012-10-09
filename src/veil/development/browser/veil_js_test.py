@@ -15,7 +15,7 @@ class VeilJsTest(TestCase):
             <script src="/-test/veil.js"></script>
             <script>
                 $(document).ready(function() {
-                    veil.resource.get('/widget1', function(html) {
+                    veil.widget.get('/widget1', function(html) {
                         veil.assertEqual('abc', html.trim());
                         $('#widget-itself').html(html.trim());
                     });
