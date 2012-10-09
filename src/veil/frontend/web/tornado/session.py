@@ -45,6 +45,11 @@ class Session:
         session_id = self.try_get_session_id(True)
         self.redis().hset(session_id, key, value)
 
+    def remove(self, key):
+        session_id = self.try_get_session_id()
+        if session_id:
+            return self.redis().hdel(session_id, key)
+
     def clear(self):
         session_id = self.try_get_session_id()
         if session_id:
