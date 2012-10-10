@@ -23,7 +23,7 @@ def decode_token(token, *part_types):
 
 
 def get_password_hash(password):
-    return get_hmac(password, strong=True)
+    return get_hmac(password, salt='99377', strong=True)
 
 
 def get_hmac(*parts, **kwargs):

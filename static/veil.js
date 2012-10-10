@@ -159,7 +159,7 @@ veil.widget.createResource = function (widget, onSuccess, dataType) {
                 var newWidget = $(html);
                 widget.replaceWith(newWidget);
                 widget = newWidget;
-                veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
+//                veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
                 veil.widget.showFieldErrorMessage(widget);
             });
         }
