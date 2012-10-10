@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import contextlib
 import traceback
 import os.path
+import inspect
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
 from veil.component import force_import_module, is_dummy_module_member
@@ -14,10 +15,15 @@ loaders = {'root': FileSystemLoader('/')}
 env = None
 current_template_directories = []
 
-def template_filter(func):
+def template_filter(func_or_name):
 # syntax sugar for register_template_filter
-    register_template_filter(func.__name__, func)
-    return func
+    if inspect.isfunction(func_or_name):
+        register_template_filter(func_or_name.__name__, func_or_name)
+        return func_or_name
+    else:
+        def decorate(func):
+            register_template_filter(func_or_name, func)
+        return decorate
 
 
 def assert_no_env():
