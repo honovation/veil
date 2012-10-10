@@ -76,11 +76,12 @@ def get_static_file_hash(path):
 
 def process_stylesheet(page_handler, html):
     html, link_elements = process_link_elements(html)
+    css_type = get_css_type(html)
     html, css_texts = process_style_elements(html)
     if css_texts:
         combined_css_text = '\n'.join(css_texts)
-        url = '/static/{}'.format(write_inline_static_file(page_handler, 'css', combined_css_text))
-        link_elements.append('<link rel="stylesheet" type="text/css" media="screen" href="{}"/>'.format(url))
+        url = '/static/{}'.format(write_inline_static_file(page_handler, css_type, combined_css_text))
+        link_elements.append('<link rel="stylesheet" type="text/{}" media="screen" href="{}"/>'.format(css_type, url))
 
     def append_link_elements_before_head_end_tag(match):
         return Markup('{}\n{}'.format('\n'.join(link_elements), match.group(0)))
@@ -90,6 +91,11 @@ def process_stylesheet(page_handler, html):
         if not found:
             html = '{}\n{}'.format(Markup('\n'.join(link_elements)), html)
     return html
+
+def get_css_type(html):
+    if re.search('type=["\']text/less["\']', html, re.I):
+        return 'less'
+    return 'css'
 
 
 def process_javascript(page_handler, html):
