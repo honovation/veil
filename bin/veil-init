@@ -4,5 +4,6 @@ else
     BIN_DIR=$(dirname $(readlink $0))
 fi
 VEIL_SRC_DIR=$(dirname $BIN_DIR)/src
+sudo ln -s $VEIL_SRC_DIR/bin/veil /usr/bin/veil 
 virtualenv env
 echo -e "$VEIL_SRC_DIR\n$(pwd)" > env/lib/python2.7/site-packages/veil.pth
