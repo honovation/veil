@@ -3,7 +3,7 @@ import functools
 from logging import getLogger
 import sys
 from inspect import isfunction
-from veil.component import get_loading_component
+from veil.component import get_loading_component, assert_component_loaded
 from veil.environment.setting import *
 
 script_handlers = {}
@@ -20,22 +20,29 @@ def is_script_defined(*argv):
 
 
 def execute_script(*argv, **kwargs):
-    level = kwargs.get('level', script_handlers)
-    arg = argv[0] if argv else None
-    if arg not in level:
-        print('{} is unknown, choose from: {}'.format(arg, level.keys()))
-        sys.exit(1)
-    next_level = level[arg]
-    if isfunction(next_level):
-        script_handler = next_level
-        bootstrap_runtime()
-        try:
-            executing_script_handlers.append(script_handler)
-            return script_handler(*argv[1:])
-        finally:
-            executing_script_handlers.pop()
-    else:
-        return execute_script(level=next_level, *argv[1:])
+    try:
+        level = kwargs.get('level', script_handlers)
+        arg = argv[0] if argv else None
+        if arg not in level:
+            print('{} is unknown, choose from: {}'.format(arg, level.keys()))
+            sys.exit(1)
+        next_level = level[arg]
+        if isfunction(next_level):
+            script_handler = next_level
+            bootstrap_runtime()
+            try:
+                executing_script_handlers.append(script_handler)
+                return script_handler(*argv[1:])
+            finally:
+                executing_script_handlers.pop()
+        else:
+            return execute_script(level=next_level, *argv[1:])
+    except:
+        import __veil__
+
+        for component in __veil__.COMPONENTS:
+            assert_component_loaded(component.__name__)
+        raise
 
 def get_executing_script_handler():
     if executing_script_handlers:
