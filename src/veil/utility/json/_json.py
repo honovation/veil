@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from datetime import datetime, date, time
 import json
 from dateutil.parser import parse
+from veil.frontend.encoding import *
 
 SUPPORTED_TYPES = {datetime, date, time}
 assert len(SUPPORTED_TYPES) == len({c.__name__ for c in SUPPORTED_TYPES})
@@ -36,7 +37,7 @@ class CustomJSONDecoder(json.JSONDecoder):
 
 
 def to_json(obj, **kwargs):
-    return json.dumps(obj, cls=CustomJSONEncoder, **kwargs)
+    return to_unicode(json.dumps(obj, cls=CustomJSONEncoder, **kwargs))
 
 
 def from_json(s, **kwargs):

@@ -1,10 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 import re
+from veil.frontend.encoding import *
 
 RE_SCRIPT = re.compile(r'<script([^>]*)>(.*?)</script>', re.DOTALL | re.IGNORECASE)
 RE_SRC_ATTRIBUTE = re.compile(r'src="(.*?)"', re.IGNORECASE)
 
 def process_script_elements(html):
+    assert isinstance(html, unicode), 'Html is not unicode'
     script_elements = []
     js_texts = []
 
