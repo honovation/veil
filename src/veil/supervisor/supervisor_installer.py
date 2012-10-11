@@ -5,6 +5,20 @@ from veil.environment.setting import *
 from veil.environment.installation import *
 
 @installation_script()
+def install_veil():
+    with require_component_only_install_once():
+        import __veil__
+
+        if VEIL_SERVER in ['development', 'test']:
+            for program_installer in __veil__.PROGRAM_INSTALLERS.values():
+                program_installer()
+        else:
+            active_programs = __veil__.ENVIRONMENTS[VEIL_ENV][VEIL_ENV_SERVER]
+            for program in active_programs:
+                __veil__.PROGRAM_INSTALLERS[program]()
+            install_supervisor(*active_programs)
+
+
 def install_supervisor(*active_programs):
     settings = get_settings()
     if not getattr(settings, 'supervisor', None):

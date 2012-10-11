@@ -1,5 +1,7 @@
 from __future__ import unicode_literals, print_function, division
+import contextlib
 import functools
+import itertools
 from veil.component import get_loading_component
 from veil.component import get_component_dependencies
 from veil.component import get_loaded_components
@@ -8,10 +10,23 @@ from veil.environment import *
 from veil.frontend.cli import *
 from .filesystem import create_directory
 
+VEIL_INSTALLED_TAG_DIR = as_path('/tmp/veil-installed')
+
 @script('install-all')
 def install_all():
-    for component_name in get_loaded_components():
-        install_dependency(component_name)
+    with require_component_only_install_once():
+        for component_name in get_loaded_components():
+            install_dependency(component_name)
+
+
+@contextlib.contextmanager
+def require_component_only_install_once():
+    VEIL_INSTALLED_TAG_DIR.rmtree()
+    create_directory(VEIL_INSTALLED_TAG_DIR)
+    try:
+        yield
+    finally:
+        VEIL_INSTALLED_TAG_DIR.rmtree()
 
 # create basic layout before deployment
 def installation_script():
@@ -21,9 +36,17 @@ def installation_script():
         component_name = get_loading_component().__name__
 
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*argv):
+            if VEIL_INSTALLED_TAG_DIR.exists():
+                if (VEIL_INSTALLED_TAG_DIR / component_name).exists():
+                    return None
+                else:
+                    (VEIL_INSTALLED_TAG_DIR / component_name).write_text('True')
             if os.getenv('VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'):
-                return func(*args, **kwargs)
+                return func(*argv)
+            if '--print-dependencies' in argv:
+                print_dependencies(component_name)
+                return None
             create_layout()
             for dependency in get_transitive_dependencies(component_name):
                 install_dependency(dependency)
@@ -63,8 +86,17 @@ def get_transitive_dependencies(component_name):
 def collect_transitive_dependencies(component_name, dependencies):
     for dependency in get_component_dependencies().get(component_name, ()):
         if dependency not in dependencies:
-            collect_transitive_dependencies(dependency, dependencies)
             dependencies.append(dependency)
+            collect_transitive_dependencies(dependency, dependencies)
+
+
+def print_dependencies(component_name, dependencies=None, tabs_count=0):
+    dependencies = dependencies or set()
+    print('{}{}-{}'.format(''.join(itertools.repeat('    ', tabs_count)), tabs_count, component_name))
+    for dependency in get_component_dependencies().get(component_name, ()):
+        if dependency not in dependencies:
+            dependencies.add(dependency)
+            print_dependencies(dependency, dependencies, tabs_count + 1)
 
 
 def create_layout():

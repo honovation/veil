@@ -23,7 +23,11 @@ case "$1" in
         exec $@
         ;;
     up)
+        find . -type f -name "*.pyc" -delete
         exec veil supervisor up
+        ;;
+    install)
+        exec veil supervisor install
         ;;
     self-check)
         exec veil :test development test self-check

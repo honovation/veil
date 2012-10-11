@@ -11,8 +11,10 @@ VEIL_HOME = as_path(VEIL_HOME)
 
 VEIL_SERVER = getenv('VEIL_SERVER') or 'development'
 VEIL_ENV = None
+VEIL_ENV_SERVER = None
 if '/' in VEIL_SERVER:
     VEIL_ENV = VEIL_SERVER[:VEIL_SERVER.find('/')]
+    VEIL_ENV_SERVER = VEIL_SERVER[VEIL_SERVER.find('/') + 1:]
 else:
     VEIL_ENV = VEIL_SERVER
 VEIL_LOG_DIR = VEIL_HOME / 'log' / VEIL_ENV
