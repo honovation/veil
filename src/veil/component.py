@@ -4,6 +4,7 @@ import importlib
 import sys
 import traceback
 import os
+import inspect
 
 __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_component',
@@ -268,14 +269,14 @@ class DummyModuleMember(object):
         self.dummy_module = dummy_module
         self.__name__ = name
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, func=None, *args, **kwargs):
         error = ImportError(
             'module {} did not load properly, due to {}'.format(
                 self.dummy_module.__name__,
                 self.dummy_module.error.message))
         if loading_components:
             record_error(error.message)
-            return self
+            return func if inspect.isfunction(func) else self
         else:
             raise error
 
