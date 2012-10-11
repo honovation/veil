@@ -10,13 +10,10 @@ fi
 
 source $VEIL_HOME/env/bin/activate
 
-if [ -z "$VEIL_ENV" ] ; then
-    export VEIL_ENV=development
-fi
 if [[ $1 == :* ]] ; then
-    COLON_VEIL_ENV=$1
+    COLON_VEIL_SERVER=$1
     shift
-    VEIL_ENV=${COLON_VEIL_ENV:1} veil $@ || exit $?
+    VEIL_SERVER=${COLON_VEIL_SERVER:1} veil $@ || exit $?
     exit 0
 fi
 

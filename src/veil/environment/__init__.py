@@ -9,7 +9,12 @@ VEIL_HOME = os.path.abspath(VEIL_HOME)
 assert VEIL_HOME, 'must specify $VEIL_HOME'
 VEIL_HOME = as_path(VEIL_HOME)
 
-VEIL_ENV = getenv('VEIL_ENV') or 'development'
+VEIL_SERVER = getenv('VEIL_SERVER') or 'development'
+VEIL_ENV = None
+if '/' in VEIL_SERVER:
+    VEIL_ENV = VEIL_SERVER[:VEIL_SERVER.find('/')]
+else:
+    VEIL_ENV = VEIL_SERVER
 VEIL_LOG_DIR = VEIL_HOME / 'log' / VEIL_ENV
 VEIL_ETC_DIR = VEIL_HOME / 'etc' / VEIL_ENV
 VEIL_VAR_DIR = VEIL_HOME / 'var' / VEIL_ENV
