@@ -6,7 +6,6 @@ RE_SCRIPT = re.compile(r'<script([^>]*)>(.*?)</script>', re.DOTALL | re.IGNORECA
 RE_SRC_ATTRIBUTE = re.compile(r'src="(.*?)"', re.IGNORECASE)
 
 def process_script_elements(html):
-    assert isinstance(html, unicode), 'Html is not unicode'
     script_elements = []
     js_texts = []
 

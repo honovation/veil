@@ -5,6 +5,7 @@ import itertools
 from veil.component import get_loading_component
 from veil.component import get_component_dependencies
 from veil.component import get_loaded_components
+from veil.component import get_transitive_dependencies
 from veil.backend.shell import *
 from veil.environment import *
 from veil.frontend.cli import *
@@ -75,19 +76,6 @@ def to_cli_handler_levels(component_name):
         args = args[1:]
     args = [arg.replace('_', '-') for arg in args]
     return args
-
-
-def get_transitive_dependencies(component_name):
-    dependencies = list()
-    collect_transitive_dependencies(component_name, dependencies)
-    return dependencies
-
-
-def collect_transitive_dependencies(component_name, dependencies):
-    for dependency in get_component_dependencies().get(component_name, ()):
-        if dependency not in dependencies:
-            dependencies.append(dependency)
-            collect_transitive_dependencies(dependency, dependencies)
 
 
 def print_dependencies(component_name, dependencies=None, tabs_count=0):

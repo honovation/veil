@@ -10,7 +10,7 @@ __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_component',
     'is_dummy_module_member', 'get_component_dependencies', 'assert_component_loaded',
     'assert_component_dependencies', 'get_component_of_module', 'is_component_loaded',
-    'get_loaded_components']
+    'get_loaded_components', 'get_transitive_dependencies']
 
 encapsulated_modules = {}
 components = {}
@@ -98,13 +98,26 @@ def get_component_of_module(module_name):
 
 
 def assert_component_dependencies(component_name, expected_dependencies):
-    actual_dependencies = dependencies[component_name]
+    actual_dependencies = get_component_dependencies().get(component_name, ())
     for expected_dependency in expected_dependencies:
         for actual_dependency in list(actual_dependencies):
             if actual_dependency.startswith(expected_dependency):
                 actual_dependencies.remove(actual_dependency)
     if actual_dependencies:
         raise Exception('{} should not reference {}'.format(component_name, actual_dependencies))
+
+
+def get_transitive_dependencies(component_name):
+    dependencies = list()
+    collect_transitive_dependencies(component_name, dependencies)
+    return dependencies
+
+
+def collect_transitive_dependencies(component_name, dependencies):
+    for dependency in get_component_dependencies().get(component_name, ()):
+        if dependency not in dependencies:
+            dependencies.append(dependency)
+            collect_transitive_dependencies(dependency, dependencies)
 
 
 def get_component_dependencies():
@@ -139,6 +152,7 @@ def force_get_all_loaded_modules():
         if module and not module_name.startswith('veil.'):
             all_loaded_modules[module_name] = module
     return all_loaded_modules
+
 
 def get_loaded_components():
     return components

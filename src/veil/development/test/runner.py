@@ -23,10 +23,11 @@ def self_check():
     for component in __veil__.COMPONENTS:
         package_names.append(component.__name__)
     test_package(*package_names)
-    check_dependencies()
+    check_architecture()
 
 
-def check_dependencies():
+@script('check-architecture')
+def check_architecture():
     import __veil__
 
     for component_name, dependencies in __veil__.ARCHITECTURE.items():
