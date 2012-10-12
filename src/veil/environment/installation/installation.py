@@ -39,10 +39,11 @@ def installation_script():
         @functools.wraps(func)
         def wrapper(*argv):
             if VEIL_INSTALLED_TAG_DIR.exists():
-                if (VEIL_INSTALLED_TAG_DIR / component_name).exists():
+                installed_tag = VEIL_INSTALLED_TAG_DIR / '{}-{}'.format(component_name, '-'.join(argv))
+                if (installed_tag).exists():
                     return None
                 else:
-                    (VEIL_INSTALLED_TAG_DIR / component_name).write_text('True')
+                    (installed_tag).write_text('True')
             if os.getenv('VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'):
                 return func(*argv)
             if '--print-dependencies' in argv:

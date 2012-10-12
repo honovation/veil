@@ -12,6 +12,7 @@ def install_veil():
         if VEIL_SERVER in ['development', 'test']:
             for program_installer in __veil__.PROGRAM_INSTALLERS.values():
                 program_installer()
+            install_supervisor()
         else:
             active_programs = __veil__.ENVIRONMENTS[VEIL_ENV][VEIL_ENV_SERVER]
             for program in active_programs:
