@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from veil.utility.path import as_path
+from veil.utility.hash import *
+from veil.utility.path import *
 from veil.environment.setting import *
 
 LOGGER = logging.getLogger(__name__)
@@ -69,10 +70,8 @@ class FilesystemBucket(Bucket):
         self.base_url = base_url
 
     def store(self, key, file):
-        path = self.base_directory.joinpath(key)
-        directory = path.parent
-        assert directory.abspath().startswith(self.base_directory.abspath())
-        directory.makedirs(mode=0770)
+        path = self.to_path(key)
+        path.parent.makedirs(mode=0770)
         with path.open('wb') as f:
             for chunk in iter_file_in_chunks(file):
                 f.write(chunk)
@@ -82,7 +81,13 @@ class FilesystemBucket(Bucket):
 
     def get_url(self, key):
         if key:
-            return '{}/{}'.format(self.base_url, key)
+            path = self.to_path(key)
+            if path.exists():
+                with open(path) as f:
+                    hash = calculate_file_md5_hash(f)
+                return '{}/{}?v={}'.format(self.base_url, key, hash)
+            else:
+                return '{}/{}'.format(self.base_url, key)
         else:
             return None
 

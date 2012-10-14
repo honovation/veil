@@ -69,7 +69,7 @@ def add_reverse_proxy_server(settings, website, **updates):
                     settings.nginx.uploaded_files_directory,
                     website_config.host,
                     website_config.port),
-                },
+            },
             '@after_upload': {
                 'proxy_pass': 'http://{}:{}'.format(website_config.host, website_config.port)
             },
@@ -81,17 +81,21 @@ def add_reverse_proxy_server(settings, website, **updates):
             },
             # external static files
             # /static/a/b/c.js?v=xxxx
-            '/static/': {
-                '_': """
-                        if ($args ~* v=(.+)) {
-                            expires 365d;
-                        }
-                        """,
-                'alias': as_path(website_config.external_static_files_directory) / ''
-            }
+            '/static/': reverse_proxy_static_file_location(website_config.external_static_files_directory)
         }
     }
     if updates:
         server_settings = merge_settings(server_settings, updates)
     settings.nginx.servers[server_name] = server_settings
     return settings
+
+
+def reverse_proxy_static_file_location(path):
+    return {
+        '_': """
+            if ($args ~* v=(.+)) {
+                expires 365d;
+            }
+            """,
+        'alias': as_path(path) / ''
+    }

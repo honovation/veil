@@ -1,4 +1,6 @@
 import veil.component
+import traceback
+
 init_components = lambda : veil.component.init_components([
     'veil.frontend.template',
     'veil.frontend.locale',
@@ -18,4 +20,4 @@ init_components = lambda : veil.component.init_components([
 try:
     __import__('__veil__')
 except:
-    pass
+    traceback.print_exc()
