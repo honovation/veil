@@ -22,6 +22,9 @@ def normalize_arguments():
     yield
 
 
+def try_get_http_argument(field):
+    return get_http_argument(field, optional=True)
+
 def get_http_argument(field, default=None, request=None, list_field=False, optional=False):
     request = request or get_current_http_request()
     if field not in request.arguments:

@@ -232,10 +232,14 @@ veil.widget.showFieldErrorMessage = function (widget) {
             var errors = $(allErrors[field]);
             errors.each(function () {
                 var error = this;
-                $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>'
-                    + error + '</span>').insertBefore(
-                    widget.find('[name=' + field + ']')
-                );
+                var $field = widget.find('[name=' + field + ']');
+                var $error = $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>'
+                    + error + '</span>');
+                if( $field.parents('label').length==1){
+                    $error.insertBefore( $field );
+                } else{
+                    $error.insertAfter( $field );
+                }
             });
         }
     }

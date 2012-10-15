@@ -19,6 +19,7 @@ with veil.component.init_component(__name__):
     from .cookie import set_cookie
     from .cookie import set_secure_cookie_salt
     from .redirection import redirect_to
+    from .argument import try_get_http_argument
     from .argument import get_http_argument
     from .argument import get_http_arguments
     from .argument import get_http_file
@@ -51,6 +52,7 @@ with veil.component.init_component(__name__):
         # from redirection
         redirect_to.__name__,
         # from argument
+        try_get_http_argument.__name__,
         get_http_argument.__name__,
         get_http_arguments.__name__,
         get_http_file.__name__,
