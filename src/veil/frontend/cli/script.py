@@ -40,7 +40,7 @@ def execute_script(*argv, **kwargs):
     except:
         import __veil__
 
-        for component in __veil__.COMPONENTS:
+        for component in getattr(__veil__, 'COMPONENTS', []):
             assert_component_loaded(component.__name__)
         raise
 
