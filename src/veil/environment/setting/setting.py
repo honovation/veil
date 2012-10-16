@@ -14,6 +14,7 @@ def add_settings(additional_settings, overrides=False):
     if initialized:
         raise Exception('settings has already been initialized: {}'.format(settings))
     settings = merge_settings(settings, additional_settings, overrides=overrides)
+    return settings
 
 
 def register_settings_coordinator(coordinator):
