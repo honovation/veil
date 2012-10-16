@@ -50,7 +50,8 @@ def copy_queue_settings_to_veil(settings):
 
 def resweb_program():
     return {
-        'command': 'resweb',
+        'execute_command': 'resweb',
+        'install_command': 'veil backend queue server install',
         'environment_variables': {
             'RESWEB_SETTINGS': VEIL_ETC_DIR / 'resweb.cfg'
         }
@@ -59,17 +60,17 @@ def resweb_program():
 
 def delayed_job_scheduler_program():
     return  {
-        'command': 'veil backend queue server delayed-job-scheduler-up'
+        'execute_command': 'veil backend queue server delayed-job-scheduler-up'
     }
 
 
 def periodic_job_scheduler_program():
     return {
-        'command': 'veil backend queue server periodic-job-scheduler-up'
+        'execute_command': 'veil backend queue server periodic-job-scheduler-up'
     }
 
 
 def job_worker_program(*queues):
     return {
-        'command': 'veil backend queue server worker-up {}'.format(' '.join(queues))
+        'execute_command': 'veil backend queue server worker-up {}'.format(' '.join(queues))
     }

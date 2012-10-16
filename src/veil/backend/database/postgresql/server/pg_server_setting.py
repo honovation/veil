@@ -5,7 +5,10 @@ from veil.model.collection import *
 
 
 def postgresql_program(purpose, updates=None):
-    program = {'command': 'veil backend database postgresql server up {}'.format(purpose)}
+    program = {
+        'execute_command': 'veil backend database postgresql server up {}'.format(purpose),
+        'install_command': 'veil backend database postgresql server install {}'.format(purpose)
+    }
     if updates:
         program.update(updates)
     return program

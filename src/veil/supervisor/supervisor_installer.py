@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.frontend.template import *
 from veil.frontend.cli import *
+from veil.backend.shell import *
 from veil.environment import *
 from veil.environment.setting import *
 from veil.environment.installation import *
@@ -8,34 +9,35 @@ from .supervisor_setting import supervisor_settings
 
 @script('install')
 def install_veil():
+    settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
+    config = settings.supervisor
     with require_component_only_install_once():
         import __veil__
 
-        program_installers = getattr(__veil__, 'PROGRAM_INSTALLERS', {})
         if VEIL_SERVER in ['development', 'test']:
-            for program_installer in program_installers.values():
-                program_installer()
-            install_supervisor()
+            for program in config.programs.values():
+                install_program(program)
+            install_supervisor(*config.programs.keys())
         else:
-            active_programs = getattr(__veil__, 'ENVIRONMENTS', {})[VEIL_ENV][VEIL_ENV_SERVER]
-            for program in active_programs:
-                program_installers[program]()
-            install_supervisor(*active_programs)
+            active_program_names = getattr(__veil__, 'ENVIRONMENTS', {})[VEIL_ENV][VEIL_ENV_SERVER]
+            for program_name in active_program_names:
+                install_program(config.programs[program_name])
+            install_supervisor(*active_program_names)
 
+def install_program(program):
+    install_command = getattr(program, 'install_command', None)
+    if install_command:
+        shell_execute(install_command)
 
-def install_supervisor(*active_programs):
+def install_supervisor(*active_program_names):
     settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
     config = settings.supervisor
-    all_programs = config.programs.keys()
-    if VEIL_ENV in ['development', 'test']:
-        active_programs = all_programs
-    else:
-        if not active_programs:
-            return
+    if not active_program_names:
+        return
     install_python_package('supervisor')
     create_file(config.config_file, get_template('supervisord.cfg.j2').render(
         config=config,
-        active_programs=active_programs,
+        active_program_names=active_program_names,
         CURRENT_USER=CURRENT_USER,
         format_command=format_command,
         format_environment_variables=format_environment_variables

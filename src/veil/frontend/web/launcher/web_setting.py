@@ -6,7 +6,7 @@ from veil.model.collection import *
 registry = {} # website => get_website_options
 
 def website_program(website, **updates):
-    program = {'command': 'veil frontend web launcher up {}'.format(website)}
+    program = {'execute_command': 'veil frontend web launcher up {}'.format(website)}
     if updates:
         program.update(updates)
     return program

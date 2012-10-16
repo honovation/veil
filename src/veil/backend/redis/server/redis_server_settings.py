@@ -16,7 +16,8 @@ REDIS_BASE_SETTINGS = {
 
 def redis_program(purpose):
     return {
-        'command': 'veil backend redis server up {}'.format(purpose)
+        'execute_command': 'veil backend redis server up {}'.format(purpose),
+        'install_command': 'veil backend redis server install {}'.format(purpose)
     }
 
 
