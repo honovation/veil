@@ -6,8 +6,8 @@ from .supervisor_setting import supervisor_settings
 
 @script('up')
 def bring_up_supervisor():
-    settings = get_settings()
-    config = settings.supervisor if 'supervisor' in settings else supervisor_settings().supervisor
+    settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
+    config = settings.supervisor
     pass_control_to('supervisord -c {}'.format(config.config_file))
 
 

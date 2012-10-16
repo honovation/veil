@@ -2,6 +2,8 @@ from __future__ import unicode_literals, print_function, division
 import contextlib
 import functools
 import itertools
+import sys
+import traceback
 from veil.component import get_loading_component
 from veil.component import get_component_dependencies
 from veil.component import get_loaded_components
@@ -38,24 +40,29 @@ def installation_script():
 
         @functools.wraps(func)
         def wrapper(*argv):
-            if VEIL_INSTALLED_TAG_DIR.exists():
-                installed_tag = VEIL_INSTALLED_TAG_DIR / '{}-{}'.format(component_name, '-'.join(argv))
-                if (installed_tag).exists():
+            try:
+                if VEIL_INSTALLED_TAG_DIR.exists():
+                    installed_tag = VEIL_INSTALLED_TAG_DIR / '{}-{}'.format(component_name, '-'.join(argv))
+                    if (installed_tag).exists():
+                        return None
+                    else:
+                        (installed_tag).write_text('True')
+                if os.getenv('VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'):
+                    return func(*argv)
+                if '--print-dependencies' in argv:
+                    print_dependencies(component_name)
                     return None
-                else:
-                    (installed_tag).write_text('True')
-            if os.getenv('VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'):
-                return func(*argv)
-            if '--print-dependencies' in argv:
-                print_dependencies(component_name)
+                create_layout()
+                for dependency in get_transitive_dependencies(component_name):
+                    install_dependency(dependency)
+                env = os.environ.copy()
+                env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'] = 'TRUE'
+                shell_execute('veil {} install'.format(' '.join(to_cli_handler_levels(component_name))), env=env)
                 return None
-            create_layout()
-            for dependency in get_transitive_dependencies(component_name):
-                install_dependency(dependency)
-            env = os.environ.copy()
-            env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'] = 'TRUE'
-            shell_execute('veil {} install'.format(' '.join(to_cli_handler_levels(component_name))), env=env)
-            return None
+            except:
+                print('Failed to install {}'.format(component_name))
+                traceback.print_exc()
+                sys.exit(1)
 
         return decorator(wrapper)
 

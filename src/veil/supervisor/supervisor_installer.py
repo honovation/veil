@@ -1,11 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 from veil.frontend.template import *
+from veil.frontend.cli import *
 from veil.environment import *
 from veil.environment.setting import *
 from veil.environment.installation import *
 from .supervisor_setting import supervisor_settings
 
-@installation_script()
+@script('install')
 def install_veil():
     with require_component_only_install_once():
         import __veil__
@@ -23,8 +24,8 @@ def install_veil():
 
 
 def install_supervisor(*active_programs):
-    settings = get_settings()
-    config = settings.supervisor if 'supervisor' in settings else supervisor_settings().supervisor
+    settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
+    config = settings.supervisor
     all_programs = config.programs.keys()
     if VEIL_ENV in ['development', 'test']:
         active_programs = all_programs
