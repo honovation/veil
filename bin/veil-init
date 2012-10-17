@@ -7,7 +7,11 @@ VEIL_SRC_DIR=$(dirname $BIN_DIR)/src
 if [ ! -f /usr/bin/veil ]; then
     sudo ln -s $BIN_DIR/veil /usr/bin/veil
 fi
-virtualenv env
-mkdir $(pwd)/src
-touch $(pwd)/src/__veil__.py
-echo -e "$VEIL_SRC_DIR\n$(pwd)/src" > env/lib/python2.7/site-packages/veil.pth
+if [ ! -d $(pwd)/src ]; then
+    mkdir $(pwd)/src
+    touch $(pwd)/src/__veil__.py
+fi
+if [ ! -d $(pwd)/env ]; then
+    virtualenv env
+    echo -e "$VEIL_SRC_DIR\n$(pwd)/src" > env/lib/python2.7/site-packages/veil.pth
+fi
