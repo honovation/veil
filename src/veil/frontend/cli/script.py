@@ -20,12 +20,12 @@ def is_script_defined(*argv):
 
 
 def execute_script(*argv, **kwargs):
+    level = kwargs.get('level', script_handlers)
+    arg = argv[0] if argv else None
+    if arg not in level:
+        print('{} is unknown, choose from: {}'.format(arg, level.keys()))
+        sys.exit(1)
     try:
-        level = kwargs.get('level', script_handlers)
-        arg = argv[0] if argv else None
-        if arg not in level:
-            print('{} is unknown, choose from: {}'.format(arg, level.keys()))
-            sys.exit(1)
         next_level = level[arg]
         if isfunction(next_level):
             script_handler = next_level
