@@ -45,7 +45,7 @@ def install_postgresql_server(purpose=None):
     create_file(
         pg_config_dir / 'postgresql.conf',
         content=get_template('postgresql.conf.j2').render(config=config))
-    create_file(pg_config_dir / 'pg_hba.conf', content=get_template('pg_hba.conf.j2').render())
+    create_file(pg_config_dir / 'pg_hba.conf', content=get_template('pg_hba.conf.j2').render(config=config))
     create_file(pg_config_dir / 'pg_ident.conf', content=get_template('pg_ident.conf.j2').render())
     create_symbolic_link(pg_data_dir / 'postgresql.conf', to=pg_config_dir / 'postgresql.conf')
     create_symbolic_link(pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf')
