@@ -38,7 +38,8 @@ def execute_script(*argv, **kwargs):
         else:
             return execute_script(level=next_level, *argv[1:])
     except:
-        if not hasattr(sys.exc_info()[1], 'EXECUTABLE_BEFORE_COMPONENT_LOADED'):
+        exception = sys.exc_info()[1]
+        if not isinstance(exception, SystemExit) and not hasattr(exception, 'EXECUTABLE_BEFORE_COMPONENT_LOADED'):
             import __veil__
             for component in getattr(__veil__, 'COMPONENTS', []):
                 assert_component_loaded(component.__name__)
