@@ -57,7 +57,7 @@ def installation_script():
                     install_dependency(dependency)
                 env = os.environ.copy()
                 env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'] = 'TRUE'
-                shell_execute('veil {} install'.format(' '.join(to_cli_handler_levels(component_name))), env=env)
+                shell_execute('veil {} install {}'.format(' '.join(to_cli_handler_levels(component_name)), ' '.join(argv)), env=env)
                 return None
             except:
                 print('Failed to install {}'.format(component_name))
