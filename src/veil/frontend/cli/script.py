@@ -38,10 +38,10 @@ def execute_script(*argv, **kwargs):
         else:
             return execute_script(level=next_level, *argv[1:])
     except:
-        import __veil__
-
-        for component in getattr(__veil__, 'COMPONENTS', []):
-            assert_component_loaded(component.__name__)
+        if not hasattr(sys.exc_info()[1], 'EXECUTABLE_BEFORE_COMPONENT_LOADED'):
+            import __veil__
+            for component in getattr(__veil__, 'COMPONENTS', []):
+                assert_component_loaded(component.__name__)
         raise
 
 def get_executing_script_handler():

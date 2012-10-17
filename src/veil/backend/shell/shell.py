@@ -36,6 +36,7 @@ def pass_control_to(command_line):
 
 
 class ShellExecutionError(Exception):
+    EXECUTABLE_BEFORE_COMPONENT_LOADED = 'true'
     def __init__(self, message, output=None):
         super(ShellExecutionError, self).__init__(message)
         self.output = output
