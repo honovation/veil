@@ -13,5 +13,5 @@ if [ ! -d $(pwd)/src ]; then
 fi
 if [ ! -d $(pwd)/env ]; then
     virtualenv env
-    echo -e "$VEIL_SRC_DIR\n$(pwd)/src" > env/lib/python2.7/site-packages/veil.pth
 fi
+echo -e "$VEIL_SRC_DIR\n$(pwd)/src" > env/lib/python2.7/site-packages/veil.pth
