@@ -16,7 +16,6 @@ def postgresql_program(purpose, updates=None):
 
 def postgresql_settings(purpose, **updates):
     settings = objectify({
-        'listen_addresses': 'localhost',
         'host': 'localhost',
         'port': 5432,
         'owner': CURRENT_USER,

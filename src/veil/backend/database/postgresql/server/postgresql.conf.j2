@@ -56,8 +56,8 @@ ident_file = '{{ config.data_directory }}/pg_ident.conf'	# ident configuration f
 
 # - Connection Settings -
 
-{% if config.listen_addresses %}
-listen_addresses = '{{ config.listen_addresses }}'		# what IP address(es) to listen on;
+{% if config.host %}
+listen_addresses = '{{ config.host }}'		# what IP address(es) to listen on;
 					# comma-separated list of addresses;
 					# defaults to 'localhost', '*' = all
 					# (change requires restart)
