@@ -35,6 +35,9 @@ case "$1" in
     install)
         exec veil supervisor install
         ;;
+    pull)
+        exec veil development git pull
+        ;;
     self-check)
         exec veil :test development test self-check
         ;;
