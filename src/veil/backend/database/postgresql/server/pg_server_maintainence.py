@@ -3,45 +3,56 @@ import logging
 from veil.environment.setting import *
 from veil.backend.shell import *
 from veil.frontend.cli import *
-from veil.environment import VEIL_HOME
+from veil.environment import *
 
 LOGGER = logging.getLogger(__name__)
 
 @script('create-database')
 def create_database(purpose):
     try:
-        shell_execute('createdb -h {host} -p {port} {database}'.format(
+        env = os.environ.copy()
+        env['PGPASSWORD'] = get_option(purpose, 'owner_password')
+        shell_execute('createdb -h {host} -p {port} -U {owner} {database}'.format(
             host=get_option(purpose, 'host'),
             port=get_option(purpose, 'port'),
-            database=get_option(purpose, 'database')), capture=True)
+            owner=get_option(purpose, 'owner'),
+            database=get_option(purpose, 'database')), env=env, capture=True)
     except ShellExecutionError, e:
         if 'already exists' in e.output:
             pass # ignore
         else:
             raise
 
+
 @script('drop-database')
 def drop_database(purpose):
     try:
-        shell_execute('dropdb -h {host} -p {port} {database}'.format(
+        env = os.environ.copy()
+        env['PGPASSWORD'] = get_option(purpose, 'owner_password')
+        shell_execute('dropdb -h {host} -p {port} -U {owner} {database}'.format(
             host=get_option(purpose, 'host'),
             port=get_option(purpose, 'port'),
-            database=get_option(purpose, 'database')), capture=True)
+            owner=get_option(purpose, 'owner'),
+            database=get_option(purpose, 'database')), env=env, capture=True)
     except ShellExecutionError, e:
         if 'not exist' in e.output:
             pass # ignore
         else:
             raise
 
+
 @script('migrate')
 def migrate(purpose):
     sql_path = VEIL_HOME / 'db' / purpose / '001-baseline.sql'
+    env = os.environ.copy()
+    env['PGPASSWORD'] = get_option(purpose, 'owner_password')
     shell_execute('psql -h {host} -p {port} -U {user} -f {sql_path} {database}'.format(
         host=get_option(purpose, 'host'),
         port=get_option(purpose, 'port'),
         user=get_option(purpose, 'user'),
         database=get_option(purpose, 'database'),
-        sql_path=sql_path))
+        sql_path=sql_path), env=env)
+
 
 @script('reset')
 def reset(purpose):
