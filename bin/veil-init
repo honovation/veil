@@ -3,16 +3,17 @@ if [ -z `readlink $0` ] ; then
 else
     BIN_DIR=$(dirname $(readlink $0))
 fi
-VEIL_SRC_DIR=$(dirname $BIN_DIR)/src
+VEIL_HOME=$(pwd)
+VEIL_FRAMEWORK_HOME=$(dirname $BIN_DIR)
 if [ ! -f /usr/bin/veil ]; then
-    sudo ln -s $BIN_DIR/veil /usr/bin/veil
+    sudo ln -s $VEIL_FRAMEWORK_HOME/bin/veil /usr/bin/veil
 fi
-if [ ! -d $(pwd)/src ]; then
-    mkdir $(pwd)/src
-    touch $(pwd)/src/__veil__.py
+if [ ! -d $VEIL_HOME/src ]; then
+    mkdir $VEIL_HOME/src
+    touch $VEIL_HOME/src/__veil__.py
 fi
-if [ ! -d $(pwd)/env ]; then
+if [ ! -d $VEIL_HOME/env ]; then
     virtualenv env
 fi
-echo "$VEIL_SRC_DIR" > env/lib/python2.7/site-packages/veil.pth
-echo "$(pwd)/src" >> env/lib/python2.7/site-packages/veil.pth
+echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
+echo "$VEIL_HOME/src" >> env/lib/python2.7/site-packages/veil.pth

@@ -1,12 +1,18 @@
 #!/bin/bash
 
 if [ -z "$VEIL_HOME" ] ; then
-    export VEIL_HOME="."
+    export VEIL_HOME=$(pwd)
 fi
 if [ ! -d $VEIL_HOME/env/bin ] ; then
 	echo "VEIL_HOME is invalid"
 	exit 1
 fi
+if [ -z `readlink $0` ] ; then
+    BIN_DIR=$(cd `dirname $0` && pwd)
+else
+    BIN_DIR=$(dirname $(readlink $0))
+fi
+export VEIL_FRAMEWORK_HOME=$(dirname $BIN_DIR)
 
 source $VEIL_HOME/env/bin/activate
 
