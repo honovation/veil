@@ -5,6 +5,8 @@ else
 fi
 VEIL_HOME=$(pwd)
 VEIL_FRAMEWORK_HOME=$(dirname $BIN_DIR)
+
+sudo apt-get install python-dev python-virtualenv
 if [ ! -f /usr/bin/veil ]; then
     sudo ln -s $VEIL_FRAMEWORK_HOME/bin/veil /usr/bin/veil
 fi
