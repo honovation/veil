@@ -33,11 +33,18 @@ def reset_widgets():
         widgets.update(original_widgets)
 
 # === handle widget ===
-def widget(func):
-    return WidgetDecorator()(func)
+def widget(func=None, is_abstract=False, implements=None):
+    if func:
+        return WidgetDecorator()(func)
+    else:
+        return WidgetDecorator(is_abstract=is_abstract, implements=implements)
 
 
 class WidgetDecorator(object):
+    def __init__(self, is_abstract=False, implements=None):
+        self.is_abstract = is_abstract
+        self.implements = implements
+
     def __call__(self, func):
         widget_name = func.__name__.replace('_widget', '')
         widget = Widget(name=widget_name, func=func)
@@ -54,8 +61,18 @@ class WidgetDecorator(object):
             namespace = loading_component.__name__
         else:
             namespace = None
-        widgets.setdefault(namespace, {})[widget_name] = wrapper
-        return wrapper
+        if self.is_abstract:
+            def report_abstract_error(*args, **kwargs):
+                raise Exception('widget {}.{} is not implemented yet'.format(namespace, widget_name))
+            widgets.setdefault(namespace, {})[widget_name] = report_abstract_error
+            return func
+        else:
+            if self.implements:
+                target_widget_namespace = veil.component.get_component_of_module(self.implements.__module__)
+                target_widget_name = self.implements.__name__.replace('_widget', '')
+                widgets.setdefault(target_widget_namespace, {})[target_widget_name] = wrapper
+            widgets.setdefault(namespace, {})[widget_name] = wrapper
+            return wrapper
 
 
 class Widget(object):
