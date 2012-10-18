@@ -7,6 +7,7 @@ import uuid
 from veil.backend.redis.client import *
 from veil.frontend.web.tornado import *
 from veil.frontend.web.launcher import *
+from veil.development.test import *
 
 SESSION_TIMEOUT_IN_SECOND = 60 * 30
 
@@ -67,6 +68,15 @@ class Session:
         clear_cookie(self.get_session_id_cookie_name())
 
     def try_get_session_id(self, create_if_not_exists=False):
+        executing_test = get_executing_test(optional=True)
+        if executing_test:
+            if getattr(executing_test, 'web_session_id', None):
+                return executing_test.web_session_id
+            def reset():
+                executing_test.web_session_id = None
+            executing_test.addCleanup(reset)
+            executing_test.web_session_id = self.create_session_id()
+            return executing_test.web_session_id
         session_id_cookie_name = self.get_session_id_cookie_name()
         session_id = get_cookie(session_id_cookie_name)
         if not session_id and create_if_not_exists:
