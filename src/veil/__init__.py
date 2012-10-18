@@ -15,6 +15,7 @@ init_components = lambda : veil.component.init_components([
     'veil.development.browser',
     'veil.development.pycharm',
     'veil.development.test',
+    'veil.development.git',
     'veil.supervisor'
 ])
 try:
