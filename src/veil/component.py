@@ -201,14 +201,15 @@ class ComponentLoader(object):
         self.packages.setdefault(package, []).extend(sub_module_names)
         for sub_module_name in sub_module_names:
             try:
-                sub_module = load_module(package.__name__, sub_module_name)
-                self.modules.append(sub_module)
+                if not self.is_public_module(sub_module_name):
+                    sub_module = load_module(package.__name__, sub_module_name)
+                    self.modules.append(sub_module)
             except ImportError, e:
                 record_error()
 
     def encapsulate_loaded_packages_and_modules(self):
         for module in self.modules:
-            if not(self.is_public_module(module)):
+            if not(self.is_public_module(module.__name__.split('.')[-1])):
                 encapsulated_modules[module.__name__] = module
                 sys.modules[module.__name__] = None
         for package in self.packages.keys():
@@ -220,8 +221,7 @@ class ComponentLoader(object):
                 if hasattr(package, module_name):
                     delattr(package, module_name)
 
-    def is_public_module(self, module):
-        module_name = module.__name__.split('.')[-1]
+    def is_public_module(self, module_name):
         return module_name.startswith('__') and module_name.endswith('__')
 
 
