@@ -33,7 +33,7 @@ case "$1" in
         exec veil supervisor up
         ;;
     install)
-        exec veil supervisor install
+        exec veil supervisor install-programs
         ;;
     pull)
         exec veil development git pull

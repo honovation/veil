@@ -10,8 +10,8 @@ from .supervisor_setting import supervisor_settings
 
 LOGGER = logging.getLogger(__name__)
 
-@script('install')
-def install_veil():
+@script('install-programs')
+def install_programs():
     settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
     config = settings.supervisor
     with require_component_only_install_once():
@@ -20,18 +20,21 @@ def install_veil():
         if VEIL_SERVER in ['development', 'test']:
             for program in config.programs.values():
                 install_program(program)
-            install_supervisor(*config.programs.keys())
+            shell_execute('veil supervisor install {}'.format(' '.join(config.programs.keys())))
         else:
             active_program_names = getattr(__veil__, 'ENVIRONMENTS', {})[VEIL_ENV][VEIL_ENV_SERVER]
             for program_name in active_program_names:
                 install_program(config.programs[program_name])
-            install_supervisor(*active_program_names)
+            shell_execute('veil supervisor install {}'.format(' '.join(active_program_names.keys())))
+
 
 def install_program(program):
     install_command = getattr(program, 'install_command', None)
     if install_command:
         shell_execute(install_command)
 
+
+@installation_script()
 def install_supervisor(*active_program_names):
     settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
     config = settings.supervisor
