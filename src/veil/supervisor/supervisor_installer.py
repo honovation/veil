@@ -25,7 +25,7 @@ def install_programs():
             active_program_names = getattr(__veil__, 'ENVIRONMENTS', {})[VEIL_ENV][VEIL_ENV_SERVER]
             for program_name in active_program_names:
                 install_program(config.programs[program_name])
-            shell_execute('veil supervisor install {}'.format(' '.join(active_program_names.keys())))
+            shell_execute('veil supervisor install {}'.format(' '.join(active_program_names)))
 
 
 def install_program(program):
