@@ -251,7 +251,7 @@ veil.widget.clearErrorMessages = function (widget) {
 
 veil.widget.refresh = function (widget, options) {
     options = options || {};
-    var refreshUrl = widget.data('refreshUrl') || options.refreshUrl;
+    var refreshUrl = options.refreshUrl || widget.data('refreshUrl');
     var onSuccess = options.onSuccess;
     if (refreshUrl) {
         veil.resource.get({
