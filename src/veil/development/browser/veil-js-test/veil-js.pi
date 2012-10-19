@@ -1,0 +1,5 @@
+<script type="text/javascript">
+    veil.waitUntil(function(){
+        return 'abc' == $('#widget-itself').html() && 'loaded' == $('#referenced-js').html();
+    }, veil.stopTest);
+</script>

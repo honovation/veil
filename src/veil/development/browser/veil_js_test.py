@@ -2,45 +2,21 @@ from __future__ import unicode_literals, print_function, division
 from veil.development.test import *
 from veil.profile.web import *
 from .browser import start_website_and_browser
+from .browser import load_page_interactions
 
 class VeilJsTest(TestCase):
     def test_script_element(self):
         @route('GET', '/', website='test')
         def home():
-            return """
-            <html>
-            <head>
-            <script src="/-test/jquery.js"></script>
-            <script src="/-test/jquery-cookie.js"></script>
-            <script src="/-test/veil.js"></script>
-            <script>
-                $(document).ready(function() {
-                    veil.widget.get('/widget1', function(html) {
-                        veil.assertEqual('abc', html.trim());
-                        $('#widget-itself').html(html.trim());
-                    });
-                });
-            </script>
-            </head>
-            <body>
-            <div id="widget-itself"></div>
-            <div id="referenced-js"></div>
-            </body>
-            </html>
-            """
+            return get_template('veil-js-test/home.html').render()
 
         @route('GET', '/widget1', website='test')
         def widget1():
-            return 'abc<script src="/widget1.js"></script>'
+            return get_template('veil-js-test/widget1.html').render()
 
         @route('GET', '/widget1.js', website='test')
         def widget1_js():
-            return "$('#referenced-js').html('loaded')"
+            return get_template('veil-js-test/widget1.js').render()
 
         start_website_and_browser(
-            'test', '/',
-            ["""
-            veil.waitUntil(function(){
-                return 'abc' == $('#widget-itself').html() && 'loaded' == $('#referenced-js').html();
-            }, veil.stopTest);
-            """])
+            'test', '/', load_page_interactions('veil-js-test/veil-js.pi'))

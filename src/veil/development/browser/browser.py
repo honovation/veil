@@ -8,9 +8,11 @@ import os.path
 import spynner
 import selenium.webdriver
 import os
+import veil.component
 from veil.utility.path import *
 from veil.development.test import *
 from veil.profile.web import *
+from veil.frontend.web.static_file import *
 
 LOGGER = logging.getLogger(__name__)
 
@@ -182,3 +184,9 @@ def inject_page_interaction(html, page_interactions):
         </script>
         """ % page_interactions.pop()
     ))
+
+def load_page_interactions(relative_path):
+    module = veil.component.force_import_module(get_executing_test().__module__)
+    page_interactions_script = (as_path(os.path.dirname(module.__file__)) / relative_path).text()
+    _, _, page_interactions = process_script_elements(page_interactions_script)
+    return page_interactions
