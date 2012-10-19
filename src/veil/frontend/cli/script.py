@@ -1,13 +1,14 @@
 from __future__ import unicode_literals, print_function, division
 import functools
-from logging import getLogger
+import logging
 import sys
-from inspect import isfunction
+import inspect
+import traceback
 from veil.component import get_loading_component, assert_component_loaded
 from veil.environment.setting import *
 
 script_handlers = {}
-LOGGER = getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 executing_script_handlers = []
 
 def is_script_defined(*argv):
@@ -27,7 +28,7 @@ def execute_script(*argv, **kwargs):
         sys.exit(1)
     try:
         next_level = level[arg]
-        if isfunction(next_level):
+        if inspect.isfunction(next_level):
             script_handler = next_level
             bootstrap_runtime()
             try:
@@ -38,12 +39,19 @@ def execute_script(*argv, **kwargs):
         else:
             return execute_script(level=next_level, *argv[1:])
     except:
-        exception = sys.exc_info()[1]
-        if not isinstance(exception, SystemExit) and not hasattr(exception, 'EXECUTABLE_BEFORE_COMPONENT_LOADED'):
-            import __veil__
-            for component in getattr(__veil__, 'COMPONENTS', []):
-                assert_component_loaded(component.__name__)
-        raise
+        formatted_exception = traceback.format_exc()
+        try:
+            if not 'install' in argv:
+                exception = sys.exc_info()[1]
+                if not isinstance(exception, SystemExit) and not hasattr(exception, 'EXECUTABLE_BEFORE_COMPONENT_LOADED'):
+                    import __veil__
+                    for component in getattr(__veil__, 'COMPONENTS', []):
+                        assert_component_loaded(component.__name__)
+        except:
+            pass
+        finally:
+            print(formatted_exception)
+        sys.exit(1)
 
 def get_executing_script_handler():
     if executing_script_handlers:
