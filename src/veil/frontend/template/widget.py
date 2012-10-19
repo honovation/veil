@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 import functools
 import sys
-from logging import getLogger
-from inspect import getargspec
+import inspect
 import traceback
+import logging
 from markupsafe import Markup
 import contextlib
 import veil.component
@@ -17,7 +17,7 @@ original_widgets = None
 widgets = {}
 current_widget_template_namespaces = []
 
-LOGGER = getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 @test_hook
 def remember_original_widgets():
@@ -44,6 +44,8 @@ class WidgetDecorator(object):
     def __init__(self, is_abstract=False, implements=None):
         self.is_abstract = is_abstract
         self.implements = implements
+        if implements:
+            assert is_abstract_widget(implements), '{} is not abstract widget'.format(implements)
 
     def __call__(self, func):
         widget_name = func.__name__.replace('_widget', '')
@@ -64,15 +66,26 @@ class WidgetDecorator(object):
         if self.is_abstract:
             def report_abstract_error(*args, **kwargs):
                 raise Exception('widget {}.{} is not implemented yet'.format(namespace, widget_name))
+
             widgets.setdefault(namespace, {})[widget_name] = report_abstract_error
+            func.IS_ABSTRACT_WIDGET = 'true'
+            func.namespace = namespace
             return func
         else:
             if self.implements:
-                target_widget_namespace = veil.component.get_component_of_module(self.implements.__module__)
+                expected_args = inspect.getargspec(self.implements).args
+                actual_args = inspect.getargspec(func).args
+                assert expected_args == actual_args, '{} does not implement {}, expected args: {}, actual args: {}'.format(
+                    func, self.implements, expected_args, actual_args)
+                target_widget_namespace = self.implements.namespace
                 target_widget_name = self.implements.__name__.replace('_widget', '')
                 widgets.setdefault(target_widget_namespace, {})[target_widget_name] = wrapper
             widgets.setdefault(namespace, {})[widget_name] = wrapper
             return wrapper
+
+
+def is_abstract_widget(widget_handler):
+    return getattr(widget_handler, 'IS_ABSTRACT_WIDGET', None)
 
 
 class Widget(object):
@@ -88,10 +101,6 @@ class Widget(object):
 
     def render(self, *args, **kwargs):
         try:
-            if 'from_template' in getargspec(self.func).args:
-                kwargs['from_template'] = kwargs['from_template'] if 'from_template' in kwargs else False
-            else:
-                kwargs.pop('from_template', None)
             with require_current_template_directory_relative_to(self.func):
                 with require_current_widget_namespace_being(self.namespace):
                     content = self.func(*args, **kwargs)
@@ -109,6 +118,8 @@ class Widget(object):
 
 
 def import_widget(widget_handler):
+    if is_abstract_widget(widget_handler):
+        raise Exception('can not import abstract widget: {}'.format(widget_handler))
     loading_component = veil.component.get_loading_component()
     if loading_component:
         namespace = loading_component.__name__
@@ -118,7 +129,6 @@ def import_widget(widget_handler):
     widgets.setdefault(namespace, {})[widget_name] = widget_handler
 
 
-# === export widgets as template utility ===
 @contextlib.contextmanager
 def require_current_widget_namespace_being(namespace):
     current_widget_template_namespaces.append(namespace)
@@ -139,16 +149,8 @@ class WidgetLookup(object):
                 return lambda *args, **kwargs: ''
             else:
                 raise Exception('widget {} not found'.format(name))
-        return append_from_template_flag(widget_handler)
+        return widget_handler
 
-
-def append_from_template_flag(widget):
-    @functools.wraps(widget)
-    def wrapper(*args, **kwargs):
-        kwargs['from_template'] = True
-        return widget(*args, **kwargs)
-
-    return wrapper
 
 register_template_utility('widgets', WidgetLookup())
 register_template_utility('optional_widgets', WidgetLookup(optional=True))
