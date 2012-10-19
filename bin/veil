@@ -29,7 +29,8 @@ case "$1" in
         exec $@
         ;;
     up)
-        find . -type f -name "*.pyc" -delete
+        find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
+        find $VEIL_HOME -type f -name "*.pyc" -delete
         exec veil supervisor up
         ;;
     install)

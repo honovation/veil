@@ -6,9 +6,9 @@ from logging import getLogger
 from datetime import timedelta, datetime
 from redis.client import Redis
 from pyres import ResQ
-from veil.backend.queue import server
 from veil.utility.clock import get_current_time
 from veil.environment.setting import register_option
+from . import job
 
 LOGGER = getLogger(__name__)
 
@@ -51,7 +51,7 @@ class RedisQueue(object):
         self.resq = resq
 
     def enqueue(self, job_handler, **payload):
-        server.enqueue(self.resq, job_handler, **payload)
+        job.enqueue(self.resq, job_handler, **payload)
 
     def enqueue_at(self, job_handler, scheduled_at, **payload):
         """
@@ -60,7 +60,7 @@ class RedisQueue(object):
         ideally it is to change pyres to stick with UTC and convert aware datetime to UTC in pyres interfaces such as enqueu_at
         """
         assert scheduled_at.tzinfo == pytz.utc, 'must provide datetime in pytz.utc timezone'
-        server.enqueue_at(self.resq, job_handler, convert_datetime_to_naive_local(scheduled_at), **payload)
+        job.enqueue_at(self.resq, job_handler, convert_datetime_to_naive_local(scheduled_at), **payload)
 
     def enqueue_then(self, job_handler, action, **payload):
         """

@@ -3,14 +3,14 @@ from veil.environment import *
 from veil.environment.setting import *
 from veil.backend.redis import *
 
-def queue_settings(config_file=None, server_host=None, server_port=None, workers=None, **updates):
+def queue_settings(resweb_host=None, resweb_port=None, workers=None, **updates):
     updates['port'] = updates.get('port', 6389)
     settings = redis_settings('queue', **updates)
     settings = merge_settings(settings, {
         'resweb': {
-            'config_file': config_file or VEIL_ETC_DIR / 'resweb.cfg',
-            'server_host': server_host or 'localhost',
-            'server_port': server_port or 7070
+            'config_file': VEIL_ETC_DIR / 'resweb.cfg',
+            'server_host': resweb_host or 'localhost',
+            'server_port': resweb_port or 7070
         }
     })
     settings = merge_settings(settings, {
@@ -51,7 +51,7 @@ def copy_queue_settings_to_veil(settings):
 def resweb_program():
     return {
         'execute_command': 'resweb',
-        'install_command': 'veil backend queue server install',
+        'install_command': 'veil backend queue install-resweb',
         'environment_variables': {
             'RESWEB_SETTINGS': VEIL_ETC_DIR / 'resweb.cfg'
         }
@@ -60,17 +60,20 @@ def resweb_program():
 
 def delayed_job_scheduler_program():
     return  {
-        'execute_command': 'veil backend queue server delayed-job-scheduler-up'
+        'execute_command': 'veil backend queue delayed-job-scheduler-up',
+        'install_command': 'veil backend queue install-delayed-job-scheduler'
     }
 
 
 def periodic_job_scheduler_program():
     return {
-        'execute_command': 'veil backend queue server periodic-job-scheduler-up'
+        'execute_command': 'veil backend queue periodic-job-scheduler-up',
+        'install_command': 'veil backend queue install-periodic-job-scheduler'
     }
 
 
-def job_worker_program(*queues):
+def job_worker_program(queue_name):
     return {
-        'execute_command': 'veil backend queue server worker-up {}'.format(' '.join(queues))
+        'execute_command': 'veil backend queue worker-up {}'.format(queue_name),
+        'install_command': 'veil backend queue install-worker {}'.format(queue_name)
     }
