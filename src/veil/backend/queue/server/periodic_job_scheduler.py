@@ -7,6 +7,7 @@ import pyres
 from veil.frontend.cli import *
 from veil.utility.clock import get_current_timestamp
 from veil.environment.setting import *
+from veil.environment.installation import *
 from ..periodic_job import schedules
 from ..job import enqueue
 from ..queue_installer import install_queue_api
@@ -24,7 +25,7 @@ def periodic_job_scheduler_program():
     }
 
 
-@script('install-periodic-job-scheduler')
+@installation_script('install-periodic-job-scheduler')
 def install_periodic_job_scheduler():
     install_queue_api()
 

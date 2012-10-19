@@ -16,8 +16,8 @@ def resweb_program():
     }
 
 
-@script('install-resweb')
-def install_queue_server():
+@installation_script('install-resweb')
+def install_resweb():
     settings = get_settings()
     install_queue_api()
     install_python_package('resweb')

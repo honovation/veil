@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 import pyres
 import pyres.worker
 from veil.environment.setting import *
+from veil.environment.installation import *
 from veil.frontend.cli import *
 from veil.frontend.locale import *
 from ..job import register_job_context_manager
@@ -31,7 +32,7 @@ def bring_up_worker(*argv):
         server=pyres.ResQ('{}:{}'.format(get_queue_host(), get_queue_port()), get_queue_password()))
 
 
-@script('install-worker')
+@installation_script('install-worker')
 def install_worker(queue_name):
     install_queue_api()
     # TODO: install the components where job handlers resides in

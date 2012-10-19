@@ -32,8 +32,8 @@ def require_component_only_install_once():
         VEIL_INSTALLED_TAG_DIR.rmtree()
 
 # create basic layout before deployment
-def installation_script():
-    decorator = script('install')
+def installation_script(command='install'):
+    decorator = script(command)
 
     def decorate(func):
         component_name = get_loading_component().__name__
@@ -57,7 +57,9 @@ def installation_script():
                     install_dependency(dependency)
                 env = os.environ.copy()
                 env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'] = 'TRUE'
-                shell_execute('veil {} install {}'.format(' '.join(to_cli_handler_levels(component_name)), ' '.join(argv)), env=env)
+                shell_execute('veil {} {} {}'.format(
+                    ' '.join(to_cli_handler_levels(component_name)), command, ' '.join(argv)),
+                    env=env)
                 return None
             except:
                 print('Failed to install {}'.format(component_name))

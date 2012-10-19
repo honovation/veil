@@ -14,7 +14,7 @@ def redis_program(purpose):
     }
 
 
-@script('install-server')
+@installation_script('install-server')
 def install_redis_server(purpose=None):
     if not purpose:
         return
