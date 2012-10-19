@@ -201,9 +201,8 @@ class ComponentLoader(object):
         self.packages.setdefault(package, []).extend(sub_module_names)
         for sub_module_name in sub_module_names:
             try:
-                if not self.is_public_module(sub_module_name):
-                    sub_module = load_module(package.__name__, sub_module_name)
-                    self.modules.append(sub_module)
+                sub_module = load_module(package.__name__, sub_module_name)
+                self.modules.append(sub_module)
             except ImportError, e:
                 record_error()
 
