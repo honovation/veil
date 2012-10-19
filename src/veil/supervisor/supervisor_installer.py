@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import logging
 from veil.frontend.template import *
 from veil.frontend.cli import *
 from veil.backend.shell import *
@@ -6,6 +7,8 @@ from veil.environment import *
 from veil.environment.setting import *
 from veil.environment.installation import *
 from .supervisor_setting import supervisor_settings
+
+LOGGER = logging.getLogger(__name__)
 
 @script('install')
 def install_veil():
@@ -45,8 +48,12 @@ def install_supervisor(*active_program_names):
     create_directory(config.logging.directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
 
 
-def format_command(command, args):
-    return get_template(template_source=command).render(**args or {})
+def format_command(program, args):
+    try:
+        return get_template(template_source=program.execute_command).render(**args or {})
+    except:
+        LOGGER.error('Failed to format command for: {}'.format(program))
+        raise
 
 
 def format_environment_variables(environment_variables):

@@ -52,7 +52,7 @@ user={{ CURRENT_USER }}
 {% if program.environment_variables %}
 environment={{ format_environment_variables(program.environment_variables) }}
 {% endif %}
-command={{ format_command(program.execute_command, program.args) }}
+command={{ format_command(program, program.args) }}
 {% if program.process_name %}
 process_name={{ program.process_name }}
 {% else %}
