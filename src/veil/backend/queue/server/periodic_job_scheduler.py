@@ -3,11 +3,37 @@ from logging import getLogger
 from math import ceil
 import time
 import signal
+import pyres
+from veil.frontend.cli import *
 from veil.utility.clock import get_current_timestamp
-from .periodic_job import schedules
-from .job import enqueue
+from veil.environment.setting import *
+from ..periodic_job import schedules
+from ..job import enqueue
+from ..queue_installer import install_queue_api
 
 LOGGER = getLogger(__name__)
+
+get_queue_host = register_option('queue', 'host')
+get_queue_port = register_option('queue', 'port', int)
+get_queue_password = register_option('queue', 'password')
+
+def periodic_job_scheduler_program():
+    return {
+        'execute_command': 'veil backend queue periodic-job-scheduler-up',
+        'install_command': 'veil backend queue install-periodic-job-scheduler'
+    }
+
+
+@script('install-periodic-job-scheduler')
+def install_periodic_job_scheduler():
+    install_queue_api()
+
+
+@script('periodic-job-scheduler-up')
+def bring_up_periodic_job_scheduler(*argv):
+    PeriodicJobScheduler(
+        pyres.ResQ('{}:{}'.format(get_queue_host(), get_queue_port()), get_queue_password())).run()
+
 
 class PeriodicJobScheduler(object):
     def __init__(self, resq):

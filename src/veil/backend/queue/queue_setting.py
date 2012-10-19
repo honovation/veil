@@ -2,6 +2,10 @@ from __future__ import unicode_literals, print_function, division
 from veil.environment import *
 from veil.environment.setting import *
 from veil.backend.redis import *
+from .server.delayed_job_scheduler import delayed_job_scheduler_program
+from .server.periodic_job_scheduler import periodic_job_scheduler_program
+from .server.worker import worker_program
+from .server.resweb import resweb_program
 
 def queue_settings(resweb_host=None, resweb_port=None, workers=None, **updates):
     updates['port'] = updates.get('port', 6389)
@@ -25,7 +29,7 @@ def queue_settings(resweb_host=None, resweb_port=None, workers=None, **updates):
     workers = workers or None
     for queue_name, workers_count in workers.items():
         for i in range(1, workers_count + 1):
-            settings.supervisor.programs['{}_worker{}'.format(queue_name, i)] = job_worker_program(queue_name)
+            settings.supervisor.programs['{}_worker{}'.format(queue_name, i)] = worker_program(queue_name)
     if 'test' == VEIL_ENV:
         settings.supervisor.programs.clear()
     return settings
@@ -48,32 +52,6 @@ def copy_queue_settings_to_veil(settings):
     }, overrides=True)
 
 
-def resweb_program():
-    return {
-        'execute_command': 'resweb',
-        'install_command': 'veil backend queue install-resweb',
-        'environment_variables': {
-            'RESWEB_SETTINGS': VEIL_ETC_DIR / 'resweb.cfg'
-        }
-    }
 
 
-def delayed_job_scheduler_program():
-    return  {
-        'execute_command': 'veil backend queue delayed-job-scheduler-up',
-        'install_command': 'veil backend queue install-delayed-job-scheduler'
-    }
 
-
-def periodic_job_scheduler_program():
-    return {
-        'execute_command': 'veil backend queue periodic-job-scheduler-up',
-        'install_command': 'veil backend queue install-periodic-job-scheduler'
-    }
-
-
-def job_worker_program(queue_name):
-    return {
-        'execute_command': 'veil backend queue worker-up {}'.format(queue_name),
-        'install_command': 'veil backend queue install-worker {}'.format(queue_name)
-    }
