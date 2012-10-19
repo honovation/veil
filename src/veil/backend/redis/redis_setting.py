@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.environment import *
 from veil.environment.setting import *
 from veil.model.collection import *
+from .redis_server import redis_program
 
 REDIS_BASE_SETTINGS = {
     'redis': {
@@ -13,12 +14,6 @@ REDIS_BASE_SETTINGS = {
         'configfile': VEIL_ETC_DIR / 'redis.conf'
     }
 }
-
-def redis_program(purpose):
-    return {
-        'execute_command': 'veil backend redis server up {}'.format(purpose),
-        'install_command': 'veil backend redis server install {}'.format(purpose)
-    }
 
 
 def redis_settings(purpose, **updates):

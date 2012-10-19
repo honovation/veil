@@ -4,7 +4,7 @@ import contextlib
 import datetime
 import logging
 import uuid
-from veil.backend.redis.client import *
+from veil.backend.redis import *
 from veil.frontend.web.tornado import *
 from veil.frontend.web.launcher import *
 from veil.development.test import *
