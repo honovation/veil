@@ -38,12 +38,14 @@ def execute_script(*argv, **kwargs):
                 executing_script_handlers.pop()
         else:
             return execute_script(level=next_level, *argv[1:])
+    except SystemExit:
+        raise
     except:
         formatted_exception = traceback.format_exc()
         try:
             if not 'install' in argv:
                 exception = sys.exc_info()[1]
-                if not isinstance(exception, SystemExit) and not hasattr(exception, 'EXECUTABLE_BEFORE_COMPONENT_LOADED'):
+                if not hasattr(exception, 'EXECUTABLE_BEFORE_COMPONENT_LOADED'):
                     import __veil__
                     for component in getattr(__veil__, 'COMPONENTS', []):
                         assert_component_loaded(component.__name__)
