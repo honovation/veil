@@ -11,7 +11,6 @@ from pytz import timezone, UnknownTimeZoneError
 from dateutil.parser import parse
 from veil.model.binding.invalid import Invalid
 
-
 _EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9_=%.+-]+@([a-zA-Z0-9_=%+-]+\.)+[a-zA-Z]{2,6}$')
 
 # reference to http://www.cnfgg.com/article/Asp/Asp_phoneCheck.htm
@@ -128,9 +127,10 @@ def to_datetime(format='%Y-%m-%d %H:%M:%S'):
             return value
         else:
             try:
+                tz = pytz.timezone('Asia/Shanghai')
                 dt = datetime.strptime(value, bind.format)
-                dt = dt.replace(tzinfo=pytz.timezone('Asia/Shanghai'))
-                return dt.astimezone(pytz.utc)
+                dt_localized = tz.localize(dt)
+                return dt_localized.astimezone(pytz.utc)
             except ValueError:
                 raise Invalid(_('不是有效的日期时间'))
     bind.format = format

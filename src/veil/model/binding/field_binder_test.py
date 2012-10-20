@@ -108,9 +108,10 @@ class FieldBinderTest(TestCase):
             to_time('07.30')
 
     def test_validate_datetime(self):
+        #Creating localtimes is also tricky, and the reason why working with local times is not recommended. Unfortunately, you cannot just pass a ‘tzinfo’ argument when constructing a datetime.
+        tz = pytz.timezone('Asia/Shanghai')
         self.assertEquals(
-            datetime.datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.timezone('Asia/Shanghai')).astimezone(pytz.utc),
-            to_datetime()('2011-07-01 00:10:00'))
+            tz.localize(datetime.datetime(2011, 07, 01, 0, 10, 0,)).astimezone(pytz.utc), to_datetime()('2011-07-01 00:10:00'))
         with self.assertRaises(Invalid):
             to_datetime()('2011-07-01 00:10')
         with self.assertRaises(Invalid):
