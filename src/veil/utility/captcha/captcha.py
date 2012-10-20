@@ -4,8 +4,6 @@ import random
 import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-dir = os.path.dirname(__file__)
-
 _letter_cases = "abcdefghjkmnpqrstuvwxy" # 小写字母，去除可能干扰的i，l，o，z
 _upper_cases = _letter_cases.upper() # 大写字母
 _numbers = ''.join(map(str, range(3, 10))) # 数字
@@ -18,8 +16,8 @@ def generate(size=(120, 30),
                          mode="RGB",
                          bg_color=(255, 255, 255),
                          fg_color=(0, 0, 255),
-                         font_size=20,
-                         font_type="{}/Phetsarath_OT.ttf".format(dir),
+                         font_size=100,
+                         font_type="/usr/share/fonts/truetype/freefont/FreeSerif.ttf",
                          length=4,
                          draw_lines=True,
                          n_line=(1, 2),
@@ -80,8 +78,7 @@ def generate(size=(120, 30),
        
         font = ImageFont.truetype(font_type, font_size)
         font_width, font_height = font.getsize(strs)
-
-        draw.text(((width - font_width) / 3, (height - font_height) / 3),
+        draw.text(((width - font_width) / 4, (height - font_height) / 4),
                     strs, font=font, fill=fg_color)
        
         return ''.join(c_chars)
