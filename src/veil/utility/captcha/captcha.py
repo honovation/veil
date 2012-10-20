@@ -17,7 +17,7 @@ def generate(size=(120, 30),
                          bg_color=(255, 255, 255),
                          fg_color=(0, 0, 255),
                          font_size=100,
-                         font_type="/usr/share/fonts/truetype/freefont/FreeSerif.ttf",
+                         font_type="{}/FreeSerifBold.ttf".format(os.path.dirname(__file__)),
                          length=4,
                          draw_lines=True,
                          n_line=(1, 2),
@@ -78,7 +78,7 @@ def generate(size=(120, 30),
        
         font = ImageFont.truetype(font_type, font_size)
         font_width, font_height = font.getsize(strs)
-        draw.text(((width - font_width) / 4, (height - font_height) / 4),
+        draw.text(((width - font_width) / 4, height / 4),
                     strs, font=font, fill=fg_color)
        
         return ''.join(c_chars)
