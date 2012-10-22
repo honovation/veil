@@ -1,11 +1,17 @@
 import veil.component
 
 with veil.component.init_component(__name__):
-    from .server import postgresql_program
-    from .server import postgresql_settings
+    from .pg_setting import postgresql_settings
 
     __all__ = [
-        # from server
-        postgresql_program.__name__,
         postgresql_settings.__name__
     ]
+
+    def init():
+        from veil.backend.database.client import register_adapter_class
+        from veil.environment.setting import register_settings_coordinator
+        from .pg_setting import copy_postgresql_settings_into_veil
+        from .adapter import PostgresqlAdapter
+
+        register_adapter_class('postgresql', PostgresqlAdapter)
+        register_settings_coordinator(copy_postgresql_settings_into_veil)

@@ -10,7 +10,7 @@ from veil.environment.setting import *
 from veil.environment.installation import *
 from ..periodic_job import schedules
 from ..job import enqueue
-from ..queue_installer import install_queue_api
+from ..queue_api_installer import install_queue_api
 
 LOGGER = getLogger(__name__)
 

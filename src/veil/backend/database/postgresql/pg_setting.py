@@ -2,17 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.environment import *
 from veil.environment.setting import *
 from veil.model.collection import *
-
-
-def postgresql_program(purpose, updates=None):
-    program = {
-        'execute_command': 'veil backend database postgresql server up {}'.format(purpose),
-        'install_command': 'veil backend database postgresql server install {}'.format(purpose)
-    }
-    if updates:
-        program.update(updates)
-    return program
-
+from .server.pg_server import postgresql_server_program
 
 def postgresql_settings(purpose, **updates):
     settings = objectify({
@@ -31,7 +21,7 @@ def postgresql_settings(purpose, **updates):
         '{}_postgresql'.format(purpose): settings,
         'supervisor': {
             'programs': {
-                '{}_postgresql'.format(purpose): postgresql_program(purpose)
+                '{}_postgresql'.format(purpose): postgresql_server_program(purpose)
             }
         }
     })

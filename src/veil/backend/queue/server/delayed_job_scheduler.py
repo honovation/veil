@@ -4,7 +4,7 @@ import pyres.scheduler
 from veil.frontend.cli import *
 from veil.environment.setting import *
 from veil.environment.installation import *
-from ..queue_installer import install_queue_api
+from ..queue_api_installer import install_queue_api
 
 get_queue_host = register_option('queue', 'host')
 get_queue_port = register_option('queue', 'port', int)

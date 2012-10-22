@@ -1,13 +1,32 @@
 from __future__ import unicode_literals, print_function, division
 import os
+import contextlib
+import time
+from veil.frontend.cli import *
+from veil.backend.shell import *
+from veil.environment.setting import *
 from veil.utility.path import *
 from veil.environment.installation import *
-from veil.backend.shell import *
 from veil.frontend.template import *
-from veil.environment.setting import *
-from .pg_server_launcher import postgresql_server_running
 
-@installation_script()
+def postgresql_server_program(purpose, updates=None):
+    program = {
+        'execute_command': 'veil backend database postgresql server-up {}'.format(purpose),
+        'install_command': 'veil backend database postgresql install-server {}'.format(purpose)
+    }
+    if updates:
+        program.update(updates)
+    return program
+
+
+@script('server-up')
+def bring_up_postgresql_server(purpose):
+    settings = get_settings()
+    config = getattr(settings, '{}_postgresql'.format(purpose))
+    pass_control_to('postgres -D {}'.format(config.data_directory))
+
+
+@installation_script('install-server')
 def install_postgresql_server(purpose=None):
     if not purpose:
         return
@@ -30,9 +49,10 @@ def install_postgresql_server(purpose=None):
         shell_execute('chmod 777 {}'.format(pg_data_dir.dirname()))
         create_file('/tmp/pg-owner-password', config.owner_password)
         try:
-            shell_execute('su {pg_data_owner} -c "initdb -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-owner-password {pg_data_dir}"'.format(
-                pg_data_owner=config.owner, pg_data_dir=pg_data_dir
-            ))
+            shell_execute(
+                'su {pg_data_owner} -c "initdb -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-owner-password {pg_data_dir}"'.format(
+                    pg_data_owner=config.owner, pg_data_dir=pg_data_dir
+                ))
         finally:
             delete_file('/tmp/pg-owner-password')
         shell_execute('chmod {} {}'.format(old_permission, pg_data_dir.dirname()))
@@ -62,3 +82,15 @@ def install_postgresql_server(purpose=None):
                 config.host, config.port, config.owner,
                 "CREATE USER {} WITH PASSWORD '{}'".format(pg_user, pg_password)
             ), env=env)
+
+
+@contextlib.contextmanager
+def postgresql_server_running(config):
+    shell_execute('su {} -c "pg_ctl -D {} start"'.format(
+        config.owner, config.data_directory))
+    time.sleep(5)
+    try:
+        yield
+    finally:
+        shell_execute('su {} -c "pg_ctl -D {} stop"'.format(
+            config.owner, config.data_directory))

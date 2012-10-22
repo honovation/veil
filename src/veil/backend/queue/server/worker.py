@@ -7,7 +7,7 @@ from veil.environment.installation import *
 from veil.frontend.cli import *
 from veil.frontend.locale import *
 from ..job import register_job_context_manager
-from ..queue_installer import install_queue_api
+from ..queue_api_installer import install_queue_api
 
 get_queue_host = register_option('queue', 'host')
 get_queue_port = register_option('queue', 'port', int)

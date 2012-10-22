@@ -274,6 +274,10 @@ class DummyModule(object):
         self.__name__ = qualified_module_name
         self.error = error
 
+    @property
+    def __file__(self):
+        raise Exception('can not get __file__ from DummyModule {}'.format(self.__name__))
+
     def __getattr__(self, item):
         return DummyModuleMember(self, item)
 
