@@ -2,6 +2,7 @@ import veil.component
 
 with veil.component.init_component(__name__):
     from .installation import installation_script
+    from .installation import install_dependency
     from .installation import require_component_only_install_once
     from .ubuntu_package import install_ubuntu_package
     from .ubuntu_package import remove_service_auto_start
@@ -14,6 +15,7 @@ with veil.component.init_component(__name__):
     __all__ = [
         # from installation
         installation_script.__name__,
+        install_dependency.__name__,
         require_component_only_install_once.__name__,
         # from ubuntu_package
         install_ubuntu_package.__name__,
