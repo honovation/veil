@@ -42,7 +42,7 @@ class JobHandlerDecorator(object):
         self.queue = queue
 
     def __call__(self, job_handler):
-        job_handler.queue = self.queue or job_handler.__name__.replace('_job', '').replace('_', '-')
+        job_handler.queue = self.queue or job_handler.__name__.replace('_job', '')
         job_handler.perform = lambda payload: perform(job_handler, payload)
         return job_handler
 
