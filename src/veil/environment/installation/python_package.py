@@ -3,6 +3,7 @@ import os
 from veil.backend.shell import *
 
 def install_python_package(package_name, test_package=None, **kwargs):
+    kwargs['capture'] = True
     test_package = test_package or package_name
     try:
         __import__(test_package)

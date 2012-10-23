@@ -23,7 +23,7 @@ def install_website(website=None):
     if not website:
         return
     for component in website_components.get(website, []):
-        install_dependency(component.__name__)
+        install_dependency(component.__name__, install_dependencies_of_dependency=True)
 
 
 def assert_website_components_loaded(website):

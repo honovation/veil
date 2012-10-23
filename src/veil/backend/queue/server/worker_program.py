@@ -28,4 +28,4 @@ def install_worker(queue_name):
     install_queue_api()
     for job_handler in list_job_handlers(queue_name):
         component_name = veil.component.get_component_of_module(job_handler.__module__)
-        install_dependency(component_name)
+        install_dependency(component_name, install_dependencies_of_dependency=True)

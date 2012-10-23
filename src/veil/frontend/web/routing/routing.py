@@ -1,4 +1,8 @@
 from __future__ import unicode_literals, print_function, division
+import veil.component
+
+veil.component.add_must_load_module(__name__)
+
 import functools
 import re
 import contextlib
@@ -7,7 +11,6 @@ from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
 from veil.development.test import *
-from veil.component import *
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
 from veil.model.event import *
@@ -45,7 +48,7 @@ class RouteDecorator(object):
 
     def __call__(self, func):
         target = self.delegates_to or func
-        loading_component = get_loading_component()
+        loading_component = veil.component.get_loading_component()
         if loading_component:
             widget_namespace = loading_component.__name__
         else:
@@ -80,7 +83,7 @@ def route_for(website):
 
 
 def infer_website():
-    return get_loading_component().__name__.split('.')[-1].upper()
+    return veil.component.get_loading_component().__name__.split('.')[-1].upper()
 
 
 def async_route(*args, **kwargs):
