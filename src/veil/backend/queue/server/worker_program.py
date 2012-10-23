@@ -1,6 +1,4 @@
 from __future__ import unicode_literals, print_function, division
-import pyres
-import pyres.worker
 import veil.component
 from veil.environment.setting import *
 from veil.environment.installation import *
