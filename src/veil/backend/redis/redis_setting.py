@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.environment import *
 from veil.environment.setting import *
 from veil.model.collection import *
-from .redis_server import redis_server_program
+from .redis_server_program import redis_server_program
 
 REDIS_BASE_SETTINGS = {
     'redis': {

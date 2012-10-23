@@ -1,10 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 from logging import getLogger
 from jinja2.loaders import FileSystemLoader
-import veil.component
 from veil.frontend.template import *
 from veil.frontend.cli import *
-from veil.environment.installation import *
 from veil.environment.setting import *
 from .tornado import *
 from .locale import *
@@ -12,23 +10,15 @@ from .routing import  *
 from .static_file import *
 from .xsrf import *
 from .reloading import *
+from .website_program import assert_website_components_loaded
 
 LOGGER = getLogger(__name__)
 
 registry = {} # website => get_website_options
-website_components = {} # website => components
 additional_context_managers = {}
 
 def register_website_context_manager(website, context_manager):
     additional_context_managers.setdefault(website.lower(), []).append(context_manager)
-
-
-@installation_script()
-def install_website(website=None):
-    if not website:
-        return
-    for component in website_components.get(website, []):
-        install_dependency(component.__name__)
 
 
 @script('up')
@@ -80,26 +70,9 @@ def create_website_http_handler(website, locale_provider=None):
     return RoutingHTTPHandler(get_routes(website), website_context_managers)
 
 
-def assert_website_components_loaded(website):
-    components = website_components.get(website, ())
-    for component in components:
-        if component:
-            veil.component.assert_component_loaded(component.__name__)
-
-
-def register_website(website):
-    loading_component = veil.component.get_loading_component()
-    if website in website_components:
-        if loading_component:
-            website_components[website].add(loading_component)
-    else:
-        website_components.setdefault(website, set()).add(loading_component)
-    if website not in registry:
-        registry[website] = register_website_options(website)
-    return registry[website]
-
-
 def register_website_options(website):
+    if website in registry:
+        return
     section = '{}_website'.format(website.lower()) # for example shopper_website
     get_reloads_module = register_option(section, 'reloads_module', bool, default=True)
     get_recalculates_static_file_hash = register_option(section, 'recalculates_static_file_hash', bool, default=True)
@@ -130,7 +103,7 @@ def register_website_options(website):
             'domain': get_domain()
         }
 
-    return get_website_options
+    registry[website] = get_website_options
 
 
 def get_website_option(website, name):

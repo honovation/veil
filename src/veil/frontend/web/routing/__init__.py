@@ -9,6 +9,7 @@ with veil.component.init_component(__name__):
     from .routing import RoutingHTTPHandler
     from .routing import get_routes
     from .routing import EVENT_NEW_WEBSITE
+    from .routing import publish_new_website_event
     from .page_post_processor import register_page_post_processor
     from .page_post_processor import TAG_NO_POST_PROCESS
 
@@ -25,6 +26,7 @@ with veil.component.init_component(__name__):
         RoutingHTTPHandler.__name__,
         get_routes.__name__,
         'EVENT_NEW_WEBSITE',
+        publish_new_website_event.__name__,
         # from page_post_processor
         register_page_post_processor.__name__,
         'TAG_NO_POST_PROCESS'

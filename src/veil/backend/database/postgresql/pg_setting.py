@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.environment import *
 from veil.environment.setting import *
 from veil.model.collection import *
-from .server.pg_server import postgresql_server_program
+from .server.pg_server_program import postgresql_server_program
 
 def postgresql_settings(purpose, **updates):
     settings = objectify({

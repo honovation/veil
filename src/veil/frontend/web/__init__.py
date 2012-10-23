@@ -1,11 +1,10 @@
 import veil.component
 
 with veil.component.init_component(__name__):
-    from .website import start_website
-    from .website import start_test_website
-    from .website import register_website_context_manager
-    from .website import register_website
-    from .website import get_website_option
+    from .website_launcher import start_website
+    from .website_launcher import start_test_website
+    from .website_launcher import register_website_context_manager
+    from .website_launcher import get_website_option
     from .website_setting import website_settings
     from .client import start_website_and_client
     from .routing import route
@@ -18,6 +17,7 @@ with veil.component.init_component(__name__):
     from .routing import EVENT_NEW_WEBSITE
     from .routing import register_page_post_processor
     from .routing import TAG_NO_POST_PROCESS
+    from .routing import publish_new_website_event
     from .nginx import add_reverse_proxy_server
     from .nginx import reverse_proxy_static_file_location
     from .nginx import nginx_settings
@@ -59,7 +59,6 @@ with veil.component.init_component(__name__):
         start_website.__name__,
         start_test_website.__name__,
         register_website_context_manager.__name__,
-        register_website.__name__,
         get_website_option.__name__,
         # from website_setting
         website_settings.__name__,
@@ -76,6 +75,7 @@ with veil.component.init_component(__name__):
         'EVENT_NEW_WEBSITE',
         register_page_post_processor.__name__,
         'TAG_NO_POST_PROCESS',
+        publish_new_website_event.__name__,
         # from nginx
         add_reverse_proxy_server.__name__,
         reverse_proxy_static_file_location.__name__,
@@ -117,7 +117,9 @@ with veil.component.init_component(__name__):
 
     def init():
         from veil.model.event import subscribe_event
-        from .website import register_website
+        from .website_launcher import register_website_options
+        from .website_program import register_website_component
         from .routing import EVENT_NEW_WEBSITE
 
-        subscribe_event(EVENT_NEW_WEBSITE, register_website)
+        subscribe_event(EVENT_NEW_WEBSITE, register_website_options)
+        subscribe_event(EVENT_NEW_WEBSITE, register_website_component)

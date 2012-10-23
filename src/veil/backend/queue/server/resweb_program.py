@@ -3,7 +3,6 @@ from veil.environment import *
 from veil.environment.installation import *
 from veil.environment.setting import *
 from veil.frontend.template import *
-from veil.frontend.cli import *
 from ..queue_api_installer import install_queue_api
 
 def resweb_program():

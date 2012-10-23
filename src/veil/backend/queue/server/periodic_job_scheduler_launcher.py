@@ -7,27 +7,14 @@ import pyres
 from veil.frontend.cli import *
 from veil.utility.clock import get_current_timestamp
 from veil.environment.setting import *
-from veil.environment.installation import *
 from ..periodic_job import schedules
 from ..job import enqueue
-from ..queue_api_installer import install_queue_api
 
 LOGGER = getLogger(__name__)
 
 get_queue_host = register_option('queue', 'host')
 get_queue_port = register_option('queue', 'port', int)
 get_queue_password = register_option('queue', 'password')
-
-def periodic_job_scheduler_program():
-    return {
-        'execute_command': 'veil backend queue periodic-job-scheduler-up',
-        'install_command': 'veil backend queue install-periodic-job-scheduler'
-    }
-
-
-@installation_script('install-periodic-job-scheduler')
-def install_periodic_job_scheduler():
-    install_queue_api()
 
 
 @script('periodic-job-scheduler-up')

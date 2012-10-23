@@ -2,14 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.environment import *
 from veil.environment.setting import *
 from veil.model.collection import *
-
-def website_program(website, **updates):
-    program = {
-        'execute_command': 'veil frontend web up {}'.format(website),
-        'install_command': 'veil frontend web install {}'.format(website)}
-    if updates:
-        program.update(updates)
-    return program
+from .website_program import website_program
 
 
 def website_settings(website, port, **updates):

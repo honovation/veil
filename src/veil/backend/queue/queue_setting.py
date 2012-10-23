@@ -2,10 +2,10 @@ from __future__ import unicode_literals, print_function, division
 from veil.environment import *
 from veil.environment.setting import *
 from veil.backend.redis import *
-from .server.delayed_job_scheduler import delayed_job_scheduler_program
-from .server.periodic_job_scheduler import periodic_job_scheduler_program
-from .server.worker import worker_program
-from .server.resweb import resweb_program
+from .server.delayed_job_scheduler_program import delayed_job_scheduler_program
+from .server.periodic_job_scheduler_program import periodic_job_scheduler_program
+from .server.worker_program import worker_program
+from .server.resweb_program import resweb_program
 
 def queue_settings(resweb_host=None, resweb_port=None, workers=None, **updates):
     updates['port'] = updates.get('port', 6389)

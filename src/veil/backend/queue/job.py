@@ -3,7 +3,6 @@ from datetime import datetime
 from inspect import isfunction
 import contextlib
 from logging import getLogger
-import pytz
 
 LOGGER = getLogger(__name__)
 context_managers = []
@@ -15,6 +14,8 @@ def register_job_context_manager(context_manager):
 
 
 def enqueue(resq, job_handler, **payload):
+    import pytz
+
     assert getattr(job_handler, 'queue'), 'must decorate job handler {} with @job to enqueue'.format(job_handler)
     for value in payload.values():
         if isinstance(value, datetime):
@@ -23,6 +24,8 @@ def enqueue(resq, job_handler, **payload):
 
 
 def enqueue_at(resq, job_handler, scheduled_at, **payload):
+    import pytz
+
     assert getattr(job_handler, 'queue'), 'must decorate job handler {} with @job to enqueue'.format(job_handler)
     for value in payload.values():
         if isinstance(value, datetime):
