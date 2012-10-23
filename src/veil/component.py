@@ -68,8 +68,8 @@ def assert_component_loaded(component_name, visited_component_names=None):
             raise Exception('circular dependency detected: {}'.format(visited_component_names))
     if component_name in errors:
         print(errors[component_name][0])
-#        for error in errors[component_name]:
-#            print(error)
+        #        for error in errors[component_name]:
+        #            print(error)
         raise Exception('component {} did not load successfully'.format(component_name))
     for dependency in dependencies.get(component_name, ()):
         assert_component_loaded(dependency, list(visited_component_names))
@@ -281,6 +281,9 @@ class DummyModule(object):
     def __getattr__(self, item):
         return DummyModuleMember(self, item)
 
+    def __repr__(self):
+        return '<DummyModule: {}>'.format(self.__name__)
+
 
 class DummyModuleMember(object):
     def __init__(self, dummy_module, name):
@@ -297,6 +300,9 @@ class DummyModuleMember(object):
             return func if inspect.isfunction(func) else self
         else:
             raise error
+
+    def __repr__(self):
+        return '<DummyModuleMember: {}.{}>'.format(self.dummy_module.__name__, self.__name__)
 
 
 def is_dummy_module_member(func):
