@@ -29,7 +29,7 @@ def install_programs():
                 install_program(program)
             shell_execute('veil supervisor install {}'.format(' '.join(config.programs.keys())))
         else:
-            server = get_veil_server(VEIL_ENV, VEIL_SERVER_NAME)
+            server = get_current_veil_server()
             print('[INSTALL] about to install programs {} ...'.format(server.programs))
             for program_name in server.programs:
                 print('[INSTALL] installing program {} ...'.format(program_name))
