@@ -5,7 +5,7 @@ import os
 
 LOGGER = logging.getLogger(__name__)
 
-def shell_execute(command_line, capture=False, silent=False, waits=True, **kwargs):
+def shell_execute(command_line, capture=False, silent=True, waits=True, **kwargs):
     command_args = shlex.split(command_line)
     if capture or silent:
         kwargs.update(dict(stderr=subprocess.STDOUT, stdout=subprocess.PIPE))

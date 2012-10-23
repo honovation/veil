@@ -44,12 +44,15 @@ def installation_script(command='install'):
         def wrapper(*argv):
             try:
                 if os.getenv('VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'):
+                    installer_name = '{}-{}'.format(component_name, '-'.join(argv))[:100]
                     if VEIL_INSTALLED_TAG_DIR.exists():
-                        installed_tag = VEIL_INSTALLED_TAG_DIR / '{}-{}'.format(component_name, '-'.join(argv))
+                        installed_tag = VEIL_INSTALLED_TAG_DIR / installer_name
                         if installed_tag.exists():
+                            print('[INSTALL] skip installer {}'.format(installer_name))
                             return None
                         else:
                             installed_tag.write_text('True')
+                    print('[INSTALL] executing installer {}...'.format(installer_name))
                     return func(*argv)
                 if '--print-dependencies' in argv:
                     print_dependencies(component_name)
