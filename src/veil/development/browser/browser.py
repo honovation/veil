@@ -56,10 +56,8 @@ def start_website_and_browser(website, path, page_interactions, timeout=60, brow
     register_page_post_processor(lambda page_handler, html: inject_page_interaction(html, page_interactions))
     http_server = start_test_website(website)
     domain = get_website_option(website, 'domain')
-    if domain:
-        url = 'http://{}{}'.format(domain, path)
-    else:
-        url = 'http://{}:{}{}'.format(http_server.host, http_server.port, path)
+    domain_port = get_website_option(website, 'domain_port')
+    url = 'http://{}:{}{}'.format(domain, domain_port, path)
     threading.Thread(target=lambda: execute_io_loop(timeout)).start()
     start_browser(url, browser)
 

@@ -86,6 +86,7 @@ def register_website_options(website):
     get_inline_static_files_directory = register_option(section, 'inline_static_files_directory')
     get_external_static_files_directory = register_option(section, 'external_static_files_directory')
     get_domain = register_option(section, 'domain')
+    get_domain_port = register_option(section, 'domain_port')
 
     def get_website_options():
         return {
@@ -100,7 +101,8 @@ def register_website_options(website):
             'processes_count': get_processes_count(),
             'inline_static_files_directory': get_inline_static_files_directory(),
             'external_static_files_directory': get_external_static_files_directory(),
-            'domain': get_domain()
+            'domain': get_domain(),
+            'domain_port': get_domain_port()
         }
 
     registry[website] = get_website_options

@@ -1,15 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 from veil.development.test import *
-from veil.model.event import *
 from veil.profile.web import *
 from veil.environment import *
-from veil.environment.setting import *
 from .browser import start_website_and_browser
 
 if 'test' == VEIL_ENV:
     publish_new_website_event('test')
     TEST_WEBSITE_SETTINGS = website_settings('test', 5090)
-    register_settings_coordinator(lambda settings: add_reverse_proxy_server(settings, 'test'))
 
 PAGE_CONTENT =\
 """
