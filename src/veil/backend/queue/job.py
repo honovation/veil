@@ -1,4 +1,8 @@
 from __future__ import unicode_literals, print_function, division
+import veil.component
+
+veil.component.add_must_load_module(__name__)
+
 from datetime import datetime
 from inspect import isfunction
 import contextlib
@@ -53,6 +57,7 @@ class JobHandlerDecorator(object):
 
 
 def perform(job_handler, payload):
+    import pytz
     with nest_context_managers(*context_managers):
         # restore datetime as utc timezone
         for key, value in payload.items():
