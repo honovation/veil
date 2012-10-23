@@ -10,13 +10,15 @@ __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_component',
     'is_dummy_module_member', 'get_component_dependencies', 'assert_component_loaded',
     'assert_component_dependencies', 'get_component_of_module', 'is_component_loaded',
-    'get_loaded_components', 'get_transitive_dependencies']
+    'get_loaded_components', 'get_transitive_dependencies',
+    'add_must_load_module', 'assert_module_is_must_load']
 
 encapsulated_modules = {}
 components = {}
 loading_components = []
 errors = {}
 dependencies = {}
+must_load_module_names = []
 
 def init_components(component_names):
     for component_name in component_names:
@@ -52,11 +54,18 @@ def init_component(component_name):
         if hasattr(component, 'init'):
             component.init()
         loader.encapsulate_loaded_packages_and_modules()
-    except:
-        raise
     finally:
         remove_loaded_components()
         loading_components.pop()
+
+
+def add_must_load_module(qualified_module_name):
+    must_load_module_names.append(qualified_module_name)
+
+def assert_module_is_must_load(qualified_module_name):
+    if qualified_module_name not in must_load_module_names:
+        print('{} is not marked as must load'.format(qualified_module_name))
+        os._exit(1)
 
 
 def assert_component_loaded(component_name, visited_component_names=None):
@@ -259,6 +268,10 @@ def load_module(*module_name_segments):
     try:
         return importlib.import_module(qualified_module_name)
     except ImportError, e:
+        if qualified_module_name in must_load_module_names:
+            print('failed to load {}'.format(loading_components))
+            traceback.print_exc()
+            os._exit(1)
         record_error()
         module = DummyModule(qualified_module_name, e)
         sys.modules[qualified_module_name] = module
@@ -266,7 +279,7 @@ def load_module(*module_name_segments):
     except:
         print('failed to load {}'.format(loading_components))
         traceback.print_exc()
-        raise
+        os._exit(1)
 
 
 class DummyModule(object):

@@ -8,6 +8,7 @@ from veil.component import get_loading_component
 from veil.component import get_component_dependencies
 from veil.component import get_loaded_components
 from veil.component import get_transitive_dependencies
+from veil.component import assert_module_is_must_load
 from veil.backend.shell import *
 from veil.environment import *
 from veil.frontend.cli import *
@@ -37,6 +38,7 @@ def installation_script(command='install'):
 
     def decorate(func):
         component_name = get_loading_component().__name__
+        assert_module_is_must_load(func.__module__)
 
         @functools.wraps(func)
         def wrapper(*argv):

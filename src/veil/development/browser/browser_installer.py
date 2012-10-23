@@ -1,4 +1,8 @@
 from __future__ import unicode_literals, print_function, division
+import veil.component
+
+veil.component.add_must_load_module(__name__)
+
 import os.path
 from veil.environment.installation import *
 from veil.backend.shell import *
