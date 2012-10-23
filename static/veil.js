@@ -269,6 +269,8 @@ veil.widget.refresh = function (widget, options) {
                 });
             }
         });
+    }else{
+        alert('refreshUrl undefine');
     }
 };
 
