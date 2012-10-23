@@ -75,21 +75,24 @@ def nginx_reverse_proxy_server_settings(settings, website, **updates):
     }
     if updates:
         server_settings = merge_settings(server_settings, updates)
-        # external static files
+    # external static files
     # /static/a/b/c.js?v=xxxx
     static_location_settings = nginx_reverse_proxy_static_file_location_settings(
         settings, website, '/static/', website_config.external_static_files_directory)
-    return merge_settings(objectify({
+    settings = merge_settings(settings, objectify({
         'nginx': {
             'servers': {
                 website_config.domain: server_settings
             }
         }
-    }), static_location_settings)
+    }))
+    return merge_settings(settings, static_location_settings)
 
 
 def nginx_reverse_proxy_static_file_location_settings(settings, website, url_pattern, directory):
-    return objectify({
+    if not getattr(settings, 'nginx', None):
+        settings = merge_settings(settings, nginx_settings())
+    location_settings = objectify({
         'nginx': {
             'servers': {
                 get_website_config(settings, website).domain: {
@@ -107,6 +110,7 @@ def nginx_reverse_proxy_static_file_location_settings(settings, website, url_pat
             }
         }
     })
+    return merge_settings(settings, location_settings)
 
 
 def get_website_config(settings, website):
