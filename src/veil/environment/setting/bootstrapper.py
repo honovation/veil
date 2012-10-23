@@ -32,3 +32,7 @@ def bootstrap_runtime():
         logger.addHandler(handler)
 
     configure_logging()
+
+
+def logging_settings(logging_level):
+    return {'veil': {'logging': {'level': logging_level}}}
