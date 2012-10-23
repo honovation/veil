@@ -38,7 +38,7 @@ def nginx_reverse_proxy_server_settings(settings, website, **updates):
         settings = merge_settings(settings, nginx_settings())
     website_config = get_website_config(settings, website)
     server_settings = {
-        'listen': website_config.domain_port,
+        'listen': int(website_config.domain_port),
         'locations': {
             '/': {
                 '_': """

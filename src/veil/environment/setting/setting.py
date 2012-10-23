@@ -28,13 +28,20 @@ def get_settings():
         initialized = True
         settings = objectify(settings)
         import __veil__
-        for s in __veil__.SETTINGS:
-            settings = merge_settings(settings, s)
+
+        settings = merge_settings(settings, __veil__.SETTINGS)
     for coordinator in coordinators:
         settings = coordinator(settings)
         if not isinstance(settings, DictObject):
             raise Exception('{} should return DictObject'.format(coordinator))
     return settings
+
+
+def merge_multiple_settings(*multiple_settings):
+    merged_settings = {}
+    for settings in multiple_settings:
+        merged_settings = merge_settings(merged_settings, settings)
+    return merged_settings
 
 
 def merge_settings(base, updates, overrides=False):
@@ -59,3 +66,18 @@ def merge_settings(base, updates, overrides=False):
         else:
             raise Exception('can not merge {} with {}'.format(base, updates))
     return base
+
+
+def load_config_from(path, *expected_keys):
+    config = DictObject()
+    with open(path) as f:
+        lines = f.readlines()
+    for line in lines:
+        line = line.strip()
+        if line:
+            key, value = line.split('=')
+            config[key] = value
+    assert set(expected_keys) == set(config.keys()), \
+        'config file {} does not provide exact keys we want, expected: {}, actual: {}'.format(
+            path, expected_keys, config.keys())
+    return config
