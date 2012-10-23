@@ -16,7 +16,6 @@ from .page_post_processor import post_process_page
 LOGGER = getLogger(__name__)
 original_routes = {}
 routes = {}
-website_components = {}
 EVENT_NEW_WEBSITE = 'new-website'
 
 
@@ -66,12 +65,7 @@ class RouteDecorator(object):
 
 
 def publish_new_website_event(website):
-    if website in website_components:
-        if get_loading_component():
-            website_components[website].add(get_loading_component())
-    else:
-        website_components.setdefault(website, set()).add(get_loading_component())
-        publish_event(EVENT_NEW_WEBSITE, website=website)
+    publish_event(EVENT_NEW_WEBSITE, website=website.lower())
 
 
 def route(method, path_template, website=None, tags=(), delegates_to=None, **path_template_params):
@@ -107,10 +101,6 @@ def is_public_route(route):
 
 def get_routes(website):
     website = website.upper()
-    components = website_components.get(website, ())
-    for component in components:
-        if component:
-            assert_component_loaded(component.__name__)
     return routes.get(website, ())
 
 

@@ -1,8 +1,10 @@
 from __future__ import unicode_literals, print_function, division
 from logging import getLogger
 from jinja2.loaders import FileSystemLoader
+import veil.component
 from veil.frontend.template import *
 from veil.frontend.cli import *
+from veil.environment.installation import *
 from veil.environment.setting import *
 from .tornado import *
 from .locale import *
@@ -14,6 +16,7 @@ from .reloading import *
 LOGGER = getLogger(__name__)
 
 registry = {} # website => get_website_options
+website_components = {} # website => components
 additional_context_managers = {}
 
 def register_website_context_manager(website, context_manager):
@@ -21,10 +24,20 @@ def register_website_context_manager(website, context_manager):
 
 
 def website_program(website, **updates):
-    program = {'execute_command': 'veil frontend web up {}'.format(website)}
+    program = {
+        'execute_command': 'veil frontend web up {}'.format(website),
+        'install_command': 'veil frontend web install {}'.format(website)}
     if updates:
         program.update(updates)
     return program
+
+
+@installation_script()
+def install_website(website=None):
+    if not website:
+        return
+    for component in website_components.get(website, []):
+        install_dependency(component.__name__)
 
 
 @script('up')
@@ -54,6 +67,7 @@ def start_website(website, **kwargs):
 
 
 def create_website_http_handler(website, locale_provider=None):
+    assert_website_components_loaded(website)
     locale_provider = locale_provider or (lambda: None)
     secure_cookie_salt = get_website_option(website, 'secure_cookie_salt')
     if secure_cookie_salt:
@@ -75,8 +89,20 @@ def create_website_http_handler(website, locale_provider=None):
     return RoutingHTTPHandler(get_routes(website), website_context_managers)
 
 
+def assert_website_components_loaded(website):
+    components = website_components.get(website, ())
+    for component in components:
+        if component:
+            veil.component.assert_component_loaded(component.__name__)
+
+
 def register_website(website):
-    website = website.lower()
+    loading_component = veil.component.get_loading_component()
+    if website in website_components:
+        if loading_component:
+            website_components[website].add(loading_component)
+    else:
+        website_components.setdefault(website, set()).add(loading_component)
     if website not in registry:
         registry[website] = register_website_options(website)
     return registry[website]
