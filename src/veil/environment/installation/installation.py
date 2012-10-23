@@ -96,7 +96,7 @@ def install_dependency(component_name, install_dependencies_of_dependency=False)
             del env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT']
         else:
             env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'] = 'TRUE'
-        if is_installer_executed(component_name, 'install', []):
+        if not is_installer_executed(component_name, 'install', []):
             shell_execute('veil {}'.format(' '.join(args)), env=env)
 
 
