@@ -23,15 +23,6 @@ def register_website_context_manager(website, context_manager):
     additional_context_managers.setdefault(website.lower(), []).append(context_manager)
 
 
-def website_program(website, **updates):
-    program = {
-        'execute_command': 'veil frontend web up {}'.format(website),
-        'install_command': 'veil frontend web install {}'.format(website)}
-    if updates:
-        program.update(updates)
-    return program
-
-
 @installation_script()
 def install_website(website=None):
     if not website:
