@@ -29,12 +29,12 @@ def install_programs():
                 install_program(program)
             shell_execute('veil supervisor install {}'.format(' '.join(config.programs.keys())))
         else:
-            active_program_names = getattr(__veil__, 'ENVIRONMENTS', {})[VEIL_ENV][VEIL_ENV_SERVER]
-            print('[INSTALL] about to install programs {} ...'.format(active_program_names))
-            for program_name in active_program_names:
+            server = get_veil_server(VEIL_ENV, VEIL_SERVER_NAME)
+            print('[INSTALL] about to install programs {} ...'.format(server.programs))
+            for program_name in server.programs:
                 print('[INSTALL] installing program {} ...'.format(program_name))
                 install_program(config.programs[program_name])
-            shell_execute('veil supervisor install {}'.format(' '.join(active_program_names)))
+            shell_execute('veil supervisor install {}'.format(' '.join(server.programs)))
 
 def assert_programs_loaded(programs):
     for program in programs:

@@ -6,7 +6,7 @@ from .server.pg_server_program import postgresql_server_program
 
 def postgresql_settings(purpose, **updates):
     settings = objectify({
-        'host': 'localhost',
+        'host': '127.0.0.1',
         'port': 5432,
         'owner': CURRENT_USER,
         'data_directory': VEIL_VAR_DIR / '{}_postgresql'.format(purpose),
