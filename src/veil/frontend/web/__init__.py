@@ -18,9 +18,8 @@ with veil.component.init_component(__name__):
     from .routing import register_page_post_processor
     from .routing import TAG_NO_POST_PROCESS
     from .routing import publish_new_website_event
-    from .nginx import add_reverse_proxy_server
-    from .nginx import reverse_proxy_static_file_location
     from .nginx import nginx_settings
+    from .nginx import nginx_reverse_proxy_static_file_location_settings
     from .session import register_website_session
     from .static_file import static_url
     from .static_file import process_script_elements
@@ -77,9 +76,8 @@ with veil.component.init_component(__name__):
         'TAG_NO_POST_PROCESS',
         publish_new_website_event.__name__,
         # from nginx
-        add_reverse_proxy_server.__name__,
-        reverse_proxy_static_file_location.__name__,
         nginx_settings.__name__,
+        nginx_reverse_proxy_static_file_location_settings.__name__,
         # from session
         register_website_session.__name__,
         # from static_file
@@ -117,9 +115,12 @@ with veil.component.init_component(__name__):
 
     def init():
         from veil.model.event import subscribe_event
+        from veil.environment.setting import register_settings_coordinator
         from .website_launcher import register_website_options
         from .website_program import register_website_component
         from .routing import EVENT_NEW_WEBSITE
+        from .website_setting import add_website_reverse_proxy_servers
 
         subscribe_event(EVENT_NEW_WEBSITE, register_website_options)
         subscribe_event(EVENT_NEW_WEBSITE, register_website_component)
+        register_settings_coordinator(add_website_reverse_proxy_servers)

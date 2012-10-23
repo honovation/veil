@@ -33,21 +33,12 @@ def nginx_settings(**updates):
     })
 
 
-def add_reverse_proxy_server(settings, website, **updates):
+def nginx_reverse_proxy_server_settings(settings, website, **updates):
     if not getattr(settings, 'nginx', None):
-        return settings
-    website_config = getattr(settings.veil, '{}_website'.format(website))
-    if ':' in website_config.domain:
-        server_name, listen_port = website_config.domain.split(':')
-    else:
-        server_name, listen_port = website_config.domain, 80
-    listen_port = int(listen_port)
-    if 'test' == VEIL_ENV and not website_config.get('domain_modified_due_to_test_env', False):
-        listen_port += 1
-    website_config.domain = '{}:{}'.format(server_name, listen_port)
-    website_config.domain_modified_due_to_test_env = True
+        settings = merge_settings(settings, nginx_settings())
+    website_config = get_website_config(settings, website)
     server_settings = {
-        'listen': listen_port,
+        'listen': website_config.domain_port,
         'locations': {
             '/': {
                 '_': """
@@ -79,24 +70,50 @@ def add_reverse_proxy_server(settings, website, **updates):
             '~ ^/static/v-(.*)/': {
                 'alias': as_path(website_config.inline_static_files_directory) / '$1',
                 'expires': '365d'
-            },
-            # external static files
-            # /static/a/b/c.js?v=xxxx
-            '/static/': reverse_proxy_static_file_location(website_config.external_static_files_directory)
+            }
         }
     }
     if updates:
         server_settings = merge_settings(server_settings, updates)
-    settings.nginx.servers[server_name] = server_settings
-    return settings
-
-
-def reverse_proxy_static_file_location(path):
-    return {
-        '_': """
-            if ($args ~* v=(.+)) {
-                expires 365d;
+        # external static files
+    # /static/a/b/c.js?v=xxxx
+    static_location_settings = nginx_reverse_proxy_static_file_location_settings(
+        settings, website, '/static/', website_config.external_static_files_directory)
+    return merge_settings(objectify({
+        'nginx': {
+            'servers': {
+                website_config.domain: server_settings
             }
-            """,
-        'alias': as_path(path) / ''
-    }
+        }
+    }), static_location_settings)
+
+
+def nginx_reverse_proxy_static_file_location_settings(settings, website, url_pattern, directory):
+    return objectify({
+        'nginx': {
+            'servers': {
+                get_website_config(settings, website).domain: {
+                    'locations': {
+                        url_pattern: {
+                                '_': """
+                            if ($args ~* v=(.+)) {
+                                expires 365d;
+                            }
+                            """,
+                                'alias': as_path(directory) / ''
+                        }
+                    }
+                }
+            }
+        }
+    })
+
+
+def get_website_config(settings, website):
+    veil_config = getattr(settings, 'veil', None)
+    if not veil_config:
+        raise Exception('veil is not defined in settings')
+    website_config = getattr(settings.veil, '{}_website'.format(website), None)
+    if not website_config:
+        raise Exception('website {} is not defined in settings'.format(website))
+    return website_config
