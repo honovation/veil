@@ -43,20 +43,16 @@ def installation_script(command='install'):
         @functools.wraps(func)
         def wrapper(*argv):
             try:
-                if os.getenv('VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'):
-                    installer_name = '{}-{}-{}'.format(component_name, command, '-'.join(argv))[:100]
-                    if VEIL_INSTALLED_TAG_DIR.exists():
-                        installed_tag = VEIL_INSTALLED_TAG_DIR / installer_name
-                        if installed_tag.exists():
-                            print('[INSTALL] skip installer {}'.format(installer_name))
-                            return None
-                        else:
-                            installed_tag.write_text('True')
-                    print('[INSTALL] executing installer {}...'.format(installer_name))
-                    return func(*argv)
                 if '--print-dependencies' in argv:
                     print_dependencies(component_name)
                     return None
+                if VEIL_INSTALLED_TAG_DIR.exists() and is_installer_executed(component_name, command, argv):
+                    return None
+                if os.getenv('VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'):
+                    if VEIL_INSTALLED_TAG_DIR.exists():
+                        mark_installer_as_executed(component_name, command, argv)
+                    print('[INSTALL] executing installer {} {} {}...'.format(component_name, command, argv))
+                    return func(*argv)
                 create_layout()
                 for dependency in get_transitive_dependencies(component_name):
                     install_dependency(dependency)
@@ -76,6 +72,21 @@ def installation_script(command='install'):
     return decorate
 
 
+def is_installer_executed(component_name, command, argv):
+    installer_name = '{}-{}-{}'.format(component_name, command, '-'.join(argv))[:100]
+    installed_tag = VEIL_INSTALLED_TAG_DIR / installer_name
+    executed = installed_tag.exists()
+    if executed:
+        print('[INSTALL] skip installer {}'.format(installer_name))
+    return executed
+
+
+def mark_installer_as_executed(component_name, command, argv):
+    installer_name = '{}-{}-{}'.format(component_name, command, '-'.join(argv))[:100]
+    installed_tag = VEIL_INSTALLED_TAG_DIR / installer_name
+    installed_tag.write_text('True')
+
+
 def install_dependency(component_name, install_dependencies_of_dependency=False):
     args = to_cli_handler_levels(component_name)
     args.append('install')
@@ -85,7 +96,8 @@ def install_dependency(component_name, install_dependencies_of_dependency=False)
             del env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT']
         else:
             env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'] = 'TRUE'
-        shell_execute('veil {}'.format(' '.join(args)), env=env)
+        if is_installer_executed(component_name, 'install', []):
+            shell_execute('veil {}'.format(' '.join(args)), env=env)
 
 
 def to_cli_handler_levels(component_name):
