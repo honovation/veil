@@ -7,6 +7,7 @@ import pytz
 
 LOGGER = getLogger(__name__)
 context_managers = []
+queues = {} # queue_name => job_handlers
 
 def register_job_context_manager(context_manager):
     LOGGER.info('register job context manager: {}'.format(context_manager))
@@ -42,8 +43,9 @@ class JobHandlerDecorator(object):
         self.queue = queue
 
     def __call__(self, job_handler):
-        job_handler.queue = self.queue or job_handler.__name__.replace('_job', '').replace('_', '-')
+        job_handler.queue = self.queue or job_handler.__name__.replace('_job', '')
         job_handler.perform = lambda payload: perform(job_handler, payload)
+        queues.setdefault(job_handler.queue, []).append(job_handler)
         return job_handler
 
 
@@ -54,6 +56,10 @@ def perform(job_handler, payload):
             if isinstance(value, datetime):
                 payload[key] = value.replace(tzinfo=pytz.utc)
         return job_handler(**payload)
+
+
+def list_job_handlers(queue_name):
+    return queues.get(queue_name, [])
 
 
 def nest_context_managers(*context_managers):
