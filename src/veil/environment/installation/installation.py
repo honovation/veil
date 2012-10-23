@@ -76,12 +76,15 @@ def installation_script(command='install'):
     return decorate
 
 
-def install_dependency(component_name):
+def install_dependency(component_name, install_dependencies_of_dependency=False):
     args = to_cli_handler_levels(component_name)
     args.append('install')
     if is_script_defined(*args):
         env = os.environ.copy()
-        env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'] = 'TRUE'
+        if install_dependencies_of_dependency:
+            del env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT']
+        else:
+            env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'] = 'TRUE'
         shell_execute('veil {}'.format(' '.join(args)), env=env)
 
 
