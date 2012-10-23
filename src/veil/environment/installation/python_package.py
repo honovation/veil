@@ -1,6 +1,9 @@
 from __future__ import unicode_literals, print_function, division
+import logging
 import os
 from veil.backend.shell import *
+
+LOGGER = logging.getLogger(__name__)
 
 def install_python_package(package_name, test_package=None, **kwargs):
     kwargs['capture'] = True
@@ -8,6 +11,7 @@ def install_python_package(package_name, test_package=None, **kwargs):
     try:
         __import__(test_package)
     except ImportError:
+        LOGGER.info('installing python package {} ...'.format(package_name))
         mirror = os.getenv('VEIL_PYTHON_PACKAGE_MIRROR', 'http://dependency-veil.googlecode.com/svn/trunk/')
         if mirror:
             shell_execute('pip install {} --no-index -f {}'.format(package_name, mirror), **kwargs)
