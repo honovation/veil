@@ -4,7 +4,7 @@ from veil.utility.path import *
 
 def install_ubuntu_package(package_name):
     try:
-        shell_execute('dpkg -L {}'.format(package_name), capture=True, silent=True)
+        shell_execute('dpkg -L {}'.format(package_name), capture=True)
     except ShellExecutionError, e:
         if 'not installed' in e.output:
             shell_execute('apt-get -y install {}'.format(package_name))

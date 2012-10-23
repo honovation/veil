@@ -10,7 +10,7 @@ def pull():
 
 def pull_dir(dir):
     print('pull {} ...'.format(dir))
-    having_changes = shell_execute('git diff-index HEAD', silent=True, capture=True, cwd=dir)
+    having_changes = shell_execute('git diff-index HEAD', capture=True, cwd=dir)
     if having_changes:
         shell_execute('git stash', cwd=dir)
     try:
