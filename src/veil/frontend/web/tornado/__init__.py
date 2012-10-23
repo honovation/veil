@@ -26,6 +26,7 @@ with veil.component.init_component(__name__):
     from .argument import get_http_files
     from .argument import clear_http_arguments
     from .executor import require_io_loop_executor
+    from tornado.ioloop import IOLoop
 
     __all__ = [
         # from context
@@ -59,5 +60,7 @@ with veil.component.init_component(__name__):
         get_http_files.__name__,
         clear_http_arguments.__name__,
         # from executor
-        require_io_loop_executor.__name__
+        require_io_loop_executor.__name__,
+        # from tornado
+        IOLoop.__name__
     ]

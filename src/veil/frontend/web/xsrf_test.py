@@ -1,11 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 import httplib
-import urllib2
-from veil.frontend.web.routing import *
-from veil.frontend.web.xsrf import *
 from veil.development.test import *
 from veil.environment.setting import *
 from .client import start_website_and_client
+from .routing import *
 
 class XsrfTest(TestCase):
     def setUp(self):

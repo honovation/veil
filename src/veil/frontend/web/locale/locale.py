@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
-from veil.frontend.web.tornado import *
 from veil.frontend.locale import *
+from veil.frontend.web.tornado import *
 
 @contextlib.contextmanager
 def install_translations(locale_provider):

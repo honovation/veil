@@ -4,9 +4,9 @@ import httplib
 import uuid
 from logging import getLogger
 from markupsafe import Markup
+from tornado.escape import xhtml_escape
 from veil.frontend.template import template_utility
 from veil.frontend.web.tornado import *
-from tornado.escape import xhtml_escape
 
 LOGGER = getLogger(__name__)
 

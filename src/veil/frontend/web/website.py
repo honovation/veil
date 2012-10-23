@@ -1,27 +1,36 @@
 from __future__ import unicode_literals, print_function, division
 from logging import getLogger
 from jinja2.loaders import FileSystemLoader
-from tornado.ioloop import IOLoop
 from veil.frontend.template import *
 from veil.frontend.cli import *
-from ..tornado import *
-from ..locale import *
-from ..routing import  *
-from ..static_file import *
-from ..xsrf import *
-from ..reloading import *
-from .web_setting import get_website_option
+from veil.environment.setting import *
+from .tornado import *
+from .locale import *
+from .routing import  *
+from .static_file import *
+from .xsrf import *
+from .reloading import *
 
 LOGGER = getLogger(__name__)
 
+registry = {} # website => get_website_options
 additional_context_managers = {}
 
 def register_website_context_manager(website, context_manager):
     additional_context_managers.setdefault(website.lower(), []).append(context_manager)
 
+
+def website_program(website, **updates):
+    program = {'execute_command': 'veil frontend web up {}'.format(website)}
+    if updates:
+        program.update(updates)
+    return program
+
+
 @script('up')
 def bring_up_website(website):
     start_website(website)
+
 
 def start_test_website(website, **kwargs):
     http_handler = create_website_http_handler(website, **kwargs)
@@ -65,3 +74,48 @@ def create_website_http_handler(website, locale_provider=None):
     website_context_managers.extend(additional_context_managers.get(website, []))
     return RoutingHTTPHandler(get_routes(website), website_context_managers)
 
+
+def register_website(website):
+    website = website.lower()
+    if website not in registry:
+        registry[website] = register_website_options(website)
+    return registry[website]
+
+
+def register_website_options(website):
+    section = '{}_website'.format(website.lower()) # for example shopper_website
+    get_reloads_module = register_option(section, 'reloads_module', bool, default=True)
+    get_recalculates_static_file_hash = register_option(section, 'recalculates_static_file_hash', bool, default=True)
+    get_clears_template_cache = register_option(section, 'clears_template_cache', bool, default=True)
+    get_prevents_xsrf = register_option(section, 'prevents_xsrf', bool, default=True)
+    get_master_template_directory = register_option(section, 'master_template_directory', default='')
+    get_secure_cookie_salt = register_option(section, 'secure_cookie_salt', default='')
+    get_host = register_option(section, 'host')
+    get_port = register_option(section, 'port', int)
+    get_processes_count = register_option(section, 'processes_count', default=1)
+    get_inline_static_files_directory = register_option(section, 'inline_static_files_directory')
+    get_external_static_files_directory = register_option(section, 'external_static_files_directory')
+    get_domain = register_option(section, 'domain')
+
+    def get_website_options():
+        return {
+            'reloads_module': get_reloads_module(),
+            'recalculates_static_file_hash': get_recalculates_static_file_hash(),
+            'clears_template_cache': get_clears_template_cache(),
+            'prevents_xsrf': get_prevents_xsrf(),
+            'master_template_directory': get_master_template_directory(),
+            'secure_cookie_salt': get_secure_cookie_salt(),
+            'host': get_host(),
+            'port': get_port(),
+            'processes_count': get_processes_count(),
+            'inline_static_files_directory': get_inline_static_files_directory(),
+            'external_static_files_directory': get_external_static_files_directory(),
+            'domain': get_domain()
+        }
+
+    return get_website_options
+
+
+def get_website_option(website, name):
+    website = website.lower()
+    return registry[website]()[name]

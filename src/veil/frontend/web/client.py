@@ -4,9 +4,9 @@ import httplib
 import threading
 import urllib
 import urllib2
-from .launcher import start_test_website
 from veil.development.test import *
-from veil.frontend.web.tornado import *
+from .website import start_test_website
+from .tornado import *
 
 def start_website_and_client(website):
     http_server = start_test_website(website)

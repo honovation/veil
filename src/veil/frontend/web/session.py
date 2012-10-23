@@ -5,9 +5,9 @@ import datetime
 import logging
 import uuid
 from veil.backend.redis import *
-from veil.frontend.web.tornado import *
-from veil.frontend.web.launcher import *
 from veil.development.test import *
+from .tornado import *
+from .website import register_website_context_manager
 
 SESSION_TIMEOUT_IN_SECOND = 60 * 30
 

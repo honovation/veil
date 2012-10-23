@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.development.test import *
 from veil.profile.web import *
-from veil.frontend.web.nginx import *
 from veil.environment import *
 from veil.environment.setting import *
 from .browser import start_website_and_browser
