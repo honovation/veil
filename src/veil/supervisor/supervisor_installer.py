@@ -23,11 +23,13 @@ def install_programs():
         import __veil__
 
         if VEIL_SERVER in ['development', 'test']:
+            print('install {} ...'.format(config.programs.keys()))
             for program in config.programs.values():
                 install_program(program)
             shell_execute('veil supervisor install {}'.format(' '.join(config.programs.keys())))
         else:
             active_program_names = getattr(__veil__, 'ENVIRONMENTS', {})[VEIL_ENV][VEIL_ENV_SERVER]
+            print('install {} ...'.format(active_program_names))
             for program_name in active_program_names:
                 install_program(config.programs[program_name])
             shell_execute('veil supervisor install {}'.format(' '.join(active_program_names)))
