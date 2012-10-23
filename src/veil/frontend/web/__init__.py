@@ -19,6 +19,7 @@ with veil.component.init_component(__name__):
     from .routing import TAG_NO_POST_PROCESS
     from .routing import publish_new_website_event
     from .nginx import nginx_settings
+    from .nginx import nginx_reverse_proxy_server_settings
     from .nginx import nginx_reverse_proxy_static_file_location_settings
     from .session import register_website_session
     from .static_file import static_url
@@ -77,6 +78,7 @@ with veil.component.init_component(__name__):
         publish_new_website_event.__name__,
         # from nginx
         nginx_settings.__name__,
+        nginx_reverse_proxy_server_settings.__name__,
         nginx_reverse_proxy_static_file_location_settings.__name__,
         # from session
         register_website_session.__name__,

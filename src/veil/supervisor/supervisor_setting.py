@@ -9,6 +9,10 @@ def supervisor_settings(**updates):
         'config_file': VEIL_ETC_DIR / 'supervisor.cfg',
         'logging': {
             'directory': VEIL_LOG_DIR
+        },
+        'inet_http_server': {
+            'host': '127.0.0.1',
+            'port': 9090
         }
     }
     settings = merge_settings(settings, updates, overrides=True)
