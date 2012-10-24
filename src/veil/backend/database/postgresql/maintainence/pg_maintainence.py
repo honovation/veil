@@ -46,7 +46,7 @@ def migrate(purpose):
     sql_path = VEIL_HOME / 'db' / purpose / '001-baseline.sql'
     env = os.environ.copy()
     env['PGPASSWORD'] = get_option(purpose, 'owner_password')
-    shell_execute('psql -h {host} -p {port} -U {user} -f {sql_path} {database}'.format(
+    shell_execute('psql -h {host} -p {port} -U {user} -f {sql_path} --set ON_ERROR_STOP=1 {database}'.format(
         host=get_option(purpose, 'host'),
         port=get_option(purpose, 'port'),
         user=get_option(purpose, 'user'),
