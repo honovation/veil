@@ -6,6 +6,7 @@ with veil.component.init_component(__name__):
     from .website_launcher import register_website_context_manager
     from .website_launcher import get_website_option
     from .website_setting import website_settings
+    from .website_setting import get_website_nginx_server_name
     from .client import start_website_and_client
     from .routing import route
     from .routing import route_for
@@ -59,6 +60,7 @@ with veil.component.init_component(__name__):
         get_website_option.__name__,
         # from website_setting
         website_settings.__name__,
+        get_website_nginx_server_name.__name__,
         # from client
         start_website_and_client.__name__,
         # from routing

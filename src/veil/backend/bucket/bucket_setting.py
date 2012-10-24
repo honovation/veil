@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.environment.setting import *
 from veil.model.collection import *
 from veil.frontend.nginx import *
+from veil.frontend.web import *
 from veil.environment import *
 
 
@@ -23,8 +24,9 @@ def add_bucket_reverse_proxy_static_file_locations(settings):
         if key.endswith('_bucket'):
             bucket = key.replace('_bucket', '')
             website = value.website
-            static_file_location_settings = nginx_reverse_proxy_static_file_location_settings(
-                settings, website, '/{}/'.format(bucket.replace('_', '-')), value.base_directory)
+            static_file_location_settings = nginx_server_static_file_location_settings(
+                settings, get_website_nginx_server_name(new_settings, website),
+                '/{}/'.format(bucket.replace('_', '-')), value.base_directory)
             new_settings = merge_settings(new_settings, static_file_location_settings)
             new_settings.veil[key].base_url = 'http://{}/{}'.format(
                 get_reverse_proxy_url(new_settings, website), bucket.replace('_', '-'))
