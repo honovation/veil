@@ -30,13 +30,15 @@ nodaemon={{ not config.daemonize }}
 [rpcinterface:supervisor]
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 
-;[supervisorctl]
+{% if config.inet_http_server %}
+[supervisorctl]
 ;serverurl=unix:///tmp/supervisor.sock ; use a unix:// URL  for a unix socket
-;serverurl=http://127.0.0.1:9001 ; use an http:// url to specify an inet socket
+serverurl=http://{{ config.inet_http_server.host }}:{{ config.inet_http_server.port }} ; use an http:// url to specify an inet socket
 ;username=chris              ; should be same as http_username if set
 ;password=123                ; should be same as http_password if set
 ;prompt=mysupervisor         ; cmd line prompt (default "supervisor")
 ;history_file=~/.sc_history  ; use readline history if available
+{% endif %}
 
 ; The below sample program section shows all possible program subsection values,
 ; create one or more 'real' program: sections to be able to control them under

@@ -13,8 +13,6 @@ def supervisor_settings(**updates):
         },
         'inet_http_server': {
             'host': '127.0.0.1',
-            'domain': 'supervisor.dev.dmright.com',
-            'domain_port': 80,
             'port': 9090
         }
     }
@@ -23,11 +21,13 @@ def supervisor_settings(**updates):
 
 
 def add_supervisor_reverse_proxy_server(settings):
+    if 'development' != VEIL_SERVER:
+        return settings
     settings = merge_settings(supervisor_settings(), settings, overrides=True)
     inet_http_server_config = settings.supervisor.inet_http_server
-    server_name = inet_http_server_config.domain
+    server_name = 'supervisor.dev.dmright.com'
     return merge_settings(settings, nginx_server_settings(settings, server_name,
-        listen=int(inet_http_server_config.domain_port),
+        listen=80,
         locations={
             '/': {
                 '_': """
