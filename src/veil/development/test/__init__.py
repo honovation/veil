@@ -7,6 +7,7 @@ with veil.component.init_component(__name__):
     from .runner import profile_package
     from .runner import test_package
     from .fixture import fixture
+    from unittest import skip
 
     __all__ = [
         # from case
@@ -16,6 +17,8 @@ with veil.component.init_component(__name__):
         # from runner
         profile_package.__name__,
         test_package.__name__,
-        # from test_data
-        fixture.__name__
+        # from fixture
+        fixture.__name__,
+        # from unittest
+        skip.__name__
     ]

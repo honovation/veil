@@ -5,8 +5,8 @@ from veil.environment.setting import *
 
 def nginx_program(**updates):
     settings = {
-        'execute_command': 'veil frontend web nginx up',
-        'install_command': 'veil frontend web nginx install',
+        'execute_command': 'veil frontend nginx up',
+        'install_command': 'veil frontend nginx install',
         'user': 'root'
     }
     return merge_settings(settings, updates)

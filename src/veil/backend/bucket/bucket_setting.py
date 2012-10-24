@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment.setting import *
 from veil.model.collection import *
-from veil.frontend.web import *
+from veil.frontend.nginx import *
 from veil.environment import *
 
 
