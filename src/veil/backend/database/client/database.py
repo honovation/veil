@@ -213,7 +213,10 @@ class Database(object):
                 for object in objects:
                     if should_insert and not should_insert(object):
                         continue
-                    yield [value_providers[column_name](object) for column_name in column_names]
+                    if len(inspect.getargspec(value_providers[column_name]).args) > 1:
+                        yield [value_providers[column_name](*object) for column_name in column_names]
+                    else:
+                        yield [value_providers[column_name](object) for column_name in column_names]
             else:
                 yield [value_providers[column_name] for column_name in column_names]
 
