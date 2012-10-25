@@ -11,33 +11,6 @@ import sys
 
 LOGGER = logging.getLogger(__name__)
 
-@script('create-database')
-def create_database(purpose):
-    try:
-        env = os.environ.copy()
-        env['PGPASSWORD'] = get_option(purpose, 'owner_password')
-        shell_execute('createdb -h {host} -p {port} -U {owner} {database}'.format(
-            host=get_option(purpose, 'host'),
-            port=get_option(purpose, 'port'),
-            owner=get_option(purpose, 'owner'),
-            database=get_option(purpose, 'database')), env=env, capture=True)
-        db = register_database(purpose)
-        db().execute(
-            """
-            CREATE TABLE IF NOT EXISTS database_migration_event (
-                id SERIAL PRIMARY KEY,
-                from_version INT NOT NULL,
-                to_version INT NOT NULL,
-                migrated_at TIMESTAMP WITH TIME ZONE NOT NULL
-            )
-            """)
-    except ShellExecutionError, e:
-        if 'already exists' in e.output:
-            pass # ignore
-        else:
-            raise
-
-
 @script('drop-database')
 def drop_database(purpose):
     supervisorctl('restart', '{}_postgresql'.format(purpose))
@@ -58,11 +31,14 @@ def drop_database(purpose):
 
 @script('migrate')
 def migrate(purpose):
+    supervisorctl('start', '{}_postgresql'.format(purpose))
+    create_database_if_not_exists(purpose)
     versions = load_versions(purpose)
     db = register_database(purpose)
 
     @transactional(db)
     def execute_migration_scripts():
+        create_database_migration_table_if_not_exists(purpose)
         current_version = db().get_scalar(
             """
             SELECT to_version
@@ -73,23 +49,54 @@ def migrate(purpose):
         from_version = current_version
         max_version = max(versions.keys())
         if from_version > max_version:
-            print('[MIGRATION] current version {} is higher than the code {}'.format(from_version, max_version))
+            print('[MIGRATE] postgresql server {} current version {} is higher than the code {}'.format(
+                purpose, from_version, max_version))
             sys.exit(1)
         if from_version == max_version:
-            print('[MIGRATION] current version {} is up to date'.format(from_version))
+            print('[MIGRATE] postgresql server {} current version {} is up to date'.format(purpose, from_version))
             sys.exit(0)
-        print('[MIGRATION] about to migrate postgresql server {} from {} to {}'.format(purpose, from_version, max_version))
+        print(
+            '[MIGRATE] about to migrate postgresql server {} from {} to {}'.format(purpose, from_version, max_version))
         to_version = None
         for i in range(current_version, max_version):
             to_version = i + 1
-            print('[MIGRATION] migrating from {} to {} ...'.format(to_version - 1, to_version))
+            print('[MIGRATE] migrating from {} to {} ...'.format(to_version - 1, to_version))
             db().execute(versions[to_version].text('utf8'))
         db().insert(
             'database_migration_event', from_version=from_version,
             to_version=to_version, migrated_at=get_current_time())
-        print('[MIGRATION] migrated postgresql server {} from {} to {}'.format(purpose, from_version, max_version))
+        print('[MIGRATE] migrated postgresql server {} from {} to {}'.format(purpose, from_version, max_version))
 
     execute_migration_scripts()
+
+
+def create_database_if_not_exists(purpose):
+    try:
+        env = os.environ.copy()
+        env['PGPASSWORD'] = get_option(purpose, 'owner_password')
+        shell_execute('createdb -h {host} -p {port} -U {owner} {database}'.format(
+            host=get_option(purpose, 'host'),
+            port=get_option(purpose, 'port'),
+            owner=get_option(purpose, 'owner'),
+            database=get_option(purpose, 'database')), env=env, capture=True)
+    except ShellExecutionError, e:
+        if 'already exists' in e.output:
+            pass # ignore
+        else:
+            raise
+
+
+def create_database_migration_table_if_not_exists(purpose):
+    db = register_database(purpose)
+    db().execute(
+        """
+        CREATE TABLE IF NOT EXISTS database_migration_event (
+            id SERIAL PRIMARY KEY,
+            from_version INT NOT NULL,
+            to_version INT NOT NULL,
+            migrated_at TIMESTAMP WITH TIME ZONE NOT NULL
+        )
+        """)
 
 
 def load_versions(purpose):
@@ -120,7 +127,6 @@ def execute_migration_script(purpose, migration_script):
 @script('reset')
 def reset(purpose):
     shell_execute('veil backend database postgresql drop-database {}'.format(purpose))
-    shell_execute('veil backend database postgresql create-database {}'.format(purpose))
     shell_execute('veil backend database postgresql migrate {}'.format(purpose))
 
 

@@ -42,6 +42,17 @@ case "$1" in
     self-check)
         exec veil :test development test self-check
         ;;
+    deploy-to)
+        shift
+        exec veil environment deployment deploy-to $@
+        ;;
+    deploy)
+        shift
+        exec veil environment deployment deploy $@
+        ;;
+    migrate)
+        exec veil environment deployment migrate
+        ;;
     *)
         exec python -m veil $@
 esac

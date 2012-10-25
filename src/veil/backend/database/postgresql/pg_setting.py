@@ -1,10 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment import *
 from veil.environment.setting import *
+from veil.environment.deployment import *
 from veil.model.collection import *
 from .server.pg_server_program import postgresql_server_program
 
 def postgresql_settings(purpose, *other_purposes, **updates):
+    register_migration_command('veil backend database postgresql migrate {}'.format(purpose))
     settings = objectify({
         'host': get_veil_server_internal_ip_for('{}_postgresql'.format(purpose)),
         'port': 5432,
