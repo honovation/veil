@@ -210,13 +210,12 @@ class Database(object):
                     value_provider = value_providers[column_name]
                     if not inspect.isfunction(value_provider) and not isinstance(value_provider, functools.partial):
                         value_providers[column_name] = ConstValueProvider(value_provider)
+                    else:
+                        value_providers[column_name] = FunctionValueProvider(value_provider)
                 for object in objects:
                     if should_insert and not should_insert(object):
                         continue
-                    if len(inspect.getargspec(value_providers[column_name]).args) > 1:
-                        yield [value_providers[column_name](*object) for column_name in column_names]
-                    else:
-                        yield [value_providers[column_name](object) for column_name in column_names]
+                    yield [value_providers[column_name](object) for column_name in column_names]
             else:
                 yield [value_providers[column_name] for column_name in column_names]
 
@@ -327,6 +326,18 @@ class Database(object):
     def __repr__(self):
         return 'Database {} opened by {}'.format(
             self.purpose, self.opened_by)
+
+
+class FunctionValueProvider(object):
+    def __init__(self, func):
+        self.func = func
+        self.multiple_args = len(inspect.getargspec(func).args) > 1
+
+    def __call__(self, obj):
+        if self.multiple_args:
+            return self.func(*obj)
+        else:
+            return self.func(obj)
 
 
 class ConstValueProvider(object):
