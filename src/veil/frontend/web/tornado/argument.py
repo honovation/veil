@@ -25,6 +25,12 @@ def normalize_arguments():
 def try_get_http_argument(field):
     return get_http_argument(field, optional=True)
 
+
+def delete_http_argument(field, request=None):
+    request = request or get_current_http_request()
+    request.arguments.pop(field, None)
+
+
 def get_http_argument(field, default=None, request=None, list_field=False, optional=False):
     request = request or get_current_http_request()
     if field not in request.arguments:
@@ -56,6 +62,7 @@ def get_http_arguments(request=None, list_fields=(), **kwargs):
         arguments[field] = get_http_argument(field, request=request, list_field=field in list_fields)
     arguments.update(kwargs)
     return arguments
+
 
 def clear_http_arguments(request=None):
     request = request or get_current_http_request()

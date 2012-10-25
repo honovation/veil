@@ -45,6 +45,7 @@ with veil.component.init_component(__name__):
     from .tornado import get_http_arguments
     from .tornado import get_http_file
     from .tornado import get_http_files
+    from .tornado import delete_http_argument
     from .tornado import clear_http_arguments
     from .tornado import require_io_loop_executor
     from .xsrf import xsrf_token
@@ -104,6 +105,7 @@ with veil.component.init_component(__name__):
         get_http_arguments.__name__,
         get_http_file.__name__,
         get_http_files.__name__,
+        delete_http_argument.__name__,
         clear_http_arguments.__name__,
         require_io_loop_executor.__name__,
         # from xsrf

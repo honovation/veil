@@ -1,0 +1,26 @@
+<style type="text/css">
+    #captcha_answer{
+        width: 77px;
+        display: inline-block !important;
+    }
+    img[name=captcha_image]{
+        vertical-align: top;
+    }
+</style>
+<div id="captcha">
+    <label for="captcha_answer">验证码</label>
+    <div>
+        <input name="captcha_answer" id="captcha_answer"/>
+        <input name="captcha_challenge_code" value="{{ challenge_code }}" type="hidden"/>
+        <a href="javascript:void(0)" title="看不清？换一个"><img name="captcha_image" src="{{ captcha_image_url }}" /></a>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#captcha a').live('click', function (e) {
+            $.get('/captcha',function(html){
+                $('#captcha').html(html);
+            });
+        });
+    });
+</script>
