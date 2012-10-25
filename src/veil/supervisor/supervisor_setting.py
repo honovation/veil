@@ -13,7 +13,7 @@ def supervisor_settings(**updates):
         },
         'inet_http_server': {
             'host': '127.0.0.1',
-            'port': 9090
+            'port': 9090 if 'test' != VEIL_SERVER else 9091
         }
     }
     settings = merge_settings(settings, updates, overrides=True)

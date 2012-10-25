@@ -4,6 +4,7 @@ from veil.environment.setting import *
 from veil.backend.shell import *
 from veil.frontend.cli import *
 from veil.environment import *
+from veil.supervisor import *
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ def create_database(purpose):
 
 @script('drop-database')
 def drop_database(purpose):
+    supervisorctl('restart', '{}_postgresql'.format(purpose))
     try:
         env = os.environ.copy()
         env['PGPASSWORD'] = get_option(purpose, 'owner_password')
