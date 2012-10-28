@@ -13,7 +13,7 @@ def publish_event(topic, **kwargs):
             subscriber(**kwargs)
         except:
             exc_class, exc, tb = sys.exc_info()
-            new_exc = Exception('failed to publish event {} to subscriber {}.{}:\n {} {}'.format(
+            new_exc = Exception(str('failed to publish event {} to subscriber {}.{}:\n {} {}').format(
                 topic, subscriber.__module__, subscriber, exc_class.__name__, exc))
             raise new_exc.__class__, new_exc, tb
 
