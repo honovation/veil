@@ -3,6 +3,7 @@ import logging
 import sys
 import os.path
 from .option import register_option
+from veil.environment import *
 
 LOGGER = logging.getLogger(__name__)
 boostrapped = False
@@ -27,9 +28,12 @@ def bootstrap_runtime():
         for level in [logging.DEBUG, logging.INFO, logging.WARN, logging.ERROR, logging.CRITICAL]:
             LOGGING_LEVEL_VALUES[logging.getLevelName(level)] = level
         level = LOGGING_LEVEL_VALUES[get_logging_level() or 'INFO']
-        logger = logging.getLogger()
-        logger.setLevel(level)
-        logger.addHandler(handler)
+        loggers = ['veil']
+        loggers.extend([c.__name__ for c in get_application_components()])
+        for logger in loggers:
+            logger = logging.getLogger(logger)
+            logger.setLevel(level)
+            logger.addHandler(handler)
 
     configure_logging()
 

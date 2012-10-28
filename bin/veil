@@ -42,9 +42,13 @@ case "$1" in
     self-check)
         exec veil :test development test self-check
         ;;
-    deploy-to)
+    deploy-env)
         shift
-        exec veil environment deployment deploy-to $@
+        exec veil environment deployment deploy-env $@
+        ;;
+    deploy-server)
+        shift
+        exec veil environment deployment deploy-server $@
         ;;
     deploy)
         shift
