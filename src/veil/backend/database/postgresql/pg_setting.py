@@ -3,11 +3,11 @@ import inspect
 from veil.environment import *
 from veil.environment.setting import *
 from veil.environment.deployment import *
-from veil.model.collection import *
 from .server.pg_server_program import postgresql_server_program
 
 def postgresql_settings(purpose, *other_purposes, **updates):
-    register_migration_command('veil backend database postgresql migrate {}'.format(purpose))
+    if VEIL_SERVER in ['test', 'development'] or '{}_postgresql'.format(purpose) in get_current_veil_server().programs:
+        register_migration_command('veil backend database postgresql migrate {}'.format(purpose))
     settings = objectify({
         'host': lambda: get_veil_server_hosting('{}_postgresql'.format(purpose)).internal_ip,
         'port': 5432,
