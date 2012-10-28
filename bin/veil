@@ -35,23 +35,13 @@ case "$1" in
         ;;
     up)
         shift
-        exec veil supervisor up $@
+        exec veil environment supervisor up $@
         ;;
     down)
-        exec veil supervisor down
+        exec veil environment supervisor down
         ;;
     install)
-        exec veil supervisor install-programs
-        ;;
-    pull)
-        exec veil development git pull
-        ;;
-    self-check)
-        exec veil :test development test self-check
-        ;;
-    deploy-env)
-        shift
-        exec veil environment deployment deploy-env $@
+        exec veil environment supervisor install-programs
         ;;
     deploy-server)
         shift
@@ -63,6 +53,16 @@ case "$1" in
         ;;
     migrate)
         exec veil environment deployment migrate
+        ;;
+    pull)
+        exec veil development git pull
+        ;;
+    self-check)
+        exec veil :test development test self-check
+        ;;
+    deploy-env)
+        shift
+        exec veil environment deployment deploy-env $@
         ;;
     *)
         exec python -m veil $@

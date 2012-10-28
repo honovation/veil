@@ -4,7 +4,7 @@ from veil.environment.setting import *
 from veil.backend.shell import *
 from veil.frontend.cli import *
 from veil.environment import *
-from veil.supervisor import *
+from veil.environment.supervisor import *
 from veil.utility.clock import *
 from veil.backend.database.client import *
 import sys

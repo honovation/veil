@@ -16,12 +16,12 @@ init_components = lambda : veil.component.init_components([
     'veil.environment.deployment',
     'veil.environment.installation',
     'veil.environment.setting',
+    'veil.environment.supervisor',
     'veil.frontend.cli',
     'veil.frontend.encoding',
     'veil.frontend.locale',
     'veil.frontend.template',
-    'veil.frontend.web',
-    'veil.supervisor'
+    'veil.frontend.web'
 ])
 try:
     import __veil__

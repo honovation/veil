@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import sys
 from veil.frontend.cli import *
-from veil.supervisor import *
+from veil.environment.supervisor import *
 from veil.backend.shell import *
 
 migration_commands = set()
