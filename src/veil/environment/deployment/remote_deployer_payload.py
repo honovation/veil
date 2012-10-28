@@ -18,7 +18,9 @@ def main():
 
 def install_git():
     shell_execute('apt-get update')
-    shell_execute('apt-get install -y git-core')
+    # language-pack-en unzip, wget is not provided by lxc container
+    # before we have server provisioning script, we put those dependency here
+    shell_execute('apt-get install -y git-core language-pack-en unzip wget')
     clone_veil()
 
 
