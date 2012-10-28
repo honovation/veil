@@ -41,6 +41,11 @@ def veil_server(internal_ip, programs, deployed_via):
         'deployed_via': deployed_via
     })
 
+def get_veil_servers(env):
+    import __veil__
+
+    return __veil__.ENVIRONMENTS[env]
+
 
 def get_current_veil_server():
     import __veil__
