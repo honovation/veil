@@ -43,6 +43,10 @@ case "$1" in
     install)
         exec veil environment supervisor install-programs
         ;;
+    deploy-env)
+        shift
+        exec veil environment deployment deploy-env $@
+        ;;
     deploy-server)
         shift
         exec veil environment deployment deploy-server $@
@@ -59,10 +63,6 @@ case "$1" in
         ;;
     self-check)
         exec veil :test development test self-check
-        ;;
-    deploy-env)
-        shift
-        exec veil environment deployment deploy-env $@
         ;;
     *)
         exec python -m veil $@

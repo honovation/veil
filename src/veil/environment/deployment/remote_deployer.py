@@ -28,8 +28,10 @@ def deploy_server(remote_veil_server, deployed_via=None):
     veil_server_env, veil_server_name = split_veil_server_code(remote_veil_server)
     fabric.api.env.host_string = deployed_via
     fabric.api.put(PAYLOAD, '/opt/remote_deployer_payload.py', use_sudo=True, mode=0700)
-    for f in (CURRENT_USER_HOME / '.{}'.format(veil_server_env)).listdir():
-        fabric.api.put(f, '~', mode=0600)
+    local_env_config_dir = CURRENT_USER_HOME / '.{}'.format(veil_server_env)
+    if local_env_config_dir.exists():
+        for f in local_env_config_dir.listdir():
+            fabric.api.put(f, '~', mode=0600)
     fabric.api.sudo('python /opt/remote_deployer_payload.py {} {} {} {}'.format(
         get_application_codebase(),
         '/opt/{}'.format(get_application_name()),

@@ -12,7 +12,8 @@ def install_python_package(package_name, test_package=None, **kwargs):
         __import__(test_package)
     except ImportError:
         LOGGER.info('installing python package {} ...'.format(package_name))
-        mirror = os.getenv('VEIL_PYTHON_PACKAGE_MIRROR', 'http://dependency-veil.googlecode.com/svn/trunk/')
+#        mirror = os.getenv('VEIL_PYTHON_PACKAGE_MIRROR', 'http://dependency-veil.googlecode.com/svn/trunk/')
+        mirror = os.getenv('VEIL_PYTHON_PACKAGE_MIRROR', 'http://www.dmright.com/')
         if mirror:
             shell_execute('pip install {} --no-index -f {}'.format(package_name, mirror), **kwargs)
         else:
