@@ -55,7 +55,7 @@ def get_veil_server_hosting(program):
         return DictObject(internal_ip='127.0.0.1')
     for server in __veil__.ENVIRONMENTS[VEIL_ENV].values():
         if program in server.programs:
-            return server.internal_ip
+            return server
     raise Exception('no server hosting program: {}'.format(program))
 
 
