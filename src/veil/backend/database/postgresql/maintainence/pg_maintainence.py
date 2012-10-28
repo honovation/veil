@@ -1,5 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
+import sys
+import time
 from veil.environment.setting import *
 from veil.backend.shell import *
 from veil.frontend.cli import *
@@ -7,13 +9,13 @@ from veil.environment import *
 from veil.environment.supervisor import *
 from veil.utility.clock import *
 from veil.backend.database.client import *
-import sys
 
 LOGGER = logging.getLogger(__name__)
 
 @script('drop-database')
 def drop_database(purpose):
     supervisorctl('restart', '{}_postgresql'.format(purpose))
+    time.sleep(3) # wait for postgresql starting to accept incoming connection
     try:
         env = os.environ.copy()
         env['PGPASSWORD'] = get_option(purpose, 'owner_password')
