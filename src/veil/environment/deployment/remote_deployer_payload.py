@@ -44,7 +44,7 @@ def pull_application(veil_home, veil_env):
 
 def deploy(veil_home, veil_env, veil_server_name):
     shell_execute('/opt/veil/bin/veil-init', cwd=veil_home, shell=True)
-    shell_execute('veil :{}/{} deploy'.format(veil_env, veil_server_name), cwd=veil_home)
+    shell_execute('veil :{}/{} install'.format(veil_env, veil_server_name), cwd=veil_home)
 
 
 def shell_execute(command_line, **kwargs):
@@ -57,7 +57,7 @@ def shell_execute(command_line, **kwargs):
         raise
     output = process.communicate()[0]
     if process.returncode:
-        print('Subprocess return code: {}, command: {}, kwargs: {}'.format(
+        raise Exception('shell_execute return code: {}, command: {}, kwargs: {}'.format(
             process.returncode, command_args, kwargs))
     return output
 

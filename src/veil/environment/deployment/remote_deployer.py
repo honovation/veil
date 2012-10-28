@@ -5,7 +5,7 @@ import os
 from veil.frontend.cli import *
 from veil.environment import *
 
-DEPLOY_PY = os.path.join(os.path.dirname(__file__), 'deploy.py')
+PAYLOAD = os.path.join(os.path.dirname(__file__), 'remote_deployer_payload.py')
 
 @script('deploy-env')
 def deploy_env(argv):
@@ -23,10 +23,10 @@ def deploy_server(*argv):
     veil_server_env, veil_server_name = split_veil_server_code(args.remote_veil_server)
     deployed_via = args.deployed_via or veil_server.deployed_via
     fabric.api.env.host_string = deployed_via
-    fabric.api.put(DEPLOY_PY, '/opt/deploy.py', use_sudo=True, mode=0700)
+    fabric.api.put(PAYLOAD, '/opt/remote_deployer_payload.py', use_sudo=True, mode=0700)
     for f in (CURRENT_USER_HOME / '.{}'.format(veil_server_env)).listdir():
         fabric.api.put(f, '~', mode=0600)
-    fabric.api.sudo('python /opt/deploy.py {} {} {} {}'.format(
+    fabric.api.sudo('python /opt/remote_deployer_payload.py {} {} {} {}'.format(
         get_application_codebase(),
         '/opt/{}'.format(get_application_name()),
         veil_server_env, veil_server_name))
