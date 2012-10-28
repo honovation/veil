@@ -9,6 +9,10 @@ def supervisorctl(action, *arguments):
 
 
 def is_supervisord_running():
+    try:
+        import supervisor
+    except:
+        return False
     output = shell_execute('veil execute supervisorctl -c {} {}'.format(
         get_option('config_file'), 'status'), capture=True)
     return 'refused' not in output
