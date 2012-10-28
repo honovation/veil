@@ -22,7 +22,7 @@ logfile={{ config.logging.directory }}/supervisor.log
 logfile_maxbytes={{ config.logging.max_size or '50MB' }}
 logfile_backups={{ config.logging.backups_count or 10 }}
 pidfile={{ config.pid_file or '/tmp/supervisord.pid' }}
-nodaemon={{ not config.daemonize }}
+nodaemon=False
 
 ; the below section must remain in the config file for RPC
 ; (supervisorctl/web interface) to work, additional interfaces may be

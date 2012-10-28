@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment.setting import *
 from veil.environment import *
-from veil.model.collection import *
 from veil.frontend.nginx import *
 
 def supervisor_settings(**updates):
@@ -14,7 +13,9 @@ def supervisor_settings(**updates):
         'inet_http_server': {
             'host': '127.0.0.1',
             'port': 9090 if 'test' != VEIL_SERVER else 9091
-        }
+        },
+        'pid_file': VEIL_VAR_DIR / 'supervisord.pid',
+        'daemonize': False if VEIL_SERVER in ['development', 'test'] else True
     }
     settings = merge_settings(settings, updates, overrides=True)
     return objectify({'supervisor': settings})

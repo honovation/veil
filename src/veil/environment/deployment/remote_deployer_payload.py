@@ -44,7 +44,7 @@ def pull_application(veil_home, veil_env):
 
 def deploy(veil_home, veil_env, veil_server_name):
     shell_execute('/opt/veil/bin/veil-init', cwd=veil_home, shell=True)
-    shell_execute('veil :{}/{} install'.format(veil_env, veil_server_name), cwd=veil_home)
+    shell_execute('veil :{}/{} deploy'.format(veil_env, veil_server_name), cwd=veil_home)
 
 
 def shell_execute(command_line, **kwargs):

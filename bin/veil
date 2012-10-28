@@ -34,7 +34,11 @@ case "$1" in
         exec $@
         ;;
     up)
-        exec veil supervisor up
+        shift
+        exec veil supervisor up $@
+        ;;
+    down)
+        exec veil supervisor down
         ;;
     install)
         exec veil supervisor install-programs
