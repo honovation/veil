@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import inspect
 from veil.environment import *
 from veil.environment.setting import *
 from veil.environment.deployment import *
@@ -8,7 +9,7 @@ from .server.pg_server_program import postgresql_server_program
 def postgresql_settings(purpose, *other_purposes, **updates):
     register_migration_command('veil backend database postgresql migrate {}'.format(purpose))
     settings = objectify({
-        'host': get_veil_server_hosting('{}_postgresql'.format(purpose)).internal_ip,
+        'host': lambda: get_veil_server_hosting('{}_postgresql'.format(purpose)).internal_ip,
         'port': 5432,
         'owner': CURRENT_USER,
         'data_directory': VEIL_VAR_DIR / '{}_postgresql'.format(purpose),
@@ -34,6 +35,8 @@ def copy_postgresql_settings_into_veil(settings):
     new_settings = settings
     for key, value in settings.items():
         if key.endswith('_postgresql'):
+            if inspect.isfunction(value.host):
+                value.host = value.host()
             primary_purpose = key.replace('_postgresql', '')
             other_purposes = set(value.other_purposes)
             for purpose in {primary_purpose}.union(other_purposes):

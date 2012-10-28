@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import inspect
 from veil.environment import *
 from veil.environment.setting import *
 from veil.model.collection import *
@@ -20,7 +21,7 @@ def redis_settings(purpose, **updates):
     settings = objectify({
         'owner': CURRENT_USER,
         'owner_group': CURRENT_USER_GROUP,
-        'bind': get_veil_server_hosting('{}_redis'.format(purpose)).internal_ip,
+        'bind': lambda: get_veil_server_hosting('{}_redis'.format(purpose)).internal_ip,
         'port': 6379,
         'password': '',
         'dbdir': VEIL_VAR_DIR / '{}_redis'.format(purpose),
@@ -43,6 +44,8 @@ def copy_redis_settings_to_veil(settings):
     new_settings = settings
     for key, value in settings.items():
         if key.endswith('_redis'):
+            if inspect.isfunction(value.bind):
+                value.bind = value.bind()
             new_settings = merge_settings(new_settings, {
                 'veil': {
                     key: {

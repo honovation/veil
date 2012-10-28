@@ -43,15 +43,18 @@ def pull_application(veil_home, veil_env):
 
 
 def deploy(veil_home, veil_env, veil_server_name):
-    print(open('/opt/veil/bin/veil-init').read())
-    shell_execute('/opt/veil/bin/veil-init', cwd=veil_home)
-    shell_execute('veil deploy {}/{}'.format(veil_env, veil_server_name), cwd=veil_home)
+    shell_execute('/opt/veil/bin/veil-init', cwd=veil_home, shell=True)
+    shell_execute('veil :{}/{} deploy'.format(veil_env, veil_server_name), cwd=veil_home)
 
 
 def shell_execute(command_line, **kwargs):
     print(command_line)
     command_args = shlex.split(command_line)
-    process = subprocess.Popen(command_args, **kwargs)
+    try:
+        process = subprocess.Popen(command_args, **kwargs)
+    except:
+        print('failed to invoke {} with {}'.format(command_args, kwargs))
+        raise
     output = process.communicate()[0]
     if process.returncode:
         print('Subprocess return code: {}, command: {}, kwargs: {}'.format(

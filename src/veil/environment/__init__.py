@@ -30,6 +30,7 @@ VEIL_VAR_DIR = VEIL_HOME / 'var' / VEIL_ENV
 
 CURRENT_USER = os.getenv('SUDO_USER') or getpass.getuser()
 CURRENT_USER_GROUP = CURRENT_USER
+CURRENT_USER_HOME = as_path(os.getenv('HOME'))
 
 def veil_server(internal_ip, programs, deployed_via):
     from veil.model.collection import objectify
