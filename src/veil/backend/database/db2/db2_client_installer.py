@@ -28,5 +28,6 @@ def install_db2_driver():
     if os.path.exists('/opt/db2-clidriver'):
         return
     shell_execute(
-        'wget http://dependency-veil.googlecode.com/svn/trunk/db2-clidriver.tar.gz -O /tmp/db2-clidriver.tar.gz')
+#        'wget http://dependency-veil.googlecode.com/svn/trunk/db2-clidriver.tar.gz -O /tmp/db2-clidriver.tar.gz')
+        'wget http://200.200.200.25:8080/db2-clidriver.tar.gz -O /tmp/db2-clidriver.tar.gz')
     shell_execute('tar xzf /tmp/db2-clidriver.tar.gz -C /opt')
