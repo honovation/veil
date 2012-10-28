@@ -23,14 +23,17 @@ if [[ $1 == :* ]] ; then
     exit 0
 fi
 
+if [[ $SUDO_USER ]] ; then
+    find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
+    find $VEIL_HOME -type f -name "*.pyc" -delete
+fi
+
 case "$1" in
     execute)
         shift
         exec $@
         ;;
     up)
-        find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
-        find $VEIL_HOME -type f -name "*.pyc" -delete
         exec veil supervisor up
         ;;
     install)
