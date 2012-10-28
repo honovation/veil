@@ -24,6 +24,8 @@ init_components = lambda : veil.component.init_components([
     'veil.supervisor'
 ])
 try:
-    __import__('__veil__')
+    import __veil__
+    for component_name in __veil__.COMPONENTS:
+        __import__(component_name)
 except:
     traceback.print_exc()

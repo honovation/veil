@@ -47,8 +47,8 @@ def execute_script(*argv, **kwargs):
                 exception = sys.exc_info()[1]
                 if not hasattr(exception, 'EXECUTABLE_BEFORE_COMPONENT_LOADED'):
                     import __veil__
-                    for component in getattr(__veil__, 'COMPONENTS', []):
-                        assert_component_loaded(component.__name__)
+                    for component_name in getattr(__veil__, 'COMPONENTS', []):
+                        assert_component_loaded(component_name)
         except:
             pass
         finally:

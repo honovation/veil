@@ -29,7 +29,7 @@ def bootstrap_runtime():
             LOGGING_LEVEL_VALUES[logging.getLevelName(level)] = level
         level = LOGGING_LEVEL_VALUES[get_logging_level() or 'INFO']
         loggers = ['veil']
-        loggers.extend([c.__name__ for c in get_application_components()])
+        loggers.extend([c for c in get_application_components()])
         for logger in loggers:
             logger = logging.getLogger(logger)
             logger.setLevel(level)

@@ -20,8 +20,8 @@ def self_check():
     package_names = ['veil']
     import __veil__
 
-    for component in getattr(__veil__, 'COMPONENTS', []):
-        package_names.append(component.__name__)
+    for component_name in getattr(__veil__, 'COMPONENTS', []):
+        package_names.append(component_name)
     test_package(*package_names)
     check_architecture()
 
