@@ -25,6 +25,7 @@ def redis_settings(purpose, **updates):
         'port': 6379,
         'password': '',
         'dbdir': VEIL_VAR_DIR / '{}_redis'.format(purpose),
+        'appendonly': True,
         'configfile': VEIL_ETC_DIR / '{}_redis.conf'.format(purpose)
     })
     settings = merge_settings(settings, updates, overrides=True)
