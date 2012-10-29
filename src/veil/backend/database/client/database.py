@@ -6,6 +6,7 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
+import veil.component
 from veil.development.test import *
 from veil.environment.setting import *
 
@@ -14,15 +15,31 @@ LOGGER = getLogger(__name__)
 registry = {} # purpose => get_database_options
 instances = {} # purpose => instance
 adapter_classes = {} # database type => adapter class
+dependencies = {}
 
 def register_adapter_class(type, adapter_class):
     adapter_classes[type] = adapter_class
 
 
 def register_database(purpose):
+    dependencies.setdefault(veil.component.get_loading_component().__name__, set()).add(purpose)
     if purpose not in registry:
         registry[purpose] = register_database_options(purpose)
     return lambda: require_database(purpose)
+
+
+def check_database_dependencies(component_names, expected_dependencies):
+    component_name_prefix = ''.join(component_names)
+    actual_dependencies = set()
+    for component_name, component_dependencies in dependencies.items():
+        if component_name.startswith(component_name_prefix):
+            actual_dependencies = actual_dependencies.union(component_dependencies)
+    unexpected_dependencies = actual_dependencies - set(expected_dependencies)
+    if unexpected_dependencies:
+        raise Exception('{} should not reference {}'.format(component_name_prefix, unexpected_dependencies))
+    unreal_dependencies = set(expected_dependencies) - actual_dependencies
+    if unreal_dependencies:
+        raise Exception('{} did not reference {}'.format(component_name_prefix, unreal_dependencies))
 
 
 def register_database_options(purpose):

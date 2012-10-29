@@ -9,8 +9,7 @@ import inspect
 __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_component',
     'is_dummy_module_member', 'get_component_dependencies', 'assert_component_loaded',
-    'assert_component_dependencies', 'get_component_of_module', 'is_component_loaded',
-    'get_loaded_components', 'get_transitive_dependencies',
+    'get_component_of_module', 'is_component_loaded', 'get_loaded_components',
     'add_must_load_module', 'assert_module_is_must_load']
 
 encapsulated_modules = {}
@@ -62,6 +61,7 @@ def init_component(component_name):
 def add_must_load_module(qualified_module_name):
     must_load_module_names.append(qualified_module_name)
 
+
 def assert_module_is_must_load(qualified_module_name):
     if qualified_module_name not in must_load_module_names:
         print('{} is not marked as must load'.format(qualified_module_name))
@@ -105,29 +105,6 @@ def get_component_of_module(module_name):
         if module_name.startswith(component_name):
             matched_component_names.append(component_name)
     return max(matched_component_names)
-
-
-def assert_component_dependencies(component_name, expected_dependencies):
-    actual_dependencies = get_component_dependencies().get(component_name, ())
-    for expected_dependency in expected_dependencies:
-        for actual_dependency in list(actual_dependencies):
-            if actual_dependency.startswith(expected_dependency):
-                actual_dependencies.remove(actual_dependency)
-    if actual_dependencies:
-        raise Exception('{} should not reference {}'.format(component_name, actual_dependencies))
-
-
-def get_transitive_dependencies(component_name):
-    dependencies = list()
-    collect_transitive_dependencies(component_name, dependencies)
-    return dependencies
-
-
-def collect_transitive_dependencies(component_name, dependencies):
-    for dependency in get_component_dependencies().get(component_name, ()):
-        if dependency not in dependencies:
-            dependencies.append(dependency)
-            collect_transitive_dependencies(dependency, dependencies)
 
 
 def get_component_dependencies():

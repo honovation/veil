@@ -7,7 +7,6 @@ import traceback
 from veil.component import get_loading_component
 from veil.component import get_component_dependencies
 from veil.component import get_loaded_components
-from veil.component import get_transitive_dependencies
 from veil.component import assert_module_is_must_load
 from veil.backend.shell import *
 from veil.environment import *
@@ -70,6 +69,19 @@ def installation_script(command='install'):
         return decorator(wrapper)
 
     return decorate
+
+
+def get_transitive_dependencies(component_name):
+    dependencies = list()
+    collect_transitive_dependencies(component_name, dependencies)
+    return dependencies
+
+
+def collect_transitive_dependencies(component_name, dependencies):
+    for dependency in get_component_dependencies().get(component_name, ()):
+        if dependency not in dependencies:
+            dependencies.append(dependency)
+            collect_transitive_dependencies(dependency, dependencies)
 
 
 def is_installer_executed(component_name, command, argv):
