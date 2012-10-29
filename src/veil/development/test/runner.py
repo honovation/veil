@@ -69,7 +69,6 @@ def check_component_dependencies(component_names, expected_dependencies):
                 filter_dependencies(dependencies, 'veil.', '{}.'.format(component_name_prefix)))
     unexpected_dependencies = actual_dependencies - set(expected_dependencies)
     if unexpected_dependencies:
-        print(expected_dependencies)
         raise Exception('{} should not reference {}'.format(component_name_prefix, unexpected_dependencies))
     unreal_dependencies = set(expected_dependencies) - actual_dependencies
     if unreal_dependencies:

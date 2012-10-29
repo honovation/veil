@@ -36,7 +36,7 @@ def migrate(purpose):
     supervisorctl('start', '{}_postgresql'.format(purpose))
     create_database_if_not_exists(purpose)
     versions = load_versions(purpose)
-    db = register_database(purpose)
+    db = lambda: require_database(purpose)
 
     @transactional(db)
     def execute_migration_scripts():
@@ -89,7 +89,7 @@ def create_database_if_not_exists(purpose):
 
 
 def create_database_migration_table_if_not_exists(purpose):
-    db = register_database(purpose)
+    db = lambda: require_database(purpose)
     db().execute(
         """
         CREATE TABLE IF NOT EXISTS database_migration_event (

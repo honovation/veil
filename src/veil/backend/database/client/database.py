@@ -36,10 +36,10 @@ def check_database_dependencies(component_names, expected_dependencies):
             actual_dependencies = actual_dependencies.union(component_dependencies)
     unexpected_dependencies = actual_dependencies - set(expected_dependencies)
     if unexpected_dependencies:
-        raise Exception('{} should not reference {}'.format(component_name_prefix, unexpected_dependencies))
+        raise Exception('{} should not reference database {}'.format(component_name_prefix, unexpected_dependencies))
     unreal_dependencies = set(expected_dependencies) - actual_dependencies
     if unreal_dependencies:
-        raise Exception('{} did not reference {}'.format(component_name_prefix, unreal_dependencies))
+        raise Exception('{} did not reference database {}'.format(component_name_prefix, unreal_dependencies))
 
 
 def register_database_options(purpose):
@@ -67,6 +67,8 @@ def register_database_options(purpose):
 
 
 def require_database(purpose):
+    if veil.component.get_loading_component():
+        raise Exception('use register_database whenever possible')
     if purpose not in registry:
         raise Exception('database for purpose {} is not registered'.format(purpose))
     if purpose not in instances:

@@ -6,6 +6,19 @@ from veil.frontend.cli import script
 from .supervisor_setting import supervisor_settings
 
 @script('up')
+def bring_up_programs(*argv):
+    if 1 == len(argv) and not argv[0].startswith('--'):
+        bring_up_program(argv[0])
+    else:
+        bring_up_supervisor(*argv)
+
+
+def bring_up_program(program_name):
+    settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
+    config = settings.supervisor
+    pass_control_to(config.programs[program_name].execute_command)
+
+
 def bring_up_supervisor(*argv):
     argument_parser = ArgumentParser('Bring up the application')
     argument_parser.add_argument('--daemonize', action='store_true',
