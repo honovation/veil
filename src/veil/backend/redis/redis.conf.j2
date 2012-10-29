@@ -174,7 +174,7 @@ maxmemory {{ config.maxmemory }}
 # IMPORTANT: Check the BGREWRITEAOF to check how to rewrite the append
 # log file in background when it gets too big.
 
-appendonly {% if config.appendonly %}yes{% else %}no{% endif %}
+appendonly {% if config.persisted_by_aof %}yes{% else %}no{% endif %}
 
 # The name of the append only file (default: "appendonly.aof")
 appendfilename {{ config.appendfilename or 'appendonly.aof' }}

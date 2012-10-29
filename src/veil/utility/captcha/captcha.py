@@ -10,6 +10,7 @@ from veil.frontend.template import *
 from veil.frontend.web import *
 from veil.backend.bucket import *
 from veil.backend.redis import *
+from veil.environment.setting import *
 
 bucket = register_bucket('captcha_image')
 redis = register_redis('captcha_answer')
@@ -24,6 +25,12 @@ def register_captcha(website):
     import_widget(captcha_widget)
     route('GET', '/captcha', website=website)(captcha_widget)
     return captcha_protected
+
+
+def captcha_settings(website, redis_port):
+    return merge_settings(
+        bucket_settings('captcha_image', website),
+        redis_settings('captcha_answer', port=6389))
 
 
 @widget
@@ -54,6 +61,7 @@ def captcha_protected(func):
         delete_http_argument('captcha_answer')
         kwargs['captcha_errors'] = validate_captcha(challenge_code, captcha_answer)
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -62,7 +70,7 @@ def validate_captcha(challenge_code, captcha_answer):
     if redis().get(challenge_code) == captcha_answer:
         return {}
     else:
-        return {'captcha_answer':['验证码错误']}
+        return {'captcha_answer': ['验证码错误']}
 
 
 def generate(size=(120, 30),
