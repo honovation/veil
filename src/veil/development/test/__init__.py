@@ -1,6 +1,6 @@
-import veil.component
+import veil_component
 
-with veil.component.init_component(__name__):
+with veil_component.init_component(__name__):
     from .case import TestCase
     from .case import get_executing_test
     from .case import test_hook

@@ -1,8 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-import veil.component
+import veil_component
 
-veil.component.add_must_load_module(__name__)
+veil_component.add_must_load_module(__name__)
 
 from veil.frontend.template import *
 from veil.frontend.cli import *
@@ -38,7 +38,7 @@ def install_programs():
 
 def assert_programs_loaded(programs):
     for program in programs:
-        assert not veil.component.is_dummy_module_member(program), 'program is not loaded properly: {}'.format(program)
+        assert not veil_component.is_dummy_module_member(program), 'program is not loaded properly: {}'.format(program)
 
 
 def install_program(program):

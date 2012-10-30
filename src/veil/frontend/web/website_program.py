@@ -1,8 +1,8 @@
 from __future__ import unicode_literals, print_function, division
-import veil.component
+import veil_component
 from veil.environment.source_code_monitor import register_reloads_on_change_program
 
-veil.component.add_must_load_module(__name__)
+veil_component.add_must_load_module(__name__)
 
 from veil.frontend.template import *
 from veil.frontend.cli import *
@@ -33,11 +33,11 @@ def assert_website_components_loaded(website):
     components = website_components.get(website, ())
     for component in components:
         if component:
-            veil.component.assert_component_loaded(component.__name__)
+            veil_component.assert_component_loaded(component.__name__)
 
 
 def register_website_component(website):
-    loading_component = veil.component.get_loading_component()
+    loading_component = veil_component.get_loading_component()
     if website in website_components:
         if loading_component:
             website_components[website].add(loading_component)

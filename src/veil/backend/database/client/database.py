@@ -6,7 +6,7 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
-import veil.component
+import veil_component
 from veil.development.test import *
 from veil.environment.setting import *
 
@@ -22,7 +22,7 @@ def register_adapter_class(type, adapter_class):
 
 
 def register_database(purpose):
-    dependencies.setdefault(veil.component.get_loading_component().__name__, set()).add(purpose)
+    dependencies.setdefault(veil_component.get_loading_component().__name__, set()).add(purpose)
     if purpose not in registry:
         registry[purpose] = register_database_options(purpose)
     return lambda: require_database(purpose)
@@ -67,7 +67,7 @@ def register_database_options(purpose):
 
 
 def require_database(purpose):
-    if veil.component.get_loading_component():
+    if veil_component.get_loading_component():
         raise Exception('use register_database whenever possible')
     if purpose not in registry:
         raise Exception('database for purpose {} is not registered'.format(purpose))

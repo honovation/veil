@@ -1,6 +1,6 @@
-import veil.component
+import veil_component
 
-with veil.component.init_component(__name__):
+with veil_component.init_component(__name__):
     import httplib
     from veil.frontend.template import *
     from veil.model.command import *

@@ -1,6 +1,6 @@
-import veil.component
+import veil_component
 
-with veil.component.init_component(__name__):
+with veil_component.init_component(__name__):
     from .hash import encode_token
     from .hash import decode_token
     from .hash import get_password_hash

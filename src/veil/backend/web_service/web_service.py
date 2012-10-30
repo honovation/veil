@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-import veil.component
+import veil_component
 from veil.environment.setting import *
 from suds.client import Client
 from suds.client import WebFault
@@ -11,7 +11,7 @@ instances = {} # purpose => instance
 dependencies = {}
 
 def register_web_service(purpose):
-    dependencies.setdefault(veil.component.get_loading_component().__name__, set()).add(purpose)
+    dependencies.setdefault(veil_component.get_loading_component().__name__, set()).add(purpose)
     if purpose not in registry:
         registry[purpose] = register_web_service_options(purpose)
     return lambda: require_web_service(purpose)

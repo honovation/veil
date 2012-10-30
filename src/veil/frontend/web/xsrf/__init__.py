@@ -1,6 +1,6 @@
-import veil.component
+import veil_component
 
-with veil.component.init_component(__name__):
+with veil_component.init_component(__name__):
     from .xsrf import xsrf_token
     from .xsrf import prevent_xsrf
     from .xsrf import set_xsrf_cookie_for_page

@@ -1,6 +1,6 @@
-import veil.component
+import veil_component
 
-with veil.component.init_component(__name__):
+with veil_component.init_component(__name__):
     from .setting import add_settings
     from .setting import register_settings_coordinator
     from .setting import get_settings

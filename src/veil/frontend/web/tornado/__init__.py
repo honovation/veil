@@ -1,6 +1,6 @@
-import veil.component
+import veil_component
 
-with veil.component.init_component(__name__):
+with veil_component.init_component(__name__):
     from .context import get_current_http_context
     from .context import get_current_http_request
     from .context import get_current_http_response

@@ -4,10 +4,10 @@ import functools
 import itertools
 import sys
 import traceback
-from veil.component import get_loading_component
-from veil.component import get_component_dependencies
-from veil.component import get_loaded_components
-from veil.component import assert_module_is_must_load
+from veil_component import get_loading_component
+from veil_component import get_component_dependencies
+from veil_component import get_loaded_components
+from veil_component import assert_module_is_must_load
 from veil.backend.shell import *
 from veil.environment import *
 from veil.frontend.cli import *

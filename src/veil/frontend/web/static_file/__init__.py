@@ -1,6 +1,6 @@
-import veil.component
+import veil_component
 
-with veil.component.init_component(__name__):
+with veil_component.init_component(__name__):
     from .static_file import clear_static_file_hashes
     from .static_file import set_inline_static_files_directory
     from .static_file import set_external_static_files_directory

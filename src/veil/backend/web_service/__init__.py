@@ -1,6 +1,6 @@
-import veil.component
+import veil_component
 
-with veil.component.init_component(__name__):
+with veil_component.init_component(__name__):
     from .web_service import register_web_service
     from .web_service_setting import web_service_settings
     from .web_service import WebFault

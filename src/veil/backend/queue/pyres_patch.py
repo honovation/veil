@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import pyres.job
-from veil.component import *
+from veil_component import *
 
 
 def patch_pyres_job_to_load_component_encapsulated_job_handler_class():

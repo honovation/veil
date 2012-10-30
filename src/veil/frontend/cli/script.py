@@ -4,7 +4,7 @@ import logging
 import sys
 import inspect
 import traceback
-from veil.component import get_loading_component, assert_component_loaded
+from veil_component import get_loading_component, assert_component_loaded
 from veil.environment.setting import *
 
 script_handlers = {}

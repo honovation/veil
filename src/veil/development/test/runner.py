@@ -6,10 +6,10 @@ from unittest.runner import TextTestResult
 from threading import Timer
 import cProfile
 import os
-from veil.component import get_component_of_module
-from veil.component import is_component_loaded
-from veil.component import force_get_all_loaded_modules
-from veil.component import get_component_dependencies
+from veil_component import get_component_of_module
+from veil_component import is_component_loaded
+from veil_component import force_get_all_loaded_modules
+from veil_component import get_component_dependencies
 from veil.backend.shell import *
 from veil.utility.path import *
 from veil.frontend.cli import *

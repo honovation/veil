@@ -1,6 +1,6 @@
-import veil.component
+import veil_component
 
-with veil.component.init_component(__name__):
+with veil_component.init_component(__name__):
     from .collection import filter_single_or_none
     from .collection import single_or_none
     from .collection import filter_single

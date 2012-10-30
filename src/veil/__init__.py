@@ -1,7 +1,7 @@
-import veil.component
+import veil_component
 import traceback
 
-init_components = lambda : veil.component.init_components([
+init_components = lambda : veil_component.init_components([
     'veil.backend.bucket',
     'veil.backend.database.client',
     'veil.backend.database.postgresql',

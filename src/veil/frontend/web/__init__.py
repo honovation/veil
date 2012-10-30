@@ -1,6 +1,6 @@
-import veil.component
+import veil_component
 
-with veil.component.init_component(__name__):
+with veil_component.init_component(__name__):
     from .website_launcher import start_website
     from .website_launcher import start_test_website
     from .website_launcher import register_website_context_manager

@@ -1,5 +1,5 @@
-import veil.component
-with veil.component.init_component(__name__):
+import veil_component
+with veil_component.init_component(__name__):
     from .template import template_filter
     from .template import register_template_filter
     from .template import template_utility
@@ -15,7 +15,7 @@ with veil.component.init_component(__name__):
     from .widget import require_current_widget_namespace_being
     from .widget import import_widget
 
-    if veil.component.is_dummy_module_member(template_utility):
+    if veil_component.is_dummy_module_member(template_utility):
         template_utility = lambda func: func
 
     __all__ = [

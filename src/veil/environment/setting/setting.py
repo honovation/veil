@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import sys
 from veil.model.collection import *
-from veil.component import  *
+from veil_component import  *
 
 initialized = False
 settings = {}

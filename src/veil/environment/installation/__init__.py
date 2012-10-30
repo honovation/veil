@@ -1,6 +1,6 @@
-import veil.component
+import veil_component
 
-with veil.component.init_component(__name__):
+with veil_component.init_component(__name__):
     from .installation import installation_script
     from .installation import install_dependency
     from .installation import require_component_only_install_once
