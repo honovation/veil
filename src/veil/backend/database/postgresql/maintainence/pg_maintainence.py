@@ -8,6 +8,7 @@ from veil.frontend.cli import *
 from veil.environment import *
 from veil.environment.supervisor import *
 from veil.utility.clock import *
+from veil.utility.hash import *
 from veil.backend.database.client import *
 
 LOGGER = logging.getLogger(__name__)
@@ -124,6 +125,16 @@ def execute_migration_script(purpose, migration_script):
         user=get_option(purpose, 'user'),
         database=get_option(purpose, 'database'),
         migration_script=migration_script), env=env)
+
+
+@script('lock-migration-scripts')
+def lock_migration_scripts(purpose):
+    migration_script_dir = VEIL_HOME / 'db' / purpose
+    for sql_path in migration_script_dir.listdir('*.sql'):
+        with open(sql_path) as sql_file:
+            md5 = calculate_file_md5_hash(sql_file)
+        lock_path = as_path(sql_path.replace('.sql', '.locked'))
+        lock_path.write_text(md5)
 
 
 @script('reset')

@@ -19,3 +19,6 @@ if [ ! -d $VEIL_HOME/env ]; then
 fi
 echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
 echo "$VEIL_HOME/src" >> env/lib/python2.7/site-packages/veil.pth
+if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then
+    ln -s $VEIL_FRAMEWORK_HOME/src/discipline_coach.py $VEIL_HOME/.git/hooks/pre-commit
+fi
