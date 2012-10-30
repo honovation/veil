@@ -7,10 +7,18 @@ from datetime import datetime
 from inspect import isfunction
 import contextlib
 from logging import getLogger
+from pprint import pprint
+from veil.frontend.cli import *
 
 LOGGER = getLogger(__name__)
 context_managers = []
 queues = {} # queue_name => job_handlers
+
+
+@script('list-queues')
+def list_queues():
+    pprint(queues)
+
 
 def register_job_context_manager(context_manager):
     LOGGER.info('register job context manager: {}'.format(context_manager))
@@ -58,6 +66,7 @@ class JobHandlerDecorator(object):
 
 def perform(job_handler, payload):
     import pytz
+
     with nest_context_managers(*context_managers):
         # restore datetime as utc timezone
         for key, value in payload.items():
