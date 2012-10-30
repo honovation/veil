@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import veil.component
+from veil.environment.reloader import register_reloads_on_change_program
 
 veil.component.add_must_load_module(__name__)
 
@@ -18,6 +19,7 @@ def website_program(website, **updates):
     if updates:
         program.update(updates)
     return program
+
 
 @installation_script()
 def install_website(website=None):
@@ -41,3 +43,7 @@ def register_website_component(website):
             website_components[website].add(loading_component)
     else:
         website_components.setdefault(website, set()).add(loading_component)
+
+
+def watch_website_changes(website):
+    register_reloads_on_change_program('{}_website'.format(website))

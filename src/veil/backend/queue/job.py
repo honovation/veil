@@ -9,6 +9,7 @@ import contextlib
 from logging import getLogger
 from pprint import pprint
 from veil.frontend.cli import *
+from veil.environment.reloader import register_reloads_on_change_group
 
 LOGGER = getLogger(__name__)
 context_managers = []
@@ -61,6 +62,7 @@ class JobHandlerDecorator(object):
         job_handler.queue = self.queue or job_handler.__name__.replace('_job', '')
         job_handler.perform = lambda payload: perform(job_handler, payload)
         queues.setdefault(job_handler.queue, []).append(job_handler)
+        register_reloads_on_change_group('{}_workers'.format(job_handler.queue))
         return job_handler
 
 
