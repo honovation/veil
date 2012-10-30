@@ -130,6 +130,15 @@ class TimedTextTestResult(TextTestResult):
         timer = Timer(30, lambda: report_time_out(self, test))
         timer.start()
         test.addCleanup(timer.cancel)
+        try:
+            super(TimedTextTestResult, self).startTest(test)
+        except:
+            import traceback
+
+            traceback.print_exc()
+
+    def addSkip(self, test, reason):
+        test.doCleanups()
         super(TimedTextTestResult, self).startTest(test)
 
 
