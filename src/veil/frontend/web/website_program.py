@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import veil.component
-from veil.environment.reloader import register_reloads_on_change_program
+from veil.environment.source_code_monitor import register_reloads_on_change_program
 
 veil.component.add_must_load_module(__name__)
 

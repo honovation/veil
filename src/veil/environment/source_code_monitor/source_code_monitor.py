@@ -5,12 +5,27 @@ import os
 import logging
 import time
 from .reloader import reload
+from veil.environment import *
 from veil.frontend.cli import *
 
 LOGGER = logging.getLogger(__name__)
 modify_times = {}
 
-@script('source-code-monitor-up')
+def source_code_monitor_settings():
+    if 'development' != VEIL_SERVER:
+        return {}
+    return {
+        'supervisor': {
+            'programs': {
+                'source_code_monitor': {
+                    'execute_command': 'veil environment source-code-monitor up'
+                }
+            }
+        }
+    }
+
+
+@script('up')
 def bring_up_source_code_monitor():
     while True:
         reload_on_change()
@@ -19,7 +34,7 @@ def bring_up_source_code_monitor():
 def reload_on_change():
     modified_path = is_source_code_modified()
     if modified_path:
-        print('{} modified, reloading...'.format(modified_path))
+        LOGGER.info('{} modified, reloading...'.format(modified_path))
         refresh_modify_times()
         reload()
     else:

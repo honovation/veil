@@ -9,7 +9,6 @@ from .locale import *
 from .routing import  *
 from .static_file import *
 from .xsrf import *
-from .reloading import *
 from .website_program import assert_website_components_loaded
 
 LOGGER = getLogger(__name__)
@@ -36,8 +35,6 @@ def start_test_website(website, **kwargs):
 
 def start_website(website, **kwargs):
     io_loop = IOLoop.instance()
-    if get_website_option(website, 'reloads_module'):
-        start_reloading_check(io_loop)
     http_handler = create_website_http_handler(website, **kwargs)
     io_loop.add_callback(lambda: LOGGER.info('started website {}'.format(website)))
     start_http_server(
@@ -74,7 +71,6 @@ def register_website_options(website):
     if website in registry:
         return
     section = '{}_website'.format(website.lower()) # for example shopper_website
-    get_reloads_module = register_option(section, 'reloads_module', bool, default=True)
     get_recalculates_static_file_hash = register_option(section, 'recalculates_static_file_hash', bool, default=True)
     get_clears_template_cache = register_option(section, 'clears_template_cache', bool, default=True)
     get_prevents_xsrf = register_option(section, 'prevents_xsrf', bool, default=True)
@@ -90,7 +86,6 @@ def register_website_options(website):
 
     def get_website_options():
         return {
-            'reloads_module': get_reloads_module(),
             'recalculates_static_file_hash': get_recalculates_static_file_hash(),
             'clears_template_cache': get_clears_template_cache(),
             'prevents_xsrf': get_prevents_xsrf(),

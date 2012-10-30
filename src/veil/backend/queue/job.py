@@ -9,7 +9,7 @@ import contextlib
 from logging import getLogger
 from pprint import pprint
 from veil.frontend.cli import *
-from veil.environment.reloader import register_reloads_on_change_group
+from veil.environment.source_code_monitor import register_reloads_on_change_group
 
 LOGGER = getLogger(__name__)
 context_managers = []
