@@ -2,6 +2,9 @@ from __future__ import unicode_literals, print_function, division
 import veil.component
 from veil.environment.setting import *
 from suds.client import Client
+from suds.client import WebFault
+
+WebFault = WebFault
 
 registry = {} # purpose => get_web+service_options
 instances = {} # purpose => instance
