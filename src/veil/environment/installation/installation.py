@@ -4,10 +4,7 @@ import functools
 import itertools
 import sys
 import traceback
-from veil_component import get_loading_component
-from veil_component import get_component_dependencies
-from veil_component import get_loaded_components
-from veil_component import assert_module_is_must_load
+import veil_component
 from veil.backend.shell import *
 from veil.environment import *
 from veil.frontend.cli import *
@@ -18,7 +15,7 @@ VEIL_INSTALLED_TAG_DIR = as_path('/tmp/veil-installed')
 @script('install-all')
 def install_all():
     with require_component_only_install_once():
-        for component_name in get_loaded_components():
+        for component_name in veil_component.get_loaded_components():
             install_dependency(component_name)
 
 
@@ -36,8 +33,8 @@ def installation_script(command='install'):
     decorator = script(command)
 
     def decorate(func):
-        component_name = get_loading_component().__name__
-        assert_module_is_must_load(func.__module__)
+        component_name = veil_component.get_loading_component().__name__
+        veil_component.assert_module_is_must_load(func.__module__)
 
         @functools.wraps(func)
         def wrapper(*argv):
@@ -78,7 +75,7 @@ def get_transitive_dependencies(component_name):
 
 
 def collect_transitive_dependencies(component_name, dependencies):
-    for dependency in get_component_dependencies().get(component_name, ()):
+    for dependency in veil_component.get_component_dependencies().get(component_name, ()):
         if dependency not in dependencies:
             dependencies.append(dependency)
             collect_transitive_dependencies(dependency, dependencies)
@@ -123,7 +120,7 @@ def to_cli_handler_levels(component_name):
 def print_dependencies(component_name, dependencies=None, tabs_count=0):
     dependencies = dependencies or set()
     print('{}{}-{}'.format(''.join(itertools.repeat('    ', tabs_count)), tabs_count, component_name))
-    for dependency in get_component_dependencies().get(component_name, ()):
+    for dependency in veil_component.get_component_dependencies().get(component_name, ()):
         if dependency not in dependencies:
             dependencies.add(dependency)
             print_dependencies(dependency, dependencies, tabs_count + 1)

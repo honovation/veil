@@ -4,7 +4,7 @@ import logging
 import sys
 import inspect
 import traceback
-from veil_component import get_loading_component, assert_component_loaded
+import veil_component
 from veil.environment.setting import *
 
 script_handlers = {}
@@ -48,7 +48,7 @@ def execute_script(*argv, **kwargs):
                 if not hasattr(exception, 'EXECUTABLE_BEFORE_COMPONENT_LOADED'):
                     import __veil__
                     for component_name in getattr(__veil__, 'COMPONENTS', []):
-                        assert_component_loaded(component_name)
+                        veil_component.assert_component_loaded(component_name)
         except:
             pass
         finally:
@@ -91,7 +91,7 @@ class ScriptHandlerDecorator(object):
 
 
 def get_current_level_names():
-    component = get_loading_component()
+    component = veil_component.get_loading_component()
     if not component:
         return []
     level_names = component.__name__.split('.')

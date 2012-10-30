@@ -3,7 +3,7 @@ import os.path
 from logging import getLogger
 from unittest.suite import TestSuite
 from unittest.loader import TestLoader
-from veil_component import force_import_module
+import veil_component
 from nose_helper import ContextSuite
 from tcunittest import TeamcityTestRunner
 
@@ -30,13 +30,13 @@ def main():
 
 def run_test_case(module_name, test_case_name):
     LOGGER.debug("/ from testcase " + test_case_name + " in " + module_name)
-    module = force_import_module(module_name)
+    module = veil_component.force_import_module(module_name)
     tests = TestLoader().loadTestsFromTestCase(getattr(module, test_case_name))
     run_test(TestSuite(tests))
 
 def run_test_method(module_name, test_case_name, test_method_name):
     LOGGER.debug("/ from method " + test_method_name + " in testcase " + test_case_name + " in " + module_name)
-    module = force_import_module(module_name)
+    module = veil_component.force_import_module(module_name)
     test_case = getattr(module, test_case_name)
     run_test(test_case(test_method_name))
 
