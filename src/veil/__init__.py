@@ -15,6 +15,7 @@ init_components = lambda : veil.component.init_components([
     'veil.development.test',
     'veil.environment.deployment',
     'veil.environment.installation',
+    'veil.environment.reloader',
     'veil.environment.setting',
     'veil.environment.supervisor',
     'veil.frontend.cli',
