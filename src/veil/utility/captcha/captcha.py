@@ -27,10 +27,6 @@ def register_captcha(website):
     return captcha_protected
 
 
-def captcha_settings(website, redis_port):
-    return merge_settings(
-        bucket_settings('captcha_image', website),
-        redis_settings('captcha_answer', port=6389))
 
 
 @widget

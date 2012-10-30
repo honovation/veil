@@ -2,7 +2,7 @@ import veil.component
 
 with veil.component.init_component(__name__):
     from .captcha import register_captcha
-    from .captcha import captcha_settings
+    from .captcha_setting import captcha_settings
 
     __all__ = [
         register_captcha.__name__,
