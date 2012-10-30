@@ -21,7 +21,7 @@ def supervisor_settings(**updates):
     return objectify({'supervisor': settings})
 
 
-def add_supervisor_reverse_proxy_server(settings):
+def add_inet_http_server_to_nginx(settings):
     if 'development' != VEIL_SERVER:
         return settings
     settings = merge_settings(supervisor_settings(), settings, overrides=True)
@@ -29,18 +29,8 @@ def add_supervisor_reverse_proxy_server(settings):
     server_name = 'supervisor.dev.dmright.com'
     return merge_settings(settings, nginx_server_settings(settings, server_name,
         listen=80,
-        locations={
-            '/': {
-                '_': """
-                        proxy_pass http://%s:%s;
-                        proxy_set_header   Host             $host;
-                        proxy_set_header   X-Real-IP        $remote_addr;
-                        proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
-                        """ % (
-                    inet_http_server_config.host,
-                    inet_http_server_config.port),
-            },
-        }
+        rewrite='^ $scheme://{}:{}$request_uri'.format(
+            inet_http_server_config.host, inet_http_server_config.port)
     ))
 
 
