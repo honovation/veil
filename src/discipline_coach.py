@@ -23,7 +23,7 @@ def check_if_locked_migration_scripts_being_changed():
                 with open(sql_path) as f:
                     actual_md5 = calculate_file_md5_hash(f)
                 if actual_md5 != expected_md5:
-                    print('[Orz] Now, Read after me: "I should not modify {}"'.format(sql_path))
+                    print('[Orz] LISTEN!!! Read after me: "I should not modify {}"'.format(sql_path))
                     sys.exit(1)
 
 
