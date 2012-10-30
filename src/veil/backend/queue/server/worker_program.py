@@ -5,8 +5,6 @@ veil_component.add_must_load_module(__name__)
 
 from veil.environment.setting import *
 from veil.environment.installation import *
-from veil.frontend.cli import *
-from veil.frontend.locale import *
 from ..job import list_job_handlers
 from ..queue_api_installer import install_queue_api
 
@@ -16,9 +14,10 @@ get_queue_password = register_option('queue', 'password')
 get_worker_interval = register_option('queue', 'worker_interval', int, default=5)
 
 
-def worker_program(queue_name):
+def worker_program(queue_redis_host, queue_redis_port, queue_name):
     return {
-        'execute_command': 'veil backend queue worker-up {}'.format(queue_name),
+        'execute_command': 'veil execute python -m pyres_patch.pyres_worker --host={} --port={} -l info -f stderr {}'.format(
+            queue_redis_host, queue_redis_port, queue_name),
         'install_command': 'veil backend queue install-worker {}'.format(queue_name),
         'group': '{}_workers'.format(queue_name)
     }

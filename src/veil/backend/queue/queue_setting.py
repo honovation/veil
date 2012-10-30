@@ -13,6 +13,8 @@ def queue_settings(
         resweb_host=None, resweb_port=None, workers=None, **updates):
     updates['port'] = updates.get('port', 6389)
     settings = redis_settings('queue', **updates)
+    queue_redis_host = settings.queue_redis.bind()
+    queue_redis_port = settings.queue_redis.port
     settings = merge_settings(settings, {
         'resweb': {
             'config_file': VEIL_ETC_DIR / 'resweb.cfg',
@@ -26,7 +28,7 @@ def queue_settings(
         'supervisor': {
             'programs': {
                 'resweb': resweb_program(),
-                'delayed_job_scheduler': delayed_job_scheduler_program(),
+                'delayed_job_scheduler': delayed_job_scheduler_program(queue_redis_host, queue_redis_port),
                 'periodic_job_scheduler': periodic_job_scheduler_program()
             }
         }
@@ -34,7 +36,8 @@ def queue_settings(
     workers = workers or None
     for queue_name, workers_count in workers.items():
         for i in range(1, workers_count + 1):
-            settings.supervisor.programs['{}_worker{}'.format(queue_name, i)] = worker_program(queue_name)
+            settings.supervisor.programs['{}_worker{}'.format(queue_name, i)] = worker_program(
+                queue_redis_host, queue_redis_port, queue_name)
     if 'test' == VEIL_ENV:
         settings.supervisor.programs.clear()
     return settings

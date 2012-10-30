@@ -17,8 +17,6 @@ with veil_component.init_component(__name__):
         from veil.environment.setting import register_settings_coordinator
         from .queue_setting import copy_queue_settings_to_veil
         from .queue_setting import add_resweb_reverse_proxy_server
-        from .pyres_patch import patch_pyres_job_to_load_component_encapsulated_job_handler_class
 
         register_settings_coordinator(copy_queue_settings_to_veil)
         register_settings_coordinator(add_resweb_reverse_proxy_server)
-        patch_pyres_job_to_load_component_encapsulated_job_handler_class()

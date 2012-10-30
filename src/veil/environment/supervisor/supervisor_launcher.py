@@ -16,7 +16,9 @@ def bring_up_programs(*argv):
 def bring_up_program(program_name):
     settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
     config = settings.supervisor
-    pass_control_to(config.programs[program_name].execute_command)
+    execute_command = config.programs[program_name].execute_command
+    print(execute_command)
+    pass_control_to(execute_command)
 
 
 def bring_up_supervisor(*argv):

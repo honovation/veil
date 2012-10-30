@@ -3,16 +3,9 @@ import veil_component
 
 veil_component.add_must_load_module(__name__)
 
-from veil.environment.installation import *
-from ..queue_api_installer import install_queue_api
-
-def delayed_job_scheduler_program():
+def delayed_job_scheduler_program(queue_redis_host, queue_redis_port):
     return  {
-        'execute_command': 'veil backend queue delayed-job-scheduler-up',
-        'install_command': 'veil backend queue install-delayed-job-scheduler'
+        'execute_command': 'veil execute python -m pyres_patch.pyres_scheduler --host={} --port={} -l info -f stderr'.format(
+            queue_redis_host, queue_redis_port),
+        'install_command': 'veil backend queue install'
     }
-
-
-@installation_script('install-delayed-job-scheduler')
-def install_delayed_job_scheduler():
-    install_queue_api()
