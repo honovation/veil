@@ -10,3 +10,9 @@ with veil.component.init_component(__name__):
         web_service_settings.__name__,
         WebFault.__name__
     ]
+
+    def init():
+        from veil.development.test import register_architecture_checker
+        from .web_service import check_web_service_dependencies
+
+        register_architecture_checker('WEB_SERVICES', check_web_service_dependencies)

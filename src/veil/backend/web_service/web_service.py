@@ -1,14 +1,31 @@
 from __future__ import unicode_literals, print_function, division
+import veil.component
 from veil.environment.setting import *
 from suds.client import Client
 
 registry = {} # purpose => get_web+service_options
 instances = {} # purpose => instance
+dependencies = {}
 
 def register_web_service(purpose):
+    dependencies.setdefault(veil.component.get_loading_component().__name__, set()).add(purpose)
     if purpose not in registry:
         registry[purpose] = register_web_service_options(purpose)
     return lambda: require_web_service(purpose)
+
+
+def check_web_service_dependencies(component_names, expected_dependencies):
+    component_name_prefix = ''.join(component_names)
+    actual_dependencies = set()
+    for component_name, component_dependencies in dependencies.items():
+        if component_name.startswith(component_name_prefix):
+            actual_dependencies = actual_dependencies.union(component_dependencies)
+    unexpected_dependencies = actual_dependencies - set(expected_dependencies)
+    if unexpected_dependencies:
+        raise Exception('{} should not reference web service {}'.format(component_name_prefix, unexpected_dependencies))
+    unreal_dependencies = set(expected_dependencies) - actual_dependencies
+    if unreal_dependencies:
+        raise Exception('{} did not reference web service {}'.format(component_name_prefix, unreal_dependencies))
 
 
 def register_web_service_options(purpose):
