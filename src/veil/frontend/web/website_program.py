@@ -13,7 +13,8 @@ website_components = {} # website => components
 def website_program(website, **updates):
     program = {
         'execute_command': 'veil frontend web up {}'.format(website),
-        'install_command': 'veil frontend web install {}'.format(website)}
+        'install_command': 'veil frontend web install {}'.format(website)
+    }
     if updates:
         program.update(updates)
     return program

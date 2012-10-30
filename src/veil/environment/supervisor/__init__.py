@@ -14,5 +14,7 @@ with veil.component.init_component(__name__):
     def init():
         from veil.environment.setting import register_settings_coordinator
         from .supervisor_setting import add_supervisor_reverse_proxy_server
+        from .supervisor_setting import consolidate_program_groups
 
         register_settings_coordinator(add_supervisor_reverse_proxy_server)
+        register_settings_coordinator(consolidate_program_groups)

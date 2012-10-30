@@ -42,3 +42,17 @@ def add_supervisor_reverse_proxy_server(settings):
             },
         }
     ))
+
+
+def consolidate_program_groups(settings):
+    settings = merge_settings(supervisor_settings(), settings, overrides=True)
+    groups = {}
+    for program_name, program in settings.supervisor.programs.items():
+        belong_to_group = program.get('group', None)
+        if belong_to_group:
+            groups.setdefault(belong_to_group, set()).add(program_name)
+    return merge_settings(settings, {
+        'supervisor': {
+            'groups': groups
+        }
+    })

@@ -19,7 +19,8 @@ get_worker_interval = register_option('queue', 'worker_interval', int, default=5
 def worker_program(queue_name):
     return {
         'execute_command': 'veil backend queue worker-up {}'.format(queue_name),
-        'install_command': 'veil backend queue install-worker {}'.format(queue_name)
+        'install_command': 'veil backend queue install-worker {}'.format(queue_name),
+        'group': '{}_workers'.format(queue_name)
     }
 
 
