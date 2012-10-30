@@ -10,8 +10,11 @@ from veil.component import get_component_of_module
 from veil.component import is_component_loaded
 from veil.component import force_get_all_loaded_modules
 from veil.component import get_component_dependencies
+from veil.backend.shell import *
 from veil.utility.path import *
 from veil.frontend.cli import *
+from veil.environment import *
+import discipline_coach
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
 architecture_checkers = {}
@@ -29,6 +32,7 @@ def self_check():
         package_names.append(component_name)
     test_package(*package_names)
     check_architecture()
+    (VEIL_HOME / '.self-check-passed').write_text(discipline_coach.calculate_git_status_hash())
 
 
 @script('check-architecture')
