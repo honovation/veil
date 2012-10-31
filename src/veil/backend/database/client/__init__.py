@@ -19,3 +19,5 @@ with veil_component.init_component(__name__):
         from .database import check_database_dependencies
 
         register_architecture_checker('DATABASES', check_database_dependencies)
+        register_architecture_checker('WRITABLE_TABLES', lambda *args, **kwargs: None)
+        register_architecture_checker('READABLE_TABLES', lambda *args, **kwargs: None)

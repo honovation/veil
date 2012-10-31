@@ -9,6 +9,7 @@ import uuid
 import veil_component
 from veil.development.test import *
 from veil.environment.setting import *
+from .table_dependency import check_table_dependency
 
 LOGGER = getLogger(__name__)
 
@@ -22,10 +23,11 @@ def register_adapter_class(type, adapter_class):
 
 
 def register_database(purpose):
-    dependencies.setdefault(veil_component.get_loading_component().__name__, set()).add(purpose)
+    component_name = veil_component.get_loading_component().__name__
+    dependencies.setdefault(component_name, set()).add(purpose)
     if purpose not in registry:
         registry[purpose] = register_database_options(purpose)
-    return lambda: require_database(purpose)
+    return lambda: require_database(purpose, component_name)
 
 
 def check_database_dependencies(component_names, expected_dependencies):
@@ -66,7 +68,7 @@ def register_database_options(purpose):
     return get_database_options
 
 
-def require_database(purpose):
+def require_database(purpose, component_name=None):
     if veil_component.get_loading_component():
         raise Exception('use register_database whenever possible')
     if purpose not in registry:
@@ -74,7 +76,7 @@ def require_database(purpose):
     if purpose not in instances:
         get_database_options = registry[purpose]
         instances[purpose] = connect(purpose=purpose, **get_database_options())
-    db = instances[purpose]
+    db = Database(purpose, component_name, instances[purpose])
     executing_test = get_executing_test(optional=True)
     if executing_test:
         db.disable_autocommit()
@@ -96,9 +98,7 @@ def connect(purpose, type, host, port, database, user, password, schema):
             host=host, port=port,
             database=database, user=user,
             password=password, schema=schema)
-        db = Database(purpose, adapter)
-        db.database = database
-        return db
+        return adapter
     else:
         raise Exception('unknown database type: {}'.format(type))
 
@@ -135,8 +135,9 @@ def transactional(database_provider):
 
 
 class Database(object):
-    def __init__(self, purpose, conn):
+    def __init__(self, purpose, component_name, conn):
         self.purpose = purpose
+        self.component_name = component_name
         self.opened_by = str('\n').join(traceback.format_stack())
         self.conn = conn
 
@@ -287,6 +288,7 @@ class Database(object):
         return self._query_large_result_set(sql, batch_size, db_fetch_size, **kwargs)
 
     def _execute(self, sql, **kwargs):
+        check_table_dependency(self.component_name, sql)
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
                 cursor.execute(sql, kwargs)
@@ -296,6 +298,7 @@ class Database(object):
             return cursor.rowcount
 
     def _executemany(self, sql, seq_of_parameters):
+        check_table_dependency(self.component_name, sql)
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
                 cursor.executemany(sql, seq_of_parameters)
@@ -305,6 +308,7 @@ class Database(object):
             return cursor.rowcount
 
     def _query(self, sql, returns_dict_object=True, **kwargs):
+        check_table_dependency(self.component_name, sql)
         with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
             try:
                 cursor.execute(sql, kwargs)

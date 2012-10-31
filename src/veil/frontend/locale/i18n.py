@@ -4,6 +4,7 @@ from gettext import NullTranslations
 from logging import getLogger
 from babel.core import Locale
 from babel.support import Translations
+import sys
 from veil.development.test import *
 from veil.frontend.template import *
 from veil.environment import *
@@ -59,16 +60,13 @@ def get_default_locale():
 
 def _(*args, **kwargs):
 # to supress the warning of pycharm
-    from __builtin__ import _
 
-    return _(*args, **kwargs)
+    return sys.modules['__builtin__']._(*args, **kwargs)
 
 @test_hook
 def install_null_translation():
-    import __builtin__
-
     def clean_up():
-        del __builtin__.__dict__['_']
+        del sys.modules['__builtin__'].__dict__['_']
 
     executing_test = get_executing_test(optional=True)
     if executing_test:

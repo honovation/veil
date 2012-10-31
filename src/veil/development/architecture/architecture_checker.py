@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
-import sys
 import veil_component
+from veil.environment import *
 
 architecture_checkers = {}
 
@@ -9,7 +9,7 @@ def register_architecture_checker(key, checker):
 
 
 def check_architecture():
-    architecture = getattr(sys.modules['__veil__'], 'ARCHITECTURE', {})
+    architecture = get_application_architecture()
     for component_name, value in architecture.items():
         check_component_architecture([component_name], value)
 

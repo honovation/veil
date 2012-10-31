@@ -76,3 +76,11 @@ def get_application_codebase():
 
 def get_application_components():
     return sys.modules['__veil__'].COMPONENTS
+
+
+def get_application_architecture():
+    return getattr(sys.modules['__veil__'], 'ARCHITECTURE', {})
+
+
+def get_application_wrtitable_tables():
+    return getattr(sys.modules['__veil__'], 'WRITABLE_TABLES', {})
