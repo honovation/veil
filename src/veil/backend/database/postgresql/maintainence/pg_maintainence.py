@@ -145,3 +145,17 @@ def reset(purpose):
 
 def get_option(purpose, key):
     return get_settings()['{}_postgresql'.format(purpose)][key]
+
+
+def check_if_locked_migration_scripts_being_changed():
+    for purpose in os.listdir('./db'):
+        file_names = set(os.listdir('./db/{}'.format(purpose)))
+        for sql_file_name in file_names:
+            locked_file_name = sql_file_name.replace('.sql', '.locked')
+            if sql_file_name.endswith('.sql') and locked_file_name in file_names:
+                expected_md5 = open('./db/{}/{}'.format(purpose, locked_file_name)).read()
+                sql_path = './db/{}/{}'.format(purpose, sql_file_name)
+                with open(sql_path) as f:
+                    actual_md5 = calculate_file_md5_hash(f)
+                if actual_md5 != expected_md5:
+                    raise Exception('locked migration script {} should not be changed'.format(sql_path))
