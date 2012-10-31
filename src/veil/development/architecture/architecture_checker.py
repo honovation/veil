@@ -1,43 +1,15 @@
 from __future__ import unicode_literals, print_function, division
-from unittest.runner import TextTestRunner
-from unittest.loader import TestLoader
-from unittest.suite import TestSuite
-from unittest.runner import TextTestResult
-from threading import Timer
-import cProfile
-import os
-import discipline_coach
+import sys
 import veil_component
-from veil.utility.path import *
-from veil.frontend.cli import *
-from veil.environment import *
-from veil.backend.shell import *
 
-CURRENT_DIR = as_path(os.path.dirname(__file__))
 architecture_checkers = {}
 
 def register_architecture_checker(key, checker):
     architecture_checkers[key] = checker
 
 
-@script('self-check')
-def self_check():
-    package_names = ['veil']
-    import __veil__
-
-    for component_name in getattr(__veil__, 'COMPONENTS', []):
-        package_names.append(component_name)
-    test_package(*package_names)
-    check_architecture()
-    shell_execute('git add .')
-    (VEIL_HOME / '.self-check-passed').write_text(discipline_coach.calculate_git_status_hash())
-
-
-@script('check-architecture')
 def check_architecture():
-    import __veil__
-
-    architecture = getattr(__veil__, 'ARCHITECTURE', {})
+    architecture = getattr(sys.modules['__veil__'], 'ARCHITECTURE', {})
     for component_name, value in architecture.items():
         check_component_architecture([component_name], value)
 
@@ -96,55 +68,3 @@ def filter_dependencies(dependencies, *white_list):
         filtered_dependencies.add(dependency)
     return filtered_dependencies
 
-
-def profile_package(*package_names):
-    import __builtin__
-
-    __builtin__.__dict__['test'] = lambda: test_package(*package_names)
-    cProfile.run('test()')
-
-
-def test_package(*package_names):
-    tests = []
-    test_loader = TestLoader()
-    for module_name, module in veil_component.force_get_all_loaded_modules().items():
-        for package_name in package_names:
-            if module_name.startswith('{}.'.format(package_name)):
-                module_tests = test_loader.loadTestsFromModule(module)
-                module_tests = [t for t in module_tests if is_test_suite_loaded(t)]
-                tests.extend(module_tests)
-    test_result = TextTestRunner(failfast=True, resultclass=TimedTextTestResult).run(TestSuite(tests))
-    if not test_result.wasSuccessful():
-        raise Exception('test failed')
-
-
-def is_test_suite_loaded(suite):
-    if 'LoadTestsFailure' == suite.__class__.__name__:
-        return False
-    for test in suite:
-        if not veil_component.is_component_loaded(veil_component.get_component_of_module(test.__module__)):
-            return False
-    return True
-
-
-class TimedTextTestResult(TextTestResult):
-    def startTest(self, test):
-        timer = Timer(30, lambda: report_time_out(self, test))
-        timer.start()
-        test.addCleanup(timer.cancel)
-        try:
-            super(TimedTextTestResult, self).startTest(test)
-        except:
-            import traceback
-
-            traceback.print_exc()
-
-    def addSkip(self, test, reason):
-        test.doCleanups()
-        super(TimedTextTestResult, self).startTest(test)
-
-
-def report_time_out(result, test):
-    result.stream.write('\n')
-    result.stream.write('{} time out'.format(test))
-    result.stream.flush()

@@ -59,7 +59,8 @@ case "$1" in
         exec veil development git pull
         ;;
     self-check)
-        exec veil :test development test self-check
+        shift
+        exec veil :test development self-checker self-check $@
         ;;
     *)
         exec python -m veil $@

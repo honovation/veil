@@ -15,7 +15,7 @@ with veil_component.init_component(__name__):
     ]
 
     def init():
-        from veil.development.test import register_architecture_checker
+        from veil.development.architecture import register_architecture_checker
         from .database import check_database_dependencies
 
         register_architecture_checker('DATABASES', check_database_dependencies)

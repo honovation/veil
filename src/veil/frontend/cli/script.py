@@ -5,6 +5,7 @@ import sys
 import inspect
 import traceback
 import veil_component
+from veil.environment import *
 from veil.environment.setting import *
 
 script_handlers = {}
@@ -46,8 +47,7 @@ def execute_script(*argv, **kwargs):
             if not 'install' in argv:
                 exception = sys.exc_info()[1]
                 if not hasattr(exception, 'EXECUTABLE_BEFORE_COMPONENT_LOADED'):
-                    import __veil__
-                    for component_name in getattr(__veil__, 'COMPONENTS', []):
+                    for component_name in get_application_components():
                         veil_component.assert_component_loaded(component_name)
         except:
             pass
