@@ -9,7 +9,7 @@ def to_str(s):
     If the argument is already a byte string or None, it is returned unchanged.
     Otherwise it must be a unicode string and is encoded as utf8.
     """
-    if isinstance(s, (bytes, type(None))):
+    if isinstance(s, (str, bytes, type(None))):
         return s
     assert isinstance(s, unicode)
     return s.encode("utf-8")
