@@ -24,9 +24,7 @@ def get_settings():
     if not initialized:
         initialized = True
         settings = objectify(settings)
-        import __veil__
-
-        settings = merge_settings(settings, __veil__.SETTINGS)
+        settings = merge_settings(settings, sys.modules['__veil__'].SETTINGS)
     for coordinator in coordinators:
         settings = coordinator(settings)
         if not isinstance(settings, DictObject):

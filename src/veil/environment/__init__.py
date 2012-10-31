@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import getpass
 from os import getenv
 import os
+import sys
 from veil.utility.path import *
 from veil.model.collection import *
 
@@ -41,34 +42,27 @@ def veil_server(internal_ip, programs, deployed_via):
         'deployed_via': deployed_via
     })
 
-def get_veil_servers(env):
-    import __veil__
 
-    return __veil__.ENVIRONMENTS[env]
+def get_veil_servers(env):
+    return sys.modules['__veil__'].ENVIRONMENTS[env]
 
 
 def get_current_veil_server():
-    import __veil__
-
-    return __veil__.ENVIRONMENTS[VEIL_ENV][VEIL_SERVER_NAME]
+    return sys.modules['__veil__'].ENVIRONMENTS[VEIL_ENV][VEIL_SERVER_NAME]
 
 
 def get_veil_server_hosting(program):
-    import __veil__
-
     if VEIL_SERVER in ['test', 'development']:
         return DictObject(internal_ip='127.0.0.1')
-    for server in __veil__.ENVIRONMENTS[VEIL_ENV].values():
+    for server in sys.modules['__veil__'].ENVIRONMENTS[VEIL_ENV].values():
         if program in server.programs:
             return server
     raise Exception('no server hosting program: {}'.format(program))
 
 
 def get_remote_veil_server(code):
-    import __veil__
-
     env, server_name = split_veil_server_code(code)
-    return __veil__.ENVIRONMENTS[env][server_name]
+    return sys.modules['__veil__'].ENVIRONMENTS[env][server_name]
 
 
 def get_application_name():
@@ -77,11 +71,8 @@ def get_application_name():
 
 
 def get_application_codebase():
-    import __veil__
+    return sys.modules['__veil__'].CODEBASE
 
-    return __veil__.CODEBASE
 
 def get_application_components():
-    import __veil__
-
-    return __veil__.COMPONENTS
+    return sys.modules['__veil__'].COMPONENTS

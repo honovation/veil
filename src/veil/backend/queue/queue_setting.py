@@ -13,7 +13,7 @@ def queue_settings(
         resweb_host=None, resweb_port=None, workers=None, **updates):
     updates['port'] = updates.get('port', 6389)
     settings = redis_settings('queue', **updates)
-    queue_redis_host = settings.queue_redis.bind()
+    queue_redis_host = settings.queue_redis.bind
     queue_redis_port = settings.queue_redis.port
     settings = merge_settings(settings, {
         'resweb': {

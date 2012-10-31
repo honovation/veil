@@ -20,8 +20,6 @@ def install_programs():
     config = settings.supervisor
     assert_programs_loaded(config.programs.values())
     with require_component_only_install_once():
-        import __veil__
-
         if VEIL_SERVER in ['development', 'test']:
             print('[INSTALL] about to install programs {} ...'.format(config.programs.keys()))
             for program_name, program in config.programs.items():
