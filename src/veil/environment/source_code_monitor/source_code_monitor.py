@@ -31,14 +31,18 @@ def bring_up_source_code_monitor():
         reload_on_change()
 
 
-def reload_on_change():
+def reload_on_change(exit_on_no_change=False):
     modified_path = is_source_code_modified()
     if modified_path:
         LOGGER.info('{} modified, reloading...'.format(modified_path))
         refresh_modify_times()
         reload()
+        reload_on_change(exit_on_no_change=True) # refresh the state
     else:
-        time.sleep(0.5)
+        if exit_on_no_change:
+            sys.exit(1)
+        else:
+            time.sleep(0.5)
 
 
 def refresh_modify_times():
