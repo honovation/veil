@@ -288,9 +288,9 @@ class Database(object):
         return self._query_large_result_set(sql, batch_size, db_fetch_size, **kwargs)
 
     def _execute(self, sql, **kwargs):
-        check_table_dependency(self.component_name, sql)
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
+                check_table_dependency(self.component_name, sql)
                 cursor.execute(sql, kwargs)
             except:
                 LOGGER.error('failed to execute {} with {}'.format(sql, kwargs))
@@ -298,9 +298,9 @@ class Database(object):
             return cursor.rowcount
 
     def _executemany(self, sql, seq_of_parameters):
-        check_table_dependency(self.component_name, sql)
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
+                check_table_dependency(self.component_name, sql)
                 cursor.executemany(sql, seq_of_parameters)
             except:
                 LOGGER.error('failed to execute {} with {}'.format(sql, seq_of_parameters))
@@ -308,9 +308,9 @@ class Database(object):
             return cursor.rowcount
 
     def _query(self, sql, returns_dict_object=True, **kwargs):
-        check_table_dependency(self.component_name, sql)
         with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
             try:
+                check_table_dependency(self.component_name, sql)
                 cursor.execute(sql, kwargs)
             except:
                 LOGGER.error('failed to execute {} with {}'.format(sql, kwargs))

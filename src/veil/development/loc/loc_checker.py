@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import os.path
 import veil_component
 
-THRESHOLD = 1110
+THRESHOLD = 990
 GOAL = 500
 
 def check_loc():

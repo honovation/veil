@@ -52,7 +52,7 @@ def installation_script(command='install'):
                     print('[INSTALL] executing installer {} {} {}...'.format(component_name, command, argv))
                     return func(*argv)
                 create_layout()
-                for dependency in get_transitive_dependencies(component_name):
+                for dependency in veil_component.get_transitive_dependencies(component_name):
                     install_dependency(dependency)
                 env = os.environ.copy()
                 env['VEIL_INSTALLATION_SCRIPT_JUST_DO_IT'] = 'TRUE'
@@ -70,17 +70,6 @@ def installation_script(command='install'):
     return decorate
 
 
-def get_transitive_dependencies(component_name):
-    dependencies = list()
-    collect_transitive_dependencies(component_name, dependencies)
-    return dependencies
-
-
-def collect_transitive_dependencies(component_name, dependencies):
-    for dependency in veil_component.get_component_dependencies().get(component_name, ()):
-        if dependency not in dependencies:
-            dependencies.append(dependency)
-            collect_transitive_dependencies(dependency, dependencies)
 
 
 def is_installer_executed(component_name, command, argv):
