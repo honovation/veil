@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import os.path
 import veil_component
 
 THRESHOLD = 1230
@@ -46,5 +47,7 @@ def calculate_component_loc(component_name):
 
 
 def get_loc(file_path):
+    if not os.path.exists(file_path):
+        return 0
     with open(file_path) as f:
         return len(f.readlines())
