@@ -9,7 +9,7 @@ import uuid
 import veil_component
 from veil.development.test import *
 from veil.environment.setting import *
-from .table_dependency import check_table_dependency
+from .table_dependency import check_table_dependencies
 
 LOGGER = getLogger(__name__)
 
@@ -290,7 +290,7 @@ class Database(object):
     def _execute(self, sql, **kwargs):
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
-                check_table_dependency(self.component_name, sql)
+                check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
             except:
                 LOGGER.error('failed to execute {} with {}'.format(sql, kwargs))
@@ -300,7 +300,7 @@ class Database(object):
     def _executemany(self, sql, seq_of_parameters):
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
-                check_table_dependency(self.component_name, sql)
+                check_table_dependencies(self.component_name, sql)
                 cursor.executemany(sql, seq_of_parameters)
             except:
                 LOGGER.error('failed to execute {} with {}'.format(sql, seq_of_parameters))
@@ -310,7 +310,7 @@ class Database(object):
     def _query(self, sql, returns_dict_object=True, **kwargs):
         with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
             try:
-                check_table_dependency(self.component_name, sql)
+                check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
             except:
                 LOGGER.error('failed to execute {} with {}'.format(sql, kwargs))

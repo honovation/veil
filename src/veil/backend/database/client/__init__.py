@@ -17,7 +17,9 @@ with veil_component.init_component(__name__):
     def init():
         from veil.development.architecture import register_architecture_checker
         from .database import check_database_dependencies
+        from .table_dependency import update_writable_tables
 
         register_architecture_checker('DATABASES', check_database_dependencies)
+        register_architecture_checker('TABLES', update_writable_tables)
         register_architecture_checker('WRITABLE_TABLES', lambda *args, **kwargs: None)
         register_architecture_checker('READABLE_TABLES', lambda *args, **kwargs: None)

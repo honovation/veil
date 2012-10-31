@@ -22,6 +22,9 @@ def check_component_architecture(component_names, architecture):
     component_dependencies = architecture.pop('DEPENDENCIES', None)
     if component_dependencies:
         check_component_dependencies(component_names, component_dependencies)
+    component_dependencies = architecture.pop('', None)
+    if component_dependencies:
+        check_component_dependencies(component_names, component_dependencies)
     for key, value in architecture.items():
         if key.startswith('.'):
             inner_component_names = list(component_names)
