@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import sys
 import time
+import os
 from veil.environment.setting import *
 from veil.backend.shell import *
 from veil.frontend.cli import *
@@ -9,7 +10,9 @@ from veil.environment import *
 from veil.environment.supervisor import *
 from veil.utility.clock import *
 from veil.utility.hash import *
+from veil.utility.path import *
 from veil.backend.database.client import *
+
 
 LOGGER = logging.getLogger(__name__)
 

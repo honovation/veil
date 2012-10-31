@@ -3,11 +3,13 @@ import contextlib
 import functools
 import itertools
 import sys
+import os
 import traceback
 import veil_component
 from veil.backend.shell import *
 from veil.environment import *
 from veil.frontend.cli import *
+from veil.utility.path import *
 from .filesystem import create_directory
 
 VEIL_INSTALLED_TAG_DIR = as_path('/tmp/veil-installed')

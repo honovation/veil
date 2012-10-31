@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.environment.setting import *
 from veil.environment import *
 from veil.frontend.nginx import *
+from veil.model.collection import *
 
 def supervisor_settings(**updates):
     settings = {

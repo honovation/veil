@@ -2,6 +2,8 @@ from __future__ import unicode_literals, print_function, division
 from veil.environment import *
 from veil.environment.setting import *
 from veil.frontend.nginx import *
+from veil.model.collection import *
+from veil.utility.path import *
 from .website_program import website_program
 
 

@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.model.collection import *
 from veil.environment import *
 from veil.environment.setting import *
+from veil.utility.path import *
 
 def nginx_program(**updates):
     settings = {
