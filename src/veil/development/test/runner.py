@@ -6,11 +6,12 @@ from unittest.runner import TextTestResult
 from threading import Timer
 import cProfile
 import os
+import discipline_coach
 import veil_component
 from veil.utility.path import *
 from veil.frontend.cli import *
 from veil.environment import *
-import discipline_coach
+from veil.backend.shell import *
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
 architecture_checkers = {}
@@ -28,6 +29,7 @@ def self_check():
         package_names.append(component_name)
     test_package(*package_names)
     check_architecture()
+    shell_execute('git add .')
     (VEIL_HOME / '.self-check-passed').write_text(discipline_coach.calculate_git_status_hash())
 
 

@@ -32,28 +32,29 @@ def check_if_locked_migration_scripts_being_changed():
 
 
 def check_if_self_check_passed():
+    if not is_self_check_passed():
+        print('[Orz] LISTEN!!! Read after me: "I should run veil self-check before commit"')
+        sys.exit(1)
+
+
+def is_self_check_passed():
+    if not os.path.exists('./.self-check-passed'):
+        return False
     with open('./.self-check-passed') as f:
         expected_hash = f.read()
     actual_hash = calculate_git_status_hash()
-    if expected_hash != actual_hash:
-        print('[Orz] LISTEN!!! Read after me: "I should run veil self-check before commit"')
-        sys.exit(1)
+    return expected_hash == actual_hash
 
 
 def calculate_git_status_hash():
     RE_MODIFIED = re.compile('^(?:M|A)(\s+)(?P<name>.*)')
     hashes = [shell_execute('git log -n 1 --pretty=format:%H', capture=True)]
     files = []
-    if len(sys.argv) > 1 and sys.argv[1] == '--all-files':
-        for root, dirs, file_names in os.walk('.'):
-            for file_name in file_names:
-                files.append(os.path.join(root, file_name))
-    else:
-        out = shell_execute('git status --porcelain', capture=True)
-        for line in out.splitlines():
-            match = RE_MODIFIED.match(line.strip())
-            if match:
-                files.append(match.group('name'))
+    out = shell_execute('git status --porcelain', capture=True)
+    for line in out.splitlines():
+        match = RE_MODIFIED.match(line.strip())
+        if match:
+            files.append(match.group('name'))
     for file in files:
         with open(file) as f:
             hashes.append(calculate_file_md5_hash(f))
