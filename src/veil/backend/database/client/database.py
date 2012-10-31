@@ -9,6 +9,7 @@ import uuid
 import veil_component
 from veil.development.test import *
 from veil.environment.setting import *
+from veil.frontend.encoding import *
 from .table_dependency import check_table_dependencies
 
 LOGGER = getLogger(__name__)
@@ -291,7 +292,7 @@ class Database(object):
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
                 check_table_dependencies(self.component_name, sql)
-                cursor.execute(sql, kwargs)
+                cursor.execute(to_str(sql), kwargs)
             except:
                 LOGGER.error('failed to execute {} with {}'.format(sql, kwargs))
                 raise
@@ -301,7 +302,7 @@ class Database(object):
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
                 check_table_dependencies(self.component_name, sql)
-                cursor.executemany(sql, seq_of_parameters)
+                cursor.executemany(to_str(sql), seq_of_parameters)
             except:
                 LOGGER.error('failed to execute {} with {}'.format(sql, seq_of_parameters))
                 raise
@@ -311,7 +312,7 @@ class Database(object):
         with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
             try:
                 check_table_dependencies(self.component_name, sql)
-                cursor.execute(sql, kwargs)
+                cursor.execute(to_str(sql), kwargs)
             except:
                 LOGGER.error('failed to execute {} with {}'.format(sql, kwargs))
                 raise
