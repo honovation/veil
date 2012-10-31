@@ -88,6 +88,7 @@ exitcodes={{ ','.join(program.expected_exit_codes) }}
 exitcodes=0,2
 {% endif %}
 stopsignal={{ program.stop_signal or 'INT' }}
+startsecs={{ program.get('startsecs', 3) }}
 {% endfor %}
 
 ; The below sample eventlistener section shows all possible

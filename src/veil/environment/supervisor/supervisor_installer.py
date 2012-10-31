@@ -15,10 +15,13 @@ from .supervisor_setting import supervisor_settings
 LOGGER = logging.getLogger(__name__)
 
 @script('install-programs')
-def install_programs():
+def install_programs(program_name=None):
     settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
     config = settings.supervisor
     assert_programs_loaded(config.programs.values())
+    if program_name:
+        install_program(config.programs[program_name])
+        return
     with require_component_only_install_once():
         if VEIL_SERVER in ['development', 'test']:
             print('[INSTALL] about to install programs {} ...'.format(config.programs.keys()))

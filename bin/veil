@@ -38,7 +38,10 @@ case "$1" in
         exec veil environment supervisor down
         ;;
     install)
-        exec veil environment supervisor install-programs
+        shift
+        find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
+        find $VEIL_HOME -type f -name "*.pyc" -delete
+        exec veil environment supervisor install-programs $@
         ;;
     deploy-env)
         shift

@@ -18,7 +18,8 @@ def source_code_monitor_settings():
         'supervisor': {
             'programs': {
                 'source_code_monitor': {
-                    'execute_command': 'veil environment source-code-monitor up'
+                    'execute_command': 'veil environment source-code-monitor up',
+                    'startsecs': 0
                 }
             }
         }
@@ -27,6 +28,7 @@ def source_code_monitor_settings():
 
 @script('up')
 def bring_up_source_code_monitor():
+    LOGGER.info('start monitoring source code changes...')
     while True:
         reload_on_change()
 
