@@ -3,6 +3,7 @@ import re
 import veil_component
 from veil.environment import *
 from veil.frontend.cli import *
+from veil.frontend.encoding import *
 from veil.development.architecture import check_architecture
 
 RE_UPDATE = re.compile(r'UPDATE\s+(\w+)\s+', re.IGNORECASE)
@@ -91,6 +92,7 @@ def check_table_dependencies(component_name, sql):
         return
     if not component_name:
         return
+    sql = to_unicode(sql)
     check_writable_table_dependencies(list_writable_tables(), component_name, sql)
     check_readable_table_dependencies(list_readable_tables(), component_name, sql)
 

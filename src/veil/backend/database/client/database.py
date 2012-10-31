@@ -294,7 +294,7 @@ class Database(object):
                 check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
             except:
-                LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+                LOGGER.error(str('failed to execute ({}) {} with {}').format(type(sql), sql, kwargs))
                 raise
             return cursor.rowcount
 
@@ -304,7 +304,7 @@ class Database(object):
                 check_table_dependencies(self.component_name, sql)
                 cursor.executemany(sql, seq_of_parameters)
             except:
-                LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, seq_of_parameters))
+                LOGGER.error(str('failed to execute ({}) {} with {}').format(type(sql), sql, seq_of_parameters))
                 raise
             return cursor.rowcount
 
@@ -314,7 +314,7 @@ class Database(object):
                 check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
             except:
-                LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+                LOGGER.error(str('failed to execute ({}) {} with {}').format(type(sql), sql, kwargs))
                 raise
             return cursor.fetchall()
 
