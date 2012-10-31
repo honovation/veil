@@ -269,16 +269,16 @@ class Database(object):
                 fragments.append('%(')
                 fragments.append(arg_name)
                 fragments.append(')s')
-                args[str(arg_name)] = to_str(cell_value)
+                args[arg_name] = cell_value
             fragments.append(')')
         if returns_id:
             fragments.append(' RETURNING id')
             if objects:
-                return self.list_scalar(to_str(''.join(fragments)), **args)
+                return self.list_scalar(''.join(fragments), **args)
             else:
-                return self.get_scalar(to_str(''.join(fragments)), **args)
+                return self.get_scalar(''.join(fragments), **args)
         else:
-            return self.execute(to_str(''.join(fragments)), **args)
+            return self.execute(''.join(fragments), **args)
 
     def iter_in_batch(self, sql, batch_size=1, db_fetch_size=None, **kwargs):
         """
