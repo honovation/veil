@@ -28,8 +28,8 @@ def init_components():
         'veil.frontend.web'
     ])
     try:
-        import __veil__
-        for component_name in __veil__.COMPONENTS:
+        from .environment import get_application_components
+        for component_name in get_application_components():
             __import__(component_name)
     except:
         traceback.print_exc()

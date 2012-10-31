@@ -71,16 +71,29 @@ def get_application_name():
 
 
 def get_application_codebase():
-    return sys.modules['__veil__'].CODEBASE
+    return get_application().CODEBASE
 
 
 def get_application_components():
-    return sys.modules['__veil__'].COMPONENTS
+    return get_application_architecture().keys()
 
 
 def get_application_architecture():
-    return getattr(sys.modules['__veil__'], 'ARCHITECTURE', {})
+    return getattr(get_application(), 'ARCHITECTURE', {})
 
 
-def get_application_wrtitable_tables():
-    return getattr(sys.modules['__veil__'], 'WRITABLE_TABLES', {})
+def get_application_tables():
+    return getattr(get_application(), 'TABLES', {})
+
+
+def get_application_settings():
+    return getattr(get_application(), 'SETTINGS', {})
+
+
+def get_application():
+    if '__veil__' in sys.modules:
+        __veil__ = sys.modules['__veil__']
+    else:
+        import __veil__
+    return __veil__
+

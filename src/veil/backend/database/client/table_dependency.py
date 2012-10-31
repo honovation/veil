@@ -12,7 +12,7 @@ def check_table_dependency(component_name, sql):
         return
     if not component_name:
         return
-    check_writable_table_dependency(get_application_wrtitable_tables(), component_name, sql)
+    check_writable_table_dependency(get_application_tables(), component_name, sql)
 
 
 def check_writable_table_dependency(writable_tables, component_name, sql):

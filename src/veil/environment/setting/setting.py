@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import sys
 from veil.model.collection import *
+from veil.environment import *
 
 initialized = False
 settings = {}
@@ -23,12 +24,7 @@ def get_settings():
     global settings
     if not initialized:
         initialized = True
-        settings = objectify(settings)
-        if '__veil__' in sys.modules:
-            __veil__ = sys.modules['__veil__']
-        else:
-            import __veil__
-        settings = merge_settings(settings, __veil__.SETTINGS)
+        settings = merge_settings(settings, get_application_settings())
     for coordinator in coordinators:
         settings = coordinator(settings)
         if not isinstance(settings, DictObject):
