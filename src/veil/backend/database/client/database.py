@@ -292,7 +292,7 @@ class Database(object):
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
                 check_table_dependencies(self.component_name, sql)
-                cursor.execute(sql, kwargs)
+                cursor.execute(to_str(sql), {to_str(k): to_str(v) for k,v in kwargs})
             except:
                 LOGGER.error(str('failed to execute ({}) {} with {}').format(type(sql), sql, kwargs))
                 raise
@@ -302,7 +302,7 @@ class Database(object):
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
                 check_table_dependencies(self.component_name, sql)
-                cursor.executemany(sql, seq_of_parameters)
+                cursor.executemany(to_str(sql), [{to_str(k): to_str(v) for k,v in kwargs} for kwargs in seq_of_parameters])
             except:
                 LOGGER.error(str('failed to execute ({}) {} with {}').format(type(sql), sql, seq_of_parameters))
                 raise
@@ -312,7 +312,7 @@ class Database(object):
         with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
             try:
                 check_table_dependencies(self.component_name, sql)
-                cursor.execute(sql, kwargs)
+                cursor.execute(to_str(sql), {to_str(k): to_str(v) for k,v in kwargs})
             except:
                 LOGGER.error(str('failed to execute ({}) {} with {}').format(type(sql), sql, kwargs))
                 raise
