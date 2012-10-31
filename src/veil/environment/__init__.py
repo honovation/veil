@@ -30,15 +30,19 @@ def get_veil_servers(env):
 def get_current_veil_server():
     return get_application().ENVIRONMENTS[VEIL_ENV][VEIL_SERVER_NAME]
 
-
-def get_veil_server_hosting(program):
-    from veil.model.collection import DictObject
-
+def is_current_veil_server_hosting(program_name):
     if VEIL_SERVER in ['test', 'development']:
-        return DictObject(internal_ip='127.0.0.1')
+        return True
+    else:
+        return program_name in get_current_veil_server().programs
+
+
+def get_veil_server_internal_ip_hosting(program):
+    if VEIL_SERVER in ['test', 'development']:
+        return '127.0.0.1'
     for server in get_application().ENVIRONMENTS[VEIL_ENV].values():
         if program in server.programs:
-            return server
+            return server.internal_ip
     raise Exception('no server hosting program: {}'.format(program))
 
 

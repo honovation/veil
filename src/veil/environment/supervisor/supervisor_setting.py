@@ -39,7 +39,7 @@ def consolidate_program_groups(settings):
     settings = merge_settings(supervisor_settings(), settings, overrides=True)
     groups = {}
     for program_name, program in settings.supervisor.programs.items():
-        if VEIL_SERVER in ['development', 'test'] or program_name in get_current_veil_server().programs:
+        if is_current_veil_server_hosting(program_name):
             belong_to_group = program.get('group', None)
             if belong_to_group:
                 groups.setdefault(belong_to_group, set()).add(program_name)

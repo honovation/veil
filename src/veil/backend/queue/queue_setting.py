@@ -46,6 +46,7 @@ def queue_settings(
                 settings.supervisor.programs['{}_worker{}'.format(queue_name, i)] = worker_program(
                     queue_redis_host, queue_redis_port, queue_name)
     if 'test' == VEIL_ENV:
+        del settings['resweb']
         settings.supervisor.programs.clear()
     return settings
 
@@ -68,8 +69,6 @@ def copy_queue_settings_to_veil(settings):
 
 
 def add_resweb_reverse_proxy_server(settings):
-    if 'development' != VEIL_SERVER:
-        return settings
     if not settings.get('resweb'):
         return settings
     server_name = settings.resweb.domain

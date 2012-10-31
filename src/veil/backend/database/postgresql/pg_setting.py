@@ -6,10 +6,10 @@ from veil.model.collection import *
 from .server.pg_server_program import postgresql_server_program
 
 def postgresql_settings(purpose, *other_purposes, **updates):
-    if VEIL_SERVER in ['test', 'development'] or '{}_postgresql'.format(purpose) in get_current_veil_server().programs:
+    if is_current_veil_server_hosting('{}_postgresql'.format(purpose)):
         register_migration_command('veil backend database postgresql migrate {}'.format(purpose))
     settings = objectify({
-        'host': get_veil_server_hosting('{}_postgresql'.format(purpose)).internal_ip,
+        'host': get_veil_server_internal_ip_hosting('{}_postgresql'.format(purpose)),
         'port': 5432,
         'owner': CURRENT_USER,
         'data_directory': VEIL_VAR_DIR / '{}_postgresql'.format(purpose),

@@ -21,7 +21,7 @@ def redis_settings(purpose, **updates):
     settings = objectify({
         'owner': CURRENT_USER,
         'owner_group': CURRENT_USER_GROUP,
-        'bind': get_veil_server_hosting('{}_redis'.format(purpose)).internal_ip,
+        'bind': get_veil_server_internal_ip_hosting('{}_redis'.format(purpose)),
         'port': 6379,
         'password': '',
         'dbdir': VEIL_VAR_DIR / '{}_redis'.format(purpose),
