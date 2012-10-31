@@ -274,11 +274,11 @@ class Database(object):
         if returns_id:
             fragments.append(' RETURNING id')
             if objects:
-                return self.list_scalar(''.join(fragments), **args)
+                return self.list_scalar(to_str(''.join(fragments)), **args)
             else:
-                return self.get_scalar(''.join(fragments), **args)
+                return self.get_scalar(to_str(''.join(fragments)), **args)
         else:
-            return self.execute(''.join(fragments), **args)
+            return self.execute(to_str(''.join(fragments)), **args)
 
     def iter_in_batch(self, sql, batch_size=1, db_fetch_size=None, **kwargs):
         """
