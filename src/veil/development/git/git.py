@@ -17,4 +17,4 @@ def pull_dir(dir):
         shell_execute('git pull --rebase', cwd=dir)
     finally:
         if having_changes:
-            shell_execute('git stash pop', capture=True, cwd=dir)
+            shell_execute('git stash pop --index', capture=True, cwd=dir)
