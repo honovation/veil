@@ -31,8 +31,7 @@ def init_component(component_name):
     component = sys.modules[component_name]
     if loading_components:
         loading_component_name = loading_components[-1].__name__
-        if not loading_component_name.startswith(component_name):
-            dependencies.setdefault(loading_component_name, set()).add(component_name)
+        record_dependency(loading_component_name, component_name)
     if component_name in components:
         try:
             loading_components.append(component)
@@ -56,6 +55,13 @@ def init_component(component_name):
     finally:
         remove_loaded_components()
         loading_components.pop()
+
+def record_dependency(loading_component_name, component_name):
+    if loading_component_name == component_name:
+        return
+    if component_name.startswith('{}.'.format(loading_component_name)):
+        return
+    dependencies.setdefault(loading_component_name, set()).add(component_name)
 
 
 def add_must_load_module(qualified_module_name):
