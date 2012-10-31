@@ -13,11 +13,7 @@ def to_str(s):
         return s
     if isinstance(s, unicode):
         return s.encode("utf-8")
-    if isinstance(s, tuple):
-        return tuple([to_str(e) for e in s])
-    if isinstance(s, list):
-        return [to_str(e) for e in s]
-    return str(s)
+    raise Exception('to_str does not support {}'.format(type(s)))
 
 
 def to_unicode(s, encoding=None, detects_encoding=False):
