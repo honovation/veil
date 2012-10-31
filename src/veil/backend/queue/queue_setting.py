@@ -68,6 +68,8 @@ def copy_queue_settings_to_veil(settings):
 
 
 def add_resweb_reverse_proxy_server(settings):
+    if 'development' != VEIL_SERVER:
+        return settings
     if not settings.get('resweb'):
         return settings
     server_name = settings.resweb.domain
