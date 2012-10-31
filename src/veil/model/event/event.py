@@ -32,5 +32,6 @@ def unsubscribe_event(topic, subscriber):
 def event(topic): #syntax sugar
     def decorator(subscriber):
         subscribe_event(topic, subscriber)
+        return subscriber
 
     return decorator
