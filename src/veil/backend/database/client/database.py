@@ -269,7 +269,7 @@ class Database(object):
                 fragments.append('%(')
                 fragments.append(arg_name)
                 fragments.append(')s')
-                args[str(arg_name)] = cell_value
+                args[str(arg_name)] = to_str(cell_value)
             fragments.append(')')
         if returns_id:
             fragments.append(' RETURNING id')
