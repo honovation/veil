@@ -11,8 +11,9 @@ def to_str(s):
     """
     if isinstance(s, (str, bytes, type(None))):
         return s
-    assert isinstance(s, unicode)
-    return s.encode("utf-8")
+    if isinstance(s, unicode):
+        return s.encode("utf-8")
+    return str(s)
 
 
 def to_unicode(s, encoding=None, detects_encoding=False):
