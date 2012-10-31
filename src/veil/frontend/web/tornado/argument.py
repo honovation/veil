@@ -35,7 +35,10 @@ def get_http_argument(field, default=None, request=None, list_field=False, optio
     request = request or get_current_http_request()
     if field not in request.arguments:
         if optional:
-            return None
+            if list_field:
+                return []
+            else:
+                return None
         if default is not None:
             return default
         raise HTTPError(httplib.BAD_REQUEST, '{} not found in http arguments: {}'.format(field, request.arguments))
