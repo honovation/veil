@@ -42,7 +42,7 @@ def reload_on_change(exit_on_no_change=False):
         if exit_on_no_change:
             sys.exit(1)
         else:
-            time.sleep(0.5)
+            time.sleep(1)
 
 
 def refresh_modify_times():
