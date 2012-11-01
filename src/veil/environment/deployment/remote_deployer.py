@@ -4,11 +4,14 @@ import fabric.api
 import os
 from veil.frontend.cli import *
 from veil.environment import *
+from veil.backend.shell import *
+from veil.utility.clock import get_current_timestamp
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'remote_deployer_payload.py')
 
 @script('deploy-env')
 def deploy_env(deploying_env):
+    tag_before_real_deploy()
     for veil_server_name in get_veil_servers(deploying_env).keys():
         deploy_server('{}/{}'.format(deploying_env, veil_server_name))
 
@@ -36,3 +39,6 @@ def deploy_server(remote_veil_server, deployed_via=None):
         get_application_codebase(),
         '/opt/{}'.format(get_application_name()),
         veil_server_env, veil_server_name))
+
+def tag_before_real_deploy():
+    shell_execute('git tag -a deploy_{}'.format(get_current_timestamp()))
