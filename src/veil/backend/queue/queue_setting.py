@@ -35,9 +35,16 @@ def queue_settings(
     })
     workers = workers or None
     for queue_name, workers_count in workers.items():
-        for i in range(1, workers_count + 1):
-            settings.supervisor.programs['{}_worker{}'.format(queue_name, i)] = worker_program(
-                queue_redis_host, queue_redis_port, queue_name)
+        if isinstance(workers_count, (list, tuple)):
+            workers_user = workers_count[0]
+            workers_count = workers_count[1]
+            for i in range(1, workers_count + 1):
+                settings.supervisor.programs['{}_worker{}'.format(queue_name, i)] = worker_program(
+                    queue_redis_host, queue_redis_port, queue_name, user=workers_user)
+        else:
+            for i in range(1, workers_count + 1):
+                settings.supervisor.programs['{}_worker{}'.format(queue_name, i)] = worker_program(
+                    queue_redis_host, queue_redis_port, queue_name)
     if 'test' == VEIL_ENV:
         settings.supervisor.programs.clear()
     return settings

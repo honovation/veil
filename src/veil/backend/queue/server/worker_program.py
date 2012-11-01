@@ -14,12 +14,13 @@ get_queue_password = register_option('queue', 'password')
 get_worker_interval = register_option('queue', 'worker_interval', int, default=5)
 
 
-def worker_program(queue_redis_host, queue_redis_port, queue_name):
+def worker_program(queue_redis_host, queue_redis_port, queue_name, user=None):
     return {
         'execute_command': 'veil execute python -m pyres_patch.pyres_worker --host={} --port={} -l info -f stderr {}'.format(
             queue_redis_host, queue_redis_port, queue_name),
         'install_command': 'veil backend queue install-worker {}'.format(queue_name),
-        'group': '{}_workers'.format(queue_name)
+        'group': '{}_workers'.format(queue_name),
+        'user':'{}'.format(user) if user else ''
     }
 
 
