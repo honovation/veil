@@ -71,9 +71,9 @@ def install_postgresql_server(purpose=None):
         content=get_template('postgresql.conf.j2').render(config=config))
     create_file(pg_config_dir / 'pg_hba.conf', content=get_template('pg_hba.conf.j2').render(config=config))
     create_file(pg_config_dir / 'pg_ident.conf', content=get_template('pg_ident.conf.j2').render())
-    create_symbolic_link(pg_data_dir / 'postgresql.conf', to=pg_config_dir / 'postgresql.conf')
-    create_symbolic_link(pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf')
-    create_symbolic_link(pg_data_dir / 'pg_ident.conf', to=pg_config_dir / 'pg_ident.conf')
+    create_symbolic_link(pg_data_dir / 'postgresql.conf', to='{}/postgresql.conf'.format(config.config_directory))
+    create_symbolic_link(pg_data_dir / 'pg_hba.conf', to='{}/pg_hba.conf'.format(config.config_directory))
+    create_symbolic_link(pg_data_dir / 'pg_ident.conf', to='{}/pg_ident.conf'.format(config.config_directory))
     if no_user:
         pg_user = config.user
         assert pg_user, 'must specify postgresql user'
