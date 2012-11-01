@@ -177,9 +177,9 @@ def clamp_length(min=None, max=None):
     def bind(value):
         value_length = len(value)
         if bind.min is not None and value_length < bind.min:
-            raise Invalid(_('值超出范围'))
+            raise Invalid(_('长度不小于') + str(bind.min))
         if bind.max is not None and value_length > bind.max:
-            raise Invalid(_('值超出范围'))
+            raise Invalid(_('长度不大于') + str(bind.max))
         return value
     bind.min = min
     bind.max = max
