@@ -13,9 +13,14 @@ def is_supervisord_running():
         import supervisor
     except:
         return False
-    output = shell_execute('veil execute supervisorctl -c {} {}'.format(
-        get_option('config_file'), 'status'), capture=True)
-    return 'refused' not in output
+    try:
+        output = shell_execute('veil execute supervisorctl -c {} {}'.format(
+            get_option('config_file'), 'status'), capture=True)
+        return 'refused' not in output
+    except ShellExecutionError, e:
+        if 'SHUTDOWN_STATE' in e.output:
+            return True
+        raise
 
 
 def get_option(key):
