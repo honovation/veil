@@ -172,7 +172,9 @@ def inject_page_interaction(html, page_interactions):
         return html
     if not page_interactions:
         return html
-    return html.replace('</body>', '{}\n</body>'.format(
+    if '</body>' not in html:
+        raise Exception('body end tag not found')
+    injected_html = unicode(html).replace('</body>', '{}\n</body>'.format(
         """
         <script type="text/javascript" src="/-test/veil-test.js"></script>
         <script type="text/javascript">$(document).ready(function() {
@@ -181,6 +183,9 @@ def inject_page_interaction(html, page_interactions):
         </script>
         """ % page_interactions.pop()
     ))
+    if 'veil-test.js' not in injected_html:
+        raise Exception('veil-test.js not injected')
+    return injected_html
 
 def load_page_interactions(relative_path):
     module = veil_component.force_import_module(get_executing_test().__module__)
