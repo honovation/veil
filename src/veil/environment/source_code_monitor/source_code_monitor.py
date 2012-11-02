@@ -4,6 +4,7 @@ import types
 import os
 import logging
 import time
+import sys
 from .reloader import reload
 from veil.environment import *
 from veil.frontend.cli import *
