@@ -1,8 +1,10 @@
 from __future__ import unicode_literals, print_function, division
 from datetime import datetime, date, time
 import json
+import decimal
 from dateutil.parser import parse
 from veil.frontend.encoding import *
+
 
 SUPPORTED_TYPES = {datetime, date, time}
 assert len(SUPPORTED_TYPES) == len({c.__name__ for c in SUPPORTED_TYPES})
@@ -14,6 +16,8 @@ class CustomJSONEncoder(json.JSONEncoder):
         if type_ in SUPPORTED_TYPES:
             if type_ in {datetime, date, time}:
                 return {'__type__': type_.__name__, '__value__': obj.isoformat()}
+        if isinstance(obj, decimal.Decimal):
+            return float(obj)
         return json.JSONEncoder.default(self, obj)
 
 
