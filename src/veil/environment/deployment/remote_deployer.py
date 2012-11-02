@@ -13,7 +13,7 @@ PAYLOAD = os.path.join(os.path.dirname(__file__), 'remote_deployer_payload.py')
 def deploy_env(deploying_env):
     for veil_server_name in get_veil_servers(deploying_env).keys():
         deploy_server('{}/{}'.format(deploying_env, veil_server_name))
-    tag_before_real_deploy()
+    tag_before_real_deploy(deploying_env)
 
 
 @script('deploy-server')
@@ -40,6 +40,6 @@ def deploy_server(remote_veil_server, deployed_via=None):
         '/opt/{}'.format(get_application_name()),
         veil_server_env, veil_server_name))
 
-def tag_before_real_deploy():
-    shell_execute('git tag deploy-{}-{}'.format(VEIL_ENV, get_current_timestamp()))
+def tag_before_real_deploy(deploying_env):
+    shell_execute('git tag deploy-{}-{}'.format(deploying_env, get_current_timestamp()))
     shell_execute('git push --tags')
