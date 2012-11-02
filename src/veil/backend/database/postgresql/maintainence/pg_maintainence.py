@@ -67,7 +67,7 @@ def migrate(purpose):
         for i in range(current_version, max_version):
             to_version = i + 1
             print('[MIGRATE] migrating from {} to {} ...'.format(to_version - 1, to_version))
-            db().execute(versions[to_version].text())
+            db().execute(versions[to_version].text('utf8'))
         db().insert(
             'database_migration_event', from_version=from_version,
             to_version=to_version, migrated_at=get_current_time())
