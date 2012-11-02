@@ -54,8 +54,8 @@ def install_postgresql_server(purpose=None):
         create_file('/tmp/pg-owner-password', config.owner_password)
         try:
             shell_execute(
-                'su {pg_data_owner} -c "initdb -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-owner-password {pg_data_dir}"'.format(
-                    pg_data_owner=config.owner, pg_data_dir=pg_data_dir
+                'su {pg_data_owner} -c "initdb  -E {encoding} --locale=en_US.UTF-8 -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-owner-password {pg_data_dir}"'.format(
+                    encoding='UTF8', pg_data_owner=config.owner, pg_data_dir=pg_data_dir
                 ))
         finally:
             delete_file('/tmp/pg-owner-password')
