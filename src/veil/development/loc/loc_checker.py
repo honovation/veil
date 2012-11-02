@@ -2,14 +2,16 @@ from __future__ import unicode_literals, print_function, division
 import os.path
 import veil_component
 
-THRESHOLD = 932
+WHITE_LIST = {'veil.utility.path'} # copied from somewhere
+THRESHOLD = 780
 GOAL = 500
 
 def check_loc():
     component_locs = {}
     sub_component_locs = {}
     for component_name in veil_component.get_loaded_components().keys():
-        component_locs[component_name] = calculate_component_loc(component_name)
+        if component_name not in WHITE_LIST:
+            component_locs[component_name] = calculate_component_loc(component_name)
     for component_name in sorted(component_locs.keys()):
         sub_component_locs[component_name] = calculate_sub_component_loc(component_locs, component_name)
     for component_name in sorted(component_locs.keys()):
