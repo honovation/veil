@@ -80,11 +80,12 @@ def create_database_if_not_exists(purpose):
     try:
         env = os.environ.copy()
         env['PGPASSWORD'] = get_option(purpose, 'owner_password')
-        shell_execute('createdb -h {host} -p {port} -U {owner} {database}'.format(
+        shell_execute('createdb -h {host} -p {port} -U {owner} {database} -E {}'.format(
             host=get_option(purpose, 'host'),
             port=get_option(purpose, 'port'),
             owner=get_option(purpose, 'owner'),
-            database=get_option(purpose, 'database')), env=env, capture=True)
+            database=get_option(purpose, 'database'),
+            'UTF8'), env=env, capture=True)
     except ShellExecutionError, e:
         if 'already exists' in e.output:
             pass # ignore
