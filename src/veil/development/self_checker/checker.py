@@ -21,3 +21,13 @@ def self_check(checker_name=None):
         print('[CHECK] checking {}...'.format(checker_name))
         self_checker()
     (VEIL_HOME / '.self-check-passed').write_text(discipline_coach.calculate_git_status_hash())
+
+@script('check')
+def self_check_without_veil_pull(checker_name=None):
+    if checker_name:
+        self_checkers[checker_name]()
+        return
+    for checker_name, self_checker in self_checkers.items():
+        print('[CHECK] checking {}...'.format(checker_name))
+        self_checker()
+    (VEIL_HOME / '.self-check-passed').write_text(discipline_coach.calculate_git_status_hash())
