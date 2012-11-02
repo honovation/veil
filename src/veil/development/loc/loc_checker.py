@@ -3,7 +3,7 @@ import os.path
 import veil_component
 
 WHITE_LIST = {'veil.utility.path'} # copied from somewhere
-THRESHOLD = 780
+THRESHOLD = 700
 GOAL = 500
 
 def check_loc():
