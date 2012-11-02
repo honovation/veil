@@ -41,5 +41,5 @@ def deploy_server(remote_veil_server, deployed_via=None):
         veil_server_env, veil_server_name))
 
 def tag_before_real_deploy():
-    shell_execute('git tag deploy_{}'.format(get_current_timestamp()))
+    shell_execute('git tag deploy-{}'.format(get_current_timestamp()))
     shell_execute('git push --tags')
