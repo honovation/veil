@@ -23,6 +23,27 @@ if [[ $1 == :* ]] ; then
     exit 0
 fi
 
+function veil_init {
+    find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
+    find $VEIL_HOME -type f -name "*.pyc" -delete
+    sudo apt-get install -y python-dev python-virtualenv
+    if [ ! -f /usr/bin/veil ]; then
+        sudo ln -s $VEIL_FRAMEWORK_HOME/bin/veil /usr/bin/veil
+    fi
+    if [ ! -d $VEIL_HOME/src ]; then
+        mkdir $VEIL_HOME/src
+        touch $VEIL_HOME/src/__veil__.py
+    fi
+    if [ ! -d $VEIL_HOME/env ]; then
+        virtualenv env
+    fi
+    echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
+    echo "$VEIL_HOME/src" >> env/lib/python2.7/site-packages/veil.pth
+    if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then
+        ln -s $VEIL_FRAMEWORK_HOME/src/discipline_coach.py $VEIL_HOME/.git/hooks/pre-commit
+    fi
+}
+
 case "$1" in
     execute)
         shift
@@ -37,10 +58,12 @@ case "$1" in
     down)
         exec veil environment supervisor down
         ;;
+    init)
+        veil_init
+        ;;
     install)
         shift
-        find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
-        find $VEIL_HOME -type f -name "*.pyc" -delete
+        veil_init
         exec veil environment supervisor install-programs $@
         ;;
     deploy-env)
