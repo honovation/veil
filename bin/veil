@@ -23,7 +23,9 @@ else
 fi
 export VEIL_FRAMEWORK_HOME=$(dirname $BIN_DIR)
 
-source $VEIL_HOME/env/bin/activate
+if [ -f $VEIL_HOME/env/bin/activate ] ; then
+    source $VEIL_HOME/env/bin/activate
+fi
 
 function veil_init {
     find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
