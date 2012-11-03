@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import os.path
 import pkgutil
-import imp
+import traceback
 
 
 LOGGER = logging.getLogger(__name__)
@@ -32,9 +32,12 @@ class ComponentWalker(object):
         self.walk(component_name, visitor, at_top_level=True)
 
     def walk(self, module_name, visitor, at_top_level=False):
-        module_loader = pkgutil.find_loader(module_name)
+        try:
+            module_loader = pkgutil.find_loader(module_name)
+        except:
+            raise InvalidComponentException('{} not found, {}'.format(module_name, traceback.format_exc()))
         if not module_loader:
-            raise InvalidComponentException('{} not found'.format(module_name))
+            raise InvalidComponentException('{} might be system builtin'.format(module_name))
         path = module_loader.get_filename()
         if not path:
             raise InvalidComponentException('{} does not have source code'.format(module_name))

@@ -4,12 +4,11 @@ from .encapsulation import force_get_all_loaded_modules
 from .encapsulation import force_import_module
 from .encapsulation import get_loading_component
 from .encapsulation import is_dummy_module_member
-from .encapsulation import get_component_dependencies
 from .encapsulation import assert_component_loaded
 from .encapsulation import get_component_of_module
 from .encapsulation import is_component_loaded
 from .encapsulation import get_loaded_components
 from .encapsulation import add_must_load_module
 from .encapsulation import assert_module_is_must_load
-from .encapsulation import get_transitive_dependencies
 from .component_map import get_component_map
+from .component_map import get_transitive_dependencies

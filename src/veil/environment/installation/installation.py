@@ -111,7 +111,7 @@ def to_cli_handler_levels(component_name):
 def print_dependencies(component_name, dependencies=None, tabs_count=0):
     dependencies = dependencies or set()
     print('{}{}-{}'.format(''.join(itertools.repeat('    ', tabs_count)), tabs_count, component_name))
-    for dependency in veil_component.get_component_dependencies().get(component_name, ()):
+    for dependency in veil_component.get_component_map().get(component_name, ()):
         if dependency not in dependencies:
             dependencies.add(dependency)
             print_dependencies(dependency, dependencies, tabs_count + 1)

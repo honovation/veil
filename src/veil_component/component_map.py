@@ -18,6 +18,22 @@ def get_component_map():
     return dict(component_map)
 
 
+def get_transitive_dependencies(component_name):
+    dependencies = list()
+    collect_transitive_dependencies(component_name, dependencies)
+    return dependencies
+
+
+def collect_transitive_dependencies(component_name, dependencies):
+    direct_dependencies = get_component_map().get(component_name, ())
+    sub_component_names = [c for c in component_walker.walked_component_names
+                           if c.startswith('{}.'.format(component_name))]
+    for dependency in set(direct_dependencies).union(set(sub_component_names)):
+        if dependency not in dependencies:
+            dependencies.append(dependency)
+            collect_transitive_dependencies(dependency, dependencies)
+
+
 def filter_dependent_component_names(my_component_name, component_names, dependencies):
     dependent_component_names = set()
     for component_name in component_names:

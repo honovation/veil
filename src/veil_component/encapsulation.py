@@ -6,14 +6,12 @@ import traceback
 import os
 import inspect
 from .component_map import add_component
-from .component_map import get_component_map
 
 __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_component',
-    'is_dummy_module_member', 'get_component_dependencies', 'assert_component_loaded',
+    'is_dummy_module_member', 'assert_component_loaded',
     'get_component_of_module', 'is_component_loaded', 'get_loaded_components',
-    'add_must_load_module', 'assert_module_is_must_load', 'get_transitive_dependencies',
-    'get_component_map']
+    'add_must_load_module', 'assert_module_is_must_load']
 
 encapsulated_modules = {}
 components = {}
@@ -117,26 +115,6 @@ def get_component_of_module(module_name):
         if module_name.startswith(component_name):
             matched_component_names.append(component_name)
     return max(matched_component_names)
-
-
-def get_component_dependencies():
-    return dependencies
-
-
-def get_transitive_dependencies(component_name):
-    dependencies = list()
-    collect_transitive_dependencies(component_name, dependencies)
-    return dependencies
-
-
-def collect_transitive_dependencies(component_name, dependencies):
-    direct_dependencies = get_component_dependencies().get(component_name, ())
-    sub_component_names = [c for c in get_loaded_components().keys()
-                           if c.startswith('{}.'.format(component_name))]
-    for dependency in set(direct_dependencies).union(set(sub_component_names)):
-        if dependency not in dependencies:
-            dependencies.append(dependency)
-            collect_transitive_dependencies(dependency, dependencies)
 
 
 def remove_loaded_components():
