@@ -40,10 +40,10 @@ def check_component_dependencies(component_names, expected_dependencies):
     component_name_prefix = ''.join(component_names)
     parent_component_name_prefix = ''.join(component_names[:-1])
     expected_dependencies = make_component_dependencies_absolute(parent_component_name_prefix, expected_dependencies)
-    for component_name, dependencies in veil_component.get_component_dependencies().items():
+    for component_name, dependencies in veil_component.get_component_map().items():
         if component_name_prefix == component_name or component_name.startswith('{}.'.format(component_name_prefix)):
             actual_dependencies = actual_dependencies.union(
-                filter_dependencies(dependencies, 'veil.', '{}.'.format(component_name_prefix)))
+                filter_dependencies(dependencies, 'veil', 'veil.', '{}.'.format(component_name_prefix)))
     unexpected_dependencies = actual_dependencies - set(expected_dependencies)
     if unexpected_dependencies:
         raise Exception('{} should not reference {}'.format(component_name_prefix, unexpected_dependencies))

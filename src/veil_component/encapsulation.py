@@ -5,12 +5,15 @@ import sys
 import traceback
 import os
 import inspect
+from .component_map import add_component
+from .component_map import get_component_map
 
 __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_component',
     'is_dummy_module_member', 'get_component_dependencies', 'assert_component_loaded',
     'get_component_of_module', 'is_component_loaded', 'get_loaded_components',
-    'add_must_load_module', 'assert_module_is_must_load', 'get_transitive_dependencies']
+    'add_must_load_module', 'assert_module_is_must_load', 'get_transitive_dependencies',
+    'get_component_map']
 
 encapsulated_modules = {}
 components = {}
@@ -20,6 +23,8 @@ dependencies = {}
 must_load_module_names = []
 
 def init_components(component_names):
+    for component_name in component_names:
+        add_component(component_name)
     for component_name in component_names:
         __import__(component_name)
     for component_name, component in components.items():
@@ -221,14 +226,14 @@ class ComponentLoader(object):
             if not(self.is_public_module(module.__name__.split('.')[-1])):
                 encapsulated_modules[module.__name__] = module
                 sys.modules[module.__name__] = None
-        for package in self.packages.keys():
-            encapsulated_modules[package.__name__] = package
-            sys.modules[package.__name__] = None
-            if package.__name__ in components:
-                del components[package.__name__]
-            for module_name in self.packages[package]:
-                if hasattr(package, module_name):
-                    delattr(package, module_name)
+#        for package in self.packages.keys():
+#            encapsulated_modules[package.__name__] = package
+#            sys.modules[package.__name__] = None
+#            if package.__name__ in components:
+#                del components[package.__name__]
+#            for module_name in self.packages[package]:
+#                if hasattr(package, module_name):
+#                    delattr(package, module_name)
 
     def is_public_module(self, module_name):
         return module_name.startswith('__') and module_name.endswith('__')

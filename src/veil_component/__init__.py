@@ -12,3 +12,4 @@ from .encapsulation import get_loaded_components
 from .encapsulation import add_must_load_module
 from .encapsulation import assert_module_is_must_load
 from .encapsulation import get_transitive_dependencies
+from .component_map import get_component_map

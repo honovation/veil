@@ -2,7 +2,7 @@ import veil_component
 import traceback
 
 def init_components():
-    veil_component.init_components([
+    component_names = [
         'veil.backend.bucket',
         'veil.backend.database.client',
         'veil.backend.database.postgresql',
@@ -26,10 +26,11 @@ def init_components():
         'veil.frontend.locale',
         'veil.frontend.template',
         'veil.frontend.web'
-    ])
+    ]
     try:
         from .environment import get_application_components
         for component_name in get_application_components():
-            __import__(component_name)
+            component_names.append(component_name)
     except:
         traceback.print_exc()
+    veil_component.init_components(component_names)
