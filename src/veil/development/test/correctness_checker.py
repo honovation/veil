@@ -5,7 +5,7 @@ from unittest.suite import TestSuite
 from unittest.runner import TextTestResult
 from threading import Timer
 import os
-import veil_component
+import sys
 from veil.utility.path import *
 from veil.environment import *
 
@@ -21,7 +21,7 @@ def check_correctness():
 def test_package(*package_names):
     tests = []
     test_loader = TestLoader()
-    for module_name, module in veil_component.force_get_all_loaded_modules().items():
+    for module_name, module in sys.modules.items():
         for package_name in package_names:
             if module_name.startswith('{}.'.format(package_name)):
                 module_tests = test_loader.loadTestsFromModule(module)
@@ -35,9 +35,6 @@ def test_package(*package_names):
 def is_test_suite_loaded(suite):
     if 'LoadTestsFailure' == suite.__class__.__name__:
         return False
-    for test in suite:
-        if not veil_component.is_component_loaded(veil_component.get_component_of_module(test.__module__)):
-            return False
     return True
 
 

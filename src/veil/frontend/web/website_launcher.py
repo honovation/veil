@@ -9,7 +9,6 @@ from .locale import *
 from .routing import  *
 from .static_file import *
 from .xsrf import *
-from .website_program import assert_website_components_loaded
 
 LOGGER = getLogger(__name__)
 
@@ -45,7 +44,6 @@ def start_website(website, **kwargs):
 
 
 def create_website_http_handler(website, locale_provider=None):
-    assert_website_components_loaded(website)
     locale_provider = locale_provider or (lambda: None)
     secure_cookie_salt = get_website_option(website, 'secure_cookie_salt')
     if secure_cookie_salt:

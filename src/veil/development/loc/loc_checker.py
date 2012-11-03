@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import os.path
 import veil_component
+import sys
 
 WHITE_LIST = {'veil.utility.path', 'veil.frontend.web.tornado'} # copied from somewhere
 THRESHOLD = 700
@@ -9,7 +10,7 @@ GOAL = 500
 def check_loc():
     component_locs = {}
     sub_component_locs = {}
-    for component_name in veil_component.get_loaded_components().keys():
+    for component_name in veil_component.get_component_map().keys():
         component_locs[component_name] = calculate_component_loc(component_name)
     for component_name in sorted(component_locs.keys()):
         sub_component_locs[component_name] = calculate_sub_component_loc(component_locs, component_name)
@@ -43,7 +44,7 @@ def calculate_sub_component_loc(component_locs, parent_component_name):
 def calculate_component_loc(component_name):
     prefix = '{}.'.format(component_name)
     loc = 0
-    for module_name, module in veil_component.force_get_all_loaded_modules().items():
+    for module_name, module in sys.modules.items():
         if module_name.startswith(prefix):
             if hasattr(module, '__file__'):
                 loc += get_loc(module.__file__.replace('.pyc', '.py'))

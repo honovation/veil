@@ -58,9 +58,9 @@ class WidgetDecorator(object):
         def wrapper(*args, **kwargs):
             return widget.render(*args, **kwargs)
 
-        loading_component = veil_component.get_loading_component()
-        if loading_component:
-            namespace = loading_component.__name__
+        loading_component_name = veil_component.get_loading_component_name()
+        if loading_component_name:
+            namespace = loading_component_name
         else:
             namespace = None
         if self.is_abstract:
@@ -93,9 +93,9 @@ class Widget(object):
         self.name = name
         self.func = func
         self.registered_by = '\n'.join(traceback.format_stack())
-        loading_component = veil_component.get_loading_component()
-        if loading_component:
-            self.namespace = loading_component.__name__
+        loading_component_name = veil_component.get_loading_component_name()
+        if loading_component_name:
+            self.namespace = loading_component_name
         else:
             self.namespace = None
 
@@ -120,9 +120,9 @@ class Widget(object):
 def import_widget(widget_handler):
     if is_abstract_widget(widget_handler):
         raise Exception('can not import abstract widget: {}'.format(widget_handler))
-    loading_component = veil_component.get_loading_component()
-    if loading_component:
-        namespace = loading_component.__name__
+    loading_component_name = veil_component.get_loading_component_name()
+    if loading_component_name:
+        namespace = loading_component_name
     else:
         namespace = None
     widget_name = widget_handler.__name__.replace('_widget', '')

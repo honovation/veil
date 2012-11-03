@@ -35,8 +35,7 @@ def installation_script(command='install'):
     decorator = script(command)
 
     def decorate(func):
-        component_name = veil_component.get_loading_component().__name__
-        veil_component.assert_module_is_must_load(func.__module__)
+        component_name = veil_component.get_loading_component_name()
 
         @functools.wraps(func)
         def wrapper(*argv):

@@ -7,6 +7,7 @@ import traceback
 import os.path
 import spynner
 import selenium.webdriver
+import importlib
 import os
 import veil_component
 from veil.utility.path import *
@@ -188,7 +189,7 @@ def inject_page_interaction(html, page_interactions):
     return injected_html
 
 def load_page_interactions(relative_path):
-    module = veil_component.force_import_module(get_executing_test().__module__)
+    module = importlib.import_module(get_executing_test().__module__)
     page_interactions_script = (as_path(os.path.dirname(module.__file__)) / relative_path).text()
     _, _, page_interactions = process_script_elements(page_interactions_script)
     return page_interactions

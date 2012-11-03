@@ -33,4 +33,5 @@ def init_components():
             component_names.append(component_name)
     except:
         traceback.print_exc()
-    veil_component.init_components(component_names)
+    for component_name in component_names:
+        __import__(component_name)

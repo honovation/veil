@@ -15,9 +15,6 @@ with veil_component.init_component(__name__):
     from .widget import require_current_widget_namespace_being
     from .widget import import_widget
 
-    if veil_component.is_dummy_module_member(template_utility):
-        template_utility = lambda func: func
-
     __all__ = [
             # from template
             template_filter.__name__,

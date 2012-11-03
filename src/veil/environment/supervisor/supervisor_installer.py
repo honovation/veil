@@ -1,9 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import veil_component
-
-veil_component.add_must_load_module(__name__)
-
 from veil.frontend.template import *
 from veil.frontend.cli import *
 from veil.backend.shell import *
@@ -18,7 +15,6 @@ LOGGER = logging.getLogger(__name__)
 def install_programs(program_name=None):
     settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
     config = settings.supervisor
-    assert_programs_loaded(config.programs.values())
     if program_name:
         install_program(config.programs[program_name])
         return
@@ -36,11 +32,6 @@ def install_programs(program_name=None):
                 print('[INSTALL] installing program {} ...'.format(program_name))
                 install_program(config.programs[program_name])
             shell_execute('veil environment supervisor install {}'.format(' '.join(server.programs)))
-
-def assert_programs_loaded(programs):
-    for program in programs:
-        assert not veil_component.is_dummy_module_member(program), 'program is not loaded properly: {}'.format(program)
-
 
 def install_program(program):
     install_command = getattr(program, 'install_command', None)

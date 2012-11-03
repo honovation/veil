@@ -8,7 +8,10 @@ import traceback
 LOGGER = logging.getLogger(__name__)
 
 class ComponentInternalVisitor(object):
-    def visit_top_level_component(self, component_name, path, source_code):
+    def visit_component_start(self, component_name, path, source_code):
+        pass
+
+    def visit_component_end(self, component_name, path, source_code):
         pass
 
     def visit_sub_component(self, component_name, path, source_code):
@@ -29,9 +32,9 @@ class ComponentInternalVisitor(object):
 # passing path/source_code to ModuleCollector
 class ComponentWalker(object):
     def walk_component(self, component_name, visitor):
-        self.walk(component_name, visitor, at_top_level=True)
+        self.walk_module(component_name, visitor, at_top_level=True)
 
-    def walk(self, module_name, visitor, at_top_level=False):
+    def walk_module(self, module_name, visitor, at_top_level=False):
         try:
             module_loader = pkgutil.find_loader(module_name)
         except:
@@ -44,8 +47,9 @@ class ComponentWalker(object):
         source_code = module_loader.get_source() or ''
         if self.is_component(source_code):
             if at_top_level:
-                visitor.visit_top_level_component(module_name, path, source_code)
+                visitor.visit_component_start(module_name, path, source_code)
                 self.walk_package(module_name, path, visitor, source_code)
+                visitor.visit_component_end(module_name, path, source_code)
             else:
                 visitor.visit_sub_component(module_name, path, source_code)
         elif at_top_level:
@@ -59,7 +63,7 @@ class ComponentWalker(object):
         visitor.visit_package_start(module_name, path, source_code)
         module_dir = os.path.dirname(path)
         for child, is_package in pkgutil.get_importer(module_dir).iter_modules():
-            self.walk('{}.{}'.format(module_name, child), visitor)
+            self.walk_module('{}.{}'.format(module_name, child), visitor)
             visitor.visit_package_end(module_name, path, source_code)
 
     def is_component(self, source_code):
@@ -68,6 +72,20 @@ class ComponentWalker(object):
 
 class InvalidComponentException(Exception):
     pass
+
+
+class OnceComponentWalker(ComponentWalker):
+    def __init__(self):
+        super(OnceComponentWalker, self).__init__()
+        self.walked_component_names = set()
+        self.walked_module_names = set()
+
+    def walk_component(self, component_name, visitor):
+        if component_name in self.walked_module_names:
+            return
+        self.walked_module_names.add(component_name)
+        super(OnceComponentWalker, self).walk_component(component_name, visitor)
+        self.walked_component_names.add(component_name)
 
 if '__main__' == __name__:
     import sys

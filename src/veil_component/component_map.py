@@ -5,10 +5,10 @@ from .dependency_collector import OnceComponentWalker
 component_map = {}
 component_walker = OnceComponentWalker()
 
-def add_component(component_name):
+def scan_component(component_name, recursive=False):
     if component_name in component_map:
         return
-    components_dependencies = list_dependencies(component_name, component_walker.walk_component)
+    components_dependencies = list_dependencies(component_name, component_walker.walk_component, recursive=recursive)
     component_names = set(component_walker.walked_component_names)
     component_map.update({k: filter_dependent_component_names(k, component_names, v)
                           for k, v in components_dependencies.items()})
@@ -48,6 +48,15 @@ def filter_dependent_component_names(my_component_name, component_names, depende
     return dependent_component_names
 
 
+def get_component_of_module(module_name):
+    matched_component_names = []
+    for component_name in component_map.keys():
+        if module_name.startswith(component_name):
+            matched_component_names.append(component_name)
+    return max(matched_component_names)
+
+
+
 if '__main__' == __name__:
-    add_component('ljmall')
+    scan_component('ljmall', recursive=True)
     print(get_transitive_dependencies('ljmall'))

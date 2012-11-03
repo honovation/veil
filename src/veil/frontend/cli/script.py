@@ -5,7 +5,6 @@ import sys
 import inspect
 import traceback
 import veil_component
-from veil.environment import *
 from veil.environment.setting import *
 
 script_handlers = {}
@@ -42,17 +41,7 @@ def execute_script(*argv, **kwargs):
     except SystemExit:
         raise
     except:
-        formatted_exception = traceback.format_exc()
-        try:
-            if not 'install' in argv:
-                exception = sys.exc_info()[1]
-                if not hasattr(exception, 'EXECUTABLE_BEFORE_COMPONENT_LOADED'):
-                    for component_name in get_application_components():
-                        veil_component.assert_component_loaded(component_name)
-        except:
-            pass
-        finally:
-            print(formatted_exception)
+        print(traceback.format_exc())
         sys.exit(1)
 
 def get_executing_script_handler():
@@ -91,10 +80,10 @@ class ScriptHandlerDecorator(object):
 
 
 def get_current_level_names():
-    component = veil_component.get_loading_component()
-    if not component:
+    component_name = veil_component.get_loading_component_name()
+    if not component_name:
         return []
-    level_names = component.__name__.split('.')
+    level_names = component_name.split('.')
     if level_names and 'veil' == level_names[0]:
         level_names = level_names[1:]
     return level_names

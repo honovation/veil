@@ -30,6 +30,7 @@ def get_veil_servers(env):
 def get_current_veil_server():
     return get_application().ENVIRONMENTS[VEIL_ENV][VEIL_SERVER_NAME]
 
+
 def is_current_veil_server_hosting(program_name):
     if VEIL_SERVER in ['test', 'development']:
         return True
@@ -51,36 +52,25 @@ def get_remote_veil_server(code):
     return get_application().ENVIRONMENTS[env][server_name]
 
 
-def get_application_name():
-    codebase = get_application_codebase()
-    return codebase[codebase.find('/') + 1:].replace('.git', '')
-
-
 def get_application_codebase():
     return get_application().CODEBASE
 
 
-def get_application_components():
-    return get_application_architecture().keys()
+def get_application_name():
+    codebase = get_application_codebase()
+    return codebase[codebase.find('/') + 1:].replace('.git', '')
 
 
 def get_application_architecture():
     return getattr(get_application(), 'ARCHITECTURE', {})
 
 
-def get_application_tables():
-    return getattr(get_application(), 'TABLES', {})
-
-
-def get_application_settings():
-    return getattr(get_application(), 'SETTINGS', {})
+def get_application_components():
+    return get_application_architecture().keys()
 
 
 def get_application():
-    import sys
-    if '__veil__' in sys.modules:
-        __veil__ = sys.modules['__veil__']
-    else:
-        import __veil__
+    import __veil__
+
     return __veil__
 

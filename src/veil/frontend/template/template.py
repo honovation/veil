@@ -3,6 +3,7 @@ import contextlib
 import traceback
 import os.path
 import inspect
+import importlib
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
 import veil_component
@@ -74,7 +75,7 @@ def require_current_template_directory_being(template_directory):
 
 def require_current_template_directory_relative_to(func):
     return require_current_template_directory_being(
-        os.path.dirname(os.path.abspath(veil_component.force_import_module(func.__module__).__file__)))
+        os.path.dirname(os.path.abspath(importlib.import_module(func.__module__).__file__)))
 
 
 def get_template(template_path=None, template_source=None):
@@ -95,7 +96,7 @@ def get_template_from_file(template_path):
             handler = get_executing_script_handler()
             if handler:
                 current_template_directory = os.path.dirname(
-                    os.path.abspath(veil_component.force_import_module(handler.__module__).__file__))
+                    os.path.abspath(importlib.import_module(handler.__module__).__file__))
             else:
                 raise Exception('unable to get {} from unknown template directory'.format(template_path))
         template_path = os.path.join(current_template_directory, template_path)

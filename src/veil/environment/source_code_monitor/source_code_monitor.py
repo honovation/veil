@@ -54,7 +54,7 @@ def refresh_modify_times():
 
 
 def is_source_code_modified():
-    for module_name, module in veil_component.force_get_all_loaded_modules().items():
+    for module_name, module in sys.modules.items():
         # Some modules play games with sys.modules (e.g. email/__init__.py
         # in the standard library), and occasionally this can cause strange
         # failures in getattr.  Just ignore anything that's not an ordinary

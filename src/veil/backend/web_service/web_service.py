@@ -11,7 +11,7 @@ instances = {} # purpose => instance
 dependencies = {}
 
 def register_web_service(purpose):
-    dependencies.setdefault(veil_component.get_loading_component().__name__, set()).add(purpose)
+    dependencies.setdefault(veil_component.get_loading_component_name(), set()).add(purpose)
     if purpose not in registry:
         registry[purpose] = register_web_service_options(purpose)
     return lambda: require_web_service(purpose)

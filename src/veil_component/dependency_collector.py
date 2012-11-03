@@ -1,43 +1,26 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 from .component_walker import ComponentInternalVisitor
-from .component_walker import InvalidComponentException
-from .component_walker import ComponentWalker
+from .component_walker import OnceComponentWalker
 from .import_collector import list_imports
 
 LOGGER = logging.getLogger(__name__)
 
-def list_dependencies(component_name, walk_component=None):
+def list_dependencies(component_name, walk_component=None, recursive=False):
     walk_component = walk_component or OnceComponentWalker().walk_component
-    dependency_collector = DependencyCollector(component_name, walk_component)
+    dependency_collector = DependencyCollector(component_name, walk_component, recursive=recursive)
     walk_component(component_name, dependency_collector)
     return dependency_collector.component_dependencies
 
 
-class OnceComponentWalker(ComponentWalker):
-    def __init__(self):
-        super(OnceComponentWalker, self).__init__()
-        self.walked_component_names = set()
-        self.walked_module_names = set()
-
-    def walk_component(self, component_name, visitor):
-        if component_name in self.walked_module_names:
-            return
-        self.walked_module_names.add(component_name)
-        try:
-            super(OnceComponentWalker, self).walk_component(component_name, visitor)
-            self.walked_component_names.add(component_name)
-        except InvalidComponentException:
-            pass
-
-
 class DependencyCollector(ComponentInternalVisitor):
-    def __init__(self, component_name, walk_component):
+    def __init__(self, component_name, walk_component, recursive):
         super(DependencyCollector, self).__init__()
         self.component_name = component_name
         self.walk_component = walk_component
+        self.recursive = recursive
 
-    def visit_top_level_component(self, component_name, path, source_code):
+    def visit_component_start(self, component_name, path, source_code):
         if '.' in component_name:
             self.collect_others_dependencies(component_name[:component_name.rfind('.')])
 
@@ -61,6 +44,8 @@ class DependencyCollector(ComponentInternalVisitor):
             self.collect_others_dependencies(dependency)
 
     def collect_others_dependencies(self, component_name):
+        if not self.recursive:
+            return
         dependency_collector = DependencyCollector(component_name, self.walk_component)
         try:
             self.walk_component(component_name, dependency_collector)
