@@ -203,7 +203,7 @@ class ComponentLoader(object):
         for module in self.modules:
             if not(self.is_public_module(module.__name__.split('.')[-1])):
                 encapsulated_modules[module.__name__] = module
-                sys.modules[module.__name__] = None
+#                sys.modules[module.__name__] = None
 #        for package in self.packages.keys():
 #            encapsulated_modules[package.__name__] = package
 #            sys.modules[package.__name__] = None
