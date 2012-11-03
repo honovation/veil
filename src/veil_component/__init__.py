@@ -10,5 +10,6 @@ from .encapsulation import is_component_loaded
 from .encapsulation import get_loaded_components
 from .encapsulation import add_must_load_module
 from .encapsulation import assert_module_is_must_load
+from .component_map import add_component
 from .component_map import get_component_map
 from .component_map import get_transitive_dependencies

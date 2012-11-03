@@ -1,11 +1,20 @@
 #!/bin/bash
 
+if [[ $1 == :* ]] ; then
+    COLON_VEIL_SERVER=$1
+    shift
+    VEIL_SERVER=${COLON_VEIL_SERVER:1} veil $@ || exit $?
+    exit 0
+fi
+
 if [ -z "$VEIL_HOME" ] ; then
     export VEIL_HOME=$(pwd)
 fi
 if [ ! -d $VEIL_HOME/env/bin ] ; then
-	echo "VEIL_HOME is invalid"
-	exit 1
+    if [[ $1 != init ]] ; then
+        echo "VEIL_HOME is invalid"
+        exit 1
+    fi
 fi
 if [ -z `readlink $0` ] ; then
     BIN_DIR=$(cd `dirname $0` && pwd)
@@ -15,13 +24,6 @@ fi
 export VEIL_FRAMEWORK_HOME=$(dirname $BIN_DIR)
 
 source $VEIL_HOME/env/bin/activate
-
-if [[ $1 == :* ]] ; then
-    COLON_VEIL_SERVER=$1
-    shift
-    VEIL_SERVER=${COLON_VEIL_SERVER:1} veil $@ || exit $?
-    exit 0
-fi
 
 function veil_init {
     find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete

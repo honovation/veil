@@ -25,13 +25,14 @@ def get_transitive_dependencies(component_name):
 
 
 def collect_transitive_dependencies(component_name, dependencies):
-    direct_dependencies = get_component_map().get(component_name, ())
+    direct_dependent_component_names = get_component_map().get(component_name, ())
     sub_component_names = [c for c in component_walker.walked_component_names
                            if c.startswith('{}.'.format(component_name))]
-    for dependency in set(direct_dependencies).union(set(sub_component_names)):
-        if dependency not in dependencies:
-            dependencies.append(dependency)
-            collect_transitive_dependencies(dependency, dependencies)
+    dependent_component_names = set(direct_dependent_component_names).union(set(sub_component_names))
+    for dependent_component_name in dependent_component_names:
+        if dependent_component_name not in dependencies:
+            dependencies.append(dependent_component_name)
+            collect_transitive_dependencies(dependent_component_name, dependencies)
 
 
 def filter_dependent_component_names(my_component_name, component_names, dependencies):
@@ -46,3 +47,7 @@ def filter_dependent_component_names(my_component_name, component_names, depende
                 dependent_component_names.add(component_name)
     return dependent_component_names
 
+
+if '__main__' == __name__:
+    add_component('ljmall')
+    print(get_transitive_dependencies('ljmall'))

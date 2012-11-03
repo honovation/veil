@@ -1,0 +1,2 @@
+os_package?libpq-dev
+python_package?psycopg2

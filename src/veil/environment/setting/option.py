@@ -73,9 +73,10 @@ def reset_options():
 
 
 def update_options(updates):
-    from veil.development.test import get_executing_test
+    import importlib
+    test_component = importlib.import_module('veil.development.test')
 
-    get_executing_test().addCleanup(reset_options)
+    test_component.get_executing_test().addCleanup(reset_options)
     new_options = merge_settings(options, updates, overrides=True)
     options.clear()
     options.update(new_options)
