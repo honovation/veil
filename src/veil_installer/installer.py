@@ -1,43 +1,32 @@
 from __future__ import unicode_literals, print_function, division
-import pprint
+import logging
 
+LOGGER = logging.getLogger()
 INSTALLERS = {}
 
 def register_installer(name, installer):
     INSTALLERS[name] = installer
 
 
-def install_resource(is_dry_run, resource):
-    if is_dry_run:
-        pprint.pprint(list_resource_map(resource))
-        return
-
-    installer_name, installer_args = resource
-    if installer_name not in INSTALLERS:
-        raise Exception('no installer for: {} {}'.format(installer_name, installer_args))
-    more_resources = INSTALLERS[installer_name](is_dry_run=False, **installer_args)
-    for more_resource in more_resources or []:
-        install_resource(False, more_resource)
+def dry_run_install_resources(installer_providers, resources):
+    dry_run_result = {}
+    install_resources(installer_providers, resources, dry_run_result=dry_run_result)
+    return dry_run_result
 
 
-def list_resource_map(resource):
-    installer_name, installer_args = resource
-    if installer_name not in INSTALLERS:
-        raise Exception('no installer for: {} {}'.format(installer_name, installer_args))
-    installer = INSTALLERS[installer_name]
-    result = installer(is_dry_run=True, **installer_args)
-    if isinstance(result, bool):
-        return '-' if result else 'INSTALL'
-    resource_map = {}
-    for resource in result:
-        sub_resource_map = list_resource_map(resource)
-        if isinstance(sub_resource_map, dict):
-            resource_map.update(sub_resource_map)
-        else:
-            resource_map[format_resource(resource)] = list_resource_map(resource)
-    return resource_map
-
-
-def format_resource(resource):
-    installer_name, installer_args = resource
-    return '{}?{}'.format(installer_name, '&'.join(['{}={}'.format(k, v) for k, v in installer_args.items()]))
+def install_resources(installer_providers, resources, dry_run_result=None):
+    for installer_provider in installer_providers:
+        installer_provider_resource = ('component', dict(name=installer_provider))
+        install_resources([], [installer_provider_resource], dry_run_result=dry_run_result)
+        try:
+            __import__(installer_provider)
+        except:
+            LOGGER.error('failed to load installer provider: {}'.format(installer_provider))
+            raise
+    for resource in resources:
+        installer_name, installer_args = resource
+        if installer_name not in INSTALLERS:
+            raise Exception('no installer for: {} {}'.format(installer_name, installer_args))
+        result = INSTALLERS[installer_name](dry_run_result=dry_run_result, **installer_args)
+        if result:
+            install_resources(dry_run_result=dry_run_result, *result)

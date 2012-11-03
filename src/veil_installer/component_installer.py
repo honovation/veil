@@ -3,11 +3,12 @@ import pkgutil
 import os
 import veil_component
 
-def install_component(is_dry_run, name):
+def install_component(dry_run_result, name):
     component_name = name
     module_path = pkgutil.get_loader(component_name).get_filename()
     module_dir = os.path.dirname(module_path)
     installer_path = os.path.join(module_dir, 'INSTALLER')
+    installer_providers = []
     resources = []
     veil_component.add_component(component_name)
     for dependent_component_name in veil_component.get_component_map().get(component_name, set()):
@@ -15,8 +16,15 @@ def install_component(is_dry_run, name):
     if os.path.exists(installer_path):
         with open(installer_path) as f:
             lines = f.readlines()
-        resources.extend([parse_resource(line) for line in lines])
-    return resources
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith('@'):
+                installer_providers.append(line[1:])
+            else:
+                resources.append(parse_resource(line))
+    return installer_providers, resources
 
 
 def parse_resource(line):

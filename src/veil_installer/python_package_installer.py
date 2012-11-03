@@ -5,10 +5,11 @@ from .shell import shell_execute
 
 LOGGER = logging.getLogger(__name__)
 
-def install_python_package(is_dry_run, name):
+def install_python_package(dry_run_result, name):
     installed = name in shell_execute('pip freeze', capture=True)
-    if is_dry_run:
-        return installed
+    if dry_run_result is not None:
+        dry_run_result['python_package?{}'.format(name)] = '-' if installed else 'INSTALL'
+        return
     if installed:
         return
     LOGGER.info('installing python package {} ...'.format(name))

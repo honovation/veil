@@ -5,10 +5,11 @@ from .shell import ShellExecutionError
 
 LOGGER = logging.getLogger(__name__)
 
-def install_os_package(is_dry_run, name):
+def install_os_package(dry_run_result, name):
     installed = is_os_package_installed(name)
-    if is_dry_run:
-        return installed
+    if dry_run_result is not None:
+        dry_run_result['os_package?{}'.format(name)] = '-' if installed else 'INSTALL'
+        return
     if installed:
         return
     LOGGER.info('installing os package {} ...'.format(name))
