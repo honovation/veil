@@ -25,5 +25,5 @@ def worker_program(queue_redis_host, queue_redis_port, queue_name, user=None):
 def install_worker(queue_name):
     install_queue_api()
     for job_handler in list_job_handlers(queue_name):
-        component_name = veil_component.get_component_of_module(job_handler.__module__)
+        component_name = veil_component.get_root_component(job_handler.__module__)
         install_dependency(component_name, install_dependencies_of_dependency=True)

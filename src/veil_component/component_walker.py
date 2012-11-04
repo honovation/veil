@@ -36,7 +36,7 @@ class ComponentWalker(object):
 
     def walk_module(self, module_name, visitor, at_top_level=False):
         try:
-            module_loader = pkgutil.find_loader(module_name)
+            module_loader = find_module_loader_without_import(module_name)
         except:
             raise InvalidComponentException('{} not found, {}'.format(module_name, traceback.format_exc()))
         if not module_loader:
@@ -68,6 +68,23 @@ class ComponentWalker(object):
 
     def is_component(self, source_code):
         return str('.init_component') in source_code
+
+
+def find_module_loader_without_import(module_name):
+# pkgutil.find_loader will trigger __import__
+    if '.' in module_name:
+        parent_module_name = module_name[:module_name.rfind('.')]
+        parent_loader = find_module_loader_without_import(parent_module_name)
+        if not parent_loader:
+            return None
+        importer = pkgutil.get_importer(os.path.dirname(parent_loader.get_filename()))
+        return importer.find_module(module_name)
+    else:
+        for importer in pkgutil.iter_importers():
+            loader = importer.find_module(module_name)
+            if loader:
+                return loader
+        return None
 
 
 class InvalidComponentException(Exception):

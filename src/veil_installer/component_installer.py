@@ -1,17 +1,16 @@
 from __future__ import unicode_literals, print_function, division
-import pkgutil
 import os
 import veil_component
 
 def install_component(dry_run_result, name):
     component_name = name
-    module_path = pkgutil.get_loader(component_name).get_filename()
+    module_path = veil_component.find_module_loader_without_import(component_name).get_filename()
     module_dir = os.path.dirname(module_path)
     installer_path = os.path.join(module_dir, 'INSTALLER')
     installer_providers = []
     resources = []
-    veil_component.add_component(component_name)
-    for dependent_component_name in veil_component.get_component_map().get(component_name, set()):
+    veil_component.scan_component(name, recursive=True)
+    for dependent_component_name in veil_component.get_dependent_component_names(component_name, includes_children=True):
         resources.append(('component', dict(name=dependent_component_name)))
     if os.path.exists(installer_path):
         with open(installer_path) as f:
@@ -21,7 +20,8 @@ def install_component(dry_run_result, name):
             if not line:
                 continue
             if line.startswith('@'):
-                installer_providers.append(line[1:])
+                installer_provider = line[1:]
+                installer_providers.append(installer_provider)
             else:
                 resources.append(parse_resource(line))
     return installer_providers, resources

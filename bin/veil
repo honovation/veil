@@ -68,7 +68,7 @@ case "$1" in
     install)
         shift
         veil_init
-        exec veil environment supervisor install-programs $@
+        exec python -m veil_installer $@
         ;;
     deploy-env)
         shift

@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import logging
 from .dependency_collector import list_dependencies
 from .dependency_collector import OnceComponentWalker
 
@@ -12,6 +13,14 @@ def scan_component(component_name, recursive=False):
     component_names = set(component_walker.walked_component_names)
     component_map.update({k: filter_dependent_component_names(k, component_names, v)
                           for k, v in components_dependencies.items()})
+
+
+def get_dependent_component_names(component_name, includes_children=False):
+    direct = component_map.get(component_name, set())
+    if not includes_children:
+        return direct
+    children = set([c for c in component_map.keys() if c.startswith('{}.'.format(component_name))])
+    return direct.union(children)
 
 
 def get_component_map():
@@ -48,15 +57,15 @@ def filter_dependent_component_names(my_component_name, component_names, depende
     return dependent_component_names
 
 
-def get_component_of_module(module_name):
+def get_root_component(module_name):
     matched_component_names = []
     for component_name in component_map.keys():
         if module_name.startswith(component_name):
             matched_component_names.append(component_name)
-    return max(matched_component_names)
-
+    return min(matched_component_names)
 
 
 if '__main__' == __name__:
+    logging.basicConfig(level=logging.DEBUG)
     scan_component('ljmall', recursive=True)
     print(get_transitive_dependencies('ljmall'))

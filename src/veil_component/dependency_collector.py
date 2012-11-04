@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 from .component_walker import ComponentInternalVisitor
 from .component_walker import OnceComponentWalker
+from .component_walker import InvalidComponentException
 from .import_collector import list_imports
 
 LOGGER = logging.getLogger(__name__)
@@ -46,10 +47,12 @@ class DependencyCollector(ComponentInternalVisitor):
     def collect_others_dependencies(self, component_name):
         if not self.recursive:
             return
-        dependency_collector = DependencyCollector(component_name, self.walk_component)
+        dependency_collector = DependencyCollector(component_name, self.walk_component, True)
         try:
             self.walk_component(component_name, dependency_collector)
             self.component_dependencies.update(dependency_collector.component_dependencies)
+        except InvalidComponentException:
+            pass
         except:
             LOGGER.error('failed to collect dependencies in {} from {}'.format(
                 self.component_name, component_name))
