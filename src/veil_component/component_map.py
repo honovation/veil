@@ -62,7 +62,19 @@ def get_root_component(module_name):
     for component_name in component_map.keys():
         if module_name.startswith(component_name):
             matched_component_names.append(component_name)
+    if not matched_component_names:
+        return None
     return min(matched_component_names)
+
+
+def get_leaf_component(module_name):
+    matched_component_names = []
+    for component_name in component_map.keys():
+        if module_name.startswith(component_name):
+            matched_component_names.append(component_name)
+    if not matched_component_names:
+        return None
+    return max(matched_component_names)
 
 
 if '__main__' == __name__:

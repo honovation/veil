@@ -5,4 +5,5 @@ from .component_map import get_dependent_component_names
 from .component_map import get_component_map
 from .component_map import get_transitive_dependencies
 from .component_map import get_root_component
+from .component_map import get_leaf_component
 from .component_walker import find_module_loader_without_import
