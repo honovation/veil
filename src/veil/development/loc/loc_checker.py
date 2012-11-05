@@ -21,8 +21,6 @@ def check_loc():
             max_loc = max(own_loc, max_loc)
             if own_loc > THRESHOLD:
                 raise Exception('{} contains {} lines of code, extract component out!'.format(component_name, own_loc))
-    if THRESHOLD > GOAL and THRESHOLD - max_loc > 50:
-        raise Exception('Threshold can be reduced to {} now', max_loc)
 
 
 def calculate_sub_component_loc(component_locs, parent_component_name):
