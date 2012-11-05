@@ -2,36 +2,21 @@ from __future__ import unicode_literals, print_function, division
 import os
 import contextlib
 import time
-from veil.frontend.cli import *
 from veil.backend.shell import *
 from veil.environment.setting import *
 from veil.utility.path import *
 from veil.environment.installation import *
 from veil.frontend.template import *
+from veil.environment.program_installer import *
 
-def postgresql_server_program(purpose, updates=None):
-    program = {
-        'execute_command': 'veil backend database postgresql server-up {}'.format(purpose),
-        'install_command': 'veil backend database postgresql install-server {}'.format(purpose)
-    }
-    if updates:
-        program.update(updates)
-    return program
-
-
-@script('server-up')
-def bring_up_postgresql_server(purpose):
-    settings = get_settings()
-    config = getattr(settings, '{}_postgresql'.format(purpose))
-    pass_control_to('postgres -D {}'.format(config.data_directory))
-
-
-@installation_script('install-server')
-def install_postgresql_server(purpose=None):
-    if not purpose:
+@program_installer('postgresql')
+def install_postgresql_server(dry_run_result, name):
+    settings = get_settings_with_missing_schema()
+    config = getattr(settings, '{}_postgresql'.format(name))
+    pg_data_dir = as_path(config.data_directory)
+    if dry_run_result is not None:
+        dry_run_result['postgresql?{}'.format(name)] = '-' if pg_data_dir.exists() else 'INSTALL'
         return
-    settings = get_settings()
-    config = getattr(settings, '{}_postgresql'.format(purpose))
     install_ubuntu_package('postgresql-9.1')
     remove_service_auto_start('postgresql', '/etc/rc0.d/K21postgresql')
     pg_bin_dir = as_path('/usr/lib/postgresql/9.1/bin')
@@ -42,7 +27,6 @@ def install_postgresql_server(purpose=None):
     create_symbolic_link(global_bin_dir / 'initdb', to='{}/initdb'.format(pg_bin_dir))
     create_symbolic_link(global_bin_dir / 'pg_ctl', to='{}/pg_ctl'.format(pg_bin_dir))
     create_symbolic_link(global_bin_dir / 'postgres', to='{}/postgres'.format(pg_bin_dir))
-    pg_data_dir = as_path(config.data_directory)
     no_user = False
     if not pg_data_dir.exists():
         old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.dirname()), capture=True).strip()

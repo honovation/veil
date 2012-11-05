@@ -11,6 +11,9 @@ with veil_component.init_component(__name__):
     from .option import update_options
     from .bootstrapper import bootstrap_runtime
     from .bootstrapper import logging_settings
+    from .schema import register_settings_schema
+    from .schema import get_settings_schema
+    from .schema import get_settings_with_missing_schema
 
     __all__ = [
         # from setting
@@ -25,5 +28,8 @@ with veil_component.init_component(__name__):
         update_options.__name__,
         # from bootstrapper
         bootstrap_runtime.__name__,
-        logging_settings.__name__
+        logging_settings.__name__,
+        register_settings_schema.__name__,
+        get_settings_schema.__name__,
+        get_settings_with_missing_schema.__name__
     ]

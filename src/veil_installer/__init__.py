@@ -1,1 +1,2 @@
 from .installer import register_installer
+from .filesystem_installer import directory_resource

@@ -24,6 +24,7 @@ def get_settings():
     global settings
     if not initialized:
         initialized = True
+        settings = merge_settings(settings, get_application_settings())
     for coordinator in coordinators:
         settings = coordinator(settings)
         if not isinstance(settings, DictObject):

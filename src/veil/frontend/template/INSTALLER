@@ -1,2 +1,2 @@
-python_package?jinja2
-python_package?markupsafe
+python_package?Jinja2
+python_package?MarkupSafe

@@ -23,7 +23,8 @@ def install_resources(installer_providers, resources, dry_run_result=None):
         install_resources([], [installer_provider_resource], dry_run_result=dry_run_result)
         try:
             __import__(installer_provider)
-            dry_run_result['@{}'.format(installer_provider)] = '-'
+            if dry_run_result is not None:
+                dry_run_result['@{}'.format(installer_provider)] = '-'
         except:
             if dry_run_result is not None:
                 dry_run_result['@{}'.format(installer_provider)] = 'INSTALL'

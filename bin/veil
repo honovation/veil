@@ -62,9 +62,6 @@ case "$1" in
     down)
         exec veil environment supervisor down
         ;;
-    init)
-        veil_init
-        ;;
     install)
         shift
         veil_init

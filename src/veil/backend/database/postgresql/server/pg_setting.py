@@ -3,7 +3,6 @@ from veil.environment import *
 from veil.environment.setting import *
 from veil.environment.deployment import *
 from veil.model.collection import *
-from .server.pg_server_program import postgresql_server_program
 
 def postgresql_settings(purpose, *other_purposes, **updates):
     if is_current_veil_server_hosting('{}_postgresql'.format(purpose)):
@@ -51,3 +50,13 @@ def copy_postgresql_settings_into_veil(settings):
                     }
                 }, overrides=True)
     return new_settings
+
+
+def postgresql_server_program(purpose, updates=None):
+    program = {
+        'execute_command': 'veil backend database postgresql server-up {}'.format(purpose),
+        'install_command': 'veil backend database postgresql install-server {}'.format(purpose)
+    }
+    if updates:
+        program.update(updates)
+    return program

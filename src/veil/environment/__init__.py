@@ -69,6 +69,10 @@ def get_application_components():
     return get_application_architecture().keys()
 
 
+def get_application_settings():
+    return getattr(get_application(), 'SETTINGS', {})
+
+
 def get_application():
     import __veil__
 
