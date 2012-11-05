@@ -6,6 +6,14 @@ LOGGER = logging.getLogger()
 INSTALLERS = {}
 stack = []
 
+def installer(name):
+    def register(func):
+        register_installer(name, func)
+        return func
+
+    return register
+
+
 def register_installer(name, installer):
     INSTALLERS[name] = installer
 
@@ -18,7 +26,7 @@ def dry_run_install_resources(installer_providers, resources):
 
 def install_resources(installer_providers, resources, dry_run_result=None):
     stack.append((installer_providers, resources))
-    if len(stack) > 10:
+    if len(stack) > 30:
         for frame in stack:
             print(frame)
         raise Exception('too many levels')

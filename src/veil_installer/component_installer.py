@@ -2,9 +2,11 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import os
 import veil_component
+from .installer import installer
 
 LOGGER = logging.getLogger(__name__)
 
+@installer('component')
 def install_component(dry_run_result, name):
     component_name = name
     module_path = veil_component.find_module_loader_without_import(component_name).get_filename()

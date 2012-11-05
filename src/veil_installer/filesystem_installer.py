@@ -3,13 +3,14 @@ import os
 import logging
 import grp
 import pwd
+from .installer import installer
 
 LOGGER = logging.getLogger(__name__)
 
 def directory_resource(path, **args):
     return 'directory', dict(args, path=path)
 
-
+@installer('directory')
 def install_directory(dry_run_result, **args):
     resource_name = 'directory?{}'.format('&'.join(['{}={}'.format(k, v) for k, v in args.items()]))
     if dry_run_result is None:
@@ -38,6 +39,11 @@ def _install_directory(is_dry_run, path, owner='root', group='root', mode=0755, 
     if os.path.exists(path):
         actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
     return actions
+
+
+@installer('file')
+def file_resource(path, content, **args):
+    return 'file', dict(args, path=path, content=content)
 
 
 def install_file(dry_run_result, **args):

@@ -5,12 +5,7 @@ import argparse
 import pprint
 from .installer import install_resources
 from .installer import dry_run_install_resources
-from .installer import register_installer
-from .python_package_installer import install_python_package
-from .os_package_installer import install_os_package
-from .component_installer import install_component
 from .component_installer import parse_resource
-from .filesystem_installer import install_directory
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -26,10 +21,6 @@ else:
     component_name = args.resource
     resource = ('component', dict(name=component_name))
 
-register_installer('python_package', install_python_package)
-register_installer('os_package', install_os_package)
-register_installer('component', install_component)
-register_installer('directory', install_directory)
 installer_providers = [args.installer_provider] if args.installer_provider else []
 if args.dry_run:
     pprint.pprint(dry_run_install_resources(installer_providers, [resource]))

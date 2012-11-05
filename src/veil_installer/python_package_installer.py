@@ -2,9 +2,14 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import os
 from .shell import shell_execute
+from .installer import installer
 
 LOGGER = logging.getLogger(__name__)
 
+def python_package_resource(name):
+    return 'python_package', dict(name=name)
+
+@installer('python_package')
 def install_python_package(dry_run_result, name, **kwargs):
     installed = is_python_package_installed(name)
     if dry_run_result is not None:

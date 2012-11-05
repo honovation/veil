@@ -1,10 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 import os
+from veil_installer import installer
 from veil_installer import is_python_package_installed
 from veil_installer import install_python_package
 from veil_installer import install_file
 from veil.backend.shell import *
 
+@installer('db2_driver')
 def install_db2_driver(dry_run_result):
     is_installed = is_python_package_installed('ibm-db')
     if dry_run_result is not None:
