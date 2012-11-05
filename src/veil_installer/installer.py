@@ -4,6 +4,7 @@ import logging
 
 LOGGER = logging.getLogger()
 INSTALLERS = {}
+stack = []
 
 def register_installer(name, installer):
     INSTALLERS[name] = installer
@@ -16,6 +17,11 @@ def dry_run_install_resources(installer_providers, resources):
 
 
 def install_resources(installer_providers, resources, dry_run_result=None):
+    stack.append((installer_providers, resources))
+    if len(stack) > 10:
+        for frame in stack:
+            print(frame)
+        raise Exception('too many levels')
     for installer_provider in installer_providers:
         veil_component.scan_component(installer_provider, recursive=True)
         installer_provider_component = veil_component.get_root_component(installer_provider)
@@ -40,3 +46,4 @@ def install_resources(installer_providers, resources, dry_run_result=None):
         result = INSTALLERS[installer_name](dry_run_result=dry_run_result, **installer_args)
         if result:
             install_resources(dry_run_result=dry_run_result, *result)
+    stack.pop()

@@ -1,2 +1,5 @@
 from .installer import register_installer
 from .filesystem_installer import directory_resource
+from .filesystem_installer import install_file
+from .python_package_installer import is_python_package_installed
+from .python_package_installer import install_python_package

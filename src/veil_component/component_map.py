@@ -60,7 +60,7 @@ def filter_dependent_component_names(my_component_name, component_names, depende
 def get_root_component(module_name):
     matched_component_names = []
     for component_name in component_map.keys():
-        if module_name.startswith(component_name):
+        if module_name == component_name or module_name.startswith('{}.'.format(component_name)):
             matched_component_names.append(component_name)
     if not matched_component_names:
         return None
@@ -70,7 +70,7 @@ def get_root_component(module_name):
 def get_leaf_component(module_name):
     matched_component_names = []
     for component_name in component_map.keys():
-        if module_name.startswith(component_name):
+        if module_name == component_name or module_name.startswith('{}.'.format(component_name)):
             matched_component_names.append(component_name)
     if not matched_component_names:
         return None

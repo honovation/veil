@@ -13,16 +13,16 @@ def directory_resource(path, **args):
 def install_directory(dry_run_result, **args):
     resource_name = 'directory?{}'.format('&'.join(['{}={}'.format(k, v) for k, v in args.items()]))
     if dry_run_result is None:
-        _create_directory(is_dry_run=False, **args)
+        _install_directory(is_dry_run=False, **args)
     else:
-        actions = _create_directory(is_dry_run=True, **args)
+        actions = _install_directory(is_dry_run=True, **args)
         if actions:
             dry_run_result[resource_name] = ', '.join(actions)
         else:
             dry_run_result[resource_name] = '-'
 
 
-def _create_directory(is_dry_run, path, owner='root', group='root', mode=0755, recursive=False):
+def _install_directory(is_dry_run, path, owner='root', group='root', mode=0755, recursive=False):
     actions = []
     if not os.path.exists(path):
         if recursive:
@@ -37,6 +37,46 @@ def _create_directory(is_dry_run, path, owner='root', group='root', mode=0755, r
                 os.mkdir(path, mode or 0755)
     if os.path.exists(path):
         actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
+    return actions
+
+
+def install_file(dry_run_result, **args):
+    resource_name = 'file?{}'.format('&'.join(['{}={}'.format(k, v) for k, v in args.items()]))
+    if dry_run_result is None:
+        _install_file(is_dry_run=False, **args)
+    else:
+        actions = _install_file(is_dry_run=True, **args)
+        if actions:
+            dry_run_result[resource_name] = ', '.join(actions)
+        else:
+            dry_run_result[resource_name] = '-'
+
+
+def _install_file(is_dry_run, path, content, owner='root', group='root', mode=0644):
+    write = False
+    actions = []
+    if not os.path.exists(path):
+        write = True
+        actions.append('CREATE')
+        reason = "it doesn't exist"
+    else:
+        if content is not None:
+            with open(path, "rb") as fp:
+                old_content = fp.read()
+            if content != old_content:
+                write = True
+                actions.append('UPDATE')
+                reason = "contents don't match"
+
+    if write:
+        LOGGER.info('Writing {} because {}'.format(path, reason))
+        with open(path, 'wb') as fp:
+            if not is_dry_run and content:
+                fp.write(content)
+
+    if os.path.exists(path):
+        actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
+
     return actions
 
 

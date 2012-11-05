@@ -11,7 +11,7 @@ if [ -z "$VEIL_HOME" ] ; then
     export VEIL_HOME=$(pwd)
 fi
 if [ ! -d $VEIL_HOME/env/bin ] ; then
-    if [[ $1 != init ]] ; then
+    if [[ $1 != install ]] ; then
         echo "VEIL_HOME is invalid"
         exit 1
     fi
@@ -40,9 +40,10 @@ function veil_init {
     fi
     if [ ! -d $VEIL_HOME/env ]; then
         virtualenv env
+        echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
+        echo "$VEIL_HOME/src" >> env/lib/python2.7/site-packages/veil.pth
+        source $VEIL_HOME/env/bin/activate
     fi
-    echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
-    echo "$VEIL_HOME/src" >> env/lib/python2.7/site-packages/veil.pth
     if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then
         ln -s $VEIL_FRAMEWORK_HOME/src/discipline_coach.py $VEIL_HOME/.git/hooks/pre-commit
     fi
