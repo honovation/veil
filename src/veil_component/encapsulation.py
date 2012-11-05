@@ -10,7 +10,7 @@ from .component_map import add_component
 __all__ = [
     'init_component', 'force_get_all_loaded_modules', 'force_import_module', 'get_loading_component',
     'is_dummy_module_member', 'assert_component_loaded',
-    'get_component_of_module', 'is_component_loaded', 'get_loaded_components',
+    'get_root_component', 'is_component_loaded', 'get_loaded_components',
     'add_must_load_module', 'assert_module_is_must_load']
 
 encapsulated_modules = {}
@@ -109,11 +109,23 @@ def is_component_loaded(component_name, visited_component_names=None):
     return True
 
 
-def get_component_of_module(module_name):
+def get_root_component(module_name):
     matched_component_names = []
     for component_name in components:
         if module_name.startswith(component_name):
             matched_component_names.append(component_name)
+    if not matched_component_names:
+        return None
+    return min(matched_component_names)
+
+
+def get_leaf_component(module_name):
+    matched_component_names = []
+    for component_name in components:
+        if module_name.startswith(component_name):
+            matched_component_names.append(component_name)
+    if not matched_component_names:
+        return None
     return max(matched_component_names)
 
 
@@ -203,15 +215,15 @@ class ComponentLoader(object):
         for module in self.modules:
             if not(self.is_public_module(module.__name__.split('.')[-1])):
                 encapsulated_modules[module.__name__] = module
-#                sys.modules[module.__name__] = None
-#        for package in self.packages.keys():
-#            encapsulated_modules[package.__name__] = package
-#            sys.modules[package.__name__] = None
-#            if package.__name__ in components:
-#                del components[package.__name__]
-#            for module_name in self.packages[package]:
-#                if hasattr(package, module_name):
-#                    delattr(package, module_name)
+            #                sys.modules[module.__name__] = None
+            #        for package in self.packages.keys():
+            #            encapsulated_modules[package.__name__] = package
+            #            sys.modules[package.__name__] = None
+            #            if package.__name__ in components:
+            #                del components[package.__name__]
+            #            for module_name in self.packages[package]:
+            #                if hasattr(package, module_name):
+            #                    delattr(package, module_name)
 
     def is_public_module(self, module_name):
         return module_name.startswith('__') and module_name.endswith('__')

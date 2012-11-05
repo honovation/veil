@@ -36,7 +36,7 @@ def is_test_suite_loaded(suite):
     if 'LoadTestsFailure' == suite.__class__.__name__:
         return False
     for test in suite:
-        if not veil_component.is_component_loaded(veil_component.get_component_of_module(test.__module__)):
+        if not veil_component.is_component_loaded(veil_component.get_root_component(test.__module__)):
             return False
     return True
 
