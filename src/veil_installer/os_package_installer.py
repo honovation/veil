@@ -6,6 +6,10 @@ from .installer import installer
 
 LOGGER = logging.getLogger(__name__)
 
+def os_package_resource(name):
+    return 'os_package', dict(name=name)
+
+
 @installer('os_package')
 def install_os_package(dry_run_result, name):
     installed = is_os_package_installed(name)

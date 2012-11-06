@@ -44,7 +44,8 @@ def redis_settings(purpose, **updates):
 def redis_server_program(purpose):
     return {
         'execute_command': 'veil backend redis server-up {}'.format(purpose),
-        'install_command': 'veil backend redis install-server {}'.format(purpose)
+        'installer_providers': ['veil.backend.redis'],
+        'resources': [('redis', dict(name=purpose))]
     }
 
 

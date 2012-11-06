@@ -46,6 +46,8 @@ def install_resources(installer_providers, resources, dry_run_result=None):
                 LOGGER.error('failed to load installer provider: {}'.format(installer_provider))
                 raise
     for resource in resources:
+        if len(resource) != 2:
+            raise Exception('invalid resource: {}'.format(resource))
         installer_name, installer_args = resource
         if installer_name not in INSTALLERS:
             if dry_run_result is not None:

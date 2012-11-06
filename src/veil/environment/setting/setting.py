@@ -7,6 +7,10 @@ initialized = False
 settings = {}
 coordinators = []
 
+def is_settings_initialized():
+    return initialized
+
+
 def add_settings(additional_settings, overrides=False):
     global settings
     if initialized:
@@ -72,7 +76,7 @@ def load_config_from(path, *expected_keys):
         if line:
             key, value = line.split('=')
             config[key] = value
-    assert set(expected_keys) == set(config.keys()), \
-        'config file {} does not provide exact keys we want, expected: {}, actual: {}'.format(
-            path, expected_keys, config.keys())
+    assert set(expected_keys) == set(config.keys()),\
+    'config file {} does not provide exact keys we want, expected: {}, actual: {}'.format(
+        path, expected_keys, config.keys())
     return config
