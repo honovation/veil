@@ -7,8 +7,9 @@ from veil.utility.path import *
 def nginx_program(**updates):
     settings = {
         'execute_command': 'veil frontend nginx up',
-        'install_command': 'veil frontend nginx install',
-        'user': 'root'
+        'user': 'root',
+        'installer_providers': ['veil.frontend.nginx'],
+        'resources': [('nginx', {})]
     }
     return merge_settings(settings, updates)
 

@@ -14,5 +14,5 @@ def install_veil_server(dry_run_result):
     else:
         server = get_current_veil_server()
         resources = [program_resource(p) for p in server.programs]
-    resources.extend(('supervisor', {}))
+    resources.append(('supervisor', {}))
     return [], resources
