@@ -5,8 +5,6 @@ with veil_component.init_component(__name__):
     from .website_launcher import start_test_website
     from .website_launcher import register_website_context_manager
     from .website_launcher import get_website_option
-    from .website_setting import website_settings
-    from .website_setting import get_website_nginx_server_name
     from .client import start_website_and_client
     from .routing import route
     from .routing import route_for
@@ -59,9 +57,6 @@ with veil_component.init_component(__name__):
         start_test_website.__name__,
         register_website_context_manager.__name__,
         get_website_option.__name__,
-        # from website_setting
-        website_settings.__name__,
-        get_website_nginx_server_name.__name__,
         # from client
         start_website_and_client.__name__,
         # from routing
@@ -119,9 +114,7 @@ with veil_component.init_component(__name__):
         from .website_program import register_website_component
         from .website_program import watch_website_changes
         from .routing import EVENT_NEW_WEBSITE
-        from .website_setting import add_website_reverse_proxy_servers
 
         subscribe_event(EVENT_NEW_WEBSITE, register_website_options)
         subscribe_event(EVENT_NEW_WEBSITE, register_website_component)
         subscribe_event(EVENT_NEW_WEBSITE, watch_website_changes)
-        register_settings_coordinator(add_website_reverse_proxy_servers)

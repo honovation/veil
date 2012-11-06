@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from veil.backend.shell import *
 from veil.environment.setting import *
 from veil.frontend.cli import script
-from .supervisor_setting import supervisor_settings
+from veil.environment.supervisor_setting import supervisor_settings
 
 @script('up')
 def bring_up_programs(*argv):

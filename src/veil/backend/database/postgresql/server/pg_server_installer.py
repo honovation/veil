@@ -11,7 +11,7 @@ from veil.environment.program_installer import *
 
 @program_installer('postgresql')
 def install_postgresql_server(dry_run_result, name):
-    settings = get_settings_with_missing_schema()
+    settings = get_settings()
     config = getattr(settings, '{}_postgresql'.format(name))
     pg_data_dir = as_path(config.data_directory)
     if dry_run_result is not None:

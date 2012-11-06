@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
-from veil.backend.bucket import *
-from veil.backend.redis import *
+from veil.backend.bucket_setting import bucket_settings
+from veil.backend.redis_setting import redis_settings
 from veil.environment.setting import *
 
 def captcha_settings(website, redis_port):

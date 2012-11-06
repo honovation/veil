@@ -1,12 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment import *
 from veil.environment.setting import *
-from veil.backend.redis import *
-from veil.frontend.nginx import *
-from .server.delayed_job_scheduler_program import delayed_job_scheduler_program
-from .server.periodic_job_scheduler_program import periodic_job_scheduler_program
-from .server.worker_program import worker_program
-from .server.resweb_program import resweb_program
+from veil.backend.redis_setting import redis_settings
+from veil.frontend.nginx_setting import nginx_server_settings
 
 def queue_settings(
         domain='queue.dev.dmright.com', domain_port=80,
@@ -49,6 +45,41 @@ def queue_settings(
         del settings['resweb']
         settings.supervisor.programs.clear()
     return settings
+
+
+def delayed_job_scheduler_program(queue_redis_host, queue_redis_port):
+    return  {
+        'execute_command': 'pyres_scheduler --host={} --port={} -l info -f stderr'.format(
+            queue_redis_host, queue_redis_port),
+        'install_command': 'veil install python_package?pyres'
+    }
+
+
+def periodic_job_scheduler_program():
+    return {
+        'execute_command': 'veil install veil.backend.queue',
+        'install_command': 'veil backend queue install-periodic-job-scheduler'
+    }
+
+
+def worker_program(queue_redis_host, queue_redis_port, queue_name, user=None):
+    return {
+        'execute_command': 'pyres_worker --host={} --port={} -l debug -f stderr {}'.format(
+            queue_redis_host, queue_redis_port, queue_name),
+        'install_command': 'veil backend queue install-worker {}'.format(queue_name),
+        'group': '{}_workers'.format(queue_name),
+        'user': '{}'.format(user) if user else ''
+    }
+
+
+def resweb_program():
+    return {
+        'execute_command': 'resweb',
+        'install_command': 'veil install --installer-provider veil.backend.queue resweb',
+        'environment_variables': {
+            'RESWEB_SETTINGS': VEIL_ETC_DIR / 'resweb.cfg'
+        }
+    }
 
 
 def copy_queue_settings_to_veil(settings):

@@ -4,6 +4,10 @@ from veil.environment.setting import *
 from veil.environment.deployment import *
 from veil.model.collection import *
 
+def init():
+    register_settings_coordinator(copy_postgresql_settings_into_veil)
+
+
 def postgresql_settings(purpose, *other_purposes, **updates):
     if is_current_veil_server_hosting('{}_postgresql'.format(purpose)):
         register_migration_command('veil backend database postgresql migrate {}'.format(purpose))
@@ -60,3 +64,5 @@ def postgresql_server_program(purpose, updates=None):
     if updates:
         program.update(updates)
     return program
+
+init()

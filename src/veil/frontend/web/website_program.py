@@ -3,16 +3,7 @@ import veil_component
 from veil.environment.source_code_monitor import register_reloads_on_change_program
 from veil.environment.installation import *
 
-website_components = {} # website => components
-
-def website_program(website, **updates):
-    program = {
-        'execute_command': 'veil frontend web up {}'.format(website),
-        'install_command': 'veil frontend web install {}'.format(website)
-    }
-    if updates:
-        program.update(updates)
-    return program
+website_components = {} # website => component
 
 
 @installation_script()

@@ -1,13 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-import veil_component
 from veil.frontend.template import *
 from veil.frontend.cli import *
 from veil.backend.shell import *
 from veil.environment import *
 from veil.environment.setting import *
 from veil.environment.installation import *
-from .supervisor_setting import supervisor_settings
+from veil.environment.supervisor_setting import supervisor_settings
 
 LOGGER = logging.getLogger(__name__)
 

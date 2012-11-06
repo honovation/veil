@@ -1,9 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment.setting import *
 from veil.model.collection import *
-from veil.frontend.nginx import *
-from veil.frontend.web import *
+from veil.frontend.website_setting import get_website_nginx_server_name
+from veil.frontend.nginx_setting import nginx_server_static_file_location_settings
 from veil.environment import *
+
+def init():
+    register_settings_coordinator(add_bucket_reverse_proxy_static_file_locations)
 
 
 def bucket_settings(bucket, website):
@@ -49,3 +52,5 @@ def get_website_config(settings, website):
     if not website_config:
         raise Exception('website {} is not defined in settings'.format(website))
     return website_config
+
+init()

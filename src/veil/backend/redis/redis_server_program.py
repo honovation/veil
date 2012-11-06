@@ -7,13 +7,6 @@ from veil.environment.installation import *
 from veil.backend.shell import *
 
 
-def redis_server_program(purpose):
-    return {
-        'execute_command': 'veil backend redis server-up {}'.format(purpose),
-        'install_command': 'veil backend redis install-server {}'.format(purpose)
-    }
-
-
 @installation_script('install-server')
 def install_redis_server(purpose=None):
     if not purpose:

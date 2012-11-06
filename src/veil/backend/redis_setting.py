@@ -1,9 +1,7 @@
 from __future__ import unicode_literals, print_function, division
-import inspect
 from veil.environment import *
 from veil.environment.setting import *
 from veil.model.collection import *
-from .redis_server_program import redis_server_program
 
 REDIS_BASE_SETTINGS = {
     'redis': {
@@ -15,6 +13,9 @@ REDIS_BASE_SETTINGS = {
         'configfile': VEIL_ETC_DIR / 'redis.conf'
     }
 }
+
+def init():
+    register_settings_coordinator(copy_redis_settings_to_veil)
 
 
 def redis_settings(purpose, **updates):
@@ -40,6 +41,13 @@ def redis_settings(purpose, **updates):
     })
 
 
+def redis_server_program(purpose):
+    return {
+        'execute_command': 'veil backend redis server-up {}'.format(purpose),
+        'install_command': 'veil backend redis install-server {}'.format(purpose)
+    }
+
+
 def copy_redis_settings_to_veil(settings):
     new_settings = settings
     for key, value in settings.items():
@@ -54,3 +62,5 @@ def copy_redis_settings_to_veil(settings):
                 }
             }, overrides=True)
     return new_settings
+
+init()

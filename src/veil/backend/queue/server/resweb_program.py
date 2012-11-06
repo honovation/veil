@@ -6,14 +6,6 @@ from veil.frontend.template import *
 from veil_installer import python_package_resource
 from veil_installer import file_resource
 
-def resweb_program():
-    return {
-        'execute_command': 'resweb',
-        'install_command': 'veil install --installer-provider veil.backend.queue resweb',
-        'environment_variables': {
-            'RESWEB_SETTINGS': VEIL_ETC_DIR / 'resweb.cfg'
-        }
-    }
 
 
 

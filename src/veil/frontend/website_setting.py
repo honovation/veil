@@ -1,11 +1,14 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment import *
 from veil.environment.setting import *
-from veil.frontend.nginx import *
+from veil.frontend.nginx_setting import nginx_settings
+from veil.frontend.nginx_setting import nginx_server_settings
+from veil.frontend.nginx_setting import nginx_server_static_file_location_settings
 from veil.model.collection import *
 from veil.utility.path import *
-from .website_program import website_program
 
+def init():
+    register_settings_coordinator(add_website_reverse_proxy_servers)
 
 def website_settings(website, port, **updates):
     port = int(port)
@@ -30,6 +33,16 @@ def website_settings(website, port, **updates):
             }
         } if 'test' != VEIL_ENV else {}
     })
+
+
+def website_program(website, **updates):
+    program = {
+        'execute_command': 'veil frontend web up {}'.format(website),
+        'install_command': 'veil frontend web install {}'.format(website)
+    }
+    if updates:
+        program.update(updates)
+    return program
 
 
 def add_website_reverse_proxy_servers(settings):
@@ -103,3 +116,4 @@ def get_website_config(settings, website):
         raise Exception('website {} is not defined in settings'.format(website))
     return website_config
 
+init()
