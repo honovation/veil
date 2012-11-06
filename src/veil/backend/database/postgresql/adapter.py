@@ -44,6 +44,17 @@ class PostgresqlAdapter(object):
         else:
             return conn
 
+    def verify(self, sql='SELECT 1'):
+        try:
+            with closing(self.conn.cursor(cursor_factory=NormalCursor)) as cur:
+                cur.execute(sql)
+        except:
+            LOGGER.warn('failed in verifying database connection', exc_info=1)
+            try:
+                self.reconnect()
+            except:
+                LOGGER.exception('failed to reconnect')
+
     def reconnect(self, need_close_first=False):
         LOGGER.info('Reconnect now <{}>'.format(self))
         if need_close_first:

@@ -24,12 +24,12 @@ def register_adapter_class(type, adapter_class):
     adapter_classes[type] = adapter_class
 
 
-def register_database(purpose):
+def register_database(purpose, verify_db=False):
     component_name = veil_component.get_loading_component().__name__
     dependencies.setdefault(component_name, set()).add(purpose)
     if purpose not in registry:
         registry[purpose] = register_database_options(purpose)
-    return lambda: require_database(purpose, component_name)
+    return lambda: require_database(purpose, component_name, verify_db)
 
 
 def check_database_dependencies(component_names, expected_dependencies):
@@ -70,11 +70,13 @@ def register_database_options(purpose):
     return get_database_options
 
 
-def require_database(purpose, component_name=None):
+def require_database(purpose, component_name=None, verify_db=False):
     if veil_component.get_loading_component():
         raise Exception('use register_database whenever possible')
     if purpose not in registry:
         raise Exception('database for purpose {} is not registered'.format(purpose))
+    if verify_db and purpose in instances:
+        instances[purpose].verify()
     if purpose not in instances:
         get_database_options = registry[purpose]
         instances[purpose] = connect(purpose=purpose, **get_database_options())
