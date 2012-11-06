@@ -1,58 +1,35 @@
 from __future__ import unicode_literals, print_function, division
 import logging
+from veil_installer import *
 from veil.frontend.template import *
-from veil.frontend.cli import *
-from veil.backend.shell import *
 from veil.environment import *
 from veil.environment.setting import *
-from veil.environment.installation import *
 from veil.environment.supervisor_setting import supervisor_settings
 
 LOGGER = logging.getLogger(__name__)
 
-@script('install-programs')
-def install_programs(program_name=None):
+@installer('supervisor')
+@using_template
+def install_supervisor(dry_run_result):
     settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
     config = settings.supervisor
-    if program_name:
-        install_program(config.programs[program_name])
-        return
-    with require_component_only_install_once():
-        if VEIL_SERVER in ['development', 'test']:
-            print('[INSTALL] about to install programs {} ...'.format(config.programs.keys()))
-            for program_name, program in config.programs.items():
-                print('[INSTALL] installing program {} ...'.format(program_name))
-                install_program(program)
-            shell_execute('veil environment supervisor install {}'.format(' '.join(config.programs.keys())))
-        else:
-            server = get_current_veil_server()
-            print('[INSTALL] about to install programs {} ...'.format(server.programs))
-            for program_name in server.programs:
-                print('[INSTALL] installing program {} ...'.format(program_name))
-                install_program(config.programs[program_name])
-            shell_execute('veil environment supervisor install {}'.format(' '.join(server.programs)))
-
-def install_program(program):
-    install_command = getattr(program, 'install_command', None)
-    if install_command:
-        shell_execute(install_command)
-
-
-@installation_script()
-def install_supervisor(*active_program_names):
-    settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
-    config = settings.supervisor
-    if not active_program_names:
-        return
-    install_python_package('supervisor')
-    create_file(config.config_file, get_template('supervisord.cfg.j2').render(
-        config=config,
-        active_program_names=active_program_names,
-        CURRENT_USER=CURRENT_USER,
-        format_command=format_command,
-        format_environment_variables=format_environment_variables
-    ))
-    create_directory(config.logging.directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
+    if VEIL_SERVER in ['development', 'test']:
+        active_program_names = config.programs.keys()
+    else:
+        active_program_names = get_current_veil_server().programs
+    resources = list(BASIC_LAYOUT_RESOURCES)
+    resources.extend([
+        python_package_resource('supervisor'),
+        file_resource(config.config_file, get_template('supervisord.cfg.j2').render(
+            config=config,
+            active_program_names=active_program_names,
+            CURRENT_USER=CURRENT_USER,
+            format_command=format_command,
+            format_environment_variables=format_environment_variables
+        )),
+        directory_resource(config.logging.directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
+    ])
+    return [], resources
 
 
 def format_command(program, args):

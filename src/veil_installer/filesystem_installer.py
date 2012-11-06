@@ -75,9 +75,9 @@ def _install_file(is_dry_run, path, content, owner='root', group='root', mode=06
                 reason = "contents don't match"
 
     if write:
-        LOGGER.info('Writing {} because {}'.format(path, reason))
         with open(path, 'wb') as fp:
             if not is_dry_run and content:
+                LOGGER.info('Writing {} because {}'.format(path, reason))
                 fp.write(content)
 
     if os.path.exists(path):

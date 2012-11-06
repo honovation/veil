@@ -10,7 +10,9 @@ def install_veil_server(dry_run_result):
     settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
     config = settings.supervisor
     if VEIL_SERVER in ['development', 'test']:
-        return [], [program_resource(p) for p in config.programs.keys()]
+        resources = [program_resource(p) for p in config.programs.keys()]
     else:
         server = get_current_veil_server()
-        return [], [program_resource(p) for p in server.programs]
+        resources = [program_resource(p) for p in server.programs]
+    resources.extend(('supervisor', {}))
+    return [], resources
