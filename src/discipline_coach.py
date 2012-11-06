@@ -13,7 +13,7 @@ import re
 
 def check_if_self_check_passed():
     if not is_self_check_passed():
-        print('[Orz] LISTEN!!! Read after me: "I should run veil self-check before commit"')
+        print(red('[Orz] LISTEN!!! Read after me: "I should run veil self-check before commit"'))
         sys.exit(1)
 
 
@@ -81,6 +81,17 @@ def shell_execute(command_line, capture=False, waits=True, **kwargs):
                 'Subprocess return code: {}, command: {}, kwargs: {}'.format(
                     process.returncode, command_args, kwargs))
     return output
+
+def _wrap_with(code):
+
+    def inner(text, bold=False):
+        c = code
+        if bold:
+            c = "1;%s" % c
+        return "\033[%sm%s\033[0m" % (c, text)
+    return inner
+
+red = _wrap_with('31')
 
 
 if __name__ == '__main__':

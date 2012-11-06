@@ -9,7 +9,6 @@ import uuid
 import veil_component
 from veil.development.test import *
 from veil.environment.setting import *
-from veil.frontend.encoding import *
 from .table_dependency import check_table_dependencies
 
 LOGGER = getLogger(__name__)
@@ -23,12 +22,12 @@ def register_adapter_class(type, adapter_class):
     adapter_classes[type] = adapter_class
 
 
-def register_database(purpose):
+def register_database(purpose, verify_db=False):
     component_name = veil_component.get_loading_component_name()
     dependencies.setdefault(component_name, set()).add(purpose)
     if purpose not in registry:
         registry[purpose] = register_database_options(purpose)
-    return lambda: require_database(purpose, component_name)
+    return lambda: require_database(purpose, component_name, verify_db)
 
 
 def check_database_dependencies(component_names, expected_dependencies):
@@ -69,11 +68,13 @@ def register_database_options(purpose):
     return get_database_options
 
 
-def require_database(purpose, component_name=None):
+def require_database(purpose, component_name=None, verify_db=False):
     if veil_component.get_loading_component_name():
         raise Exception('use register_database whenever possible')
     if purpose not in registry:
         raise Exception('database for purpose {} is not registered'.format(purpose))
+    if verify_db and purpose in instances:
+        instances[purpose].verify()
     if purpose not in instances:
         get_database_options = registry[purpose]
         instances[purpose] = connect(purpose=purpose, **get_database_options())
@@ -288,12 +289,20 @@ class Database(object):
         """
         return self._query_large_result_set(sql, batch_size, db_fetch_size, **kwargs)
 
+    def _reconnect(self):
+        try:
+            self.conn.reconnect()
+        except:
+            LOGGER.exception('failed to reconnect')
+
     def _execute(self, sql, **kwargs):
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
                 check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
-            except:
+            except Exception as e:
+                if is_connection_broken(e):
+                    self._reconnect()
                 LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
                 raise
             return cursor.rowcount
@@ -303,7 +312,9 @@ class Database(object):
             try:
                 check_table_dependencies(self.component_name, sql)
                 cursor.executemany(sql, seq_of_parameters)
-            except:
+            except Exception as e:
+                if is_connection_broken(e):
+                    self._reconnect()
                 LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, seq_of_parameters))
                 raise
             return cursor.rowcount
@@ -313,7 +324,9 @@ class Database(object):
             try:
                 check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
-            except:
+            except Exception as e:
+                if is_connection_broken(e):
+                    self._reconnect()
                 LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
                 raise
             return cursor.fetchall()
@@ -322,19 +335,25 @@ class Database(object):
         """
         Run a query with potentially large result set using server-side cursor
         """
-        # psycopg2 named cursor is implemented as 'DECLARE name CURSOR WITHOUT HOLD FOR query' and should be within a transaction and not be used in autocommit mode
-        with require_transaction_context(self):
-            cursor = self.conn.cursor(name=self._unique_cursor_name(), returns_dict_object=returns_dict_object)
-            if db_fetch_size:
-                cursor.itersize = db_fetch_size
-            cursor.execute(sql, kwargs)
-            rows = cursor.fetchmany(batch_size)
-            while len(rows) > 0:
-                yield rows
+        try:
+            # psycopg2 named cursor is implemented as 'DECLARE name CURSOR WITHOUT HOLD FOR query' and should be within a transaction and not be used in autocommit mode
+            with require_transaction_context(self):
+                cursor = self.conn.cursor(name=self._unique_cursor_name(), returns_dict_object=returns_dict_object)
+                if db_fetch_size:
+                    cursor.itersize = db_fetch_size
+                cursor.execute(sql, kwargs)
                 rows = cursor.fetchmany(batch_size)
-            cursor.close()
-            # if exception happen before close, the whole transaction should be rolled back by the caller
-            # if we close the cursor when sql execution error, the actuall error will be covered by unable to close cursor itself
+                while len(rows) > 0:
+                    yield rows
+                    rows = cursor.fetchmany(batch_size)
+                cursor.close()
+                # if exception happen before close, the whole transaction should be rolled back by the caller
+                # if we close the cursor when sql execution error, the actuall error will be covered by unable to close cursor itself
+        except Exception as e:
+            if is_connection_broken(e):
+                self._reconnect()
+            LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+            raise
 
     @staticmethod
     def _unique_cursor_name():
@@ -350,6 +369,11 @@ class Database(object):
     def __repr__(self):
         return 'Database {} opened by {}'.format(
             self.purpose, self.opened_by)
+
+
+def is_connection_broken(exception):
+    # TODO: delegate this check to adapter
+    return 'OperationalError' == type(exception).__name__
 
 
 class FunctionValueProvider(object):

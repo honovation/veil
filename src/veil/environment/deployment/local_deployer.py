@@ -1,7 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-import sys
 from veil.frontend.cli import *
-from veil.environment.supervisor import *
 from veil.backend.shell import *
 
 migration_commands = set()
@@ -18,27 +16,8 @@ def migrate():
 
 @script('deploy')
 def deploy():
-    if is_supervisord_running():
-        print('[DEPLOY] supervisord is running, doing hot deploy...')
-        hot_deploy()
-    else:
-        print('[DEPLOY] supervisord is not running, doing cold deploy...')
-        cold_deploy()
-
-
-def hot_deploy():
-    print('[DEPLOY] stopping all programs...')
-    supervisorctl('stop all')
-    print('[DEPLOY] install...')
-    shell_execute('veil install')
-    print('[DEPLOY] updating program list...')
-    supervisorctl('update')
-    wait_for_application_up_then_migrate()
-    print('[DEPLOY] starting all programs...')
-    supervisorctl('start all')
-
-
-def cold_deploy():
+    print('veil down...')
+    shell_execute('veil down')
     print('[DEPLOY] install...')
     shell_execute('veil install')
     print('[DEPLOY] bringing up...')
