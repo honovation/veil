@@ -7,10 +7,12 @@ from veil.environment.setting import *
 from veil.utility.path import *
 from veil.environment.installation import *
 from veil.frontend.template import *
-from veil.environment.program_installer import *
+from veil_installer import *
 
-@program_installer('postgresql')
+@installer('postgresql')
+@using_template
 def install_postgresql_server(dry_run_result, name):
+    # TODO: include basic layout resources here
     settings = get_settings()
     config = getattr(settings, '{}_postgresql'.format(name))
     pg_data_dir = as_path(config.data_directory)

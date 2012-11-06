@@ -4,6 +4,7 @@ import traceback
 import os.path
 import inspect
 import importlib
+import functools
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
 import veil_component
@@ -72,6 +73,13 @@ def require_current_template_directory_being(template_directory):
     finally:
         current_template_directories.pop()
 
+
+def using_template(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        with require_current_template_directory_relative_to(func):
+            return func(*args, **kwargs)
+    return wrapper
 
 def require_current_template_directory_relative_to(func):
     return require_current_template_directory_being(

@@ -3,6 +3,7 @@ import getpass
 from os import getenv
 import os
 from veil.utility.path import *
+from veil_installer import directory_resource
 
 def split_veil_server_code(code):
     env = code[:code.find('/')]
@@ -31,3 +32,11 @@ VEIL_VAR_DIR = VEIL_HOME / 'var' / VEIL_ENV
 CURRENT_USER = os.getenv('SUDO_USER') or getpass.getuser()
 CURRENT_USER_GROUP = CURRENT_USER
 CURRENT_USER_HOME = as_path(os.getenv('HOME'))
+
+BASIC_LAYOUT_RESOURCES = [
+    directory_resource(VEIL_HOME / 'log'),
+    directory_resource(VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+    directory_resource(VEIL_HOME / 'etc'), directory_resource(VEIL_ETC_DIR),
+    directory_resource(VEIL_HOME / 'var'),
+    directory_resource(VEIL_VAR_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
+]
