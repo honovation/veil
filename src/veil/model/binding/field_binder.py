@@ -82,7 +82,7 @@ def to_float(value):
     try:
         return float(value)
     except (TypeError, ValueError):
-        raise Invalid(_('不是小数'))
+        raise Invalid(_('数据不合法'))
 
 
 def to_bool(value):
@@ -187,7 +187,7 @@ def clamp_length(min=None, max=None):
 
 def clamp(min=None, max=None):
     """
-    clamp a value between minimum and maximum lengths (either
+    clamp a value between minimum and maximum (either
     of which are optional).
     """
     def bind(value):
