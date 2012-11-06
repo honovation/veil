@@ -39,6 +39,15 @@ class DB2Adapter(object):
         else:
             return conn
 
+    def reconnect(self, need_close_first=False):
+        LOGGER.info('Reconnect now <{}>'.format(self))
+        if need_close_first:
+            try:
+                self.close()
+            except:
+                LOGGER.exception('Cannot close database connection')
+        self.conn = self._get_conn()
+
     def _reconnect_when_needed(self):
         pass
 

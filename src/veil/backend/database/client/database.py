@@ -6,10 +6,11 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
+from ibm_db_dbi import OperationalError as DB2OperationalError
+from psycopg2 import OperationalError as PostgreSQLOperationalError
 import veil_component
 from veil.development.test import *
 from veil.environment.setting import *
-from veil.frontend.encoding import *
 from .table_dependency import check_table_dependencies
 
 LOGGER = getLogger(__name__)
@@ -288,12 +289,20 @@ class Database(object):
         """
         return self._query_large_result_set(sql, batch_size, db_fetch_size, **kwargs)
 
+    def _reconnect(self):
+        try:
+            self.conn.reconnect()
+        except:
+            LOGGER.exception('failed to reconnect')
+
     def _execute(self, sql, **kwargs):
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
                 check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
-            except:
+            except Exception as e:
+                if isinstance(e, PostgreSQLOperationalError) or isinstance(e, DB2OperationalError):
+                    self._reconnect()
                 LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
                 raise
             return cursor.rowcount
@@ -303,7 +312,9 @@ class Database(object):
             try:
                 check_table_dependencies(self.component_name, sql)
                 cursor.executemany(sql, seq_of_parameters)
-            except:
+            except Exception as e:
+                if isinstance(e, PostgreSQLOperationalError) or isinstance(e, DB2OperationalError):
+                    self._reconnect()
                 LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, seq_of_parameters))
                 raise
             return cursor.rowcount
@@ -313,7 +324,9 @@ class Database(object):
             try:
                 check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
-            except:
+            except Exception as e:
+                if isinstance(e, PostgreSQLOperationalError) or isinstance(e, DB2OperationalError):
+                    self._reconnect()
                 LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
                 raise
             return cursor.fetchall()
@@ -322,19 +335,25 @@ class Database(object):
         """
         Run a query with potentially large result set using server-side cursor
         """
-        # psycopg2 named cursor is implemented as 'DECLARE name CURSOR WITHOUT HOLD FOR query' and should be within a transaction and not be used in autocommit mode
-        with require_transaction_context(self):
-            cursor = self.conn.cursor(name=self._unique_cursor_name(), returns_dict_object=returns_dict_object)
-            if db_fetch_size:
-                cursor.itersize = db_fetch_size
-            cursor.execute(sql, kwargs)
-            rows = cursor.fetchmany(batch_size)
-            while len(rows) > 0:
-                yield rows
+        try:
+            # psycopg2 named cursor is implemented as 'DECLARE name CURSOR WITHOUT HOLD FOR query' and should be within a transaction and not be used in autocommit mode
+            with require_transaction_context(self):
+                cursor = self.conn.cursor(name=self._unique_cursor_name(), returns_dict_object=returns_dict_object)
+                if db_fetch_size:
+                    cursor.itersize = db_fetch_size
+                cursor.execute(sql, kwargs)
                 rows = cursor.fetchmany(batch_size)
-            cursor.close()
-            # if exception happen before close, the whole transaction should be rolled back by the caller
-            # if we close the cursor when sql execution error, the actuall error will be covered by unable to close cursor itself
+                while len(rows) > 0:
+                    yield rows
+                    rows = cursor.fetchmany(batch_size)
+                cursor.close()
+                # if exception happen before close, the whole transaction should be rolled back by the caller
+                # if we close the cursor when sql execution error, the actuall error will be covered by unable to close cursor itself
+        except Exception as e:
+            if isinstance(e, PostgreSQLOperationalError) or isinstance(e, DB2OperationalError):
+                self._reconnect()
+            LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+            raise
 
     @staticmethod
     def _unique_cursor_name():
