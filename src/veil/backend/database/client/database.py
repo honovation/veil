@@ -6,8 +6,6 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
-from ibm_db_dbi import OperationalError as DB2OperationalError
-from psycopg2 import OperationalError as PostgreSQLOperationalError
 import veil_component
 from veil.development.test import *
 from veil.environment.setting import *
@@ -303,7 +301,7 @@ class Database(object):
                 check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
             except Exception as e:
-                if isinstance(e, PostgreSQLOperationalError) or isinstance(e, DB2OperationalError):
+                if is_connection_broken(e):
                     self._reconnect()
                 LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
                 raise
@@ -315,7 +313,7 @@ class Database(object):
                 check_table_dependencies(self.component_name, sql)
                 cursor.executemany(sql, seq_of_parameters)
             except Exception as e:
-                if isinstance(e, PostgreSQLOperationalError) or isinstance(e, DB2OperationalError):
+                if is_connection_broken(e):
                     self._reconnect()
                 LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, seq_of_parameters))
                 raise
@@ -327,7 +325,7 @@ class Database(object):
                 check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
             except Exception as e:
-                if isinstance(e, PostgreSQLOperationalError) or isinstance(e, DB2OperationalError):
+                if is_connection_broken(e):
                     self._reconnect()
                 LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
                 raise
@@ -352,7 +350,7 @@ class Database(object):
                 # if exception happen before close, the whole transaction should be rolled back by the caller
                 # if we close the cursor when sql execution error, the actuall error will be covered by unable to close cursor itself
         except Exception as e:
-            if isinstance(e, PostgreSQLOperationalError) or isinstance(e, DB2OperationalError):
+            if is_connection_broken(e):
                 self._reconnect()
             LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
             raise
@@ -371,6 +369,11 @@ class Database(object):
     def __repr__(self):
         return 'Database {} opened by {}'.format(
             self.purpose, self.opened_by)
+
+
+def is_connection_broken(exception):
+    # TODO: delegate this check to adapter
+    return 'OperationalError' == type(exception).__name__
 
 
 class FunctionValueProvider(object):
