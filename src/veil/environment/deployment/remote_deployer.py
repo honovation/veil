@@ -1,12 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 from argparse import ArgumentParser
-import fabric.api
 from fabric.colors import green
-import os
 from veil.frontend.cli import *
 from veil.environment import *
 from veil.backend.shell import *
-from veil.utility.clock import get_current_timestamp
+import os
+import datetime
+import fabric.api
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'remote_deployer_payload.py')
 
@@ -50,5 +50,5 @@ def deploy_server(remote_veil_server, deployed_via=None):
         veil_server_env, veil_server_name))
 
 def tag_deploy(deploying_env):
-    shell_execute('git tag deploy-{}-{}'.format(deploying_env, get_current_timestamp()))
+    shell_execute('git tag deploy-{}-{}'.format(deploying_env, datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')))
     shell_execute('git push --tags')
