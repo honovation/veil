@@ -80,10 +80,9 @@ def worker_program(queue_redis_host, queue_redis_port, queue_name, user=None):
 def resweb_program():
     return {
         'execute_command': 'resweb',
-        'install_command': 'veil install --installer-provider veil.backend.queue resweb',
-        'environment_variables': {
-            'RESWEB_SETTINGS': VEIL_ETC_DIR / 'resweb.cfg'
-        }
+        'environment_variables': {'RESWEB_SETTINGS': VEIL_ETC_DIR / 'resweb.cfg'},
+        'installer_providers': ['veil.backend.queue'],
+        'resources': [('resweb', {})]
     }
 
 
