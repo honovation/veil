@@ -8,6 +8,8 @@ from .python_package_installer import install_python_package
 from .python_package_installer import python_package_resource
 from .component_installer import component_resource
 from .os_package_installer import os_package_resource
+from .os_package_installer import is_os_package_installed
+from .os_package_installer import install_os_package
 from .os_service_installer import os_service_resource
 
 __import__('veil_installer.os_package_installer')
