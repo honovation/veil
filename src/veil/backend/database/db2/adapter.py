@@ -4,6 +4,7 @@ import logging
 import re
 import ibm_db_dbi
 import ibm_db
+from ibm_db_dbi import OperationalError
 from veil.model.collection import *
 
 LOGGER = logging.getLogger(__name__)
@@ -39,25 +40,28 @@ class DB2Adapter(object):
         else:
             return conn
 
-    def verify(self, sql='VALUES 1'):
+    def reconnect_if_broken_per_verification(self, sql='VALUES 1'):
         try:
             with contextlib.closing(self.conn.cursor()) as cur:
                 cur.execute(sql)
         except:
             LOGGER.warn('failed in verifying database connection', exc_info=1)
-            try:
-                self.reconnect()
-            except:
-                LOGGER.exception('failed to reconnect')
+            self._reconnect()
 
-    def reconnect(self, need_close_first=False):
+    def reconnect_if_broken_per_exception(self, e):
+        if isinstance(e, OperationalError):
+            self._reconnect()
+
+    def _reconnect(self):
         LOGGER.info('Reconnect now <{}>'.format(self))
-        if need_close_first:
-            try:
-                self.close()
-            except:
-                LOGGER.exception('Cannot close database connection')
-        self.conn = self._get_conn()
+        try:
+            self.close()
+        except:
+            LOGGER.exception('Cannot close database connection')
+        try:
+            self.conn = self._get_conn()
+        except:
+            LOGGER.exception('failed to reconnect')
 
     def _reconnect_when_needed(self):
         pass

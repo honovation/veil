@@ -6,6 +6,7 @@ from psycopg2.extensions import  ISOLATION_LEVEL_READ_COMMITTED
 from veil.model.collection import *
 from psycopg2.extras import NamedTupleCursor
 from psycopg2.extensions import cursor as NormalCursor
+from psycopg2 import OperationalError
 
 LOGGER = getLogger(__name__)
 
@@ -44,25 +45,28 @@ class PostgresqlAdapter(object):
         else:
             return conn
 
-    def verify(self, sql='SELECT 1'):
+    def reconnect_if_broken_per_verification(self, sql='SELECT 1'):
         try:
             with closing(self.conn.cursor(cursor_factory=NormalCursor)) as cur:
                 cur.execute(sql)
         except:
             LOGGER.warn('failed in verifying database connection', exc_info=1)
-            try:
-                self.reconnect()
-            except:
-                LOGGER.exception('failed to reconnect')
+            self._reconnect()
 
-    def reconnect(self, need_close_first=False):
+    def reconnect_if_broken_per_exception(self, e):
+        if isinstance(e, OperationalError):
+            self._reconnect()
+
+    def _reconnect(self):
         LOGGER.info('Reconnect now <{}>'.format(self))
-        if need_close_first:
-            try:
-                self.close()
-            except:
-                LOGGER.exception('Cannot close database connection')
-        self.conn = self._get_conn()
+        try:
+            self.close()
+        except:
+            LOGGER.exception('Cannot close database connection')
+        try:
+            self.conn = self._get_conn()
+        except:
+            LOGGER.exception('failed to reconnect')
 
     def _reconnect_when_needed(self):
         if self.conn.closed:
