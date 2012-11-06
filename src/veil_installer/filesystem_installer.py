@@ -12,7 +12,7 @@ def directory_resource(path, **args):
 
 @installer('directory')
 def install_directory(dry_run_result, **args):
-    resource_name = 'directory?{}'.format('&'.join(['{}={}'.format(k, v) for k, v in args.items()]))
+    resource_name = 'directory?{}'.format(args['path'])
     if dry_run_result is None:
         _install_directory(is_dry_run=False, **args)
     else:
@@ -41,13 +41,13 @@ def _install_directory(is_dry_run, path, owner='root', group='root', mode=0755, 
     return actions
 
 
-@installer('file')
 def file_resource(path, content, **args):
     return 'file', dict(args, path=path, content=content)
 
 
+@installer('file')
 def install_file(dry_run_result, **args):
-    resource_name = 'file?{}'.format('&'.join(['{}={}'.format(k, v) for k, v in args.items()]))
+    resource_name = 'file?{}'.format(args['path'])
     if dry_run_result is None:
         _install_file(is_dry_run=False, **args)
     else:

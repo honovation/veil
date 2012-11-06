@@ -1,16 +1,12 @@
 from __future__ import unicode_literals, print_function, division
-from veil.environment import *
 from veil.environment.program_installer import *
 from veil.environment.setting import *
 from veil.frontend.template import *
 from veil_installer import python_package_resource
 from veil_installer import file_resource
 
-
-
-
 @program_installer('resweb')
-def install_resweb():
+def install_resweb(dry_run_result):
     settings = get_settings()
     resources = [
         python_package_resource('resweb'),

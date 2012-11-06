@@ -4,6 +4,11 @@ from veil.environment.setting import *
 from veil.backend.redis_setting import redis_settings
 from veil.frontend.nginx_setting import nginx_server_settings
 
+def init():
+    register_settings_coordinator(copy_queue_settings_to_veil)
+    register_settings_coordinator(add_resweb_reverse_proxy_server)
+
+
 def queue_settings(
         domain='queue.dev.dmright.com', domain_port=80,
         resweb_host=None, resweb_port=None, workers=None, **updates):
@@ -57,8 +62,8 @@ def delayed_job_scheduler_program(queue_redis_host, queue_redis_port):
 
 def periodic_job_scheduler_program():
     return {
-        'execute_command': 'veil install veil.backend.queue',
-        'install_command': 'veil backend queue install-periodic-job-scheduler'
+        'execute_command': 'veil backend queue periodic-job-scheduler-up',
+        'install_command': 'veil install veil.backend.queue'
     }
 
 
@@ -66,7 +71,7 @@ def worker_program(queue_redis_host, queue_redis_port, queue_name, user=None):
     return {
         'execute_command': 'pyres_worker --host={} --port={} -l debug -f stderr {}'.format(
             queue_redis_host, queue_redis_port, queue_name),
-        'install_command': 'veil backend queue install-worker {}'.format(queue_name),
+        'install_command': 'veil install --installer-provider veil.backend.queue queue_worker?{}'.format(queue_name),
         'group': '{}_workers'.format(queue_name),
         'user': '{}'.format(user) if user else ''
     }
@@ -119,7 +124,5 @@ def add_resweb_reverse_proxy_server(settings):
         }
     ))
 
-
-
-
+init()
 
