@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from argparse import ArgumentParser
 import fabric.api
+from fabric.colors import green
 import os
 from veil.frontend.cli import *
 from veil.environment import *
@@ -29,13 +30,13 @@ def execute_deploy_server(*argv):
 def deploy_server(remote_veil_server, deployed_via=None):
     deployed_via = deployed_via or get_remote_veil_server(remote_veil_server).deployed_via
     veil_server_env, veil_server_name = split_veil_server_code(remote_veil_server)
-    print('switch to env-{} branch...'.format(veil_server_env))
+    print(green('switch to env-{} branch...'.format(veil_server_env)))
     shell_execute('git checkout env-{}'.format(veil_server_env), cwd=VEIL_HOME)
-    print('merge master to this...')
+    print(green('merge master to this...'))
     shell_execute('git merge master', cwd=VEIL_HOME)
-    print('push env-{} to github...'.format(veil_server_env))
+    print(green('push env-{} to github...'.format(veil_server_env)))
     shell_execute('git push origin env-{}'.format(veil_server_env), cwd=VEIL_HOME)
-    print('switch back to master...')
+    print(green('switch back to master...'))
     shell_execute('git checkout master', cwd=VEIL_HOME)
     fabric.api.env.host_string = deployed_via
     fabric.api.put(PAYLOAD, '/opt/remote_deployer_payload.py', use_sudo=True, mode=0700)
