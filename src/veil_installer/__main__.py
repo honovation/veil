@@ -15,12 +15,7 @@ argument_parser.add_argument('--dry-run', help='list the resources required and 
 argument_parser.add_argument('--installer-provider', help='for non-builtin resource')
 args = argument_parser.parse_args(sys.argv[1:])
 
-if '?' in args.resource:
-    resource = parse_resource(args.resource)
-else:
-    component_name = args.resource
-    resource = ('component', dict(name=component_name))
-
+resource = parse_resource(args.resource)
 installer_providers = [args.installer_provider] if args.installer_provider else []
 if args.dry_run:
     pprint.pprint(dry_run_install_resources(installer_providers, [resource]))

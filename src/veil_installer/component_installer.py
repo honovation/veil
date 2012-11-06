@@ -12,7 +12,10 @@ def component_resource(name):
 @installer('component')
 def install_component(dry_run_result, name):
     component_name = name
-    module_path = veil_component.find_module_loader_without_import(component_name).get_filename()
+    module_loader = veil_component.find_module_loader_without_import(component_name)
+    if not module_loader:
+        raise Exception('component {} not found'.format(name))
+    module_path = module_loader.get_filename()
     module_dir = os.path.dirname(module_path)
     installer_path = os.path.join(module_dir, 'INSTALLER')
     installer_providers = []

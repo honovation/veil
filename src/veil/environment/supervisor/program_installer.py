@@ -3,6 +3,10 @@ from veil_installer import *
 from veil.environment.setting import *
 from veil.environment.supervisor_setting import supervisor_settings
 
+def program_resource(name):
+    return 'program', dict(name=name)
+
+
 @installer('program')
 def install_program(dry_run_result, name):
     settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
