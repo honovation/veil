@@ -60,7 +60,8 @@ def copy_postgresql_settings_into_veil(settings):
 def postgresql_server_program(purpose, updates=None):
     program = {
         'execute_command': 'veil backend database postgresql server-up {}'.format(purpose),
-        'install_command': 'veil backend database postgresql install-server {}'.format(purpose)
+        'installer_providers': ['veil.backend.database.postgresql'],
+        'resources': [('postgresql', dict(name=purpose))]
     }
     if updates:
         program.update(updates)
