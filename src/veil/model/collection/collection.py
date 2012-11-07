@@ -85,8 +85,8 @@ class Entity(DictObject):
     def __init__(self, seq=None, **kwargs):
         super(Entity, self).__init__(seq, **kwargs)
         assert self.PRIMARY_KEYS, 'must specify PRIMARY_KEYS'
-        for primary_key in self.PRIMARY_KEYS:
-            assert getattr(self, primary_key, None) is not None, '{} does not have {}'.format(self, primary_key)
+        if all(getattr(self, primary_key, None) is None for primary_key in self.PRIMARY_KEYS):
+            raise Exception('{} does not have any of {}'.format(self, self.PRIMARY_KEYS))
 
     @classmethod
     def serialize(cls, **kwargs):

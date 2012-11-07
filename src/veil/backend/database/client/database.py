@@ -74,7 +74,7 @@ def require_database(purpose, component_name=None, verify_db=False):
     if purpose not in registry:
         raise Exception('database for purpose {} is not registered'.format(purpose))
     if verify_db and purpose in instances:
-        instances[purpose].verify()
+        instances[purpose].reconnect_if_broken_per_verification()
     if purpose not in instances:
         get_database_options = registry[purpose]
         instances[purpose] = connect(purpose=purpose, **get_database_options())
@@ -185,6 +185,8 @@ class Database(object):
         return self._execute(sql, **kwargs)
 
     def executemany(self, sql, seq_of_parameters):
+        if not seq_of_parameters:
+            return 0
         return self._executemany(sql, seq_of_parameters)
 
     def list(self, sql, **kwargs):
@@ -289,21 +291,14 @@ class Database(object):
         """
         return self._query_large_result_set(sql, batch_size, db_fetch_size, **kwargs)
 
-    def _reconnect(self):
-        try:
-            self.conn.reconnect()
-        except:
-            LOGGER.exception('failed to reconnect')
-
     def _execute(self, sql, **kwargs):
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             try:
                 check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
             except Exception as e:
-                if is_connection_broken(e):
-                    self._reconnect()
-                LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+                LOGGER.exception('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+                self.conn.reconnect_if_broken_per_exception(e)
                 raise
             return cursor.rowcount
 
@@ -313,9 +308,8 @@ class Database(object):
                 check_table_dependencies(self.component_name, sql)
                 cursor.executemany(sql, seq_of_parameters)
             except Exception as e:
-                if is_connection_broken(e):
-                    self._reconnect()
-                LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, seq_of_parameters))
+                LOGGER.exception('failed to execute ({}) {} with {}'.format(type(sql), sql, seq_of_parameters))
+                self.conn.reconnect_if_broken_per_exception(e)
                 raise
             return cursor.rowcount
 
@@ -325,9 +319,8 @@ class Database(object):
                 check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
             except Exception as e:
-                if is_connection_broken(e):
-                    self._reconnect()
-                LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+                LOGGER.exception('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+                self.conn.reconnect_if_broken_per_exception(e)
                 raise
             return cursor.fetchall()
 
@@ -350,9 +343,8 @@ class Database(object):
                 # if exception happen before close, the whole transaction should be rolled back by the caller
                 # if we close the cursor when sql execution error, the actuall error will be covered by unable to close cursor itself
         except Exception as e:
-            if is_connection_broken(e):
-                self._reconnect()
-            LOGGER.error('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+            LOGGER.exception('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+            self.conn.reconnect_if_broken_per_exception(e)
             raise
 
     @staticmethod
@@ -369,11 +361,6 @@ class Database(object):
     def __repr__(self):
         return 'Database {} opened by {}'.format(
             self.purpose, self.opened_by)
-
-
-def is_connection_broken(exception):
-    # TODO: delegate this check to adapter
-    return 'OperationalError' == type(exception).__name__
 
 
 class FunctionValueProvider(object):

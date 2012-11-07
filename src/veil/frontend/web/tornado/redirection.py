@@ -12,6 +12,6 @@ def redirect_to(url, permanent=False, response=None):
         raise Exception('Cannot redirect after headers have been written')
     response.status_code = httplib.MOVED_PERMANENTLY if permanent else httplib.FOUND
     # Remove whitespace
-    url = re.sub(r'[\x00-\x20]+', '', to_str(url))
+    url = re.sub(r'[\x00-\x20]+', '', url)
     response.set_header('Location', urlparse.urljoin(response.request.uri, url))
     end_http_request_processing()
