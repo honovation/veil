@@ -7,7 +7,7 @@ from .installer import installer
 LOGGER = logging.getLogger(__name__)
 
 def component_resource(name):
-    return ('component', dict(name=name))
+    return 'component', dict(name=name)
 
 @installer('component')
 def install_component(dry_run_result, name):

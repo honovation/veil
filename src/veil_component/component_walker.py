@@ -3,9 +3,11 @@ import logging
 import os.path
 import pkgutil
 import traceback
+import re
 
 
 LOGGER = logging.getLogger(__name__)
+RE_COMPONET = re.compile(r'.\s*init_component\s*\(')
 
 class ComponentInternalVisitor(object):
     def visit_component_start(self, component_name, path, source_code):
@@ -67,7 +69,7 @@ class ComponentWalker(object):
             visitor.visit_package_end(module_name, path, source_code)
 
     def is_component(self, source_code):
-        return str('.init_component') in source_code
+        return RE_COMPONET.search(source_code)
 
 
 def find_module_loader_without_import(module_name):
@@ -109,12 +111,12 @@ if '__main__' == __name__:
 
     class PrintTrail(ComponentInternalVisitor):
         def visit_sub_component(self, component_name, path, source_code):
-            print('[component] {}'.format(component_name))
+            print('[sub_component] {} {}'.format(component_name, path))
 
         def visit_package_start(self, package_name, path, source_code):
-            print('[package] {}'.format(package_name))
+            print('[package] {} {}'.format(package_name, path))
 
         def visit_module(self, module_name, path, source_code):
-            print('[module] {}'.format(module_name))
+            print('[module] {} {}'.format(module_name, path))
 
     ComponentWalker().walk_component(sys.argv[1], PrintTrail())
