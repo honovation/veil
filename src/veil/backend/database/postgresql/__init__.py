@@ -4,7 +4,7 @@ with veil_component.init_component(__name__):
     def init():
         from veil.backend.database.client import register_adapter_class
         from veil.development.self_checker import register_self_checker
-        from veil.model.event import *
+        from veil.model.event import subscribe_event
         from veil.backend.database.postgresql_setting import EVENT_NEW_POSTGRESQL
         from veil.environment.deployment import register_migration_command
         from .adapter import PostgresqlAdapter

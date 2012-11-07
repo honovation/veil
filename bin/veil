@@ -58,10 +58,14 @@ case "$1" in
         shift
         find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
         find $VEIL_HOME -type f -name "*.pyc" -delete
-        exec python -m veil.environment.supervisor up $@
+        exec veil environment supervisor up $@
         ;;
     down)
-        exec python -m veil.environment.supervisor down
+        exec veil environment supervisor down
+        ;;
+    install-program)
+        shift
+        exec python -m veil_installer --installer-provider veil.environment.supervisor program?$@
         ;;
     install)
         shift
