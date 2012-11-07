@@ -185,6 +185,8 @@ class Database(object):
         return self._execute(sql, **kwargs)
 
     def executemany(self, sql, seq_of_parameters):
+        if not seq_of_parameters:
+            return 0
         return self._executemany(sql, seq_of_parameters)
 
     def list(self, sql, **kwargs):

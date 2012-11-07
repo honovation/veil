@@ -63,7 +63,10 @@ class DB2Adapter(object):
         except:
             LOGGER.exception('failed to reconnect')
 
-    def _reconnect_when_needed(self):
+    def _reconnect_if_broken_per_lightweight_detection(self):
+        """
+        lightweight detection is not supported by the driver library ibm_db_dbi
+        """
         pass
 
     @property
@@ -84,7 +87,7 @@ class DB2Adapter(object):
         self.conn.close()
 
     def cursor(self, returns_dict_object=True, **kwargs):
-        self._reconnect_when_needed()
+        self._reconnect_if_broken_per_lightweight_detection()
         cursor = self.conn.cursor(**kwargs)
         cursor = NamedParameterCursor(cursor)
         if returns_dict_object:
