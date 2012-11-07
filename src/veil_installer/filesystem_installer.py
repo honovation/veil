@@ -10,6 +10,7 @@ LOGGER = logging.getLogger(__name__)
 def directory_resource(path, **args):
     return 'directory', dict(args, path=path)
 
+
 @installer('directory')
 def install_directory(dry_run_result, **args):
     resource_name = 'directory?{}'.format(args['path'])
@@ -84,6 +85,41 @@ def _install_file(is_dry_run, path, content, owner='root', group='root', mode=06
         actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
 
     return actions
+
+
+def symbolic_link_resource(path, to, **args):
+    return 'symbolic_link', dict(args, path=path, to=to)
+
+
+@installer('symbolic_link')
+def install_symbolic_link(dry_run_result, **args):
+    resource_name = 'symbolic_link?path={}'.format(args['path'])
+    if dry_run_result is None:
+        _install_symbolic_link(is_dry_run=False, **args)
+    else:
+        action = _install_symbolic_link(is_dry_run=True, **args)
+        dry_run_result[resource_name] = action if action else '-'
+
+
+def _install_symbolic_link(is_dry_run, path, to):
+    action = None
+    if os.path.lexists(path):
+        oldpath = os.path.realpath(path)
+        if oldpath == to:
+            return
+        if not os.path.islink(path):
+            raise Exception(
+                '%{} trying to create a symlink with the same name as an existing file or directory'.format(path))
+        action = 'UPDATE'
+        if not is_dry_run:
+            LOGGER.info("replacing old symlink {} from {} to {}".format(path, oldpath, to))
+            os.unlink(path)
+    if not action:
+        action = 'CREATE'
+    if not is_dry_run:
+        LOGGER.info('Creating symbolic {} to {}'.format(path, to))
+        os.symlink(to, path)
+    return action
 
 
 def ensure_metadata(is_dry_run, path, user, group, mode=None):
