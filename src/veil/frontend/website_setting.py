@@ -6,6 +6,7 @@ from veil.frontend.nginx_setting import nginx_server_settings
 from veil.frontend.nginx_setting import nginx_server_static_file_location_settings
 from veil.model.collection import *
 from veil.utility.path import *
+from veil.development.source_code_monitor_setting import source_code_monitor_settings
 
 def init():
     register_settings_coordinator(add_website_reverse_proxy_servers)
@@ -25,14 +26,14 @@ def website_settings(website, port, **updates):
     settings = merge_settings(settings, updates, overrides=True)
     if 'test' == VEIL_ENV:
         settings.domain_port = int(settings.domain_port) + 1
-    return objectify({
+    return merge_settings(objectify({
         'veil': {'{}_website'.format(website): settings},
         'supervisor': {
             'programs': {
                 '{}_website'.format(website): website_program(website)
             }
         } if 'test' != VEIL_ENV else {}
-    })
+    }), source_code_monitor_settings())
 
 
 def website_program(website, **updates):

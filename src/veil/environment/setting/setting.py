@@ -7,9 +7,6 @@ initialized = False
 settings = {}
 coordinators = []
 
-def is_settings_initialized():
-    return initialized
-
 
 def add_settings(additional_settings, overrides=False):
     global settings

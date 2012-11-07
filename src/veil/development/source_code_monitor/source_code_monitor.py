@@ -1,31 +1,14 @@
 from __future__ import unicode_literals, print_function, division
-import veil_component
 import types
 import os
 import logging
 import time
 import sys
 from .reloader import reload
-from veil.environment import *
 from veil.frontend.cli import *
 
 LOGGER = logging.getLogger(__name__)
 modify_times = {}
-
-def source_code_monitor_settings():
-    if 'development' != VEIL_SERVER:
-        return {}
-    return {
-        'supervisor': {
-            'programs': {
-                'source_code_monitor': {
-                    'execute_command': 'veil environment source-code-monitor up',
-                    'startsecs': 0
-                }
-            }
-        }
-    }
-
 
 @script('up')
 def bring_up_source_code_monitor():

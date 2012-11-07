@@ -109,7 +109,7 @@ with veil_component.init_component(__name__):
 
     def init():
         from veil.model.event import subscribe_event
-        from veil.environment.source_code_monitor import register_reloads_on_change_program
+        from veil.development.source_code_monitor import register_reloads_on_change_program
         from .website_launcher import register_website_options
         from .routing import EVENT_NEW_WEBSITE
 
