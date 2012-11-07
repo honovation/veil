@@ -12,7 +12,7 @@ PAYLOAD = os.path.join(os.path.dirname(__file__), 'remote_deployer_payload.py')
 
 @script('deploy-env')
 def deploy_env(deploying_env):
-    for veil_server_name in get_veil_servers(deploying_env).keys():
+    for veil_server_name in sorted(get_veil_servers(deploying_env).keys()):
         deploy_server('{}/{}'.format(deploying_env, veil_server_name))
     tag_deploy(deploying_env)
 
