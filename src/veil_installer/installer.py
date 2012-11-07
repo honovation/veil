@@ -83,7 +83,7 @@ def install_resource(dry_run_result, resource):
     installer_name, installer_args = resource
     if installer_name not in INSTALLERS:
         if dry_run_result is not None:
-            return
+            return [], []
         raise Exception('no installer for: {} {}'.format(installer_name, installer_args))
     result = INSTALLERS[installer_name](dry_run_result=dry_run_result, **installer_args)
     if result:
