@@ -38,7 +38,8 @@ def website_settings(website, port, **updates):
 def website_program(website, **updates):
     program = {
         'execute_command': 'veil frontend web up {}'.format(website),
-        'install_command': 'veil frontend web install {}'.format(website)
+        'installer_providers': ['veil.frontend.web'],
+        'resources': [('website', dict(name=website))]
     }
     if updates:
         program.update(updates)

@@ -1,0 +1,3 @@
+os_package?libxml2-dev
+os_package?libxslt1-dev
+python_package?lxml

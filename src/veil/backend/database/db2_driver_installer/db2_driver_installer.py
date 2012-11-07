@@ -14,6 +14,7 @@ def install_db2_driver(dry_run_result):
         return
     if is_installed:
         return
+    download_db2_driver()
     env = os.environ.copy()
     env['IBM_DB_HOME'] = '/opt/db2-clidriver'
     install_python_package(None, 'ibm-db', env=env)
