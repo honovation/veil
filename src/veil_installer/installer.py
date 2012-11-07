@@ -6,6 +6,7 @@ LOGGER = logging.getLogger()
 INSTALLERS = {}
 stack = []
 installed_resource_codes = set()
+installed_installer_providers = set()
 
 def installer(name):
     def register(func):
@@ -34,6 +35,7 @@ def install_resources_recursively(dry_run_result, installer_providers, resources
 
 
 def install_installer_providers(dry_run_result, installer_providers):
+    installer_providers = set(installer_providers) - installed_installer_providers
     installer_provider_component_resources = []
     for installer_provider in installer_providers:
         veil_component.scan_component(installer_provider, recursive=True)
@@ -44,6 +46,7 @@ def install_installer_providers(dry_run_result, installer_providers):
     for installer_provider in installer_providers:
         try:
             __import__(installer_provider)
+            installed_installer_providers.add(installer_provider)
             if dry_run_result is not None:
                 dry_run_result['@{}'.format(installer_provider)] = '-'
         except:
@@ -63,6 +66,7 @@ def install_resources(dry_run_result, resources):
         next_round_resources = []
         for resource in resources:
             more_installer_providers, more_resources = install_resource(dry_run_result, resource)
+            more_installer_providers = set(more_installer_providers) - installed_installer_providers
             if more_installer_providers:
                 next_level_installer_providers.extend(more_installer_providers)
                 next_level_resources.extend(more_resources)
