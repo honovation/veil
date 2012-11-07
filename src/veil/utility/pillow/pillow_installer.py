@@ -1,13 +1,11 @@
 from __future__ import unicode_literals, print_function, division
-from veil.environment.installation import *
+from veil_installer import *
 
-dependency_providers = []
-
-def register_pillow_dependency_provider(dependency_provider):
-    dependency_providers.append(dependency_provider)
-
-
-def install_pillow():
-    for dependency_provider in dependency_providers:
-        dependency_provider()
-    install_python_package('pillow', 'PIL')
+@installer('pillow')
+def install_pillow(dry_run_result):
+    resources = [
+        os_package_resource('libjpeg-dev'),
+        os_package_resource('libfreetype6-dev'),
+        python_package_resource('Pillow')
+    ]
+    return [], resources
