@@ -13,7 +13,7 @@ from veil_installer import *
 LOGGER = logging.getLogger(__name__)
 
 @installer('postgresql')
-@using_template
+@using_isolated_template
 def install_postgresql_server(dry_run_result, name):
     settings = get_settings()
     config = getattr(settings, '{}_postgresql'.format(name))

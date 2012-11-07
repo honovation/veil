@@ -74,11 +74,15 @@ def require_current_template_directory_being(template_directory):
         current_template_directories.pop()
 
 
-def using_template(func):
+def using_isolated_template(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         with require_current_template_directory_relative_to(func):
-            return func(*args, **kwargs)
+            assert_no_env()
+            try:
+                return func(*args, **kwargs)
+            finally:
+                reset_template_environment()
     return wrapper
 
 def require_current_template_directory_relative_to(func):

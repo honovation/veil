@@ -5,7 +5,7 @@ from veil.frontend.template import *
 from veil_installer import *
 
 @installer('resweb')
-@using_template
+@using_isolated_template
 def install_resweb(dry_run_result):
     settings = get_settings()
     resources = list(BASIC_LAYOUT_RESOURCES)

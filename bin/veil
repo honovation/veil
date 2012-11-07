@@ -70,15 +70,7 @@ case "$1" in
     install)
         shift
         veil_init
-        if [[ -z "$@" ]] ; then
-            exec python -m veil_installer --installer-provider veil.environment.supervisor veil_server
-        else
-            if [[ $@ = --dry-run ]] ; then
-                exec python -m veil_installer --dry-run --installer-provider veil.environment.supervisor veil_server
-            else
-                exec python -m veil_installer $@
-            fi
-        fi
+        exec python -m veil_installer --installer-provider veil.environment.supervisor veil_server $@
         ;;
     deploy-env)
         shift

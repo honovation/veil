@@ -6,7 +6,7 @@ from veil.environment import *
 from veil.environment.setting import *
 
 @installer('nginx')
-@using_template
+@using_isolated_template
 def install_nginx(dry_run_result):
     settings = get_settings()
     resources = list(BASIC_LAYOUT_RESOURCES)

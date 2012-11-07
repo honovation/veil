@@ -65,7 +65,7 @@ def periodic_job_scheduler_program():
     return {
         'execute_command': 'veil backend queue periodic-job-scheduler-up',
         'installer_providers': [],
-        'resources': [('component', 'veil.backend.queue')]
+        'resources': [('component', dict(name='veil.backend.queue'))]
     }
 
 
