@@ -24,6 +24,7 @@ def init_components():
         'veil.frontend.encoding',
         'veil.frontend.locale',
         'veil.frontend.template',
+        'veil.frontend.nginx',
         'veil.frontend.web'
     ]
     component_names.extend(get_application_components())
