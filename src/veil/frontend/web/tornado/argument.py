@@ -22,10 +22,6 @@ def normalize_arguments():
     yield
 
 
-def try_get_http_argument(field):
-    return get_http_argument(field, optional=True)
-
-
 def delete_http_argument(field, request=None):
     request = request or get_current_http_request()
     request.arguments.pop(field, None)
