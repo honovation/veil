@@ -1,5 +1,6 @@
 from veil.environment import *
 from veil.environment.setting import *
+from veil.environment.supervisor_setting import supervisor_settings
 from veil.backend.database.postgresql_setting import postgresql_settings
 from veil.backend.bucket_setting import bucket_settings
 from veil.backend.database.db2_setting import db2_settings
