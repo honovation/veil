@@ -11,7 +11,7 @@ if [ -z "$VEIL_HOME" ] ; then
     export VEIL_HOME=$(pwd)
 fi
 if [ ! -d $VEIL_HOME/env/bin ] ; then
-    if [[ $1 != install ]] ; then
+    if [[ $1 != deploy ]] ; then
         echo "VEIL_HOME is invalid"
         exit 1
     fi
@@ -75,7 +75,6 @@ case "$1" in
         ;;
     install)
         shift
-        veil_init
         exec python -m veil_installer --installer-provider veil.environment.supervisor veil_server $@
         ;;
     deploy-env)
@@ -88,6 +87,7 @@ case "$1" in
         ;;
     deploy)
         shift
+        veil_init
         exec veil environment deployment deploy $@
         ;;
     migrate)

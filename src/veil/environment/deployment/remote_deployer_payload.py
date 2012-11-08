@@ -53,7 +53,7 @@ def pull_veil(veil_version):
 
 
 def deploy(veil_home, veil_env, veil_server_name):
-    shell_execute('veil :{}/{} deploy'.format(veil_env, veil_server_name), cwd=veil_home)
+    shell_execute('/opt/veil/bin/veil :{}/{} deploy'.format(veil_env, veil_server_name), cwd=veil_home)
 
 
 def shell_execute(command_line, **kwargs):
