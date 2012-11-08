@@ -4,7 +4,8 @@ import os
 import logging
 import time
 import sys
-from .reloader import reload
+from .reloader import restart_all
+from .reloader import start_all
 from veil.frontend.cli import *
 
 LOGGER = logging.getLogger(__name__)
@@ -13,6 +14,7 @@ modify_times = {}
 @script('up')
 def bring_up_source_code_monitor():
     LOGGER.info('start monitoring source code changes...')
+    start_all()
     while True:
         reload_on_change()
 
@@ -22,7 +24,7 @@ def reload_on_change(exit_on_no_change=False):
     if modified_path:
         LOGGER.info('{} modified, reloading...'.format(modified_path))
         refresh_modify_times()
-        reload()
+        restart_all()
         reload_on_change(exit_on_no_change=True) # refresh the state
     else:
         if exit_on_no_change:
