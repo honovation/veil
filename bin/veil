@@ -73,6 +73,10 @@ case "$1" in
         shift
         exec python -m veil_installer component?$@
         ;;
+    install-supervisor)
+        shift
+        exec python -m veil_installer --installer-provider veil.environment.supervisor supervisor
+        ;;
     install-program)
         shift
         exec python -m veil_installer --installer-provider veil.environment.supervisor program?$@

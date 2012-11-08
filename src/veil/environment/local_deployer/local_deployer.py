@@ -5,7 +5,7 @@ import time
 
 @script('deploy')
 def deploy():
-    shell_execute('veil install-component veil.environment.supervisor')
+    shell_execute('veil install-supervisor')
     shell_execute('veil down')
     shell_execute('veil install-component ljmall')
     shell_execute('veil ljmall backup deploy_backup')
