@@ -4,15 +4,13 @@ from veil_installer import *
 from veil.frontend.template import *
 from veil.environment import *
 from veil.environment.setting import *
-from veil.environment.supervisor_setting import supervisor_settings
 
 LOGGER = logging.getLogger(__name__)
 
 @installer('supervisor')
 @using_isolated_template
 def install_supervisor(dry_run_result):
-    settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
-    config = settings.supervisor
+    config = get_settings().supervisor
     if VEIL_SERVER in ['development', 'test']:
         active_program_names = config.programs.keys()
     else:

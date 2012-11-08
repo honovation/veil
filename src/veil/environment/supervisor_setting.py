@@ -24,7 +24,6 @@ def supervisor_settings(**updates):
     return objectify({'supervisor': settings})
 
 def consolidate_program_groups(settings):
-    settings = merge_settings(supervisor_settings(), settings, overrides=True)
     groups = {}
     for program_name, program in settings.supervisor.programs.items():
         if is_current_veil_server_hosting(program_name):

@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment.setting import *
 from veil.backend.shell import *
-from veil.environment.supervisor_setting import supervisor_settings
 
 def supervisorctl(action, *arguments, **kwargs):
     return shell_execute('veil execute supervisorctl -c {} {} {}'.format(
@@ -30,5 +29,4 @@ def are_all_supervisord_programs_running():
 
 
 def get_option(key):
-    settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
-    return settings['supervisor'][key]
+    return get_settings()['supervisor'][key]

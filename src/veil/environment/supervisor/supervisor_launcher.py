@@ -1,11 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 from argparse import ArgumentParser
 import time
-import os
 from veil.backend.shell import *
 from veil.environment.setting import *
 from veil.frontend.cli import script
-from veil.environment.supervisor_setting import supervisor_settings
 from .supervisorctl import are_all_supervisord_programs_running
 from .supervisorctl import supervisorctl
 from .supervisorctl import is_supervisord_running
@@ -19,8 +17,7 @@ def bring_up_programs(*argv):
 
 
 def bring_up_program(program_name):
-    settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
-    config = settings.supervisor
+    config = get_settings().supervisor
     execute_command = config.programs[program_name].execute_command
     print(execute_command)
     pass_control_to(execute_command)
@@ -32,8 +29,7 @@ def bring_up_supervisor(*argv):
         help='should the process run in background')
     args = argument_parser.parse_args(argv)
 
-    settings = merge_settings(supervisor_settings(), get_settings(), overrides=True)
-    config = settings.supervisor
+    config = get_settings().supervisor
     daemonize = args.daemonize or config.daemonize
     if daemonize:
         shell_execute('supervisord -c {}'.format(config.config_file))
