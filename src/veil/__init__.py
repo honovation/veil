@@ -1,7 +1,5 @@
 from .environment import get_application_components
 from .environment import VEIL_SERVER
-from .environment.setting import initialize_settings
-import veil_component
 
 initialized = False
 
@@ -44,4 +42,3 @@ def init_components():
                 raise
             pass # try our best to import as many components as possible
     __import__('__veil__')
-    initialize_settings()

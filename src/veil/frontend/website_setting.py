@@ -11,7 +11,15 @@ from veil.development.source_code_monitor_setting import source_code_monitor_set
 def init():
     register_settings_coordinator(add_website_reverse_proxy_servers)
 
+
 def website_settings(website, port, **updates):
+    return merge_multiple_settings(
+        _website_settings(website, port, **updates),
+        _website_settings('test', 5090) if 'test' != VEIL_ENV else {},
+        source_code_monitor_settings())
+
+
+def _website_settings(website, port, **updates):
     port = int(port)
     if 'test' == VEIL_ENV:
         port += 1
@@ -26,14 +34,14 @@ def website_settings(website, port, **updates):
     settings = merge_settings(settings, updates, overrides=True)
     if 'test' == VEIL_ENV:
         settings.domain_port = int(settings.domain_port) + 1
-    return merge_settings(objectify({
+    return objectify({
         'veil': {'{}_website'.format(website): settings},
         'supervisor': {
             'programs': {
                 '{}_website'.format(website): website_program(website)
             }
         } if 'test' != VEIL_ENV else {}
-    }), source_code_monitor_settings())
+    })
 
 
 def website_program(website, **updates):
