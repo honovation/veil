@@ -1,28 +1,24 @@
 from __future__ import unicode_literals, print_function, division
 from veil.frontend.cli import *
 from veil.backend.shell import *
+import time
+from fabric.colors import green
 
 @script('deploy')
 def deploy():
-    print('veil down...')
+    print(green('veil down'))
     shell_execute('veil down')
-    print('[DEPLOY] install...')
+    print(green('backup'))
+    shell_execute('veil ljmall backup deploy_backup')
+    print(green('veil install'))
     shell_execute('veil install')
-    print('[DEPLOY] bringing up...')
+    print(green('veil up --daemonize'))
     shell_execute('veil up --daemonize')
-    wait_for_application_up_then_migrate()
-
-
-def wait_for_application_up_then_migrate():
-    print('[DEPLOY] migrating...')
+    print(green('veil migrate'))
     for i in range(3):
         try:
-            output = shell_execute('veil migrate', capture=True)
-            print(output, end='')
-            print('[DEPLOY] migrated')
-            return
+            shell_execute('veil migrate', capture=True)
         except:
-            print('[DEPLOY] application not up yet, retrying migration...')
-    print('[DEPLOY] retry migration for the last time')
-    shell_execute('veil migrate')
-    print('[DEPLOY] migrated')
+            time.sleep(1)
+    shell_execute('veil migrate', capture=True)
+

@@ -8,28 +8,17 @@ def main():
     veil_home = sys.argv[2]
     veil_env = sys.argv[3]
     veil_server_name = sys.argv[4]
-    install_packages()
-    clone_veil()
-    pull_veil()
+    install_git()
     clone_application(application_codebase, veil_home)
     pull_application(veil_home, veil_env)
+    veil_version = read_veil_version(veil_home)
+    clone_veil()
+    pull_veil(veil_version)
     deploy(veil_home, veil_env, veil_server_name)
 
 
-def install_packages():
-    #shell_execute('apt-get update')
-    # language-pack-en unzip, wget is not provided by lxc container
-    # before we have server provisioning script, we put those dependency here
-    shell_execute('apt-get install -y git-core language-pack-en unzip wget')
-
-def clone_veil():
-    if os.path.exists('/opt/veil'):
-        return
-    shell_execute('git clone git://github.com/honovation/veil.git /opt/veil')
-
-
-def pull_veil():
-    shell_execute('git pull', cwd='/opt/veil')
+def install_git():
+    shell_execute('apt-get install -y git-core')
 
 
 def clone_application(application_codebase, veil_home):
@@ -43,11 +32,27 @@ def pull_application(veil_home, veil_env):
     shell_execute('git pull', cwd=veil_home)
 
 
+def read_veil_version(veil_home):
+    veil_version = 'master'
+    veil_version_file = os.path.join(veil_home, 'VEIL-VERSION')
+    if os.path.exists(veil_version_file):
+        with open(veil_version_file) as f:
+            veil_version = f.read()
+    return veil_version
+
+
+def clone_veil():
+    if os.path.exists('/opt/veil'):
+        return
+    shell_execute('git clone git://github.com/honovation/veil.git /opt/veil')
+
+
+def pull_veil(veil_version):
+    shell_execute('git checkout {}'.format(veil_version), cwd='/opt/veil')
+    shell_execute('git pull', cwd='/opt/veil')
+
+
 def deploy(veil_home, veil_env, veil_server_name):
-    print(green('backup old version var dir'))
-    shell_execute('veil :{}/{} ljmall backup deploy_backup'.format(veil_env, veil_server_name), cwd=veil_home)
-    shell_execute('/opt/veil/bin/veil init', cwd=veil_home)
-    shell_execute('veil :{}/{} environment deployment install'.format(veil_env, veil_server_name), cwd=veil_home)
     shell_execute('veil :{}/{} deploy'.format(veil_env, veil_server_name), cwd=veil_home)
 
 
@@ -65,13 +70,14 @@ def shell_execute(command_line, **kwargs):
             process.returncode, command_args, kwargs)))
     return output
 
-def _wrap_with(code):
 
+def _wrap_with(code):
     def inner(text, bold=False):
         c = code
         if bold:
             c = "1;%s" % c
         return "\033[%sm%s\033[0m" % (c, text)
+
     return inner
 
 red = _wrap_with('31')

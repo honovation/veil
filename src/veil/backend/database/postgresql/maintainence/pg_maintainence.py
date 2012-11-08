@@ -12,12 +12,14 @@ from veil.utility.clock import *
 from veil.utility.hash import *
 from veil.utility.path import *
 from veil.backend.database.client import *
-from veil.environment.migration import register_migration_command
+from veil.environment.migration import *
 
 LOGGER = logging.getLogger(__name__)
 
 @script('drop-database')
 def drop_database(purpose):
+    if VEIL_SERVER not in ['development', 'test']:
+        raise Exception('not allow to drop database other than development or test')
     supervisorctl('restart', '{}_postgresql'.format(purpose))
     time.sleep(3) # wait for postgresql starting to accept incoming connection
     try:
@@ -37,6 +39,8 @@ def drop_database(purpose):
 
 @script('migrate')
 def migrate(purpose):
+    if not is_current_veil_server_hosting('{}_purpose'.format(purpose)):
+        return
     create_database_if_not_exists(purpose)
     versions = load_versions(purpose)
     db = lambda: require_database(purpose)
