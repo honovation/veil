@@ -99,11 +99,17 @@ def install_postgresql_user(dry_run_result, name):
     with postgresql_server_running(config):
         env = os.environ.copy()
         env['PGPASSWORD'] = config.owner_password
-        shell_execute('psql -h {} -p {} -U {} -d postgres -c "{}"'.format(
-            config.host, config.port, config.owner,
-            "CREATE USER {} WITH PASSWORD '{}'".format(pg_user, pg_password)
-        ), env=env)
-        user_installed_tag_file.touch()
+        try:
+            shell_execute('psql -h {} -p {} -U {} -d postgres -c "{}"'.format(
+                config.host, config.port, config.owner,
+                "CREATE USER {} WITH PASSWORD '{}'".format(pg_user, pg_password)
+            ), env=env, capture=True)
+            user_installed_tag_file.touch()
+        except ShellExecutionError, e:
+            if 'already exists' in e.output:
+                user_installed_tag_file.touch()
+            else:
+                raise
 
 
 def delete_file(path):
