@@ -36,6 +36,12 @@ def drop_database(purpose):
         else:
             raise
 
+@script('migrate-all')
+def migrate_all():
+    for key in get_settings().keys():
+        if key.endswith('_postgresql'):
+            purpose = key.replace('_postgresql', '')
+            migrate(purpose)
 
 @script('migrate')
 def migrate(purpose):

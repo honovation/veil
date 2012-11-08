@@ -6,10 +6,10 @@ from .dependency_collector import OnceComponentWalker
 component_map = {}
 component_walker = OnceComponentWalker()
 
-def scan_component(component_name, recursive=False):
+def scan_component(component_name):
     if component_name in component_map:
         return
-    components_dependencies = list_dependencies(component_name, component_walker.walk_component, recursive=recursive)
+    components_dependencies = list_dependencies(component_name, component_walker.walk_component, recursive=True)
     component_names = set(component_walker.walked_component_names)
     component_map.update({k: filter_dependent_component_names(k, component_names, v)
                           for k, v in components_dependencies.items()})
@@ -28,19 +28,19 @@ def get_component_map():
 
 
 def get_transitive_dependencies(component_name):
-    dependencies = list()
+    dependencies = set()
     collect_transitive_dependencies(component_name, dependencies)
     return dependencies
 
 
 def collect_transitive_dependencies(component_name, dependencies):
     direct_dependent_component_names = get_component_map().get(component_name, ())
-    sub_component_names = [c for c in component_walker.walked_component_names
+    sub_component_names = [c for c in component_map.keys()
                            if c.startswith('{}.'.format(component_name))]
     dependent_component_names = set(direct_dependent_component_names).union(set(sub_component_names))
     for dependent_component_name in dependent_component_names:
         if dependent_component_name not in dependencies:
-            dependencies.append(dependent_component_name)
+            dependencies.add(dependent_component_name)
             collect_transitive_dependencies(dependent_component_name, dependencies)
 
 
@@ -79,5 +79,5 @@ def get_leaf_component(module_name):
 
 if '__main__' == __name__:
     logging.basicConfig(level=logging.DEBUG)
-    scan_component('ljmall', recursive=True)
+    scan_component('ljmall')
     print(get_transitive_dependencies('ljmall'))

@@ -1,7 +1,15 @@
 from .environment import get_application_components
 from .environment import VEIL_SERVER
+from .environment.setting import initialize_settings
+import veil_component
+
+initialized = False
 
 def init_components():
+    global initialized
+    if initialized:
+        return
+    initialized = True
     component_names = [
         'veil.backend.bucket',
         'veil.backend.database.client',
@@ -32,7 +40,8 @@ def init_components():
         try:
             __import__(component_name)
         except:
-            if 'development' == VEIL_SERVER:
+            if VEIL_SERVER in ['development', 'test']:
                 raise
             pass # try our best to import as many components as possible
     __import__('__veil__')
+    initialize_settings()

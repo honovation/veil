@@ -103,7 +103,10 @@ def copy_queue_settings_to_veil(settings):
                 'port': settings.queue_redis.port,
                 'password': settings.queue_redis.password
             } if 'test' != VEIL_ENV else {
-                'type': 'immediate'
+                'type': 'immediate',
+                'host': 'dummy',
+                'port': 0,
+                'password': 'dummy'
             }
         }
     }, overrides=True)

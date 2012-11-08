@@ -1,31 +1,41 @@
 from __future__ import unicode_literals, print_function, division
 import sys
+import traceback
 from veil.model.collection import *
 from veil.environment import *
 
-initialized = False
+initialized_by = None
 settings = {}
 coordinators = []
 
 
 def add_settings(additional_settings, overrides=False):
     global settings
-    if initialized:
-        raise Exception('settings has already been initialized: {}'.format(settings))
+    if initialized_by:
+        raise Exception('settings has already been initialized by: {}'.format(initialized_by))
     settings = merge_settings(settings, additional_settings, overrides=overrides)
     return settings
 
 
 def register_settings_coordinator(coordinator):
+    if initialized_by:
+        raise Exception('settings has already been initialized by: {}'.format(initialized_by))
     coordinators.append(coordinator)
 
 
 def get_settings():
-    global initialized
+    if not initialized_by:
+        raise Exception('settings has not already initialized yet')
+    return settings
+
+
+def initialize_settings():
+    global initialized_by
     global settings
-    if not initialized:
-        initialized = True
-        settings = merge_settings(settings, get_application_settings())
+    if initialized_by:
+        raise Exception('settings has already been initialized by: {}'.format(initialized_by))
+    initialized_by = '\n'.join(traceback.format_stack())
+    settings = merge_settings(settings, get_application_settings())
     for coordinator in coordinators:
         settings = coordinator(settings)
         if not isinstance(settings, DictObject):

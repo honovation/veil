@@ -54,7 +54,7 @@ def copy_postgresql_settings_into_veil(settings):
                         }
                     }
                 }, overrides=True)
-    return new_settings
+    return objectify(new_settings)
 
 
 def postgresql_server_program(purpose, updates=None):

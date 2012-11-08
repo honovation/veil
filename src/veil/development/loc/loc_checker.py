@@ -10,7 +10,7 @@ GOAL = 500
 def check_loc():
     component_files = {}
     for module_name, module in sys.modules.items():
-        component_name = veil_component.get_leaf_component(module.__name__)
+        component_name = veil_component.get_leaf_component(module_name)
         if component_name and hasattr(module, '__file__'):
             module_file = module.__file__.replace('.pyc', '.py')
             module_loc = get_loc(module_file)

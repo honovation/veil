@@ -45,8 +45,8 @@ def init_options():
             try:
                 value = decide_option_value(options[section].get(name), definition)
             except ValueError, e:
-                raise Exception('option {}.{}: {}, defined by: {}'.format(
-                    section, name, e.message, ''.join(definition.defined_by)))
+                raise Exception('option {}.{}: {}\n\tdefined by: {}\n\tall options: {}'.format(
+                    section, name, e.message, ''.join(definition.defined_by), options))
             options[section][name] = value
     original_options = dict(options)
 

@@ -39,7 +39,7 @@ def install_resources(dry_run_result, installer_providers, resources):
 def install_installer_providers(dry_run_result, installer_providers):
     installer_provider_component_resources = []
     for installer_provider in installer_providers:
-        veil_component.scan_component(installer_provider, recursive=True)
+        veil_component.scan_component(installer_provider)
         installer_provider_component = veil_component.get_root_component(installer_provider)
         installer_provider_component_resource = ('component', dict(name=installer_provider_component))
         installer_provider_component_resources.append(installer_provider_component_resource)

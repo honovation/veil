@@ -20,7 +20,7 @@ def install_component(dry_run_result, name):
     installer_path = os.path.join(module_dir, 'INSTALLER')
     installer_providers = []
     resources = []
-    veil_component.scan_component(name, recursive=True)
+    veil_component.scan_component(name)
     for dependent_component_name in veil_component.get_dependent_component_names(component_name, includes_children=True):
         resources.append(('component', dict(name=dependent_component_name)))
     if os.path.exists(installer_path):

@@ -2,11 +2,12 @@ from __future__ import unicode_literals, print_function, division
 from veil.development.test import *
 from veil.profile.web import *
 from veil.environment import *
+from veil.frontend.website_setting import *
 from .browser import start_website_and_browser
 
-if 'test' == VEIL_ENV:
+if 'test' == VEIL_SERVER:
     publish_new_website_event('test')
-    TEST_WEBSITE_SETTINGS = website_settings('test', 5090)
+    add_settings(website_settings('test', 5090))
 
 PAGE_CONTENT =\
 """
