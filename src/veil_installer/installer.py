@@ -72,12 +72,9 @@ def install_resource(dry_run_result, resource):
 
 def skip_installed_installer_providers(installer_providers):
     for installer_provider in installer_providers:
-        try:
-            __import__(installer_provider)
-        except:
-            if installer_provider not in installed_installer_providers:
-                installed_installer_providers.add(installer_provider)
-                yield installer_provider
+        if installer_provider not in installed_installer_providers:
+            installed_installer_providers.add(installer_provider)
+            yield installer_provider
 
 
 def skip_installed_resources(resources):
