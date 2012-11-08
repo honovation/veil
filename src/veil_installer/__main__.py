@@ -3,7 +3,7 @@ import sys
 import logging
 import argparse
 import pprint
-from .installer import install_resources_recursively
+from .installer import install_resources
 from .component_installer import parse_resource
 
 logging.basicConfig(level=logging.DEBUG)
@@ -18,8 +18,8 @@ resource = parse_resource(args.resource)
 installer_providers = [args.installer_provider] if args.installer_provider else []
 if args.dry_run:
     dry_run_result = {}
-    install_resources_recursively(dry_run_result, installer_providers, [resource])
+    install_resources(dry_run_result, installer_providers, [resource])
     pprint.pprint(dry_run_result)
 else:
-    install_resources_recursively(None, installer_providers, [resource])
+    install_resources(None, installer_providers, [resource])
 

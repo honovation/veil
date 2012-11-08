@@ -25,7 +25,7 @@ def install_db2_driver(dry_run_result):
 def download_db2_driver():
     if os.path.exists('/opt/db2-clidriver'):
         return
+    mirror = os.getenv('VEIL_DEPENDENCY_MIRROR', 'http://dependency-veil.googlecode.com/svn/trunk')
     shell_execute(
-        'wget http://dependency-veil.googlecode.com/svn/trunk/db2-clidriver.tar.gz -O /tmp/db2-clidriver.tar.gz')
-    #        'wget http://200.200.200.25:8080/db2-clidriver.tar.gz -O /tmp/db2-clidriver.tar.gz')
+        'wget {}/db2-clidriver.tar.gz -O /tmp/db2-clidriver.tar.gz'.format(mirror))
     shell_execute('tar xzf /tmp/db2-clidriver.tar.gz -C /opt')

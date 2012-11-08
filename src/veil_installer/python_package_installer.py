@@ -19,10 +19,9 @@ def install_python_package(dry_run_result, name, **kwargs):
     if installed:
         return
     LOGGER.info('installing python package {} ...'.format(name))
-    mirror = os.getenv('VEIL_PYTHON_PACKAGE_MIRROR', 'http://dependency-veil.googlecode.com/svn/trunk/')
-    # mirror = os.getenv('VEIL_PYTHON_PACKAGE_MIRROR', 'http://200.200.200.25:8080/')
+    mirror = os.getenv('VEIL_DEPENDENCY_MIRROR', 'http://dependency-veil.googlecode.com/svn/trunk')
     if mirror:
-        shell_execute('pip install {} --no-index -f {}'.format(name, mirror), capture=True, **kwargs)
+        shell_execute('pip install {} --no-index -f {}/'.format(name, mirror), capture=True, **kwargs)
     else:
         shell_execute('pip install {}'.format(name), capture=True, **kwargs)
 

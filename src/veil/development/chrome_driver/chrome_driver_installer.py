@@ -11,5 +11,6 @@ def install_chrome_driver(dry_run_result):
         return
     if is_installed:
         return
-    shell_execute('wget http://chromedriver.googlecode.com/files/chromedriver_linux64_21.0.1180.4.zip -O /tmp/chromedriver_linux64_21.0.1180.4.zip')
+    mirror = os.getenv('VEIL_DEPENDENCY_MIRROR', 'http://chromedriver.googlecode.com/files')
+    shell_execute('wget {}/chromedriver_linux64_21.0.1180.4.zip -O /tmp/chromedriver_linux64_21.0.1180.4.zip'.format(mirror))
     shell_execute('unzip /tmp/chromedriver_linux64_21.0.1180.4.zip -d /usr/bin')
