@@ -1,4 +1,5 @@
 from .environment import get_application_components
+from .environment import VEIL_SERVER
 
 def init_components():
     component_names = [
@@ -17,7 +18,6 @@ def init_components():
         'veil.development.test',
         'veil.development.source_code_monitor',
         'veil.environment.deployment',
-        'veil.environment.installation',
         'veil.environment.setting',
         'veil.environment.supervisor',
         'veil.frontend.cli',
@@ -32,4 +32,6 @@ def init_components():
         try:
             __import__(component_name)
         except:
+            if 'development' == VEIL_SERVER:
+                raise
             pass # try our best to import as many components as possible
