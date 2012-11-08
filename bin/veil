@@ -91,7 +91,7 @@ case "$1" in
         exec veil environment deployment deploy $@
         ;;
     migrate)
-        exec veil environment deployment migrate
+        exec veil environment migration migrate
         ;;
     pull)
         exec veil development git pull

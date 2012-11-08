@@ -35,3 +35,4 @@ def init_components():
             if 'development' == VEIL_SERVER:
                 raise
             pass # try our best to import as many components as possible
+    __import__('__veil__')
