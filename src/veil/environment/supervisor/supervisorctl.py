@@ -3,9 +3,9 @@ from veil.environment.setting import *
 from veil.backend.shell import *
 from veil.environment.supervisor_setting import supervisor_settings
 
-def supervisorctl(action, *arguments):
-    shell_execute('veil execute supervisorctl -c {} {} {}'.format(
-        get_option('config_file'), action, ' '.join(arguments)))
+def supervisorctl(action, *arguments, **kwargs):
+    return shell_execute('veil execute supervisorctl -c {} {} {}'.format(
+        get_option('config_file'), action, ' '.join(arguments)), **kwargs)
 
 
 def is_supervisord_running():
@@ -21,6 +21,12 @@ def is_supervisord_running():
         if 'SHUTDOWN_STATE' in e.output:
             return True
         raise
+
+def are_all_supervisord_programs_running():
+    for line in supervisorctl('status', capture=True).split('\n'):
+        if line and 'RUNNING' not in line:
+            return False
+    return True
 
 
 def get_option(key):

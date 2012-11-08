@@ -54,6 +54,12 @@ case "$1" in
         shift
         exec $@
         ;;
+    sleep)
+        shift
+        sleep $1
+        shift
+        exec $@
+        ;;
     up)
         shift
         find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete

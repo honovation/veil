@@ -65,7 +65,7 @@ process_name=%(program_name)s
 {% endif %}
 {% endif %}
 numprocs={{ program.processes_count or 1 }}
-stopwaitsecs=30
+stopwaitsecs=10
 redirect_stderr=True
 {% if program.logging and program.logging.file %}
 stdout_logfile={{ program.logging.file }}
@@ -89,6 +89,7 @@ exitcodes=0,2
 {% endif %}
 stopsignal={{ program.stop_signal or 'INT' }}
 startsecs={{ program.get('startsecs', 3) }}
+startretries={{ program.get('startretries', 3) }}
 {% endfor %}
 
 ; The below sample eventlistener section shows all possible
