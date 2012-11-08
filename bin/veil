@@ -79,16 +79,16 @@ case "$1" in
         ;;
     deploy-env)
         shift
-        exec veil environment remote_deployer deploy-env $@
+        exec veil environment remote-deployer deploy-env $@
         ;;
     deploy-server)
         shift
-        exec veil environment remote_deployer deploy-server $@
+        exec veil environment remote-deployer deploy-server $@
         ;;
     deploy)
         shift
         veil_init
-        exec veil environment local_deployer deploy $@
+        exec veil environment local-deployer deploy $@
         ;;
     migrate)
         exec veil environment migration migrate
