@@ -5,7 +5,7 @@ from veil.backend.shell import *
 
 @installer('python_qt4')
 def install_python_qt4(dry_run_result):
-    is_installed = is_os_package_installed('python-qt4')
+    is_installed = is_python_qt4_installed()
     if dry_run_result is not None:
         dry_run_result['python_qt4'] = '-' if is_installed else 'INSTALL'
         return
@@ -13,3 +13,11 @@ def install_python_qt4(dry_run_result):
         return
     install_os_package(None, 'python-qt4')
     shell_execute(os.path.join(os.path.dirname(__file__), 'link-pyqt4-to-virtualenv.sh'))
+
+
+def is_python_qt4_installed():
+    try:
+        __import__('PyQt4')
+        return True
+    except:
+        return False
