@@ -70,7 +70,7 @@ def load_config_from(path, *expected_keys):
         lines = f.readlines()
     for line in lines:
         line = line.strip()
-        if line:
+        if line and not line.startswith('#'):
             key, value = line.split('=')
             config[key] = value
     assert set(expected_keys) == set(config.keys()),\

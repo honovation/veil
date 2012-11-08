@@ -3,6 +3,7 @@ import contextlib
 import httplib
 import logging
 import re
+import traceback
 from veil.model.collection import DictObject
 from veil.frontend.encoding import to_unicode
 from .error import  HTTPError
@@ -22,10 +23,6 @@ def normalize_arguments():
     yield
 
 
-def try_get_http_argument(field):
-    return get_http_argument(field, optional=True)
-
-
 def delete_http_argument(field, request=None):
     request = request or get_current_http_request()
     request.arguments.pop(field, None)
@@ -41,6 +38,7 @@ def get_http_argument(field, default=None, request=None, list_field=False, optio
                 return None
         if default is not None:
             return default
+        LOGGER.error('{} not found in http arguments: {}\n{}'.format(field, request.arguments, str('\n').join(traceback.format_stack())))
         raise HTTPError(httplib.BAD_REQUEST, '{} not found in http arguments: {}'.format(field, request.arguments))
     values = request.arguments[field]
     return values if list_field else values[0]
