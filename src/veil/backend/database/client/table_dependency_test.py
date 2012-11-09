@@ -2,8 +2,13 @@ from __future__ import unicode_literals, print_function, division
 from veil.development.test import *
 from .table_dependency import check_writable_table_dependencies
 from .table_dependency import check_readable_table_dependencies
+from .table_dependency import disable_logging
 
 class CheckWritableTableDependencyTest(TestCase):
+    def setUp(self):
+        super(CheckWritableTableDependencyTest, self).setUp()
+        disable_logging()
+
     def test_select(self):
         check_writable_table_dependencies({}, 'a', 'SELECT xxx FROM...')
 
@@ -35,6 +40,10 @@ class CheckWritableTableDependencyTest(TestCase):
 
 
 class CheckReadableTableDependencyTest(TestCase):
+    def setUp(self):
+        super(CheckReadableTableDependencyTest, self).setUp()
+        disable_logging()
+
     def test_expected_select(self):
         check_readable_table_dependencies({'a': ['xxx']}, 'a', 'SELECT * FROM xxx WHERE ...')
 
@@ -49,7 +58,8 @@ class CheckReadableTableDependencyTest(TestCase):
         check_readable_table_dependencies({'a': ['xxx', 'yyy']}, 'a', 'SELECT * FROM xxx AS x, yyy AS y WHERE ...')
 
     def test_left_join(self):
-        check_readable_table_dependencies({'a': ['xxx', 'yyy']}, 'a', 'SELECT * FROM xxx LEFT JOIN yyy ON x=y WHERE ...')
+        check_readable_table_dependencies({'a': ['xxx', 'yyy']}, 'a',
+            'SELECT * FROM xxx LEFT JOIN yyy ON x=y WHERE ...')
 
     def test_unexpected_left_join(self):
         with self.assertRaises(Exception):

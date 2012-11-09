@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import re
 import veil_component
 import logging
+import traceback
 from veil.environment import *
 from veil.frontend.cli import *
 from veil.frontend.encoding import *
@@ -36,6 +37,9 @@ RE_JOIN = re.compile(r'\s+JOIN\s(\w+)\s+', re.IGNORECASE)
 writable_tables = None # from __veil__.ARCHITECTURE
 readable_tables = None # infer from writable_tables based on component dependencies
 LOGGER = logging.getLogger(__name__)
+
+def disable_logging():
+    LOGGER.disabled = True
 
 
 @script('writable-tables')
