@@ -12,7 +12,6 @@ from veil.utility.clock import *
 from veil.utility.hash import *
 from veil.utility.path import *
 from veil.backend.database.client import *
-from veil.environment.migration import *
 
 LOGGER = logging.getLogger(__name__)
 
@@ -172,10 +171,3 @@ def check_if_locked_migration_scripts_being_changed():
                     actual_md5 = calculate_file_md5_hash(f)
                 if actual_md5 != expected_md5:
                     raise Exception('locked migration script {} should not be changed'.format(sql_path))
-
-def register_migration_commands():
-    for key in get_settings().keys():
-        if key.endswith('_postgresql'):
-            purpose = key.replace('_postgresql', '')
-            register_migration_command(
-                'veil backend database postgresql migrate {}'.format(purpose))
