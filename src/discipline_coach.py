@@ -30,6 +30,7 @@ def calculate_git_status_hash():
     RE_MODIFIED = re.compile('^(?:M|A)(\s+)(?P<name>.*)')
     hashes = [shell_execute('git log -n 1 --pretty=format:%H', capture=True)]
     files = []
+    shell_execute('git config core.quotepath false') # chinese filename
     out = shell_execute('git status --porcelain', capture=True)
     for line in out.splitlines():
         match = RE_MODIFIED.match(line.strip())

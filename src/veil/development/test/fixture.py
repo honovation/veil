@@ -17,6 +17,10 @@ def fixture(fixture_type, fixture_name=None):
     return FixtureProviderDecorator(fixture_type, fixture_name)
 
 
+def g(fixture_name):
+    return fixture_providers[fixture_name]()
+
+
 class FixtureProviderDecorator(object):
     def __init__(self, fixture_type, fixture_name=None):
         self.fixture_type = fixture_type
