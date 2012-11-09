@@ -4,9 +4,11 @@ import os
 import logging
 import time
 import sys
+from veil.environment import *
+from veil.frontend.cli import *
+from veil.backend.shell import *
 from .reloader import restart_all
 from .reloader import start_all
-from veil.frontend.cli import *
 
 LOGGER = logging.getLogger(__name__)
 modify_times = {}
@@ -14,6 +16,8 @@ modify_times = {}
 @script('up')
 def bring_up_source_code_monitor():
     LOGGER.info('start monitoring source code changes...')
+    shell_execute('find {} -type f -name "*.pyc" -delete'.format(VEIL_FRAMEWORK_HOME))
+    shell_execute('find {} -type f -name "*.pyc" -delete'.format(VEIL_HOME))
     start_all()
     while True:
         reload_on_change()

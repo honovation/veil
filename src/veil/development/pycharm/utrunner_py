@@ -17,6 +17,11 @@ def main():
         return
 
     a = arg.split("::")
+
+    __dir__ = os.path.dirname(a[0])
+    if __dir__ in sys.path:
+        sys.path.remove(__dir__) # disable old style relative import
+
     if len(a) == 1:
         raise Exception('test file or folder not supported')
 

@@ -9,7 +9,8 @@ def source_code_monitor_settings():
             'programs': {
                 'source_code_monitor': {
                     'execute_command': 'veil development source-code-monitor up',
-                    'startsecs': 0
+                    'startsecs': 0,
+                    'user': 'root' # required to clear pyc files
                 }
             }
         }
