@@ -15,7 +15,7 @@ def init():
 def website_settings(website, port, **updates):
     return merge_multiple_settings(
         _website_settings(website, port, **updates),
-        _website_settings('test', 5090) if 'test' != VEIL_ENV else {},
+        _website_settings('test', 5090) if 'test' == VEIL_ENV else {},
         source_code_monitor_settings())
 
 
