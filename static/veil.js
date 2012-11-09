@@ -1,5 +1,7 @@
 $.ajaxSetup({headers:{'X-XSRF':$.cookie('_xsrf')}});
 
+
+
 var veil = veil || {};
 
 veil.log = function(message) {
@@ -124,9 +126,13 @@ veil.resource.del = function (options) {
 veil.widget = {};
 
 veil.widget.handle = function (widget_selector, child_selector, event, handler) {
-    $(widget_selector + ' ' + child_selector).live(event, function (e) {
+    $(widget_selector + ' ' + child_selector).live(event, function () {
         var widget = $(this).parents(widget_selector);
-        return handler.apply(this, [widget, e]);
+        var newArgs = [widget];
+        for(var i = 0; i < arguments.length; i++) {
+            newArgs.push(arguments[i]);
+        }
+        return handler.apply(this, newArgs);
     });
 };
 
@@ -270,7 +276,7 @@ veil.widget.refresh = function (widget, options) {
             }
         });
     }else{
-        alert('refreshUrl undefine');
+        console.log('refreshUrl undefine');
     }
 };
 
