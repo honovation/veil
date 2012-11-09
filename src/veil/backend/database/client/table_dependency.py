@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import re
 import veil_component
+import logging
 from veil.environment import *
 from veil.frontend.cli import *
 from veil.frontend.encoding import *
@@ -34,6 +35,7 @@ RE_JOIN = re.compile(r'\s+JOIN\s(\w+)\s+', re.IGNORECASE)
 
 writable_tables = None # from __veil__.ARCHITECTURE
 readable_tables = None # infer from writable_tables based on component dependencies
+LOGGER = logging.getLogger(__name__)
 
 
 @script('writable-tables')
@@ -101,7 +103,10 @@ def check_writable_table_dependencies(writable_tables, component_name, sql):
     sql = sql.strip().replace('\n', '').replace('\r', '').replace('\t', '')
     writing_table_name = get_writing_table_name(sql)
     if writing_table_name and writing_table_name not in writable_tables.get(component_name, set()):
-        raise Exception('{} should not write to table {}'.format(component_name, writing_table_name))
+        LOGGER.debug('readable tables: {}'.format(readable_tables))
+        LOGGER.debug('writable tables: {}'.format(writable_tables))
+        raise Exception('{} should not write to table {}'.format(
+            component_name, writing_table_name))
 
 
 def get_writing_table_name(sql):
@@ -125,7 +130,10 @@ def check_readable_table_dependencies(readable_tables, component_name, sql):
     component_tables = readable_tables.get(component_name, set())
     for table in reading_table_names:
         if table not in component_tables:
-            raise Exception('{} should not read from table {}'.format(component_name, table))
+            LOGGER.debug('readable tables: {}'.format(readable_tables))
+            LOGGER.debug('writable tables: {}'.format(writable_tables))
+            raise Exception('{} should not read from table {}'.format(
+                component_name, table))
 
 
 def get_reading_table_names(sql):
