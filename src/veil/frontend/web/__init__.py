@@ -106,6 +106,7 @@ with veil_component.init_component(__name__):
     ]
 
     def init():
+        from veil.environment import VEIL_SERVER
         from veil.model.event import subscribe_event
         from veil.development.source_code_monitor import register_reloads_on_change_program
         from .website_launcher import register_website_options
@@ -114,3 +115,6 @@ with veil_component.init_component(__name__):
         subscribe_event(EVENT_NEW_WEBSITE, register_website_options)
         subscribe_event(EVENT_NEW_WEBSITE, lambda website: register_reloads_on_change_program(
             '{}_website'.format(website)))
+
+        if 'test' == VEIL_SERVER:
+            publish_new_website_event('test') # used when we need to test web framework from outside

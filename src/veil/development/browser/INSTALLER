@@ -1,8 +1,0 @@
-@veil.development.python_qt4
-@veil.development.chrome_driver
-python_qt4
-os_package?libxml2-dev
-os_package?libxslt1-dev
-python_package?spynner
-python_package?selenium
-chrome_driver

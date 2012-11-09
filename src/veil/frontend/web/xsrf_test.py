@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import httplib
 from veil.development.test import *
 from veil.environment.setting import *
+from veil.environment import VEIL_SERVER
 from .client import start_website_and_client
 from .routing import *
 

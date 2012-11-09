@@ -17,7 +17,6 @@ def init_components():
         'veil.backend.redis',
         'veil.backend.shell',
         'veil.development.architecture',
-        'veil.development.browser',
         'veil.development.git',
         'veil.development.loc',
         'veil.development.pycharm',
