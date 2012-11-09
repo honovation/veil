@@ -2,6 +2,7 @@ import subprocess
 import shlex
 import os.path
 import sys
+import os
 
 def main():
     application_codebase = sys.argv[1]
@@ -53,7 +54,9 @@ def pull_veil(veil_version):
 
 
 def deploy(veil_home, veil_env, veil_server_name):
-    shell_execute('/opt/veil/bin/veil :{}/{} deploy'.format(veil_env, veil_server_name), cwd=veil_home)
+    env = os.environ.copy()
+    env['VEIL_DEPENDENCY_MIRROR'] = 'http://200.200.200.25:8080'
+    shell_execute('/opt/veil/bin/veil :{}/{} deploy'.format(veil_env, veil_server_name), cwd=veil_home, env=env)
 
 
 def shell_execute(command_line, **kwargs):
