@@ -1,10 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 import unittest.case
 from veil import init_components
-from veil.environment.setting import bootstrap_runtime
 
 executing_test = None
-bootstrappers = [init_components, bootstrap_runtime]
+bootstrappers = [init_components]
 
 def register_test_hook(bootstrapper):
     bootstrappers.append(bootstrapper)
@@ -26,12 +25,16 @@ def get_executing_test(optional=False):
     return executing_test
 
 
-def set_fake_executing_test():
+def set_up_fake_test():
     global executing_test
     if executing_test:
         raise Exception('test is executing')
     else:
-        executing_test = FakeTestCase()
+        FakeTestCase().setUp()
+
+
+def tear_down_fake_test():
+    get_executing_test().doCleanups()
 
 
 class TestCase(unittest.case.TestCase):

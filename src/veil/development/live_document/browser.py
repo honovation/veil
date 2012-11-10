@@ -3,7 +3,6 @@ import contextlib
 import threading
 import traceback
 import os
-import atexit
 import selenium.webdriver
 import selenium.common.exceptions
 import jinjatag
@@ -48,7 +47,7 @@ def require_webdriver():
     os.chdir('/tmp')
     try:
         webdriver = selenium.webdriver.Chrome()
-        atexit.register(webdriver.close)
+        get_executing_test().addCleanup(webdriver.close)
         return webdriver
     finally:
         os.chdir(old_cwd)
@@ -64,7 +63,6 @@ def require_website_running(website):
 
 
 def execute_io_loop(timeout):
-    get_executing_test().addCleanup(require_io_loop_executor().stop)
     try:
         require_io_loop_executor().execute(timeout=timeout)
     except:

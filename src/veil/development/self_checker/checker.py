@@ -17,6 +17,7 @@ def self_check(checker_name=None):
         return
     shell_execute('git add .')
     shell_execute('veil pull')
+    shell_execute('veil environment local-deployer reset')
     for checker_name, self_checker in self_checkers.items():
         print('[CHECK] checking {}...'.format(checker_name))
         self_checker()
