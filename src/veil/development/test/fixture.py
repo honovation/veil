@@ -3,7 +3,6 @@ from veil.model.collection import *
 from .case import test_hook
 from .case import get_executing_test
 
-
 fixtures = {} # fixture_name => normally just the id of database record
 fixture_providers = {} # fixture_name => the provider function
 fixture_types = {} # type => reloaders
@@ -44,14 +43,15 @@ class FixtureProvider(object):
         if self.fixture_name not in fixtures:
             args = self.provider()
             fixtures[self.fixture_name] = args if isinstance(args, (list, tuple)) else [args]
-        return reload_fixture(self.fixture_type, self.fixture_name)
+        return reload_fixture(self.fixture_type, *fixtures[self.fixture_name])
 
 
-def reload_fixture(fixture_type, fixture_name):
+def reload_fixture(fixture_type, *reload_args):
     reloaders = fixture_types[fixture_type]
     fixture = {}
     for reloader in reloaders:
-        fixture.update(reloader(*fixtures[fixture_name]))
+        fixture.update(reloader(*reload_args))
+    fixture['e'] = lambda action_name, *args: fixture[action_name](*args)
     return objectify(fixture)
 
 

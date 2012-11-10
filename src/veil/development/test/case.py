@@ -51,3 +51,7 @@ class TestCase(unittest.case.TestCase):
 class FakeTestCase(TestCase):
     def runTest(self):
         pass
+
+    def doCleanups(self):
+        self._resultForDoCleanups = self.defaultTestResult()
+        super(FakeTestCase, self).doCleanups()
