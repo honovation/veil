@@ -57,6 +57,10 @@ def get_application_codebase():
     return get_application().CODEBASE
 
 
+def get_application_live_document():
+    return get_application().LIVE_DOCUMENT
+
+
 def get_application_name():
     codebase = get_application_codebase()
     return codebase[codebase.find('/') + 1:].replace('.git', '')
@@ -68,10 +72,6 @@ def get_application_architecture():
 
 def get_application_components():
     return get_application_architecture().keys()
-
-
-def get_application_settings():
-    return getattr(get_application(), 'SETTINGS', {})
 
 
 def get_application():
