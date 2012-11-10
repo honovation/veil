@@ -9,6 +9,7 @@ with veil_component.init_component(__name__):
     from .fixture import fixture
     from .fixture import fixture_reloader
     from .fixture import get_fixture
+    from .fixture import require_fixture
     from .fixture import reload_fixture
     from unittest import skip
     from .correctness_checker import check_correctness
@@ -26,6 +27,7 @@ with veil_component.init_component(__name__):
         fixture.__name__,
         fixture_reloader.__name__,
         get_fixture.__name__,
+        require_fixture.__name__,
         reload_fixture.__name__,
         'g',
         # from unittest

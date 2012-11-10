@@ -32,12 +32,26 @@ class BrowserPageContext(object):
     def __call__(self, statement_name, args):
         try:
             return require_webdriver().execute_script(
-                "return veil.doc.currentPage['{}'].apply(this, arguments);".format(statement_name), *args)
+                "return veil.doc.currentPage['{}'].apply(this, arguments);".format(statement_name),
+                *filter_non_serializable(args))
         except selenium.common.exceptions.WebDriverException, e:
             if 'modal dialog' in e.msg:
                 require_webdriver().switch_to_alert().accept()
             else:
                 raise
+
+
+def filter_non_serializable(arg):
+    SERIZABLE_TYPES = (basestring, int, float, dict, tuple, list)
+    if isinstance(arg, dict):
+        return {k: filter_non_serializable(v) for k, v in arg.items() if isinstance(v, SERIZABLE_TYPES)}
+    elif isinstance(arg, (tuple, list)):
+        return [filter_non_serializable(e) for e in arg if isinstance(e, SERIZABLE_TYPES)]
+    else:
+        if isinstance(arg, SERIZABLE_TYPES):
+            return arg
+        else:
+            raise Exception('can not serialze: {}'.format(arg))
 
 
 def require_webdriver():

@@ -264,13 +264,15 @@ veil.widget.refresh = function (widget, options) {
             url:refreshUrl,
             onSuccess:function (html) {
                 veil.widget.processWidget(html, function(html) {
-                    widget.replaceWith(html);
-                    var refreshedWidget = $('[data-refresh-url="' + refreshUrl + '"]');
-                    if (!refreshedWidget) {
+                    var token = 'refreshed-' + Math.round(Math.random()*1000);
+                    widget.replaceWith($(html).attr('data-refresh-token', token));
+                    var refreshedWidget = $('[data-refresh-token=' + token + ']');
+                    if (!refreshedWidget.length) {
                         veil.log('widget disappeared after refreshed from: ' + refreshUrl);
-                    }
-                    if (onSuccess && refreshedWidget) {
-                        onSuccess(refreshedWidget)
+                    } else {
+                        if (onSuccess) {
+                            onSuccess(refreshedWidget)
+                        }
                     }
                 });
             }

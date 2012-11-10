@@ -17,7 +17,14 @@ def fixture(fixture_type, fixture_name=None):
 
 
 def get_fixture(fixture_name):
-    return fixture_providers[fixture_name]()
+    return reload_fixture(fixture_providers[fixture_name].fixture_type, *fixtures[fixture_name])
+
+
+def require_fixture(expected_fixture_type, fixture_name):
+    provider = fixture_providers[fixture_name]
+    if expected_fixture_type != provider.fixture_type:
+        raise Exception('{} is not {}'.format(fixture_name, expected_fixture_type))
+    return provider()
 
 
 class FixtureProviderDecorator(object):
@@ -43,7 +50,7 @@ class FixtureProvider(object):
         if self.fixture_name not in fixtures:
             args = self.provider()
             fixtures[self.fixture_name] = args if isinstance(args, (list, tuple)) else [args]
-        return reload_fixture(self.fixture_type, *fixtures[self.fixture_name])
+        return get_fixture(self.fixture_name)
 
 
 def reload_fixture(fixture_type, *reload_args):

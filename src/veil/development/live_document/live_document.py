@@ -1,10 +1,9 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import contextlib
 import atexit
 from veil import init_components
-from veil.development.test import set_up_fake_test
-from veil.development.test import tear_down_fake_test
-from veil.development.test import get_executing_test
+from veil.development.test import *
 
 root_context = {}
 contexts = [lambda statement_name, args: root_context[statement_name](*args)]
@@ -27,6 +26,8 @@ def document_statement(statement_name):
         return func
 
     return register
+
+document_statement('创建')(require_fixture)
 
 
 @contextlib.contextmanager
