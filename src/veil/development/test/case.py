@@ -34,7 +34,9 @@ def set_up_fake_test():
 
 
 def tear_down_fake_test():
-    get_executing_test().doCleanups()
+    executing_test = get_executing_test(optional=True)
+    if executing_test:
+        executing_test.doCleanups()
 
 
 class TestCase(unittest.case.TestCase):

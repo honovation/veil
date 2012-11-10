@@ -6,6 +6,7 @@ import os
 import selenium.webdriver
 import selenium.common.exceptions
 import jinjatag
+import atexit
 from veil.environment import *
 from veil.frontend.web import *
 from veil.development.test import *
@@ -47,7 +48,8 @@ def require_webdriver():
     os.chdir('/tmp')
     try:
         webdriver = selenium.webdriver.Chrome()
-        get_executing_test().addCleanup(webdriver.close)
+        atexit.register(webdriver.close) # only close when we finished everything
+        get_executing_test().addCleanup(webdriver.delete_all_cookies) # delete all cookies to isolate document-checking
         return webdriver
     finally:
         os.chdir(old_cwd)
