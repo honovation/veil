@@ -14,8 +14,8 @@ def deploy():
     shell_execute('veil install-supervisor')
     generate_db_dump('before')
     shell_execute('veil down')
-#    shell_execute('veil install-component ljmall')
-#    shell_execute('veil ljmall backup deploy_backup')
+    shell_execute('veil install-component ljmall')
+    shell_execute('veil ljmall backup deploy_backup')
     shell_execute('veil install')
     shell_execute('veil up --daemonize')
     for i in range(3):
