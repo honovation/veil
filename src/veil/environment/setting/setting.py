@@ -2,7 +2,6 @@ from __future__ import unicode_literals, print_function, division
 import sys
 import traceback
 from veil.model.collection import *
-from veil import init_components
 
 initialized_by = None
 settings = None
@@ -17,7 +16,6 @@ def register_settings_coordinator(coordinator):
 
 
 def get_settings():
-    init_components()
     if not initialized_by:
         raise Exception('settings has not been initialized yet')
     return settings
@@ -28,7 +26,7 @@ def initialize_settings(*multiple_settings):
     global settings
     if initialized_by:
         raise Exception('settings has already been initialized by: {}'.format(initialized_by))
-    initialized_by = '\n'.join(traceback.format_stack())
+    initialized_by = str('\n').join(traceback.format_stack())
     settings = merge_settings(settings, merge_multiple_settings(*multiple_settings))
     for coordinator in coordinators:
         settings = coordinator(settings)

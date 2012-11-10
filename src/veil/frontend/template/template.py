@@ -5,9 +5,9 @@ import os.path
 import inspect
 import importlib
 import functools
+import jinjatag
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
-import veil_component
 from veil.development.test import get_executing_test
 from veil.frontend.cli import get_executing_script_handler
 
@@ -130,10 +130,12 @@ def get_or_create_environment():
     global env
     if env:
         return env
+    jinja_tag = jinjatag.JinjaTag()
     env = Environment(
         loader=PrefixLoader(loaders, delimiter=':'),
         autoescape=True,
-        extensions=['jinja2.ext.autoescape', 'jinja2.ext.i18n'])
+        extensions=['jinja2.ext.autoescape', 'jinja2.ext.i18n', jinja_tag])
+    jinja_tag.init()
     env.filters.update(filters)
     env.install_null_translations()
     env.created_by = str('\n').join(traceback.format_stack())

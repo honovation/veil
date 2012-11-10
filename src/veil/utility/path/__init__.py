@@ -1,12 +1,9 @@
 import veil_component
 
 with veil_component.init_component(__name__):
-    from .path import Path
+    from .path import as_path
 
-    as_path = Path
 
     __all__ = [
-        # from path
-        Path.__name__,
-        'as_path'
+        as_path.__name__
     ]

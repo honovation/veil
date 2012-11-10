@@ -30,7 +30,6 @@ def execute_script(*argv, **kwargs):
         next_level = level[arg]
         if inspect.isfunction(next_level):
             script_handler = next_level
-            bootstrap_runtime()
             try:
                 executing_script_handlers.append(script_handler)
                 return script_handler(*argv[1:])

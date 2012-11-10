@@ -26,6 +26,14 @@ def get_executing_test(optional=False):
     return executing_test
 
 
+def set_fake_executing_test():
+    global executing_test
+    if executing_test:
+        raise Exception('test is executing')
+    else:
+        executing_test = FakeTestCase()
+
+
 class TestCase(unittest.case.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
@@ -33,3 +41,8 @@ class TestCase(unittest.case.TestCase):
         self.addCleanup(lambda: set_executing_test(None))
         for bootstrapper in bootstrappers:
             bootstrapper()
+
+
+class FakeTestCase(TestCase):
+    def runTest(self):
+        pass

@@ -3,6 +3,7 @@ import getpass
 from os import getenv
 import os
 from veil.utility.path import *
+from veil.frontend.encoding import to_str
 from veil_installer import directory_resource
 
 def split_veil_server_code(code):

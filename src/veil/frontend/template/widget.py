@@ -92,7 +92,7 @@ class Widget(object):
     def __init__(self, name, func):
         self.name = name
         self.func = func
-        self.registered_by = '\n'.join(traceback.format_stack())
+        self.registered_by = str('\n').join(traceback.format_stack())
         loading_component_name = veil_component.get_loading_component_name()
         if loading_component_name:
             self.namespace = loading_component_name

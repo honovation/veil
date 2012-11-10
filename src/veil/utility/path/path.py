@@ -42,6 +42,12 @@ class TreeWalkWarning(Warning):
     pass
 
 
+def as_path(p):
+    return Path(to_str(p))
+
+def to_str(p):
+    return p.encode('utf8') if isinstance(p, unicode) else p
+
 class Path(_base):
     """ Represents a filesystem path.
 
@@ -57,16 +63,16 @@ class Path(_base):
     # Adding a path and a string yields a path.
     def __add__(self, more):
         try:
-            resultStr = _base.__add__(self, more)
+            resultStr = _base.__add__(self, to_str(more))
         except TypeError:  #Python bug
             resultStr = NotImplemented
         if resultStr is NotImplemented:
             return resultStr
-        return self.__class__(resultStr)
+        return as_path(resultStr)
 
     def __radd__(self, other):
         if isinstance(other, basestring):
-            return self.__class__(other.__add__(self))
+            return as_path(other.__add__(self))
         else:
             return NotImplemented
 
@@ -77,7 +83,7 @@ class Path(_base):
         Join two path components, adding a separator character if
         needed.
         """
-        return self.__class__(os.path.join(self, rel))
+        return as_path(os.path.join(self, rel))
 
     # Make the / operator work even when true division is enabled.
     __truediv__ = __div__
@@ -97,19 +103,19 @@ class Path(_base):
 
     isabs = os.path.isabs
 
-    def abspath(self):       return self.__class__(os.path.abspath(self))
+    def abspath(self):       return as_path(os.path.abspath(self))
 
-    def normcase(self):      return self.__class__(os.path.normcase(self))
+    def normcase(self):      return as_path(os.path.normcase(self))
 
-    def normpath(self):      return self.__class__(os.path.normpath(self))
+    def normpath(self):      return as_path(os.path.normpath(self))
 
-    def realpath(self):      return self.__class__(os.path.realpath(self))
+    def realpath(self):      return as_path(os.path.realpath(self))
 
-    def expanduser(self):    return self.__class__(os.path.expanduser(self))
+    def expanduser(self):    return as_path(os.path.expanduser(self))
 
-    def expandvars(self):    return self.__class__(os.path.expandvars(self))
+    def expandvars(self):    return as_path(os.path.expandvars(self))
 
-    def dirname(self):       return self.__class__(os.path.dirname(self))
+    def dirname(self):       return as_path(os.path.dirname(self))
 
     basename = os.path.basename
 
@@ -132,7 +138,7 @@ class Path(_base):
 
     def _get_drive(self):
         drive, r = os.path.splitdrive(self)
-        return self.__class__(drive)
+        return as_path(drive)
 
     parent = property(
         dirname, None, None,
@@ -169,7 +175,7 @@ class Path(_base):
     def splitpath(self):
         """ p.splitpath() -> Return (p.parent, p.name). """
         parent, child = os.path.split(self)
-        return self.__class__(parent), child
+        return as_path(parent), child
 
     def splitdrive(self):
         """ p.splitdrive() -> Return (p.drive, <the rest of p>).
@@ -179,7 +185,7 @@ class Path(_base):
         is simply (path(''), p).  This is always the case on Unix.
         """
         drive, rel = os.path.splitdrive(self)
-        return self.__class__(drive), rel
+        return as_path(drive), rel
 
     def splitext(self):
         """ p.splitext() -> Return (p.stripext(), p.ext).
@@ -192,7 +198,7 @@ class Path(_base):
         (a, b) == p.splitext(), then a + b == p.
         """
         filename, ext = os.path.splitext(self)
-        return self.__class__(filename), ext
+        return as_path(filename), ext
 
     def stripext(self):
         """ p.stripext() -> Remove one file extension from the path.
@@ -205,11 +211,11 @@ class Path(_base):
     if hasattr(os.path, 'splitunc'):
         def splitunc(self):
             unc, rest = os.path.splitunc(self)
-            return self.__class__(unc), rest
+            return as_path(unc), rest
 
         def _get_uncshare(self):
             unc, r = os.path.splitunc(self)
-            return self.__class__(unc)
+            return as_path(unc)
 
         uncshare = property(
             _get_uncshare, None, None,
@@ -221,7 +227,7 @@ class Path(_base):
         character (os.sep) if needed.  Returns a new path
         object.
         """
-        return self.__class__(os.path.join(self, *args))
+        return as_path(os.path.join(self, *args))
 
     def splitall(self):
         r""" Return a list of the path components in this path.
@@ -249,7 +255,7 @@ class Path(_base):
         """ Return this path as a relative path,
         based from the current working directory.
         """
-        cwd = self.__class__(os.getcwd())
+        cwd = as_path(os.getcwd())
         return cwd.relpathto(self)
 
     def relpathto(self, dest):
@@ -260,7 +266,7 @@ class Path(_base):
         dest.abspath().
         """
         origin = self.abspath()
-        dest = self.__class__(dest).abspath()
+        dest = as_path(dest).abspath()
 
         orig_list = origin.normcase().splitall()
         # Don't normcase dest!  We want to preserve the case.
@@ -288,7 +294,7 @@ class Path(_base):
             relpath = os.curdir
         else:
             relpath = os.path.join(*segments)
-        return self.__class__(relpath)
+        return as_path(relpath)
 
     # --- Listing, searching, walking, and matching
 
@@ -890,7 +896,7 @@ class Path(_base):
 
             The result may be an absolute or a relative path.
             """
-            return self.__class__(os.readlink(self))
+            return as_path(os.readlink(self))
 
         def readlinkabs(self):
             """ Return the path to which this symbolic link points.

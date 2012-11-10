@@ -1,2 +1,3 @@
 python_package?Jinja2
 python_package?MarkupSafe
+python_package?jinjatag

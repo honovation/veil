@@ -17,7 +17,7 @@ def fixture(fixture_type, fixture_name=None):
     return FixtureProviderDecorator(fixture_type, fixture_name)
 
 
-def g(fixture_name):
+def get_fixture(fixture_name):
     return fixture_providers[fixture_name]()
 
 
