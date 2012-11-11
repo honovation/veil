@@ -53,7 +53,7 @@ def migrate(purpose):
             psql(purpose, '-c "SELECT 1"', capture=True)
             break
         except:
-            time.sleep(1)
+            time.sleep(3)
     create_database_if_not_exists(purpose)
     versions = load_versions(purpose)
     db = lambda: require_database(purpose)

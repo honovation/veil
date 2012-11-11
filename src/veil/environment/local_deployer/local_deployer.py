@@ -17,7 +17,7 @@ def deploy():
     shell_execute('veil ljmall backup deploy_backup')
     shell_execute('veil install')
     shell_execute('veil up --daemonize')
-    shell_execute('veil migrate', capture=True)
+    shell_execute('veil migrate')
 
 @script('deploy-restore-check')
 def deploy_restore_check():
