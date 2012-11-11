@@ -3,14 +3,15 @@ import veil_component
 import logging
 
 LOGGER = logging.getLogger()
-INSTALLERS = {}
+ATOMIC_INSTALLERS = {}
+COMPOSITE_INSTALLERS = {}
 stack = []
 installed_resource_codes = set()
 installed_installer_providers = set()
 
 def atomic_installer(name):
     def register(func):
-        register_installer(name, func)
+        ATOMIC_INSTALLERS[name] = func
         return func
 
     return register
@@ -18,14 +19,10 @@ def atomic_installer(name):
 
 def composite_installer(name):
     def register(func):
-        register_installer(name, func)
+        COMPOSITE_INSTALLERS[name] = func
         return func
 
     return register
-
-
-def register_installer(name, installer):
-    INSTALLERS[name] = installer
 
 
 def install_resources(dry_run_result, installer_providers, resources):
@@ -67,15 +64,15 @@ def install_installer_providers(dry_run_result, installer_providers):
 
 def install_resource(dry_run_result, resource):
     installer_name, installer_args = resource
-    if installer_name not in INSTALLERS:
+    if installer_name in ATOMIC_INSTALLERS:
+        ATOMIC_INSTALLERS[installer_name](dry_run_result=dry_run_result, **installer_args)
+        return [], []
+    elif installer_name in COMPOSITE_INSTALLERS:
+        return COMPOSITE_INSTALLERS[installer_name](**installer_args)
+    else:
         if dry_run_result is not None:
             return [], []
         raise Exception('no installer for: {} {}'.format(installer_name, installer_args))
-    result = INSTALLERS[installer_name](dry_run_result=dry_run_result, **installer_args)
-    if result:
-        return result # installer_providers, resources
-    else:
-        return [], []
 
 
 def skip_installed_installer_providers(installer_providers):

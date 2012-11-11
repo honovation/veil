@@ -9,7 +9,7 @@ from veil_installer import *
 
 @composite_installer('redis')
 @using_isolated_template
-def install_redis_server(dry_run_result, name):
+def install_redis_server(name):
     purpose = name
     settings = get_settings()
     config = getattr(settings, '{}_redis'.format(purpose))

@@ -7,6 +7,6 @@ def program_resource(name):
 
 
 @composite_installer('program')
-def install_program(dry_run_result, name):
+def install_program(name):
     config = get_settings().supervisor
     return config.programs[name].get('installer_providers', []), config.programs[name].get('resources', [])

@@ -6,7 +6,7 @@ from veil_installer import *
 
 @composite_installer('resweb')
 @using_isolated_template
-def install_resweb(dry_run_result):
+def install_resweb():
     settings = get_settings()
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([

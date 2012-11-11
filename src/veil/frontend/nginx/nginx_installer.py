@@ -7,7 +7,7 @@ from veil.environment.setting import *
 
 @composite_installer('nginx')
 @using_isolated_template
-def install_nginx(dry_run_result):
+def install_nginx():
     settings = get_settings()
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([

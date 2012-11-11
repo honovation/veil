@@ -10,7 +10,7 @@ def component_resource(name):
     return 'component', dict(name=name)
 
 @composite_installer('component')
-def install_component(dry_run_result, name):
+def install_component(name):
     component_name = name
     module_loader = veil_component.find_module_loader_without_import(component_name)
     if not module_loader:

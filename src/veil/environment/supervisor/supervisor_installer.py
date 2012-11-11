@@ -9,7 +9,7 @@ LOGGER = logging.getLogger(__name__)
 
 @composite_installer('supervisor')
 @using_isolated_template
-def install_supervisor(dry_run_result):
+def install_supervisor():
     config = get_settings().supervisor
     if VEIL_SERVER in ['development', 'test']:
         active_program_names = config.programs.keys()

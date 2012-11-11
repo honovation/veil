@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 @composite_installer('postgresql')
 @using_isolated_template
-def install_postgresql_server(dry_run_result, name):
+def install_postgresql_server(name):
     settings = get_settings()
     config = getattr(settings, '{}_postgresql'.format(name))
     pg_data_dir = as_path(config.data_directory)
@@ -40,7 +40,7 @@ def install_postgresql_server(dry_run_result, name):
 
 
 @composite_installer('postgresql_global_bin')
-def install_postgresql_global_bin(dry_run_result):
+def install_postgresql_global_bin():
     pg_bin_dir = as_path('/usr/lib/postgresql/9.1/bin')
     global_bin_dir = as_path('/usr/bin')
     resources = [

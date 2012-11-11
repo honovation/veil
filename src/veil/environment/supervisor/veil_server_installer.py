@@ -5,7 +5,7 @@ from veil.environment.setting import *
 from .program_installer import program_resource
 
 @composite_installer('veil_server')
-def install_veil_server(dry_run_result):
+def install_veil_server():
     config = get_settings().supervisor
     if VEIL_SERVER in ['development', 'test']:
         resources = [program_resource(p) for p in config.programs.keys()]
