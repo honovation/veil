@@ -3,7 +3,7 @@ import os
 import logging
 import grp
 import pwd
-from .installer import installer
+from .installer import atomic_installer
 
 LOGGER = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ def directory_resource(path, **args):
     return 'directory', dict(args, path=path)
 
 
-@installer('directory')
+@atomic_installer('directory')
 def install_directory(dry_run_result, **args):
     resource_name = 'directory?{}'.format(args['path'])
     if dry_run_result is None:
@@ -46,7 +46,7 @@ def file_resource(path, content, **args):
     return 'file', dict(args, path=path, content=content)
 
 
-@installer('file')
+@atomic_installer('file')
 def install_file(dry_run_result, **args):
     resource_name = 'file?{}'.format(args['path'])
     if dry_run_result is None:
@@ -91,7 +91,7 @@ def symbolic_link_resource(path, to, **args):
     return 'symbolic_link', dict(args, path=path, to=to)
 
 
-@installer('symbolic_link')
+@atomic_installer('symbolic_link')
 def install_symbolic_link(dry_run_result, **args):
     resource_name = 'symbolic_link?path={}'.format(args['path'])
     if dry_run_result is None:

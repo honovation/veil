@@ -8,7 +8,15 @@ stack = []
 installed_resource_codes = set()
 installed_installer_providers = set()
 
-def installer(name):
+def atomic_installer(name):
+    def register(func):
+        register_installer(name, func)
+        return func
+
+    return register
+
+
+def composite_installer(name):
     def register(func):
         register_installer(name, func)
         return func

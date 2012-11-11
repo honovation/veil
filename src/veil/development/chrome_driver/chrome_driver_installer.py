@@ -3,7 +3,7 @@ import os
 from veil_installer import *
 from veil.backend.shell import *
 
-@installer('chrome_driver')
+@atomic_installer('chrome_driver')
 def install_chrome_driver(dry_run_result):
     is_installed = os.path.exists('/usr/bin/chromedriver')
     if dry_run_result is not None:

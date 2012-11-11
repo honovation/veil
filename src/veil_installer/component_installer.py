@@ -2,14 +2,14 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import os
 import veil_component
-from .installer import installer
+from .installer import composite_installer
 
 LOGGER = logging.getLogger(__name__)
 
 def component_resource(name):
     return 'component', dict(name=name)
 
-@installer('component')
+@composite_installer('component')
 def install_component(dry_run_result, name):
     component_name = name
     module_loader = veil_component.find_module_loader_without_import(component_name)

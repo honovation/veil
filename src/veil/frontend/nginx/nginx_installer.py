@@ -5,7 +5,7 @@ from veil.frontend.template import *
 from veil.environment import *
 from veil.environment.setting import *
 
-@installer('nginx')
+@composite_installer('nginx')
 @using_isolated_template
 def install_nginx(dry_run_result):
     settings = get_settings()

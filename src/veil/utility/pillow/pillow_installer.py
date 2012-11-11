@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil_installer import *
 
-@installer('pillow')
+@composite_installer('pillow')
 def install_pillow(dry_run_result):
     resources = [
         os_package_resource('libjpeg-dev'),

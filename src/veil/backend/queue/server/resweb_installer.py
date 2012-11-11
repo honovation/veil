@@ -4,7 +4,7 @@ from veil.environment.setting import *
 from veil.frontend.template import *
 from veil_installer import *
 
-@installer('resweb')
+@composite_installer('resweb')
 @using_isolated_template
 def install_resweb(dry_run_result):
     settings = get_settings()

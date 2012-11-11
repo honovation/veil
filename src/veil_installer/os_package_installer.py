@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 from .shell import shell_execute
 from .shell import ShellExecutionError
-from .installer import installer
+from .installer import atomic_installer
 
 LOGGER = logging.getLogger(__name__)
 
@@ -10,7 +10,7 @@ def os_package_resource(name):
     return 'os_package', dict(name=name)
 
 
-@installer('os_package')
+@atomic_installer('os_package')
 def install_os_package(dry_run_result, name):
     installed = is_os_package_installed(name)
     if dry_run_result is not None:

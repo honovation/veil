@@ -7,7 +7,7 @@ from veil.environment.setting import *
 
 LOGGER = logging.getLogger(__name__)
 
-@installer('supervisor')
+@composite_installer('supervisor')
 @using_isolated_template
 def install_supervisor(dry_run_result):
     config = get_settings().supervisor

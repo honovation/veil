@@ -1,5 +1,6 @@
 from .installer import register_installer
-from .installer import installer
+from .installer import atomic_installer
+from .installer import composite_installer
 from .filesystem_installer import directory_resource
 from .filesystem_installer import install_file
 from .filesystem_installer import file_resource

@@ -12,7 +12,7 @@ from veil_installer import *
 
 LOGGER = logging.getLogger(__name__)
 
-@installer('postgresql')
+@composite_installer('postgresql')
 @using_isolated_template
 def install_postgresql_server(dry_run_result, name):
     settings = get_settings()
@@ -39,7 +39,7 @@ def install_postgresql_server(dry_run_result, name):
     return [], resources
 
 
-@installer('postgresql_global_bin')
+@composite_installer('postgresql_global_bin')
 def install_postgresql_global_bin(dry_run_result):
     pg_bin_dir = as_path('/usr/lib/postgresql/9.1/bin')
     global_bin_dir = as_path('/usr/bin')
@@ -53,7 +53,7 @@ def install_postgresql_global_bin(dry_run_result):
     return [], resources
 
 
-@installer('postgresql_initdb')
+@atomic_installer('postgresql_initdb')
 def install_postgresql_initdb(dry_run_result, name):
     settings = get_settings()
     config = getattr(settings, '{}_postgresql'.format(name))
@@ -80,7 +80,7 @@ def install_postgresql_initdb(dry_run_result, name):
     delete_file(pg_data_dir / 'pg_ident.conf')
 
 
-@installer('postgresql_user')
+@atomic_installer('postgresql_user')
 def install_postgresql_user(dry_run_result, name):
     settings = get_settings()
     config = getattr(settings, '{}_postgresql'.format(name))

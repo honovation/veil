@@ -7,7 +7,7 @@ from veil.backend.shell import *
 from veil_installer import *
 
 
-@installer('redis')
+@composite_installer('redis')
 @using_isolated_template
 def install_redis_server(dry_run_result, name):
     purpose = name

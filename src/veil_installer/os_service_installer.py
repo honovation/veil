@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import os
 import logging
 from .shell import shell_execute
-from .installer import installer
+from .installer import atomic_installer
 
 LOGGER = logging.getLogger(__name__)
 
@@ -10,7 +10,7 @@ def os_service_resource(name, path, state):
     return 'os_service', dict(name=name, path=path, state=state)
 
 
-@installer('os_service')
+@atomic_installer('os_service')
 def install_os_service(dry_run_result, name, path, state):
     if 'not_installed' != state:
         raise NotImplementedError('only support remove os service')
