@@ -48,6 +48,7 @@ def migrate_all():
 def migrate(purpose):
     if not is_current_veil_server_hosting('{}_purpose'.format(purpose)):
         return
+    time.sleep(1)
     create_database_if_not_exists(purpose)
     versions = load_versions(purpose)
     db = lambda: require_database(purpose)
