@@ -41,7 +41,10 @@ def migrate_all():
     for key in get_settings().keys():
         if key.endswith('_postgresql'):
             purpose = key.replace('_postgresql', '')
-            migrate(purpose)
+            try:
+                migrate(purpose)
+            except SystemExit:
+                pass
 
 
 @script('migrate')

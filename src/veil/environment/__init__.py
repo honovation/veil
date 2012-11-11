@@ -74,6 +74,18 @@ def get_application_components():
     return get_application_architecture().keys()
 
 
+def get_application_version():
+    if 'development' == VEIL_SERVER:
+        return 'development'
+    if 'test' == VEIL_SERVER:
+        return 'test'
+    from veil.backend.shell import shell_execute
+
+    app_commit_hash = shell_execute('git rev-parse HEAD', cwd=VEIL_HOME, capture=True).strip()
+    framework_commit_hash = shell_execute('git rev-parse HEAD', cwd=VEIL_FRAMEWORK_HOME, capture=True).strip()
+    return '{}-{}'.format(app_commit_hash, framework_commit_hash)
+
+
 def get_application():
     import __veil__
 
