@@ -8,7 +8,6 @@ settings = None
 coordinators = []
 
 
-
 def register_settings_coordinator(coordinator):
     if initialized_by:
         raise Exception('settings has already been initialized by: {}'.format(initialized_by))
@@ -16,6 +15,9 @@ def register_settings_coordinator(coordinator):
 
 
 def get_settings():
+    from veil import init_components
+
+    init_components()
     if not initialized_by:
         raise Exception('settings has not been initialized yet')
     return settings
