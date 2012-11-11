@@ -48,7 +48,12 @@ def migrate_all():
 def migrate(purpose):
     if not is_current_veil_server_hosting('{}_purpose'.format(purpose)):
         return
-    time.sleep(1)
+    for i in range(5):
+        try:
+            psql(purpose, '-c "SELECT 1"', capture=True)
+            break
+        except:
+            time.sleep(1)
     create_database_if_not_exists(purpose)
     versions = load_versions(purpose)
     db = lambda: require_database(purpose)
@@ -132,14 +137,18 @@ def load_versions(purpose):
 
 
 def execute_migration_script(purpose, migration_script):
+    psql(purpose, '-f {}'.format(migration_script))
+
+
+def psql(purpose, extra_arg, **kwargs):
     env = os.environ.copy()
     env['PGPASSWORD'] = get_option(purpose, 'owner_password')
-    shell_execute('psql -h {host} -p {port} -U {user} -f {migration_script} --set ON_ERROR_STOP=1 {database}'.format(
+    shell_execute('psql -h {host} -p {port} -U {user} {extra_arg} --set ON_ERROR_STOP=1 {database}'.format(
         host=get_option(purpose, 'host'),
         port=get_option(purpose, 'port'),
         user=get_option(purpose, 'user'),
         database=get_option(purpose, 'database'),
-        migration_script=migration_script), env=env)
+        extra_arg=extra_arg), env=env, **kwargs)
 
 
 @script('lock-migration-scripts')

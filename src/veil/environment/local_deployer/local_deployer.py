@@ -3,7 +3,6 @@ from veil.frontend.cli import *
 from veil.backend.shell import *
 from veil.environment.setting import *
 from veil.utility.hash import *
-import time
 import os
 
 
@@ -18,11 +17,6 @@ def deploy():
     shell_execute('veil ljmall backup deploy_backup')
     shell_execute('veil install')
     shell_execute('veil up --daemonize')
-    for i in range(3):
-        try:
-            shell_execute('veil migrate', capture=True)
-        except:
-            time.sleep(1)
     shell_execute('veil migrate', capture=True)
 
 @script('deploy-restore-check')
