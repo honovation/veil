@@ -12,7 +12,7 @@ def reset_fixtures():
     get_executing_test().addCleanup(fixtures.clear)
 
 
-def fixture(fixture_type, fixture_name=None):
+def fixture(fixture_type, fixture_name):
     return FixtureProviderDecorator(fixture_type, fixture_name)
 
 
