@@ -4,7 +4,7 @@ from .environment.setting import bootstrap_runtime
 
 initialized = False
 
-def init_components():
+def init_components(must_load_module_name=None):
     global initialized
     if initialized:
         return
@@ -39,7 +39,7 @@ def init_components():
         try:
             __import__(component_name)
         except:
-            if VEIL_SERVER in ['development', 'test']:
+            if must_load_module_name and must_load_module_name.startswith(component_name.replace('veil.', '')):
                 raise
             pass # try our best to import as many components as possible
     __import__('__veil__')

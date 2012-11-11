@@ -3,5 +3,5 @@ import sys
 from veil import init_components
 from veil.frontend.cli import execute_script
 
-init_components()
+init_components('.'.join(sys.argv[1:]).replace('veil.', ''))
 execute_script(*sys.argv[1:])
