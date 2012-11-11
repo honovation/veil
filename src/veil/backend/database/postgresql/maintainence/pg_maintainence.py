@@ -48,7 +48,7 @@ def migrate_all():
 def migrate(purpose):
     if not is_current_veil_server_hosting('{}_purpose'.format(purpose)):
         return
-    for i in range(5):
+    for i in range(20):
         try:
             psql(purpose, '-c "SELECT 1"', capture=True)
             break

@@ -73,13 +73,14 @@ def periodic_job_scheduler_program():
 
 def worker_program(queue_redis_host, queue_redis_port, queue_name, user=None):
     return {
-        'execute_command': 'veil sleep 3 pyres_worker --host={} --port={} -l debug -f stderr {}'.format(
+        'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -l debug -f stderr {}'.format(
             queue_redis_host, queue_redis_port, queue_name),
         'group': '{}_workers'.format(queue_name),
         'user': '{}'.format(user) if user else '',
         'installer_providers': ['veil.backend.queue'],
         'resources': [('queue_worker', dict(name=queue_name))],
-        'startretries': 10
+        'startretries': 10,
+        'startsecs': 10
     }
 
 
