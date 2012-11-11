@@ -1,3 +1,4 @@
 @veil.development.chrome_driver
 chrome_driver
 python_package?jinjatag
+python_package?selenium
