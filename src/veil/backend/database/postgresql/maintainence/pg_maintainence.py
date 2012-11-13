@@ -20,6 +20,7 @@ def drop_database(purpose):
     if VEIL_SERVER not in ['development', 'test']:
         raise Exception('not allow to drop database other than development or test')
     supervisorctl('restart', '{}_postgresql'.format(purpose))
+    wait_for_server_up(purpose)
     time.sleep(3) # wait for postgresql starting to accept incoming connection
     try:
         env = os.environ.copy()
@@ -179,7 +180,6 @@ def reset_all():
 
 @script('reset')
 def reset(purpose):
-    wait_for_server_up(purpose)
     shell_execute('veil backend database postgresql drop-database {}'.format(purpose))
     shell_execute('veil backend database postgresql migrate {}'.format(purpose))
 
