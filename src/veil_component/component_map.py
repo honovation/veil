@@ -4,15 +4,17 @@ from .dependency_collector import list_dependencies
 from .dependency_collector import OnceComponentWalker
 
 component_map = {}
+component_dependencies = {}
 component_walker = OnceComponentWalker()
 
 def scan_component(component_name):
     if component_name in component_map:
         return
-    components_dependencies = list_dependencies(component_name, component_walker.walk_component, recursive=True)
+    dependencies = list_dependencies(component_name, component_walker.walk_component, recursive=True)
+    component_dependencies.update(dependencies)
     component_names = set(component_walker.walked_component_names)
     component_map.update({k: filter_dependent_component_names(k, component_names, v)
-                          for k, v in components_dependencies.items()})
+                          for k, v in dependencies.items()})
 
 
 def get_dependent_component_names(component_name, includes_children=False):
@@ -25,6 +27,10 @@ def get_dependent_component_names(component_name, includes_children=False):
 
 def get_component_map():
     return dict(component_map)
+
+
+def get_component_dependencies():
+    return dict(component_dependencies)
 
 
 def get_transitive_dependencies(component_name):

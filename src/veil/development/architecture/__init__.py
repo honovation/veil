@@ -12,5 +12,7 @@ with veil_component.init_component(__name__):
     def init():
         from veil.development.self_checker import register_self_checker
         from .architecture_checker import check_architecture
+        from .encapsulation_checker import check_encapsulation
 
         register_self_checker('architecture', check_architecture)
+        register_self_checker('encapsulation', check_encapsulation)

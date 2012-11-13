@@ -70,4 +70,4 @@ if '__main__' == __name__:
     import pprint
 
     logging.basicConfig(level=logging.DEBUG)
-    pprint.pprint(list_dependencies(sys.argv[1], recursive=True))
+    pprint.pprint(list_dependencies(sys.argv[1], recursive=True)[sys.argv[1]])
