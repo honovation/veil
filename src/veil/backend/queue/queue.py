@@ -48,7 +48,7 @@ def release_queue():
 
 class RedisQueue(object):
     def __init__(self, resq):
-        self.opened_by = '\n'.join(traceback.format_stack())
+        self.opened_by = str('\n').join(traceback.format_stack())
         self.resq = resq
 
     def enqueue(self, job_handler, **payload):
