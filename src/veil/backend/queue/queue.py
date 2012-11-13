@@ -86,7 +86,7 @@ class RedisQueue(object):
 
 class ImmediateQueue(object):
     def __init__(self):
-        self.opened_by = '\n'.join(traceback.format_stack())
+        self.opened_by = str('\n').join(traceback.format_stack())
         self.stopped = False
         self.queued_jobs = []
 
