@@ -51,13 +51,7 @@ def migrate_all():
 def migrate(purpose):
     if not is_current_veil_server_hosting('{}_purpose'.format(purpose)):
         return
-    for i in range(20):
-        try:
-            psql(purpose, '-c "SELECT 1"', database='postgres', capture=True)
-            break
-        except:
-            print('[MIGRATE] wait for postgresql...')
-            time.sleep(3)
+    wait_for_server_up(purpose)
     create_database_if_not_exists(purpose)
     versions = load_versions(purpose)
     db = lambda: require_database(purpose)
@@ -94,6 +88,16 @@ def migrate(purpose):
         print('[MIGRATE] migrated postgresql server {} from {} to {}'.format(purpose, from_version, max_version))
 
     execute_migration_scripts()
+
+
+def wait_for_server_up(purpose):
+    for i in range(20):
+        try:
+            psql(purpose, '-c "SELECT 1"', database='postgres', capture=True)
+            break
+        except:
+            print('[MIGRATE] wait for postgresql...')
+            time.sleep(3)
 
 
 def create_database_if_not_exists(purpose):
@@ -175,6 +179,7 @@ def reset_all():
 
 @script('reset')
 def reset(purpose):
+    wait_for_server_up(purpose)
     shell_execute('veil backend database postgresql drop-database {}'.format(purpose))
     shell_execute('veil backend database postgresql migrate {}'.format(purpose))
 
