@@ -50,7 +50,8 @@ def migrate_all():
 
 @script('migrate')
 def migrate(purpose):
-    if not is_current_veil_server_hosting('{}_purpose'.format(purpose)):
+    if not is_current_veil_server_hosting('{}_postgresql'.format(purpose)):
+        print('[MIGRATE] skip {}, as not hosted by this server'.format(purpose))
         return
     wait_for_server_up(purpose)
     create_database_if_not_exists(purpose)
