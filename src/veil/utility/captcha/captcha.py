@@ -5,6 +5,7 @@ import functools
 import random
 import uuid
 import os
+import logging
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from veil.frontend.template import *
 from veil.frontend.web import *
@@ -14,12 +15,7 @@ from veil.environment.setting import *
 
 bucket = register_bucket('captcha_image')
 redis = register_redis('captcha_answer')
-
-_letter_cases = "abcdefghjkmnpqrstuvwxy" # 小写字母，去除可能干扰的i，l，o，z
-_upper_cases = _letter_cases.upper() # 大写字母
-_numbers = ''.join(map(str, range(3, 10))) # 数字
-init_chars = ''.join((_letter_cases, _numbers))
-
+LOGGER = logging.getLogger(__name__)
 
 def register_captcha(website):
     import_widget(captcha_widget)
@@ -38,9 +34,9 @@ def captcha_widget():
 
 def generate_captcha():
     challenge_code = str(uuid.uuid4()).replace('-', '')
-    image, answer = generate(size=(90, 26), font_size=20, length=4)
+    image, answer = generate(size=(150, 30), font_size=20)
     redis().set(challenge_code, answer)
-    redis().expire(challenge_code, 30) #expire 30 seconds
+    redis().expire(challenge_code, 60) #expire 30 seconds
     buffer = StringIO()
     image.save(buffer, 'GIF')
     buffer.reset()
@@ -63,21 +59,20 @@ def captcha_protected(func):
 
 def validate_captcha(challenge_code, captcha_answer):
     bucket().delete(challenge_code)
-    if redis().get(challenge_code) == captcha_answer:
+    real_answer = redis().get(challenge_code)
+    if real_answer == captcha_answer:
         return {}
     else:
         return {'captcha_answer': ['验证码错误']}
 
 
-def generate(size=(120, 30),
-             chars=init_chars,
+def generate(size=(180, 30),
              img_type="GIF",
              mode="RGB",
              bg_color=(255, 255, 255),
              fg_color=(0, 0, 255),
              font_size=100,
-             font_type="{}/FreeSerifBold.ttf".format(os.path.dirname(__file__)),
-             length=4,
+             font_type="{}/wqy-microhei.ttc".format(os.path.dirname(__file__)),
              draw_lines=True,
              n_line=(1, 2),
              draw_points=True,
@@ -105,9 +100,26 @@ def generate(size=(120, 30),
     img = Image.new(mode, size, bg_color) # 创建图形
     draw = ImageDraw.Draw(img) # 创建画笔
 
-    def get_chars():
-        '''生成给定长度的字符串，返回列表格式'''
-        return random.sample(chars, length)
+    numbers = range(1, 11)
+    operator = [u'加', u'减', u'乘']
+
+    def get_question():
+        first_number = random.choice(numbers)
+        selected_operator = random.choice(operator)
+        question = str(first_number) + selected_operator
+        if selected_operator == u'减':
+            second_number = 0
+            while True:
+                second_number = random.choice(numbers)
+                if second_number <= first_number:
+                    break
+            question += str(second_number)
+        else:
+            question += str(random.choice(numbers))
+        eval_question = question.replace(u'加', '+').replace(u'减', '-').replace(u'乘', '*')
+        answer = str(eval(eval_question))
+
+        return question + u'等于？', answer
 
     def create_lines():
         '''绘制干扰线'''
@@ -132,7 +144,7 @@ def generate(size=(120, 30),
 
     def create_strs():
         '''绘制验证码字符'''
-        c_chars = get_chars()
+        c_chars, answer = get_question()
         strs = ' %s ' % ' '.join(c_chars) # 每个字符前后以空格隔开
 
         font = ImageFont.truetype(font_type, font_size)
@@ -140,13 +152,13 @@ def generate(size=(120, 30),
         draw.text(((width - font_width) / 4, height / 4),
             strs, font=font, fill=fg_color)
 
-        return ''.join(c_chars)
+        return answer
 
     if draw_lines:
         create_lines()
     if draw_points:
         create_points()
-    strs = create_strs()
+    answer = create_strs()
 
     # 图形扭曲参数
     params = [1 - float(random.randint(1, 2)) / 100,
@@ -162,4 +174,4 @@ def generate(size=(120, 30),
 
     img = img.filter(ImageFilter.EDGE_ENHANCE_MORE) # 滤镜，边界加强（阈值更大）
 
-    return img, strs
+    return img, answer
