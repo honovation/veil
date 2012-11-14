@@ -3,6 +3,7 @@ from logging import getLogger
 from jinja2.loaders import FileSystemLoader
 from veil.frontend.template import *
 from veil.frontend.cli import *
+from veil.environment import *
 from veil.environment.setting import *
 from .tornado import *
 from .locale import *
@@ -21,8 +22,12 @@ def register_website_context_manager(website, context_manager):
 
 @script('up')
 def bring_up_website(website):
+    check_all_loading_components()
     start_website(website)
 
+def check_all_loading_components():
+    for component_name in get_application_components():
+        __import__(component_name)
 
 def start_test_website(website, **kwargs):
     http_handler = create_website_http_handler(website, **kwargs)
