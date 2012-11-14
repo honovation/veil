@@ -14,7 +14,7 @@ LOGGER = getLogger(__name__)
 
 get_queue_host = register_option('queue', 'host')
 get_queue_port = register_option('queue', 'port', int)
-get_queue_password = register_option('queue', 'password')
+get_queue_password = register_option('queue', 'password', default='')
 
 
 @script('periodic-job-scheduler-up')

@@ -34,6 +34,7 @@ def initialize_settings(*multiple_settings):
         settings = coordinator(settings)
         if not isinstance(settings, DictObject):
             raise Exception('{} should return DictObject'.format(coordinator))
+    settings = freeze_dict_object(settings)
     return settings
 
 

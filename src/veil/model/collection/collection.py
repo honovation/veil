@@ -64,6 +64,14 @@ def to_dict_object(o):
     else:
         return o
 
+def freeze_dict_object(o):
+    if isinstance(o, dict):
+        return FrozenDictObject({k: freeze_dict_object(v) for k, v in o.items()})
+    elif isinstance(o, (tuple, set, list)):
+        return [freeze_dict_object(e) for e in o]
+    else:
+        return o
+
 
 class DictObject(dict):
     def __init__(self, seq=None, **kwargs):
@@ -77,6 +85,14 @@ class DictObject(dict):
             return self[name]
         except KeyError:
             raise AttributeError('"{}" object has no attribute "{}"'.format(self.__class__.__name__, name))
+
+
+class FrozenDictObject(DictObject):
+    def __setattr__(self, key, value):
+        raise Exception('it is frozen')
+
+    def __setitem__(self, key, value):
+        raise Exception('it is frozen')
 
 
 class Entity(DictObject):

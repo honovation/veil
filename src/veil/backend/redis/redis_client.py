@@ -19,7 +19,7 @@ def register_redis_options(purpose):
     section = '{}_redis'.format(purpose) # for example cache_redis
     get_redis_host = register_option(section, 'host')
     get_redis_port = register_option(section, 'port', int)
-    get_redis_password = register_option(section, 'password')
+    get_redis_password = register_option(section, 'password', default='')
 
     def get_redis_options():
         return {

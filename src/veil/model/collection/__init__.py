@@ -12,6 +12,7 @@ with veil_component.init_component(__name__):
     from .collection import objectify
     from .collection import DictObject
     from .collection import Entity
+    from .collection import freeze_dict_object
 
     __all__ = [
         # from collection
@@ -25,5 +26,6 @@ with veil_component.init_component(__name__):
         first.__name__,
         objectify.__name__,
         DictObject.__name__,
-        Entity.__name__
+        Entity.__name__,
+        freeze_dict_object.__name__
     ]

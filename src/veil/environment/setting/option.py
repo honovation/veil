@@ -38,7 +38,7 @@ def init_options():
     global original_options
     if options is not None:
         return
-    options = dict(get_settings().get('veil', {}))
+    options = deep_copy_options(get_settings().get('veil', {}))
     for section, section_definitions in option_definitions.items():
         for name, definition in section_definitions.items():
             options.setdefault(section, {})
@@ -48,8 +48,17 @@ def init_options():
                 raise Exception('option {}.{}: {}\n\tdefined by: {}\n\tall options: {}'.format(
                     section, name, e.message, ''.join(definition.defined_by), options))
             options[section][name] = value
-    original_options = dict(options)
+    original_options = deep_copy_options(options)
 
+def deep_copy_options(options):
+    copied_options = {}
+    for section, section_config in options.items():
+        for key, value in section_config.items():
+            assert isinstance(section, basestring), '{} is not basestring'.format(section)
+            assert isinstance(key, basestring), '{} is not basestring'.format(key)
+            assert not isinstance(value, dict)
+            copied_options.setdefault(section, {})[key] = value
+    return copied_options
 
 def decide_option_value(raw_value, definition):
     if raw_value is None and definition.default is None:
