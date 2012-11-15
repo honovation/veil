@@ -83,7 +83,11 @@ def list_writable_tables():
     if writable_tables is not None:
         return writable_tables
     writable_tables = {}
-    check_architecture() # which calls "update_writable_tables"
+    try:
+        check_architecture() # which calls "update_writable_tables"
+    except:
+        writable_tables = None
+        raise
     return writable_tables
 
 

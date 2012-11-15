@@ -23,7 +23,7 @@ def check_component_architecture(component_names, architecture):
     if component_dependencies:
         check_component_dependencies(component_names, component_dependencies)
     component_dependencies = architecture.pop('', None)
-    if component_dependencies:
+    if component_dependencies is not None:
         check_component_dependencies(component_names, component_dependencies)
     for key, value in architecture.items():
         if key.startswith('.'):
