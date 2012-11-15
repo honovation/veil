@@ -18,27 +18,30 @@ def init():
     register_settings_coordinator(copy_redis_settings_to_veil)
 
 
-def redis_settings(purpose, **updates):
+def redis_settings(primary_purpose, *other_purposes, **updates):
     settings = objectify({
         'owner': CURRENT_USER,
         'owner_group': CURRENT_USER_GROUP,
-        'bind': get_veil_server_internal_ip_hosting('{}_redis'.format(purpose)),
+        'bind': get_veil_server_internal_ip_hosting('{}_redis'.format(primary_purpose)),
         'port': 6379,
         'password': '',
-        'dbdir': VEIL_VAR_DIR / '{}_redis'.format(purpose),
-        'configfile': VEIL_ETC_DIR / '{}_redis.conf'.format(purpose)
+        'dbdir': VEIL_VAR_DIR / '{}_redis'.format(primary_purpose),
+        'configfile': VEIL_ETC_DIR / '{}_redis.conf'.format(primary_purpose)
     })
     settings = merge_settings(settings, updates, overrides=True)
     if 'test' == VEIL_ENV:
         settings.port = int(settings.port) + 1
-    return objectify({
-        '{}_redis'.format(purpose): settings,
+    total_settings =  objectify({
+        '{}_redis'.format(primary_purpose): settings,
         'supervisor': {
             'programs': {
-                '{}_redis'.format(purpose): redis_server_program(purpose)
+                '{}_redis'.format(primary_purpose): redis_server_program(primary_purpose)
             }
         }
     })
+    for other_purpose in other_purposes:
+        total_settings['{}_redis'.format(other_purpose)] = settings
+    return total_settings
 
 
 def redis_server_program(purpose):

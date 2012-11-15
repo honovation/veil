@@ -12,9 +12,10 @@ def init():
 
 def queue_settings(
         domain='queue.dev.dmright.com', domain_port=80,
-        resweb_host=None, resweb_port=None, workers=None, **updates):
+        resweb_host=None, resweb_port=None, workers=None,
+        overridden_redis_settings=None, **updates):
     updates['port'] = updates.get('port', 6389)
-    settings = redis_settings('queue', **updates)
+    settings = overridden_redis_settings or redis_settings('queue', **updates)
     queue_redis_host = settings.queue_redis.bind
     queue_redis_port = settings.queue_redis.port
     settings = merge_settings(settings, {
