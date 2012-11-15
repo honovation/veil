@@ -11,7 +11,6 @@ from veil.frontend.template import *
 from veil.frontend.web import *
 from veil.backend.bucket import *
 from veil.backend.redis import *
-from veil.environment.setting import *
 
 bucket = register_bucket('captcha_image')
 redis = register_redis('captcha_answer')
@@ -21,8 +20,6 @@ def register_captcha(website):
     import_widget(captcha_widget)
     route('GET', '/captcha', website=website)(captcha_widget)
     return captcha_protected
-
-
 
 
 @widget
