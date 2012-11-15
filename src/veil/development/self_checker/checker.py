@@ -11,20 +11,15 @@ def register_self_checker(name, self_checker):
 
 
 @script('self-check')
-def self_check(checker_name=None):
-    if checker_name:
-        self_checkers[checker_name]()
-        return
+def self_check():
     shell_execute('git add .')
     shell_execute('veil pull')
     shell_execute('veil environment local-deployer reset')
-    for checker_name, self_checker in self_checkers.items():
-        print('[CHECK] checking {}...'.format(checker_name))
-        self_checker()
-    (VEIL_HOME / '.self-check-passed').write_text(discipline_coach.calculate_git_status_hash())
+    quick_check()
 
-@script('check')
-def self_check_without_veil_pull(checker_name=None):
+
+@script('quick-check')
+def quick_check(checker_name=None):
     if checker_name:
         self_checkers[checker_name]()
         return

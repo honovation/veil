@@ -19,9 +19,9 @@ LOGGER = logging.getLogger(__name__)
 def drop_database(purpose):
     if VEIL_SERVER not in ['development', 'test']:
         raise Exception('not allow to drop database other than development or test')
-    supervisorctl('restart', '{}_postgresql'.format(purpose))
-    wait_for_server_up(purpose)
-    time.sleep(3) # wait for postgresql starting to accept incoming connection
+    if 'development' == VEIL_SERVER:
+        supervisorctl('restart', '{}_postgresql'.format(purpose))
+        wait_for_server_up(purpose)
     try:
         env = os.environ.copy()
         env['PGPASSWORD'] = get_option(purpose, 'owner_password')

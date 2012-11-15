@@ -115,9 +115,9 @@ case "$1" in
         shift
         exec veil :test development self-checker self-check $@
         ;;
-    check)
+    quick-check)
         shift
-        exec veil :test development self-checker check $@
+        exec veil :test development self-checker quick-check $@
         ;;
     *)
         exec python -m veil $@
