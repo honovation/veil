@@ -16,7 +16,6 @@ def init_components(must_load_module_name=None):
         'veil.backend.database.db2',
         'veil.backend.queue',
         'veil.backend.redis',
-        'veil.backend.shell',
         'veil.development.architecture',
         'veil.development.git',
         'veil.development.loc',

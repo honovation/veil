@@ -6,7 +6,7 @@ import time
 import sys
 from veil.environment import *
 from veil.frontend.cli import *
-from veil.backend.shell import *
+from veil.utility.shell import *
 from .reloader import restart_all
 from .reloader import start_all
 

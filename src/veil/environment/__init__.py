@@ -79,7 +79,7 @@ def get_application_version():
         return 'development'
     if 'test' == VEIL_SERVER:
         return 'test'
-    from veil.backend.shell import shell_execute
+    from veil.utility.shell import shell_execute
 
     app_commit_hash = shell_execute('git rev-parse HEAD', cwd=VEIL_HOME, capture=True).strip()
     framework_commit_hash = shell_execute('git rev-parse HEAD', cwd=VEIL_FRAMEWORK_HOME, capture=True).strip()

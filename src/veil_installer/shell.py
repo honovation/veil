@@ -23,8 +23,6 @@ def shell_execute(command_line, capture=False, waits=True, **kwargs):
 
 
 class ShellExecutionError(Exception):
-    EXECUTABLE_BEFORE_COMPONENT_LOADED = 'true'
-
     def __init__(self, message, output=None):
         super(ShellExecutionError, self).__init__(message)
         self.output = output

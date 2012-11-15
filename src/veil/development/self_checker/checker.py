@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import discipline_coach
 from veil.frontend.cli import *
 from veil.environment import *
-from veil.backend.shell import *
+from veil.utility.shell import *
 
 self_checkers = {}
 

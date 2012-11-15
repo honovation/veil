@@ -3,7 +3,7 @@ from veil.frontend.cli import *
 from veil.frontend.template import *
 from veil.environment import *
 from veil.environment.setting import *
-from veil.backend.shell import *
+from veil.utility.shell import *
 from veil_installer import *
 
 

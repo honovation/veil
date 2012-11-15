@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment.setting import *
-from veil.backend.shell import *
+from veil.utility.shell import *
 
 def supervisorctl(action, *arguments, **kwargs):
     return shell_execute('veil execute supervisorctl -c {} {} {}'.format(

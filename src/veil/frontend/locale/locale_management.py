@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from argparse import ArgumentParser
 from veil.environment import VEIL_HOME
 from veil.frontend.cli import *
-from veil.backend.shell import *
+from veil.utility.shell import *
 from .i18n import LOCALE_DIR
 
 @script('extract')

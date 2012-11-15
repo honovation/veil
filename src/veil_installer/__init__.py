@@ -12,6 +12,8 @@ from .os_package_installer import os_package_resource
 from .os_package_installer import is_os_package_installed
 from .os_package_installer import install_os_package
 from .os_service_installer import os_service_resource
+from .shell import shell_execute
+from .shell import ShellExecutionError
 
 __import__('veil_installer.os_package_installer')
 __import__('veil_installer.filesystem_installer')

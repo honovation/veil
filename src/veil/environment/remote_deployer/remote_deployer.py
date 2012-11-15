@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from fabric.colors import green
 from veil.frontend.cli import *
 from veil.environment import *
-from veil.backend.shell import *
+from veil.utility.shell import *
 import os
 import datetime
 import fabric.api
