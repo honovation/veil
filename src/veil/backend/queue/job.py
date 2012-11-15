@@ -15,26 +15,6 @@ def register_job_context_manager(context_manager):
     context_managers.append(context_manager)
 
 
-def enqueue(resq, job_handler, **payload):
-    import pytz
-
-    assert getattr(job_handler, 'queue'), 'must decorate job handler {} with @job to enqueue'.format(job_handler)
-    for value in payload.values():
-        if isinstance(value, datetime):
-            assert pytz.utc == value.tzinfo, 'must provide datetime in pytz.utc timezone'
-    resq.enqueue(job_handler, payload)
-
-
-def enqueue_at(resq, job_handler, scheduled_at, **payload):
-    import pytz
-
-    assert getattr(job_handler, 'queue'), 'must decorate job handler {} with @job to enqueue'.format(job_handler)
-    for value in payload.values():
-        if isinstance(value, datetime):
-            assert pytz.utc == value.tzinfo, 'must provide datetime in pytz.utc timezone'
-    resq.enqueue_at(scheduled_at, job_handler, payload)
-
-
 def job(queue):
     if isfunction(queue):
         job_handler = queue

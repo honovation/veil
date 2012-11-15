@@ -8,8 +8,6 @@ from redis.client import Redis
 from pyres import ResQ
 from veil.utility.clock import get_current_time
 from veil.environment.setting import register_option
-from .job import enqueue
-from .job import enqueue_at
 
 LOGGER = getLogger(__name__)
 
@@ -51,17 +49,31 @@ class RedisQueue(object):
         self.opened_by = str('\n').join(traceback.format_stack())
         self.resq = resq
 
-    def enqueue(self, job_handler, **payload):
-        enqueue(self.resq, job_handler, **payload)
+    def enqueue(self, job_handler, to_queue=None, **payload):
+        assert getattr(job_handler, 'perform'), 'must decorate job handler {} with @job to enqueue'.format(job_handler)
+        for value in payload.values():
+            if isinstance(value, datetime):
+                assert pytz.utc == value.tzinfo, 'must provide datetime in pytz.utc timezone'
+        to_queue = to_queue or job_handler.queue
+        self.resq.enqueue_from_string(
+            '{}.{}'.format(job_handler.__module__, job_handler.__name__),
+            to_queue, payload)
 
-    def enqueue_at(self, job_handler, scheduled_at, **payload):
+    def enqueue_at(self, job_handler, scheduled_at, to_queue=None, **payload):
         """
         pyres expects that scheduled_at is a naive local time
         to_local_datetime is to convert a datetime to naive local date time, this is an okay workaround as all servers are in UTC in production
         ideally it is to change pyres to stick with UTC and convert aware datetime to UTC in pyres interfaces such as enqueu_at
         """
         assert scheduled_at.tzinfo == pytz.utc, 'must provide datetime in pytz.utc timezone'
-        enqueue_at(self.resq, job_handler, convert_datetime_to_naive_local(scheduled_at), **payload)
+        assert getattr(job_handler, 'perform'), 'must decorate job handler {} with @job to enqueue'.format(job_handler)
+        for value in payload.values():
+            if isinstance(value, datetime):
+                assert pytz.utc == value.tzinfo, 'must provide datetime in pytz.utc timezone'
+        to_queue = to_queue or job_handler.queue
+        self.resq.enqueue_at_from_string(
+            scheduled_at, '{}.{}'.format(job_handler.__module__, job_handler.__name__),
+            to_queue, payload)
 
     def enqueue_then(self, job_handler, action, **payload):
         """
@@ -90,13 +102,13 @@ class ImmediateQueue(object):
         self.stopped = False
         self.queued_jobs = []
 
-    def enqueue(self, job_handler, **payload):
+    def enqueue(self, job_handler, to_queue=None, **payload):
         if self.stopped:
             self.queued_jobs.append((job_handler, payload))
         else:
             job_handler.perform(payload)
 
-    def enqueue_at(self, job_handler, scheduled_at, **payload):
+    def enqueue_at(self, job_handler, scheduled_at, to_queue=None, **payload):
         self.enqueue(job_handler, **payload)
 
     def enqueue_then(self, job_handler, action, **payload):

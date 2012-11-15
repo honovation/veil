@@ -3,29 +3,20 @@ from logging import getLogger
 from math import ceil
 import time
 import signal
-import pyres
 from veil.frontend.cli import *
 from veil.utility.clock import get_current_timestamp
-from veil.environment.setting import *
 from ..periodic_job import schedules
-from ..job import enqueue
+from ..queue import require_queue
 
 LOGGER = getLogger(__name__)
 
-get_queue_host = register_option('queue', 'host')
-get_queue_port = register_option('queue', 'port', int)
-get_queue_password = register_option('queue', 'password', default='')
-
-
 @script('periodic-job-scheduler-up')
-def bring_up_periodic_job_scheduler(*argv):
-    PeriodicJobScheduler(
-        pyres.ResQ('{}:{}'.format(get_queue_host(), get_queue_port()), get_queue_password())).run()
+def bring_up_periodic_job_scheduler():
+    PeriodicJobScheduler().run()
 
 
 class PeriodicJobScheduler(object):
-    def __init__(self, resq):
-        self.resq = resq
+    def __init__(self):
         self.stopped = False
         self.last_handle_at = None
         self.next_handle_at = None
@@ -63,7 +54,7 @@ class PeriodicJobScheduler(object):
             if next <= now:
                 for job_handler in schedules[schedule]:
                     LOGGER.info('enqueue job {}'.format(job_handler))
-                    enqueue(self.resq, job_handler)
+                    require_queue().enqueue(job_handler)
                 next = schedule.get_next_timestamp(now)
             earliest_next = min(next, earliest_next)
         self.last_handle_at = now
