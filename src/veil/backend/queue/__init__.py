@@ -10,3 +10,8 @@ with veil_component.init_component(__name__):
         periodic_job.__name__,
         require_queue.__name__,
     ]
+
+    def init():
+        from veil.development.source_code_monitor import register_reloads_on_change_group
+
+        register_reloads_on_change_group('workers')

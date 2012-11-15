@@ -37,17 +37,20 @@ def queue_settings(
         }
     })
     workers = workers or None
-    for queue_name, workers_count in workers.items():
+    for queue_names, workers_count in workers.items():
+        run_as = None
         if isinstance(workers_count, (list, tuple)):
-            workers_user = workers_count[0]
+            run_as = workers_count[0]
             workers_count = workers_count[1]
-            for i in range(1, workers_count + 1):
-                settings.supervisor.programs['{}_worker{}'.format(queue_name, i)] = worker_program(
-                    queue_redis_host, queue_redis_port, queue_name, user=workers_user)
-        else:
-            for i in range(1, workers_count + 1):
-                settings.supervisor.programs['{}_worker{}'.format(queue_name, i)] = worker_program(
-                    queue_redis_host, queue_redis_port, queue_name)
+        if not isinstance(queue_names, tuple):
+            queue_names = [queue_names]
+        for i in range(1, workers_count + 1):
+            if 1 == len(queue_names):
+                worker_name = '{}_worker{}'.format(queue_names[0], i)
+            else:
+                worker_name = '{}_and_{}_more_worker{}'.format(queue_names[0], len(queue_names) - 1,  i)
+            settings.supervisor.programs[worker_name] = worker_program(
+                queue_redis_host, queue_redis_port, queue_names, run_as)
     if 'test' == VEIL_ENV:
         del settings['resweb']
         settings.supervisor.programs.clear()
@@ -72,14 +75,14 @@ def periodic_job_scheduler_program():
     }
 
 
-def worker_program(queue_redis_host, queue_redis_port, queue_name, user=None):
+def worker_program(queue_redis_host, queue_redis_port, queue_names, user=None):
     return {
         'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -l debug -f stderr {}'.format(
-            queue_redis_host, queue_redis_port, queue_name),
-        'group': '{}_workers'.format(queue_name),
+            queue_redis_host, queue_redis_port, ','.join(queue_names)),
+        'group': 'workers',
         'user': '{}'.format(user) if user else '',
         'installer_providers': ['veil.backend.queue'],
-        'resources': [('queue_worker', dict(name=queue_name))],
+        'resources': [('queue_worker', dict(queue_names=queue_names))],
         'startretries': 10,
         'startsecs': 10
     }

@@ -4,10 +4,7 @@ from inspect import isfunction
 import contextlib
 import pytz
 from logging import getLogger
-from pprint import pprint
 from veil.environment import *
-from veil.frontend.cli import *
-from veil.development.source_code_monitor import *
 
 LOGGER = getLogger(__name__)
 context_managers = []
@@ -53,7 +50,6 @@ class JobHandlerDecorator(object):
     def __call__(self, job_handler):
         job_handler.queue = self.queue or job_handler.__name__.replace('_job', '')
         job_handler.perform = lambda payload: perform(job_handler, payload)
-        register_reloads_on_change_group('{}_workers'.format(job_handler.queue))
         return job_handler
 
 
