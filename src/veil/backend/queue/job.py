@@ -2,19 +2,15 @@ from __future__ import unicode_literals, print_function, division
 from datetime import datetime
 from inspect import isfunction
 import contextlib
+import pytz
 from logging import getLogger
 from pprint import pprint
+from veil.environment import *
 from veil.frontend.cli import *
-from veil.development.source_code_monitor import register_reloads_on_change_group
+from veil.development.source_code_monitor import *
 
 LOGGER = getLogger(__name__)
 context_managers = []
-queues = {} # queue_name => job_handlers
-
-
-@script('list-queues')
-def list_queues():
-    pprint(queues)
 
 
 def register_job_context_manager(context_manager):
@@ -57,14 +53,12 @@ class JobHandlerDecorator(object):
     def __call__(self, job_handler):
         job_handler.queue = self.queue or job_handler.__name__.replace('_job', '')
         job_handler.perform = lambda payload: perform(job_handler, payload)
-        queues.setdefault(job_handler.queue, []).append(job_handler)
         register_reloads_on_change_group('{}_workers'.format(job_handler.queue))
         return job_handler
 
 
 def perform(job_handler, payload):
-    import pytz
-
+    load_all_job_components()
     with nest_context_managers(*context_managers):
         # restore datetime as utc timezone
         for key, value in payload.items():
@@ -73,8 +67,10 @@ def perform(job_handler, payload):
         return job_handler(**payload)
 
 
-def list_job_handlers(queue_name):
-    return queues.get(queue_name, [])
+def load_all_job_components():
+    # before we know the reverse dependencies, we have to ensure all application components loaded
+    for component_name in get_application_components():
+        __import__(component_name)
 
 
 def nest_context_managers(*context_managers):

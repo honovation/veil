@@ -22,10 +22,11 @@ def register_website_context_manager(website, context_manager):
 
 @script('up')
 def bring_up_website(website):
-    check_all_loading_components()
+    load_all_website_components()
     start_website(website)
 
-def check_all_loading_components():
+def load_all_website_components():
+    # before we know the reverse dependencies, we have to ensure all application components loaded
     for component_name in get_application_components():
         __import__(component_name)
 
