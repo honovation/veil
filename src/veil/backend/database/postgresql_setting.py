@@ -10,28 +10,31 @@ def init():
     register_settings_coordinator(copy_postgresql_settings_into_veil)
 
 
-def postgresql_settings(purpose, **updates):
-    publish_event(EVENT_NEW_POSTGRESQL, purpose=purpose)
+def postgresql_settings(primary_purpose, *other_purposes, **updates):
+    publish_event(EVENT_NEW_POSTGRESQL, purpose=primary_purpose)
     settings = objectify({
-        'host': get_veil_server_internal_ip_hosting('{}_postgresql'.format(purpose)),
+        'host': get_veil_server_internal_ip_hosting('{}_postgresql'.format(primary_purpose)),
         'port': 5432,
         'owner': CURRENT_USER,
-        'data_directory': VEIL_VAR_DIR / '{}_postgresql'.format(purpose),
-        'config_directory': VEIL_ETC_DIR / '{}_postgresql'.format(purpose),
+        'data_directory': VEIL_VAR_DIR / '{}_postgresql'.format(primary_purpose),
+        'config_directory': VEIL_ETC_DIR / '{}_postgresql'.format(primary_purpose),
         'unix_socket_directory': '/tmp',
-        'database': purpose
+        'database': primary_purpose
     })
     settings = merge_settings(settings, updates, overrides=True)
     if 'test' == VEIL_ENV:
         settings.port += 1
-    return objectify({
-        '{}_postgresql'.format(purpose): settings,
+    total_settings = objectify({
+        '{}_postgresql'.format(primary_purpose): settings,
         'supervisor': {
             'programs': {
-                '{}_postgresql'.format(purpose): postgresql_server_program(purpose)
+                '{}_postgresql'.format(primary_purpose): postgresql_server_program(primary_purpose)
             }
         }
     })
+    for other_purpose in other_purposes:
+        total_settings['{}_postgresql'.format(other_purpose)] = DictObject(settings, database=other_purpose)
+    return total_settings
 
 
 def copy_postgresql_settings_into_veil(settings):
