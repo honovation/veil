@@ -1,24 +1,31 @@
 <style type="text/css">
-    #captcha_answer{
+    #captcha {
+        margin: 10px 0 10px 0;
+    }
+
+    #captcha_answer {
         width: 77px;
         display: inline-block !important;
     }
-    img[name=captcha_image]{
+
+    img[name=captcha_image] {
         vertical-align: top;
+    }
+
+    #captcha a {
+        display: inline-block;
     }
 </style>
 <div id="captcha">
+    <input name="captcha_challenge_code" value="{{ challenge_code }}" type="hidden"/>
     <label for="captcha_answer">验证码</label>
-    <div>
-        <input name="captcha_answer" id="captcha_answer"/>
-        <input name="captcha_challenge_code" value="{{ challenge_code }}" type="hidden"/>
-        <a href="javascript:void(0)" title="看不清？换一个"><img name="captcha_image" src="{{ captcha_image_url }}" /></a>
-    </div>
+    <input name="captcha_answer" id="captcha_answer"/>
+    <a href="javascript:void(0)" title="看不清？换一个"><img name="captcha_image" src="{{ captcha_image_url }}"/></a>
 </div>
 <script type="text/javascript">
     $(document).ready(function () {
         $('#captcha a').live('click', function (e) {
-            $.get('/captcha',function(html){
+            $.get('/captcha', function (html) {
                 $('#captcha').html(html);
             });
         });
