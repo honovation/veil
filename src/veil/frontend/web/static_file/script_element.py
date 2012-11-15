@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import re
-from veil.frontend.encoding import *
+from veil.utility.encoding import *
 
 RE_SCRIPT = re.compile(r'<script([^>]*)>(.*?)</script>', re.DOTALL | re.IGNORECASE)
 RE_SRC_ATTRIBUTE = re.compile(r'src="(.*?)"', re.IGNORECASE)

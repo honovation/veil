@@ -8,7 +8,7 @@ from markupsafe import Markup
 import contextlib
 import veil_component
 from veil.development.test import *
-from veil.frontend.encoding import *
+from veil.utility.encoding import *
 from .template import register_template_utility
 from .template import require_current_template_directory_relative_to
 

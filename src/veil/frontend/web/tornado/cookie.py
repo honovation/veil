@@ -8,7 +8,7 @@ from logging import getLogger
 import re
 import time
 from veil.development.test import *
-from veil.frontend.encoding import *
+from veil.utility.encoding import *
 from veil.utility.hash import *
 from .context import get_current_http_request
 from .context import get_current_http_response

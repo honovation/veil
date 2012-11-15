@@ -4,8 +4,8 @@ import httplib
 import logging
 import re
 import traceback
-from veil.model.collection import DictObject
-from veil.frontend.encoding import to_unicode
+from veil.model.collection import *
+from veil.utility.encoding import *
 from .error import  HTTPError
 from .context import get_current_http_request
 

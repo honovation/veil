@@ -28,7 +28,6 @@ def init_components(must_load_module_name=None):
         'veil.environment.setting',
         'veil.environment.supervisor',
         'veil.frontend.cli',
-        'veil.frontend.encoding',
         'veil.frontend.locale',
         'veil.frontend.template',
         'veil.frontend.nginx',

@@ -3,7 +3,7 @@ from datetime import datetime, date, time
 import json
 import decimal
 from dateutil.parser import parse
-from veil.frontend.encoding import *
+from veil.utility.encoding import *
 
 
 SUPPORTED_TYPES = {datetime, date, time}

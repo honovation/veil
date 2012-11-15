@@ -8,7 +8,7 @@ from veil.development.test import *
 from veil.utility.path import as_path
 from veil.utility.hash import *
 from veil.frontend.template import *
-from veil.frontend.encoding import *
+from veil.utility.encoding import *
 from .script_element import process_script_elements
 from .link_element import process_link_elements
 from .style_element import process_style_elements

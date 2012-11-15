@@ -5,7 +5,7 @@ import logging
 import traceback
 from veil.environment import *
 from veil.frontend.cli import *
-from veil.frontend.encoding import *
+from veil.utility.encoding import *
 from veil.development.architecture import check_architecture
 
 RE_UPDATE = re.compile(r'UPDATE\s+(\w+)\s+', re.IGNORECASE)

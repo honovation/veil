@@ -11,7 +11,7 @@ import tornado
 from tornado.httpserver import HTTPServer
 from tornado.stack_context import StackContext
 from tornado.ioloop import IOLoop
-from veil.frontend.encoding import to_str
+from veil.utility.encoding import to_str
 from veil.development.test import *
 from .argument import normalize_arguments
 from .argument import tunnel_put_and_delete
