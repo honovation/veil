@@ -12,5 +12,8 @@ def db2_settings(purpose, host, port, database, schema, user, password):
                 'password': password,
                 'schema': schema
             }
+        },
+        'databases': {
+            purpose: 'veil.backend.database.db2'
         }
     }
