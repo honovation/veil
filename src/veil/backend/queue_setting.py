@@ -11,7 +11,7 @@ from veil_installer import *
 def init():
     register_settings_coordinator(copy_queue_settings_to_veil)
     register_settings_coordinator(add_resweb_reverse_proxy_server)
-    register_settings_coordinator(copy_queue_settings_to_worker_programs)
+    register_settings_coordinator(copy_queue_settings_to_job_worker_programs)
 
 
 def queue_settings(
@@ -134,11 +134,11 @@ def job_worker_settings(*queue_names, **kwargs):
         worker_name = queue_names[0]
     for i in range(1, workers_count + 1):
         program_name = '{}_worker{}'.format(worker_name, i)
-        settings.supervisor.programs[program_name] = worker_program(queue_names, run_as, dependencies)
+        settings.supervisor.programs[program_name] = job_worker_program(queue_names, run_as, dependencies)
     return settings
 
 
-def worker_program(queue_names, run_as, dependencies):
+def job_worker_program(queue_names, run_as, dependencies):
     resources = []
     for dependency in dependencies:
         resources.append(component_resource(dependency))
@@ -153,10 +153,11 @@ def worker_program(queue_names, run_as, dependencies):
         'user': run_as or '',
         'resources': resources,
         'startretries': 10,
-        'startsecs': 10
+        'startsecs': 10,
+        'reloads_on_change': True # used by source code monitor in development mode
     }
 
-def copy_queue_settings_to_worker_programs(settings):
+def copy_queue_settings_to_job_worker_programs(settings):
     if 'queue_redis' not in settings:
         return settings
     for program_name, program in settings.supervisor.programs.items():

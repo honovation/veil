@@ -4,24 +4,46 @@ import os
 import logging
 import time
 import sys
+import threading
+import functools
+from veil.environment.supervisor import *
+from veil.environment.setting import *
 from veil.environment import *
 from veil.frontend.cli import *
 from veil.utility.shell import *
-from .reloader import restart_all
-from .reloader import start_all
 
 LOGGER = logging.getLogger(__name__)
 modify_times = {}
 
 @script('up')
 def bring_up_source_code_monitor():
-    load_application_components()
+    load_reloads_on_change_programs_components()
     LOGGER.info('start monitoring source code changes...')
     shell_execute('find {} -type f -name "*.pyc" -delete'.format(VEIL_FRAMEWORK_HOME))
     shell_execute('find {} -type f -name "*.pyc" -delete'.format(VEIL_HOME))
     start_all()
     while True:
         reload_on_change()
+
+
+def load_reloads_on_change_programs_components():
+    component_names = set()
+    for program in list_reloads_on_change_programs().values():
+        for resource in program.get('resources', []):
+            installer_name, installer_args = resource
+            if 'component' == installer_name:
+                component_names.add(installer_args['name'])
+    for component_name in component_names:
+        LOGGER.info('monitoring component {}'.format(component_name))
+        __import__(component_name)
+
+
+def list_reloads_on_change_programs():
+    programs = {}
+    for program_name, program in get_settings().supervisor.programs.items():
+        if program.get('reloads_on_change'):
+            programs[program_name] = program
+    return programs
 
 
 def reload_on_change(exit_on_no_change=False):
@@ -63,3 +85,28 @@ def is_source_code_modified():
             continue
         if modify_times[path] != modified:
             return path
+
+
+def restart_all():
+    execute('restart')
+
+
+def start_all():
+    execute('start')
+
+
+def execute(action):
+    death_list = set()
+    for program_name, program in list_reloads_on_change_programs().items():
+        if program.get('group'):
+            death_list.add('{}:'.format(program.group))
+        else:
+            death_list.add(program_name)
+    threads = []
+    for death_target in death_list:
+        killer = functools.partial(supervisorctl, action, death_target)
+        thread = threading.Thread(target=killer)
+        thread.start()
+        threads.append(thread)
+    for thread in threads:
+        thread.join()

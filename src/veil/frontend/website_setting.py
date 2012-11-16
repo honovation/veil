@@ -53,7 +53,8 @@ def website_program(website, dependencies):
         resources.append(component_resource(dependency))
     program = {
         'execute_command': 'veil frontend web up {}'.format(website),
-        'resources': resources
+        'resources': resources,
+        'reloads_on_change': True # used by source code monitor in development mode
     }
     return program
 
