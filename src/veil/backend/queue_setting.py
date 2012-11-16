@@ -35,8 +35,7 @@ def queue_settings(
         'supervisor': {
             'programs': {
                 'resweb': resweb_program(),
-                'delayed_job_scheduler': delayed_job_scheduler_program(queue_redis_host, queue_redis_port),
-                'periodic_job_scheduler': periodic_job_scheduler_program()
+                'delayed_job_scheduler': delayed_job_scheduler_program(queue_redis_host, queue_redis_port)
             }
         }
     })
@@ -53,14 +52,6 @@ def delayed_job_scheduler_program(queue_redis_host, queue_redis_port):
         'installer_providers': [],
         'resources': [('python_package', dict(name='pyres'))],
         'startretries': 10
-    }
-
-
-def periodic_job_scheduler_program():
-    return {
-        'execute_command': 'veil backend queue periodic-job-scheduler-up',
-        'installer_providers': [],
-        'resources': [('component', dict(name='veil.backend.queue'))]
     }
 
 
@@ -139,7 +130,7 @@ def job_worker_settings(*queue_names, **kwargs):
 
 
 def job_worker_program(queue_names, run_as, dependencies):
-    resources = []
+    resources = [component_resource('veil.backend.queue')]
     for dependency in dependencies:
         resources.append(component_resource(dependency))
     return {
@@ -156,6 +147,7 @@ def job_worker_program(queue_names, run_as, dependencies):
         'startsecs': 10,
         'reloads_on_change': True # used by source code monitor in development mode
     }
+
 
 def copy_queue_settings_to_job_worker_programs(settings):
     if 'queue_redis' not in settings:
@@ -175,6 +167,29 @@ def copy_queue_settings_to_job_worker_programs(settings):
                 }
             })
     return settings
+
+
+def periodic_job_scheduler_settings(dependencies):
+    if 'test' == VEIL_SERVER:
+        return {}
+    return objectify({
+        'supervisor': {
+            'programs': {
+                'periodic_job_scheduler': periodic_job_scheduler_program(dependencies)
+            }
+        }
+    })
+
+
+def periodic_job_scheduler_program(dependencies):
+    resources = [component_resource('veil.backend.queue')]
+    for dependency in dependencies:
+        resources.append(component_resource(dependency))
+    return {
+        'execute_command': 'veil backend queue periodic-job-scheduler-up',
+        'installer_providers': [],
+        'resources': resources
+    }
 
 init()
 

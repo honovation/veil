@@ -48,7 +48,7 @@ def _website_settings(website, port, dependencies, **updates):
 
 
 def website_program(website, dependencies):
-    resources = []
+    resources = [component_resource('veil.frontend.web')]
     for dependency in dependencies:
         resources.append(component_resource(dependency))
     program = {

@@ -5,7 +5,7 @@ import time
 import signal
 from veil.frontend.cli import *
 from veil.utility.clock import *
-from veil.environment import *
+from veil.environment.setting import *
 from ..periodic_job import schedules
 from ..queue import require_queue
 
@@ -13,7 +13,12 @@ LOGGER = getLogger(__name__)
 
 @script('periodic-job-scheduler-up')
 def bring_up_periodic_job_scheduler():
-    load_application_components()
+    for resource in get_settings().supervisor.programs.periodic_job_scheduler.resources:
+        installer_name, installer_args = resource
+        if 'component' == installer_name:
+            component_name = installer_args['name']
+            LOGGER.info('load @periodic_job from {}'.format(component_name))
+            __import__(component_name)
     PeriodicJobScheduler().run()
 
 
