@@ -22,7 +22,7 @@ def install_supervisor():
             config=config,
             active_program_names=active_program_names,
             CURRENT_USER=CURRENT_USER,
-            format_command=format_command,
+            format_execute_command=format_execute_command,
             format_environment_variables=format_environment_variables
         )),
         directory_resource(config.logging.directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
@@ -30,9 +30,10 @@ def install_supervisor():
     return [], resources
 
 
-def format_command(program, args):
+def format_execute_command(program):
     try:
-        return get_template(template_source=program.execute_command).render(**args or {})
+        execute_command_args = program.get('execute_command_args', {})
+        return get_template(template_source=program.execute_command).render(**execute_command_args)
     except:
         LOGGER.error('Failed to format command for: {}'.format(program))
         raise

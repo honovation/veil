@@ -1,4 +1,3 @@
-from .environment import get_application_components
 from .environment import VEIL_SERVER
 
 def configure_logging(logger_name, logging_level):

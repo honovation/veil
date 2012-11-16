@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment import *
 from veil.environment.setting import *
+from veil.model.collection import *
 from veil.backend.redis_setting import redis_settings
 from veil.frontend.nginx_setting import nginx_server_settings
 from veil.development.source_code_monitor_setting import source_code_monitor_settings
@@ -9,6 +10,7 @@ from veil.development.self_checker_setting import self_checker_settings
 def init():
     register_settings_coordinator(copy_queue_settings_to_veil)
     register_settings_coordinator(add_resweb_reverse_proxy_server)
+    register_settings_coordinator(copy_queue_settings_to_worker_programs)
 
 
 def queue_settings(
@@ -37,22 +39,7 @@ def queue_settings(
             }
         }
     })
-    workers = workers or None
-    for queue_names, workers_count in workers.items():
-        run_as = None
-        if isinstance(workers_count, (list, tuple)):
-            run_as = workers_count[0]
-            workers_count = workers_count[1]
-        if not isinstance(queue_names, tuple):
-            queue_names = [queue_names]
-        for i in range(1, workers_count + 1):
-            if 1 == len(queue_names):
-                worker_name = '{}_worker{}'.format(queue_names[0], i)
-            else:
-                worker_name = '{}_and_{}_more_worker{}'.format(queue_names[0], len(queue_names) - 1,  i)
-            settings.supervisor.programs[worker_name] = worker_program(
-                queue_redis_host, queue_redis_port, queue_names, run_as)
-    if 'test' == VEIL_ENV:
+    if 'test' == VEIL_SERVER:
         del settings['resweb']
         settings.supervisor.programs.clear()
     return merge_multiple_settings(settings, source_code_monitor_settings(), self_checker_settings())
@@ -73,19 +60,6 @@ def periodic_job_scheduler_program():
         'execute_command': 'veil backend queue periodic-job-scheduler-up',
         'installer_providers': [],
         'resources': [('component', dict(name='veil.backend.queue'))]
-    }
-
-
-def worker_program(queue_redis_host, queue_redis_port, queue_names, user=None):
-    return {
-        'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -l debug -f stderr {}'.format(
-            queue_redis_host, queue_redis_port, ','.join(queue_names)),
-        'group': 'workers',
-        'user': '{}'.format(user) if user else '',
-        'installer_providers': ['veil.backend.queue'],
-        'resources': [('queue_worker', dict(queue_names=queue_names))],
-        'startretries': 10,
-        'startsecs': 10
     }
 
 
@@ -137,6 +111,65 @@ def add_resweb_reverse_proxy_server(settings):
             },
         }
     ))
+
+
+def job_worker_settings(*queue_names, **kwargs):
+    if 'test' == VEIL_SERVER:
+        return {}
+    settings = objectify({
+        'supervisor': {
+            'programs': {
+
+            }
+        }
+    })
+    run_as = kwargs.pop('run_as', None)
+    workers_count = kwargs.pop('workers_count', 1)
+    worker_name = kwargs.pop('worker_name', None)
+    if not worker_name:
+        if len(queue_names) > 1:
+            raise Exception('must give worker a name when working for more than one queue')
+        worker_name = queue_names[0]
+    for i in range(1, workers_count + 1):
+        program_name = '{}_worker{}'.format(worker_name, i)
+        settings.supervisor.programs[program_name] = worker_program(queue_names, run_as)
+    return settings
+
+
+def worker_program(queue_names, run_as=None):
+    return {
+        'execute_command': 'veil sleep 10 pyres_worker --host={{ host }} --port={{ port }} -l debug -f stderr %s'
+                           % ','.join(queue_names),
+        'execute_command_args': {
+            #'host': will be copied by coordinator
+            #'port': will be copied by coordinator
+        },
+        'group': 'workers',
+        'user': run_as or '',
+        'installer_providers': ['veil.backend.queue'],
+        'resources': [('queue_worker', dict(queue_names=queue_names))],
+        'startretries': 10,
+        'startsecs': 10
+    }
+
+def copy_queue_settings_to_worker_programs(settings):
+    if 'queue_redis' not in settings:
+        return settings
+    for program_name, program in settings.supervisor.programs.items():
+        if 'workers' == program.get('group'):
+            settings = merge_settings(settings, {
+                'supervisor': {
+                    'programs': {
+                        program_name: {
+                            'execute_command_args': {
+                                'host': settings.queue_redis.bind,
+                                'port': settings.queue_redis.port
+                            }
+                        }
+                    }
+                }
+            })
+    return settings
 
 init()
 
