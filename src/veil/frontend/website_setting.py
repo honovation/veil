@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+from veil_installer import *
 from veil.environment import *
 from veil.environment.setting import *
 from veil.frontend.nginx_setting import nginx_settings
@@ -13,15 +14,15 @@ def init():
     register_settings_coordinator(add_website_reverse_proxy_servers)
 
 
-def website_settings(website, port, **updates):
+def website_settings(website, port, dependencies, **updates):
     return merge_multiple_settings(
-        _website_settings(website, port, **updates),
-        _website_settings('test', 5090) if 'test' == VEIL_ENV else {},
+        _website_settings(website, port, dependencies, **updates),
+        _website_settings('test', 5090, []) if 'test' == VEIL_ENV else {},
         source_code_monitor_settings(),
         self_checker_settings())
 
 
-def _website_settings(website, port, **updates):
+def _website_settings(website, port, dependencies, **updates):
     port = int(port)
     if 'test' == VEIL_ENV:
         port += 1
@@ -40,20 +41,20 @@ def _website_settings(website, port, **updates):
         'veil': {'{}_website'.format(website): settings},
         'supervisor': {
             'programs': {
-                '{}_website'.format(website): website_program(website)
+                '{}_website'.format(website): website_program(website, dependencies)
             }
         } if 'test' != VEIL_ENV else {}
     })
 
 
-def website_program(website, **updates):
+def website_program(website, dependencies):
+    resources = []
+    for dependency in dependencies:
+        resources.append(component_resource(dependency))
     program = {
         'execute_command': 'veil frontend web up {}'.format(website),
-        'installer_providers': ['veil.frontend.web'],
-        'resources': [('website', dict(name=website))]
+        'resources': resources
     }
-    if updates:
-        program.update(updates)
     return program
 
 

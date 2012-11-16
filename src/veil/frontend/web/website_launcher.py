@@ -22,7 +22,11 @@ def register_website_context_manager(website, context_manager):
 
 @script('up')
 def bring_up_website(website):
-    load_application_components()
+    program_config = get_settings().supervisor.programs['{}_website'.format(website)]
+    for resource in program_config.resources:
+        installer_name, installer_args = resource
+        if 'component' == installer_name:
+            __import__(installer_args['name'])
     start_website(website)
 
 
