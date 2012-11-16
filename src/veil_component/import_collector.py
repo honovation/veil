@@ -1,9 +1,13 @@
 from __future__ import unicode_literals, print_function, division
 import ast
+import traceback
 
-
-def list_imports(source_code):
-    tree = ast.parse(source_code)
+def list_imports(source_code, filename=None):
+    try:
+        tree = ast.parse(source_code, filename)
+    except:
+        traceback.print_exc()
+        return [], []
     import_collector = ImportCollector()
     import_collector.visit(tree)
     return import_collector.absolute_imports, import_collector.relative_imports

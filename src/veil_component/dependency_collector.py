@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import logging
+import traceback
 from .component_walker import ComponentInternalVisitor
 from .component_walker import OnceComponentWalker
 from .component_walker import InvalidComponentException
@@ -29,11 +30,11 @@ class DependencyCollector(ComponentInternalVisitor):
         self.collect_others_dependencies(component_name)
 
     def visit_package_start(self, package_name, path, source_code):
-        absolute_imports, relative_imports = list_imports(source_code)
+        absolute_imports, relative_imports = list_imports(source_code, path)
         self.collect_own_dependencies(absolute_imports)
 
     def visit_module(self, module_name, path, source_code):
-        absolute_imports, relative_imports = list_imports(source_code)
+        absolute_imports, relative_imports = list_imports(source_code, path)
         self.collect_own_dependencies(absolute_imports)
 
     def collect_own_dependencies(self, more_dependencies):
@@ -53,10 +54,6 @@ class DependencyCollector(ComponentInternalVisitor):
             self.component_dependencies.update(dependency_collector.component_dependencies)
         except InvalidComponentException:
             pass
-        except:
-            LOGGER.error('failed to collect dependencies in {} from {}'.format(
-                self.component_name, component_name))
-            raise
 
     @property
     def component_dependencies(self):
