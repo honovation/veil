@@ -55,7 +55,23 @@ class BrowserPageContext(object):
             if 'modal dialog' in e.msg:
                 require_webdriver().switch_to_alert().accept()
             else:
+                assert_no_js_errors()
                 raise
+        except:
+            assert_no_js_errors()
+            raise
+
+def assert_no_js_errors():
+    js_errors = require_webdriver().execute_script(
+        """
+        if (window.veil && veil.doc) {
+            return veil.doc.jsErrors
+        } else {
+            return null;
+        }
+        """)
+    if js_errors:
+        raise Exception('java script errors: {}'.format(js_errors))
 
 
 def filter_non_serializable(arg):
