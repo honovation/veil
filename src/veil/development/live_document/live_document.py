@@ -14,7 +14,8 @@ def register_document_statement(statement_name, statement_executor):
 
 def execute_document_statement(statement_name, *args):
     if not get_executing_test(optional=True):
-        load_application_components()
+        for component_name in get_application_components():
+            __import__(component_name) # load document statements and fixtures
         set_up_fake_test()
         atexit.register(tear_down_fake_test)
     return contexts[-1](statement_name, args)

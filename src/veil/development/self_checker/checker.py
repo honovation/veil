@@ -16,7 +16,8 @@ def self_check():
 
 @script('quick-check')
 def quick_check(checker_name=None):
-    load_application_components()
+    for component_name in get_application_components():
+        __import__(component_name) # check if all components can be loaded
     if checker_name:
         get_self_checkers()[checker_name]()
         return
