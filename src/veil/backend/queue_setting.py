@@ -6,6 +6,7 @@ from veil.backend.redis_setting import redis_settings
 from veil.frontend.nginx_setting import nginx_server_settings
 from veil.development.source_code_monitor_setting import source_code_monitor_settings
 from veil.development.self_checker_setting import self_checker_settings
+from veil_installer import *
 
 def init():
     register_settings_coordinator(copy_queue_settings_to_veil)
@@ -126,17 +127,21 @@ def job_worker_settings(*queue_names, **kwargs):
     run_as = kwargs.pop('run_as', None)
     workers_count = kwargs.pop('workers_count', 1)
     worker_name = kwargs.pop('worker_name', None)
+    dependencies = kwargs.pop('dependencies', [])
     if not worker_name:
         if len(queue_names) > 1:
             raise Exception('must give worker a name when working for more than one queue')
         worker_name = queue_names[0]
     for i in range(1, workers_count + 1):
         program_name = '{}_worker{}'.format(worker_name, i)
-        settings.supervisor.programs[program_name] = worker_program(queue_names, run_as)
+        settings.supervisor.programs[program_name] = worker_program(queue_names, run_as, dependencies)
     return settings
 
 
-def worker_program(queue_names, run_as=None):
+def worker_program(queue_names, run_as, dependencies):
+    resources = []
+    for dependency in dependencies:
+        resources.append(component_resource(dependency))
     return {
         'execute_command': 'veil sleep 10 pyres_worker --host={{ host }} --port={{ port }} -l debug -f stderr %s'
                            % ','.join(queue_names),
@@ -146,8 +151,7 @@ def worker_program(queue_names, run_as=None):
         },
         'group': 'workers',
         'user': run_as or '',
-        'installer_providers': ['veil.backend.queue'],
-        'resources': [('queue_worker', dict(queue_names=queue_names))],
+        'resources': resources,
         'startretries': 10,
         'startsecs': 10
     }

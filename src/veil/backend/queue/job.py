@@ -34,7 +34,6 @@ class JobHandlerDecorator(object):
 
 
 def perform(job_handler, payload):
-    load_application_components()
     with nest_context_managers(*context_managers):
         # restore datetime as utc timezone
         for key, value in payload.items():
