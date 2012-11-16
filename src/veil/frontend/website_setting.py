@@ -7,6 +7,7 @@ from veil.frontend.nginx_setting import nginx_server_static_file_location_settin
 from veil.model.collection import *
 from veil.utility.path import *
 from veil.development.source_code_monitor_setting import source_code_monitor_settings
+from veil.development.self_checker_setting import self_checker_settings
 
 def init():
     register_settings_coordinator(add_website_reverse_proxy_servers)
@@ -16,7 +17,8 @@ def website_settings(website, port, **updates):
     return merge_multiple_settings(
         _website_settings(website, port, **updates),
         _website_settings('test', 5090) if 'test' == VEIL_ENV else {},
-        source_code_monitor_settings())
+        source_code_monitor_settings(),
+        self_checker_settings())
 
 
 def _website_settings(website, port, **updates):

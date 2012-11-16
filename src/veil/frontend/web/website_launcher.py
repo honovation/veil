@@ -22,13 +22,9 @@ def register_website_context_manager(website, context_manager):
 
 @script('up')
 def bring_up_website(website):
-    load_all_website_components()
+    load_application_components()
     start_website(website)
 
-def load_all_website_components():
-    # before we know the reverse dependencies, we have to ensure all application components loaded
-    for component_name in get_application_components():
-        __import__(component_name)
 
 def start_test_website(website, **kwargs):
     http_handler = create_website_http_handler(website, **kwargs)

@@ -4,7 +4,8 @@ from math import ceil
 import time
 import signal
 from veil.frontend.cli import *
-from veil.utility.clock import get_current_timestamp
+from veil.utility.clock import *
+from veil.environment import *
 from ..periodic_job import schedules
 from ..queue import require_queue
 
@@ -12,6 +13,7 @@ LOGGER = getLogger(__name__)
 
 @script('periodic-job-scheduler-up')
 def bring_up_periodic_job_scheduler():
+    load_application_components()
     PeriodicJobScheduler().run()
 
 

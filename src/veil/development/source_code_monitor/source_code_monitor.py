@@ -15,8 +15,7 @@ modify_times = {}
 
 @script('up')
 def bring_up_source_code_monitor():
-    for component_name in get_application_components():
-        __import__(component_name)
+    load_application_components()
     LOGGER.info('start monitoring source code changes...')
     shell_execute('find {} -type f -name "*.pyc" -delete'.format(VEIL_FRAMEWORK_HOME))
     shell_execute('find {} -type f -name "*.pyc" -delete'.format(VEIL_HOME))

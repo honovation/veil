@@ -74,6 +74,11 @@ def get_application_components():
     return get_application_architecture().keys()
 
 
+def load_application_components():
+    for component_name in get_application_components():
+        __import__(component_name)
+
+
 def get_application_version():
     if 'development' == VEIL_SERVER:
         return 'development'

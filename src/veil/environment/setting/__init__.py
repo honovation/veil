@@ -9,8 +9,6 @@ with veil_component.init_component(__name__):
     from .setting import load_config_from
     from .option import register_option
     from .option import update_options
-    from .bootstrapper import bootstrap_runtime
-    from .bootstrapper import logging_settings
 
     __all__ = [
         # from setting
@@ -22,8 +20,5 @@ with veil_component.init_component(__name__):
         load_config_from.__name__,
         # from option
         register_option.__name__,
-        update_options.__name__,
-        # from bootstrapper
-        bootstrap_runtime.__name__,
-        logging_settings.__name__
+        update_options.__name__
     ]

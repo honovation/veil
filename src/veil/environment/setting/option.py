@@ -82,6 +82,7 @@ def reset_options():
 
 
 def update_options(updates):
+    init_options()
     import importlib
     test_component = importlib.import_module('veil.development.test')
 

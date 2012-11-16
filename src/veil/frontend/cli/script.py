@@ -5,7 +5,7 @@ import sys
 import inspect
 import traceback
 import veil_component
-from veil.environment.setting import *
+from veil.environment import *
 
 script_handlers = {}
 LOGGER = logging.getLogger(__name__)
@@ -21,7 +21,11 @@ def is_script_defined(*argv):
 
 
 def execute_script(*argv, **kwargs):
-    level = kwargs.get('level', script_handlers)
+    if 'level' in kwargs:
+        level = kwargs.get('level')
+    else:
+        import_script_handlers(argv)
+        level = script_handlers
     arg = argv[0] if argv else None
     if arg not in level:
         print('{} is unknown, choose from: {}'.format(arg, level.keys()))
@@ -44,6 +48,56 @@ def execute_script(*argv, **kwargs):
         print(traceback.format_exc())
         print(value.message)
         sys.exit(1)
+
+def import_script_handlers(argv):
+    if argv:
+        possible_module_names = []
+        for i in range(len(argv)):
+            if i:
+                module_name = '.'.join(argv[:-i])
+            else:
+                module_name = '.'.join(argv)
+            module_name = module_name.replace('-', '_')
+            possible_module_names.append(module_name)
+            possible_module_names.append('veil.{}'.format(module_name))
+        for module_name in possible_module_names:
+            try:
+                __import__(module_name)
+            except:
+                if veil_component.find_module_loader_without_import(module_name):
+                    raise
+                else:
+                    pass
+    if not script_handlers:
+        component_names = [
+            'veil.backend.bucket',
+            'veil.backend.database.client',
+            'veil.backend.database.postgresql',
+            'veil.backend.database.db2',
+            'veil.backend.queue',
+            'veil.backend.redis',
+            'veil.development.architecture',
+            'veil.development.git',
+            'veil.development.loc',
+            'veil.development.pycharm',
+            'veil.development.test',
+            'veil.development.source_code_monitor',
+            'veil.environment.local_deployer',
+            'veil.environment.remote_deployer',
+            'veil.environment.setting',
+            'veil.environment.supervisor',
+            'veil.frontend.cli',
+            'veil.frontend.locale',
+            'veil.frontend.template',
+            'veil.frontend.nginx',
+            'veil.frontend.web'
+        ]
+        component_names.extend(get_application_components())
+        for component_name in component_names:
+            try:
+                __import__(component_name)
+            except:
+                pass
 
 def get_executing_script_handler():
     if executing_script_handlers:

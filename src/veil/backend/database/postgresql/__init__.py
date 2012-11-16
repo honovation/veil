@@ -1,16 +1,16 @@
 import veil_component
 
 with veil_component.init_component(__name__):
+    from .maintainence.pg_maintainence import check_if_locked_migration_scripts_being_changed
+
+    __all__ = [
+        check_if_locked_migration_scripts_being_changed.__name__
+    ]
+
     def init():
         from veil.backend.database.client import register_adapter_class
-        from veil.development.self_checker import register_self_checker
-        from veil.environment.local_deployer import register_migration_command
-        from veil.environment.local_deployer import register_reset_command
         from .adapter import PostgresqlAdapter
         from .maintainence.pg_maintainence import check_if_locked_migration_scripts_being_changed
         from .server.pg_server_installer import install_postgresql_server
 
-        register_migration_command('veil backend database postgresql migrate-all')
-        register_reset_command('veil backend database postgresql reset-all')
         register_adapter_class('postgresql', PostgresqlAdapter)
-        register_self_checker('migration-scripts', check_if_locked_migration_scripts_being_changed)

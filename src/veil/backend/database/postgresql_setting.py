@@ -30,10 +30,37 @@ def postgresql_settings(primary_purpose, *other_purposes, **updates):
             'programs': {
                 '{}_postgresql'.format(primary_purpose): postgresql_server_program(primary_purpose)
             }
+        },
+        'self_checkers': {
+            'migration-scripts': 'veil.backend.database.postgresql.check_if_locked_migration_scripts_being_changed'
+        },
+        'migration_commands': {
+            '{}_postgresql'.format(primary_purpose):
+                'veil backend database postgresql migrate {}'.format(primary_purpose)
+        },
+        'reset_commands': {
+            '{}_postgresql'.format(primary_purpose):
+                'veil backend database postgresql reset {}'.format(primary_purpose)
+        },
+        'databases': {
+            primary_purpose: 'veil.backend.database.postgresql'
         }
     })
     for other_purpose in other_purposes:
-        total_settings['{}_postgresql'.format(other_purpose)] = DictObject(settings, database=other_purpose)
+        total_settings = merge_settings(total_settings, {
+            '{}_postgresql'.format(other_purpose): DictObject(settings, database=other_purpose),
+            'migration_commands': {
+                '{}_postgresql'.format(other_purpose):
+                    'veil backend database postgresql migrate {}'.format(other_purpose)
+            },
+            'reset_commands': {
+                '{}_postgresql'.format(other_purpose):
+                    'veil backend database postgresql reset {}'.format(other_purpose)
+            },
+            'databases': {
+                other_purpose: 'veil.backend.database.postgresql'
+            }
+        })
     return total_settings
 
 

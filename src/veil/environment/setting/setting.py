@@ -15,9 +15,7 @@ def register_settings_coordinator(coordinator):
 
 
 def get_settings():
-    from veil import init_components
-
-    init_components()
+    __import__('__veil__')
     if not initialized_by:
         raise Exception('settings has not been initialized yet')
     return settings

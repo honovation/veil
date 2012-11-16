@@ -1,22 +1,13 @@
 from __future__ import unicode_literals, print_function, division
 from veil.environment import *
+from veil.environment.setting import *
 from veil.frontend.cli import *
 from veil.utility.shell import *
 
-migration_commands = set()
-reset_commands = set()
-
-def register_migration_command(migration_command):
-    migration_commands.add(migration_command)
-
-
-def register_reset_command(reset_command):
-    reset_commands.add(reset_command)
-
-
 @script('migrate')
 def migrate():
-    for command in migration_commands:
+    for target, command in get_migration_commands().items():
+        print('migrating {}...'.format(target))
         shell_execute(command)
 
 
@@ -24,5 +15,14 @@ def migrate():
 def reset():
     if VEIL_SERVER not in ['development', 'test']:
         raise Exception('{} environment must not reset'.format(VEIL_SERVER))
-    for command in reset_commands:
+    for target, command in get_reset_commands().items():
+        print('resetting {}...'.format(target))
         shell_execute(command)
+
+
+def get_migration_commands():
+    return get_settings().migration_commands
+
+
+def get_reset_commands():
+    return get_settings().reset_commands

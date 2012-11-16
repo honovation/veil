@@ -4,6 +4,7 @@ from veil.environment.setting import *
 from veil.backend.redis_setting import redis_settings
 from veil.frontend.nginx_setting import nginx_server_settings
 from veil.development.source_code_monitor_setting import source_code_monitor_settings
+from veil.development.self_checker_setting import self_checker_settings
 
 def init():
     register_settings_coordinator(copy_queue_settings_to_veil)
@@ -54,7 +55,7 @@ def queue_settings(
     if 'test' == VEIL_ENV:
         del settings['resweb']
         settings.supervisor.programs.clear()
-    return merge_settings(settings, source_code_monitor_settings())
+    return merge_multiple_settings(settings, source_code_monitor_settings(), self_checker_settings())
 
 
 def delayed_job_scheduler_program(queue_redis_host, queue_redis_port):

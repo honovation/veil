@@ -34,19 +34,13 @@ class JobHandlerDecorator(object):
 
 
 def perform(job_handler, payload):
-    load_all_job_components()
+    load_application_components()
     with nest_context_managers(*context_managers):
         # restore datetime as utc timezone
         for key, value in payload.items():
             if isinstance(value, datetime):
                 payload[key] = value.replace(tzinfo=pytz.utc)
         return job_handler(**payload)
-
-
-def load_all_job_components():
-    # before we know the reverse dependencies, we have to ensure all application components loaded
-    for component_name in get_application_components():
-        __import__(component_name)
 
 
 def nest_context_managers(*context_managers):
