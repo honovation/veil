@@ -40,7 +40,9 @@ def execute_script(*argv, **kwargs):
     except SystemExit:
         raise
     except:
+        type, value, tb = sys.exc_info()
         print(traceback.format_exc())
+        print(value.message)
         sys.exit(1)
 
 def get_executing_script_handler():

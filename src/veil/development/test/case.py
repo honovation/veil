@@ -38,7 +38,6 @@ def tear_down_fake_test():
     if executing_test:
         executing_test.doCleanups()
 
-
 class TestCase(unittest.case.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()

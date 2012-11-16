@@ -11,6 +11,7 @@ from veil.frontend.template import *
 from veil.frontend.web import *
 from veil.backend.bucket import *
 from veil.backend.redis import *
+from veil.environment import *
 
 bucket = register_bucket('captcha_image')
 redis = register_redis('captcha_answer')
@@ -57,6 +58,8 @@ def captcha_protected(func):
 def validate_captcha(challenge_code, captcha_answer):
     bucket().delete(challenge_code)
     real_answer = redis().get(challenge_code)
+    if 'test' == VEIL_SERVER:
+        return {}
     if real_answer == captcha_answer:
         return {}
     else:

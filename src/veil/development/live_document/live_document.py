@@ -2,7 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
 import atexit
-from veil import init_components
+from veil.environment import get_application_components
 from veil.development.test import *
 
 root_context = {}
@@ -14,7 +14,8 @@ def register_document_statement(statement_name, statement_executor):
 
 def execute_document_statement(statement_name, *args):
     if not get_executing_test(optional=True):
-        init_components()
+        for component_name in get_application_components():
+            __import__(component_name)
         set_up_fake_test()
         atexit.register(tear_down_fake_test)
     return contexts[-1](statement_name, args)

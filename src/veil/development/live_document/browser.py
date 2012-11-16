@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import contextlib
 import threading
@@ -7,26 +8,42 @@ import selenium.webdriver
 import selenium.common.exceptions
 import jinjatag
 import atexit
+import tornado.ioloop
 from veil.environment import *
 from veil.frontend.web import *
 from veil.development.test import *
 from .live_document import require_current_context_being
+from .live_document import document_statement
 
 website_threads = {}
 webdriver = None
 
-@contextlib.contextmanager
 def open_browser_page(website, path, page_name):
     require_website_running(website)
     webdriver = require_webdriver()
     webdriver.get(get_url(website, path))
-    current_page = webdriver.execute_script('return veil.doc.currentPage;')
-    if page_name != current_page['pageName']:
-        raise Exception('we are on the wrong page, expected: {}, actual: {}'.format(
-            page_name, current_page['pageName']))
+    return assert_current_page(page_name)
+
+@document_statement('确认所在页面')
+@contextlib.contextmanager
+def assert_current_page(page_name):
+    current_page_name = webdriver.execute_script(
+        """
+        if (window.veil && veil.doc && veil.doc.currentPage) {
+            return veil.doc.currentPage.pageName;
+        } else {
+            return null;
+        }
+        """)
+    if page_name != current_page_name:
+        message = 'we are on the wrong page, expected: {}, actual: {}, url: {}'.format(
+            page_name, current_page_name, webdriver.current_url)
+        print(message)
+        import time
+        time.sleep(60)
+        raise Exception(message)
     with require_current_context_being(BrowserPageContext()):
         yield
-
 
 class BrowserPageContext(object):
     def __call__(self, statement_name, args):
@@ -70,8 +87,11 @@ def require_webdriver():
 
 
 def require_website_running(website):
+    get_executing_test().addCleanup(website_threads.clear)
     if website in website_threads:
         return
+    if website_threads:
+        raise Exception('do not support running two websites at the same time')
     start_test_website(website)
     website_threads[website] = threading.Thread(target=lambda: execute_io_loop(60))
     website_threads[website].daemon = True
@@ -80,7 +100,7 @@ def require_website_running(website):
 
 def execute_io_loop(timeout):
     try:
-        require_io_loop_executor().execute(timeout=timeout)
+        tornado.ioloop.IOLoop.instance().start()
     except:
         traceback.print_exc()
         raise

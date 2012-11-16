@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import sys
 from logging import getLogger
+from veil.utility.encoding import *
 
 LOGGER = getLogger(__name__)
 subscribers = {}
@@ -12,10 +13,8 @@ def publish_event(topic, **kwargs):
         try:
             subscriber(**kwargs)
         except:
-            exc_class, exc, tb = sys.exc_info()
-            new_exc = Exception(str('failed to publish event {} to subscriber {}.{}:\n {} {}').format(
-                topic, subscriber.__module__, subscriber, exc_class.__name__, exc))
-            raise new_exc.__class__, new_exc, tb
+            LOGGER.error('failed to publish event {} to subscriber {}'.format(topic, subscriber))
+            raise
 
 
 def subscribe_event(topic, subscriber):

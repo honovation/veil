@@ -73,3 +73,6 @@ class IOLoopExecutor(object):
             self.io_loop.stop()
             self.running = False
 
+    def start(self):
+        self.io_loop.start()
+
