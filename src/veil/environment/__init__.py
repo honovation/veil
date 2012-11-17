@@ -57,10 +57,6 @@ def get_application_codebase():
     return get_application().CODEBASE
 
 
-def get_application_live_document():
-    return get_application().LIVE_DOCUMENT
-
-
 def get_application_name():
     codebase = get_application_codebase()
     return codebase[codebase.find('/') + 1:].replace('.git', '')
