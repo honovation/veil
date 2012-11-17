@@ -14,10 +14,6 @@ REDIS_BASE_SETTINGS = {
     }
 }
 
-def init():
-    register_settings_coordinator(copy_redis_settings_to_veil)
-
-
 def redis_settings(primary_purpose, *other_purposes, **updates):
     settings = objectify({
         'owner': CURRENT_USER,
@@ -59,21 +55,3 @@ def redis_server_program(purpose):
         'installer_providers': ['veil.backend.redis'],
         'resources': [('redis', dict(name=purpose))]
     }
-
-
-def copy_redis_settings_to_veil(settings):
-    new_settings = settings
-    for key, value in settings.items():
-        if key.endswith('_redis'):
-            new_settings = merge_settings(new_settings, {
-                'veil': {
-                    key: {
-                        'host': value.bind,
-                        'port': value.port,
-                        'password': value.password
-                    }
-                }
-            }, overrides=True)
-    return new_settings
-
-init()

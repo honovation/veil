@@ -3,17 +3,15 @@ import veil_component
 from veil.environment.setting import *
 from suds.client import Client
 from suds.client import WebFault
+from veil.backend.web_service_setting import get_web_service_options
 
 WebFault = WebFault
 
-registry = {} # purpose => get_web+service_options
 instances = {} # purpose => instance
 dependencies = {}
 
 def register_web_service(purpose):
     dependencies.setdefault(veil_component.get_loading_component_name(), set()).add(purpose)
-    if purpose not in registry:
-        registry[purpose] = register_web_service_options(purpose)
     return lambda: require_web_service(purpose)
 
 
@@ -31,24 +29,10 @@ def check_web_service_dependencies(component_names, expected_dependencies):
         raise Exception('{} did not reference web service {}'.format(component_name_prefix, unreal_dependencies))
 
 
-def register_web_service_options(purpose):
-    section = '{}_web_service'.format(purpose) # for example contact_index_database
-    get_url = register_option(section, 'url')
-
-    def get_web_service_options():
-        return {
-            'url': get_url()
-        }
-
-    return get_web_service_options
-
-
 def require_web_service(purpose):
-    if purpose not in registry:
-        raise Exception('web service for purpose {} is not registered'.format(purpose))
+    web_service_options = get_web_service_options(purpose)
     if purpose not in instances:
-        web_service_options = registry[purpose]()
-        suds_client = Client(web_service_options['url'])
+        suds_client = Client(web_service_options.url)
         instances[purpose] = WebService(suds_client)
     return instances[purpose]
 
