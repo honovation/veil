@@ -28,24 +28,20 @@ def postgresql_settings(primary_purpose, *other_purposes, **updates):
         },
         'self_checker': {
             'migration-scripts': 'veil.backend.database.postgresql.check_if_locked_migration_scripts_being_changed'
-        },
-        'databases': {
-            primary_purpose: 'veil.backend.database.postgresql'
         }
     })
     total_settings = merge_settings(total_settings, database_client_settings(
-        type='postgresql', purpose=primary_purpose, host=settings.host, port=settings.port,
-        database=settings.database, schema=None, user=settings.user, password=settings.password
+        type='postgresql', driver='veil.backend.database.postgresql', purpose=primary_purpose,
+        host=settings.host, port=settings.port, database=settings.database, schema=None,
+        user=settings.user, password=settings.password
     ))
     for other_purpose in other_purposes:
         total_settings = merge_multiple_settings(total_settings, {
             '{}_postgresql'.format(other_purpose): DictObject(settings, database=other_purpose),
-            'databases': {
-                other_purpose: 'veil.backend.database.postgresql'
-            }
         }, database_client_settings(
-            type='postgresql', purpose=other_purpose, host=settings.host, port=settings.port,
-            database=other_purpose, schema=None, user=settings.user, password=settings.password
+            type='postgresql', driver='veil.backend.database.postgresql', purpose=other_purpose,
+            host=settings.host, port=settings.port, database=other_purpose, schema=None,
+            user=settings.user, password=settings.password
         ))
     return total_settings
 
