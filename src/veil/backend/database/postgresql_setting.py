@@ -29,10 +29,6 @@ def postgresql_settings(primary_purpose, *other_purposes, **updates):
         'self_checker': {
             'migration-scripts': 'veil.backend.database.postgresql.check_if_locked_migration_scripts_being_changed'
         },
-        'migration_commands': {
-            '{}_postgresql'.format(primary_purpose):
-                'veil backend database postgresql migrate {}'.format(primary_purpose)
-        },
         'databases': {
             primary_purpose: 'veil.backend.database.postgresql'
         }
@@ -44,10 +40,6 @@ def postgresql_settings(primary_purpose, *other_purposes, **updates):
     for other_purpose in other_purposes:
         total_settings = merge_multiple_settings(total_settings, {
             '{}_postgresql'.format(other_purpose): DictObject(settings, database=other_purpose),
-            'migration_commands': {
-                '{}_postgresql'.format(other_purpose):
-                    'veil backend database postgresql migrate {}'.format(other_purpose)
-            },
             'databases': {
                 other_purpose: 'veil.backend.database.postgresql'
             }
@@ -61,6 +53,7 @@ def postgresql_settings(primary_purpose, *other_purposes, **updates):
 def postgresql_server_program(purpose, updates=None):
     program = {
         'execute_command': 'veil backend database postgresql server-up {}'.format(purpose),
+        'migrate_command': 'veil backend database postgresql migrate {}'.format(purpose),
         'installer_providers': ['veil.backend.database.postgresql'],
         'resources': [('postgresql', dict(name=purpose))]
     }

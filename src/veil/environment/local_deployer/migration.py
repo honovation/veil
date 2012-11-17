@@ -5,10 +5,14 @@ from veil.utility.shell import *
 
 @script('migrate')
 def migrate():
-    for target, command in get_migration_commands().items():
-        print('migrating {}...'.format(target))
+    for program_name, command in get_migration_commands().items():
+        print('migrating {}...'.format(program_name))
         shell_execute(command)
 
 
 def get_migration_commands():
-    return get_settings().migration_commands
+    migrate_commands = {}
+    for program_name, program in get_settings().supervisor.programs.items():
+        if program.get('migrate_command'):
+            migrate_commands[program_name] = program.migrate_command
+    return migrate_commands
