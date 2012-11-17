@@ -14,20 +14,20 @@ def init():
     register_settings_coordinator(add_website_reverse_proxy_servers)
 
 
-def website_settings(website, port, dependencies, **updates):
+def website_settings(purpose, port, dependencies, **updates):
     return merge_multiple_settings(
-        _website_settings(website, port, dependencies, **updates),
+        _website_settings(purpose, port, dependencies, **updates),
         _website_settings('test', 5090, []) if 'test' == VEIL_ENV else {},
         source_code_monitor_settings(),
         self_checker_settings())
 
 
-def _website_settings(website, port, dependencies, **updates):
+def _website_settings(purpose, port, dependencies, **updates):
     port = int(port)
     if 'test' == VEIL_ENV:
         port += 1
     settings = objectify({
-        'domain': '{}.dev.dmright.com'.format(website),
+        'domain': '{}.dev.dmright.com'.format(purpose),
         'domain_port': 80,
         'inline_static_files_directory': VEIL_VAR_DIR / 'inline-static-files',
         'external_static_files_directory': VEIL_HOME / 'static',
@@ -40,12 +40,30 @@ def _website_settings(website, port, dependencies, **updates):
             'domain_port': int(settings.domain_port) + 1
         }, overrides=True)
     return objectify({
-        'veil': {'{}_website'.format(website): settings},
+        '{}_website'.format(purpose): settings,
         'supervisor': {
             'programs': {
-                '{}_website'.format(website): website_program(website, dependencies)
+                '{}_website'.format(purpose): website_program(purpose, dependencies)
             }
         } if 'test' != VEIL_ENV else {}
+    })
+
+
+def get_website_options(purpose):
+    config = get_settings()['{}_website'.format(purpose)]
+    return objectify({
+        'recalculates_static_file_hash': config.get('recalculates_static_file_hash', True),
+        'clears_template_cache': config.get('clears_template_cache', True),
+        'prevents_xsrf': config.get('prevents_xsrf', True),
+        'master_template_directory': config.get('master_template_directory', ''),
+        'secure_cookie_salt': config.get('secure_cookie_salt', ''),
+        'host': config.host,
+        'port': config.port,
+        'processes_count': config.get('processes_count', 1),
+        'inline_static_files_directory': config.inline_static_files_directory,
+        'external_static_files_directory': config.external_static_files_directory,
+        'domain': config.domain,
+        'domain_port': config.domain_port
     })
 
 
@@ -63,7 +81,7 @@ def website_program(website, dependencies):
 
 def add_website_reverse_proxy_servers(settings):
     new_settings = settings
-    for key, value in settings.veil.items():
+    for key, value in settings.items():
         if key.endswith('_website'):
             website = key.replace('_website', '')
             reverse_proxy_server_settings = nginx_reverse_proxy_server_settings(settings, website)
@@ -124,10 +142,7 @@ def get_website_nginx_server_name(settings, website):
 
 
 def get_website_config(settings, website):
-    veil_config = getattr(settings, 'veil', None)
-    if not veil_config:
-        raise Exception('veil is not defined in settings')
-    website_config = getattr(settings.veil, '{}_website'.format(website), None)
+    website_config = getattr(settings, '{}_website'.format(website), None)
     if not website_config:
         raise Exception('website {} is not defined in settings'.format(website))
     return website_config

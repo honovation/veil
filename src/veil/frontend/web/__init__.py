@@ -4,7 +4,6 @@ with veil_component.init_component(__name__):
     from .website_launcher import start_website
     from .website_launcher import start_test_website
     from .website_launcher import register_website_context_manager
-    from .website_launcher import get_website_option
     from .client import start_website_and_client
     from .routing import route
     from .routing import route_for
@@ -55,7 +54,6 @@ with veil_component.init_component(__name__):
         start_website.__name__,
         start_test_website.__name__,
         register_website_context_manager.__name__,
-        get_website_option.__name__,
         # from client
         start_website_and_client.__name__,
         # from routing
@@ -104,13 +102,3 @@ with veil_component.init_component(__name__):
         # from xsrf
         xsrf_token.__name__
     ]
-
-    def init():
-        from veil.environment import VEIL_SERVER
-        from veil.model.event import subscribe_event
-        from .website_launcher import register_website_options
-        from .routing import EVENT_NEW_WEBSITE
-
-        subscribe_event(EVENT_NEW_WEBSITE, register_website_options)
-        if 'test' == VEIL_SERVER:
-            publish_new_website_event('test') # used when we need to test web framework from outside

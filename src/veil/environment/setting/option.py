@@ -30,7 +30,10 @@ def get_option(section, name):
     definition = option_definitions.get(section, {}).get(name)
     if not definition:
         raise Exception('option {}.{} has not been registered'.format(section, name))
-    return options[section][name]
+    if name in options[section]: # HACK
+        return options[section][name]
+    else:
+        return None
 
 
 def init_options():

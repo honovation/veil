@@ -57,10 +57,7 @@ def get_reverse_proxy_url(settings, website):
 
 
 def get_website_config(settings, website):
-    veil_config = getattr(settings, 'veil', None)
-    if not veil_config:
-        raise Exception('veil is not defined in settings')
-    website_config = getattr(settings.veil, '{}_website'.format(website), None)
+    website_config = getattr(settings, '{}_website'.format(website), None)
     if not website_config:
         raise Exception('website {} is not defined in settings'.format(website))
     return website_config
