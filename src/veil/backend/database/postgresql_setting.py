@@ -26,7 +26,7 @@ def postgresql_settings(primary_purpose, *other_purposes, **updates):
                 '{}_postgresql'.format(primary_purpose): postgresql_server_program(primary_purpose)
             }
         },
-        'self_checkers': {
+        'self_checker': {
             'migration-scripts': 'veil.backend.database.postgresql.check_if_locked_migration_scripts_being_changed'
         },
         'migration_commands': {

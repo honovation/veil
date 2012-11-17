@@ -27,7 +27,7 @@ def quick_check(checker_name=None):
     (VEIL_HOME / '.self-check-passed').write_text(discipline_coach.calculate_git_status_hash())
 
 def get_self_checkers():
-    return {k: import_self_checker(v) for k, v in get_settings()['self_checkers'].items()}
+    return {k: import_self_checker(v) for k, v in get_settings().self_checker.items()}
 
 def import_self_checker(module_and_function_name):
     parts = module_and_function_name.split('.')
