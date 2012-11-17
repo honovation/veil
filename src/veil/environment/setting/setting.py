@@ -45,7 +45,7 @@ def merge_multiple_settings(*multiple_settings):
 
 def merge_settings(base, updates, overrides=False):
     if base is None:
-        return updates
+        return freeze_dict_object(updates)
     if isinstance(base, dict) and isinstance(updates, dict):
         updated = DictObject()
         for k, v in base.items():
@@ -56,15 +56,15 @@ def merge_settings(base, updates, overrides=False):
         for k, v in updates.items():
             if k not in updated:
                 updated[k] = v
-        return updated
+        return freeze_dict_object(updated)
     if base == updates:
-        return base
+        return freeze_dict_object(base)
     if updates is not None:
         if overrides:
             return updates
         else:
             raise Exception('can not merge {} with {}'.format(base, updates))
-    return base
+    return freeze_dict_object(base)
 
 
 def load_config_from(path, *expected_keys):

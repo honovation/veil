@@ -31,8 +31,14 @@ def add_bucket_reverse_proxy_static_file_locations(settings):
                 settings, get_website_nginx_server_name(new_settings, website),
                 '/{}/'.format(bucket.replace('_', '-')), value.base_directory)
             new_settings = merge_settings(new_settings, static_file_location_settings)
-            new_settings.veil[key]['base_url'] = 'http://{}/{}'.format(
-                get_reverse_proxy_url(new_settings, website), bucket.replace('_', '-'))
+            new_settings = merge_settings(new_settings, {
+                'veil': {
+                    key: {
+                        'base_url': 'http://{}/{}'.format(
+                            get_reverse_proxy_url(new_settings, website), bucket.replace('_', '-'))
+                    }
+                }
+            })
     return new_settings
 
 
