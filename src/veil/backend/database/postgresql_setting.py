@@ -33,10 +33,6 @@ def postgresql_settings(primary_purpose, *other_purposes, **updates):
             '{}_postgresql'.format(primary_purpose):
                 'veil backend database postgresql migrate {}'.format(primary_purpose)
         },
-        'reset_commands': {
-            '{}_postgresql'.format(primary_purpose):
-                'veil backend database postgresql reset {}'.format(primary_purpose)
-        },
         'databases': {
             primary_purpose: 'veil.backend.database.postgresql'
         }
@@ -51,10 +47,6 @@ def postgresql_settings(primary_purpose, *other_purposes, **updates):
             'migration_commands': {
                 '{}_postgresql'.format(other_purpose):
                     'veil backend database postgresql migrate {}'.format(other_purpose)
-            },
-            'reset_commands': {
-                '{}_postgresql'.format(other_purpose):
-                    'veil backend database postgresql reset {}'.format(other_purpose)
             },
             'databases': {
                 other_purpose: 'veil.backend.database.postgresql'
