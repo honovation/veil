@@ -11,19 +11,17 @@ def init():
 
 def bucket_settings(bucket, website):
     return objectify({
-        'veil': {
-            '{}_bucket'.format(bucket): {
-                'type': 'filesystem',
-                'base_directory': VEIL_VAR_DIR / bucket.replace('_', '-'),
-                'website': website
-            }
+        '{}_bucket'.format(bucket): {
+            'type': 'filesystem',
+            'base_directory': VEIL_VAR_DIR / bucket.replace('_', '-'),
+            'website': website
         }
     })
 
 
 def add_bucket_reverse_proxy_static_file_locations(settings):
     new_settings = settings
-    for key, value in settings.veil.items():
+    for key, value in settings.items():
         if key.endswith('_bucket'):
             bucket = key.replace('_bucket', '')
             website = value.website
@@ -32,11 +30,9 @@ def add_bucket_reverse_proxy_static_file_locations(settings):
                 '/{}/'.format(bucket.replace('_', '-')), value.base_directory)
             new_settings = merge_settings(new_settings, static_file_location_settings)
             new_settings = merge_settings(new_settings, {
-                'veil': {
-                    key: {
-                        'base_url': 'http://{}/{}'.format(
-                            get_reverse_proxy_url(new_settings, website), bucket.replace('_', '-'))
-                    }
+                key: {
+                    'base_url': 'http://{}/{}'.format(
+                        get_reverse_proxy_url(new_settings, website), bucket.replace('_', '-'))
                 }
             })
     return new_settings

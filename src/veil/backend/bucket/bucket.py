@@ -2,45 +2,32 @@ from __future__ import unicode_literals, print_function, division
 import logging
 from veil.utility.hash import *
 from veil.utility.path import *
+from veil.model.collection import *
 from veil.environment.setting import *
 
 LOGGER = logging.getLogger(__name__)
-registry = {} # purpose => get_bucket_options
 instances = {} # purpose => instance
 
-def register_bucket(purpose, optional=False):
-    if purpose not in registry:
-        registry[purpose] = register_bucket_options(purpose, optional)
+def register_bucket(purpose):
     return lambda: require_bucket(purpose)
 
 
-def register_bucket_options(purpose, optional):
-    get_type = register_option(
-        '{}_bucket'.format(purpose), 'type', default='' if optional else None)
-    get_base_directory = register_option(
-        '{}_bucket'.format(purpose), 'base_directory', default='' if optional else None)
-    get_base_url = register_option(
-        '{}_bucket'.format(purpose), 'base_url', default='' if optional else None)
-
-    def get_bucket_options():
-        return {
-            'type': get_type(),
-            'base_directory': get_base_directory(),
-            'base_url': get_base_url()
-        }
-
-    return get_bucket_options
+def get_bucket_options(purpose):
+    config = get_settings()['{}_bucket'.format(purpose)]
+    return objectify({
+        'type': config.type,
+        'base_directory': config.base_directory,
+        'base_url': config.base_url
+    })
 
 
 def require_bucket(purpose):
-    if purpose not in registry:
-        raise Exception('bucket for purpose {} is not registered'.format(purpose))
     if purpose not in instances:
-        bucket_options = registry[purpose]()
-        bucket_type = bucket_options['type']
+        bucket_options = get_bucket_options(purpose)
+        bucket_type = bucket_options.type
         if 'filesystem' == bucket_type:
             instances[purpose] = FilesystemBucket(
-                bucket_options['base_directory'], bucket_options['base_url'])
+                bucket_options.base_directory, bucket_options.base_url)
         else:
             raise NotImplementedError('unknown bucket type: {}'.format(bucket_type))
     return instances[purpose]

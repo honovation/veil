@@ -6,7 +6,7 @@ from veil.utility.path import as_path
 from veil.environment.setting import *
 from .bucket import register_bucket
 
-bucket = register_bucket('test', optional=True)
+bucket = register_bucket('test')
 
 class FilesystemBucketTest(TestCase):
     def setUp(self):
