@@ -2,23 +2,13 @@ from __future__ import unicode_literals, print_function, division
 import logging
 from veil.utility.hash import *
 from veil.utility.path import *
-from veil.model.collection import *
-from veil.environment.setting import *
+from veil.backend.bucket_setting import get_bucket_options
 
 LOGGER = logging.getLogger(__name__)
 instances = {} # purpose => instance
 
 def register_bucket(purpose):
     return lambda: require_bucket(purpose)
-
-
-def get_bucket_options(purpose):
-    config = get_settings()['{}_bucket'.format(purpose)]
-    return objectify({
-        'type': config.type,
-        'base_directory': config.base_directory,
-        'base_url': config.base_url
-    })
 
 
 def require_bucket(purpose):

@@ -6,36 +6,26 @@ from logging import getLogger
 from datetime import timedelta, datetime
 from redis.client import Redis
 from pyres import ResQ
-from veil.utility.clock import get_current_time
-from veil.environment.setting import register_option
+from veil.utility.clock import *
+from veil.backend.queue_setting import get_queue_options
 
 LOGGER = getLogger(__name__)
-
-get_type = register_option('queue', 'type')
-get_host = register_option('queue', 'host', default='')
-get_port = register_option('queue', 'port', int, default=0)
-get_password = register_option('queue', 'password', default='')
 
 _current_queue = None
 
 def require_queue():
     global _current_queue
-    queue_type = get_type()
+    queue_options = get_queue_options()
     if _current_queue is None:
-        if 'redis' == queue_type:
-            redis = Redis(host=get_host(), port=get_port(), password=get_password())
+        if 'redis' == queue_options.type:
+            redis = Redis(host=queue_options.host, port=queue_options.port, password=queue_options.password)
             resq = ResQ(server=redis)
             _current_queue = RedisQueue(resq)
-        elif 'immediate' == queue_type:
+        elif 'immediate' == queue_options.type:
             _current_queue = ImmediateQueue()
         else:
-            raise Exception('unknown queue type: {}'.format(queue_type))
+            raise Exception('unknown queue type: {}'.format(queue_options.type))
     return _current_queue
-
-
-def assert_no_queue():
-    if _current_queue is not None:
-        raise Exception('{} has not been released'.format(_current_queue))
 
 
 def release_queue():

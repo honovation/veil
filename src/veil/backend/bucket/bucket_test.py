@@ -4,6 +4,7 @@ import tempfile
 from veil.development.test import TestCase
 from veil.utility.path import as_path
 from veil.environment.setting import *
+from veil.backend.bucket_setting import bucket_settings
 from .bucket import register_bucket
 
 bucket = register_bucket('test')
@@ -12,12 +13,7 @@ class FilesystemBucketTest(TestCase):
     def setUp(self):
         super(FilesystemBucketTest, self).setUp()
         self.temp_dir = as_path(tempfile.gettempdir())
-        update_options({
-            'test_bucket': {
-                'type': 'filesystem',
-                'base_directory': self.temp_dir
-            }
-        })
+        override_test_settings(bucket_settings('test', website=None, base_directory=self.temp_dir))
 
     def test_happy_path(self):
         bucket().store('a/b/c', StringIO('d'))

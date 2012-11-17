@@ -1,9 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 import sys
 import traceback
+import importlib
 from veil.model.collection import *
+from veil.environment import *
 
 initialized_by = None
+overridden_test_settings = None
 settings = None
 coordinators = []
 
@@ -18,7 +21,10 @@ def get_settings():
     __import__('__veil__')
     if not initialized_by:
         raise Exception('settings has not been initialized yet')
-    return settings
+    if 'test' == VEIL_SERVER:
+        return merge_settings(settings, overridden_test_settings or {}, overrides=True)
+    else:
+        return settings
 
 
 def initialize_settings(*multiple_settings):
@@ -80,3 +86,15 @@ def load_config_from(path, *expected_keys):
     'config file {} does not provide exact keys we want, expected: {}, actual: {}'.format(
         path, expected_keys, config.keys())
     return config
+
+
+def override_test_settings(settings):
+    assert 'test' == VEIL_SERVER, 'can only override settings in test mode'
+    global overridden_test_settings
+
+    def reset_overridden_test_settings():
+        overridden_test_settings = None
+
+    test_component = importlib.import_module('veil.development.test')
+    test_component.get_executing_test().addCleanup(reset_overridden_test_settings)
+    overridden_test_settings = merge_settings(overridden_test_settings or {}, settings, overrides=True)

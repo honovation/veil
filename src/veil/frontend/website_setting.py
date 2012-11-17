@@ -36,7 +36,9 @@ def _website_settings(website, port, dependencies, **updates):
     })
     settings = merge_settings(settings, updates, overrides=True)
     if 'test' == VEIL_ENV:
-        settings.domain_port = int(settings.domain_port) + 1
+        settings = merge_settings(settings, {
+            'domain_port': int(settings.domain_port) + 1
+        }, overrides=True)
     return objectify({
         'veil': {'{}_website'.format(website): settings},
         'supervisor': {

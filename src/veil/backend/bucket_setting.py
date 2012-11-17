@@ -9,13 +9,23 @@ def init():
     register_settings_coordinator(add_bucket_reverse_proxy_static_file_locations)
 
 
-def bucket_settings(bucket, website):
+def bucket_settings(bucket, website, base_directory=None, base_url=None):
     return objectify({
         '{}_bucket'.format(bucket): {
             'type': 'filesystem',
-            'base_directory': VEIL_VAR_DIR / bucket.replace('_', '-'),
-            'website': website
+            'base_directory': base_directory or VEIL_VAR_DIR / bucket.replace('_', '-'),
+            'website': website,
+            'base_url': base_url
         }
+    })
+
+
+def get_bucket_options(purpose):
+    config = get_settings()['{}_bucket'.format(purpose)]
+    return objectify({
+        'type': config.type,
+        'base_directory': config.base_directory,
+        'base_url': config.base_url
     })
 
 

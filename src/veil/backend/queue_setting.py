@@ -9,7 +9,6 @@ from veil.development.self_checker_setting import self_checker_settings
 from veil_installer import *
 
 def init():
-    register_settings_coordinator(copy_queue_settings_to_veil)
     register_settings_coordinator(add_resweb_reverse_proxy_server)
     register_settings_coordinator(copy_queue_settings_to_job_worker_programs)
 
@@ -18,10 +17,21 @@ def queue_settings(
         domain='queue.dev.dmright.com', domain_port=80,
         resweb_host=None, resweb_port=None, workers=None,
         overridden_redis_settings=None, **updates):
+    if 'test' == VEIL_SERVER:
+        return objectify({
+            'queue': {
+                'type': 'immediate'
+            }
+        })
     updates['port'] = updates.get('port', 6389)
     settings = overridden_redis_settings or redis_settings('queue', **updates)
     queue_redis_host = settings.queue_redis.bind
     queue_redis_port = settings.queue_redis.port
+    settings = merge_settings(settings, {
+        'queue': {
+            'type': 'redis'
+        }
+    })
     settings = merge_settings(settings, {
         'resweb': {
             'config_file': VEIL_ETC_DIR / 'resweb.cfg',
@@ -44,6 +54,20 @@ def queue_settings(
         settings.supervisor.programs.clear()
     return merge_multiple_settings(settings, source_code_monitor_settings(), self_checker_settings())
 
+def get_queue_options():
+    queue_type = get_settings().queue.type
+    if 'redis' == queue_type:
+        config = get_settings().queue_redis
+        return objectify({
+            'type': 'redis',
+            'host': config.bind,
+            'port': config.port,
+            'password': config.password
+        })
+    elif 'immediate' == queue_type:
+        return objectify({'type': 'immediate'})
+    else:
+        raise Exception('unknown queue type: {}'.format(queue_type))
 
 def delayed_job_scheduler_program(queue_redis_host, queue_redis_port):
     return  {
@@ -62,26 +86,6 @@ def resweb_program():
         'installer_providers': ['veil.backend.queue'],
         'resources': [('resweb', {})]
     }
-
-
-def copy_queue_settings_to_veil(settings):
-    if 'queue_redis' not in settings:
-        return settings
-    return merge_settings(settings, {
-        'veil': {
-            'queue': {
-                'type': 'redis',
-                'host': settings.queue_redis.bind,
-                'port': settings.queue_redis.port,
-                'password': settings.queue_redis.password
-            } if 'test' != VEIL_ENV else {
-                'type': 'immediate',
-                'host': 'dummy',
-                'port': 0,
-                'password': 'dummy'
-            }
-        }
-    }, overrides=True)
 
 
 def add_resweb_reverse_proxy_server(settings):

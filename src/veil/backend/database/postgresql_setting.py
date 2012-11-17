@@ -23,7 +23,9 @@ def postgresql_settings(primary_purpose, *other_purposes, **updates):
     })
     settings = merge_settings(settings, updates, overrides=True)
     if 'test' == VEIL_ENV:
-        settings.port += 1
+        settings = merge_settings(settings, {
+            'port': int(settings.port) + 1
+        }, overrides=True)
     total_settings = objectify({
         '{}_postgresql'.format(primary_purpose): settings,
         'supervisor': {
