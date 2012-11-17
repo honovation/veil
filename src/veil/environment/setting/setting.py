@@ -2,8 +2,10 @@ from __future__ import unicode_literals, print_function, division
 import sys
 import traceback
 import importlib
+import pprint
 from veil.model.collection import *
 from veil.environment import *
+from veil.frontend.cli import *
 
 initialized_by = None
 overridden_test_settings = None
@@ -92,9 +94,16 @@ def override_test_settings(settings):
     assert 'test' == VEIL_SERVER, 'can only override settings in test mode'
     global overridden_test_settings
 
-    def reset_overridden_test_settings():
-        overridden_test_settings = None
-
     test_component = importlib.import_module('veil.development.test')
     test_component.get_executing_test().addCleanup(reset_overridden_test_settings)
     overridden_test_settings = merge_settings(overridden_test_settings or {}, settings, overrides=True)
+
+
+def reset_overridden_test_settings():
+    global overridden_test_settings
+    overridden_test_settings = None
+
+
+@script('print-settings')
+def print_settings():
+    pprint.pprint(get_settings())
