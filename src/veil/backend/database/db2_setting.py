@@ -1,19 +1,13 @@
 from __future__ import unicode_literals, print_function, division
+from veil.environment.setting import *
+from veil.backend.database.database_client_setting import database_client_settings
 
 def db2_settings(purpose, host, port, database, schema, user, password):
-    return {
-        'veil': {
-            '{}_database'.format(purpose): {
-                'type': 'db2',
-                'host': host,
-                'port': port,
-                'database': database,
-                'user': user,
-                'password': password,
-                'schema': schema
-            }
-        },
+    return merge_settings(database_client_settings(
+        type='db2', purpose=purpose, host=host, port=port, database=database,
+        schema=schema, user=user, password=password
+    ), {
         'databases': {
             purpose: 'veil.backend.database.db2'
         }
-    }
+    })

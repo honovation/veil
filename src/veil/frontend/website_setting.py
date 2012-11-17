@@ -67,6 +67,11 @@ def get_website_options(purpose):
     })
 
 
+def get_website_url_prefix(purpose):
+    website_options = get_website_options(purpose)
+    return 'http://{}:{}'.format(website_options.domain, website_options.domain_port)
+
+
 def website_program(website, dependencies):
     resources = [component_resource('veil.frontend.web')]
     for dependency in dependencies:

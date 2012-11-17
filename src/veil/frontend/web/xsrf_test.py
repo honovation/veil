@@ -9,11 +9,9 @@ from .routing import *
 class XsrfTest(TestCase):
     def setUp(self):
         super(XsrfTest, self).setUp()
-        update_options({
-            'veil': {
-                'test_website': {
-                    'prevents_xsrf': True
-                }
+        override_test_settings({
+            'test_website': {
+                'prevents_xsrf': True
             }
         })
 

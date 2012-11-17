@@ -8,12 +8,11 @@ from logging import getLogger
 import uuid
 import veil_component
 from veil.development.test import *
-from veil.environment.setting import *
 from .table_dependency import check_table_dependencies
+from veil.backend.database.database_client_setting import get_database_client_options
 
 LOGGER = getLogger(__name__)
 
-registry = {} # purpose => get_database_options
 instances = {} # purpose => instance
 adapter_classes = {} # database type => adapter class
 dependencies = {}
@@ -25,8 +24,6 @@ def register_adapter_class(type, adapter_class):
 def register_database(purpose, verify_db=False):
     component_name = veil_component.get_loading_component_name()
     dependencies.setdefault(component_name, set()).add(purpose)
-    if purpose not in registry:
-        registry[purpose] = register_database_options(purpose)
     return lambda: require_database(purpose, component_name, verify_db)
 
 
@@ -44,40 +41,14 @@ def check_database_dependencies(component_names, expected_dependencies):
         raise Exception('{} did not reference database {}'.format(component_name_prefix, unreal_dependencies))
 
 
-def register_database_options(purpose):
-    section = '{}_database'.format(purpose) # for example contact_index_database
-    get_db_type = register_option(section, 'type')
-    get_db_host = register_option(section, 'host')
-    get_db_port = register_option(section, 'port', int)
-    get_db_database = register_option(section, 'database')
-    get_db_user = register_option(section, 'user')
-    get_db_password = register_option(section, 'password')
-    get_db_schema = register_option(section, 'schema', default='')
-
-    def get_database_options():
-        return {
-            'type': get_db_type(),
-            'host': get_db_host(),
-            'port': get_db_port(),
-            'database': get_db_database(),
-            'user': get_db_user(),
-            'password': get_db_password(),
-            'schema': get_db_schema()
-        }
-
-    return get_database_options
-
-
 def require_database(purpose, component_name=None, verify_db=False):
     if veil_component.get_loading_component_name():
         raise Exception('use register_database whenever possible')
-    if purpose not in registry:
-        raise Exception('database for purpose {} is not registered'.format(purpose))
     if verify_db and purpose in instances:
         instances[purpose].reconnect_if_broken_per_verification()
+    database_client_options = get_database_client_options(purpose)
     if purpose not in instances:
-        get_database_options = registry[purpose]
-        instances[purpose] = connect(purpose=purpose, **get_database_options())
+        instances[purpose] = connect(purpose=purpose, **database_client_options)
     db = Database(purpose, component_name, instances[purpose])
     executing_test = get_executing_test(optional=True)
     if executing_test:

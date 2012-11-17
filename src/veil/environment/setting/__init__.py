@@ -8,8 +8,6 @@ with veil_component.init_component(__name__):
     from .setting import merge_multiple_settings
     from .setting import load_config_from
     from .setting import override_test_settings
-    from .option import register_option
-    from .option import update_options
 
     __all__ = [
         # from setting
@@ -20,7 +18,4 @@ with veil_component.init_component(__name__):
         merge_multiple_settings.__name__,
         load_config_from.__name__,
         override_test_settings.__name__,
-        # from option
-        register_option.__name__,
-        update_options.__name__
     ]
