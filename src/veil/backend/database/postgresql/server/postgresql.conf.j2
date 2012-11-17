@@ -56,22 +56,16 @@ ident_file = '{{ config.data_directory }}/pg_ident.conf'	# ident configuration f
 
 # - Connection Settings -
 
-{% if config.host %}
 listen_addresses = '{{ config.host }}'		# what IP address(es) to listen on;
 					# comma-separated list of addresses;
 					# defaults to 'localhost', '*' = all
 					# (change requires restart)
-{% endif %}
-{% if config.port %}
 port = {{ config.port }}				# (change requires restart)
-{% endif %}
 max_connections = 100			# (change requires restart)
 # Note:  Increasing max_connections costs ~400 bytes of shared memory per
 # connection slot, plus lock space (see max_locks_per_transaction).
 #superuser_reserved_connections = 3	# (change requires restart)
-{% if config.unix_socket_directory %}
-unix_socket_directory = '{{ config.unix_socket_directory }}'		# (change requires restart)
-{% endif %}
+unix_socket_directory = '/tmp'		# (change requires restart)
 #unix_socket_group = ''			# (change requires restart)
 #unix_socket_permissions = 0777		# begin with 0 to use octal notation
 					# (change requires restart)
@@ -262,13 +256,13 @@ shared_buffers = 24MB			# min 128kB
 
 # - Where to Log -
 
-log_destination = '{{ config.log_destination }}'		# Valid values are combinations of
+log_destination = '{{ config.get('log_destination', 'stderr') }}'		# Valid values are combinations of
 					# stderr, csvlog, syslog, and eventlog,
 					# depending on platform.  csvlog
 					# requires logging_collector to be on.
 
 # This is used when logging to stderr:
-logging_collector = {{ config.logging_collector or 'off' }}		# Enable capturing of stderr and csvlog
+logging_collector = {{ config.get('logging_collector', 'off') }}		# Enable capturing of stderr and csvlog
 					# into log files. Required to be on for
 					# csvlogs.
 					# (change requires restart)
@@ -343,7 +337,7 @@ log_directory = 'pg_log'		# directory where log files are written,
 					#   fatal
 					#   panic (effectively off)
 
-log_min_duration_statement = {{ config.log_min_duration_statement or -1 }}	# -1 is disabled, 0 logs all statements
+log_min_duration_statement = {{ config.get('log_min_duration_statement', -1) }}	# -1 is disabled, 0 logs all statements
 					# and their durations, > 0 logs only
 					# statements running at least this number
 					# of milliseconds

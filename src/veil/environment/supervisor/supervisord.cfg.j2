@@ -44,7 +44,7 @@ serverurl=http://{{ config.inet_http_server.host }}:{{ config.inet_http_server.p
 ; create one or more 'real' program: sections to be able to control them under
 ; supervisor.
 
-{% for program_name, program in config.programs.items() if program and program_name in active_program_names %}
+{% for program_name, program in config.programs.items() if program and program.is_active %}
 [program:{{ program_name }}]
 {% if program.user %}
 user={{ program.user }}

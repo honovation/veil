@@ -9,25 +9,20 @@ LOGGER = logging.getLogger(__name__)
 
 @composite_installer('supervisor')
 @using_isolated_template
-def install_supervisor():
-    config = get_settings().supervisor
-    if VEIL_SERVER in ['development', 'test']:
-        active_program_names = config.programs.keys()
-    else:
-        active_program_names = get_current_veil_server().programs
-    resources = list(BASIC_LAYOUT_RESOURCES)
-    resources.extend([
-        python_package_resource('supervisor'),
-        file_resource(config.config_file, get_template('supervisord.cfg.j2').render(
-            config=config,
-            active_program_names=active_program_names,
-            CURRENT_USER=CURRENT_USER,
-            format_execute_command=format_execute_command,
-            format_environment_variables=format_environment_variables
-        )),
-        directory_resource(config.logging.directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
-    ])
-    return [], resources
+def install_supervisor(programs):
+    return [], []
+#    resources = list(BASIC_LAYOUT_RESOURCES)
+#    resources.extend([
+#        python_package_resource('supervisor'),
+#        file_resource(config.config_file, get_template('supervisord.cfg.j2').render(
+#            config=config,
+#            CURRENT_USER=CURRENT_USER,
+#            format_execute_command=format_execute_command,
+#            format_environment_variables=format_environment_variables
+#        )),
+#        directory_resource(config.logging.directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
+#    ])
+#    return [], resources
 
 
 def format_execute_command(program):

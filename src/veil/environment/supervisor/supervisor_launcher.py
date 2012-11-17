@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from argparse import ArgumentParser
 import time
 from veil.utility.shell import *
+from veil.environment import *
 from veil.environment.setting import *
 from veil.frontend.cli import script
 from .supervisorctl import are_all_supervisord_programs_running
@@ -17,7 +18,7 @@ def bring_up_programs(*argv):
 
 
 def bring_up_program(program_name):
-    config = get_settings().supervisor
+    config = list_current_veil_server_programs().supervisor.supervisor_resource
     execute_command = config.programs[program_name].execute_command
     print(execute_command)
     pass_control_to(execute_command)

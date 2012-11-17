@@ -6,6 +6,7 @@ import inspect
 import importlib
 import functools
 import jinjatag
+import jinja2
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
 from veil.development.test import get_executing_test
@@ -79,6 +80,7 @@ def using_isolated_template(func):
     def wrapper(*args, **kwargs):
         with require_current_template_directory_relative_to(func):
             assert_no_env()
+            get_or_create_environment(strict=True)
             try:
                 return func(*args, **kwargs)
             finally:
@@ -126,7 +128,7 @@ def get_template_environment():
     return get_or_create_environment()
 
 
-def get_or_create_environment():
+def get_or_create_environment(strict=False):
     global env
     if env:
         return env
@@ -134,7 +136,8 @@ def get_or_create_environment():
     env = Environment(
         loader=PrefixLoader(loaders, delimiter=':'),
         autoescape=True,
-        extensions=['jinja2.ext.autoescape', 'jinja2.ext.i18n', jinja_tag])
+        extensions=['jinja2.ext.autoescape', 'jinja2.ext.i18n', jinja_tag],
+        undefined=jinja2.StrictUndefined if strict else None)
     jinja_tag.init()
     env.filters.update(filters)
     env.install_null_translations()
