@@ -26,6 +26,8 @@ def to_supervisor_programs(veil_server_programs):
         if 'environment_variables' in veil_server_program:
             supervisor_program['environment_variables'] = format_environment_variables(
                 veil_server_program.environment_variables)
+        if 'startretries' in veil_server_program:
+            supervisor_program['startretries'] = veil_server_program.startretries
         supervisor_programs[program_name] = supervisor_program
     return supervisor_programs
 
