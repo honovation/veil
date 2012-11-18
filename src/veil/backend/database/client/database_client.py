@@ -47,6 +47,7 @@ def require_database(purpose, component_name=None, verify_db=False):
     if verify_db and purpose in instances:
         instances[purpose].reconnect_if_broken_per_verification()
     database_client_options = get_database_client_options(purpose)
+    database_client_options.pop('driver', None)
     if purpose not in instances:
         instances[purpose] = connect(purpose=purpose, **database_client_options)
     db = Database(purpose, component_name, instances[purpose])
