@@ -9,16 +9,13 @@ LOGGER = logging.getLogger(__name__)
 
 @composite_installer('supervisor')
 @using_isolated_template
-def install_supervisor(programs, inet_http_server_host=None, inet_http_server_port=None):
-    if inet_http_server_host and inet_http_server_port:
-        inet_http_server_config = {
-            'inet_http_server': {
-                'host': inet_http_server_host,
-                'port': inet_http_server_port
-            }
+def install_supervisor(programs, program_groups=None):
+    inet_http_server_config = {
+        'inet_http_server': {
+            'host': 'localhost',
+            'port': 9090
         }
-    else:
-        inet_http_server_config = {}
+    }
     logging_config = {
         'logging': {
             'directory': VEIL_LOG_DIR
@@ -32,6 +29,7 @@ def install_supervisor(programs, inet_http_server_host=None, inet_http_server_po
                 inet_http_server_config,
                 logging_config, {
                     'programs': programs,
+                    'program_groups': program_groups,
                     'pid_file': VEIL_VAR_DIR / 'supervisor.pid'
                 })
         )),

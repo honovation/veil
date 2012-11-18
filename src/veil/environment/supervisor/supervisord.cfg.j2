@@ -9,7 +9,7 @@
 {% if 'inet_http_server' in config %}
 [inet_http_server]
 port={{ config.inet_http_server.host }}:{{ config.inet_http_server.port }}
-{% if 'username' in inet_http_server %}
+{% if 'username' in config.inet_http_server %}
 username={{ config.inet_http_server.username }}
 {% endif %}
 {% if 'password' in config.inet_http_server %}
@@ -121,8 +121,8 @@ startretries={{ program.get('startretries', 3) }}
 ; create one or more 'real' group: sections to create "heterogeneous"
 ; process groups.
 
-{% for group_name, programs in config.get('groups', {}).items() %}
-[group:{{ group_name }}]
+{% for program_group_name, programs in (config.get('program_groups') or {}).items() %}
+[group:{{ program_group_name }}]
 programs= {{ programs | join(',') }}
 {% endfor %}
 

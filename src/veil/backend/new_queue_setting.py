@@ -53,3 +53,22 @@ def periodic_job_scheduler_program(dependencies):
             'resources': resources
         }
     })
+
+
+def job_worker_program(worker_name, queue_host, queue_port, queue_names, dependencies, run_as=None):
+    resources = [component_resource('veil.backend.queue')]
+    for dependency in dependencies:
+        resources.append(component_resource(dependency))
+    return objectify({
+        '{}_worker'.format(worker_name): {
+            'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -l debug -f stderr {}'.format(
+                queue_host, queue_port, ','.join(queue_names)
+            ),
+            'group': 'workers',
+            'run_as': run_as or CURRENT_USER,
+            'resources': resources,
+            'startretries': 10,
+            'startsecs': 10,
+            'reloads_on_change': True
+        }
+    })
