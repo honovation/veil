@@ -9,10 +9,7 @@ def install_veil_server():
     resources = [('supervisor', {'programs': to_supervisor_programs(veil_server_programs)})]
     for program in veil_server_programs.values():
         installer_providers.extend(program.get('installer_providers', []))
-        for key, value in program.items():
-            if key.endswith('_resource'):
-                installer_name = key.replace('_resource', '')
-                resources.append((installer_name, value))
+        resources.extend(program.get('resources', []))
     return installer_providers, resources
 
 

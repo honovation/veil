@@ -7,10 +7,10 @@ def redis_program(purpose, host, port):
         '{}_redis'.format(purpose): {
             'execute_command': 'redis-server {}'.format(VEIL_ETC_DIR / '{}_redis.conf'.format(purpose)),
             'installer_providers': ['veil.backend.redis'],
-            'redis_resource': {
+            'resources': [('redis', {
                 'purpose': purpose,
                 'host': host,
                 'port': port
-            }
+            })]
         }
     })
