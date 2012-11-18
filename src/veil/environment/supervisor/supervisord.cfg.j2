@@ -6,22 +6,22 @@
 ;username=user              ; (default is no username (open server))
 ;password=123               ; (default is no password (open server))
 
-{% if config.inet_http_server %}
+{% if 'inet_http_server' in config %}
 [inet_http_server]
 port={{ config.inet_http_server.host }}:{{ config.inet_http_server.port }}
-{% if config.inet_http_server.username is not none %}
+{% if 'username' in inet_http_server %}
 username={{ config.inet_http_server.username }}
 {% endif %}
-{% if config.inet_http_server.password is not none %}
+{% if 'password' in config.inet_http_server %}
 password={{ config.inet_http_server.password }}
 {% endif %}
 {% endif %}
 
 [supervisord]
 logfile={{ config.logging.directory }}/supervisor.log
-logfile_maxbytes={{ config.logging.max_size or '50MB' }}
-logfile_backups={{ config.logging.backups_count or 10 }}
-pidfile={{ config.pid_file or '/tmp/supervisord.pid' }}
+logfile_maxbytes={{ config.logging.get('max_size', '50MB') }}
+logfile_backups={{ config.logging.get('backups_count', 10) }}
+pidfile={{ config.pid_file }}
 nodaemon=False
 
 ; the below section must remain in the config file for RPC
@@ -30,7 +30,7 @@ nodaemon=False
 [rpcinterface:supervisor]
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 
-{% if config.inet_http_server %}
+{% if 'inet_http_server' in config %}
 [supervisorctl]
 ;serverurl=unix:///tmp/supervisor.sock ; use a unix:// URL  for a unix socket
 serverurl=http://{{ config.inet_http_server.host }}:{{ config.inet_http_server.port }} ; use an http:// url to specify an inet socket
@@ -44,50 +44,41 @@ serverurl=http://{{ config.inet_http_server.host }}:{{ config.inet_http_server.p
 ; create one or more 'real' program: sections to be able to control them under
 ; supervisor.
 
-{% for program_name, program in config.programs.items() if program and program.is_active %}
+{% for program_name, program in config.programs.items() %}
 [program:{{ program_name }}]
-{% if program.user %}
+{% if 'user' in program %}
 user={{ program.user }}
 {% else %}
-user={{ CURRENT_USER }}
 {% endif %}
-{% if program.environment_variables %}
-environment={{ format_environment_variables(program.environment_variables) }}
+{% if 'environment_variables' in program %}
+environment={{ program.environment_variables }}
 {% endif %}
-command={{ format_execute_command(program) }}
-{% if program.process_name %}
+command={{ program.execute_command }}
+{% if 'process_name' in program %}
 process_name={{ program.process_name }}
 {% else %}
-{% if program.processes_count and program.processes_count > 1 %}
+{% if 'processes_count' in program %}
 process_name=%(program_name)s-%(process_num)s
 {% else %}
 process_name=%(program_name)s
 {% endif %}
 {% endif %}
-numprocs={{ program.processes_count or 1 }}
+numprocs={{ program.get('processes_count', 1) }}
 stopwaitsecs=10
 redirect_stderr=True
-{% if program.logging and program.logging.file %}
-stdout_logfile={{ program.logging.file }}
+{% if 'stdout_logfile' in program %}
+stdout_logfile={{ program.stdout_logfile }}
 {% else %}
 stdout_logfile={{ config.logging.directory }}/{{ program_name }}.log
 {% endif %}
-{% if program.logging and program.logging.max_size %}
-stdout_logfile_maxbytes={{ program.logging.max_size }}
-{% else %}
-stdout_logfile_maxbytes={{ config.logging.max_size or '50MB' }}
-{% endif %}
-{% if program.logging and program.logging.backups_count %}
-stdout_logfile_backups={{ program.logging.backups_count }}
-{% else %}
-stdout_logfile_backups={{ config.logging.backups_count or 10 }}
-{% endif %}
-{% if program.expected_exit_codes %}
+stdout_logfile_maxbytes={{ program.get('stdout_logfile_maxbytes', '50MB') }}
+stdout_logfile_backups={{ program.get('stdout_logfile_backups', 10) }}
+{% if 'expected_exit_codes' in program %}
 exitcodes={{ ','.join(program.expected_exit_codes) }}
 {% else %}
 exitcodes=0,2
 {% endif %}
-stopsignal={{ program.stop_signal or 'INT' }}
+stopsignal={{ program.get('stop_signal', 'INT') }}
 startsecs={{ program.get('startsecs', 3) }}
 startretries={{ program.get('startretries', 3) }}
 {% endfor %}

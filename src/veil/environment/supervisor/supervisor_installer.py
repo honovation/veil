@@ -9,29 +9,37 @@ LOGGER = logging.getLogger(__name__)
 
 @composite_installer('supervisor')
 @using_isolated_template
-def install_supervisor(programs):
-    return [], []
-#    resources = list(BASIC_LAYOUT_RESOURCES)
-#    resources.extend([
-#        python_package_resource('supervisor'),
-#        file_resource(config.config_file, get_template('supervisord.cfg.j2').render(
-#            config=config,
-#            CURRENT_USER=CURRENT_USER,
-#            format_execute_command=format_execute_command,
-#            format_environment_variables=format_environment_variables
-#        )),
-#        directory_resource(config.logging.directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
-#    ])
-#    return [], resources
-
-
-def format_execute_command(program):
-    try:
-        execute_command_args = program.get('execute_command_args', {})
-        return get_template(template_source=program.execute_command).render(**execute_command_args)
-    except:
-        LOGGER.error('Failed to format command for: {}'.format(program))
-        raise
+def install_supervisor(programs, inet_http_server_host=None, inet_http_server_port=None):
+    if inet_http_server_host and inet_http_server_port:
+        inet_http_server_config = {
+            'inet_http_server': {
+                'host': inet_http_server_host,
+                'port': inet_http_server_port
+            }
+        }
+    else:
+        inet_http_server_config = {}
+    logging_config = {
+        'logging': {
+            'directory': VEIL_LOG_DIR
+        }
+    }
+    resources = list(BASIC_LAYOUT_RESOURCES)
+    resources.extend([
+        python_package_resource('supervisor'),
+        file_resource(VEIL_ETC_DIR / 'supervisor.cfg', get_template('supervisord.cfg.j2').render(
+            config=merge_multiple_settings(
+                inet_http_server_config,
+                logging_config, {
+                    'programs': programs,
+                    'pid_file': VEIL_VAR_DIR / 'supervisor.pid'
+                }),
+            CURRENT_USER=CURRENT_USER,
+            format_environment_variables=format_environment_variables
+        )),
+        directory_resource(VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
+    ])
+    return [], resources
 
 
 def format_environment_variables(environment_variables):

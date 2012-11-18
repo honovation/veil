@@ -18,8 +18,8 @@ def bring_up_programs(*argv):
 
 
 def bring_up_program(program_name):
-    config = list_current_veil_server_programs().supervisor.supervisor_resource
-    execute_command = config.programs[program_name].execute_command
+    config = list_current_veil_server_programs()[program_name]
+    execute_command = config.execute_command
     print(execute_command)
     pass_control_to(execute_command)
 
@@ -30,17 +30,16 @@ def bring_up_supervisor(*argv):
         help='should the process run in background')
     args = argument_parser.parse_args(argv)
 
-    config = get_settings().supervisor
-    daemonize = args.daemonize or config.daemonize
+    daemonize = args.daemonize
     if daemonize:
-        shell_execute('supervisord -c {}'.format(config.config_file))
+        shell_execute('supervisord -c {}'.format(VEIL_ETC_DIR / 'supervisor.cfg'))
         for i in range(10):
             if are_all_supervisord_programs_running():
                 return
             time.sleep(3)
         print('failed to bring up supervisor, latest status: {}'.format(supervisorctl('status', capture=True)))
     else:
-        pass_control_to('supervisord -n -c {}'.format(config.config_file))
+        pass_control_to('supervisord -n -c {}'.format(VEIL_ETC_DIR / 'supervisor.cfg'))
 
 
 @script('down')
