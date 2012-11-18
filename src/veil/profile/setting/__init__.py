@@ -10,3 +10,4 @@ with veil_component.init_component(__name__):
     from veil.backend.new_queue_setting import delayed_job_scheduler_program
     from veil.backend.new_queue_setting import periodic_job_scheduler_program
     from veil.backend.new_queue_setting import job_worker_program
+    from veil.frontend.new_nginx_setting import nginx_program

@@ -1,16 +1,16 @@
 {% autoescape false %}
-user {{ config.owner or 'root' }} {{ config.group or config.owner }};
-worker_processes {{ config.worker_processes_count or 4 }};
+user {{ config.owner }} {{ config.owner_group }};
+worker_processes {{ config.get('worker_processes_count', 4) }};
 daemon off;
 
-{% if config.pid_file %}
+{% if 'pid_file' in config %}
 pid {{ config.pid_file }};
 {% endif %}
 
 error_log  {{ config.log_directory }}/error.log;
 
 events {
-    worker_connections  {{ config.connections_count_per_worker or 1024 }};
+    worker_connections  {{ config.get('connections_count_per_worker', 1024) }};
 }
 
 http {

@@ -21,10 +21,10 @@ def to_supervisor_programs(veil_server_programs):
     for program_name, veil_server_program in veil_server_programs.items():
         supervisor_program = {
             'execute_command': veil_server_program.execute_command,
-            'user': CURRENT_USER
+            'run_as': CURRENT_USER
         }
         if 'run_as' in veil_server_program:
-            supervisor_program['user'] = veil_server_program.run_as
+            supervisor_program['run_as'] = veil_server_program.run_as
         if 'environment_variables' in veil_server_program:
             supervisor_program['environment_variables'] = format_environment_variables(
                 veil_server_program.environment_variables)

@@ -46,9 +46,8 @@ serverurl=http://{{ config.inet_http_server.host }}:{{ config.inet_http_server.p
 
 {% for program_name, program in config.programs.items() %}
 [program:{{ program_name }}]
-{% if 'user' in program %}
-user={{ program.user }}
-{% else %}
+{% if 'run_as' in program %}
+user={{ program.run_as }}
 {% endif %}
 {% if 'environment_variables' in program %}
 environment={{ program.environment_variables }}
