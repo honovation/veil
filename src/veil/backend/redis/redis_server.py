@@ -9,16 +9,22 @@ from veil_installer import *
 
 @composite_installer('redis')
 @using_isolated_template
-def install_redis_server(name):
-    purpose = name
-    settings = get_settings()
-    config = getattr(settings, '{}_redis'.format(purpose))
+def install_redis_server(purpose, host, port):
     resources = list(BASIC_LAYOUT_RESOURCES)
+    data_directory = VEIL_VAR_DIR / '{}_redis'.format(purpose)
     resources.extend([
         os_package_resource('redis-server'),
         os_service_resource(state='not_installed', name='redis-server', path='/etc/rc0.d/K20redis-server'),
-        directory_resource(config.dbdir, owner=config.owner, group=config.owner_group, mode=0770),
-        file_resource(config.configfile, content=get_template('redis.conf.j2').render(config=config))
+        directory_resource(
+            data_directory,
+            owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770),
+        file_resource(
+            VEIL_ETC_DIR / '{}_redis.conf'.format(purpose),
+            content=get_template('redis.conf.j2').render(config={
+                'host': host,
+                'port': port,
+                'data_directory': data_directory
+            }))
     ])
     return [], resources
 

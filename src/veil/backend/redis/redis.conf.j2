@@ -14,28 +14,26 @@
 
 # By default Redis does not run as a daemon. Use 'yes' if you need it.
 # Note that Redis will write a pid file in /var/run/redis.pid when daemonized.
-{% if config.daemonize %}
+{% if config.get('daemonize') %}
 daemonize yes
 {% endif %}
 
 # When run as a daemon, Redis write a pid file in /var/run/redis.pid by default.
 # You can specify a custom pid file location here.
-{% if config.pidfile %}
+{% if 'pidfile' in config %}
 pidfile {{ config.pidfile }}
 {% endif %}
 
 # Accept connections on the specified port, default is 6379
-port {{ config.port or 6379 }}
+port {{ config.port }}
 
 # If you want you can bind a single interface, if the bind option is not
 # specified all the interfaces will listen for connections.
 
-{% if config.bind %}
-bind {{ config.bind }}
-{% endif %}
+bind {{ config.host }}
 
 # Close the connection after a client is idle for N seconds (0 to disable)
-timeout {{ config.timeout or 300 }}
+timeout {{ config.get('timeout', 300) }}
 
 # Set server verbosity to 'debug'
 # it can be one of:
@@ -43,17 +41,17 @@ timeout {{ config.timeout or 300 }}
 # verbose (many rarely useful info, but not a mess like the debug level)
 # notice (moderately verbose, what you want in production probably)
 # warning (only very important / critical messages are logged)
-loglevel {{ config.loglevel or 'notice' }}
+loglevel {{ config.get('log_level', 'notice') }}
 
 # Specify the log file name. Also 'stdout' can be used to force
 # Redis to log on the standard output. Note that if you use standard
 # output for logging but daemonize, logs will be sent to /dev/null
-logfile {{ config.logfile or 'stdout' }}
+logfile {{ config.get('log_file', 'stdout') }}
 
 # Set the number of databases. The default database is DB 0, you can select
 # a different one on a per-connection basis using SELECT <dbid> where
 # dbid is a number between 0 and 'databases'-1
-databases {{ config.databases or 100 }}
+databases {{ config.get('max_databases_count', 100) }}
 
 ################################ SNAPSHOTTING  #################################
 #
@@ -71,18 +69,18 @@ databases {{ config.databases or 100 }}
 #
 #   Note: you can disable saving at all commenting all the "save" lines.
 
-{% for save_config in config.save_configs %}
+{% for save_config in config.get('save_configs', []) %}
 save {{ save_config.interval }} {{ save_config.changed_keys }}
 {% endfor %}
 
 # The filename where to dump the DB
-dbfilename {{ config.dbfilename or 'dump.rdb' }}
+dbfilename {{ config.get('dump_file', 'dump.rdb') }}
 
 # Compress string objects using LZF when dump .rdb databases?
 # For default that's set to 'yes' as it's almost always a win.
 # If you want to save some CPU in the saving child set it to 'no' but
 # the dataset will likely be bigger if you have compressible values or keys.
-rdbcompression {% if config.rdbcompression %}yes{% else %}no{% endif %}
+rdbcompression {% if config.get('compresses_dump_file') %}yes{% else %}no{% endif %}
 
 # The working directory.
 #
@@ -92,7 +90,7 @@ rdbcompression {% if config.rdbcompression %}yes{% else %}no{% endif %}
 # Also the Append Only File will be created inside this directory.
 # 
 # Note that you must specify a directory here, not a file name.
-dir {{ config.dbdir }}
+dir {{ config.data_directory }}
 
 ################################# REPLICATION #################################
 
@@ -121,7 +119,7 @@ dir {{ config.dbdir }}
 # 150k passwords per second against a good box. This means that you should
 # use a very strong password otherwise it will be very easy to break.
 #
-{% if config.password %}
+{% if 'password' in config %}
 requirepass {{ config.password }}
 {% endif %}
 
@@ -152,8 +150,8 @@ requirepass {{ config.password }}
 # to upgrade. With maxmemory after the limit is reached you'll start to get
 # errors for write operations, and this may even lead to DB inconsistency.
 
-{% if config.maxmemory %}
-maxmemory {{ config.maxmemory }}
+{% if 'max_memory' in config %}
+maxmemory {{ config.max_memory }}
 {% endif %}
 
 ############################## APPEND ONLY MODE ###############################
@@ -174,10 +172,10 @@ maxmemory {{ config.maxmemory }}
 # IMPORTANT: Check the BGREWRITEAOF to check how to rewrite the append
 # log file in background when it gets too big.
 
-appendonly {% if config.persisted_by_aof %}yes{% else %}no{% endif %}
+appendonly {% if config.get('persisted_by_aof') %}yes{% else %}no{% endif %}
 
 # The name of the append only file (default: "appendonly.aof")
-appendfilename {{ config.appendfilename or 'appendonly.aof' }}
+appendfilename {{ config.get('aof_file', 'appendonly.aof') }}
 
 # The fsync() call tells the Operating System to actually write data on disk
 # instead to wait for more data in the output buffer. Some OS will really flush 
@@ -199,7 +197,7 @@ appendfilename {{ config.appendfilename or 'appendonly.aof' }}
 #
 # If unsure, use "everysec".
 
-appendfsync {{ config.appendfsync or 'everysec' }}
+appendfsync {{ config.get('aof_fsync', 'everysec') }}
 
 ################################ VIRTUAL MEMORY ###############################
 
