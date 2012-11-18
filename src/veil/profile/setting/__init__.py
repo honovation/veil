@@ -6,3 +6,4 @@ with veil_component.init_component(__name__):
     from veil.backend.database.new_postgresql_setting import postgresql_program
     from veil.backend.new_redis_setting import redis_program
     from veil.backend.new_queue_setting import queue_program
+    from veil.backend.new_queue_setting import resweb_program

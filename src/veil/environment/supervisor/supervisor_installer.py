@@ -33,14 +33,8 @@ def install_supervisor(programs, inet_http_server_host=None, inet_http_server_po
                 logging_config, {
                     'programs': programs,
                     'pid_file': VEIL_VAR_DIR / 'supervisor.pid'
-                }),
-            CURRENT_USER=CURRENT_USER,
-            format_environment_variables=format_environment_variables
+                })
         )),
         directory_resource(VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     ])
     return [], resources
-
-
-def format_environment_variables(environment_variables):
-    return ','.join(['{}={}'.format(k, v) for k, v in environment_variables.items()])

@@ -18,9 +18,17 @@ def install_veil_server():
 
 def to_supervisor_programs(veil_server_programs):
     supervisor_programs = {}
-    for program_name, program in veil_server_programs.items():
-        supervisor_programs[program_name] = {
-            'execute_command': program.execute_command,
+    for program_name, veil_server_program in veil_server_programs.items():
+        supervisor_program = {
+            'execute_command': veil_server_program.execute_command,
             'user': CURRENT_USER
         }
+        if 'environment_variables' in veil_server_program:
+            supervisor_program['environment_variables'] = format_environment_variables(
+                veil_server_program.environment_variables)
+        supervisor_programs[program_name] = supervisor_program
     return supervisor_programs
+
+
+def format_environment_variables(environment_variables):
+    return ','.join(['{}={}'.format(k, v) for k, v in environment_variables.items()])
