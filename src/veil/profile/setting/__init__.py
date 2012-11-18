@@ -13,3 +13,4 @@ with veil_component.init_component(__name__):
     from veil.frontend.new_nginx_setting import nginx_program
     from veil.frontend.new_nginx_setting import nginx_server
     from veil.frontend.new_nginx_setting import nginx_reverse_proxy_location
+    from veil.frontend.new_website_setting import website_program

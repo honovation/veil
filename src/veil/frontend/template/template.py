@@ -137,7 +137,7 @@ def get_or_create_environment(strict=False):
         loader=PrefixLoader(loaders, delimiter=':'),
         autoescape=True,
         extensions=['jinja2.ext.autoescape', 'jinja2.ext.i18n', jinja_tag],
-        undefined=jinja2.StrictUndefined if strict else None)
+        undefined=jinja2.StrictUndefined if strict else jinja2.Undefined)
     jinja_tag.init()
     env.filters.update(filters)
     env.install_null_translations()
