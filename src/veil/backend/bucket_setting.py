@@ -20,15 +20,6 @@ def bucket_settings(bucket, website, base_directory=None, base_url=None):
     })
 
 
-def get_bucket_options(purpose):
-    config = get_settings()['{}_bucket'.format(purpose)]
-    return objectify({
-        'type': config.type,
-        'base_directory': config.base_directory,
-        'base_url': config.base_url
-    })
-
-
 def add_bucket_reverse_proxy_static_file_locations(settings):
     new_settings = settings
     for key, value in settings.items():

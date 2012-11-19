@@ -11,6 +11,14 @@ def queue_program(host, port):
     })
 
 
+def queue_client_resource(type, host, port):
+    return ('queue_client', {
+        'type': type,
+        'host': host,
+        'port': port
+    })
+
+
 def resweb_program(resweb_host, resweb_port, queue_host, queue_port):
     return objectify({
         'resweb': {

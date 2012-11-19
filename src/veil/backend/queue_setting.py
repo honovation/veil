@@ -54,20 +54,6 @@ def queue_settings(
         settings.supervisor.programs.clear()
     return merge_multiple_settings(settings, source_code_monitor_settings(), self_checker_settings())
 
-def get_queue_options():
-    queue_type = get_settings().queue.type
-    if 'redis' == queue_type:
-        config = get_settings().queue_redis
-        return objectify({
-            'type': 'redis',
-            'host': config.bind,
-            'port': config.port,
-            'password': config.password
-        })
-    elif 'immediate' == queue_type:
-        return objectify({'type': 'immediate'})
-    else:
-        raise Exception('unknown queue type: {}'.format(queue_type))
 
 def delayed_job_scheduler_program(queue_redis_host, queue_redis_port):
     return  {

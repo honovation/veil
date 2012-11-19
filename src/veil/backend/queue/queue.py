@@ -7,7 +7,7 @@ from datetime import timedelta, datetime
 from redis.client import Redis
 from pyres import ResQ
 from veil.utility.clock import *
-from veil.backend.queue_setting import get_queue_options
+from .queue_client_installer import load_queue_client_config
 
 LOGGER = getLogger(__name__)
 
@@ -15,16 +15,16 @@ _current_queue = None
 
 def require_queue():
     global _current_queue
-    queue_options = get_queue_options()
     if _current_queue is None:
-        if 'redis' == queue_options.type:
-            redis = Redis(host=queue_options.host, port=queue_options.port, password=queue_options.password)
+        config = load_queue_client_config()
+        if 'redis' == config.type:
+            redis = Redis(host=config.host, port=config.port)
             resq = ResQ(server=redis)
             _current_queue = RedisQueue(resq)
-        elif 'immediate' == queue_options.type:
+        elif 'immediate' == config.type:
             _current_queue = ImmediateQueue()
         else:
-            raise Exception('unknown queue type: {}'.format(queue_options.type))
+            raise Exception('unknown queue type: {}'.format(config.type))
     return _current_queue
 
 
