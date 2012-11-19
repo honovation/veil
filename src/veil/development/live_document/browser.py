@@ -23,10 +23,48 @@ def open_browser_page(website, path, page_name):
     require_website_running(website)
     webdriver = require_webdriver()
     webdriver.get(get_url(website, path))
-    return assert_current_page(page_name)
+    return enter_browser_page_context(page_name)
+
 
 @document_statement('确认所在页面')
 @contextlib.contextmanager
+def enter_browser_page_context(page_name):
+    assert_current_page(page_name)
+    with require_current_context_being(BrowserPageContext(page_name)):
+        yield
+
+
+class BrowserPageContext(object):
+    def __init__(self, page_name):
+        super(BrowserPageContext, self).__init__()
+        self.page_name = page_name
+
+    def __call__(self, statement_name, args):
+        try:
+            assert_current_page(self.page_name)
+            return_value = require_webdriver().execute_script(
+                """
+                if (!veil.doc.currentPage['%s']) {
+                    return 'NO_STATEMENT';
+                }
+                return veil.doc.currentPage['%s'].apply(this, arguments);
+                """ % (statement_name, statement_name),
+                *filter_non_serializable(args))
+            if 'NO_STATEMENT' == return_value:
+                report_error('statement {} not defined'.format(statement_name))
+            else:
+                return return_value
+        except selenium.common.exceptions.WebDriverException, e:
+            if 'modal dialog' in e.msg:
+                require_webdriver().switch_to_alert().accept()
+            else:
+                assert_no_js_errors()
+                raise
+        except:
+            assert_no_js_errors()
+            raise
+
+
 def assert_current_page(page_name):
     current_page_name = webdriver.execute_script(
         """
@@ -37,30 +75,11 @@ def assert_current_page(page_name):
         }
         """)
     if page_name != current_page_name:
+        assert_no_js_errors()
         message = 'we are on the wrong page, expected: {}, actual: {}, url: {}'.format(
             page_name, current_page_name, webdriver.current_url)
-        print(message)
-        import time
-        time.sleep(60)
-        raise Exception(message)
-    with require_current_context_being(BrowserPageContext()):
-        yield
+        report_error(message)
 
-class BrowserPageContext(object):
-    def __call__(self, statement_name, args):
-        try:
-            return require_webdriver().execute_script(
-                "return veil.doc.currentPage['{}'].apply(this, arguments);".format(statement_name),
-                *filter_non_serializable(args))
-        except selenium.common.exceptions.WebDriverException, e:
-            if 'modal dialog' in e.msg:
-                require_webdriver().switch_to_alert().accept()
-            else:
-                assert_no_js_errors()
-                raise
-        except:
-            assert_no_js_errors()
-            raise
 
 def assert_no_js_errors():
     js_errors = require_webdriver().execute_script(
@@ -72,7 +91,14 @@ def assert_no_js_errors():
         }
         """)
     if js_errors:
-        raise Exception('java script errors: {}'.format(js_errors))
+        report_error('java script errors: {}'.format(js_errors))
+
+def report_error(message):
+    print(message)
+    import time
+
+    time.sleep(60)
+    raise Exception(message)
 
 
 def filter_non_serializable(arg):
