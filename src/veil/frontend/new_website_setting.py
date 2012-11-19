@@ -48,7 +48,7 @@ def load_website_config(purpose):
     return config
 
 
-def website_reverse_proxy(host, port):
+def website_locations(host, port):
     return {
         '/': {
             '_': """

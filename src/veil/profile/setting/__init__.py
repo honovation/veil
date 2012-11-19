@@ -14,9 +14,11 @@ with veil_component.init_component(__name__):
     from veil.backend.new_queue_setting import job_worker_program
     from veil.backend.new_queue_setting import queue_client_resource
     from veil.backend.new_bucket_setting import bucket_resource
+    from veil.backend.new_bucket_setting import bucket_location
     from veil.frontend.new_nginx_setting import nginx_program
     from veil.frontend.new_nginx_setting import nginx_server
     from veil.frontend.new_nginx_setting import nginx_reverse_proxy_location
     from veil.frontend.new_website_setting import website_program
-    from veil.frontend.new_website_setting import website_reverse_proxy
+    from veil.frontend.new_website_setting import website_locations
     from veil.frontend.new_website_setting import website_resource
+    from veil.frontend.new_captcha_setting import captcha_resources

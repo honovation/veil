@@ -6,7 +6,7 @@ from veil.environment.setting import *
 def redis_program(purpose, host, port):
     return objectify({
         '{}_redis'.format(purpose): {
-            'execute_command': 'redis-server {}'.format(VEIL_ETC_DIR / '{}_redis.conf'.format(purpose)),
+            'execute_command': 'redis-server {}'.format(VEIL_ETC_DIR / '{}_redis.conf'.format(purpose.replace('_', '-'))),
             'installer_providers': ['veil.backend.redis'],
             'resources': [('redis_server', {
                 'purpose': purpose,
@@ -26,7 +26,7 @@ def redis_client_resource(purpose, host, port):
 
 
 def load_redis_client_config(purpose):
-    config = load_config_from(VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose), 'host', 'port')
+    config = load_config_from(VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')), 'host', 'port')
     config.port = int(config.port)
     return config
 

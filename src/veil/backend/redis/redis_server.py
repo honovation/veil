@@ -16,7 +16,7 @@ def install_redis_server(purpose, host, port):
             data_directory,
             owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770),
         file_resource(
-            VEIL_ETC_DIR / '{}_redis.conf'.format(purpose),
+            VEIL_ETC_DIR / '{}_redis.conf'.format(purpose.replace('_', '-')),
             content=get_template('redis-server.conf.j2').render(config={
                 'host': host,
                 'port': port,
