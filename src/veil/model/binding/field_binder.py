@@ -10,6 +10,7 @@ import pytz
 from pytz import timezone, UnknownTimeZoneError
 from dateutil.parser import parse
 from veil.model.binding.invalid import Invalid
+from veil.frontend.locale import DEFAULT_CLIENT_TIMEZONE
 
 _EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9_=%.+-]+@([a-zA-Z0-9_=%+-]+\.)+[a-zA-Z]{2,6}$')
 
@@ -127,7 +128,7 @@ def to_datetime(format='%Y-%m-%d %H:%M:%S'):
             return value
         else:
             try:
-                tz = pytz.timezone('Asia/Shanghai')
+                tz = DEFAULT_CLIENT_TIMEZONE
                 dt = datetime.strptime(value, bind.format)
                 dt_localized = tz.localize(dt)
                 return dt_localized.astimezone(pytz.utc)
