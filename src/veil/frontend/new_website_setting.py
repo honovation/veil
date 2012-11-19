@@ -21,11 +21,13 @@ def website_program(purpose, dependencies, installer_providers, resources):
     })
 
 
-def website_resource(purpose, host, port, secure_cookie_salt, master_template_directory,
+def website_resource(purpose, domain, domain_port, host, port, secure_cookie_salt, master_template_directory,
                      prevents_xsrf, recalculates_static_file_hash, clears_template_cache):
     return 'website', {
         'purpose': purpose,
         'config': {
+            'domain': domain,
+            'domain_port': domain_port,
             'host': host,
             'port': port,
             'secure_cookie_salt': secure_cookie_salt,
@@ -39,7 +41,7 @@ def website_resource(purpose, host, port, secure_cookie_salt, master_template_di
 
 def load_website_config(purpose):
     config = load_config_from(VEIL_ETC_DIR / '{}-website.cfg'.format(purpose),
-        'host', 'port', 'secure_cookie_salt', 'master_template_directory',
+        'domain', 'domain_port', 'host', 'port', 'secure_cookie_salt', 'master_template_directory',
         'prevents_xsrf', 'recalculates_static_file_hash', 'clears_template_cache')
     config.port = int(config.port)
     config.prevents_xsrf = unicode(True) == config.prevents_xsrf

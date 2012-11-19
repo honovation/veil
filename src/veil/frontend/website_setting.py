@@ -9,6 +9,11 @@ from veil.model.collection import *
 from veil.utility.path import *
 from veil.development.source_code_monitor_setting import source_code_monitor_settings
 from veil.development.self_checker_setting import self_checker_settings
+from .new_website_setting import load_website_config
+
+def get_website_url_prefix(purpose):
+    config = load_website_config(purpose)
+    return 'http://{}:{}'.format(config.domain, config.domain_port)
 
 def init():
     register_settings_coordinator(add_website_reverse_proxy_servers)
@@ -47,30 +52,6 @@ def _website_settings(purpose, port, dependencies, **updates):
             }
         } if 'test' != VEIL_ENV else {}
     })
-
-
-def get_website_options(purpose):
-    config = get_settings()['{}_website'.format(purpose)]
-    return objectify({
-        'recalculates_static_file_hash': config.get('recalculates_static_file_hash', True),
-        'clears_template_cache': config.get('clears_template_cache', True),
-        'prevents_xsrf': config.get('prevents_xsrf', True),
-        'master_template_directory': config.get('master_template_directory', ''),
-        'secure_cookie_salt': config.get('secure_cookie_salt', ''),
-        'host': config.host,
-        'port': config.port,
-        'processes_count': config.get('processes_count', 1),
-        'inline_static_files_directory': config.inline_static_files_directory,
-        'external_static_files_directory': config.external_static_files_directory,
-        'domain': config.domain,
-        'domain_port': config.domain_port
-    })
-
-
-def get_website_url_prefix(purpose):
-    website_options = get_website_options(purpose)
-    return 'http://{}:{}'.format(website_options.domain, website_options.domain_port)
-
 
 def website_program(website, dependencies):
     resources = [component_resource('veil.frontend.web')]

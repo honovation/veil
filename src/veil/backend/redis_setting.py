@@ -41,14 +41,6 @@ def redis_settings(primary_purpose, *other_purposes, **updates):
         total_settings['{}_redis'.format(other_purpose)] = settings
     return total_settings
 
-def get_redis_options(purpose):
-    config = get_settings()['{}_redis'.format(purpose)]
-    return objectify({
-        'host': config.bind,
-        'port': config.port,
-        'password': config.get('password')
-    })
-
 def redis_server_program(purpose):
     return {
         'execute_command': 'veil backend redis server-up {}'.format(purpose),

@@ -12,7 +12,7 @@ import tornado.ioloop
 from veil.environment import *
 from veil.frontend.web import *
 from veil.development.test import *
-from veil.frontend.website_setting import get_website_options
+from veil.frontend.website_setting import get_website_url_prefix
 from .live_document import require_current_context_being
 from .live_document import document_statement
 
@@ -149,11 +149,8 @@ def execute_io_loop(timeout):
         raise
 
 
-def get_url(website, path):
-    website_options = get_website_options(website)
-    domain = website_options.domain
-    domain_port = website_options.domain_port
-    url_prefix = 'http://{}:{}'.format(domain, domain_port)
+def get_url(purpose, path):
+    url_prefix = get_website_url_prefix(purpose)
     return '{}{}'.format(url_prefix, path)
 
 
