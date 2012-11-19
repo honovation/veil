@@ -9,7 +9,7 @@ import uuid
 import veil_component
 from veil.development.test import *
 from .table_dependency import check_table_dependencies
-from veil.backend.database.database_client_setting import get_database_client_options
+from .database_client_installer import load_database_client_config
 
 LOGGER = getLogger(__name__)
 
@@ -46,10 +46,10 @@ def require_database(purpose, component_name=None, verify_db=False):
         raise Exception('use register_database whenever possible')
     if verify_db and purpose in instances:
         instances[purpose].reconnect_if_broken_per_verification()
-    database_client_options = get_database_client_options(purpose)
-    database_client_options.pop('driver', None)
     if purpose not in instances:
-        instances[purpose] = connect(purpose=purpose, **database_client_options)
+        config = load_database_client_config(purpose)
+        __import__(config.pop('driver'))
+        instances[purpose] = connect(purpose=purpose, **config)
     db = Database(purpose, component_name, instances[purpose])
     executing_test = get_executing_test(optional=True)
     if executing_test:
@@ -66,7 +66,6 @@ def close_databases():
 
 
 def connect(purpose, type, host, port, database, user, password, schema):
-    __import__('veil.backend.database.{}'.format(type))
     if type in adapter_classes:
         adapter = adapter_classes[type](
             host=host, port=port,

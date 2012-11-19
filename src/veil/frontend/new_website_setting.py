@@ -38,7 +38,7 @@ def website_resource(purpose, host, port, secure_cookie_salt, master_template_di
 
 
 def load_website_config(purpose):
-    config = load_config_from(VEIL_ETC_DIR / '{}_website.cfg'.format(purpose),
+    config = load_config_from(VEIL_ETC_DIR / '{}-website.cfg'.format(purpose),
         'host', 'port', 'secure_cookie_salt', 'master_template_directory',
         'prevents_xsrf', 'recalculates_static_file_hash', 'clears_template_cache')
     config.port = int(config.port)
@@ -79,5 +79,13 @@ def website_reverse_proxy(host, port):
         '~ ^/static/v-(.*)/': {
             'alias': VEIL_VAR_DIR / 'inline-static-files' / '$1',
             'expires': '365d'
+        },
+        '/static/': {
+            '_': """
+                if ($args ~* v=(.+)) {
+                    expires 365d;
+                }
+                """,
+            'alias': VEIL_HOME / 'static' / ''
         }
     }

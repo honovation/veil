@@ -5,7 +5,7 @@ from veil_installer import *
 from veil.development.test import *
 from veil.frontend.template import *
 from veil.environment import *
-from veil.backend.new_redis_setting import load_redis_config
+from veil.backend.new_redis_setting import load_redis_client_config
 
 LOGGER = getLogger(__name__)
 
@@ -17,8 +17,8 @@ def register_redis(purpose):
 
 def require_redis(purpose):
     if purpose not in instances:
-        redis_config = load_redis_config(purpose)
-        instances[purpose] = Redis(**redis_config)
+        redis_client_config = load_redis_client_config(purpose)
+        instances[purpose] = Redis(**redis_client_config)
     executing_test = get_executing_test(optional=True)
     if executing_test:
         def flush():
@@ -30,6 +30,6 @@ def require_redis(purpose):
 @using_isolated_template
 def install_redis_client(purpose, host, port):
     resources = list(BASIC_LAYOUT_RESOURCES)
-    resources.append(file_resource(VEIL_ETC_DIR / '{}_redis.cfg'.format(purpose), content=get_template(
+    resources.append(file_resource(VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose), content=get_template(
         'redis-client.cfg.j2').render(host=host, port=port)))
     return [], resources

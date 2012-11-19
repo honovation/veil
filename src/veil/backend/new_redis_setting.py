@@ -25,8 +25,8 @@ def redis_client_resource(purpose, host, port):
     })
 
 
-def load_redis_config(purpose):
-    config = load_config_from(VEIL_ETC_DIR / '{}_redis.cfg'.format(purpose), 'host', 'port')
+def load_redis_client_config(purpose):
+    config = load_config_from(VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose), 'host', 'port')
     config.port = int(config.port)
     return config
 

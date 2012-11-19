@@ -7,6 +7,6 @@ from veil.frontend.template import *
 @using_isolated_template
 def install_website(purpose, config):
     resources = list(BASIC_LAYOUT_RESOURCES)
-    resources.append(file_resource(VEIL_ETC_DIR / '{}_website.cfg'.format(purpose), content=get_template(
+    resources.append(file_resource(VEIL_ETC_DIR / '{}-website.cfg'.format(purpose), content=get_template(
         'website.cfg.j2').render(config=config)))
     return [], resources
