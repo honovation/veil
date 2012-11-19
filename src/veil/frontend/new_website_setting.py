@@ -1,35 +1,40 @@
 from __future__ import unicode_literals, print_function, division
+from veil_installer import *
 from veil.environment import *
 from veil.environment.setting import *
 from veil.model.collection import *
 
-def website_program(
-        purpose, host, port, secure_cookie_salt, master_template_directory,
-        prevents_xsrf, recalculates_static_file_hash, clears_template_cache, dependencies):
+def website_program(purpose, dependencies, installer_providers, resources):
+    resources = list(resources)
     additional_args = []
     for dependency in dependencies:
+        resources.append(component_resource(dependency))
         additional_args.append('--dependency {}'.format(dependency))
     return objectify({
         '{}_website'.format(purpose): {
             'execute_command': 'veil frontend web up {} {}'.format(
                 purpose, ' '.join(additional_args)),
-            'installer_providers': ['veil.frontend.web'],
-            'resources': [('website', {
-                'purpose': purpose,
-                'config': {
-                    'host': host,
-                    'port': port,
-                    'secure_cookie_salt': secure_cookie_salt,
-                    'master_template_directory': master_template_directory,
-                    'prevents_xsrf': prevents_xsrf,
-                    'recalculates_static_file_hash': recalculates_static_file_hash,
-                    'clears_template_cache': clears_template_cache
-                },
-                'dependencies': dependencies
-            })],
+            'installer_providers': installer_providers,
+            'resources': resources,
             'reloads_on_change': True
         }
     })
+
+
+def website_resource(purpose, host, port, secure_cookie_salt, master_template_directory,
+                     prevents_xsrf, recalculates_static_file_hash, clears_template_cache):
+    return 'website', {
+        'purpose': purpose,
+        'config': {
+            'host': host,
+            'port': port,
+            'secure_cookie_salt': secure_cookie_salt,
+            'master_template_directory': master_template_directory,
+            'prevents_xsrf': prevents_xsrf,
+            'recalculates_static_file_hash': recalculates_static_file_hash,
+            'clears_template_cache': clears_template_cache
+        }
+    }
 
 
 def load_website_config(purpose):
