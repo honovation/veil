@@ -41,3 +41,38 @@ def load_website_config(purpose):
     config.recalculates_static_file_hash = unicode(True) == config.recalculates_static_file_hash
     config.clears_template_cache = unicode(True) == config.clears_template_cache
     return config
+
+
+def website_reverse_proxy(host, port):
+    return {
+        '/': {
+            '_': """
+                if ($content_type ~* multipart/form-data) {
+                    upload_pass @after_upload;
+                    upload_store %s 1;
+                    upload_set_form_field $upload_field_name.name "$upload_file_name";
+                    upload_set_form_field $upload_field_name.content_type "$upload_content_type";
+                    upload_set_form_field $upload_field_name.path "$upload_tmp_path";
+                    upload_pass_args on;
+                    upload_pass_form_field "^.*$";
+                    upload_cleanup 400-599;
+                    break;
+                }
+                proxy_pass http://%s:%s;
+                proxy_set_header   Host             $host;
+                proxy_set_header   X-Real-IP        $remote_addr;
+                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+                """ % (
+                VEIL_VAR_DIR / 'uploaded-files',
+                host, port),
+        },
+        '@after_upload': {
+            'proxy_pass': 'http://{}:{}'.format(host, port)
+        },
+        # inline static files
+        # /static/v-xxxx/a-b.js
+        '~ ^/static/v-(.*)/': {
+            'alias': VEIL_VAR_DIR / 'inline-static-files' / '$1',
+            'expires': '365d'
+        }
+    }
