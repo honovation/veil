@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 from veil.utility.hash import *
 from veil.utility.path import *
-from veil.backend.bucket_setting import get_bucket_options
+from .bucket_installer import load_bucket_config
 
 LOGGER = logging.getLogger(__name__)
 instances = {} # purpose => instance
@@ -13,11 +13,11 @@ def register_bucket(purpose):
 
 def require_bucket(purpose):
     if purpose not in instances:
-        bucket_options = get_bucket_options(purpose)
-        bucket_type = bucket_options.type
+        config = load_bucket_config(purpose)
+        bucket_type = config.type
         if 'filesystem' == bucket_type:
             instances[purpose] = FilesystemBucket(
-                bucket_options.base_directory, bucket_options.base_url)
+                config.base_directory, config.base_url)
         else:
             raise NotImplementedError('unknown bucket type: {}'.format(bucket_type))
     return instances[purpose]

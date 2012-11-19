@@ -86,7 +86,7 @@ def load_config_from(path, *expected_keys):
             config[key] = value
     assert set(expected_keys) == set(config.keys()),\
     'config file {} does not provide exact keys we want, expected: {}, actual: {}'.format(
-        path, expected_keys, config.keys())
+        path, set(expected_keys), set(config.keys()))
     return config
 
 
