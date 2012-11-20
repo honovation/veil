@@ -76,19 +76,15 @@ case "$1" in
     down)
         exec veil environment supervisor down
         ;;
-    install-component)
+    install)
         shift
-        exec python -m veil_installer component?$@
-        ;;
-    install-supervisor)
-        shift
-        exec python -m veil_installer --installer-provider veil.environment.supervisor supervisor
+        exec python -m veil_installer $@
         ;;
     install-program)
         shift
         exec python -m veil_installer --installer-provider veil.environment.supervisor program?$@
         ;;
-    install)
+    install-server)
         shift
         exec python -m veil_installer --installer-provider veil.environment.supervisor veil_server $@
         ;;

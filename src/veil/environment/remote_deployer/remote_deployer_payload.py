@@ -55,7 +55,7 @@ def pull_veil(veil_version):
 
 def deploy(veil_home, veil_env, veil_server_name):
     env = os.environ.copy()
-    env['VEIL_DEPENDENCY_MIRROR'] = 'http://200.200.200.25:8080'
+#    env['VEIL_DEPENDENCY_MIRROR'] = 'http://200.200.200.25:8080'
     shell_execute('/opt/veil/bin/veil :{}/{} deploy'.format(veil_env, veil_server_name), cwd=veil_home, env=env)
 
 

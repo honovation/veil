@@ -4,10 +4,10 @@ from veil.utility.shell import *
 
 @script('deploy')
 def deploy():
-    shell_execute('veil install-supervisor')
+    shell_execute('veil install python_package?supervisor')
     shell_execute('veil down')
-    shell_execute('veil install-component ljmall')
+    shell_execute('veil install component?ljmall')
     shell_execute('veil ljmall backup deploy_backup')
-    shell_execute('veil install')
+    shell_execute('veil install-server')
     shell_execute('veil up --daemonize')
     shell_execute('veil migrate')
