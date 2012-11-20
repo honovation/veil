@@ -1,10 +1,11 @@
 from __future__ import unicode_literals, print_function, division
+from veil.environment import *
 from veil.environment.setting import *
 from veil.utility.shell import *
 
 def supervisorctl(action, *arguments, **kwargs):
     return shell_execute('veil execute supervisorctl -c {} {} {}'.format(
-        get_option('config_file'), action, ' '.join(arguments)), **kwargs)
+        VEIL_ETC_DIR / 'supervisor.cfg', action, ' '.join(arguments)), **kwargs)
 
 
 def is_supervisord_running():
@@ -14,7 +15,7 @@ def is_supervisord_running():
         return False
     try:
         output = shell_execute('veil execute supervisorctl -c {} {}'.format(
-            get_option('config_file'), 'status'), capture=True)
+            VEIL_ETC_DIR / 'supervisor.cfg', 'status'), capture=True)
         return 'refused' not in output
     except ShellExecutionError, e:
         if 'SHUTDOWN_STATE' in e.output:
@@ -26,7 +27,3 @@ def are_all_supervisord_programs_running():
         if line and 'RUNNING' not in line:
             return False
     return True
-
-
-def get_option(key):
-    return get_settings()['supervisor'][key]

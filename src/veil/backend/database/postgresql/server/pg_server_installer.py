@@ -5,6 +5,7 @@ import time
 import logging
 from veil.utility.shell import *
 from veil.environment import *
+from veil.environment.setting import *
 from veil.utility.path import *
 from veil.frontend.template import *
 from veil_installer import *
@@ -32,6 +33,8 @@ def install_postgresql_server(purpose, host, port, owner, owner_password, user, 
             })),
         file_resource(pg_config_dir / 'pg_hba.conf', content=get_template('pg_hba.conf.j2').render(host=host)),
         file_resource(pg_config_dir / 'pg_ident.conf', content=get_template('pg_ident.conf.j2').render()),
+        file_resource(pg_config_dir / 'postgresql-maintainence.cfg', content=get_template(
+            'postgresql-maintainence.cfg.j2').render(owner=owner, owner_password=owner_password)),
         symbolic_link_resource(pg_data_dir / 'postgresql.conf', to=pg_config_dir / 'postgresql.conf'),
         symbolic_link_resource(pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf'),
         symbolic_link_resource(pg_data_dir / 'pg_ident.conf', to=pg_config_dir / 'pg_ident.conf'),
@@ -128,3 +131,7 @@ def postgresql_server_running(data_directory, owner):
     finally:
         shell_execute('su {} -c "pg_ctl -D {} stop"'.format(
             owner, data_directory))
+
+def load_postgresql_maintainence_config(purpose):
+    return load_config_from(VEIL_ETC_DIR / '{}_postgresql'.format(purpose) / 'postgresql-maintainence.cfg',
+        'owner', 'owner_password')

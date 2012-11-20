@@ -12,6 +12,7 @@ from veil.utility.clock import *
 from veil.utility.hash import *
 from veil.utility.path import *
 from veil.backend.database.client import *
+from ..server.pg_server_installer import load_postgresql_maintainence_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,13 +24,15 @@ def drop_database(purpose):
         supervisorctl('restart', '{}_postgresql'.format(purpose))
         wait_for_server_up(purpose)
     try:
+        config = load_database_client_config(purpose)
+        maintainence_config = load_postgresql_maintainence_config(purpose)
         env = os.environ.copy()
-        env['PGPASSWORD'] = get_option(purpose, 'owner_password')
+        env['PGPASSWORD'] = maintainence_config.owner_password
         shell_execute('dropdb -h {host} -p {port} -U {owner} {database}'.format(
-            host=get_option(purpose, 'host'),
-            port=get_option(purpose, 'port'),
-            owner=get_option(purpose, 'owner'),
-            database=get_option(purpose, 'database')), env=env, capture=True)
+            host=config.host,
+            port=config.port,
+            owner=maintainence_config.owner,
+            database=config.database), env=env, capture=True)
     except ShellExecutionError, e:
         if 'not exist' in e.output:
             pass # ignore
@@ -86,19 +89,24 @@ def wait_for_server_up(purpose):
             psql(purpose, '-c "SELECT 1"', database='postgres', capture=True)
             break
         except:
+            import traceback
+            traceback.print_exc()
             print('[MIGRATE] wait for postgresql...')
             time.sleep(3)
 
 
+@script('create-database')
 def create_database_if_not_exists(purpose):
     try:
+        config = load_database_client_config(purpose)
+        maintainence_config = load_postgresql_maintainence_config(purpose)
         env = os.environ.copy()
-        env['PGPASSWORD'] = get_option(purpose, 'owner_password')
+        env['PGPASSWORD'] = maintainence_config.owner_password
         shell_execute('createdb -h {host} -p {port} -U {owner} {database} -E {encoding}'.format(
-            host=get_option(purpose, 'host'),
-            port=get_option(purpose, 'port'),
-            owner=get_option(purpose, 'owner'),
-            database=get_option(purpose, 'database'),
+            host=config.host,
+            port=config.port,
+            owner=maintainence_config.owner,
+            database=config.database,
             encoding='UTF8'), env=env, capture=True)
     except ShellExecutionError, e:
         if 'already exists' in e.output:
@@ -139,13 +147,14 @@ def execute_migration_script(purpose, migration_script):
 
 
 def psql(purpose, extra_arg, database=None, **kwargs):
+    config = load_database_client_config(purpose)
     env = os.environ.copy()
-    env['PGPASSWORD'] = get_option(purpose, 'owner_password')
+    env['PGPASSWORD'] = config.password
     shell_execute('psql -h {host} -p {port} -U {user} {extra_arg} --set ON_ERROR_STOP=1 {database}'.format(
-        host=get_option(purpose, 'host'),
-        port=get_option(purpose, 'port'),
-        user=get_option(purpose, 'user'),
-        database=database or get_option(purpose, 'database'),
+        host=config.host,
+        port=config.port,
+        user=config.user,
+        database=database or config.database,
         extra_arg=extra_arg), env=env, **kwargs)
 
 
@@ -163,11 +172,6 @@ def lock_migration_scripts(purpose):
 def reset(purpose):
     shell_execute('veil backend database postgresql drop-database {}'.format(purpose))
     shell_execute('veil backend database postgresql migrate {}'.format(purpose))
-
-
-def get_option(purpose, key):
-    return get_settings()['{}_postgresql'.format(purpose)][key]
-
 
 def check_if_locked_migration_scripts_being_changed():
     for purpose in os.listdir('./db'):
