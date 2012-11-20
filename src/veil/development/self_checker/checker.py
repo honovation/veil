@@ -20,6 +20,7 @@ def quick_check(checker_name=None):
     if checker_name:
         get_self_checkers()[checker_name]()
         return
+    shell_execute('git add .')
     shell_execute('veil migrate')
     for checker_name, self_checker in get_self_checkers().items():
         print('[CHECK] checking {}...'.format(checker_name))
