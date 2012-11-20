@@ -1,12 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 from veil_installer import *
-from veil.environment.setting import *
-
-def program_resource(name):
-    return 'program', dict(name=name)
-
+from veil.environment import *
 
 @composite_installer('program')
 def install_program(name):
-    config = get_settings().supervisor
-    return config.programs[name].get('installer_providers', []), config.programs[name].get('resources', [])
+    program = list_current_veil_server_programs()[name]
+    return program.installer_providers, program.resources
