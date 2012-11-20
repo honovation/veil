@@ -14,13 +14,13 @@ from .environment import BASIC_LAYOUT_RESOURCES
 from .environment import split_veil_server_code
 
 
-def veil_server(internal_ip, programs, deployed_via):
+def veil_server(deployed_via, internal_ip, programs):
     from veil.model.collection import objectify
 
     return objectify({
+        'deployed_via': deployed_via,
         'internal_ip': internal_ip,
-        'programs': programs,
-        'deployed_via': deployed_via
+        'programs': programs
     })
 
 
@@ -30,22 +30,6 @@ def get_veil_servers(env):
 
 def get_current_veil_server():
     return get_application().ENVIRONMENTS[VEIL_ENV][VEIL_SERVER_NAME]
-
-
-def is_current_veil_server_hosting(program_name):
-    if VEIL_SERVER in ['test', 'development']:
-        return True
-    else:
-        return program_name in get_current_veil_server().programs
-
-
-def get_veil_server_internal_ip_hosting(program):
-    if VEIL_SERVER in ['test', 'development']:
-        return '127.0.0.1'
-    for server in get_application().ENVIRONMENTS[VEIL_ENV].values():
-        if program in server.programs:
-            return server.internal_ip
-    raise Exception('no server hosting program: {}'.format(program))
 
 
 def get_remote_veil_server(code):
