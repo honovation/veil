@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.environment.setting import *
+from veil.environment import *
 from veil.frontend.cli import *
 from veil.utility.shell import *
 
@@ -12,7 +12,7 @@ def migrate():
 
 def get_migration_commands():
     migrate_commands = {}
-    for program_name, program in get_settings().supervisor.programs.items():
+    for program_name, program in list_current_veil_server_programs().items():
         if program.get('migrate_command'):
             migrate_commands[program_name] = program.migrate_command
     return migrate_commands

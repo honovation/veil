@@ -6,6 +6,7 @@ def postgresql_program(purpose, host, port, owner, owner_password, user, passwor
     return objectify({
         '{}_postgresql'.format(purpose): {
             'execute_command': 'postgres -D {}'.format(VEIL_VAR_DIR / '{}_postgresql'.format(purpose)),
+            'migrate_command': 'veil backend database postgresql migrate {}'.format(purpose),
             'installer_providers': ['veil.backend.database.postgresql'],
             'resources': [('postgresql', {
                 'purpose': purpose,
