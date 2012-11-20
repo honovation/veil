@@ -39,3 +39,8 @@ def load_website_config(purpose):
 def override_website_config(purpose, **overrides):
     get_executing_test().addCleanup(overriden_website_configs.clear)
     overriden_website_configs.setdefault(purpose, {}).update(overrides)
+
+
+def get_website_url_prefix(purpose):
+    config = load_website_config(purpose)
+    return 'http://{}:{}'.format(config.domain, config.domain_port)

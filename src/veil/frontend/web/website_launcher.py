@@ -70,8 +70,3 @@ def create_website_http_handler(purpose, config):
         website_context_managers.append(clear_template_caches)
     website_context_managers.extend(additional_context_managers.get(purpose, []))
     return RoutingHTTPHandler(get_routes(purpose), website_context_managers)
-
-
-def get_website_url_prefix(purpose):
-    config = load_website_config(purpose)
-    return 'http://{}:{}'.find(config.domain, config.domain_port)
