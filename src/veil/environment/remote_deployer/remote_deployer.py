@@ -11,11 +11,12 @@ import fabric.api
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'remote_deployer_payload.py')
 
 @script('deploy-env')
-def deploy_env(deploying_env):
-    update_branch(deploying_env)
+def deploy_env(deploying_env, from_branch=None):
+    update_branch(deploying_env, from_branch)
     for veil_server_name in sorted(get_veil_servers(deploying_env).keys()):
         deploy_server('{}/{}'.format(deploying_env, veil_server_name))
-    tag_deploy(deploying_env)
+    if not from_branch:
+        tag_deploy(deploying_env)
 
 
 @script('deploy-server')
@@ -43,12 +44,13 @@ def deploy_server(remote_veil_server, deployed_via=None):
         veil_server_env, veil_server_name))
 
 
-def update_branch(deploying_env):
+def update_branch(deploying_env, from_branch):
+    from_branch = from_branch or 'master'
     print(green('update env-{} branch...'.format(deploying_env)))
     shell_execute('git checkout env-{}'.format(deploying_env), cwd=VEIL_HOME)
-    shell_execute('git merge master --ff-only', cwd=VEIL_HOME)
+    shell_execute('git merge {} --ff-only'.format(from_branch), cwd=VEIL_HOME)
     shell_execute('git push origin env-{}'.format(deploying_env), cwd=VEIL_HOME)
-    shell_execute('git checkout master', cwd=VEIL_HOME)
+    shell_execute('git checkout {}'.format(from_branch), cwd=VEIL_HOME)
 
 
 def tag_deploy(deploying_env):
