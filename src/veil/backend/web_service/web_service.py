@@ -3,7 +3,7 @@ import veil_component
 from veil.environment.setting import *
 from suds.client import Client
 from suds.client import WebFault
-from veil.backend.web_service_setting import get_web_service_options
+from .web_service_client_installer import load_web_service_client_config
 
 WebFault = WebFault
 
@@ -30,9 +30,9 @@ def check_web_service_dependencies(component_names, expected_dependencies):
 
 
 def require_web_service(purpose):
-    web_service_options = get_web_service_options(purpose)
     if purpose not in instances:
-        suds_client = Client(web_service_options.url)
+        config = load_web_service_client_config(purpose)
+        suds_client = Client(config.url)
         instances[purpose] = WebService(suds_client)
     return instances[purpose]
 

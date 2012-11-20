@@ -8,9 +8,3 @@ def web_service_settings(purpose, url):
             'url': url
         }
     })
-
-def get_web_service_options(purpose):
-    config = get_settings()['{}_web_service'.format(purpose)]
-    return objectify({
-        'url': config.url
-    })
