@@ -17,4 +17,5 @@ def install_queue_client(type, host, port):
 def load_queue_client_config():
     config = load_config_from(VEIL_ETC_DIR / 'queue-client.cfg',
         'type', 'host', 'port')
+    config.port = int(config.port)
     return config
