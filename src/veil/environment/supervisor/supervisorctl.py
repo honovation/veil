@@ -13,6 +13,8 @@ def is_supervisord_running():
         import supervisor
     except:
         return False
+    if not (VEIL_ETC_DIR / 'supervisor.cfg').exists():
+        return False
     try:
         output = shell_execute('veil execute supervisorctl -c {} {}'.format(
             VEIL_ETC_DIR / 'supervisor.cfg', 'status'), capture=True)

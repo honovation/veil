@@ -3,7 +3,6 @@ from argparse import ArgumentParser
 import time
 from veil.utility.shell import *
 from veil.environment import *
-from veil.environment.setting import *
 from veil.frontend.cli import script
 from .supervisorctl import are_all_supervisord_programs_running
 from .supervisorctl import supervisorctl
@@ -44,6 +43,8 @@ def bring_up_supervisor(*argv):
 
 @script('down')
 def bring_down_supervisor():
+    if not is_supervisord_running():
+        return
     supervisorctl('shutdown')
     while is_supervisord_running():
         time.sleep(3)
