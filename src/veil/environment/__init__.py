@@ -32,13 +32,6 @@ def get_current_veil_server():
     return get_application().ENVIRONMENTS[VEIL_ENV][VEIL_SERVER_NAME]
 
 
-def list_current_veil_server_programs():
-    import __veil__
-    from veil.model.collection import objectify
-
-    return objectify(__veil__.ENVIRONMENT[VEIL_ENV][VEIL_SERVER_NAME]['programs'])
-
-
 def is_current_veil_server_hosting(program_name):
     if VEIL_SERVER in ['test', 'development']:
         return True

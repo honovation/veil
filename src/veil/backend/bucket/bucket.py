@@ -23,6 +23,7 @@ def require_bucket(purpose):
     return instances[purpose]
 
 
+
 class Bucket(object):
     def store(self, key, file):
         raise NotImplementedError()

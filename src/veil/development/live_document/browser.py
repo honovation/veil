@@ -12,7 +12,6 @@ import tornado.ioloop
 from veil.environment import *
 from veil.frontend.web import *
 from veil.development.test import *
-from veil.frontend.website_setting import get_website_url_prefix
 from .live_document import require_current_context_being
 from .live_document import document_statement
 

@@ -13,7 +13,7 @@ def install_supervisor(programs, program_groups=None):
     inet_http_server_config = {
         'inet_http_server': {
             'host': 'localhost',
-            'port': 9090
+            'port': 9091 if 'test' == VEIL_SERVER else 9090
         }
     }
     logging_config = {

@@ -5,7 +5,7 @@ from veil_installer import *
 from veil.development.test import *
 from veil.frontend.template import *
 from veil.environment import *
-from veil.backend.new_redis_setting import load_redis_client_config
+from veil.environment.setting import *
 
 LOGGER = getLogger(__name__)
 
@@ -23,13 +23,22 @@ def require_redis(purpose):
     if executing_test:
         def flush():
             instances[purpose].flushall()
+
         executing_test.addCleanup(flush)
     return instances[purpose]
+
 
 @composite_installer('redis_client')
 @using_isolated_template
 def install_redis_client(purpose, host, port):
     resources = list(BASIC_LAYOUT_RESOURCES)
-    resources.append(file_resource(VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')), content=get_template(
-        'redis-client.cfg.j2').render(host=host, port=port)))
+    resources.append(
+        file_resource(VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')), content=get_template(
+            'redis-client.cfg.j2').render(host=host, port=port)))
     return [], resources
+
+
+def load_redis_client_config(purpose):
+    config = load_config_from(VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')), 'host', 'port')
+    config.port = int(config.port)
+    return config

@@ -4,15 +4,17 @@ from veil.environment import *
 
 @composite_installer('veil_server')
 def install_veil_server():
-    veil_server_programs = list_current_veil_server_programs()
+    veil_server = get_current_veil_server()
     installer_providers = ['veil.environment.supervisor']
     resources = [('supervisor', {
-        'programs': to_supervisor_programs(veil_server_programs),
-        'program_groups': to_supervisor_program_groups(veil_server_programs)
+        'programs': to_supervisor_programs(veil_server.programs),
+        'program_groups': to_supervisor_program_groups(veil_server.programs)
     })]
-    for program in veil_server_programs.values():
+    for program in veil_server.programs.values():
         installer_providers.extend(program.get('installer_providers', []))
         resources.extend(program.get('resources', []))
+    installer_providers.extend(veil_server.get('installer_providers', []))
+    resources.extend(veil_server.get('resources', []))
     return installer_providers, resources
 
 

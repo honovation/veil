@@ -4,5 +4,5 @@ from veil.environment import *
 
 @composite_installer('program')
 def install_program(name):
-    program = list_current_veil_server_programs()[name]
+    program = get_current_veil_server().programs[name]
     return program.installer_providers, program.resources

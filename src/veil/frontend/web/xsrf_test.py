@@ -1,19 +1,18 @@
 from __future__ import unicode_literals, print_function, division
 import httplib
 from veil.development.test import *
-from veil.environment.setting import *
-from veil.environment import VEIL_SERVER
 from .client import start_website_and_client
 from .routing import *
+from .web_installer import override_website_config
 
 class XsrfTest(TestCase):
     def setUp(self):
         super(XsrfTest, self).setUp()
-        override_test_settings({
-            'test_website': {
-                'prevents_xsrf': True
-            }
-        })
+        override_website_config('test',
+            domain='', domain_port=0, host='localhost', port=4999,
+            secure_cookie_salt='secret', master_template_directory='',
+            prevents_xsrf=True, recalculates_static_file_hash=True,
+            clears_template_cache=True)
 
     def test_form_submission(self):
         @route('POST', '/', website='test')

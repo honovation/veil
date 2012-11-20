@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil_installer import *
 from veil.environment import *
-from veil.environment.setting import *
 from veil.model.collection import *
 
 def website_program(purpose, dependencies, installer_providers, resources):
@@ -37,17 +36,6 @@ def website_resource(purpose, domain, domain_port, host, port, secure_cookie_sal
             'clears_template_cache': clears_template_cache
         }
     }
-
-
-def load_website_config(purpose):
-    config = load_config_from(VEIL_ETC_DIR / '{}-website.cfg'.format(purpose),
-        'domain', 'domain_port', 'host', 'port', 'secure_cookie_salt', 'master_template_directory',
-        'prevents_xsrf', 'recalculates_static_file_hash', 'clears_template_cache')
-    config.port = int(config.port)
-    config.prevents_xsrf = unicode(True) == config.prevents_xsrf
-    config.recalculates_static_file_hash = unicode(True) == config.recalculates_static_file_hash
-    config.clears_template_cache = unicode(True) == config.clears_template_cache
-    return config
 
 
 def website_locations(host, port):

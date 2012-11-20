@@ -18,7 +18,7 @@ def bring_up_programs(*argv):
 
 
 def bring_up_program(program_name):
-    config = list_current_veil_server_programs()[program_name]
+    config = get_current_veil_server().programs[program_name]
     execute_command = config.execute_command
     print(execute_command)
     pass_control_to(execute_command)

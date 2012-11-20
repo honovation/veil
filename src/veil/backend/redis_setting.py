@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.model.collection import *
 from veil.environment import *
-from veil.environment.setting import *
 
 def redis_program(purpose, host, port):
     return objectify({
@@ -24,9 +23,4 @@ def redis_client_resource(purpose, host, port):
         'port': port
     })
 
-
-def load_redis_client_config(purpose):
-    config = load_config_from(VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')), 'host', 'port')
-    config.port = int(config.port)
-    return config
 

@@ -4,6 +4,7 @@ with veil_component.init_component(__name__):
     from .website_launcher import start_website
     from .website_launcher import start_test_website
     from .website_launcher import register_website_context_manager
+    from .website_launcher import get_website_url_prefix
     from .client import start_website_and_client
     from .routing import route
     from .routing import route_for

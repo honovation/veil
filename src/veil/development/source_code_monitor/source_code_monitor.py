@@ -40,7 +40,7 @@ def load_reloads_on_change_programs_components():
 
 def list_reloads_on_change_programs():
     programs = {}
-    for program_name, program in list_current_veil_server_programs().items():
+    for program_name, program in get_current_veil_server().programs.items():
         if program.get('reloads_on_change'):
             programs[program_name] = program
     return programs

@@ -5,12 +5,13 @@ from jinja2.loaders import FileSystemLoader
 from veil.frontend.template import *
 from veil.frontend.cli import *
 from veil.environment import *
-from veil.frontend.new_website_setting import load_website_config
+from veil.environment.setting import *
 from .tornado import *
 from .locale import *
 from .routing import  *
 from .static_file import *
 from .xsrf import *
+from .web_installer import load_website_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -69,3 +70,8 @@ def create_website_http_handler(purpose, config):
         website_context_managers.append(clear_template_caches)
     website_context_managers.extend(additional_context_managers.get(purpose, []))
     return RoutingHTTPHandler(get_routes(purpose), website_context_managers)
+
+
+def get_website_url_prefix(purpose):
+    config = load_website_config(purpose)
+    return 'http://{}:{}'.find(config.domain, config.domain_port)
