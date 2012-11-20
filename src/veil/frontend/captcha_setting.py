@@ -1,9 +1,7 @@
 from __future__ import unicode_literals, print_function, division
-from veil.backend.bucket_setting import bucket_settings
-from veil.backend.redis_setting import redis_settings
-from veil.environment.setting import *
+from veil.backend.bucket_setting import bucket_resource
+from veil.backend.redis_setting import redis_client_resource
 
-def captcha_settings(website, redis_port=None, overridden_redis_settings=None):
-    return merge_settings(
-        bucket_settings('captcha_image', website),
-        overridden_redis_settings or redis_settings('captcha_answer', port=redis_port))
+def captcha_resources(bucket_type, bucket_base_directory, bucket_base_url, redis_host, redis_port):
+    return [bucket_resource('captcha_image', bucket_type, bucket_base_directory, bucket_base_url),
+            redis_client_resource('captcha_answer', host=redis_host, port=redis_port)]

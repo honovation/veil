@@ -1,10 +1,23 @@
 from __future__ import unicode_literals, print_function, division
-import importlib
 import discipline_coach
 from veil.frontend.cli import *
 from veil.environment import *
-from veil.environment.setting import *
 from veil.utility.shell import *
+from veil.development.architecture import check_architecture
+from veil.development.architecture import check_encapsulation
+from veil.development.loc import check_loc
+from veil.development.live_document import check_live_document
+from veil.development.test import check_correctness
+from veil.backend.database.postgresql import check_if_locked_migration_scripts_being_changed
+
+SELF_CHECKERS = {
+    'architecture': check_architecture,
+    'encapsulation': check_encapsulation,
+    'loc': check_loc,
+    'live-document': check_live_document,
+    'correctness': check_correctness,
+    'migration-scripts': check_if_locked_migration_scripts_being_changed
+}
 
 @script('self-check')
 def self_check():
@@ -18,19 +31,11 @@ def quick_check(checker_name=None):
     for component_name in get_application_components():
         __import__(component_name) # check if all components can be loaded
     if checker_name:
-        get_self_checkers()[checker_name]()
+        SELF_CHECKERS[checker_name]()
         return
     shell_execute('git add .')
     shell_execute('veil migrate')
-    for checker_name, self_checker in get_self_checkers().items():
+    for checker_name, self_checker in SELF_CHECKERS.items():
         print('[CHECK] checking {}...'.format(checker_name))
         self_checker()
     (VEIL_HOME / '.self-check-passed').write_text(discipline_coach.calculate_git_status_hash())
-
-def get_self_checkers():
-    return {k: import_self_checker(v) for k, v in get_settings().self_checker.items()}
-
-def import_self_checker(module_and_function_name):
-    parts = module_and_function_name.split('.')
-    module = importlib.import_module('.'.join(parts[:-1]))
-    return getattr(module, parts[-1])
