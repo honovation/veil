@@ -23,3 +23,4 @@ with veil_component.init_component(__name__):
     from veil.frontend.new_website_setting import website_locations
     from veil.frontend.new_website_setting import website_resource
     from veil.frontend.new_captcha_setting import captcha_resources
+    from veil.development.new_source_code_monitor_setting import source_code_monitor_program
