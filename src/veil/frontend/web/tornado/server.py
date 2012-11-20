@@ -8,6 +8,7 @@ import httplib
 from logging import getLogger
 import re
 import tornado
+import traceback
 from tornado.httpserver import HTTPServer
 from tornado.stack_context import StackContext
 from tornado.ioloop import IOLoop
@@ -71,7 +72,7 @@ def set_http_status_code(status_code):
 
 class HTTPResponse(object):
     def __init__(self, request):
-        self._headers_written = False
+        self._headers_written = None
         self._finished = False
         self.request = request
         self.connection = self.request.connection
@@ -97,7 +98,8 @@ class HTTPResponse(object):
     def status_code(self, status_code):
         assert status_code in httplib.responses
         if self.headers_written:
-            LOGGER.warn('setting status code to {} is too late, as heads already written'.format(status_code))
+            LOGGER.warn('setting status code to {} is too late, as heads already written\n'.format(
+                status_code, self.headers_written))
         self._status_code = status_code
 
     def clear(self):
@@ -138,7 +140,7 @@ class HTTPResponse(object):
         chunk = ''.join(self._write_buffer)
         self._write_buffer = []
         if not self._headers_written:
-            self._headers_written = True
+            self._headers_written = traceback.format_stack()
             headers = self._generate_headers()
         else:
             headers = ''
