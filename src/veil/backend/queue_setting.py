@@ -65,7 +65,7 @@ def periodic_job_scheduler_program(dependencies):
 
 def job_worker_program(
         worker_name, queue_host, queue_port, queue_names, dependencies,
-        installer_proviers=(), resources=(), run_as=None):
+        installer_providers=(), resources=(), run_as=None):
     resources = list(resources)
     resources.append(component_resource('veil.backend.queue'))
     for dependency in dependencies:
@@ -77,6 +77,7 @@ def job_worker_program(
             ),
             'group': 'workers',
             'run_as': run_as or CURRENT_USER,
+            'installer_providers': installer_providers,
             'resources': resources,
             'startretries': 10,
             'startsecs': 10,
