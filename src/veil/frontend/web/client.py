@@ -50,22 +50,11 @@ class WebClient(object):
 
 
     def __enter__(self):
-        threading.Thread(target=self.execute_io_loop).start()
+        self.io_loop_executor.__enter__()
         return self
 
-    def execute_io_loop(self):
-        self.io_loop_finished = threading.Lock()
-        get_executing_test().addCleanup(self.io_loop_finished.acquire)
-        with self.io_loop_finished:
-            self.io_loop_executor.execute()
-
-
-
     def __exit__(self, type, value, traceback):
-        if value:
-            self.io_loop_executor.stop(failure=(type, value, traceback))
-        else:
-            self.io_loop_executor.stop()
+        self.io_loop_executor.__exit__(type, value, traceback)
 
 
 class SilentHTTPErrorProcessor(urllib2.HTTPErrorProcessor):

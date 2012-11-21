@@ -1,28 +1,48 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import contextlib
-import threading
-import traceback
 import os
 import selenium.webdriver
 import selenium.common.exceptions
 import jinjatag
 import atexit
-import tornado.ioloop
 from veil.environment import *
 from veil.frontend.web import *
 from veil.development.test import *
 from .live_document import require_current_context_being
 from .live_document import document_statement
 
-website_threads = {}
+current_http_server = None
 webdriver = None
 
-def open_browser_page(website, path, page_name):
-    require_website_running(website)
-    webdriver = require_webdriver()
-    webdriver.get(get_url(website, path))
-    return enter_browser_page_context(page_name)
+@contextlib.contextmanager
+def open_browser_page(website_purpose, path, page_name):
+    ensure_website_running(website_purpose)
+    with require_current_context_being(BrowserPageContext(page_name)):
+        with require_io_loop_executor():
+            webdriver = require_webdriver()
+            webdriver.get(get_url(website_purpose, path))
+            assert_current_page(page_name)
+            yield
+
+
+def ensure_website_running(purpose):
+    get_executing_test().addCleanup(reset_current_http_server)
+    global current_http_server
+    if current_http_server:
+        if current_http_server.purpose == purpose:
+            pass
+        else:
+            current_http_server.stop()
+            current_http_server = start_test_website(purpose)
+    else:
+        current_http_server = start_test_website(purpose)
+
+
+def reset_current_http_server():
+    global current_http_server
+    current_http_server.stop()
+    current_http_server = None
 
 
 @document_statement('确认所在页面')
@@ -30,7 +50,8 @@ def open_browser_page(website, path, page_name):
 def enter_browser_page_context(page_name):
     assert_current_page(page_name)
     with require_current_context_being(BrowserPageContext(page_name)):
-        yield
+        with require_io_loop_executor():
+            yield
 
 
 class BrowserPageContext(object):
@@ -65,7 +86,7 @@ class BrowserPageContext(object):
 
 
 def assert_current_page(page_name):
-    current_page_name = webdriver.execute_script(
+    current_page_name = require_webdriver().execute_script(
         """
         if (window.veil && veil.doc && veil.doc.currentPage) {
             return veil.doc.currentPage.pageName;
@@ -91,6 +112,7 @@ def assert_no_js_errors():
         """)
     if js_errors:
         report_error('java script errors: {}'.format(js_errors))
+
 
 def report_error(message):
     print(message)
@@ -126,26 +148,6 @@ def require_webdriver():
         return webdriver
     finally:
         os.chdir(old_cwd)
-
-
-def require_website_running(website):
-    get_executing_test().addCleanup(website_threads.clear)
-    if website in website_threads:
-        return
-    if website_threads:
-        raise Exception('do not support running two websites at the same time')
-    start_test_website(website)
-    website_threads[website] = threading.Thread(target=lambda: execute_io_loop(60))
-    website_threads[website].daemon = True
-    website_threads[website].start()
-
-
-def execute_io_loop(timeout):
-    try:
-        tornado.ioloop.IOLoop.instance().start()
-    except:
-        traceback.print_exc()
-        raise
 
 
 def get_url(purpose, path):
