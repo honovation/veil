@@ -32,10 +32,12 @@ def bring_up_website(website):
 def start_test_website(purpose, **kwargs):
     http_handler = create_website_http_handler(purpose, **kwargs)
     website_options = get_website_options(purpose)
-    return start_test_http_server(
+    http_server = start_test_http_server(
         http_handler,
         host=website_options.host,
         port=website_options.port)
+    http_server.purpose = purpose
+    return http_server
 
 
 def start_website(purpose, **kwargs):
