@@ -12,7 +12,7 @@ from veil.utility.clock import *
 from veil.utility.hash import *
 from veil.utility.path import *
 from veil.backend.database.client import *
-from ..server.pg_server_installer import load_postgresql_maintainence_config
+from ..server.pg_server_installer import load_postgresql_maintenance_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,13 +25,13 @@ def drop_database(purpose):
         wait_for_server_up(purpose)
     try:
         config = load_database_client_config(purpose)
-        maintainence_config = load_postgresql_maintainence_config(purpose)
+        maintenance_config = load_postgresql_maintenance_config(purpose)
         env = os.environ.copy()
-        env['PGPASSWORD'] = maintainence_config.owner_password
+        env['PGPASSWORD'] = maintenance_config.owner_password
         shell_execute('dropdb -h {host} -p {port} -U {owner} {database}'.format(
             host=config.host,
             port=config.port,
-            owner=maintainence_config.owner,
+            owner=maintenance_config.owner,
             database=config.database), env=env, capture=True)
     except ShellExecutionError, e:
         if 'not exist' in e.output:
@@ -96,13 +96,13 @@ def wait_for_server_up(purpose):
 def create_database_if_not_exists(purpose):
     try:
         config = load_database_client_config(purpose)
-        maintainence_config = load_postgresql_maintainence_config(purpose)
+        maintenance_config = load_postgresql_maintenance_config(purpose)
         env = os.environ.copy()
-        env['PGPASSWORD'] = maintainence_config.owner_password
+        env['PGPASSWORD'] = maintenance_config.owner_password
         shell_execute('createdb -h {host} -p {port} -U {owner} {database} -E {encoding}'.format(
             host=config.host,
             port=config.port,
-            owner=maintainence_config.owner,
+            owner=maintenance_config.owner,
             database=config.database,
             encoding='UTF8'), env=env, capture=True)
     except ShellExecutionError, e:

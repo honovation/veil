@@ -15,8 +15,8 @@ LOGGER = logging.getLogger(__name__)
 @composite_installer('postgresql')
 @using_isolated_template
 def install_postgresql_server(purpose, host, port, owner, owner_password, user, password):
-    pg_data_dir = VEIL_VAR_DIR / '{}_postgresql'.format(purpose)
-    pg_config_dir = VEIL_ETC_DIR / '{}_postgresql'.format(purpose)
+    pg_data_dir = get_data_dir(purpose)
+    pg_config_dir = get_config_dir(purpose)
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
         os_package_resource('postgresql-9.1'),
@@ -33,8 +33,8 @@ def install_postgresql_server(purpose, host, port, owner, owner_password, user, 
             })),
         file_resource(pg_config_dir / 'pg_hba.conf', content=get_template('pg_hba.conf.j2').render(host=host)),
         file_resource(pg_config_dir / 'pg_ident.conf', content=get_template('pg_ident.conf.j2').render()),
-        file_resource(pg_config_dir / 'postgresql-maintainence.cfg', content=get_template(
-            'postgresql-maintainence.cfg.j2').render(owner=owner, owner_password=owner_password)),
+        file_resource(pg_config_dir / 'postgresql-maintenance.cfg', content=get_template(
+            'postgresql-maintenance.cfg.j2').render(owner=owner, owner_password=owner_password)),
         symbolic_link_resource(pg_data_dir / 'postgresql.conf', to=pg_config_dir / 'postgresql.conf'),
         symbolic_link_resource(pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf'),
         symbolic_link_resource(pg_data_dir / 'pg_ident.conf', to=pg_config_dir / 'pg_ident.conf'),
@@ -62,7 +62,7 @@ def install_postgresql_global_bin():
 
 @atomic_installer('postgresql_initdb')
 def install_postgresql_initdb(dry_run_result, purpose, owner, owner_password):
-    pg_data_dir = VEIL_VAR_DIR / '{}_postgresql'.format(purpose)
+    pg_data_dir = get_data_dir(purpose)
     is_installed = pg_data_dir.exists()
     if dry_run_result is not None:
         dry_run_result['postgresql_initdb?{}'.format(purpose)] = '-' if is_installed else 'INSTALL'
@@ -91,7 +91,7 @@ def install_postgresql_user(dry_run_result, purpose, user, password, owner, owne
     assert pg_user, 'must specify postgresql user'
     pg_password = password
     assert pg_password, 'must specify postgresql user password'
-    pg_data_dir = VEIL_VAR_DIR / '{}_postgresql'.format(purpose)
+    pg_data_dir = get_data_dir(purpose)
     user_installed_tag_file = pg_data_dir / 'user-installed'
     is_installed = user_installed_tag_file.exists()
     if dry_run_result is not None:
@@ -132,6 +132,16 @@ def postgresql_server_running(data_directory, owner):
         shell_execute('su {} -c "pg_ctl -D {} stop"'.format(
             owner, data_directory))
 
-def load_postgresql_maintainence_config(purpose):
-    return load_config_from(VEIL_ETC_DIR / '{}_postgresql'.format(purpose) / 'postgresql-maintainence.cfg',
+
+def load_postgresql_maintenance_config(purpose):
+    config_dir = get_config_dir(purpose)
+    return load_config_from(config_dir / 'postgresql-maintenance.cfg',
         'owner', 'owner_password')
+
+
+def get_config_dir(purpose):
+    return VEIL_ETC_DIR / '{}-postgresql'.format(purpose.replace('_', '-'))
+
+
+def get_data_dir(purpose):
+    return VEIL_VAR_DIR / '{}-postgresql'.format(purpose.replace('_', '-'))
