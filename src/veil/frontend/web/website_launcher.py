@@ -35,7 +35,7 @@ def bring_up_website(*argv):
 
 def start_test_website(purpose, **kwargs):
     config = load_website_config(purpose)
-    http_handler = create_website_http_handler(purpose, **kwargs)
+    http_handler = create_website_http_handler(purpose, config, **kwargs)
     http_server = start_test_http_server(
         http_handler,
         host=config.host,
