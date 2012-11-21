@@ -63,8 +63,11 @@ def periodic_job_scheduler_program(dependencies):
     })
 
 
-def job_worker_program(worker_name, queue_host, queue_port, queue_names, dependencies, run_as=None):
-    resources = [component_resource('veil.backend.queue')]
+def job_worker_program(
+        worker_name, queue_host, queue_port, queue_names, dependencies,
+        installer_proviers=(), resources=(), run_as=None):
+    resources = list(resources)
+    resources.append(component_resource('veil.backend.queue'))
     for dependency in dependencies:
         resources.append(component_resource(dependency))
     return objectify({
