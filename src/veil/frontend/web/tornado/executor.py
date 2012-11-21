@@ -1,26 +1,24 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
-from logging import getLogger
+import logging
 import threading
 from tornado.ioloop import IOLoop
 from tornado.stack_context import  NullContext
 import sys
 import time
-from veil.development.test import get_executing_test
 
-LOGGER = getLogger(__name__)
-lock = threading.Lock()
+LOGGER = logging.getLogger(__name__)
 
+@contextlib.contextmanager
 def require_io_loop_executor():
-    lock.acquire()
+    executor = IOLoopExecutor(IOLoop.instance())
+    thread = threading.Thread(target=executor.execute)
+    thread.start()
     try:
-        test = get_executing_test()
-        if not hasattr(test, '_io_loop_executor'):
-            test._io_loop_executor = IOLoopExecutor(IOLoop.instance())
-        return getattr(test, '_io_loop_executor')
+        yield
     finally:
-        lock.release()
-
+        executor.stop()
+        thread.join()
 
 class IOLoopExecutor(object):
     def __init__(self, io_loop):
