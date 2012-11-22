@@ -29,7 +29,11 @@ def install_postgresql_server(purpose, host, port, owner, owner_password, user, 
             content=get_template('postgresql.conf.j2').render(config={
                 'data_directory': pg_data_dir,
                 'host': host,
-                'port': port
+                'port': port,
+                'log_destination': 'csvlog',
+                'logging_collector': True,
+                'log_directory': VEIL_LOG_DIR / '{}-postgresql'.format(purpose),
+                'log_min_duration_statement': 500
             })),
         file_resource(pg_config_dir / 'pg_hba.conf', content=get_template('pg_hba.conf.j2').render(host=host)),
         file_resource(pg_config_dir / 'pg_ident.conf', content=get_template('pg_ident.conf.j2').render()),

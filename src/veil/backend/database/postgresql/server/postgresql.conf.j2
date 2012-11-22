@@ -262,13 +262,13 @@ log_destination = '{{ config.get('log_destination', 'stderr') }}'		# Valid value
 					# requires logging_collector to be on.
 
 # This is used when logging to stderr:
-logging_collector = {{ config.get('logging_collector', 'off') }}		# Enable capturing of stderr and csvlog
+logging_collector = {{ 'on' if config.get('logging_collector',False) else 'off' }}		# Enable capturing of stderr and csvlog
 					# into log files. Required to be on for
 					# csvlogs.
 					# (change requires restart)
 
 # These are only used if logging_collector is on:
-log_directory = 'pg_log'		# directory where log files are written,
+log_directory = '{{ config.get('log_directory', 'pg_log') }}'		# directory where log files are written,
 					# can be absolute or relative to PGDATA
 #log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'	# log file name pattern,
 					# can include strftime() escapes
@@ -352,7 +352,7 @@ log_min_duration_statement = {{ config.get('log_min_duration_statement', -1) }}	
 #log_checkpoints = off
 #log_connections = off
 #log_disconnections = off
-#log_duration = off
+log_duration = {{ 'on' if config.get('log_duration', False) else 'off' }}
 #log_error_verbosity = default		# terse, default, or verbose messages
 #log_hostname = off
 #log_line_prefix = ''			# special values:
@@ -376,7 +376,7 @@ log_min_duration_statement = {{ config.get('log_min_duration_statement', -1) }}	
 					#   %% = '%'
 					# e.g. '<%u%%%d> '
 #log_lock_waits = off			# log lock waits >= deadlock_timeout
-#log_statement = 'none'			# none, ddl, mod, all
+log_statement = '{{ config.get('log_statement', 'none') }}'			# none, ddl, mod, all
 #log_temp_files = -1			# log temporary files equal or larger
 					# than the specified size in kilobytes;
 					# -1 disables, 0 logs all temp files
