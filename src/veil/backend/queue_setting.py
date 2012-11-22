@@ -35,11 +35,11 @@ def resweb_program(resweb_host, resweb_port, queue_host, queue_port):
     })
 
 
-def delayed_job_scheduler_program(queue_host, queue_port, logging_level, logging_file):
+def delayed_job_scheduler_program(queue_host, queue_port, logging_level):
     return objectify({
         'delayed_job_scheduler': {
-            'execute_command': 'veil sleep 3 pyres_scheduler --host={} --port={} -l {} -f {}'.format(
-                queue_host, queue_port, logging_level, logging_file),
+            'execute_command': 'veil sleep 3 pyres_scheduler --host={} --port={} -l {} -f stderr'.format(
+                queue_host, queue_port, logging_level),
             'installer_providers': [],
             'resources': [('python_package', {'name': 'pyres'})],
             'startretries': 10

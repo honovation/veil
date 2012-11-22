@@ -7,21 +7,28 @@ import sys
 import threading
 import functools
 from veil.environment.supervisor import *
-from veil.environment.setting import *
 from veil.environment import *
 from veil.frontend.cli import *
-from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
 modify_times = {}
 
 @script('up')
 def bring_up_source_code_monitor():
-    load_reloads_on_change_programs_components()
+    restarts_all = False
+    while True:
+        try:
+            load_reloads_on_change_programs_components()
+            break
+        except:
+            LOGGER.info('code contains error, retry in 10 seconds...')
+            time.sleep(10) # give 10 seconds to you to fix the problem
+            restarts_all = True # once fixed, ensure all restarted
     LOGGER.info('start monitoring source code changes...')
-    shell_execute('find {} -type f -name "*.pyc" -delete'.format(VEIL_FRAMEWORK_HOME))
-    shell_execute('find {} -type f -name "*.pyc" -delete'.format(VEIL_HOME))
-    start_all()
+    if restarts_all:
+        restart_all()
+    else:
+        start_all()
     while True:
         reload_on_change()
 

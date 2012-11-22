@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 @composite_installer('postgresql')
 @using_isolated_template
-def install_postgresql_server(purpose, host, port, owner, owner_password, user, password):
+def install_postgresql_server(purpose, config):
     pg_data_dir = get_data_dir(purpose)
     pg_config_dir = get_config_dir(purpose)
     resources = list(BASIC_LAYOUT_RESOURCES)
@@ -22,30 +22,30 @@ def install_postgresql_server(purpose, host, port, owner, owner_password, user, 
         os_package_resource('postgresql-9.1'),
         os_service_resource(state='not_installed', name='postgresql', path='/etc/rc0.d/K21postgresql'),
         ('postgresql_global_bin', dict()),
-        ('postgresql_initdb', dict(purpose=purpose, owner=owner, owner_password=owner_password)),
+        ('postgresql_initdb', dict(purpose=purpose, owner=config.owner, owner_password=config.owner_password)),
         directory_resource(pg_config_dir),
         file_resource(
             pg_config_dir / 'postgresql.conf',
             content=get_template('postgresql.conf.j2').render(config={
                 'data_directory': pg_data_dir,
-                'host': host,
-                'port': port,
+                'host': config.host,
+                'port': config.port,
                 'log_destination': 'csvlog',
                 'logging_collector': True,
                 'log_directory': VEIL_LOG_DIR / '{}-postgresql'.format(purpose),
-                'log_min_duration_statement': 500
+                'log_min_duration_statement': config.log_min_duration_statement
             })),
-        file_resource(pg_config_dir / 'pg_hba.conf', content=get_template('pg_hba.conf.j2').render(host=host)),
+        file_resource(pg_config_dir / 'pg_hba.conf', content=get_template('pg_hba.conf.j2').render(host=config.host)),
         file_resource(pg_config_dir / 'pg_ident.conf', content=get_template('pg_ident.conf.j2').render()),
         file_resource(pg_config_dir / 'postgresql-maintenance.cfg', content=get_template(
-            'postgresql-maintenance.cfg.j2').render(owner=owner, owner_password=owner_password)),
+            'postgresql-maintenance.cfg.j2').render(owner=config.owner, owner_password=config.owner_password)),
         symbolic_link_resource(pg_data_dir / 'postgresql.conf', to=pg_config_dir / 'postgresql.conf'),
         symbolic_link_resource(pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf'),
         symbolic_link_resource(pg_data_dir / 'pg_ident.conf', to=pg_config_dir / 'pg_ident.conf'),
         ('postgresql_user', dict(
-            purpose=purpose, user=user, password=password,
-            owner=owner, owner_password=owner_password,
-            host=host, port=port))
+            purpose=purpose, user=config.user, password=config.password,
+            owner=config.owner, owner_password=config.owner_password,
+            host=config.host, port=config.port))
     ])
     return [], resources
 
