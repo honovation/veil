@@ -27,7 +27,7 @@ def rename_old_dirs():
 
 def rename_old_dir(dir):
     existing_names = os.listdir(dir)
-    for file in VEIL_VAR_DIR.listdir():
+    for file in dir.listdir():
         if '_' in file.name:
             new_name = file.name.replace('_', '-')
             if new_name in existing_names:
