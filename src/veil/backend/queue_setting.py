@@ -47,8 +47,11 @@ def delayed_job_scheduler_program(queue_host, queue_port, logging_level):
     })
 
 
-def periodic_job_scheduler_program(dependencies):
-    resources = [component_resource('veil.backend.queue')]
+def periodic_job_scheduler_program(loggers, dependencies):
+    veil_log_config_path = VEIL_ETC_DIR / 'periodic-job-scheduler-log.cfg'
+    resources = [
+        component_resource('veil.backend.queue'),
+        veil_log_config_resource(veil_log_config_path, loggers)]
     for dependency in dependencies:
         resources.append(component_resource(dependency))
     additional_args = []
@@ -57,6 +60,9 @@ def periodic_job_scheduler_program(dependencies):
     return objectify({
         'periodic_job_scheduler': {
             'execute_command': 'veil backend queue periodic-job-scheduler-up {}'.format(' '.join(additional_args)),
+            'environment_variables': {
+                'VEIL_LOG': veil_log_config_path
+            },
             'installer_providers': [],
             'resources': resources
         }

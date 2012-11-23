@@ -3,8 +3,10 @@ from veil_installer import *
 from veil.environment import *
 from veil.model.collection import *
 
-def website_program(purpose, dependencies, installer_providers, resources):
+def website_program(purpose, loggers, dependencies, installer_providers, resources):
+    veil_log_config_path = VEIL_ETC_DIR / '{}-website-log.cfg'.format(purpose)
     resources = list(resources)
+    resources.append(veil_log_config_resource(veil_log_config_path, loggers))
     additional_args = []
     for dependency in dependencies:
         resources.append(component_resource(dependency))
@@ -14,7 +16,7 @@ def website_program(purpose, dependencies, installer_providers, resources):
             'execute_command': 'veil frontend web up {} {}'.format(
                 purpose, ' '.join(additional_args)),
             'environment_variables': {
-                'VEIL_LOG': VEIL_ETC_DIR / '{}-website-log.cfg'.format(purpose)
+                'VEIL_LOG': veil_log_config_path
             },
             'installer_providers': installer_providers,
             'resources': resources,
