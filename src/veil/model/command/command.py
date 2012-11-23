@@ -3,6 +3,7 @@ import functools
 from inspect import getargspec, isfunction
 from veil.model.binding import *
 from veil.model.collection import *
+from veil.utility.encoding import *
 
 
 def command(binders):
@@ -130,7 +131,10 @@ class InvalidCommand(Exception):
         self.errors = errors
 
     def __str__(self):
-        return str(self.errors)
+        parts = []
+        for k, v in self.errors.items():
+            parts.append('{}=[{}]'.format(k, ', '.join(v)))
+        return to_str(', '.join(parts))
 
 
 class CommandError(Exception):
