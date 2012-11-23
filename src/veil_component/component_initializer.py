@@ -4,11 +4,13 @@ import sys
 from .component_walker import ComponentWalker
 from .component_walker import ComponentInternalVisitor
 from .component_map import scan_component
+from .component_logging import configure_logging
 
 loading_component_names = []
 
 @contextlib.contextmanager
 def init_component(component_name):
+    configure_logging(component_name)
     scan_component(component_name)
     loading_component_names.append(component_name)
     try:

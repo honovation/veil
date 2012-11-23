@@ -1,3 +1,6 @@
+from .component_logging import configure_logging
+configure_logging('veil_component')
+
 from .component_initializer import init_component
 from .component_initializer import get_loading_component_name
 from .component_map import scan_component
