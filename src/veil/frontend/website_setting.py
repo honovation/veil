@@ -13,6 +13,9 @@ def website_program(purpose, dependencies, installer_providers, resources):
         '{}_website'.format(purpose): {
             'execute_command': 'veil frontend web up {} {}'.format(
                 purpose, ' '.join(additional_args)),
+            'environment_variables': {
+                'VEIL_LOG': VEIL_ETC_DIR / '{}-website-log.cfg'.format(purpose)
+            },
             'installer_providers': installer_providers,
             'resources': resources,
             'reloads_on_change': True
