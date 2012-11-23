@@ -10,8 +10,8 @@ loading_component_names = []
 
 @contextlib.contextmanager
 def init_component(component_name):
-    configure_logging(component_name)
     scan_component(component_name)
+    configure_logging(component_name)
     loading_component_names.append(component_name)
     try:
         ComponentWalker().walk_component(component_name, ComponentLoader())

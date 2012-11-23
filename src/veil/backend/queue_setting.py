@@ -70,17 +70,22 @@ def periodic_job_scheduler_program(loggers, dependencies):
 
 
 def job_worker_program(
-        worker_name, queue_host, queue_port, queue_names, dependencies,
+        worker_name, pyres_worker_logging_level, loggers, queue_host, queue_port, queue_names, dependencies,
         installer_providers=(), resources=(), run_as=None):
+    veil_log_config_path = VEIL_ETC_DIR / '{}-worker-log.cfg'.format(worker_name)
     resources = list(resources)
+    resources.append(veil_log_config_resource(veil_log_config_path, loggers))
     resources.append(component_resource('veil.backend.queue'))
     for dependency in dependencies:
         resources.append(component_resource(dependency))
     return objectify({
         '{}_worker'.format(worker_name): {
-            'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -l debug -f stderr {}'.format(
-                queue_host, queue_port, ','.join(queue_names)
-            ),
+            'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -l {} -f stderr {}'.format(
+                queue_host, queue_port, pyres_worker_logging_level, ','.join(queue_names)
+            ), # log instruction for the main process, a.k.a pyres_worker
+            'environment_variables': {
+                'VEIL_LOG': veil_log_config_path
+            }, # log instruction for the sub-process forked from pyres_worker, a.k.a our code
             'group': 'workers',
             'run_as': run_as or CURRENT_USER,
             'installer_providers': installer_providers,
