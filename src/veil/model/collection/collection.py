@@ -106,6 +106,8 @@ class Entity(DictObject):
 
     @classmethod
     def serialize(cls, **kwargs):
+        if '_hash' in kwargs:
+            del kwargs['_hash']
         return kwargs
 
     @classmethod
