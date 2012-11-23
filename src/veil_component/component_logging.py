@@ -3,34 +3,35 @@ import os
 import sys
 from .component_map import get_root_component
 
-veil_log_configured = False
+logging_levels = None
 configured_root_loggers = set()
 
 def configure_logging(component_name):
-    veil_log_config_file = os.getenv('VEIL_LOG')
-    if veil_log_config_file:
-        configure_by_file(veil_log_config_file)
-    else:
-        configure_component_logger(component_name, logging.DEBUG)
+    load_logging_levels()
+    configure_component_logger(component_name)
 
 
-def configure_by_file(config_file):
-    global veil_log_configured
-    if veil_log_configured:
+def load_logging_levels():
+    global logging_levels
+    if logging_levels is not None:
         return
-    veil_log_configured = True
-    with open(config_file) as f:
+    logging_levels = {}
+    veil_log_config_file = os.getenv('VEIL_LOG')
+    if not veil_log_config_file:
+        return
+    with open(veil_log_config_file) as f:
         lines = f.readlines()
     for line in lines:
         logger_name, logging_level = line.split('=')
         logging_level = getattr(logging, logging_level.strip())
-        configure_component_logger(logger_name, logging_level)
+        logging_levels[logger_name] = logging_level
 
 
-def configure_component_logger(component_name, logging_level):
+def configure_component_logger(component_name):
     logger = logging.getLogger(component_name)
-    logger.setLevel(logging_level)
-    configure_root_component_logger(get_root_component(component_name))
+    logger.setLevel(logging_levels.get(component_name, logging.INFO))
+    root_component_name = get_root_component(component_name)
+    configure_root_component_logger(root_component_name or component_name)
 
 
 def configure_root_component_logger(component_name):
