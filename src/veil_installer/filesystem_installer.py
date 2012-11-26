@@ -30,12 +30,12 @@ def _install_directory(is_dry_run, path, owner='root', group='root', mode=0755, 
         if recursive:
             actions.append('RECURSIVELY-CREATE')
             if not is_dry_run:
-                LOGGER.info('creating directory {} recursively'.format(path))
+                LOGGER.info('creating directory recursively: %(path)s', {'path': path})
                 os.makedirs(path, mode or 0755)
         else:
             actions.append('CREATE')
             if not is_dry_run:
-                LOGGER.info('creating directory {}'.format(path))
+                LOGGER.info('creating directory: %(path)s', {'path': path})
                 os.mkdir(path, mode or 0755)
     if os.path.exists(path):
         actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
@@ -78,7 +78,10 @@ def _install_file(is_dry_run, path, content, owner='root', group='root', mode=06
     if write:
         if not is_dry_run and content:
             with open(path, 'wb') as fp:
-                LOGGER.info('Writing {} because {}'.format(path, reason))
+                LOGGER.info('Writing file: %(path)s because %(reason)s', {
+                    'path': path,
+                    'reason': reason
+                })
                 fp.write(content)
 
     if os.path.exists(path):
@@ -112,12 +115,19 @@ def _install_symbolic_link(is_dry_run, path, to):
                 '%{} trying to create a symlink with the same name as an existing file or directory'.format(path))
         action = 'UPDATE'
         if not is_dry_run:
-            LOGGER.info("replacing old symlink {} from {} to {}".format(path, oldpath, to))
+            LOGGER.info("replacing old symlink: %(path)s from %(old_path)s to %(to)s", {
+                'path': path,
+                'oldpath': oldpath,
+                'to': to
+            })
             os.unlink(path)
     if not action:
         action = 'CREATE'
     if not is_dry_run:
-        LOGGER.info('Creating symbolic {} to {}'.format(path, to))
+        LOGGER.info('Creating symbolic: %(path)s to %(to)s', {
+            'path': path,
+            'to': to
+        })
         os.symlink(to, path)
     return action
 
@@ -131,7 +141,11 @@ def ensure_metadata(is_dry_run, path, user, group, mode=None):
         if existing_mode != mode:
             actions.append('CHMOD')
             if not is_dry_run:
-                LOGGER.info("changing permission for %s from %o to %o" % (path, existing_mode, mode))
+                LOGGER.info('changing permission: for %(path)s from %(existing_mode)s to %(mode)s', {
+                    'path': path,
+                    'existing_mode': existing_mode,
+                    'mode': mode
+                })
                 os.chmod(path, mode)
 
     if user:
@@ -139,7 +153,11 @@ def ensure_metadata(is_dry_run, path, user, group, mode=None):
         if stat.st_uid != uid:
             actions.append('CHOWN')
             if not is_dry_run:
-                LOGGER.info("changing owner for %s from %d to %s" % (path, stat.st_uid, user))
+                LOGGER.info('changing owner: for %(path)s from %(existing_owner)s to %(user)s', {
+                    'path': path,
+                    'existing_owner': stat.st_uid,
+                    'user': user
+                })
                 os.chown(path, uid, -1)
 
     if group:
@@ -147,7 +165,11 @@ def ensure_metadata(is_dry_run, path, user, group, mode=None):
         if stat.st_gid != gid:
             actions.append('CHGRP')
             if not is_dry_run:
-                LOGGER.info("changing group for %s from %d to %s" % (path, stat.st_gid, group))
+                LOGGER.info('changing group: for %(path)s from %(existing_group)s to %(group)s', {
+                    'path': path,
+                    'existing_group': stat.st_gid,
+                    'group': group
+                })
                 os.chown(path, -1, gid)
     return actions
 

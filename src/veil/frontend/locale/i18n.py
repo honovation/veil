@@ -18,7 +18,7 @@ def get_locale(*codes):
         try:
             locale = Locale.parse(code.replace('-', '_'))
         except:
-            LOGGER.exception('Cannot parse locale from the given locale identifier: {}'.format(code))
+            LOGGER.exception('Cannot parse locale from the given locale identifier: %(code)s', {'code': code})
             continue
         else:
             break

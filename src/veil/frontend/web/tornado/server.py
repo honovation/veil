@@ -28,7 +28,10 @@ def start_http_server(handler, io_loop=None, host='127.0.0.1', port=8080, proces
     http_server = create_http_server(handler, io_loop=io_loop)
     http_server.bind(port, host)
     http_server.start(processes_count)
-    io_loop.add_callback(lambda: LOGGER.info('http listen at {}:{}'.format(host, port)))
+    io_loop.add_callback(lambda: LOGGER.info('ioloop started: listening at %(host)s:%(port)s', {
+        'host': host,
+        'port': port
+    }))
     io_loop.start()
 
 
@@ -56,10 +59,7 @@ class HTTPHandler(object):
                 with normalize_arguments():
                     with tunnel_put_and_delete():
                         self.handler()
-        if request.files:
-            LOGGER.debug('handled file upload to {}'.format(request.uri))
-        else:
-            LOGGER.debug('handled {}'.format(request))
+        LOGGER.debug('handled request: %(request)s', {'request': request})
 
 
 def create_stack_context(context_manager, *args, **kwargs):
@@ -98,15 +98,17 @@ class HTTPResponse(object):
     def status_code(self, status_code):
         assert status_code in httplib.responses
         if self.headers_written:
-            LOGGER.warn('setting status code to {} is too late, as heads already written\n'.format(
-                status_code, self.headers_written))
+            LOGGER.warn('setting status code too late: status code to set is %(status_code)s\n%(headers_written)s', {
+                'status_code': status_code,
+                'headers_written': self.headers_written
+            })
         self._status_code = status_code
 
     def clear(self):
         self._headers = {
             'Server': 'TornadoServer/%s' % tornado.version,
             'Content-Type': 'text/html; charset=utf-8',
-            }
+        }
         if not self.request.supports_http_1_1():
             if self.request.headers.get('Connection') == 'Keep-Alive':
                 self.set_header('Connection', 'Keep-Alive')
@@ -115,7 +117,11 @@ class HTTPResponse(object):
 
     def set_header(self, name, value):
         if self.headers_written:
-            LOGGER.warn('setting header {} to {} is too late, as heads already written'.format(name, value))
+            LOGGER.warn('setting header too late: header to set is %(name)s=%(value)s\n%(headers_written)s', {
+                'name': name,
+                'value': value,
+                'headers_written': self.headers_written
+            })
         if isinstance(value, datetime.datetime):
             t = calendar.timegm(value.utctimetuple())
             value = email.utils.formatdate(t, localtime=False, usegmt=True)

@@ -58,7 +58,7 @@ class PostgresqlAdapter(object):
             self._reconnect()
 
     def _reconnect(self):
-        LOGGER.info('Reconnect now <{}>'.format(self))
+        LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
         try:
             self.close()
         except:
@@ -73,7 +73,9 @@ class PostgresqlAdapter(object):
         lightweight detection is supported by the driver library psycopg2
         """
         if self.conn.closed:
-            LOGGER.warn('Detected database connection had been closed, reconnect now <{}>'.format(self))
+            LOGGER.warn('Detected database connection had been closed, reconnect now: %(connection)s', {
+                'connection': self
+            })
             self.conn = self._get_conn()
 
     @property

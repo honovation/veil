@@ -20,19 +20,25 @@ def prevent_xsrf():
         if not token:
             request.is_new_xsrf_token = True
             token = uuid.uuid4().get_hex()
-            LOGGER.debug('assign XSRF token {} from {} {}'.format(token, request.method, request.path))
+            LOGGER.debug('assigned XSRF token: %(token)s from %(method)s %(path)s', {
+                'token': token,
+                'method': request.method,
+                'path': request.path
+            })
         request._xsrf_token = token
     if 'GET' != request.method.upper():
         token = get_http_argument('_xsrf', optional=True) or request.headers.get('X-XSRF', None)
         if not token:
             response.status_code = httplib.FORBIDDEN
-            LOGGER.warn('XSRF token missing, request: {}'.format(request))
+            LOGGER.warn('XSRF token not found: request is %(request)s', {'request': request})
             raise HTTPError(403, 'XSRF token missing')
         expected_token = xsrf_token()
         if expected_token != token:
-            LOGGER.debug('expected token: {}'.format(expected_token))
-            LOGGER.debug('actual token: {}'.format(token))
-            LOGGER.warn('XSRF token invalid, request: {}'.format(request))
+            LOGGER.warn('XSRF token invalid: request is %(request)s, expected is %(expected_token)s, actual is %(token)s', {
+                'request': request,
+                'expected_token': expected_token,
+                'token': token
+            })
             raise HTTPError(403, 'XSRF token invalid')
     request.arguments.pop('_xsrf', None)
     yield

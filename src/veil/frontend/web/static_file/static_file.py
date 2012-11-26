@@ -70,7 +70,9 @@ def get_static_file_hash(path):
                 hash = calculate_file_md5_hash(f)
                 static_file_hashes[path] = hash
         except:
-            LOGGER.error('Could not open static file {}'.format(static_file_path))
+            LOGGER.error('Could not open static file: %(static_file_path)s', {
+                'static_file_path': static_file_path
+            })
     return static_file_hashes.get(path)
 
 

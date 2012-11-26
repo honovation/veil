@@ -149,7 +149,7 @@ class RoutingHTTPHandler(object):
             if 'ASYNC' not in route.tags:
                 response.finish()
         except:
-            LOGGER.error('failed to post-process route: {}'.format(route))
+            LOGGER.error('failed to post-process route: %(route)s', {'route': route})
             raise
 
 

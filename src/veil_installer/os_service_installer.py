@@ -19,6 +19,9 @@ def install_os_service(dry_run_result, name, path, state):
         dry_run_result['os_service?{}'.format(name)] = 'UNINSTALL' if installed else '-'
         return
     if installed:
-        LOGGER.info('uninstall os service {} from {}'.format(name, path))
+        LOGGER.info('uninstall os service: %(name)s from %(path)s', {
+            'name': name,
+            'path': path
+        })
         shell_execute('service {} stop'.format(name), capture=True)
         shell_execute('update-rc.d -f {} remove'.format(name), capture=True)

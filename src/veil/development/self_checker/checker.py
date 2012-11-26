@@ -41,6 +41,8 @@ def quick_check(checker_name=None):
     shell_execute('git add .')
     shell_execute('veil migrate')
     for checker_name, self_checker in SELF_CHECKERS.items():
-        LOGGER.info('[CHECK] checking {}...'.format(checker_name))
+        LOGGER.info('[CHECK] checking: %(checker_name)s...', {
+            'checker_name': checker_name
+        })
         self_checker()
     (VEIL_HOME / '.self-check-passed').write_text(discipline_coach.calculate_git_status_hash())

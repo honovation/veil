@@ -58,7 +58,9 @@ def install_installer_providers(dry_run_result, installer_providers):
             if dry_run_result is not None:
                 dry_run_result['@{}'.format(installer_provider)] = 'INSTALL'
             else:
-                LOGGER.error('failed to load installer provider: {}'.format(installer_provider))
+                LOGGER.error('failed to load installer provider: %(installer_provider)s', {
+                    'installer_provider': installer_provider
+                })
                 raise
 
 

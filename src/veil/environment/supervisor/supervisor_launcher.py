@@ -39,7 +39,9 @@ def bring_up_supervisor(*argv):
             if are_all_supervisord_programs_running():
                 return
             time.sleep(3)
-        LOGGER.info('failed to bring up supervisor, latest status: {}'.format(supervisorctl('status', capture=True)))
+        LOGGER.info('failed to bring up supervisor: latest status: %(status)s', {
+            'status': supervisorctl('status', capture=True)
+        })
     else:
         pass_control_to('supervisord -n -c {}'.format(VEIL_ETC_DIR / 'supervisor.cfg'))
 

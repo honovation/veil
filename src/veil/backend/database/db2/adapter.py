@@ -53,7 +53,7 @@ class DB2Adapter(object):
             self._reconnect()
 
     def _reconnect(self):
-        LOGGER.info('Reconnect now <{}>'.format(self))
+        LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
         try:
             self.close()
         except:
