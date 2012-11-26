@@ -44,7 +44,10 @@ class PeriodicJobScheduler(object):
         if schedules:
             for schedule in schedules:
                 jobs = ', '.join({str(job_handler) for job_handler in schedules[schedule]})
-                LOGGER.info('schedule for {}: {}'.format(jobs, schedule))
+                LOGGER.info('schedule loaded: schedule is %{schedule)s and jobs are %(jobs)s', {
+                    'schedule': schedule,
+                    'jobs': jobs
+                })
         else:
             LOGGER.error('no schedule of periodic job, exit!')
             return
@@ -60,7 +63,9 @@ class PeriodicJobScheduler(object):
             next = schedule.get_next_timestamp(self.last_handle_at)
             if next <= now:
                 for job_handler in schedules[schedule]:
-                    LOGGER.info('enqueue job {}'.format(job_handler))
+                    LOGGER.info('job due: about to enqueue %(job_handler)s', {
+                        'job_handler': job_handler
+                    })
                     require_queue().enqueue(job_handler)
                 next = schedule.get_next_timestamp(now)
             earliest_next = min(next, earliest_next)
@@ -70,5 +75,7 @@ class PeriodicJobScheduler(object):
     def wait_until_next(self):
         now = get_current_timestamp()
         seconds = max(0, ceil(self.next_handle_at - now))
-        LOGGER.debug('sleep {} seconds'.format(seconds))
+        LOGGER.debug('nothing to do: going to sleep %(seconds)s', {
+            'seconds': seconds
+        })
         time.sleep(seconds)

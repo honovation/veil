@@ -4,15 +4,16 @@ from inspect import isfunction
 import contextlib
 import pytz
 from logging import getLogger
-from veil.environment import *
 
 LOGGER = getLogger(__name__)
 context_managers = []
 
 
 def register_job_context_manager(context_manager):
-    LOGGER.info('register job context manager: {}'.format(context_manager))
     context_managers.append(context_manager)
+    LOGGER.info('registered job context manager: %(context_manager)s', {
+        'context_manager': context_manager
+    })
 
 
 def job(queue):
