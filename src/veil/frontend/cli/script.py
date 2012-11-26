@@ -28,7 +28,7 @@ def execute_script(*argv, **kwargs):
         level = script_handlers
     arg = argv[0] if argv else None
     if arg not in level:
-        print('{} is unknown, choose from: {}'.format(arg, level.keys()))
+        LOGGER.info('{} is unknown, choose from: {}'.format(arg, level.keys()))
         sys.exit(1)
     try:
         next_level = level[arg]
@@ -45,8 +45,8 @@ def execute_script(*argv, **kwargs):
         raise
     except:
         type, value, tb = sys.exc_info()
-        print(traceback.format_exc())
-        print(value.message)
+        LOGGER.error(traceback.format_exc())
+        LOGGER.error(value.message)
         sys.exit(1)
 
 def import_script_handlers(argv):

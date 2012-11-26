@@ -1,12 +1,15 @@
 from __future__ import unicode_literals, print_function, division
+import logging
 from veil.environment import *
 from veil.frontend.cli import *
 from veil.utility.shell import *
 
+LOGGER = logging.getLogger(__name__)
+
 @script('migrate')
 def migrate():
     for program_name, command in get_migration_commands().items():
-        print('migrating {}...'.format(program_name))
+        LOGGER.info('migrating {}...'.format(program_name))
         shell_execute(command)
 
 

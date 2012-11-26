@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import discipline_coach
+import logging
 from veil.frontend.cli import *
 from veil.environment import *
 from veil.utility.shell import *
@@ -9,6 +10,8 @@ from veil.development.loc import check_loc
 from veil.development.live_document import check_live_document
 from veil.development.test import check_correctness
 from veil.backend.database.postgresql import check_if_locked_migration_scripts_being_changed
+
+LOGGER = logging.getLogger(__name__)
 
 SELF_CHECKERS = {
     'architecture': check_architecture,
@@ -36,6 +39,6 @@ def quick_check(checker_name=None):
     shell_execute('git add .')
     shell_execute('veil migrate')
     for checker_name, self_checker in SELF_CHECKERS.items():
-        print('[CHECK] checking {}...'.format(checker_name))
+        LOGGER.info('[CHECK] checking {}...'.format(checker_name))
         self_checker()
     (VEIL_HOME / '.self-check-passed').write_text(discipline_coach.calculate_git_status_hash())

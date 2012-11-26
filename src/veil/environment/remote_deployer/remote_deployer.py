@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import logging
 from argparse import ArgumentParser
 from fabric.colors import green
 from veil.frontend.cli import *
@@ -9,6 +10,7 @@ import datetime
 import fabric.api
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'remote_deployer_payload.py')
+LOGGER = logging.getLogger(__name__)
 
 @script('deploy-env')
 def deploy_env(deploying_env, from_branch=None):
@@ -46,7 +48,7 @@ def deploy_server(remote_veil_server, deployed_via=None):
 
 def update_branch(deploying_env, from_branch):
     from_branch = from_branch or 'master'
-    print(green('update env-{} branch...'.format(deploying_env)))
+    LOGGER.info('update env-{} branch...'.format(deploying_env))
     shell_execute('git checkout env-{}'.format(deploying_env), cwd=VEIL_HOME)
     shell_execute('git merge {} --ff-only'.format(from_branch), cwd=VEIL_HOME)
     shell_execute('git push origin env-{}'.format(deploying_env), cwd=VEIL_HOME)

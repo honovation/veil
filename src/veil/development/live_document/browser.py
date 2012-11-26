@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
+import logging
 import contextlib
 import os
 import selenium.webdriver
@@ -12,6 +13,7 @@ from veil.development.test import *
 from .live_document import require_current_context_being
 from .live_document import document_statement
 
+LOGGER = logging.getLogger(__name__)
 current_http_server = None
 webdriver = None
 
@@ -115,7 +117,7 @@ def assert_no_js_errors():
 
 
 def report_error(message):
-    print(message)
+    LOGGER.error(message)
     import time
 
     time.sleep(60)

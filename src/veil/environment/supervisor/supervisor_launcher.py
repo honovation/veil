@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import logging
 from argparse import ArgumentParser
 import time
 from veil.utility.shell import *
@@ -7,6 +8,8 @@ from veil.frontend.cli import script
 from .supervisorctl import are_all_supervisord_programs_running
 from .supervisorctl import supervisorctl
 from .supervisorctl import is_supervisord_running
+
+LOGGER = logging.getLogger(__name__)
 
 @script('up')
 def bring_up_programs(*argv):
@@ -19,7 +22,7 @@ def bring_up_programs(*argv):
 def bring_up_program(program_name):
     config = get_current_veil_server().programs[program_name]
     execute_command = config.execute_command
-    print(execute_command)
+    LOGGER.info(execute_command)
     pass_control_to(execute_command)
 
 
@@ -36,7 +39,7 @@ def bring_up_supervisor(*argv):
             if are_all_supervisord_programs_running():
                 return
             time.sleep(3)
-        print('failed to bring up supervisor, latest status: {}'.format(supervisorctl('status', capture=True)))
+        LOGGER.info('failed to bring up supervisor, latest status: {}'.format(supervisorctl('status', capture=True)))
     else:
         pass_control_to('supervisord -n -c {}'.format(VEIL_ETC_DIR / 'supervisor.cfg'))
 

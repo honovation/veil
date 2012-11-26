@@ -2,7 +2,6 @@ from __future__ import unicode_literals, print_function, division
 import re
 import veil_component
 import logging
-import traceback
 from veil.environment import *
 from veil.frontend.cli import *
 from veil.utility.encoding import *
@@ -59,9 +58,9 @@ def print_table_dependencies_for(component_tables, threshold=8):
         if tables:
             tables = list(tables)
             if len(tables) > threshold:
-                print('[{}]:\t{}...'.format(component_name, ', '.join(tables[:threshold])))
+                LOGGER.info('[{}]:\t{}...'.format(component_name, ', '.join(tables[:threshold])))
             else:
-                print('[{}]:\t{}'.format(component_name, ', '.join(tables)))
+                LOGGER.info('[{}]:\t{}'.format(component_name, ', '.join(tables)))
 
 
 def list_readable_tables():

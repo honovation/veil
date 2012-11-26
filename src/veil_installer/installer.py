@@ -31,7 +31,7 @@ def install_resources(dry_run_result, installer_providers, resources):
     stack.append((installer_providers, resources))
     if len(stack) > 30:
         for frame in stack:
-            print(frame)
+            LOGGER.error(frame)
         raise Exception('too many levels')
     if installer_providers:
         install_installer_providers(dry_run_result, installer_providers)

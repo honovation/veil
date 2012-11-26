@@ -59,23 +59,23 @@ def migrate(purpose):
         from_version = current_version
         max_version = max(versions.keys())
         if from_version > max_version:
-            print('[MIGRATE] postgresql server {} current version {} is higher than the code {}'.format(
+            LOGGER.info('[MIGRATE] postgresql server {} current version {} is higher than the code {}'.format(
                 purpose, from_version, max_version))
             sys.exit(1)
         if from_version == max_version:
-            print('[MIGRATE] postgresql server {} current version {} is up to date'.format(purpose, from_version))
+            LOGGER.info('[MIGRATE] postgresql server {} current version {} is up to date'.format(purpose, from_version))
             sys.exit(0)
-        print(
+        LOGGER.info(
             '[MIGRATE] about to migrate postgresql server {} from {} to {}'.format(purpose, from_version, max_version))
         to_version = None
         for i in range(current_version, max_version):
             to_version = i + 1
-            print('[MIGRATE] migrating from {} to {} ...'.format(to_version - 1, to_version))
+            LOGGER.info('[MIGRATE] migrating from {} to {} ...'.format(to_version - 1, to_version))
             db().execute(versions[to_version].text('utf8'))
         db().insert(
             'database_migration_event', from_version=from_version,
             to_version=to_version, migrated_at=get_current_time())
-        print('[MIGRATE] migrated postgresql server {} from {} to {}'.format(purpose, from_version, max_version))
+        LOGGER.info('[MIGRATE] migrated postgresql server {} from {} to {}'.format(purpose, from_version, max_version))
 
     execute_migration_scripts()
 
@@ -88,7 +88,7 @@ def wait_for_server_up(purpose):
         except:
             import traceback
             traceback.print_exc()
-            print('[MIGRATE] wait for postgresql...')
+            LOGGER.info('[MIGRATE] wait for postgresql...')
             time.sleep(3)
 
 
