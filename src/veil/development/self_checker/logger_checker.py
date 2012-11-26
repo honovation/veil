@@ -13,11 +13,8 @@ def check_logger():
             module_file = module.__file__.replace('.pyc', '.py')
             if check_file(module_file):
                 wrong_usages_count += 1
-    LOGGER.info('logger usage summary: %(wrong_usages_count)s places used logger in the wrong way', {
-        'wrong_usages_count': wrong_usages_count
-    })
-    if wrong_usages_count > 0:
-        raise Exception('Loggers were not being used correctly')
+    if wrong_usages_count:
+        raise Exception('Loggers were not being used correctly, in {} places'.format(wrong_usages_count))
 
 def check_file(file_path):
     failed = False
