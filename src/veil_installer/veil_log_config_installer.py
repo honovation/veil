@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
-from veil_installer import *
+from .installer import composite_installer
+from .filesystem_installer import file_resource
 
 @composite_installer('veil_log_config')
 def install_veil_log_config(path, loggers):
