@@ -75,8 +75,8 @@ def route(method, path_template, website=None, tags=(), delegates_to=None, **pat
         **path_template_params)
 
 
-def route_for(website):
-    return functools.partial(route, website=website)
+def route_for(website, tags=()):
+    return functools.partial(route, website=website, tags=tags)
 
 
 def infer_website():
