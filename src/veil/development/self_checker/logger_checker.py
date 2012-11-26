@@ -16,7 +16,7 @@ def check_logger():
     LOGGER.info('logger usage summary: %(wrong_usages_count)s places used logger in the wrong way', {
         'wrong_usages_count': wrong_usages_count
     })
-    if wrong_usages_count > 20:
+    if wrong_usages_count > 7:
         raise Exception('Loggers were not being used correctly')
 
 def check_file(file_path):
