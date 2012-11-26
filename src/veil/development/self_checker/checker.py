@@ -4,9 +4,9 @@ import logging
 from veil.frontend.cli import *
 from veil.environment import *
 from veil.utility.shell import *
-from veil.development.architecture import check_architecture
-from veil.development.architecture import check_encapsulation
-from veil.development.loc import check_loc
+from .architecture_checker import check_architecture
+from .encapsulation_checker import check_encapsulation
+from .loc_checker import check_loc
 from veil.development.live_document import check_live_document
 from veil.development.test import check_correctness
 from veil.backend.database.postgresql import check_if_locked_migration_scripts_being_changed

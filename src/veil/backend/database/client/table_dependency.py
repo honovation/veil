@@ -5,7 +5,6 @@ import logging
 from veil.environment import *
 from veil.frontend.cli import *
 from veil.utility.encoding import *
-from veil.development.architecture import check_architecture
 
 RE_UPDATE = re.compile(r'UPDATE\s+(\w+)\s+', re.IGNORECASE)
 RE_INSERT = re.compile(r'INSERT\s+(\w+)[\s\(]+', re.IGNORECASE)
@@ -83,11 +82,26 @@ def list_writable_tables():
         return writable_tables
     writable_tables = {}
     try:
-        check_architecture() # which calls "update_writable_tables"
+        architecture = get_application_architecture()
+        for component_name, value in architecture.items():
+            collect_writable_tables([component_name], value)
     except:
         writable_tables = None
         raise
     return writable_tables
+
+
+def collect_writable_tables(component_names, architecture):
+    if not isinstance(architecture, dict):
+        return
+    for key, value in architecture.items():
+        if 'TABLES' == key:
+            update_writable_tables(component_names, value)
+        elif key.startswith('.'):
+            inner_component_names = list(component_names)
+            inner_component_names.append(key)
+            inner_architecture = value
+            collect_writable_tables(inner_component_names, inner_architecture)
 
 
 def update_writable_tables(component_names, expected_dependencies):

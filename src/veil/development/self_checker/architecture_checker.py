@@ -1,12 +1,14 @@
 from __future__ import unicode_literals, print_function, division
 import veil_component
 from veil.environment import *
+from veil.backend.web_service import check_web_service_dependencies
+from veil.backend.database.client import check_database_dependencies
 
-architecture_checkers = {}
-
-def register_architecture_checker(key, checker):
-    architecture_checkers[key] = checker
-
+architecture_checkers = {
+    'WEB_SERVICES': check_web_service_dependencies,
+    'DATABASES': check_database_dependencies,
+    'TABLES': lambda *args, **kwargs: None # tables are checked in runtime
+}
 
 def check_architecture():
     for component_name in get_application_components():
