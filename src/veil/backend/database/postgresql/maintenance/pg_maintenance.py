@@ -59,23 +59,40 @@ def migrate(purpose):
         from_version = current_version
         max_version = max(versions.keys())
         if from_version > max_version:
-            LOGGER.info('[MIGRATE] postgresql server {} current version {} is higher than the code {}'.format(
-                purpose, from_version, max_version))
+            LOGGER.info('[MIGRATE] postgresql server current version higher than code: %(purpose)s is version %(from_version)s, code is version %(max_version)s', {
+                'purpose': purpose,
+                'from_version': from_version,
+                'max_version': max_version
+            })
             sys.exit(1)
         if from_version == max_version:
-            LOGGER.info('[MIGRATE] postgresql server {} current version {} is up to date'.format(purpose, from_version))
+            LOGGER.info('[MIGRATE] postgresql server is up to date: %(purpose)s is version %(from_version)s', {
+                'purpose': purpose,
+                'from_version': from_version
+            })
             sys.exit(0)
         LOGGER.info(
-            '[MIGRATE] about to migrate postgresql server {} from {} to {}'.format(purpose, from_version, max_version))
+            '[MIGRATE] about to migrate postgresql server: %(purpose)s from %(from_version)s to %(max_version)s', {
+                'purpose': purpose,
+                'from_version': from_version,
+                'max_version': max_version
+            })
         to_version = None
         for i in range(current_version, max_version):
             to_version = i + 1
-            LOGGER.info('[MIGRATE] migrating from {} to {} ...'.format(to_version - 1, to_version))
+            LOGGER.info('[MIGRATE] upgrading one version: from %(from_version)s to %(to_version)s ...', {
+                'from_version': to_version - 1,
+                'to_version': to_version
+            })
             db().execute(versions[to_version].text('utf8'))
         db().insert(
             'database_migration_event', from_version=from_version,
             to_version=to_version, migrated_at=get_current_time())
-        LOGGER.info('[MIGRATE] migrated postgresql server {} from {} to {}'.format(purpose, from_version, max_version))
+        LOGGER.info('[MIGRATE] migrated postgresql server: %(purpose)s from %(from_version)s to %(max_version)s', {
+            'purpose': purpose,
+            'from_version': from_version,
+            'max_version': max_version
+        })
 
     execute_migration_scripts()
 

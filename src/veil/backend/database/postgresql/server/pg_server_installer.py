@@ -121,7 +121,7 @@ def install_postgresql_user(dry_run_result, purpose, user, password, owner, owne
 
 def delete_file(path):
     if os.path.exists(path):
-        LOGGER.info('delete {}'.format(path))
+        LOGGER.info('delete file: %(path)s', {'path': path})
         os.remove(path)
 
 
