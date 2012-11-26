@@ -11,7 +11,6 @@ with veil_component.init_component(__name__):
     from .template import get_template
     from .template import get_template_environment
     from .template import clear_template_caches
-    from .template import using_isolated_template
     from .widget import widget
     from .widget import require_current_widget_namespace_being
     from .widget import import_widget
@@ -28,7 +27,6 @@ with veil_component.init_component(__name__):
             require_current_template_directory_relative_to.__name__,
             get_template.__name__,
             get_template_environment.__name__,
-            using_isolated_template.__name__,
             # from widget
             widget.__name__,
             clear_template_caches.__name__,

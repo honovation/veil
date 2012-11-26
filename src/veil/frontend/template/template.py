@@ -4,9 +4,7 @@ import traceback
 import os.path
 import inspect
 import importlib
-import functools
 import jinjatag
-import jinja2
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
 from veil.development.test import get_executing_test
@@ -75,18 +73,6 @@ def require_current_template_directory_being(template_directory):
         current_template_directories.pop()
 
 
-def using_isolated_template(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        with require_current_template_directory_relative_to(func):
-            assert_no_env()
-            get_or_create_environment(strict=True)
-            try:
-                return func(*args, **kwargs)
-            finally:
-                reset_template_environment()
-    return wrapper
-
 def require_current_template_directory_relative_to(func):
     return require_current_template_directory_being(
         os.path.dirname(os.path.abspath(importlib.import_module(func.__module__).__file__)))
@@ -128,7 +114,7 @@ def get_template_environment():
     return get_or_create_environment()
 
 
-def get_or_create_environment(strict=False):
+def get_or_create_environment():
     global env
     if env:
         return env
@@ -136,8 +122,7 @@ def get_or_create_environment(strict=False):
     env = Environment(
         loader=PrefixLoader(loaders, delimiter=':'),
         autoescape=True,
-        extensions=['jinja2.ext.autoescape', 'jinja2.ext.i18n', jinja_tag],
-        undefined=jinja2.StrictUndefined if strict else jinja2.Undefined)
+        extensions=['jinja2.ext.autoescape', 'jinja2.ext.i18n', jinja_tag])
     jinja_tag.init()
     env.filters.update(filters)
     env.install_null_translations()

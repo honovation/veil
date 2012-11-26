@@ -1,17 +1,15 @@
 from __future__ import unicode_literals, print_function, division
 from veil_installer import *
-from veil.frontend.template import *
 from veil.environment import *
 
 @composite_installer('nginx')
-@using_isolated_template
 def install_nginx(servers):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
         os_package_resource('nginx-extras'),
         os_service_resource(state='not_installed', name='nginx', path='/etc/rc0.d/K20nginx'),
         directory_resource(VEIL_LOG_DIR / 'nginx', owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-        file_resource(VEIL_ETC_DIR / 'nginx.conf', get_template('nginx.conf.j2').render(config={
+        file_resource(VEIL_ETC_DIR / 'nginx.conf', render_config('nginx.conf.j2', config={
             'owner': CURRENT_USER,
             'owner_group': CURRENT_USER_GROUP,
             'log_directory': VEIL_LOG_DIR / 'nginx',

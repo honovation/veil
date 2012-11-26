@@ -29,12 +29,11 @@ def require_redis(purpose):
 
 
 @composite_installer('redis_client')
-@using_isolated_template
 def install_redis_client(purpose, host, port):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.append(
-        file_resource(VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')), content=get_template(
-            'redis-client.cfg.j2').render(host=host, port=port)))
+        file_resource(VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')), content=render_config(
+            'redis-client.cfg.j2', host=host, port=port)))
     return [], resources
 
 

@@ -4,12 +4,11 @@ from veil.frontend.template import *
 from veil_installer import *
 
 @composite_installer('resweb')
-@using_isolated_template
 def install_resweb(resweb_host, resweb_port, queue_host, queue_port):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
         python_package_resource('resweb'),
-        file_resource(VEIL_ETC_DIR / 'resweb.cfg', content=get_template('resweb.cfg.j2').render(config={
+        file_resource(VEIL_ETC_DIR / 'resweb.cfg', content=render_config('resweb.cfg.j2', config={
             'resweb_host': resweb_host,
             'resweb_port': resweb_port,
             'queue_host': queue_host,

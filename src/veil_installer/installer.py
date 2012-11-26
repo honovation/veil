@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import functools
 import veil_component
 import logging
 
@@ -8,6 +9,7 @@ COMPOSITE_INSTALLERS = {}
 stack = []
 installed_resource_codes = set()
 installed_installer_providers = set()
+executing_composite_installer = None
 
 def atomic_installer(name):
     def register(func):
@@ -19,10 +21,25 @@ def atomic_installer(name):
 
 def composite_installer(name):
     def register(func):
-        COMPOSITE_INSTALLERS[name] = func
-        return func
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            global executing_composite_installer
+
+            try:
+                if executing_composite_installer:
+                    raise Exception('@composite_installer can not be nested')
+                executing_composite_installer = func
+                return func(*args, **kwargs)
+            finally:
+                executing_composite_installer = None
+
+        COMPOSITE_INSTALLERS[name] = wrapper
+        return wrapper
 
     return register
+
+def get_executing_composite_installer():
+    return executing_composite_installer
 
 
 def install_resources(dry_run_result, installer_providers, resources):

@@ -18,6 +18,7 @@ with veil_component.init_component(__name__):
     from .veil_log_config_installer import veil_log_config_resource
     from .shell import shell_execute
     from .shell import ShellExecutionError
+    from .config_renderer import render_config
 
     __all__ = [
         atomic_installer.__name__,
@@ -36,5 +37,6 @@ with veil_component.init_component(__name__):
         os_service_resource.__name__,
         veil_log_config_resource.__name__,
         shell_execute.__name__,
-        ShellExecutionError.__name__
+        ShellExecutionError.__name__,
+        render_config.__name__
     ]

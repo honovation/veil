@@ -7,13 +7,11 @@ from veil.utility.shell import *
 from veil.environment import *
 from veil.environment.setting import *
 from veil.utility.path import *
-from veil.frontend.template import *
 from veil_installer import *
 
 LOGGER = logging.getLogger(__name__)
 
 @composite_installer('postgresql')
-@using_isolated_template
 def install_postgresql_server(purpose, config):
     pg_data_dir = get_data_dir(purpose)
     pg_config_dir = get_config_dir(purpose)
@@ -26,7 +24,7 @@ def install_postgresql_server(purpose, config):
         directory_resource(pg_config_dir),
         file_resource(
             pg_config_dir / 'postgresql.conf',
-            content=get_template('postgresql.conf.j2').render(config={
+            content=render_config('postgresql.conf.j2', config={
                 'data_directory': pg_data_dir,
                 'host': config.host,
                 'port': config.port,
@@ -35,10 +33,10 @@ def install_postgresql_server(purpose, config):
                 'log_directory': VEIL_LOG_DIR / '{}-postgresql'.format(purpose),
                 'log_min_duration_statement': config.log_min_duration_statement
             })),
-        file_resource(pg_config_dir / 'pg_hba.conf', content=get_template('pg_hba.conf.j2').render(host=config.host)),
-        file_resource(pg_config_dir / 'pg_ident.conf', content=get_template('pg_ident.conf.j2').render()),
-        file_resource(pg_config_dir / 'postgresql-maintenance.cfg', content=get_template(
-            'postgresql-maintenance.cfg.j2').render(owner=config.owner, owner_password=config.owner_password)),
+        file_resource(pg_config_dir / 'pg_hba.conf', content=render_config('pg_hba.conf.j2', host=config.host)),
+        file_resource(pg_config_dir / 'pg_ident.conf', content=render_config('pg_ident.conf.j2')),
+        file_resource(pg_config_dir / 'postgresql-maintenance.cfg', content=render_config(
+            'postgresql-maintenance.cfg.j2', owner=config.owner, owner_password=config.owner_password)),
         symbolic_link_resource(pg_data_dir / 'postgresql.conf', to=pg_config_dir / 'postgresql.conf'),
         symbolic_link_resource(pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf'),
         symbolic_link_resource(pg_data_dir / 'pg_ident.conf', to=pg_config_dir / 'pg_ident.conf'),
