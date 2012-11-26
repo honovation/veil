@@ -18,7 +18,7 @@ def install_os_package(dry_run_result, name):
         return
     if installed:
         return
-    LOGGER.info('installing os package {} ...'.format(name))
+    LOGGER.info('installing os package: %(name)s ...', {'name': name})
     shell_execute('apt-get -y install {}'.format(name), capture=True)
 
 

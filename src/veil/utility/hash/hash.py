@@ -14,10 +14,10 @@ def encode_token(*parts):
 def decode_token(token, *part_types):
     parts = token.split('|')
     if len(parts) != len(part_types) + 1:
-        LOGGER.warn('token parts count invalid: {}'.format(token))
+        LOGGER.warn('token parts count invalid: %(token)s', {'token': token})
         return None
     if parts[-1] != get_hmac(*parts[:-1], strong=False):
-        LOGGER.warn('token signature mismatch: {}'.format(token))
+        LOGGER.warn('token signature mismatch: %(token)s', {'token': token})
         return None
     return [t(parts[i]) for i, t in enumerate(part_types)]
 

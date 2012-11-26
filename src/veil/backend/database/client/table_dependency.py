@@ -57,9 +57,15 @@ def print_table_dependencies_for(component_tables, threshold=8):
         if tables:
             tables = list(tables)
             if len(tables) > threshold:
-                LOGGER.info('[{}]:\t{}...'.format(component_name, ', '.join(tables[:threshold])))
+                LOGGER.info('[%(component_name)s]:\t%(tables)s...', {
+                    'component_name': component_name,
+                    'tables': ', '.join(tables[:threshold])
+                })
             else:
-                LOGGER.info('[{}]:\t{}'.format(component_name, ', '.join(tables)))
+                LOGGER.info('[%(component_name)s]:\t%(tables)s', {
+                    'component_name': component_name,
+                    'tables': ', '.join(tables)
+                })
 
 
 def list_readable_tables():
@@ -124,8 +130,6 @@ def check_writable_table_dependencies(writable_tables, component_name, sql):
     sql = sql.strip().replace('\n', '').replace('\r', '').replace('\t', '')
     writing_table_name = get_writing_table_name(sql)
     if writing_table_name and writing_table_name not in writable_tables.get(component_name, set()):
-        LOGGER.debug('readable tables: {}'.format(readable_tables))
-        LOGGER.debug('writable tables: {}'.format(writable_tables))
         raise Exception('{} should not write to table {}'.format(
             component_name, writing_table_name))
 
@@ -151,8 +155,6 @@ def check_readable_table_dependencies(readable_tables, component_name, sql):
     component_tables = readable_tables.get(component_name, set())
     for table in reading_table_names:
         if table not in component_tables:
-            LOGGER.debug('readable tables: {}'.format(readable_tables))
-            LOGGER.debug('writable tables: {}'.format(writable_tables))
             raise Exception('{} should not read from table {}'.format(
                 component_name, table))
 

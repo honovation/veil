@@ -13,7 +13,10 @@ def publish_event(topic, **kwargs):
         try:
             subscriber(**kwargs)
         except:
-            LOGGER.error('failed to publish event {} to subscriber {}'.format(topic, subscriber))
+            LOGGER.error('failed to publish event:  publishing topic %(topic)s to subscriber %(subscriber)s', {
+                'topic': topic,
+                'subscriber': subscriber
+            })
             raise
 
 

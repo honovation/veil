@@ -166,27 +166,45 @@ class Database(object):
     def list_scalar(self, sql, **kwargs):
         rows = self._query(sql, returns_dict_object=False, **kwargs)
         if rows and len(rows[0]) > 1:
-            raise Exception('More than one columns returned with the sql {} {}'.format(sql, kwargs))
+            raise Exception('More than one columns returned: sql is %(sql)s and kwargs are %(kwargs)s', {
+                'sql': sql,
+                'kwargs': kwargs
+            })
         return [row[0] for row in rows]
 
     def get(self, sql, **kwargs):
         rows = self._query(sql, **kwargs)
         if not rows:
-            LOGGER.debug('No rows returned with the sql {} {}'.format(sql, kwargs))
+            LOGGER.debug('No rows returned: sql is %(sql)s and kwargs are %(kwargs)s', {
+                'sql': sql,
+                'kwargs': kwargs
+            })
             return None
         if len(rows) > 1:
-            LOGGER.warning('More than one rows returned with the sql {} {}'.format(sql, kwargs))
+            LOGGER.warning('More than one rows returned: sql is %(sql)s and kwargs are %(kwargs)s', {
+                'sql': sql,
+                'kwargs': kwargs
+            })
         return rows[0]
 
     def get_scalar(self, sql, **kwargs):
         rows = self._query(sql, returns_dict_object=False, **kwargs)
         if not rows:
-            LOGGER.debug('No rows returned with the sql {} {}'.format(sql, kwargs))
+            LOGGER.debug('No rows returned: sql is %(sql)s and kwargs are %(kwargs)s', {
+                'sql': sql,
+                'kwargs': kwargs
+            })
             return None
         if len(rows) > 1:
-            LOGGER.warning('More than one rows returned with the sql {} {}'.format(sql, kwargs))
+            LOGGER.warning('More than one rows returned: sql is %(sql)s and kwargs are %(kwargs)s', {
+                'sql': sql,
+                'kwargs': kwargs
+            })
         if len(rows[0]) > 1:
-            raise Exception('More than one columns returned with the sql {} {}'.format(sql, kwargs))
+            raise Exception('More than one columns returned: sql is %(sql)s and kwargs are %(kwargs)s', {
+                'sql': sql,
+                'kwargs': kwargs
+            })
         return rows[0][0]
 
     def insert(self, table, objects=None, returns_id=False, should_insert=None, **value_providers):
@@ -268,7 +286,10 @@ class Database(object):
                 check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
             except Exception as e:
-                LOGGER.exception('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+                LOGGER.exception('failed to execute statement: sql is %(sql)s and kwargs are %(kwargs)s', {
+                    'sql': sql,
+                    'kwargs': kwargs
+                })
                 self.conn.reconnect_if_broken_per_exception(e)
                 raise
             return cursor.rowcount
@@ -279,7 +300,10 @@ class Database(object):
                 check_table_dependencies(self.component_name, sql)
                 cursor.executemany(sql, seq_of_parameters)
             except Exception as e:
-                LOGGER.exception('failed to execute ({}) {} with {}'.format(type(sql), sql, seq_of_parameters))
+                LOGGER.exception('failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s', {
+                    'sql': sql,
+                    'seq_of_parameters': seq_of_parameters
+                })
                 self.conn.reconnect_if_broken_per_exception(e)
                 raise
             return cursor.rowcount
@@ -290,7 +314,10 @@ class Database(object):
                 check_table_dependencies(self.component_name, sql)
                 cursor.execute(sql, kwargs)
             except Exception as e:
-                LOGGER.exception('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+                LOGGER.exception('failed to execute query: sql is %(sql)s and kwargs are %(kwargs)s', {
+                    'sql': sql,
+                    'kwargs': kwargs
+                })
                 self.conn.reconnect_if_broken_per_exception(e)
                 raise
             return cursor.fetchall()
@@ -314,7 +341,10 @@ class Database(object):
                 # if exception happen before close, the whole transaction should be rolled back by the caller
                 # if we close the cursor when sql execution error, the actuall error will be covered by unable to close cursor itself
         except Exception as e:
-            LOGGER.exception('failed to execute ({}) {} with {}'.format(type(sql), sql, kwargs))
+            LOGGER.exception('failed to query large result set: sql is %(sql)s and kwargs are %(kwargs)s', {
+                'sql': sql,
+                'kwargs': kwargs
+            })
             self.conn.reconnect_if_broken_per_exception(e)
             raise
 

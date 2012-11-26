@@ -37,7 +37,7 @@ def install_component(name):
                 else:
                     resources.append(parse_resource(line))
         except:
-            LOGGER.error('failed to parse: {}'.format(installer_path))
+            LOGGER.error('failed to parse: %(installer_path)s', {'installer_path': installer_path})
             raise
     return installer_providers, resources
 
