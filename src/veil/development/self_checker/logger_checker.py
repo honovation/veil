@@ -16,7 +16,7 @@ def check_logger():
     LOGGER.info('logger usage summary: %(wrong_usages_count)s places used logger in the wrong way', {
         'wrong_usages_count': wrong_usages_count
     })
-    if wrong_usages_count > 32:
+    if wrong_usages_count > 20:
         raise Exception('Loggers were not being used correctly')
 
 def check_file(file_path):
@@ -30,7 +30,6 @@ def check_file(file_path):
 #                    'file_path': file_path,
 #                    'line_no': line_no + 1
 #                })
-#                if '/veil/' in file_path:
-#                    raise Exception()
+#                raise Exception()
                 failed = True
     return failed
