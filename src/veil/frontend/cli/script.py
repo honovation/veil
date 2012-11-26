@@ -28,7 +28,11 @@ def execute_script(*argv, **kwargs):
         level = script_handlers
     arg = argv[0] if argv else None
     if arg not in level:
-        LOGGER.info('{} is unknown, choose from: {}'.format(arg, level.keys()))
+        LOGGER.info(
+            '%(unknown_option)s is unknown, choose from: %(valid_options)s', {
+                'unknown_option': arg,
+                'valid_options': level.keys()
+            })
         sys.exit(1)
     try:
         next_level = level[arg]
@@ -48,6 +52,7 @@ def execute_script(*argv, **kwargs):
         LOGGER.error(traceback.format_exc())
         LOGGER.error(value.message)
         sys.exit(1)
+
 
 def import_script_handlers(argv):
     if argv:
@@ -98,6 +103,7 @@ def import_script_handlers(argv):
                 __import__(component_name)
             except:
                 pass
+
 
 def get_executing_script_handler():
     if executing_script_handlers:
