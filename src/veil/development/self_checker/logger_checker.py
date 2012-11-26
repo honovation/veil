@@ -16,7 +16,7 @@ def check_logger():
     LOGGER.info('logger usage summary: %(wrong_usages_count)s places used logger in the wrong way', {
         'wrong_usages_count': wrong_usages_count
     })
-    if wrong_usages_count > 7:
+    if wrong_usages_count > 0:
         raise Exception('Loggers were not being used correctly')
 
 def check_file(file_path):
@@ -26,10 +26,9 @@ def check_file(file_path):
             used_format = str('.format(') in line
             used_format_arg = str('{}') in line
             if str('LOGGER') in line and (used_format or used_format_arg):
-#                LOGGER.error('logger used in the wrong way: at %(file_path)s:%(line_no)s, we do not need to format log message as itself is a format', {
-#                    'file_path': file_path,
-#                    'line_no': line_no + 1
-#                })
-#                raise Exception()
+                LOGGER.error('logger used in the wrong way: at %(file_path)s:%(line_no)s, we do not need to format log message as itself is a format', {
+                    'file_path': file_path,
+                    'line_no': line_no + 1
+                })
                 failed = True
     return failed
