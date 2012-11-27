@@ -55,8 +55,8 @@ def clear_static_file_hashes():
 @template_utility
 def static_url(path):
     hash = get_static_file_hash(path)
-    if static_file_hashes.get(path):
-        return '/static/{}?v={}'.format(path, hash[:5])
+    if hash:
+        return '/static/{}?v={}'.format(path, hash)
     else:
         return '/static/{}'.format(path)
 
@@ -67,7 +67,7 @@ def get_static_file_hash(path):
         static_file_path = as_path(external_static_files_directory) / path
         try:
             with open(static_file_path) as f:
-                hash = calculate_file_md5_hash(f)
+                hash = calculate_file_md5_hash(f, hex=True)
                 static_file_hashes[path] = hash
         except:
             LOGGER.error('Could not open static file: %(static_file_path)s', {
