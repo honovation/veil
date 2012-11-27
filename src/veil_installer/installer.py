@@ -45,7 +45,7 @@ def composite_installer(func):
     return atomic_installer(wrapper)
 
 
-@composite_installer
+@atomic_installer
 def application_resource(component_names, config):
     global application_sub_resources
     try:
