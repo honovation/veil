@@ -3,7 +3,6 @@ from redis.client import Redis
 from logging import getLogger
 from veil_installer import *
 from veil.development.test import *
-from veil.frontend.template import *
 from veil.environment import *
 from veil.environment.setting import *
 
@@ -12,6 +11,9 @@ LOGGER = getLogger(__name__)
 instances = {} # purpose => instance (a.k.a Redis class instance)
 
 def register_redis(purpose):
+    add_application_sub_resource(
+        '{}_redis_client'.format(purpose),
+        lambda config: redis_client_resource(purpose=purpose, **config))
     return lambda: require_redis(purpose)
 
 
@@ -32,8 +34,9 @@ def require_redis(purpose):
 def redis_client_resource(purpose, host, port):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.append(
-        file_resource(path=VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')), content=render_config(
-            'redis-client.cfg.j2', host=host, port=port)))
+        file_resource(path=VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')),
+            content=render_config(
+                'redis-client.cfg.j2', host=host, port=port)))
     return resources
 
 

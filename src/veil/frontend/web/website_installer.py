@@ -4,8 +4,18 @@ from veil.environment import *
 from veil.model.collection import *
 from veil.environment.setting import *
 from veil.development.test import *
+from veil.model.event import *
+from .routing import *
 
 overriden_website_configs = {}
+
+
+@event(EVENT_NEW_WEBSITE)
+def on_new_website(website):
+    add_application_sub_resource(
+        '{}_website'.format(website),
+        lambda config: website_resource(purpose=website, config=config))
+
 
 @composite_installer
 def website_resource(purpose, config):

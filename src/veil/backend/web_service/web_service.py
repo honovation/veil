@@ -1,9 +1,10 @@
 from __future__ import unicode_literals, print_function, division
-import veil_component
-from veil.environment.setting import *
 from suds.client import Client
 from suds.client import WebFault
+import veil_component
+from veil_installer import *
 from .web_service_client_installer import load_web_service_client_config
+from .web_service_client_installer import web_service_client_resource
 
 WebFault = WebFault
 
@@ -11,6 +12,9 @@ instances = {} # purpose => instance
 dependencies = {}
 
 def register_web_service(purpose):
+    add_application_sub_resource(
+        '{}_web_service_client'.format(purpose),
+        lambda config: web_service_client_resource(purpose=purpose, **config))
     dependencies.setdefault(veil_component.get_loading_component_name(), set()).add(purpose)
     return lambda: require_web_service(purpose)
 

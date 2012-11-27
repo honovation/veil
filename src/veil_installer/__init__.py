@@ -5,6 +5,8 @@ with veil_component.init_component(__name__):
     from .installer import composite_installer
     from .installer import get_dry_run_result
     from .installer import do_install
+    from .installer import application_resource
+    from .installer import add_application_sub_resource
     from .filesystem_installer import directory_resource
     from .filesystem_installer import file_resource
     from .filesystem_installer import symbolic_link_resource
@@ -25,6 +27,8 @@ with veil_component.init_component(__name__):
         composite_installer.__name__,
         get_dry_run_result.__name__,
         do_install.__name__,
+        application_resource.__name__,
+        add_application_sub_resource.__name__,
         # from filesystem_installer
         directory_resource.__name__,
         file_resource.__name__,

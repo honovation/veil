@@ -11,14 +11,6 @@ def queue_program(host, port):
     })
 
 
-def queue_client_resource(type, host, port):
-    return ('veil.backend.queue.queue_client_resource', {
-        'type': type,
-        'host': host,
-        'port': port
-    })
-
-
 def resweb_program(resweb_host, resweb_port, queue_host, queue_port):
     return objectify({
         'resweb': {
@@ -67,14 +59,13 @@ def periodic_job_scheduler_program(loggers, dependencies):
 
 
 def job_worker_program(
-        worker_name, pyres_worker_logging_level, loggers, queue_host, queue_port, queue_names, dependencies,
-        resources=(), run_as=None):
+        worker_name, pyres_worker_logging_level, loggers, queue_host, queue_port, queue_names,
+        application_component_names, application_config, run_as=None):
     veil_log_config_path = VEIL_ETC_DIR / '{}-worker-log.cfg'.format(worker_name)
-    resources = list(resources)
-    resources.append(veil_log_config_resource(path=veil_log_config_path, loggers=loggers))
-    resources.append(component_resource(name='veil.backend.queue'))
-    for dependency in dependencies:
-        resources.append(component_resource(name=dependency))
+    resources = [
+        veil_log_config_resource(path=veil_log_config_path, loggers=loggers),
+        component_resource(name='veil.backend.queue'),
+        application_resource(component_names=application_component_names, config=application_config)]
     return objectify({
         '{}_worker'.format(worker_name): {
             'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -l {} -f stderr {}'.format(

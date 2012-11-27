@@ -3,13 +3,13 @@ from veil_installer import *
 from veil.environment import *
 from veil.model.collection import *
 
-def website_program(purpose, loggers, dependencies, resources):
+def website_program(purpose, loggers, application_component_names, application_config):
     veil_log_config_path = VEIL_ETC_DIR / '{}-website-log.cfg'.format(purpose)
-    resources = list(resources)
-    resources.append(veil_log_config_resource(path=veil_log_config_path, loggers=loggers))
+    resources = [
+        veil_log_config_resource(path=veil_log_config_path, loggers=loggers),
+        application_resource(component_names=application_component_names, config=application_config)]
     additional_args = []
-    for dependency in dependencies:
-        resources.append(component_resource(name=dependency))
+    for dependency in application_component_names:
         additional_args.append('--dependency {}'.format(dependency))
     return objectify({
         '{}_website'.format(purpose): {
@@ -22,25 +22,6 @@ def website_program(purpose, loggers, dependencies, resources):
             'reloads_on_change': True
         }
     })
-
-
-def website_resource(purpose, domain, domain_port, host, port, secure_cookie_salt, master_template_directory,
-                     prevents_xsrf, recalculates_static_file_hash, clears_template_cache):
-    return 'veil.frontend.web.website_resource', {
-        'purpose': purpose,
-        'config': {
-            'domain': domain,
-            'domain_port': domain_port,
-            'host': host,
-            'port': port,
-            'secure_cookie_salt': secure_cookie_salt,
-            'master_template_directory': master_template_directory,
-            'prevents_xsrf': prevents_xsrf,
-            'recalculates_static_file_hash': recalculates_static_file_hash,
-            'clears_template_cache': clears_template_cache
-        }
-    }
-
 
 def website_locations(host, port):
     return {

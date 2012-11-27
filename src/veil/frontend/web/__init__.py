@@ -14,7 +14,6 @@ with veil_component.init_component(__name__):
     from .routing import is_public_route
     from .routing import RoutingHTTPHandler
     from .routing import get_routes
-    from .routing import EVENT_NEW_WEBSITE
     from .routing import register_page_post_processor
     from .routing import TAG_NO_POST_PROCESS
     from .routing import publish_new_website_event
@@ -48,9 +47,6 @@ with veil_component.init_component(__name__):
     from .tornado import require_io_loop_executor
     from .xsrf import xsrf_token
 
-    EVENT_NEW_WEBSITE = EVENT_NEW_WEBSITE
-    TAG_NO_POST_PROCESS = TAG_NO_POST_PROCESS
-
     __all__ = [
         # from website
         start_website.__name__,
@@ -69,7 +65,6 @@ with veil_component.init_component(__name__):
         is_public_route.__name__,
         RoutingHTTPHandler.__name__,
         get_routes.__name__,
-        'EVENT_NEW_WEBSITE',
         register_page_post_processor.__name__,
         'TAG_NO_POST_PROCESS',
         publish_new_website_event.__name__,

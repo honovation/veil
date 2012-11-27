@@ -10,6 +10,8 @@ LOGGER = logging.getLogger()
 installed_resource_codes = set()
 executing_composite_installer = None
 dry_run_result = None
+application_sub_resources = None
+installing = False
 
 def atomic_installer(func):
     assert inspect.isfunction(func)
@@ -22,7 +24,6 @@ def atomic_installer(func):
                 func.__name__), kwargs
         return func(**kwargs)
 
-    wrapper.is_composite_installer = False
     return wrapper
 
 
@@ -33,10 +34,6 @@ def composite_installer(func):
     def wrapper(**kwargs):
         global executing_composite_installer
 
-        if not kwargs.pop('do_install', False):
-            return '{}.{}'.format(
-                veil_component.get_leaf_component(func.__module__),
-                func.__name__), kwargs
         try:
             if executing_composite_installer:
                 raise Exception('@composite_installer can not be nested')
@@ -45,8 +42,32 @@ def composite_installer(func):
         finally:
             executing_composite_installer = None
 
-    wrapper.is_composite_installer = True
-    return wrapper
+    return atomic_installer(wrapper)
+
+
+@composite_installer
+def application_resource(component_names, config):
+    global application_sub_resources
+    try:
+        application_sub_resources = {}
+        component_resources = [('veil_installer.component_resource', dict(name=name)) for name in component_names]
+        install_resources(component_resources)
+        for component_name in component_names:
+            __import__(component_name)
+        resources = []
+        for section, resource_provider in application_sub_resources.items():
+            resources.append(resource_provider(config[section]))
+        return resources
+    finally:
+        application_sub_resources = None
+
+
+def add_application_sub_resource(section, resource_provider):
+    if not is_installing():
+        return
+    if application_sub_resources is None:
+        raise Exception('not installing any application resource')
+    application_sub_resources[section] = resource_provider
 
 
 def get_executing_composite_installer():
@@ -54,6 +75,8 @@ def get_executing_composite_installer():
 
 
 def install_resources(resources):
+    global installing
+    installing = True
     resources = list(skip_installed_resources(resources))
     for resource in resources:
         more_resources = do_install(resource)
@@ -113,3 +136,7 @@ def dry_run():
         yield
     finally:
         dry_run_result = None
+
+
+def is_installing():
+    return installing

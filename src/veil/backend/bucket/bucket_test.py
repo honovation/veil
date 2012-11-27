@@ -1,12 +1,14 @@
 from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
 import tempfile
-from veil.development.test import TestCase
-from veil.utility.path import as_path
+from veil.environment import *
+from veil.development.test import *
+from veil.utility.path import *
 from .bucket import register_bucket
 from .bucket_installer import override_bucket_config
 
-bucket = register_bucket('test')
+if 'test' == VEIL_ENV:
+    bucket = register_bucket('test')
 
 class FilesystemBucketTest(TestCase):
     def setUp(self):

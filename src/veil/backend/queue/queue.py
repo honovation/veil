@@ -6,12 +6,19 @@ from logging import getLogger
 from datetime import timedelta, datetime
 from redis.client import Redis
 from pyres import ResQ
+from veil_installer import *
 from veil.utility.clock import *
 from .queue_client_installer import load_queue_client_config
+from .queue_client_installer import queue_client_resource
 
 LOGGER = getLogger(__name__)
 
 _current_queue = None
+
+def register_queue():
+    add_application_sub_resource('queue_client', lambda config: queue_client_resource(**config))
+    return lambda: require_queue()
+
 
 def require_queue():
     global _current_queue

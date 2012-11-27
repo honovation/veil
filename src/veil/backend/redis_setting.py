@@ -14,12 +14,3 @@ def redis_program(purpose, host, port):
         }
     })
 
-
-def redis_client_resource(purpose, host, port):
-    return ('veil.backend.redis.redis_client_resource', {
-        'purpose': purpose,
-        'host': host,
-        'port': port
-    })
-
-

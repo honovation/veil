@@ -7,9 +7,11 @@ from functools import wraps
 from logging import getLogger
 import uuid
 import veil_component
+from veil_installer import *
 from veil.development.test import *
 from .table_dependency import check_table_dependencies
 from .database_client_installer import load_database_client_config
+from .database_client_installer import database_client_resource
 
 LOGGER = getLogger(__name__)
 
@@ -24,6 +26,9 @@ def register_adapter_class(type, adapter_class):
 def register_database(purpose, verify_db=False):
     component_name = veil_component.get_loading_component_name()
     dependencies.setdefault(component_name, set()).add(purpose)
+    add_application_sub_resource(
+        '{}_database_client'.format(purpose),
+        lambda config: database_client_resource(purpose=purpose, config=config))
     return lambda: require_database(purpose, component_name, verify_db)
 
 

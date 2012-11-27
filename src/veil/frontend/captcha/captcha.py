@@ -7,6 +7,7 @@ import uuid
 import os
 import logging
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from veil_installer import *
 from veil.frontend.template import *
 from veil.frontend.web import *
 from veil.backend.bucket import *
@@ -18,6 +19,12 @@ redis = register_redis('captcha_answer')
 LOGGER = logging.getLogger(__name__)
 
 def register_captcha(website):
+    add_application_sub_resource(
+        'captcha_image_bucket',
+        lambda config: bucket_resource('captcha_image', config))
+    add_application_sub_resource(
+        'captcha_answer_redis_client',
+        lambda config: redis_client_resource('captcha_answer', **config))
     import_widget(captcha_widget)
     route('GET', '/captcha', website=website)(captcha_widget)
     return captcha_protected
