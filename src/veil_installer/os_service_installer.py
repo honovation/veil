@@ -3,18 +3,16 @@ import os
 import logging
 from .shell import shell_execute
 from .installer import atomic_installer
+from .installer import get_dry_run_result
 
 LOGGER = logging.getLogger(__name__)
 
+@atomic_installer
 def os_service_resource(name, path, state):
-    return 'os_service', dict(name=name, path=path, state=state)
-
-
-@atomic_installer('os_service')
-def install_os_service(dry_run_result, name, path, state):
     if 'not_installed' != state:
         raise NotImplementedError('only support remove os service')
     installed = os.path.exists(path)
+    dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         dry_run_result['os_service?{}'.format(name)] = 'UNINSTALL' if installed else '-'
         return

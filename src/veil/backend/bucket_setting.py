@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.utility.path import *
 
 def bucket_resource(purpose, type, base_directory, base_url):
-    return ('bucket', {
+    return ('veil.backend.bucket.bucket_resource', {
         'purpose': purpose,
         'config': {
             'type': type,

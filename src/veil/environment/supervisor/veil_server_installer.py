@@ -1,21 +1,18 @@
 from __future__ import unicode_literals, print_function, division
 from veil_installer import *
 from veil.environment import *
+from .supervisor_installer import supervisor_resource
 
-@composite_installer('veil_server')
-def install_veil_server():
+@composite_installer
+def veil_server_resource():
     veil_server = get_current_veil_server()
-    installer_providers = ['veil.environment.supervisor']
-    resources = [('supervisor', {
-        'programs': to_supervisor_programs(veil_server.programs),
-        'program_groups': to_supervisor_program_groups(veil_server.programs)
-    })]
+    resources = [supervisor_resource(
+        programs=to_supervisor_programs(veil_server.programs),
+        program_groups=to_supervisor_program_groups(veil_server.programs))]
     for program in veil_server.programs.values():
-        installer_providers.extend(program.get('installer_providers', []))
         resources.extend(program.get('resources', []))
-    installer_providers.extend(veil_server.get('installer_providers', []))
     resources.extend(veil_server.get('resources', []))
-    return installer_providers, resources
+    return resources
 
 
 def to_supervisor_programs(veil_server_programs):

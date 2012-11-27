@@ -5,13 +5,12 @@ from jinja2.loaders import FileSystemLoader
 from veil.frontend.template import *
 from veil.frontend.cli import *
 from veil.environment import *
-from veil.environment.setting import *
 from .tornado import *
 from .locale import *
 from .routing import  *
 from .static_file import *
 from .xsrf import *
-from .web_installer import load_website_config
+from .website_installer import load_website_config
 
 LOGGER = logging.getLogger(__name__)
 

@@ -14,13 +14,12 @@ from .environment import BASIC_LAYOUT_RESOURCES
 from .environment import split_veil_server_code
 
 
-def veil_server(deployed_via, programs, installer_providers=(), resources=()):
+def veil_server(deployed_via, programs, resources=()):
     from veil.model.collection import objectify
 
     return objectify({
         'deployed_via': deployed_via,
         'programs': programs,
-        'installer_providers': installer_providers,
         'resources': resources
     })
 

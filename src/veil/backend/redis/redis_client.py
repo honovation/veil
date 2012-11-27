@@ -28,13 +28,13 @@ def require_redis(purpose):
     return instances[purpose]
 
 
-@composite_installer('redis_client')
-def install_redis_client(purpose, host, port):
+@composite_installer
+def redis_client_resource(purpose, host, port):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.append(
-        file_resource(VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')), content=render_config(
+        file_resource(path=VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')), content=render_config(
             'redis-client.cfg.j2', host=host, port=port)))
-    return [], resources
+    return resources
 
 
 def load_redis_client_config(purpose):

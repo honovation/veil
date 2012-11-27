@@ -34,9 +34,10 @@ CURRENT_USER_GROUP = CURRENT_USER
 CURRENT_USER_HOME = as_path(os.getenv('HOME'))
 
 BASIC_LAYOUT_RESOURCES = [
-    directory_resource(VEIL_HOME / 'log'),
-    directory_resource(VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-    directory_resource(VEIL_HOME / 'etc'), directory_resource(VEIL_ETC_DIR),
-    directory_resource(VEIL_HOME / 'var'),
-    directory_resource(VEIL_VAR_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
+    directory_resource(path=VEIL_HOME / 'log'),
+    directory_resource(path=VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+    directory_resource(path=VEIL_HOME / 'etc'),
+    directory_resource(path=VEIL_ETC_DIR),
+    directory_resource(path=VEIL_HOME / 'var'),
+    directory_resource(path=VEIL_VAR_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
 ]

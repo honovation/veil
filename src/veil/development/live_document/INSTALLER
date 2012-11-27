@@ -1,4 +1,3 @@
-@veil.development.chrome_driver
-chrome_driver
-python_package?jinjatag
-python_package?selenium
+veil.development.chrome_driver.chrome_driver_resource
+veil_installer.python_package_resource?jinjatag
+veil_installer.python_package_resource?selenium

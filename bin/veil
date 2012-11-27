@@ -82,11 +82,11 @@ case "$1" in
         ;;
     install-program)
         shift
-        exec python -m veil_installer --installer-provider veil.environment.supervisor program?$@
+        exec python -m veil_installer veil.environment.supervisor.program_resource?$@
         ;;
     install-server)
         shift
-        exec python -m veil_installer --installer-provider veil.environment.supervisor veil_server $@
+        exec python -m veil_installer veil.environment.supervisor.veil_server_resource $@
         ;;
     deploy-env)
         shift

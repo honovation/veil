@@ -3,7 +3,7 @@ import httplib
 from veil.development.test import *
 from .client import start_website_and_client
 from .routing import *
-from .web_installer import override_website_config
+from .website_installer import override_website_config
 
 class XsrfTest(TestCase):
     def setUp(self):

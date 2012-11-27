@@ -6,8 +6,7 @@ def redis_program(purpose, host, port):
     return objectify({
         '{}_redis'.format(purpose): {
             'execute_command': 'redis-server {}'.format(VEIL_ETC_DIR / '{}-redis.conf'.format(purpose.replace('_', '-'))),
-            'installer_providers': ['veil.backend.redis'],
-            'resources': [('redis_server', {
+            'resources': [('veil.backend.redis.redis_server_resource', {
                 'purpose': purpose,
                 'host': host,
                 'port': port
@@ -17,7 +16,7 @@ def redis_program(purpose, host, port):
 
 
 def redis_client_resource(purpose, host, port):
-    return ('redis_client', {
+    return ('veil.backend.redis.redis_client_resource', {
         'purpose': purpose,
         'host': host,
         'port': port

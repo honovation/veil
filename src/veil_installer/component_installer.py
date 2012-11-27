@@ -6,11 +6,8 @@ from .installer import composite_installer
 
 LOGGER = logging.getLogger(__name__)
 
+@composite_installer
 def component_resource(name):
-    return 'component', dict(name=name)
-
-@composite_installer('component')
-def install_component(name):
     component_name = name
     module_loader = veil_component.find_module_loader_without_import(component_name)
     if not module_loader:
@@ -18,11 +15,10 @@ def install_component(name):
     module_path = module_loader.get_filename()
     module_dir = os.path.dirname(module_path)
     installer_path = os.path.join(module_dir, 'INSTALLER')
-    installer_providers = []
     resources = []
     veil_component.scan_component(name)
     for dependent_component_name in veil_component.get_dependent_component_names(component_name, includes_children=True):
-        resources.append(('component', dict(name=dependent_component_name)))
+        resources.append(component_resource(name=dependent_component_name))
     if os.path.exists(installer_path):
         try:
             with open(installer_path) as f:
@@ -31,15 +27,11 @@ def install_component(name):
                 line = line.strip()
                 if not line:
                     continue
-                if line.startswith('@'):
-                    installer_provider = line[1:]
-                    installer_providers.append(installer_provider)
-                else:
-                    resources.append(parse_resource(line))
+                resources.append(parse_resource(line))
         except:
             LOGGER.error('failed to parse: %(installer_path)s', {'installer_path': installer_path})
             raise
-    return installer_providers, resources
+    return resources
 
 
 def parse_resource(line):

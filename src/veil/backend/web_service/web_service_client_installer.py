@@ -3,13 +3,13 @@ from veil_installer import *
 from veil.environment import *
 from veil.environment.setting import *
 
-@composite_installer('web_service_client')
-def install_web_service_client(purpose, url):
+@composite_installer
+def web_service_client_resource(purpose, url):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.append(
-        file_resource(VEIL_ETC_DIR / '{}-web-service.cfg'.format(purpose.replace('_', '-')), content=render_config(
+        file_resource(path=VEIL_ETC_DIR / '{}-web-service.cfg'.format(purpose.replace('_', '-')), content=render_config(
             'web-service-client.cfg.j2', url=url)))
-    return [], resources
+    return resources
 
 
 def load_web_service_client_config(purpose):

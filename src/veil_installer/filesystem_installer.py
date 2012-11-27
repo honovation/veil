@@ -4,27 +4,26 @@ import logging
 import grp
 import pwd
 from .installer import atomic_installer
+from .installer import get_dry_run_result
 
 LOGGER = logging.getLogger(__name__)
 
-def directory_resource(path, **args):
-    return 'directory', dict(args, path=path)
-
-
-@atomic_installer('directory')
-def install_directory(dry_run_result, **args):
-    resource_name = 'directory?{}'.format(args['path'])
+@atomic_installer
+def directory_resource(path, owner='root', group='root', mode=0755, recursive=False):
+    args = dict(path=path, owner=owner, group=group, mode=mode, recursive=recursive)
+    resource_name = 'directory?{}'.format(path)
+    dry_run_result = get_dry_run_result()
     if dry_run_result is None:
-        _install_directory(is_dry_run=False, **args)
+        install_directory(is_dry_run=False, **args)
     else:
-        actions = _install_directory(is_dry_run=True, **args)
+        actions = install_directory(is_dry_run=True, **args)
         if actions:
             dry_run_result[resource_name] = ', '.join(actions)
         else:
             dry_run_result[resource_name] = '-'
 
 
-def _install_directory(is_dry_run, path, owner='root', group='root', mode=0755, recursive=False):
+def install_directory(is_dry_run, path, owner='root', group='root', mode=0755, recursive=False):
     actions = []
     if not os.path.exists(path):
         if recursive:
@@ -42,24 +41,22 @@ def _install_directory(is_dry_run, path, owner='root', group='root', mode=0755, 
     return actions
 
 
-def file_resource(path, content, **args):
-    return 'file', dict(args, path=path, content=content)
-
-
-@atomic_installer('file')
-def install_file(dry_run_result, **args):
-    resource_name = 'file?{}'.format(args['path'])
+@atomic_installer
+def file_resource(path, content, owner='root', group='root', mode=0644):
+    resource_name = 'file?{}'.format(path)
+    args = dict(path=path, content=content, owner=owner, group=group, mode=mode)
+    dry_run_result = get_dry_run_result()
     if dry_run_result is None:
-        _install_file(is_dry_run=False, **args)
+        install_file(is_dry_run=False, **args)
     else:
-        actions = _install_file(is_dry_run=True, **args)
+        actions = install_file(is_dry_run=True, **args)
         if actions:
             dry_run_result[resource_name] = ', '.join(actions)
         else:
             dry_run_result[resource_name] = '-'
 
 
-def _install_file(is_dry_run, path, content, owner='root', group='root', mode=0644):
+def install_file(is_dry_run, path, content, owner='root', group='root', mode=0644):
     write = False
     actions = []
     if not os.path.exists(path):
@@ -90,21 +87,19 @@ def _install_file(is_dry_run, path, content, owner='root', group='root', mode=06
     return actions
 
 
-def symbolic_link_resource(path, to, **args):
-    return 'symbolic_link', dict(args, path=path, to=to)
-
-
-@atomic_installer('symbolic_link')
-def install_symbolic_link(dry_run_result, **args):
-    resource_name = 'symbolic_link?path={}'.format(args['path'])
+@atomic_installer
+def symbolic_link_resource(path, to):
+    resource_name = 'symbolic_link?path={}'.format(path)
+    args = dict(path=path, to=to)
+    dry_run_result = get_dry_run_result()
     if dry_run_result is None:
-        _install_symbolic_link(is_dry_run=False, **args)
+        install_symbolic_link(is_dry_run=False, **args)
     else:
-        action = _install_symbolic_link(is_dry_run=True, **args)
+        action = install_symbolic_link(is_dry_run=True, **args)
         dry_run_result[resource_name] = action if action else '-'
 
 
-def _install_symbolic_link(is_dry_run, path, to):
+def install_symbolic_link(is_dry_run, path, to):
     action = None
     if os.path.lexists(path):
         oldpath = os.path.realpath(path)

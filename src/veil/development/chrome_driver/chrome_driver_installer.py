@@ -1,11 +1,11 @@
 from __future__ import unicode_literals, print_function, division
 import os
 from veil_installer import *
-from veil.utility.shell import *
 
-@atomic_installer('chrome_driver')
-def install_chrome_driver(dry_run_result):
+@atomic_installer
+def chrome_driver_resource():
     is_installed = os.path.exists('/usr/bin/chromedriver')
+    dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         dry_run_result['chrome_driver'] = '-' if is_installed else 'INSTALL'
         return

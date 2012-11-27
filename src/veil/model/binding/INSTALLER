@@ -1,2 +1,2 @@
-python_package?python-dateutil
-python_package?pytz
+veil_installer.python_package_resource?python-dateutil
+veil_installer.python_package_resource?pytz

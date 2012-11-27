@@ -7,12 +7,12 @@ from veil.development.test import *
 
 overriden_website_configs = {}
 
-@composite_installer('website')
-def install_website(purpose, config):
+@composite_installer
+def website_resource(purpose, config):
     resources = list(BASIC_LAYOUT_RESOURCES)
-    resources.append(file_resource(VEIL_ETC_DIR / '{}-website.cfg'.format(purpose), content=render_config(
+    resources.append(file_resource(path=VEIL_ETC_DIR / '{}-website.cfg'.format(purpose), content=render_config(
         'website.cfg.j2', config=config)))
-    return [], resources
+    return resources
 
 
 def load_website_config(purpose):

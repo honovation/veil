@@ -1,2 +1,1 @@
-@veil.backend.database.db2_driver_installer
-db2_driver
+veil.backend.database.db2_driver_installer.db2_driver_resource

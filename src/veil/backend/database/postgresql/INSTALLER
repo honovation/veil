@@ -1,2 +1,2 @@
-os_package?libpq-dev
-python_package?psycopg2
+veil_installer.os_package_resource?libpq-dev
+veil_installer.python_package_resource?psycopg2

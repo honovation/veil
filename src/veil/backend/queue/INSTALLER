@@ -1,3 +1,3 @@
-python_package?pytz
-python_package?pyres
-python_package?croniter
+veil_installer.python_package_resource?pytz
+veil_installer.python_package_resource?pyres
+veil_installer.python_package_resource?croniter

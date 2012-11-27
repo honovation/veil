@@ -3,16 +3,15 @@ import logging
 import os
 from .shell import shell_execute
 from .installer import atomic_installer
+from .installer import get_dry_run_result
 
 LOGGER = logging.getLogger(__name__)
 PIP_FREEZE_OUTPUT = None
 
-def python_package_resource(name):
-    return 'python_package', dict(name=name)
-
-@atomic_installer('python_package')
-def install_python_package(dry_run_result, name, **kwargs):
+@atomic_installer
+def python_package_resource(name, **kwargs):
     installed = is_python_package_installed(name)
+    dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         dry_run_result['python_package?{}'.format(name)] = '-' if installed else 'INSTALL'
         return

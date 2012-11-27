@@ -7,13 +7,13 @@ from veil.development.test import *
 
 overridden_bucket_configs = {}
 
-@composite_installer('bucket')
-def install_bucket(purpose, config):
+@composite_installer
+def bucket_resource(purpose, config):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.append(
-        file_resource(VEIL_ETC_DIR / '{}-bucket.cfg'.format(purpose.replace('_', '-')), content=render_config(
+        file_resource(path=VEIL_ETC_DIR / '{}-bucket.cfg'.format(purpose.replace('_', '-')), content=render_config(
             'bucket.cfg.j2', config=config)))
-    return [], resources
+    return resources
 
 
 def override_bucket_config(purpose, **overrides):

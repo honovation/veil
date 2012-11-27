@@ -3,13 +3,13 @@ from veil_installer import *
 from veil.environment import *
 from veil.model.collection import *
 
-def website_program(purpose, loggers, dependencies, installer_providers, resources):
+def website_program(purpose, loggers, dependencies, resources):
     veil_log_config_path = VEIL_ETC_DIR / '{}-website-log.cfg'.format(purpose)
     resources = list(resources)
-    resources.append(veil_log_config_resource(veil_log_config_path, loggers))
+    resources.append(veil_log_config_resource(path=veil_log_config_path, loggers=loggers))
     additional_args = []
     for dependency in dependencies:
-        resources.append(component_resource(dependency))
+        resources.append(component_resource(name=dependency))
         additional_args.append('--dependency {}'.format(dependency))
     return objectify({
         '{}_website'.format(purpose): {
@@ -18,7 +18,6 @@ def website_program(purpose, loggers, dependencies, installer_providers, resourc
             'environment_variables': {
                 'VEIL_LOG': veil_log_config_path
             },
-            'installer_providers': installer_providers,
             'resources': resources,
             'reloads_on_change': True
         }
@@ -27,7 +26,7 @@ def website_program(purpose, loggers, dependencies, installer_providers, resourc
 
 def website_resource(purpose, domain, domain_port, host, port, secure_cookie_salt, master_template_directory,
                      prevents_xsrf, recalculates_static_file_hash, clears_template_cache):
-    return 'website', {
+    return 'veil.frontend.web.website_resource', {
         'purpose': purpose,
         'config': {
             'domain': domain,

@@ -10,8 +10,7 @@ def postgresql_program(
         '{}_postgresql'.format(purpose): {
             'execute_command': 'postgres -D {}'.format(data_dir),
             'migrate_command': 'veil backend database postgresql migrate {}'.format(purpose),
-            'installer_providers': ['veil.backend.database.postgresql'],
-            'resources': [('postgresql', {
+            'resources': [('veil.backend.database.postgresql.postgresql_server_resource', {
                 'purpose': purpose,
                 'config': {
                     'host': host,

@@ -2,9 +2,10 @@ from __future__ import unicode_literals, print_function, division
 import os
 from veil_installer import *
 
-@atomic_installer('db2_driver')
-def install_db2_driver(dry_run_result):
+@atomic_installer
+def db2_driver_resource():
     is_installed = is_python_package_installed('ibm-db')
+    dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         dry_run_result['db2-driver'] = '-' if is_installed else 'INSTALL'
         return
@@ -13,8 +14,8 @@ def install_db2_driver(dry_run_result):
     download_db2_driver()
     env = os.environ.copy()
     env['IBM_DB_HOME'] = '/opt/db2-clidriver'
-    install_python_package(None, 'ibm-db', env=env)
-    install_file(None, path='/etc/ld.so.conf.d/db2-clidriver.conf', content='/opt/db2-clidriver/lib')
+    do_install(python_package_resource('ibm-db', env=env))
+    do_install(file_resource(path='/etc/ld.so.conf.d/db2-clidriver.conf', content='/opt/db2-clidriver/lib'))
     shell_execute('ldconfig')
 
 

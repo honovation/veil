@@ -1,11 +1,11 @@
 from __future__ import unicode_literals, print_function, division
 from veil_installer import *
 
-@composite_installer('pillow')
-def install_pillow():
+@composite_installer
+def pillow_resource():
     resources = [
-        os_package_resource('libjpeg-dev'),
-        os_package_resource('libfreetype6-dev'),
-        python_package_resource('Pillow')
+        os_package_resource(name='libjpeg-dev'),
+        os_package_resource(name='libfreetype6-dev'),
+        python_package_resource(name='Pillow')
     ]
-    return [], resources
+    return resources

@@ -1,104 +1,83 @@
 from __future__ import unicode_literals, print_function, division
 import functools
-import veil_component
 import logging
+import inspect
+import importlib
+import contextlib
+import veil_component
 
 LOGGER = logging.getLogger()
-ATOMIC_INSTALLERS = {}
-COMPOSITE_INSTALLERS = {}
-stack = []
 installed_resource_codes = set()
-installed_installer_providers = set()
 executing_composite_installer = None
+dry_run_result = None
 
-def atomic_installer(name):
-    def register(func):
-        ATOMIC_INSTALLERS[name] = func
-        return func
+def atomic_installer(func):
+    assert inspect.isfunction(func)
 
-    return register
+    @functools.wraps(func)
+    def wrapper(**kwargs):
+        if not kwargs.pop('do_install', False):
+            return '{}.{}'.format(
+                veil_component.get_leaf_component(func.__module__),
+                func.__name__), kwargs
+        return func(**kwargs)
+
+    wrapper.is_composite_installer = False
+    return wrapper
 
 
-def composite_installer(name):
-    def register(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            global executing_composite_installer
+def composite_installer(func):
+    assert inspect.isfunction(func)
 
-            try:
-                if executing_composite_installer:
-                    raise Exception('@composite_installer can not be nested')
-                executing_composite_installer = func
-                return func(*args, **kwargs)
-            finally:
-                executing_composite_installer = None
+    @functools.wraps(func)
+    def wrapper(**kwargs):
+        global executing_composite_installer
 
-        COMPOSITE_INSTALLERS[name] = wrapper
-        return wrapper
+        if not kwargs.pop('do_install', False):
+            return '{}.{}'.format(
+                veil_component.get_leaf_component(func.__module__),
+                func.__name__), kwargs
+        try:
+            if executing_composite_installer:
+                raise Exception('@composite_installer can not be nested')
+            executing_composite_installer = func
+            return func(**kwargs)
+        finally:
+            executing_composite_installer = None
 
-    return register
+    wrapper.is_composite_installer = True
+    return wrapper
+
 
 def get_executing_composite_installer():
     return executing_composite_installer
 
 
-def install_resources(dry_run_result, installer_providers, resources):
-    installer_providers = list(skip_installed_installer_providers(installer_providers))
+def install_resources(dry_run_result, resources):
     resources = list(skip_installed_resources(resources))
-    stack.append((installer_providers, resources))
-    if len(stack) > 30:
-        for frame in stack:
-            LOGGER.error(frame)
-        raise Exception('too many levels')
-    if installer_providers:
-        install_installer_providers(dry_run_result, installer_providers)
     for resource in resources:
-        more_installer_providers, more_resources = install_resource(dry_run_result, resource)
-        install_resources(dry_run_result, more_installer_providers, more_resources)
-    stack.pop()
+        more_resources = do_install(resource)
+        install_resources(dry_run_result, more_resources)
 
 
-def install_installer_providers(dry_run_result, installer_providers):
-    installer_provider_component_resources = []
-    for installer_provider in installer_providers:
-        veil_component.scan_component(installer_provider)
-        installer_provider_component = veil_component.get_root_component(installer_provider)
-        installer_provider_component_resource = ('component', dict(name=installer_provider_component))
-        installer_provider_component_resources.append(installer_provider_component_resource)
-    install_resources(dry_run_result, [], installer_provider_component_resources)
-    for installer_provider in installer_providers:
-        try:
-            __import__(installer_provider)
-            if dry_run_result is not None:
-                dry_run_result['@{}'.format(installer_provider)] = '-'
-        except:
-            if dry_run_result is not None:
-                dry_run_result['@{}'.format(installer_provider)] = 'INSTALL'
-            else:
-                LOGGER.error('failed to load installer provider: %(installer_provider)s', {
-                    'installer_provider': installer_provider
-                })
-                raise
-
-
-def install_resource(dry_run_result, resource):
+def do_install(resource):
     installer_name, installer_args = resource
-    if installer_name in ATOMIC_INSTALLERS:
-        ATOMIC_INSTALLERS[installer_name](dry_run_result=dry_run_result, **installer_args)
-        return [], []
-    elif installer_name in COMPOSITE_INSTALLERS:
-        return COMPOSITE_INSTALLERS[installer_name](**installer_args)
-    else:
-        if dry_run_result is not None:
-            return [], []
-        raise Exception('no installer for: {} {}'.format(installer_name, installer_args))
+    if installer_name != 'veil_installer.component_resource':
+        if '.' not in installer_name:
+            raise Exception('invalid installer: {}'.format(installer_name))
+        installer_module_name = get_installer_module_name(installer_name)
+        install_resources(dry_run_result, [('veil_installer.component_resource', dict(name=installer_module_name))])
+    installer = get_installer(installer_name)
+    return installer(do_install=True, **installer_args) or []
 
 
-def skip_installed_installer_providers(installer_providers):
-    for installer_provider in installer_providers:
-        if installer_provider not in installed_installer_providers:
-            installed_installer_providers.add(installer_provider)
-            yield installer_provider
+def get_installer(installer_name):
+    module = importlib.import_module(get_installer_module_name(installer_name))
+    return getattr(module, installer_name.split('.')[-1])
+
+
+def get_installer_module_name(installer_name):
+    return '.'.join(installer_name.split('.')[:-1])
 
 
 def skip_installed_resources(resources):
@@ -119,3 +98,18 @@ def to_resource_code(resource):
         ['{}={}'.format(k, installer_args[k])
          for k in sorted(installer_args.keys())]))
     return resource_code
+
+
+def get_dry_run_result():
+    return dry_run_result
+
+
+@contextlib.contextmanager
+def dry_run():
+    global dry_run_result
+
+    dry_run_result = {}
+    try:
+        yield
+    finally:
+        dry_run_result = None
