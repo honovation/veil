@@ -98,8 +98,7 @@ def clear_cookie(name, path='/', domain=None, response=None):
 def set_cookie(response=None, cookie=None, **kwargs):
     response = response or get_current_http_response()
     cookie = cookie or create_cookie(**kwargs)
-    response.set_header('Set-Cookie', cookie.OutputString(None))
-
+    response.add_cookie(cookie.OutputString(None))
 
 def create_cookie(name, value, domain=None, expires=None, path='/', expires_days=None, **kwargs):
     base_cookie = Cookie.BaseCookie()

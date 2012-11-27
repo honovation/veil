@@ -74,6 +74,7 @@ class HTTPResponse(object):
     def __init__(self, request):
         self._headers_written = None
         self._finished = False
+        self._cookies = []
         self.request = request
         self.connection = self.request.connection
         self.clear()
@@ -114,6 +115,9 @@ class HTTPResponse(object):
                 self.set_header('Connection', 'Keep-Alive')
         self._write_buffer = []
         self._status_code = 200
+
+    def add_cookie(self, cookie):
+        self._cookies.append(cookie)
 
     def set_header(self, name, value):
         if self.headers_written:
@@ -191,4 +195,6 @@ class HTTPResponse(object):
         lines = [self.request.version + " " + str(self._status_code) + " " +
                  httplib.responses[self._status_code]]
         lines.extend(['%s: %s' % (n, v) for n, v in self._headers.iteritems()])
+        for cookie in self.cookies:
+            lines.append(to_str("Set-Cookie: " + cookie))
         return '\r\n'.join(lines) + '\r\n\r\n'
