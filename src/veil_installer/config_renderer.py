@@ -24,6 +24,6 @@ def create_environment():
     import jinja2
     return jinja2.Environment(
         loader=jinja2.PrefixLoader({'root': jinja2.FileSystemLoader('/')}, delimiter=':'),
-        autoescape=True,
+        autoescape=False,
         extensions=[],
         undefined=jinja2.StrictUndefined)
