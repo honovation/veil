@@ -29,7 +29,7 @@ def load_logging_levels():
 
 def configure_component_logger(component_name):
     logger = logging.getLogger(component_name)
-    logger.setLevel(logging_levels.get(component_name, logging.INFO))
+    logger.setLevel(logging_levels.get(component_name, logging.DEBUG))
     root_component_name = get_root_component(component_name)
     configure_root_component_logger(root_component_name or component_name)
 
