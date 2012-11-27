@@ -28,7 +28,7 @@ class IOLoopExecutor(object):
         self.failure = None
         self.return_value = None
 
-    def execute(self, condition=None, timeout=10):
+    def execute(self, condition=None, timeout=60):
         """Runs the IOLoop until stop is called or timeout has passed.
 
         In the event of a timeout, an exception will be thrown.
