@@ -5,6 +5,8 @@ if '__main__' == __name__:
     import argparse
     import pprint
     from .installer import install_resources
+    from .installer import dry_run
+    from .installer import get_dry_run_result
     from .component_installer import parse_resource
 
     argument_parser = argparse.ArgumentParser('Install resource')
@@ -14,9 +16,9 @@ if '__main__' == __name__:
 
     resource = parse_resource(args.resource)
     if args.dry_run:
-        dry_run_result = {}
-        install_resources(dry_run_result, [resource])
-        pprint.pprint(dry_run_result)
+        with dry_run():
+            install_resources([resource])
+            pprint.pprint(get_dry_run_result())
     else:
-        install_resources(None, [resource])
+        install_resources([resource])
 

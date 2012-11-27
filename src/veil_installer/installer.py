@@ -53,11 +53,11 @@ def get_executing_composite_installer():
     return executing_composite_installer
 
 
-def install_resources(dry_run_result, resources):
+def install_resources(resources):
     resources = list(skip_installed_resources(resources))
     for resource in resources:
         more_resources = do_install(resource)
-        install_resources(dry_run_result, more_resources)
+        install_resources(more_resources)
 
 
 def do_install(resource):
@@ -66,7 +66,7 @@ def do_install(resource):
         if '.' not in installer_name:
             raise Exception('invalid installer: {}'.format(installer_name))
         installer_module_name = get_installer_module_name(installer_name)
-        install_resources(dry_run_result, [('veil_installer.component_resource', dict(name=installer_module_name))])
+        install_resources([('veil_installer.component_resource', dict(name=installer_module_name))])
     installer = get_installer(installer_name)
     return installer(do_install=True, **installer_args) or []
 
