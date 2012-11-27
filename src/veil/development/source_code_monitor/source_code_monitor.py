@@ -38,7 +38,7 @@ def load_reloads_on_change_programs_components():
     for program in list_reloads_on_change_programs().values():
         for resource in program.get('resources', []):
             installer_name, installer_args = resource
-            if 'component' == installer_name:
+            if 'veil_installer.component_resource' == installer_name:
                 component_names.add(installer_args['name'])
     for component_name in component_names:
         LOGGER.info('monitoring component {}'.format(component_name))
