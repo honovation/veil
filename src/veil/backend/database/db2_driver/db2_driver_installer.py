@@ -14,7 +14,7 @@ def db2_driver_resource():
     download_db2_driver()
     env = os.environ.copy()
     env['IBM_DB_HOME'] = '/opt/db2-clidriver'
-    do_install(python_package_resource('ibm-db', env=env))
+    do_install(python_package_resource(name='ibm-db', env=env))
     do_install(file_resource(path='/etc/ld.so.conf.d/db2-clidriver.conf', content='/opt/db2-clidriver/lib'))
     shell_execute('ldconfig')
 
