@@ -102,8 +102,8 @@ def symbolic_link_resource(path, to):
 def install_symbolic_link(is_dry_run, path, to):
     action = None
     if os.path.lexists(path):
-        oldpath = os.path.realpath(path)
-        if oldpath == to:
+        old_path = os.path.realpath(path)
+        if old_path == to:
             return
         if not os.path.islink(path):
             raise Exception(
@@ -112,7 +112,7 @@ def install_symbolic_link(is_dry_run, path, to):
         if not is_dry_run:
             LOGGER.info("replacing old symlink: %(path)s from %(old_path)s to %(to)s", {
                 'path': path,
-                'oldpath': oldpath,
+                'old_path': old_path,
                 'to': to
             })
             os.unlink(path)
