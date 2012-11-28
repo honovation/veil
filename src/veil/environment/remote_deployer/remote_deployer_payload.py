@@ -25,6 +25,8 @@ def main():
 def ad_hoc_migrate_old_layout(veil_home, veil_framework_home):
     if os.path.exists('/opt/ljmall'):
         shell_execute('veil down', cwd='/opt/ljmall')
+        shutil.rmtree('/opt/ljmall/etc')
+        shutil.rmtree('/opt/ljmall/env')
         shutil.move('/opt/ljmall', veil_home)
         shutil.move('/opt/veil', veil_framework_home)
     os.remove('/usr/bin/veil')
