@@ -27,8 +27,8 @@ def ad_hoc_migrate_old_layout(veil_home, veil_framework_home):
         shell_execute('veil down', cwd='/opt/ljmall')
         shutil.rmtree('/opt/ljmall/etc')
         shutil.rmtree('/opt/ljmall/env')
-        shutil.move('/opt/ljmall', veil_home)
-        shutil.move('/opt/veil', veil_framework_home)
+        shell_execute('mv /opt/ljmall {}'.format(veil_home))
+        shell_execute('mv /opt/veil {}'.format(veil_framework_home))
     os.remove('/usr/bin/veil')
     os.symlink('{}/bin/veil'.format(veil_framework_home), '/usr/bin/veil')
 
