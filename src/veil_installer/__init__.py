@@ -16,7 +16,7 @@ with veil_component.init_component(__name__):
     from .os_package_installer import os_package_resource
     from .os_package_installer import is_os_package_installed
     from .os_service_installer import os_service_resource
-    from .veil_log_config_installer import veil_log_config_resource
+    from .veil_logging_level_config_installer import veil_logging_level_config_resource
     from .shell import shell_execute
     from .shell import ShellExecutionError
     from .config_renderer import render_config
@@ -44,7 +44,7 @@ with veil_component.init_component(__name__):
         # from os_service_installer
         os_service_resource.__name__,
         # from veil_log_config_installer
-        veil_log_config_resource.__name__,
+        veil_logging_level_config_resource.__name__,
         # from shell
         shell_execute.__name__,
         ShellExecutionError.__name__,

@@ -3,10 +3,14 @@ from veil_installer import *
 from veil.environment.setting import *
 from veil.environment import *
 
-def website_programs(purpose, loggers, application_component_names, application_config, start_port, processes_count=1):
-    veil_log_config_path = VEIL_ETC_DIR / '{}-website-log.cfg'.format(purpose)
+def website_programs(
+        purpose, logging_levels, application_component_names, application_config,
+        start_port, processes_count=1):
+    veil_logging_level_config_path = VEIL_ETC_DIR / '{}-website-log.cfg'.format(purpose)
     resources = [
-        veil_log_config_resource(path=veil_log_config_path, loggers=loggers),
+        veil_logging_level_config_resource(
+            path=veil_logging_level_config_path,
+            logging_levels=logging_levels),
         application_resource(component_names=application_component_names, config=application_config)]
     additional_args = []
     for component in application_component_names:
@@ -18,7 +22,7 @@ def website_programs(purpose, loggers, application_component_names, application_
                 'execute_command': 'veil frontend web up {} {} {}'.format(
                     purpose, start_port + i, ' '.join(additional_args)),
                 'environment_variables': {
-                    'VEIL_LOG': veil_log_config_path
+                    'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path
                 },
                 'resources': resources,
                 'reloads_on_change': application_component_names,

@@ -19,10 +19,10 @@ def load_logging_levels():
     if logging_levels is not None:
         return
     logging_levels = {}
-    veil_log_config_file = os.getenv('VEIL_LOG')
-    if not veil_log_config_file:
+    veil_logging_level_config = os.getenv('VEIL_LOGGING_LEVEL_CONFIG')
+    if not veil_logging_level_config:
         return
-    with open(veil_log_config_file) as f:
+    with open(veil_logging_level_config) as f:
         lines = f.readlines()
     for line in lines:
         logger_name, logging_level = line.split('=')

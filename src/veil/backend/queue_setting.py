@@ -37,11 +37,11 @@ def delayed_job_scheduler_program(queue_host, queue_port, logging_level):
     })
 
 
-def periodic_job_scheduler_program(loggers, dependencies):
-    veil_log_config_path = VEIL_ETC_DIR / 'periodic-job-scheduler-log.cfg'
+def periodic_job_scheduler_program(logging_levels, dependencies):
+    veil_logging_level_config_path = VEIL_ETC_DIR / 'periodic-job-scheduler-log.cfg'
     resources = [
         component_resource(name='veil.backend.queue'),
-        veil_log_config_resource(path=veil_log_config_path, loggers=loggers)]
+        veil_logging_level_config_resource(path=veil_logging_level_config_path, logging_levels=logging_levels)]
     for dependency in dependencies:
         resources.append(component_resource(name=dependency))
     additional_args = []
@@ -51,7 +51,7 @@ def periodic_job_scheduler_program(loggers, dependencies):
         'periodic_job_scheduler': {
             'execute_command': 'veil backend queue periodic-job-scheduler-up {}'.format(' '.join(additional_args)),
             'environment_variables': {
-                'VEIL_LOG': veil_log_config_path
+                'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path
             },
             'resources': resources
         }
@@ -59,11 +59,14 @@ def periodic_job_scheduler_program(loggers, dependencies):
 
 
 def job_worker_program(
-        worker_name, pyres_worker_logging_level, loggers, queue_host, queue_port, queue_names,
+        worker_name, pyres_worker_logging_level, application_logging_levels,
+        queue_host, queue_port, queue_names,
         application_component_names, application_config, run_as=None):
-    veil_log_config_path = VEIL_ETC_DIR / '{}-worker-log.cfg'.format(worker_name)
+    veil_logging_level_config_path = VEIL_ETC_DIR / '{}-worker-log.cfg'.format(worker_name)
     resources = [
-        veil_log_config_resource(path=veil_log_config_path, loggers=loggers),
+        veil_logging_level_config_resource(
+            path=veil_logging_level_config_path,
+            logging_levels=application_logging_levels),
         component_resource(name='veil.backend.queue'),
         application_resource(component_names=application_component_names, config=application_config)]
     return objectify({
@@ -72,7 +75,7 @@ def job_worker_program(
                 queue_host, queue_port, pyres_worker_logging_level, ','.join(queue_names)
             ), # log instruction for the main process, a.k.a pyres_worker
             'environment_variables': {
-                'VEIL_LOG': veil_log_config_path
+                'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path
             }, # log instruction for the sub-process forked from pyres_worker, a.k.a our code
             'group': 'workers',
             'run_as': run_as or CURRENT_USER,
