@@ -15,9 +15,11 @@ LOGGER = logging.getLogger(__name__)
 def deploy_env(deploying_env, from_branch=None):
     update_branch(deploying_env, from_branch)
     for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
-        backup_server(deploying_env, deploying_server_name)
+        guard_do('create-backup', deploying_env, deploying_server_name)
     for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
         deploy_server(deploying_env, deploying_server_name)
+    for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
+        guard_do('delete-backup', deploying_env, deploying_server_name)
     if not from_branch:
         tag_deploy(deploying_env)
     local_env_config_dir = CURRENT_USER_HOME / '.{}'.format(deploying_env)
@@ -27,25 +29,17 @@ def deploy_env(deploying_env, from_branch=None):
 @script('rollback-env')
 def rollback_env(deploying_env):
     for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
-        rollback_server(deploying_env, deploying_server_name)
+        guard_do('check-backup', deploying_env, deploying_server_name)
+    for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
+        guard_do('rollback', deploying_env, deploying_server_name)
 
 
-def backup_server(deploying_env, deploying_server_name):
+def guard_do(action, deploying_env, deploying_server_name):
     deployed_via = get_remote_veil_server(deploying_env, deploying_server_name).deployed_via
     fabric.api.env.host_string = deployed_via
     fabric.api.put(GUARD, '/opt/remote_deployer_guard.py', use_sudo=True, mode=0700)
     fabric.api.sudo('python /opt/remote_deployer_guard.py {} {} {}'.format(
-        'backup',
-        deploying_env,
-        deploying_server_name))
-
-
-def rollback_server(deploying_env, deploying_server_name):
-    deployed_via = get_remote_veil_server(deploying_env, deploying_server_name).deployed_via
-    fabric.api.env.host_string = deployed_via
-    fabric.api.put(GUARD, '/opt/remote_deployer_guard.py', use_sudo=True, mode=0700)
-    fabric.api.sudo('python /opt/remote_deployer_guard.py {} {} {}'.format(
-        'rollback',
+        action,
         deploying_env,
         deploying_server_name))
 

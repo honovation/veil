@@ -4,6 +4,7 @@ import os
 import shlex
 import subprocess
 import datetime
+import shutil
 
 def main():
     action = sys.argv[1]
@@ -13,15 +14,20 @@ def main():
     src_dir = '/opt/{}'.format(veil_env)
     backup_dir = '{}-backup'.format(src_dir)
     veil_server = '{}/{}'.format(veil_env, veil_server_name)
-    if 'backup' == action:
-        backup(src_dir, backup_dir, veil_server)
+    if 'create-backup' == action:
+        create_backup(src_dir, backup_dir, veil_server)
+    elif 'check-backup' == action:
+        if not os.path.exists(backup_dir):
+            raise Exception('backup {} does not exists'.format(backup_dir))
+    elif 'delete-backup' == action:
+        shutil.rmtree(backup_dir)
     elif 'rollback' == action:
         rollback(src_dir, backup_dir, veil_server)
     else:
         raise Exception('unknown action: {}'.format(action))
 
 
-def backup(src_dir, backup_dir, veil_server):
+def create_backup(src_dir, backup_dir, veil_server):
     if not os.path.exists(src_dir):
         print('{} does not exists, skipped backup'.format(src_dir))
         return
