@@ -23,6 +23,8 @@ def main():
     deploy(veil_framework_home, veil_home, veil_env, veil_server_name)
 
 def ad_hoc_migrate_old_layout(veil_home, veil_framework_home):
+    os.remove('/usr/bin/veil')
+    os.symlink('{}/bin/veil'.format(veil_framework_home), '/usr/bin/veil')
     if os.path.exists('/opt/ljmall'):
         shell_execute('veil down', cwd='/opt/ljmall')
         shutil.move('/opt/ljmall', veil_home)
