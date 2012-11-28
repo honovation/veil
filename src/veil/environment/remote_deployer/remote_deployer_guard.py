@@ -4,7 +4,6 @@ import os
 import shlex
 import subprocess
 import datetime
-import shutil
 
 def main():
     action = sys.argv[1]
@@ -20,7 +19,8 @@ def main():
         if not os.path.exists(backup_dir):
             raise Exception('backup {} does not exists'.format(backup_dir))
     elif 'delete-backup' == action:
-        shutil.rmtree(backup_dir)
+        assert '-backup' in backup_dir
+        shell_execute('rm -rf {}'.format(backup_dir))
     elif 'rollback' == action:
         rollback(src_dir, backup_dir, veil_server)
     else:
