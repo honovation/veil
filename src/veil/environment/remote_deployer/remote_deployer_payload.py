@@ -13,7 +13,7 @@ def main():
     veil_framework_home = '/opt/{}/veil'.format(veil_env)
     application_branch = 'env-{}'.format(veil_env)
 
-    ad_hoc_migrate_old_layout(veil_home, veil_framework_home)
+    ad_hoc_migrate_old_layout(veil_home, veil_framework_home, veil_env, veil_server_name)
     install_git()
     clone_application(application_codebase, veil_home)
     pull_application(application_branch, veil_home)
@@ -22,9 +22,9 @@ def main():
     pull_veil(framework_version, veil_framework_home)
     deploy(veil_framework_home, veil_home, veil_env, veil_server_name)
 
-def ad_hoc_migrate_old_layout(veil_home, veil_framework_home):
+def ad_hoc_migrate_old_layout(veil_home, veil_framework_home, veil_env, veil_server_name):
     if os.path.exists('/opt/ljmall'):
-        shell_execute('veil down', cwd='/opt/ljmall')
+        shell_execute('veil :{}/{} down'.format(veil_env, veil_server_name), cwd='/opt/ljmall')
         shutil.rmtree('/opt/ljmall/etc')
         shutil.rmtree('/opt/ljmall/env')
         shell_execute('mv /opt/ljmall {}'.format(veil_home))
