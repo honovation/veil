@@ -24,12 +24,13 @@ def register_website_context_manager(website, context_manager):
 def bring_up_website(*argv):
     argument_parser = argparse.ArgumentParser('Website')
     argument_parser.add_argument('purpose', help='which website to bring up')
-    argument_parser.add_argument('--dependency', type=str,
-        help='where @periodic_job is defined', nargs='+', dest='dependencies')
+    argument_parser.add_argument('port', type=int, help='listen on which port')
+    argument_parser.add_argument('--component', type=str,
+        help='where @route is defined', nargs='+', dest='components')
     args = argument_parser.parse_args(argv)
-    for dependency in args.dependencies:
-        __import__(dependency)
-    start_website(args.purpose)
+    for component in args.components:
+        __import__(component)
+    start_website(args.purpose, args.port)
 
 
 def start_test_website(purpose, **kwargs):
@@ -37,20 +38,20 @@ def start_test_website(purpose, **kwargs):
     http_handler = create_website_http_handler(purpose, config, **kwargs)
     http_server = start_test_http_server(
         http_handler,
-        host=config.host,
-        port=config.port)
+        host='localhost',
+        port=config.start_port)
     http_server.purpose = purpose
     return http_server
 
 
-def start_website(purpose):
+def start_website(purpose, port):
     config = load_website_config(purpose)
     http_handler = create_website_http_handler(purpose, config)
     io_loop = IOLoop.instance()
     io_loop.add_callback(lambda: LOGGER.info('started website: %(purpose)s', {'purpose': purpose}))
     start_http_server(
         http_handler, io_loop=io_loop,
-        host=config.host, port=config.port)
+        host='localhost', port=port)
 
 
 def create_website_http_handler(purpose, config):

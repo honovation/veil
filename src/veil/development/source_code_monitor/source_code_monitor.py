@@ -16,7 +16,7 @@ modify_times = {}
 @script('up')
 def bring_up_source_code_monitor():
     restarts_all = False
-    while True:
+    for i in range(10):
         try:
             load_reloads_on_change_programs_components()
             break
@@ -35,13 +35,13 @@ def bring_up_source_code_monitor():
 
 def load_reloads_on_change_programs_components():
     component_names = set()
-    for program in list_reloads_on_change_programs().values():
-        for resource in program.get('resources', []):
-            installer_name, installer_args = resource
-            if 'veil_installer.component_resource' == installer_name:
-                component_names.add(installer_args['name'])
+    for program_name, program in list_reloads_on_change_programs().items():
+        LOGGER.info('found reload on change program: %(program_name)s, watching for %(component_names)s', {
+            'program_name': program_name,
+            'component_names': program.reloads_on_change
+        })
+        component_names = component_names.union(set(program.reloads_on_change))
     for component_name in component_names:
-        LOGGER.info('monitoring component {}'.format(component_name))
         __import__(component_name)
 
 

@@ -20,6 +20,16 @@ http {
     gzip  on;
     gzip_disable "MSIE [1-6]\.(?!.*SV1)";
 
+    {% for server_properties in config.servers.values() %}
+        {% for upstream_name, upstream_servers in (server_properties.get('upstreams') or {}).items() %}
+        upstream {{ upstream_name }} {
+            {% for upstream_server in upstream_servers %}
+            server {{ upstream_server.host }}:{{ upstream_server.port }};
+            {% endfor %}
+        }
+        {% endfor %}
+    {% endfor %}
+
     {% for server_name, server_properties in config.servers.items() %}
     server {
         server_name  {{ server_name }};
@@ -38,6 +48,8 @@ http {
                     {% endfor %}
                 }
                 {% endfor %}
+            {% elif 'upstreams' == key %}
+                {# skip this #}
             {% else %}
                 {{ key }} {{ value }};
             {% endif %}

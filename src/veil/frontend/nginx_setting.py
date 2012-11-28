@@ -4,7 +4,7 @@ from veil.environment import *
 
 def nginx_program(servers):
     return objectify({
-        'veil.frontend.nginx.nginx_resource': {
+        'nginx': {
             'execute_command': 'nginx -c {}'.format(VEIL_ETC_DIR / 'nginx.conf'),
             'run_as': 'root',
             'resources': [('veil.frontend.nginx.nginx_resource', {'servers': servers})]
@@ -12,11 +12,12 @@ def nginx_program(servers):
     })
 
 
-def nginx_server(server_name, listen, locations):
+def nginx_server(server_name, listen, locations, upstreams=None):
     return {
         server_name: {
             'listen': listen,
-            'locations': locations
+            'locations': locations,
+            'upstreams': upstreams
         }
     }
 

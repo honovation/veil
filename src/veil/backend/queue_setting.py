@@ -79,6 +79,6 @@ def job_worker_program(
             'resources': resources,
             'startretries': 10,
             'startsecs': 10,
-            'reloads_on_change': True
+            'reloads_on_change': application_component_names
         }
     })
