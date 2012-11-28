@@ -19,7 +19,7 @@ def deploy_env(deploying_env, from_branch=None):
         deploy_server('{}/{}'.format(deploying_env, veil_server_name))
     if not from_branch:
         tag_deploy(deploying_env)
-    local_env_config_dir = CURRENT_USER_HOME / '.{}'.format(veil_server_env)
+    local_env_config_dir = CURRENT_USER_HOME / '.{}'.format(deploying_env)
     local_env_config_dir.rmtree()
 
 
