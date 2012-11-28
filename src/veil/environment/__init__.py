@@ -32,18 +32,12 @@ def get_current_veil_server():
     return get_application().ENVIRONMENTS[VEIL_ENV][VEIL_SERVER_NAME]
 
 
-def get_remote_veil_server(code):
-    env, server_name = split_veil_server_code(code)
-    return get_application().ENVIRONMENTS[env][server_name]
+def get_remote_veil_server(veil_env, veil_server_name):
+    return get_application().ENVIRONMENTS[veil_env][veil_server_name]
 
 
 def get_application_codebase():
     return get_application().CODEBASE
-
-
-def get_application_name():
-    codebase = get_application_codebase()
-    return codebase[codebase.find('/') + 1:].replace('.git', '')
 
 
 def get_application_architecture():

@@ -92,9 +92,9 @@ case "$1" in
         shift
         exec veil environment remote-deployer deploy-env $@
         ;;
-    deploy-server)
+    rollback-env)
         shift
-        exec veil environment remote-deployer deploy-server $@
+        exec veil environment remote-deployer rollback-env $@
         ;;
     deploy)
         shift
