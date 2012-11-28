@@ -6,8 +6,8 @@ import os
 
 def main():
     application_codebase = sys.argv[1]
-    veil_env = sys.argv[3]
-    veil_server_name = sys.argv[4]
+    veil_env = sys.argv[2]
+    veil_server_name = sys.argv[3]
     veil_home = '/opt/{}/app'.format(veil_env)
     veil_framework_home = '/opt/{}/veil'.format(veil_env)
     application_branch = 'env-{}'.format(veil_env)
