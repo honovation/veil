@@ -20,7 +20,7 @@ def main():
     framework_version = read_framework_version(veil_home)
     clone_veil(veil_framework_home)
     pull_veil(framework_version, veil_framework_home)
-    deploy(veil_home, veil_env, veil_server_name)
+    deploy(veil_framework_home, veil_home, veil_env, veil_server_name)
 
 def ad_hoc_migrate_old_layout(veil_home, veil_framework_home):
     if os.path.exists('/opt/ljmall'):
@@ -63,10 +63,11 @@ def pull_veil(framework_version, veil_framework_home):
     shell_execute('git pull', cwd=veil_framework_home)
 
 
-def deploy(veil_home, veil_env, veil_server_name):
+def deploy(veil_framework_home, veil_home, veil_env, veil_server_name):
     env = os.environ.copy()
     env['VEIL_DEPENDENCY_MIRROR'] = 'http://200.200.200.25:8080'
-    shell_execute('/opt/veil/bin/veil :{}/{} deploy'.format(veil_env, veil_server_name), cwd=veil_home, env=env)
+    shell_execute('{}/bin/veil :{}/{} deploy'.format(
+        veil_framework_home, veil_env, veil_server_name), cwd=veil_home, env=env)
 
 
 def shell_execute(command_line, **kwargs):
