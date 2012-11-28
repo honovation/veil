@@ -3,6 +3,7 @@ import shlex
 import os.path
 import sys
 import os
+import shutil
 
 def main():
     application_codebase = sys.argv[1]
@@ -12,6 +13,7 @@ def main():
     veil_framework_home = '/opt/{}/veil'.format(veil_env)
     application_branch = 'env-{}'.format(veil_env)
 
+    ad_hoc_migrate_old_layout(veil_home, veil_framework_home)
     install_git()
     clone_application(application_codebase, veil_home)
     pull_application(application_branch, veil_home)
@@ -20,6 +22,11 @@ def main():
     pull_veil(framework_version, veil_framework_home)
     deploy(veil_home, veil_env, veil_server_name)
 
+def ad_hoc_migrate_old_layout(veil_home, veil_framework_home):
+    if os.path.exists('/opt/ljmall'):
+        shell_execute('veil down', cwd='/opt/ljmall')
+        shutil.move('/opt/ljmall', veil_home)
+        shutil.move('/opt/veil', veil_framework_home)
 
 def install_git():
     shell_execute('apt-get install -y git-core')
