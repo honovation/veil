@@ -31,7 +31,7 @@ def delayed_job_scheduler_program(queue_host, queue_port, logging_level):
         'delayed_job_scheduler': {
             'execute_command': 'veil sleep 3 pyres_scheduler --host={} --port={} -l {} -f stderr'.format(
                 queue_host, queue_port, logging_level),
-            'resources': [('veil_installer.python_package_resource', {'name': 'pyres'})],
+            'resources': [('veil_installer.component_resource', {'name': 'veil.backend.queue'})],
             'startretries': 10
         }
     })

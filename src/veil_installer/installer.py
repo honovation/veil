@@ -6,12 +6,13 @@ import importlib
 import contextlib
 import veil_component
 
-LOGGER = logging.getLogger()
+LOGGER = logging.getLogger(__name__)
 installed_resource_codes = set()
 executing_composite_installer = None
 dry_run_result = None
 application_sub_resources = None
 installing = False
+stack = []
 
 def atomic_installer(func):
     assert inspect.isfunction(func)
@@ -53,7 +54,11 @@ def application_resource(component_names, config):
         component_resources = [('veil_installer.component_resource', dict(name=name)) for name in component_names]
         install_resources(component_resources)
         for component_name in component_names:
-            __import__(component_name)
+            try:
+                __import__(component_name)
+            except:
+                if get_dry_run_result() is None:
+                    raise
         resources = []
         for section, resource_provider in application_sub_resources.items():
             resources.append(resource_provider(config[section]))
@@ -80,7 +85,17 @@ def install_resources(resources):
     resources = list(skip_installed_resources(resources))
     for resource in resources:
         more_resources = do_install(resource)
-        install_resources(more_resources)
+        stack.append(resource)
+        try:
+            if len(stack) > 30:
+                LOGGER.error('failed to install sub resources: %(stack)s', {
+                    'stack': stack
+                })
+                raise Exception('too many levels')
+            install_resources(more_resources)
+        finally:
+            stack.pop()
+        installed_resource_codes.add(to_resource_code(resource))
 
 
 def do_install(resource):
@@ -90,8 +105,14 @@ def do_install(resource):
             raise Exception('invalid installer: {}'.format(installer_name))
         installer_module_name = get_installer_module_name(installer_name)
         install_resources([('veil_installer.component_resource', dict(name=installer_module_name))])
-    installer = get_installer(installer_name)
-    return installer(do_install=True, **installer_args) or []
+    try:
+        installer = get_installer(installer_name)
+        return installer(do_install=True, **installer_args) or []
+    except:
+        if get_dry_run_result() is None:
+            raise
+        else:
+            return []
 
 
 def get_installer(installer_name):
@@ -107,7 +128,6 @@ def skip_installed_resources(resources):
     for resource in resources:
         resource_code = to_resource_code(resource)
         if resource_code not in installed_resource_codes:
-            installed_resource_codes.add(resource_code)
             yield resource
 
 
