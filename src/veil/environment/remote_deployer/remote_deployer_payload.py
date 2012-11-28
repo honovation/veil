@@ -6,15 +6,18 @@ import os
 
 def main():
     application_codebase = sys.argv[1]
-    veil_home = sys.argv[2]
     veil_env = sys.argv[3]
     veil_server_name = sys.argv[4]
+    veil_home = '/opt/{}/app'.format(veil_env)
+    veil_framework_home = '/opt/{}/veil'.format(veil_env)
+    application_branch = 'env-{}'.format(veil_env)
+
     install_git()
     clone_application(application_codebase, veil_home)
-    pull_application(veil_home, veil_env)
-    veil_version = read_veil_version(veil_home)
-    clone_veil()
-    pull_veil(veil_version)
+    pull_application(application_branch, veil_home)
+    framework_version = read_framework_version(veil_home)
+    clone_veil(veil_framework_home)
+    pull_veil(framework_version, veil_framework_home)
     deploy(veil_home, veil_env, veil_server_name)
 
 
@@ -28,29 +31,29 @@ def clone_application(application_codebase, veil_home):
     shell_execute('git clone {} {}'.format(application_codebase, veil_home))
 
 
-def pull_application(veil_home, veil_env):
-    shell_execute('git checkout env-{}'.format(veil_env), cwd=veil_home)
+def pull_application(application_branch, veil_home):
+    shell_execute('git checkout {}'.format(application_branch), cwd=veil_home)
     shell_execute('git pull', cwd=veil_home)
 
 
-def read_veil_version(veil_home):
-    veil_version = 'master'
-    veil_version_file = os.path.join(veil_home, 'VEIL-VERSION')
-    if os.path.exists(veil_version_file):
-        with open(veil_version_file) as f:
-            veil_version = f.read()
-    return veil_version
+def read_framework_version(veil_home):
+    framework_version = 'master'
+    framework_version_file = os.path.join(veil_home, 'VEIL-VERSION')
+    if os.path.exists(framework_version_file):
+        with open(framework_version_file) as f:
+            framework_version = f.read()
+    return framework_version
 
 
-def clone_veil():
-    if os.path.exists('/opt/veil'):
+def clone_veil(veil_framework_home):
+    if os.path.exists(veil_framework_home):
         return
-    shell_execute('git clone git://github.com/honovation/veil.git /opt/veil')
+    shell_execute('git clone git://github.com/honovation/veil.git {}'.format(veil_framework_home))
 
 
-def pull_veil(veil_version):
-    shell_execute('git checkout {}'.format(veil_version), cwd='/opt/veil')
-    shell_execute('git pull', cwd='/opt/veil')
+def pull_veil(framework_version, veil_framework_home):
+    shell_execute('git checkout {}'.format(framework_version), cwd=veil_framework_home)
+    shell_execute('git pull', cwd=veil_framework_home)
 
 
 def deploy(veil_home, veil_env, veil_server_name):

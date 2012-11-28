@@ -42,10 +42,10 @@ def deploy_server(remote_veil_server, deployed_via=None):
     if local_env_config_dir.exists():
         for f in local_env_config_dir.listdir():
             fabric.api.put(f, '~', mode=0600)
-    fabric.api.sudo('python /opt/remote_deployer_payload.py {} {} {} {}'.format(
+    fabric.api.sudo('python /opt/remote_deployer_payload.py {} {} {}'.format(
         get_application_codebase(),
-        '/opt/{}'.format(get_application_name()),
-        veil_server_env, veil_server_name))
+        veil_server_env,
+        veil_server_name))
 
 
 def update_branch(deploying_env, from_branch):
