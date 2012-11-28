@@ -43,11 +43,11 @@ def configure_root_component_logger(component_name):
     configured_root_loggers.add(component_name)
     console_handler = logging.StreamHandler(os.fdopen(sys.stderr.fileno(), 'w', 0))
     console_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-    syslog_handler = logging.handlers.SysLogHandler(
-        address='/dev/veil-log',
-        facility=logging.handlers.SysLogHandler.LOG_USER)
-    syslog_handler.setFormatter(EventFormatter())
-    syslog_handler.addFilter(EventFilter())
+#    syslog_handler = logging.handlers.SysLogHandler(
+#        address='/dev/veil-log',
+#        facility=logging.handlers.SysLogHandler.LOG_USER)
+#    syslog_handler.setFormatter(EventFormatter())
+#    syslog_handler.addFilter(EventFilter())
     logger = logging.getLogger(component_name)
     logger.addHandler(console_handler)
 #    logger.addHandler(syslog_handler)
