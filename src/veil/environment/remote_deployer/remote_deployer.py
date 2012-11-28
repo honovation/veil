@@ -19,6 +19,8 @@ def deploy_env(deploying_env, from_branch=None):
         deploy_server('{}/{}'.format(deploying_env, veil_server_name))
     if not from_branch:
         tag_deploy(deploying_env)
+    local_env_config_dir = CURRENT_USER_HOME / '.{}'.format(veil_server_env)
+    local_env_config_dir.rmtree()
 
 
 @script('deploy-server')
@@ -40,7 +42,6 @@ def deploy_server(remote_veil_server, deployed_via=None):
     if local_env_config_dir.exists():
         for f in local_env_config_dir.listdir():
             fabric.api.put(f, '~', mode=0600)
-        local_env_config_dir.rmtree()
     fabric.api.sudo('python /opt/remote_deployer_payload.py {} {} {} {}'.format(
         get_application_codebase(),
         '/opt/{}'.format(get_application_name()),
