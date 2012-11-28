@@ -4,3 +4,17 @@ options { chain_hostnames(off); flush_lines(0); use_dns(no); use_fqdn(no);
 	  owner("root"); group("adm"); perm(0640); stats_freq(0);
 	  bad_hostname("^gconfd$");
 };
+
+{% for source_name, source in config.sources.items() %}
+source {{ source_name }} {
+    {{ source.type }}("{{ source.arg }}");
+};
+{% endfor %}
+{% for destination_name, destination in config.destinations.items() %}
+destination {{ destination_name }} {
+    {{ destination.type }}("{{ destination.arg }}" {% for k,v in destination.additional_args.items() %}{{ k }}({{ v }}){% endfor %});
+};
+{% endfor %}
+{% for log in config.logs %}
+log { source({{ log.source }}); destination({{ log.destination }}); };
+{% endfor %}
