@@ -59,7 +59,7 @@ class HTTPHandler(object):
                 with normalize_arguments():
                     with tunnel_put_and_delete():
                         self.handler()
-        LOGGER.debug('handled request: %(request)s', {'request': request})
+        LOGGER.debug('handled request: %(request)s', {'request': unicode(request)})
 
 
 def create_stack_context(context_manager, *args, **kwargs):

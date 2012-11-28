@@ -12,7 +12,7 @@ source {{ source_name }} {
 {% endfor %}
 {% for destination_name, destination in config.destinations.items() %}
 destination {{ destination_name }} {
-    {{ destination.type }}("{{ destination.arg }}" {% for k,v in destination.additional_args.items() %}{{ k }}({{ v }}){% endfor %});
+    {{ destination.type }}("{{ destination.arg }}" {% for k,v in destination.get('additional_args', {}).items() %}{{ k }}({{ v }}){% endfor %});
 };
 {% endfor %}
 {% for log in config.logs %}

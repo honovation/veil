@@ -5,7 +5,7 @@ from veil.environment import *
 def syslog_server_program(config):
     return objectify({
         'syslog_server': {
-            'execute_command': 'syslog-ng --no-caps --user={} --foreground --cfgfile={} --persist-file={} --pidfile={}'.format(
+            'execute_command': 'syslog-ng --no-caps --user={} --foreground --cfgfile={} --persist-file={} --pidfile={} -v -d -e'.format(
                 CURRENT_USER, VEIL_ETC_DIR / 'syslog-ng.conf',
                 VEIL_VAR_DIR / 'syslog-ng.persist',
                 VEIL_VAR_DIR / 'syslog-ng.pid'),
