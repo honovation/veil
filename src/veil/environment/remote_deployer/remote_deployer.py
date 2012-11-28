@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 from argparse import ArgumentParser
-from fabric.colors import green
 from veil.frontend.cli import *
 from veil.environment import *
 from veil.utility.shell import *
