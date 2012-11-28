@@ -8,7 +8,7 @@ import datetime
 def main():
     action = sys.argv[1]
     veil_env = sys.argv[2]
-    veil_server_name = sys.argv[2]
+    veil_server_name = sys.argv[3]
 
     src_dir = '/opt/{}'.format(veil_env)
     backup_dir = '{}-backup'.format(src_dir)
