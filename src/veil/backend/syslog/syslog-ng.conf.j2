@@ -1,0 +1,6 @@
+@version: 3.3
+
+options { chain_hostnames(off); flush_lines(0); use_dns(no); use_fqdn(no);
+	  owner("root"); group("adm"); perm(0640); stats_freq(0);
+	  bad_hostname("^gconfd$");
+};
