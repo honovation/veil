@@ -195,6 +195,6 @@ class HTTPResponse(object):
         lines = [self.request.version + " " + str(self._status_code) + " " +
                  httplib.responses[self._status_code]]
         lines.extend(['%s: %s' % (n, v) for n, v in self._headers.iteritems()])
-        for cookie in self.cookies:
+        for cookie in self._cookies:
             lines.append(to_str("Set-Cookie: " + cookie))
         return '\r\n'.join(lines) + '\r\n\r\n'
