@@ -22,8 +22,10 @@ def website_programs(
                 'execute_command': 'veil frontend web up {} {} {}'.format(
                     purpose, start_port + i, ' '.join(additional_args)),
                 'environment_variables': {
-                    'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path
+                    'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path,
+                    'VEIL_LOGGING_EVENT': 'True'
                 },
+                'redirect_stderr': False,
                 'resources': resources,
                 'reloads_on_change': application_component_names,
                 'group': '{}_website'.format(purpose),

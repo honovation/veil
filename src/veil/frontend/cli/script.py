@@ -29,11 +29,10 @@ def execute_script(*argv, **kwargs):
         level = script_handlers
     arg = argv[0] if argv else None
     if arg not in level:
-        LOGGER.info(
+        LOGGER.warn(
             '%(unknown_option)s is unknown, choose from: %(valid_options)s', {
                 'unknown_option': arg,
                 'valid_options': level.keys(),
-                '__color__': 'RED'
             })
         sys.exit(1)
     try:

@@ -51,8 +51,10 @@ def periodic_job_scheduler_program(logging_levels, dependencies):
         'periodic_job_scheduler': {
             'execute_command': 'veil backend queue periodic-job-scheduler-up {}'.format(' '.join(additional_args)),
             'environment_variables': {
-                'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path
+                'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path,
+                'VEIL_LOGGING_EVENT': 'True'
             },
+            'redirect_stderr': False,
             'resources': resources
         }
     })
@@ -75,13 +77,15 @@ def job_worker_program(
                 queue_host, queue_port, pyres_worker_logging_level, ','.join(queue_names)
             ), # log instruction for the main process, a.k.a pyres_worker
             'environment_variables': {
-                'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path
+                'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path,
+                'VEIL_LOGGING_EVENT': 'True'
             }, # log instruction for the sub-process forked from pyres_worker, a.k.a our code
             'group': 'workers',
             'run_as': run_as or CURRENT_USER,
             'resources': resources,
             'startretries': 10,
             'startsecs': 10,
+            'redirect_stderr': False,
             'reloads_on_change': application_component_names
         }
     })

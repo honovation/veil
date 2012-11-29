@@ -31,6 +31,10 @@ def to_supervisor_programs(veil_server_programs):
             supervisor_program['startretries'] = veil_server_program.startretries
         if 'startsecs' in veil_server_program:
             supervisor_program['startsecs'] = veil_server_program.startsecs
+        if 'redirect_stderr' in veil_server_program:
+            supervisor_program['redirect_stderr'] = veil_server_program.redirect_stderr
+        else:
+            supervisor_program['redirect_stderr'] = True
         supervisor_programs[program_name] = supervisor_program
     return supervisor_programs
 

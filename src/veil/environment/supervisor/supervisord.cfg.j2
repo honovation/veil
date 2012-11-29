@@ -63,14 +63,17 @@ process_name=%(program_name)s
 {% endif %}
 numprocs={{ program.get('processes_count', 1) }}
 stopwaitsecs=10
-redirect_stderr=True
-{% if 'stdout_logfile' in program %}
-stdout_logfile={{ program.stdout_logfile }}
-{% else %}
+redirect_stderr={{ program.redirect_stderr }}
+{% if program.redirect_stderr %}
 stdout_logfile={{ config.logging.directory }}/{{ program_name }}.log
+{% else %}
+stdout_logfile={{ config.logging.directory }}/{{ program_name }}-stdout.log
+stderr_logfile={{ config.logging.directory }}/{{ program_name }}-stderr.log
 {% endif %}
 stdout_logfile_maxbytes={{ program.get('stdout_logfile_maxbytes', '50MB') }}
 stdout_logfile_backups={{ program.get('stdout_logfile_backups', 10) }}
+stderr_logfile_maxbytes={{ program.get('stderr_logfile_maxbytes', '50MB') }}
+stderr_logfile_backups={{ program.get('stderr_logfile_backups', 10) }}
 {% if 'expected_exit_codes' in program %}
 exitcodes={{ ','.join(program.expected_exit_codes) }}
 {% else %}

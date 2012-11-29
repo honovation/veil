@@ -2,9 +2,12 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import os
 import sys
+import json
+import time
 from .component_map import get_root_component
 
 VEIL_LOGGING_LEVEL_CONFIG = 'VEIL_LOGGING_LEVEL_CONFIG'
+VEIL_LOGGING_EVENT = 'VEIL_LOGGING_EVENT'
 logging_levels = None
 configured_root_loggers = set()
 
@@ -56,9 +59,15 @@ def configure_root_component_logger(component_name):
     configured_root_loggers.add(component_name)
 
     logger = logging.getLogger(component_name)
-    console_handler = logging.StreamHandler(os.fdopen(sys.stderr.fileno(), 'w', 0))
-    console_handler.setFormatter(ColoredFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-    logger.addHandler(console_handler)
+    human_handler = logging.StreamHandler(os.fdopen(sys.stdout.fileno(), 'w', 0))
+    human_handler.setFormatter(ColoredFormatter(
+        fmt='%(asctime)s [%(name)s] %(message)s',
+        datefmt='%H:%M:%S'))
+    logger.addHandler(human_handler)
+    if os.getenv('VEIL_LOGGING_EVENT'):
+        machine_handler = logging.StreamHandler(os.fdopen(sys.stderr.fileno(), 'w', 0))
+        machine_handler.setFormatter(EventFormatter())
+        logger.addHandler(machine_handler)
 
 
 class ColoredFormatter(logging.Formatter):
@@ -70,3 +79,20 @@ class ColoredFormatter(logging.Formatter):
                 wrap = COLOR_WRAPPERS.get(record.args['__color__'])
                 return wrap(super(ColoredFormatter, self).format(record))
         return super(ColoredFormatter, self).format(record)
+
+
+class EventFormatter(logging.Formatter):
+    def format(self, record):
+        event_name = record.message.split(':')[0]
+        event = {
+            '@type': '{}/{}'.format(record.name, event_name),
+            '@tags': [record.levelname],
+            '@message': record.getMessage(),
+            '@timestamp': time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created))
+        }
+        if record.args and isinstance(record.args, dict):
+            event['@fields'] = dict(record.args)
+        if record.exc_info:
+            event['@fields']['exception_type'] = unicode(record.exc_info[0])
+            event['@fields']['exception_stack_trace'] = self.formatException(record.exc_info)
+        return json.dumps(event)
