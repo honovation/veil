@@ -30,7 +30,7 @@ def prevent_xsrf():
         token = get_http_argument('_xsrf', optional=True) or request.headers.get('X-XSRF', None)
         if not token:
             response.status_code = httplib.FORBIDDEN
-            LOGGER.warn('XSRF token not found: request is %(request)s', {'request': request})
+            LOGGER.warn('XSRF token not found: request is %(request)s', {'request': str(request)})
             raise HTTPError(403, 'XSRF token missing')
         expected_token = xsrf_token()
         if expected_token != token:

@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division, absolute_import
-from redis.client import Redis
+from redis.client import Redis, StrictRedis
 from logging import getLogger
 from veil_installer import *
 from veil.development.test import *
@@ -20,7 +20,7 @@ def register_redis(purpose):
 def require_redis(purpose):
     if purpose not in instances:
         redis_client_config = load_redis_client_config(purpose)
-        instances[purpose] = Redis(**redis_client_config)
+        instances[purpose] = StrictRedis(**redis_client_config)
     executing_test = get_executing_test(optional=True)
     if executing_test:
         def flush():
