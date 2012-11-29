@@ -44,7 +44,7 @@ class PeriodicJobScheduler(object):
         if schedules:
             for schedule in schedules:
                 jobs = ', '.join({str(job_handler) for job_handler in schedules[schedule]})
-                LOGGER.info('schedule loaded: schedule is %{schedule)s and jobs are %(jobs)s', {
+                LOGGER.info('schedule loaded: schedule is %(schedule)s and jobs are %(jobs)s', {
                     'schedule': schedule,
                     'jobs': jobs
                 })
