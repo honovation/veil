@@ -23,17 +23,30 @@ def veil_server(deployed_via, programs, resources=()):
         'resources': resources
     })
 
+def veil_server_host(ssh_ip, ssh_port, servers):
+    from veil.model.collection import objectify
+
+    return objectify({
+        'ssh_ip': ssh_ip,
+        'ssh_port': ssh_port,
+        'servers': servers
+    })
+
 
 def get_veil_servers(env):
-    return get_application().ENVIRONMENTS[env]
+    hosts = get_application().ENVIRONMENTS[env].values()
+    servers = {}
+    for host in hosts:
+        servers.update(host.servers)
+    return servers
 
 
 def get_current_veil_server():
-    return get_application().ENVIRONMENTS[VEIL_ENV][VEIL_SERVER_NAME]
+    return get_veil_servers(VEIL_ENV)[VEIL_SERVER_NAME]
 
 
 def get_remote_veil_server(veil_env, veil_server_name):
-    return get_application().ENVIRONMENTS[veil_env][veil_server_name]
+    return get_veil_servers(veil_env)[veil_server_name]
 
 
 def get_application_codebase():
