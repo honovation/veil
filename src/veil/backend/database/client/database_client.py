@@ -212,7 +212,7 @@ class Database(object):
             })
         return rows[0][0]
 
-    def insert(self, table, objects=None, returns_id=False, should_insert=None, **value_providers):
+    def insert(self, table, objects=None, returns_id=False, returns_record=False, should_insert=None, **value_providers):
         if objects is not None:
             if not objects:
                 return None
@@ -268,7 +268,13 @@ class Database(object):
                 fragments.append(')s')
                 args[arg_name] = cell_value
             fragments.append(')')
-        if returns_id:
+        if returns_record:
+            fragments.append(' RETURNING *')
+            if objects:
+                return self.list(''.join(fragments), **args)
+            else:
+                return self.get(''.join(fragments), **args)
+        elif returns_id:
             fragments.append(' RETURNING id')
             if objects:
                 return self.list_scalar(''.join(fragments), **args)
