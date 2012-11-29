@@ -101,6 +101,14 @@ case "$1" in
         veil_init
         exec veil environment local-deployer deploy $@
         ;;
+    backup-env)
+        shift
+        exec veil environment remote-guard backup $@
+        ;;
+    backup)
+        shift
+        exec veil environment local-guard backup $@
+        ;;
     migrate)
         exec veil environment local-deployer migrate
         ;;
