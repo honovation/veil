@@ -44,7 +44,10 @@ def rollback(src_dir, backup_dir, veil_server):
         shell_execute('veil :{} down'.format(veil_server), cwd='{}/app'.format(src_dir))
         shell_execute('mv {} {}-to-be-deleted-{}'.format(
             src_dir, src_dir, datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
-    shell_execute('killall supervisord')
+    try:
+        shell_execute('killall supervisord')
+    except:
+        pass # do not care if it is there
     shell_execute('mv {} {}'.format(backup_dir, src_dir))
     shell_execute('veil :{} up'.format(veil_server), cwd='{}/app'.format(src_dir))
 
