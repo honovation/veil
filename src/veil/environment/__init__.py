@@ -14,14 +14,16 @@ from .environment import BASIC_LAYOUT_RESOURCES
 from .environment import split_veil_server_code
 
 
-def veil_server(deployed_via, programs, resources=()):
+def veil_server(ip, deployed_via, programs, resources=()):
     from veil.model.collection import objectify
 
     return objectify({
+        'ip': ip,
         'deployed_via': deployed_via,
         'programs': programs,
         'resources': resources
     })
+
 
 def veil_server_host(ssh_ip, ssh_port, servers):
     from veil.model.collection import objectify
@@ -31,6 +33,10 @@ def veil_server_host(ssh_ip, ssh_port, servers):
         'ssh_port': ssh_port,
         'servers': servers
     })
+
+
+def get_veil_server_hosts(env):
+    return get_application().ENVIRONMENTS[env]
 
 
 def get_veil_servers(env):
@@ -46,7 +52,16 @@ def get_current_veil_server():
 
 
 def get_remote_veil_server(veil_env, veil_server_name):
-    return get_veil_servers(veil_env)[veil_server_name]
+    from veil.model.collection import objectify
+
+    hosts = get_application().ENVIRONMENTS[veil_env].values()
+    for host in hosts:
+        for server_name, server in host.servers.items():
+            if server_name == veil_server_name:
+                host = dict(host)
+                host.pop('servers')
+                return objectify(dict(server, host=host))
+    raise Exception('not found')
 
 
 def get_application_codebase():
