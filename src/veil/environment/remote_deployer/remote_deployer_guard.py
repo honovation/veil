@@ -48,8 +48,8 @@ def rollback(src_dir, backup_dir, veil_server):
         shell_execute('killall supervisord')
     except:
         pass # do not care if it is there
-    shell_execute('mv {} {}'.format(backup_dir, src_dir))
-    shell_execute('veil :{} up'.format(veil_server), cwd='{}/app'.format(src_dir))
+    shell_execute('cp -r -p {} {}'.format(backup_dir, src_dir))
+    shell_execute('veil :{} up --daemonize'.format(veil_server), cwd='{}/app'.format(src_dir))
 
 
 def shell_execute(command_line, **kwargs):

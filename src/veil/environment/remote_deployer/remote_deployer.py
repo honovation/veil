@@ -32,6 +32,8 @@ def rollback_env(deploying_env):
         guard_do('check-backup', deploying_env, deploying_server_name)
     for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
         guard_do('rollback', deploying_env, deploying_server_name)
+    for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
+        guard_do('delete-backup', deploying_env, deploying_server_name)
 
 
 def guard_do(action, deploying_env, deploying_server_name):
