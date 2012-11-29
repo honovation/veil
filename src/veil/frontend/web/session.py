@@ -37,20 +37,17 @@ class Session:
 
     def touch(self):
         session_id_cookie_name = self.get_session_id_cookie_name()
-        session_id = get_cookie(session_id_cookie_name)
-        if session_id:
-            if not self.redis().exists(session_id):
-                self.redis().hset(session_id, 'session_id', session_id)
-        else:
-            session_id = self.create_session_id()
+        session_id = get_cookie(session_id_cookie_name) or self.create_session_id()
+        self.redis().hsetnx(session_id, 'session_id', session_id)
         self.redis().expire(session_id, SESSION_TIMEOUT_IN_SECOND)
         expires = datetime.datetime.utcnow() + datetime.timedelta(seconds=SESSION_TIMEOUT_IN_SECOND)
         set_cookie(name=session_id_cookie_name, value=session_id, expires=expires)
 
     def get(self, key):
         session_id = self.try_get_session_id()
-        if session_id:
-            return self.redis().hget(session_id, key)
+        if not session_id:
+            return None
+        return self.redis().hget(session_id, key)
 
     def set(self, key, value):
         session_id = self.try_get_session_id(True)
