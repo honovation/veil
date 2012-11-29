@@ -41,8 +41,10 @@ def rollback(src_dir, backup_dir, veil_server):
     if not os.path.exists(backup_dir):
         raise Exception('{} does not exists, can not rollback'.format(backup_dir))
     if os.path.exists(src_dir):
+        shell_execute('veil :{} down'.format(veil_server), cwd='{}/app'.format(src_dir))
         shell_execute('mv {} {}-to-be-deleted-{}'.format(
             src_dir, src_dir, datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')))
+    shell_execute('killall supervisord')
     shell_execute('mv {} {}'.format(backup_dir, src_dir))
     shell_execute('veil :{} up'.format(veil_server), cwd='{}/app'.format(src_dir))
 
