@@ -1,7 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from argparse import ArgumentParser
+import argparse
 import time
+import sys
 from veil.utility.shell import *
 from veil.environment import *
 from veil.frontend.cli import script
@@ -27,7 +28,7 @@ def bring_up_program(program_name):
 
 
 def bring_up_supervisor(*argv):
-    argument_parser = ArgumentParser('Bring up the application')
+    argument_parser = argparse.ArgumentParser('Bring up the application')
     argument_parser.add_argument('--daemonize', action='store_true',
         help='should the process run in background')
     args = argument_parser.parse_args(argv)
@@ -42,6 +43,7 @@ def bring_up_supervisor(*argv):
         LOGGER.info('failed to bring up supervisor: latest status: %(status)s', {
             'status': supervisorctl('status', capture=True)
         })
+        sys.exit(1)
     else:
         pass_control_to('supervisord -n -c {}'.format(VEIL_ETC_DIR / 'supervisor.cfg'))
 
