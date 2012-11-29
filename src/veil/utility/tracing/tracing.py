@@ -8,7 +8,6 @@ def traced(level='INFO', color=None):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            print(args)
             args_message = ', '.join([unicode(arg) for arg in args])
             if kwargs:
                 args_message = '{}, {}'.format(

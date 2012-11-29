@@ -93,6 +93,7 @@ def import_script_handlers(argv):
             'veil.environment.remote_deployer',
             'veil.environment.setting',
             'veil.environment.supervisor',
+            'veil.environment.backup',
             'veil.frontend.cli',
             'veil.frontend.locale',
             'veil.frontend.template',
