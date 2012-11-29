@@ -6,6 +6,7 @@ import inspect
 import traceback
 import veil_component
 from veil.environment import *
+from veil.utility.tracing import *
 
 script_handlers = {}
 LOGGER = logging.getLogger(__name__)
@@ -31,7 +32,8 @@ def execute_script(*argv, **kwargs):
         LOGGER.info(
             '%(unknown_option)s is unknown, choose from: %(valid_options)s', {
                 'unknown_option': arg,
-                'valid_options': level.keys()
+                'valid_options': level.keys(),
+                '__color__': 'RED'
             })
         sys.exit(1)
     try:
@@ -122,7 +124,7 @@ class ScriptHandlerDecorator(object):
         self.command = command
 
     def __call__(self, script_handler):
-        script_handler = script_handler
+        script_handler = traced(color='GREEN')(script_handler)
 
         @functools.wraps(script_handler)
         def wrapper(*args, **kwargs):

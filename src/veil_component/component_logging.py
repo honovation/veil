@@ -13,6 +13,20 @@ VEIL_SYSLOG_ADDRESS = 'VEIL_SYSLOG_ADDRESS'
 logging_levels = None
 configured_root_loggers = set()
 
+def wrap_console_text_with_color(code):
+    def inner(text, bold=False):
+        c = code
+        if bold:
+            c = "1;%s" % c
+        return "\033[%sm%s\033[0m" % (c, text)
+
+    return inner
+
+COLOR_WRAPPERS = {
+    'RED': wrap_console_text_with_color('31'),
+    'GREEN': wrap_console_text_with_color('32')
+}
+
 def configure_logging(component_name):
     load_logging_levels()
     configure_component_logger(component_name)
@@ -48,7 +62,7 @@ def configure_root_component_logger(component_name):
 
     logger = logging.getLogger(component_name)
     console_handler = logging.StreamHandler(os.fdopen(sys.stderr.fileno(), 'w', 0))
-    console_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    console_handler.setFormatter(ColoredFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     logger.addHandler(console_handler)
     syslog_handler = get_syslog_handler()
     if syslog_handler:
@@ -72,6 +86,17 @@ def get_syslog_handler():
     syslog_handler.setFormatter(EventFormatter())
     syslog_handler.addFilter(EventFilter())
     return syslog_handler
+
+
+class ColoredFormatter(logging.Formatter):
+    def format(self, record):
+        if record.levelno >= logging.WARNING:
+            return COLOR_WRAPPERS['RED'](super(ColoredFormatter, self).format(record))
+        if record.args and isinstance(record.args, dict):
+            if record.args.get('__color__'):
+                wrap = COLOR_WRAPPERS.get(record.args['__color__'])
+                return wrap(super(ColoredFormatter, self).format(record))
+        return super(ColoredFormatter, self).format(record)
 
 
 class EventFilter(logging.Filter):
