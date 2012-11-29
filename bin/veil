@@ -103,7 +103,7 @@ case "$1" in
         ;;
     backup-env)
         shift
-        exec veil environment remote-guard backup $@
+        exec veil environment remote-guard backup-env $@
         ;;
     backup)
         shift
