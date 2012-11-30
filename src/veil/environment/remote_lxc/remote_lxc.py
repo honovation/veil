@@ -18,9 +18,13 @@ def provision_env(provisioning_env, config_dir):
 def provision_server(provisioning_env, provisioning_server_name, config_dir):
     provisioning_server = get_remote_veil_server(provisioning_env, provisioning_server_name)
     sequence_no = provisioning_server.ip.split('.')[-1]
-    with open('{}/{}/{}/pass'.format(config_dir, provisioning_env, provisioning_server_name)) as f:
+    with open('{}/env/{}/{}/pass'.format(config_dir, provisioning_env, provisioning_server_name)) as f:
         user_name, user_password = f.read().split(':')
     fabric.api.env.host_string = '{}:{}'.format(provisioning_server.host.ssh_ip, provisioning_server.host.ssh_port)
+    with open('{}/host/{}/pass'.format(config_dir, provisioning_server.host.name)) as f:
+        host_user_name, host_user_password = f.read().split(':')
+    fabric.api.env.host_string = '{}@{}'.format(host_user_name, fabric.api.env.host_string)
+    fabric.api.env.password = host_user_password
     fabric.api.put(PAYLOAD, '/opt/remote_lxc_payload.py', use_sudo=True, mode=0700)
     fabric.api.sudo('python /opt/remote_lxc_payload.py {} {} {} {}'.format(
         '{}-{}'.format(provisioning_env, provisioning_server_name),

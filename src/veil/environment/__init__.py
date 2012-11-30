@@ -54,11 +54,10 @@ def get_current_veil_server():
 def get_remote_veil_server(veil_env, veil_server_name):
     from veil.model.collection import objectify
 
-    hosts = get_application().ENVIRONMENTS[veil_env].values()
-    for host in hosts:
+    for host_name, host in get_application().ENVIRONMENTS[veil_env].items():
         for server_name, server in host.servers.items():
             if server_name == veil_server_name:
-                host = dict(host)
+                host = dict(host, name=host_name)
                 host.pop('servers')
                 return objectify(dict(server, host=host))
     raise Exception('not found')
