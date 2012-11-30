@@ -7,11 +7,11 @@ from veil.environment.setting import *
 LOGGER = logging.getLogger(__name__)
 
 @composite_installer
-def supervisor_resource(programs, program_groups=None):
+def supervisor_resource(programs, inet_http_server_port=None, program_groups=None):
     inet_http_server_config = {
         'inet_http_server': {
             'host': 'localhost',
-            'port': 9091 if 'test' == VEIL_SERVER else 9090
+            'port': inet_http_server_port or (9091 if 'test' == VEIL_SERVER else 9090)
         }
     }
     logging_config = {

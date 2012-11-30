@@ -8,7 +8,8 @@ def veil_server_resource():
     veil_server = get_current_veil_server()
     resources = [supervisor_resource(
         programs=to_supervisor_programs(veil_server.programs),
-        program_groups=to_supervisor_program_groups(veil_server.programs))]
+        program_groups=to_supervisor_program_groups(veil_server.programs),
+        inet_http_server_port=veil_server.supervisor_http_port)]
     for program in veil_server.programs.values():
         resources.extend(program.get('resources', []))
     resources.extend(veil_server.get('resources', []))
