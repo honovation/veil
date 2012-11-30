@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division, absolute_import
-from redis.client import Redis, StrictRedis
+from redis.client import StrictRedis
 from logging import getLogger
 from veil_installer import *
 from veil.development.test import *

@@ -86,4 +86,4 @@ class Session:
         return '{}_session_id'.format(self.website)
 
     def create_session_id(self):
-        return '{}-{}'.format(datetime.datetime.now().strftime("%Y%m%d%H%M%S"), str(uuid.uuid4()).replace('-', ''))
+        return '{}-{}'.format(datetime.datetime.now().strftime("%Y%m%d%H%M%S"), uuid.uuid4().get_hex())

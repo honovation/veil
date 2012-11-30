@@ -38,7 +38,7 @@ def captcha_widget():
 
 
 def generate_captcha():
-    challenge_code = str(uuid.uuid4()).replace('-', '')
+    challenge_code = uuid.uuid4().get_hex()
     image, answer = generate(size=(150, 30), font_size=20)
     redis().set(challenge_code, answer)
     redis().expire(challenge_code, 60) #expire 30 seconds

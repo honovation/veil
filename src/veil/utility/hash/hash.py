@@ -2,8 +2,17 @@ from __future__ import unicode_literals, print_function, division
 import hashlib
 import hmac
 from logging import getLogger
+from veil.development.test import get_executing_test
 
 LOGGER = getLogger(__name__)
+
+DEFAULT_SECURE_HASH_SALT = '953236d83dd3401c9228f77ec2140b9d'
+secure_hash_salt = DEFAULT_SECURE_HASH_SALT
+
+def set_secure_hash_salt(value):
+    global secure_hash_salt
+    secure_hash_salt = value
+
 
 def encode_token(*parts):
     parts = [unicode(p) for p in parts]
@@ -23,12 +32,17 @@ def decode_token(token, *part_types):
 
 
 def get_password_hash(password):
-    return get_hmac(password, salt='99377', strong=True)
+    return get_hmac(password, strong=True)
 
 
 def get_hmac(*parts, **kwargs):
     strong = kwargs.pop('strong', True)
-    salt = kwargs.pop('salt')
+
+    salt = kwargs.pop('salt', secure_hash_salt)
+    executing_test = get_executing_test(optional=True)
+    if executing_test:
+        salt = DEFAULT_SECURE_HASH_SALT
+
     digestmod = hashlib.sha256 if strong else hashlib.sha1
     msg = '|'.join([str(part) for part in parts])
     return hmac.new(str(salt), msg, digestmod).hexdigest()
