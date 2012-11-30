@@ -18,15 +18,46 @@ def provision_env(provisioning_env, config_dir):
 def provision_server(provisioning_env, provisioning_server_name, config_dir):
     provisioning_server = get_remote_veil_server(provisioning_env, provisioning_server_name)
     sequence_no = provisioning_server.ip.split('.')[-1]
-    with open('{}/env/{}/{}/pass'.format(config_dir, provisioning_env, provisioning_server_name)) as f:
+    server_config_dir = '{}/env/{}/{}'.format(config_dir, provisioning_env, provisioning_server_name)
+    with open('{}/pass'.format(server_config_dir)) as f:
         user_name, user_password = f.read().split(':')
+        user_password = user_password.strip()
     fabric.api.env.host_string = '{}:{}'.format(provisioning_server.host.ssh_ip, provisioning_server.host.ssh_port)
     with open('{}/host/{}/pass'.format(config_dir, provisioning_server.host.name)) as f:
         host_user_name, host_user_password = f.read().split(':')
+        host_user_password = host_user_password.strip()
     fabric.api.env.host_string = '{}@{}'.format(host_user_name, fabric.api.env.host_string)
-    fabric.api.env.password = host_user_password
-    fabric.api.put(PAYLOAD, '/opt/remote_lxc_payload.py', use_sudo=True, mode=0700)
+    fabric.api.env.passwords[fabric.api.env.host_string] = host_user_password
+    fabric.api.put(PAYLOAD, '/opt/remote_lxc_payload.py', use_sudo=True, mode=0600)
     fabric.api.sudo('python /opt/remote_lxc_payload.py {} {} {} {}'.format(
         '{}-{}'.format(provisioning_env, provisioning_server_name),
         sequence_no, user_name, user_password))
+    fabric.api.env.host_string = '{}@{}:{}22'.format(user_name, provisioning_server.host.ssh_ip, sequence_no)
+    fabric.api.env.passwords[fabric.api.env.host_string] = user_password
+    try:
+        fabric.api.run('mkdir /home/{}/.ssh'.format(user_name))
+    except:
+        pass
+    fabric.api.put(
+        '{}/id_rsa'.format(server_config_dir), '/home/{}/.ssh/id_rsa'.format(user_name),
+        use_sudo=True, mode=0600)
+    fabric.api.put(
+        '{}/id_rsa.pub'.format(server_config_dir), '/home/{}/.ssh/id_rsa.pub'.format(user_name),
+        use_sudo=True, mode=0644)
+    fabric.api.put(
+        '{}/known_hosts'.format(server_config_dir), '/home/{}/.ssh/known_hosts'.format(user_name),
+        use_sudo=True, mode=0644)
+    try:
+        fabric.api.sudo('mkdir /root/.ssh')
+    except:
+        pass
+    fabric.api.put(
+        '{}/id_rsa'.format(server_config_dir), '/root/.ssh/id_rsa',
+        use_sudo=True, mode=0600)
+    fabric.api.put(
+        '{}/id_rsa.pub'.format(server_config_dir), '/root/.ssh/id_rsa.pub',
+        use_sudo=True, mode=0644)
+    fabric.api.put(
+        '{}/known_hosts'.format(server_config_dir), '/root/.ssh/known_hosts',
+        use_sudo=True, mode=0644)
 
