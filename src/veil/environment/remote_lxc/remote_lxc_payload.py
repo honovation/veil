@@ -41,15 +41,18 @@ def pull_veil():
 
 def create_installer_file(installer_path, container_name, sequence_no, user_name, user_password):
     with open(installer_path, 'w') as f:
+        container_args = '&'.join([
+            'container_name={}'.format(container_name),
+            'sequence_no={}'.format(sequence_no),
+            'user_name={}'.format(user_name),
+            'user_password={}'.format(user_password)])
+        iptables_rule = 'PREROUTING -p tcp -m tcp --dport {}22 -j DNAT --to-destination 10.0.3.{}:22'.format(
+            sequence_no, sequence_no)
         f.write(
             """
             veil.environment.local_lxc.lxc_container_ready_resource?{}
-            """.format('&'.join([
-                'container_name={}'.format(container_name),
-                'sequence_no={}'.format(sequence_no),
-                'user_name={}'.format(user_name),
-                'user_password={}'.format(user_password)
-            ])))
+            veil.environment.networking.iptables_rule_resource?table=nat&rule={}
+            """.format(container_args, iptables_rule))
     os.chmod(installer_path, 0600)
 
 
