@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import os
 import fabric.api
+from veil.utility.path import *
 from veil.frontend.cli import *
 from veil.environment import *
 
@@ -18,7 +19,7 @@ def provision_env(provisioning_env, config_dir):
 def provision_server(provisioning_env, provisioning_server_name, config_dir):
     provisioning_server = get_remote_veil_server(provisioning_env, provisioning_server_name)
     sequence_no = provisioning_server.ip.split('.')[-1]
-    server_config_dir = '{}/env/{}/{}'.format(config_dir, provisioning_env, provisioning_server_name)
+    server_config_dir = as_path('{}/env/{}/{}'.format(config_dir, provisioning_env, provisioning_server_name))
     with open('{}/pass'.format(server_config_dir)) as f:
         user_name, user_password = f.read().split(':')
         user_password = user_password.strip()
@@ -39,25 +40,28 @@ def provision_server(provisioning_env, provisioning_server_name, config_dir):
     except:
         pass
     fabric.api.put(
-        '{}/id_rsa'.format(server_config_dir), '/home/{}/.ssh/id_rsa'.format(user_name),
+        server_config_dir / 'id_rsa', '/home/{}/.ssh/id_rsa'.format(user_name),
         use_sudo=True, mode=0600)
     fabric.api.put(
-        '{}/id_rsa.pub'.format(server_config_dir), '/home/{}/.ssh/id_rsa.pub'.format(user_name),
+        server_config_dir / 'id_rsa.pub', '/home/{}/.ssh/id_rsa.pub'.format(user_name),
         use_sudo=True, mode=0644)
     fabric.api.put(
-        '{}/known_hosts'.format(server_config_dir), '/home/{}/.ssh/known_hosts'.format(user_name),
+        server_config_dir / 'known_hosts', '/home/{}/.ssh/known_hosts'.format(user_name),
         use_sudo=True, mode=0644)
+    if (server_config_dir / 'config').exists():
+        for f in (server_config_dir / 'config').listdir():
+            fabric.api.put(f, '~', mode=0600)
     try:
         fabric.api.sudo('mkdir /root/.ssh')
     except:
         pass
     fabric.api.put(
-        '{}/id_rsa'.format(server_config_dir), '/root/.ssh/id_rsa',
+        server_config_dir / 'id_rsa', '/root/.ssh/id_rsa',
         use_sudo=True, mode=0600)
     fabric.api.put(
-        '{}/id_rsa.pub'.format(server_config_dir), '/root/.ssh/id_rsa.pub',
+        server_config_dir / 'id_rsa.pub', '/root/.ssh/id_rsa.pub',
         use_sudo=True, mode=0644)
     fabric.api.put(
-        '{}/known_hosts'.format(server_config_dir), '/root/.ssh/known_hosts',
+        server_config_dir / 'known_hosts', '/root/.ssh/known_hosts',
         use_sudo=True, mode=0644)
 
