@@ -12,18 +12,15 @@ GUARD = os.path.join(os.path.dirname(__file__), 'remote_deployer_guard.py')
 LOGGER = logging.getLogger(__name__)
 
 @script('deploy-env')
-def deploy_env(deploying_env, from_branch=None):
-    update_branch(deploying_env, from_branch)
+def deploy_env(deploying_env):
+    update_branch(deploying_env)
     for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
         guard_do('create-backup', deploying_env, deploying_server_name)
     for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
         deploy_server(deploying_env, deploying_server_name)
     for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
         guard_do('delete-backup', deploying_env, deploying_server_name)
-    if not from_branch:
-        tag_deploy(deploying_env)
-    local_env_config_dir = CURRENT_USER_HOME / '.{}'.format(deploying_env)
-    local_env_config_dir.rmtree()
+    tag_deploy(deploying_env)
 
 
 @script('rollback-env')
@@ -50,23 +47,18 @@ def deploy_server(deploying_env, deploying_server_name):
     deployed_via = get_remote_veil_server(deploying_env, deploying_server_name).deployed_via
     fabric.api.env.host_string = deployed_via
     fabric.api.put(PAYLOAD, '/opt/remote_deployer_payload.py', use_sudo=True, mode=0700)
-    local_env_config_dir = CURRENT_USER_HOME / '.{}'.format(deploying_env)
-    if local_env_config_dir.exists():
-        for f in local_env_config_dir.listdir():
-            fabric.api.put(f, '~', mode=0600)
     fabric.api.sudo('python /opt/remote_deployer_payload.py {} {} {}'.format(
         get_application_codebase(),
         deploying_env,
         deploying_server_name))
 
 
-def update_branch(deploying_env, from_branch):
-    from_branch = from_branch or 'master'
+def update_branch(deploying_env):
     LOGGER.info('update env-{} branch...'.format(deploying_env))
     shell_execute('git checkout env-{}'.format(deploying_env), cwd=VEIL_HOME)
-    shell_execute('git merge {} --ff-only'.format(from_branch), cwd=VEIL_HOME)
+    shell_execute('git merge master --ff-only', cwd=VEIL_HOME)
     shell_execute('git push origin env-{}'.format(deploying_env), cwd=VEIL_HOME)
-    shell_execute('git checkout {}'.format(from_branch), cwd=VEIL_HOME)
+    shell_execute('git checkout master', cwd=VEIL_HOME)
 
 
 def tag_deploy(deploying_env):
