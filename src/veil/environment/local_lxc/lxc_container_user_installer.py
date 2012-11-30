@@ -8,7 +8,10 @@ LOGGER = logging.getLogger(__name__)
 @atomic_installer
 def lxc_container_user_resource(container_name, user_name):
     rootfs_path = '/var/lib/lxc/{}/rootfs'.format(container_name)
-    is_installed = unsafe_call('chroot {} getent passwd {}'.format(rootfs_path, user_name))
+    try:
+        is_installed = unsafe_call('chroot {} getent passwd {}'.format(rootfs_path, user_name))
+    except:
+        is_installed = False
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'lxc_container_user?container_name={}&user_name={}'.format(container_name, user_name)
