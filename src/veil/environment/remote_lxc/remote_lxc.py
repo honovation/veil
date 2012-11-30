@@ -8,8 +8,14 @@ from veil.environment import *
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'remote_lxc_payload.py')
 LOGGER = logging.getLogger(__name__)
 
-@script('provision')
-def provision(provisioning_env, provisioning_server_name, config_dir):
+@script('provision-env')
+def provision_env(provisioning_env, config_dir):
+    for provisioning_server_name in get_veil_servers(provisioning_env).keys():
+        provision_server(provisioning_env, provisioning_server_name, config_dir)
+
+
+@script('provision-server')
+def provision_server(provisioning_env, provisioning_server_name, config_dir):
     provisioning_server = get_remote_veil_server(provisioning_env, provisioning_server_name)
     sequence_no = provisioning_server.ip.split('.')[-1]
     with open('{}/{}/{}/pass'.format(config_dir, provisioning_env, provisioning_server_name)) as f:

@@ -52,7 +52,7 @@ def lxc_container_running_resource(name):
     if is_running:
         return
     LOGGER.info('start lxc container: %(name)s ...', {'name': name})
-    shell_execute('lxc-start -n {} -d'.format(name))
+    shell_execute('lxc-start -n {} -d'.format(name), capture=True)
 
 
 @atomic_installer
@@ -65,4 +65,4 @@ def lxc_container_stopped_resource(name):
     if is_stopped:
         return
     LOGGER.info('stop lxc container: %(name)s ...', {'name': name})
-    shell_execute('lxc-shutdown -n {} -w'.format(name))
+    shell_execute('lxc-shutdown -n {} -w'.format(name), capture=True)
