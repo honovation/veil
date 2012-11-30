@@ -28,8 +28,8 @@ def main():
 
 
 def create_backup(src_dir, backup_dir, veil_server):
-    if not os.path.exists(src_dir):
-        print('{} does not exists, skipped backup'.format(src_dir))
+    if not os.path.exists('{}/app'.format(src_dir)):
+        print('{} does not exists, skipped backup'.format('{}/app'.format(src_dir)))
         return
     if os.path.exists(backup_dir):
         raise Exception('{} already exists, backup procedure abandoned')
