@@ -11,13 +11,12 @@ LOGGER = logging.getLogger(__name__)
 @script('provision-server')
 def provision_server(provisioning_env, provisioning_server_name, user_name, user_password):
     provisioning_server = get_remote_veil_server(provisioning_env, provisioning_server_name)
-    public_ssh_port = '{}22'.format(provisioning_server.ip.split('.')[0])
+    sequence_no = provisioning_server.ip.split('.')[-1]
     fabric.api.env.host_string = '{}:{}'.format(provisioning_server.host.ssh_ip, provisioning_server.host.ssh_port)
     fabric.api.put(PAYLOAD, '/opt/remote_lxc_payload.py', use_sudo=True, mode=0700)
-    fabric.api.sudo('python /opt/remote_lxc_payload.py {} {} {}'.format(
+    fabric.api.sudo('python /opt/remote_lxc_payload.py {} {} {} {}'.format(
         '{}-{}'.format(provisioning_env, provisioning_server_name),
-        provisioning_server.ip,
-        public_ssh_port))
+        sequence_no, user_name, user_password))
 
 #def provision_iptables(ip):
 #    output = fabric.api.sudo('iptables -L -n -t nat')
