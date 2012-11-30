@@ -21,10 +21,10 @@ LOGGER = logging.getLogger(__name__)
 def register_captcha(website):
     add_application_sub_resource(
         'captcha_image_bucket',
-        lambda config: bucket_resource('captcha_image', config))
+        lambda config: bucket_resource(purpose='captcha_image', config=config))
     add_application_sub_resource(
         'captcha_answer_redis_client',
-        lambda config: redis_client_resource('captcha_answer', **config))
+        lambda config: redis_client_resource(purpose='captcha_answer', **config))
     import_widget(captcha_widget)
     route('GET', '/captcha', website=website)(captcha_widget)
     return captcha_protected
