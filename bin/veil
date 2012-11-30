@@ -18,7 +18,7 @@ if [ -z "$VEIL_HOME" ] ; then
     export VEIL_HOME=$(pwd)
 fi
 if [ ! -d $VEIL_HOME/env/bin ] ; then
-    if [[ $1 != deploy ]] ; then
+    if [[ ("$1" != "deploy") && ("$1" != "init") ]] ; then
         echo "VEIL_HOME is invalid"
         exit 1
     fi
@@ -95,6 +95,10 @@ case "$1" in
     rollback-env)
         shift
         exec veil environment remote-deployer rollback-env $@
+        ;;
+    init)
+        shift
+        veil_init
         ;;
     deploy)
         shift

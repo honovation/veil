@@ -13,6 +13,7 @@ with veil_component.init_component(__name__):
     from .python_package_installer import is_python_package_installed
     from .python_package_installer import python_package_resource
     from .component_installer import component_resource
+    from .component_installer import installer_resource
     from .os_package_installer import os_package_resource
     from .os_package_installer import is_os_package_installed
     from .os_service_installer import os_service_resource
@@ -38,6 +39,7 @@ with veil_component.init_component(__name__):
         python_package_resource.__name__,
         # from component_installer
         component_resource.__name__,
+        installer_resource.__name__,
         # from os_package_installer
         os_package_resource.__name__,
         is_os_package_installed.__name__,

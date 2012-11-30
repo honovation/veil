@@ -104,7 +104,8 @@ def do_install(resource):
         if '.' not in installer_name:
             raise Exception('invalid installer: {}'.format(installer_name))
         installer_module_name = get_installer_module_name(installer_name)
-        install_resources([('veil_installer.component_resource', dict(name=installer_module_name))])
+        if 'veil_installer' != installer_module_name:
+            install_resources([('veil_installer.component_resource', dict(name=installer_module_name))])
     try:
         installer = get_installer(installer_name)
         return installer(do_install=True, **installer_args) or []
