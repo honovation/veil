@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 from veil.model.collection import *
 
-def remote_guard_program(backing_up_env, crontab_expression):
+def guard_program(backing_up_env, crontab_expression):
     return objectify({
-        'remote_guard': {
+        'guard': {
             'execute_command': "veil environment backup guard-up {} '{}'".format(
                 backing_up_env, crontab_expression),
             'resources': [('veil_installer.component_resource', {

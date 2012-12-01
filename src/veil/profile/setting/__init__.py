@@ -4,7 +4,7 @@ with veil_component.init_component(__name__):
     from veil_installer import *
     from veil.environment import *
     from veil.utility.setting import *
-    from veil.environment.remote_guard_setting import remote_guard_program
+    from veil.environment.guard_setting import guard_program
     from veil.backend.database.postgresql_setting import postgresql_program
     from veil.backend.redis_setting import redis_program
     from veil.backend.queue_setting import queue_program
