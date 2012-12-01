@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.environment import *
-from veil_installer import *
+from veil.profile.installer import *
 
 @composite_installer
 def resweb_resource(resweb_host, resweb_port, queue_host, queue_port):

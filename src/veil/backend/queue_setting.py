@@ -3,6 +3,7 @@ from veil_installer import *
 from veil.model.collection import *
 from veil.environment import *
 from veil.backend.redis_setting import redis_program
+from veil.server.python import *
 
 
 def queue_program(host, port):

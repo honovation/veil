@@ -1,13 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-import os
-import contextlib
-import time
-import logging
-from veil.utility.shell import *
-from veil.environment import *
-from veil.utility.setting import *
-from veil.utility.path import *
-from veil_installer import *
+from veil.profile.installer import *
 
 LOGGER = logging.getLogger(__name__)
 

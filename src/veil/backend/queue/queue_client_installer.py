@@ -1,7 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil_installer import *
-from veil.environment import *
-from veil.utility.setting import *
+from veil.profile.installer import *
 
 @composite_installer
 def queue_client_resource(type, host, port):

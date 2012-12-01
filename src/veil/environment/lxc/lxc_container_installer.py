@@ -1,7 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-import os
-import logging
-from veil_installer import *
+from veil.profile.installer import *
 from .lxc_container_user_installer import lxc_container_user_resource
 from .lxc_container_user_installer import lxc_container_user_password_resource
 from .lxc_container_user_installer import lxc_container_user_group_resource

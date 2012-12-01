@@ -1,3 +1,3 @@
 veil_installer.os_package_resource?libxml2-dev
 veil_installer.os_package_resource?libxslt1-dev
-veil_installer.python_package_resource?lxml
+veil.server.python.python_package_resource?lxml

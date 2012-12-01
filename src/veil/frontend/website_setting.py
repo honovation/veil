@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil_installer import *
 from veil.utility.setting import *
 from veil.environment import *
+from veil.server.python import *
 
 def website_programs(
         purpose, logging_levels, application_component_names, application_config,

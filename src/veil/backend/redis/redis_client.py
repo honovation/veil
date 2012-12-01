@@ -3,8 +3,8 @@ from redis.client import StrictRedis
 from logging import getLogger
 from veil_installer import *
 from veil.development.test import *
-from veil.environment import *
-from veil.utility.setting import *
+from .redis_client_installer import redis_client_resource
+from .redis_client_installer import load_redis_client_config
 
 LOGGER = getLogger(__name__)
 
@@ -29,18 +29,3 @@ def require_redis(purpose):
         executing_test.addCleanup(flush)
     return instances[purpose]
 
-
-@composite_installer
-def redis_client_resource(purpose, host, port):
-    resources = list(BASIC_LAYOUT_RESOURCES)
-    resources.append(
-        file_resource(path=VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')),
-            content=render_config(
-                'redis-client.cfg.j2', host=host, port=port)))
-    return resources
-
-
-def load_redis_client_config(purpose):
-    config = load_config_from(VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')), 'host', 'port')
-    config.port = int(config.port)
-    return config

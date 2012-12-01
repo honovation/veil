@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from .installer import composite_installer
-from .filesystem_installer import file_resource
+from veil_installer import *
 
 @composite_installer
 def veil_logging_level_config_resource(path, logging_levels):

@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import importlib
 import os
-from .installer import get_executing_composite_installer
+from veil_installer import *
 
 def render_config(template_path, **kwargs):
     return get_template_from_file(template_path).render(**kwargs)

@@ -1,9 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil_installer import *
-from veil.environment import *
-from veil.model.collection import *
-from veil.utility.setting import *
-from veil.development.test import *
+from veil.profile.installer import *
 from veil.model.event import *
 from .routing import *
 

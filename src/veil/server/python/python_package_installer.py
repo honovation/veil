@@ -1,9 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import os
-from .shell import shell_execute
-from .installer import atomic_installer
-from .installer import get_dry_run_result
+from veil_installer import *
 
 LOGGER = logging.getLogger(__name__)
 PIP_FREEZE_OUTPUT = None
