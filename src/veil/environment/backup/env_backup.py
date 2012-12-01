@@ -2,34 +2,18 @@ from __future__ import unicode_literals, print_function, division
 import fabric.api
 import datetime
 import os
-import logging
-import time
-from croniter.croniter import croniter
+from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
-from veil.utility.clock import get_current_timestamp
-
-LOGGER = logging.getLogger(__name__)
-
-@script('backup-env-at')
-def backup_env_at(backing_up_env, crontab_expression):
-    with open('{}/.backup-{}.pass'.format(os.getenv('HOME'), backing_up_env)) as f:
-        user, password = f.read().split(':')
-    fabric.api.user = user
-    fabric.api.password = password
-    while True:
-        now = get_current_timestamp()
-        next = croniter(crontab_expression, now).get_next()
-        delta = next - now
-        LOGGER.info('backup later: wake up in %(delta)s seconds', {
-            'delta': delta
-        })
-        time.sleep(delta)
-        backup_env(backing_up_env)
 
 
-@script('backup-env')
-def backup_env(backing_up_env):
+@script('create')
+def create_env_backup(backing_up_env):
+    return do_install(env_backup_resource(backing_up_env=backing_up_env))
+
+
+@atomic_installer
+def env_backup_resource(backing_up_env):
     for veil_server_name in sorted(get_veil_servers(backing_up_env).keys()):
         bring_down_server(backing_up_env, veil_server_name)
     timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')

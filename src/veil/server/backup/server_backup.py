@@ -1,12 +1,24 @@
 from __future__ import unicode_literals, print_function, division
 import os
+from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
-from veil.utility.shell import *
 from veil.server.supervisor import *
 
-@script('backup')
-def backup(backup_path):
+@script('create')
+def create_server_backup(backup_path):
+    do_install(server_backup_resource(backup_path=backup_path))
+
+
+@atomic_installer
+def server_backup_resource(backup_path):
+    is_backup_there = os.path.exists(backup_path)
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        dry_run_result['backup?{}'.format(backup_path)] = '-' if is_backup_there else 'BACKUP'
+        return
+    if is_backup_there:
+        return
     if is_supervisord_running():
         raise Exception('can not backup while supervisord is executing')
     backup_dir = os.path.dirname(backup_path)

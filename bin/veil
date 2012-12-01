@@ -107,11 +107,11 @@ case "$1" in
         ;;
     backup-env)
         shift
-        exec veil environment remote-guard backup-env $@
+        exec veil environment backup create $@
         ;;
     backup)
         shift
-        exec veil environment local-guard backup $@
+        exec veil server backup create $@
         ;;
     migrate)
         exec veil server in-service migrate
