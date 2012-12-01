@@ -103,7 +103,7 @@ case "$1" in
     deploy)
         shift
         veil_init
-        exec veil environment local-deployer deploy $@
+        exec veil server in-service deploy $@
         ;;
     backup-env)
         shift
@@ -114,7 +114,7 @@ case "$1" in
         exec veil environment local-guard backup $@
         ;;
     migrate)
-        exec veil environment local-deployer migrate
+        exec veil server in-service migrate
         ;;
     pull)
         exec veil development git pull
