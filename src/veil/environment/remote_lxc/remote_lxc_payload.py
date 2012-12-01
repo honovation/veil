@@ -50,7 +50,7 @@ def create_installer_file(installer_path, container_name, sequence_no, user_name
             sequence_no, sequence_no)
         f.write(
             """
-            veil.environment.local_lxc.lxc_container_ready_resource?{}
+            veil.environment.lxc.lxc_container_ready_resource?{}
             veil.environment.networking.iptables_rule_resource?table=nat&rule={}
             """.format(container_args, iptables_rule))
     os.chmod(installer_path, 0600)
