@@ -91,7 +91,7 @@ def import_script_handlers(argv):
             'veil.development.source_code_monitor',
             'veil.environment.local_deployer',
             'veil.environment.remote_deployer',
-            'veil.environment.setting',
+            'veil.utility.setting',
             'veil.environment.supervisor',
             'veil.environment.local_guard',
             'veil.environment.remote_guard',

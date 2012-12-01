@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 from veil_installer import *
 from veil.environment import *
-from veil.environment.setting import *
+from veil.utility.setting import *
 
 LOGGER = logging.getLogger(__name__)
 

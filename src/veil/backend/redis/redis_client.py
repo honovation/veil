@@ -4,7 +4,7 @@ from logging import getLogger
 from veil_installer import *
 from veil.development.test import *
 from veil.environment import *
-from veil.environment.setting import *
+from veil.utility.setting import *
 
 LOGGER = getLogger(__name__)
 

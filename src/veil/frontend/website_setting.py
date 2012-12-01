@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil_installer import *
-from veil.environment.setting import *
+from veil.utility.setting import *
 from veil.environment import *
 
 def website_programs(

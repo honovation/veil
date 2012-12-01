@@ -5,7 +5,7 @@ import time
 import logging
 from veil.utility.shell import *
 from veil.environment import *
-from veil.environment.setting import *
+from veil.utility.setting import *
 from veil.utility.path import *
 from veil_installer import *
 
