@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import os
-from veil_installer import *
-from veil.server.python import *
+from veil.profile.installer import *
 
 @atomic_installer
 def db2_driver_resource():

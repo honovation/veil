@@ -25,6 +25,8 @@ def to_supervisor_programs(veil_server_programs):
         }
         if 'run_as' in veil_server_program:
             supervisor_program['run_as'] = veil_server_program.run_as
+        if 'run_in_directory' in veil_server_program:
+            supervisor_program['run_in_directory'] = veil_server_program.run_in_directory
         if 'environment_variables' in veil_server_program:
             supervisor_program['environment_variables'] = format_environment_variables(
                 veil_server_program.environment_variables)

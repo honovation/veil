@@ -8,6 +8,7 @@ with veil_component.init_component(__name__):
     from .os_package_installer import is_os_package_installed
     from .os_service_installer import os_service_resource
     from .downloaded_file_installer import downloaded_file_resource
+    from .uncompressed_directory_installer import uncompressed_directory_resource
 
     __all__ = [
         # from filesystem_installer
@@ -18,5 +19,9 @@ with veil_component.init_component(__name__):
         os_package_resource.__name__,
         is_os_package_installed.__name__,
         # from os_service_installer
-        os_service_resource.__name__
+        os_service_resource.__name__,
+        # from downloaded_file_installer
+        downloaded_file_resource.__name__,
+        # from uncompressed_directory_installer
+        uncompressed_directory_resource.__name__
     ]

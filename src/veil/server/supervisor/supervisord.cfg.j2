@@ -52,6 +52,9 @@ user={{ program.run_as }}
 environment={{ program.environment_variables }}
 {% endif %}
 command={{ program.execute_command }}
+{% if 'run_in_directory' in program %}
+directory={{ program.run_in_directory }}
+{% endif %}
 {% if 'process_name' in program %}
 process_name={{ program.process_name }}
 {% else %}
