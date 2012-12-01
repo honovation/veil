@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import os
 from veil_installer import *
+from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
 PIP_FREEZE_OUTPUT = None

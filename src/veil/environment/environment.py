@@ -3,7 +3,7 @@ import getpass
 from os import getenv
 import os
 from veil.utility.path import *
-from veil_installer import directory_resource
+from veil.server.os import *
 
 def split_veil_server_code(code):
     env = code[:code.find('/')]

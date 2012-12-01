@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil_installer import *
-from veil.server.python import *
+from veil.profile.installer import *
 
 @composite_installer
 def pillow_resource():

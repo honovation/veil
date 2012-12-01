@@ -1,4 +1,4 @@
-veil_installer.os_package_resource?libaio1
-veil_installer.os_package_resource?libstdc++6-4.4-dev
-veil_installer.os_package_resource?libstdc++6-4.4-pic
-veil_installer.os_package_resource?libstdc++5
+veil.server.os.os_package_resource?libaio1
+veil.server.os.os_package_resource?libstdc++6-4.4-dev
+veil.server.os.os_package_resource?libstdc++6-4.4-pic
+veil.server.os.os_package_resource?libstdc++5

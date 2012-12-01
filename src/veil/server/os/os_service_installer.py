@@ -1,9 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 import os
 import logging
-from .shell import shell_execute
-from .installer import atomic_installer
-from .installer import get_dry_run_result
+from veil_installer import *
+from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
 

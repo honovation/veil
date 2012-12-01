@@ -3,8 +3,7 @@ import os
 import logging
 import grp
 import pwd
-from .installer import atomic_installer
-from .installer import get_dry_run_result
+from veil_installer import *
 
 LOGGER = logging.getLogger(__name__)
 
