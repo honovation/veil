@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil_installer import *
 from veil.environment import *
-from .supervisor_installer import supervisor_resource
+from veil.server.supervisor import supervisor_resource
 
 @composite_installer
 def veil_server_resource():

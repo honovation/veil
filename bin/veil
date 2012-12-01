@@ -71,22 +71,18 @@ case "$1" in
         shift
         find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
         find $VEIL_HOME -type f -name "*.pyc" -delete
-        exec veil environment supervisor up $@
+        exec veil server supervisor up $@
         ;;
     down)
-        exec veil environment supervisor down
+        exec veil server supervisor down
         ;;
     install)
         shift
         exec python -m veil_installer $@
         ;;
-    install-program)
-        shift
-        exec python -m veil_installer veil.environment.supervisor.program_resource?$@
-        ;;
     install-server)
         shift
-        exec python -m veil_installer veil.environment.supervisor.veil_server_resource $@
+        exec python -m veil_installer veil.server.in_service.veil_server_resource $@
         ;;
     deploy-env)
         shift

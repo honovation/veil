@@ -6,7 +6,7 @@ import time
 import sys
 import threading
 import functools
-from veil.environment.supervisor import *
+from veil.server.supervisor import *
 from veil.environment import *
 from veil.frontend.cli import *
 

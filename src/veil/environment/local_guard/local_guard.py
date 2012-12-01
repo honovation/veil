@@ -3,7 +3,7 @@ import os
 from veil.frontend.cli import *
 from veil.environment import *
 from veil.utility.shell import *
-from veil.environment.supervisor import *
+from veil.server.supervisor import *
 
 @script('backup')
 def backup(backup_path):

@@ -11,7 +11,6 @@ from .environment import CURRENT_USER
 from .environment import CURRENT_USER_GROUP
 from .environment import CURRENT_USER_HOME
 from .environment import BASIC_LAYOUT_RESOURCES
-from .environment import split_veil_server_code
 
 
 def veil_server(ip, deployed_via, programs, resources=(), supervisor_http_port=None):

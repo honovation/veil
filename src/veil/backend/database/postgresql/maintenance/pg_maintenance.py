@@ -3,11 +3,10 @@ import logging
 import sys
 import time
 import os
-from veil.utility.setting import *
 from veil.utility.shell import *
 from veil.frontend.cli import *
 from veil.environment import *
-from veil.environment.supervisor import *
+from veil.server.supervisor import *
 from veil.utility.clock import *
 from veil.utility.hash import *
 from veil.utility.path import *
