@@ -58,7 +58,9 @@ def create_installer_file(installer_path, container_name, sequence_no, user_name
 
 def install(installer_path):
     shell_execute('/opt/veil/bin/veil init', cwd='/opt/veil')
-    shell_execute('veil install veil_installer.installer_resource?{}'.format(installer_path), cwd='/opt/veil')
+    env = os.environ.copy()
+    env['VEIL_DEPENDENCY_MIRROR'] = 'http://200.200.200.25:8080'
+    shell_execute('veil install veil_installer.installer_resource?{}'.format(installer_path), cwd='/opt/veil', env=env)
 
 
 def shell_execute(command_line, **kwargs):
