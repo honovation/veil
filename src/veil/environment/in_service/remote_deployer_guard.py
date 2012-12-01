@@ -21,6 +21,8 @@ def main():
     elif 'delete-backup' == action:
         assert '-backup' in backup_dir
         shell_execute('rm -rf {}'.format(backup_dir))
+    elif 'purge-left-overs' == action:
+        purge_left_overs()
     elif 'rollback' == action:
         rollback(src_dir, backup_dir, veil_server)
     else:
@@ -50,6 +52,12 @@ def rollback(src_dir, backup_dir, veil_server):
         pass # do not care if it is there
     shell_execute('cp -r -p {} {}'.format(backup_dir, src_dir))
     shell_execute('veil :{} up --daemonize'.format(veil_server), cwd='{}/app'.format(src_dir))
+
+
+def purge_left_overs():
+    for name in os.listdir('/opt'):
+        if 'to-be-deleted' in name or name.endswith('-backup'):
+            shell_execute('rm -rf {}'.format('/opt/{}'.format(name)))
 
 
 def shell_execute(command_line, **kwargs):
