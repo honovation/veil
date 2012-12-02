@@ -1,0 +1,3 @@
+{% for log_file_path, redis_config in config.items() %}
+{{ log_file_path }} => {{ redis_config.host }}:{{ redis_config.port }}/{{ redis_config.key }}
+{% endfor %}
