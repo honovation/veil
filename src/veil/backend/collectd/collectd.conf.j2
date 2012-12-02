@@ -1,0 +1,19 @@
+BaseDir "{{ base_dir }}"
+
+LoadPlugin "logfile"
+<Plugin "logfile">
+  LogLevel "debug"
+  File "stdout"
+  Timestamp true
+</Plugin>
+
+LoadPlugin cpu
+LoadPlugin load
+
+LoadPlugin csv
+<Plugin "csv">
+  DataDir "stderr"
+  StoreRates true
+</Plugin>
+
+

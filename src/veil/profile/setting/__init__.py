@@ -14,6 +14,7 @@ with veil_component.init_component(__name__):
     from veil.backend.queue_setting import job_worker_program
     from veil.backend.bucket_setting import bucket_location
     from veil.backend.log_shipper_setting import log_shipper_program
+    from veil.backend.collectd_setting import collectd_program
     from veil.frontend.nginx_setting import nginx_program
     from veil.frontend.nginx_setting import nginx_server
     from veil.frontend.nginx_setting import nginx_reverse_proxy_location
