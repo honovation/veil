@@ -27,4 +27,4 @@ class LogShipper(object):
     def ship(self):
         lines = self.log_file.readlines()
         for line in lines:
-            self.redis_client.rpush(self.redis_key, line)
+            self.redis_client.rpush(self.redis_key, line.strip())
