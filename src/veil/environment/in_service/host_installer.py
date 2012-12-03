@@ -6,7 +6,7 @@ from veil.utility.path import *
 from veil.frontend.cli import *
 from veil.environment import *
 
-PAYLOAD = os.path.join(os.path.dirname(__file__), 'remote_lxc_payload.py')
+PAYLOAD = os.path.join(os.path.dirname(__file__), 'host_installer_payload.py')
 LOGGER = logging.getLogger(__name__)
 
 @script('provision-env')
