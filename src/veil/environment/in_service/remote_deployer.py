@@ -1,15 +1,23 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from veil.frontend.cli import *
-from veil.environment import *
-from veil.utility.shell import *
 import os
 import datetime
 import fabric.api
+from veil_installer import *
+from veil.frontend.cli import *
+from veil.environment import *
+from veil.utility.shell import *
+from .remote_lxc import provision_env
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'remote_deployer_payload.py')
 GUARD = os.path.join(os.path.dirname(__file__), 'remote_deployer_guard.py')
 LOGGER = logging.getLogger(__name__)
+
+@atomic_installer
+def veil_env_in_service_resource(name, config_dir):
+    provision_env(name, config_dir)
+    deploy_env(name)
+
 
 @script('deploy-env')
 def deploy_env(deploying_env):

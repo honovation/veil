@@ -41,10 +41,6 @@ function veil_init {
     if [ ! -f /usr/bin/veil ]; then
         sudo ln -s $VEIL_FRAMEWORK_HOME/bin/veil /usr/bin/veil
     fi
-    if [ ! -d $VEIL_HOME/src ]; then
-        mkdir $VEIL_HOME/src
-        touch $VEIL_HOME/src/__veil__.py
-    fi
     if [ ! -d $VEIL_HOME/env ]; then
         virtualenv env
         echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
@@ -98,7 +94,7 @@ case "$1" in
         ;;
     provision-env)
         shift
-        exec veil environment in-service provision-env $@
+        exec python -m veil_installer "veil.environment.in_service.veil_env_in_service_resource?name=$1&config_dir=$2"
         ;;
     deploy)
         shift
