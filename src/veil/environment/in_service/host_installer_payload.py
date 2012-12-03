@@ -52,8 +52,8 @@ def create_installer_file(installer_path, container_name, sequence_no, user_name
             """
             veil.environment.lxc.lxc_container_ready_resource?{}
             veil.environment.networking.iptables_rule_resource?table=nat&rule={}
-            veil.server.os.directory_resource?{}/.ssh
-            veil.server.os.directory_resource?/root/.ssh
+            veil.server.os.directory_resource?path={}/.ssh
+            veil.server.os.directory_resource?path=/root/.ssh
             """.format(container_args, iptables_rule, os.getenv('HOME')))
     os.chmod(installer_path, 0600)
 
