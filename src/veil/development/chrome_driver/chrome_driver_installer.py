@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import os
 from veil_installer import *
+from veil.utility.shell import *
 
 @atomic_installer
 def chrome_driver_resource():
