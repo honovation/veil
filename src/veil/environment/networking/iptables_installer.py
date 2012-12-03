@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 from veil_installer import *
+from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
 
