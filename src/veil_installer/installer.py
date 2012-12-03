@@ -8,7 +8,7 @@ import veil_component
 
 LOGGER = logging.getLogger(__name__)
 installed_resource_codes = set()
-executing_composite_installer = None
+executing_installers = []
 dry_run_result = None
 application_sub_resources = None
 installing = False
@@ -23,7 +23,11 @@ def atomic_installer(func):
             return '{}.{}'.format(
                 veil_component.get_leaf_component(func.__module__),
                 func.__name__), kwargs
-        return func(**kwargs)
+        try:
+            executing_installers.append(func)
+            return func(**kwargs)
+        finally:
+            executing_installers.pop()
 
     return wrapper
 
@@ -36,12 +40,10 @@ def composite_installer(func):
         global executing_composite_installer
 
         try:
-            if executing_composite_installer:
-                raise Exception('@composite_installer can not be nested')
-            executing_composite_installer = func
+            executing_installers.append(func)
             return func(**kwargs)
         finally:
-            executing_composite_installer = None
+            executing_installers.pop()
 
     return atomic_installer(wrapper)
 
@@ -75,9 +77,11 @@ def add_application_sub_resource(section, resource_provider):
     application_sub_resources[section] = resource_provider
 
 
-def get_executing_composite_installer():
-    return executing_composite_installer
+def get_executing_installer():
+    return executing_installers[-1]
 
+def install_resource(resource):
+    install_resources([resource])
 
 def install_resources(resources):
     global installing

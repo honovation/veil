@@ -65,7 +65,7 @@ def postgresql_cluster_resource(purpose, owner, owner_password):
         return
     old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.dirname()), capture=True).strip()
     shell_execute('chmod 777 {}'.format(pg_data_dir.dirname()))
-    do_install(file_resource(path='/tmp/pg-owner-password', content=owner_password))
+    install_resource(file_resource(path='/tmp/pg-owner-password', content=owner_password))
     try:
         shell_execute(
             'su {pg_data_owner} -c "initdb  -E {encoding} --locale=en_US.UTF-8 -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-owner-password {pg_data_dir}"'.format(

@@ -9,7 +9,7 @@ from veil.environment import *
 
 @script('create')
 def create_env_backup(backing_up_env):
-    return do_install(env_backup_resource(backing_up_env=backing_up_env))
+    return install_resource(env_backup_resource(backing_up_env=backing_up_env))
 
 
 @atomic_installer

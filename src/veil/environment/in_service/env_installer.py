@@ -16,10 +16,10 @@ LOGGER = logging.getLogger(__name__)
 @script('deploy-env')
 def deploy_env(veil_env_name, config_dir):
     update_branch(veil_env_name)
-    do_install(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
+    install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     for deploying_server_name in sorted(list_veil_servers(veil_env_name).keys()):
         remote_do('create-backup', veil_env_name, deploying_server_name)
-    do_install(veil_env_servers_resource(veil_env_name=veil_env_name))
+    install_resource(veil_env_servers_resource(veil_env_name=veil_env_name))
     for deploying_server_name in sorted(list_veil_servers(veil_env_name).keys()):
         remote_do('delete-backup', veil_env_name, deploying_server_name)
     tag_deploy(veil_env_name)

@@ -7,7 +7,7 @@ from veil.server.supervisor import *
 
 @script('create')
 def create_server_backup(backup_path):
-    do_install(server_backup_resource(backup_path=backup_path))
+    install_resource(server_backup_resource(backup_path=backup_path))
 
 
 @atomic_installer
