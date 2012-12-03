@@ -43,8 +43,8 @@ def purge_left_overs(veil_env_name):
 @composite_installer
 def veil_env_resource(veil_env_name, config_dir):
     resources = [
-        veil_env_containers_resource(veil_env_name, config_dir),
-        veil_env_servers_resource(veil_env_name)]
+        veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir),
+        veil_env_servers_resource(veil_env_name=veil_env_name)]
     return resources
 
 
