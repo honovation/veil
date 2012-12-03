@@ -35,32 +35,12 @@ def provision_server(provisioning_env, provisioning_server_name, config_dir):
         sequence_no, user_name, user_password))
     fabric.api.env.host_string = '{}@{}:{}22'.format(user_name, provisioning_server.host.ssh_ip, sequence_no)
     fabric.api.env.passwords[fabric.api.env.host_string] = user_password
-    try:
-        fabric.api.run('mkdir /home/{}/.ssh'.format(user_name))
-    except:
-        pass
-    fabric.api.put(
-        server_config_dir / 'id_rsa', '/home/{}/.ssh/id_rsa'.format(user_name),
-        use_sudo=True, mode=0600)
-    fabric.api.put(
-        server_config_dir / 'id_rsa.pub', '/home/{}/.ssh/id_rsa.pub'.format(user_name),
-        use_sudo=True, mode=0644)
     fabric.api.put(
         server_config_dir / 'known_hosts', '/home/{}/.ssh/known_hosts'.format(user_name),
         use_sudo=True, mode=0644)
     if (server_config_dir / 'config').exists():
         for f in (server_config_dir / 'config').listdir():
             fabric.api.put(f, '~', mode=0600)
-    try:
-        fabric.api.sudo('mkdir /root/.ssh')
-    except:
-        pass
-    fabric.api.put(
-        server_config_dir / 'id_rsa', '/root/.ssh/id_rsa',
-        use_sudo=True, mode=0600)
-    fabric.api.put(
-        server_config_dir / 'id_rsa.pub', '/root/.ssh/id_rsa.pub',
-        use_sudo=True, mode=0644)
     fabric.api.put(
         server_config_dir / 'known_hosts', '/root/.ssh/known_hosts',
         use_sudo=True, mode=0644)

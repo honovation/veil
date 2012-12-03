@@ -7,7 +7,7 @@ from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
 from veil.utility.shell import *
-from .remote_lxc import provision_env
+from .host_installer import provision_env
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'remote_deployer_payload.py')
 GUARD = os.path.join(os.path.dirname(__file__), 'remote_deployer_guard.py')
@@ -60,6 +60,7 @@ def guard_do(action, deploying_env, deploying_server_name):
 def deploy_server(deploying_env, deploying_server_name):
     deployed_via = get_remote_veil_server(deploying_env, deploying_server_name).deployed_via
     fabric.api.env.host_string = deployed_via
+    fabric.api.env.forward_agent = True
     fabric.api.put(PAYLOAD, '/opt/remote_deployer_payload.py', use_sudo=True, mode=0700)
     fabric.api.sudo('python /opt/remote_deployer_payload.py {} {} {}'.format(
         get_application_codebase(),

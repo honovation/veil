@@ -13,6 +13,7 @@ def main():
     veil_framework_home = '/opt/{}/veil'.format(veil_env)
     application_branch = 'env-{}'.format(veil_env)
 
+    fix_sudo_ssh_key_forwarding()
     install_git()
     clone_application(application_codebase, veil_home)
     pull_application(application_branch, veil_home)
@@ -20,6 +21,17 @@ def main():
     clone_veil(veil_framework_home)
     pull_veil(framework_version, veil_framework_home)
     deploy(veil_framework_home, veil_home, veil_env, veil_server_name)
+
+
+def fix_sudo_ssh_key_forwarding():
+    with open('/etc/sudoers') as f:
+        content =  f.read()
+    if 'SSH_AUTH_SOCK' in content:
+        return
+    print(green('fix /etc/sudoers to work with ssh key forwarding'))
+    with open('/etc/sudoers', 'r+') as f:
+        f.write('\nDefaults\tenv_keep+=SSH_AUTH_SOCK\n{}'.format(content))
+        f.truncate()
 
 
 def install_git():
@@ -60,7 +72,7 @@ def pull_veil(framework_version, veil_framework_home):
 
 def deploy(veil_framework_home, veil_home, veil_env, veil_server_name):
     env = os.environ.copy()
-    env['VEIL_DEPENDENCY_MIRROR'] = 'http://200.200.200.25:8080'
+#    env['VEIL_DEPENDENCY_MIRROR'] = 'http://200.200.200.25:8080'
     shell_execute('{}/bin/veil :{}/{} deploy'.format(
         veil_framework_home, veil_env, veil_server_name), cwd=veil_home, env=env)
 
