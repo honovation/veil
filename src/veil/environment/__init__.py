@@ -13,54 +13,61 @@ from .environment import CURRENT_USER_HOME
 from .environment import BASIC_LAYOUT_RESOURCES
 
 
-def veil_server(ip, deployed_via, programs, resources=(), supervisor_http_port=None):
+def veil_env(server_hosts, servers):
     from veil.model.collection import objectify
 
     return objectify({
-        'ip': ip,
-        'deployed_via': deployed_via,
+        'server_hosts': server_hosts,
+        'servers': servers
+    })
+
+
+def veil_server(hosted_on, sequence_no, programs, resources=(), supervisor_http_port=None):
+    from veil.model.collection import objectify
+
+    return objectify({
+        'hosted_on': hosted_on,
+        'sequence_no': sequence_no,
         'programs': programs,
         'resources': resources,
         'supervisor_http_port': supervisor_http_port
     })
 
 
-def veil_server_host(ssh_ip, ssh_port, servers):
+def veil_server_host(ssh_ip, ssh_port=22, resources=()):
     from veil.model.collection import objectify
 
     return objectify({
         'ssh_ip': ssh_ip,
         'ssh_port': ssh_port,
-        'servers': servers
+        'resources': resources
     })
 
 
-def get_veil_server_hosts(env):
-    return get_application().ENVIRONMENTS[env]
+def list_veil_servers(veil_env):
+    return get_application().ENVIRONMENTS[veil_env].servers
 
 
-def get_veil_servers(env):
-    hosts = get_application().ENVIRONMENTS[env].values()
-    servers = {}
-    for host in hosts:
-        servers.update(host.servers)
-    return servers
+def list_veil_server_hosts(veil_env):
+    return get_application().ENVIRONMENTS[veil_env].server_hosts
+
+
+def get_veil_server_host(veil_env, veil_server_host_name):
+    return list_veil_server_hosts(veil_env)[veil_server_host_name]
+
+
+def get_veil_server(veil_env, veil_server_name):
+    return list_veil_servers(veil_env)[veil_server_name]
 
 
 def get_current_veil_server():
-    return get_veil_servers(VEIL_ENV)[VEIL_SERVER_NAME]
+    return get_veil_server(VEIL_ENV, VEIL_SERVER_NAME)
 
 
-def get_remote_veil_server(veil_env, veil_server_name):
-    from veil.model.collection import objectify
-
-    for host_name, host in get_application().ENVIRONMENTS[veil_env].items():
-        for server_name, server in host.servers.items():
-            if server_name == veil_server_name:
-                host = dict(host, name=host_name)
-                host.pop('servers')
-                return objectify(dict(server, host=host))
-    raise Exception('not found')
+def get_veil_server_host_string(veil_env, veil_server_name):
+    veil_server_host_name = get_veil_server(veil_env, veil_server_name).hosted_on
+    veil_server_host = get_veil_server_host(veil_env, veil_server_host_name)
+    return '{}:{}'.format(veil_server_host.ssh_ip, veil_server_host.ssh_port)
 
 
 def get_application_codebase():

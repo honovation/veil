@@ -14,32 +14,32 @@ def create_env_backup(backing_up_env):
 
 @atomic_installer
 def env_backup_resource(backing_up_env):
-    for veil_server_name in sorted(get_veil_servers(backing_up_env).keys()):
+    for veil_server_name in sorted(list_veil_servers(backing_up_env).keys()):
         bring_down_server(backing_up_env, veil_server_name)
     timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    for veil_server_name in sorted(get_veil_servers(backing_up_env).keys()):
+    for veil_server_name in sorted(list_veil_servers(backing_up_env).keys()):
         if '@guard' != veil_server_name:
             backup_server(backing_up_env, veil_server_name, timestamp)
-    for veil_server_name in sorted(get_veil_servers(backing_up_env).keys()):
+    for veil_server_name in sorted(list_veil_servers(backing_up_env).keys()):
         bring_up_server(backing_up_env, veil_server_name)
 
 
 def bring_down_server(backing_up_env, veil_server_name):
-    deployed_via = get_remote_veil_server(backing_up_env, veil_server_name).deployed_via
+    deployed_via = get_veil_server_host_string(backing_up_env, veil_server_name)
     fabric.api.env.host_string = deployed_via
     with fabric.api.cd('/opt/{}/app'.format(backing_up_env)):
         fabric.api.sudo('veil :{}/{} down'.format(backing_up_env, veil_server_name))
 
 
 def bring_up_server(backing_up_env, veil_server_name):
-    deployed_via = get_remote_veil_server(backing_up_env, veil_server_name).deployed_via
+    deployed_via = get_veil_server_host_string(backing_up_env, veil_server_name)
     fabric.api.env.host_string = deployed_via
     with fabric.api.cd('/opt/{}/app'.format(backing_up_env)):
         fabric.api.sudo('veil :{}/{} up --daemonize'.format(backing_up_env, veil_server_name))
 
 
 def backup_server(backing_up_env, veil_server_name, timestamp):
-    deployed_via = get_remote_veil_server(backing_up_env, veil_server_name).deployed_via
+    deployed_via = get_veil_server_host_string(backing_up_env, veil_server_name)
     fabric.api.env.host_string = deployed_via
     backup_path = '/backup/{}-{}-{}.tar.gz'.format(
         backing_up_env, veil_server_name, timestamp)

@@ -22,34 +22,33 @@ def veil_env_in_service_resource(name, config_dir):
 @script('deploy-env')
 def deploy_env(deploying_env):
     update_branch(deploying_env)
-    for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
+    for deploying_server_name in sorted(list_veil_servers(deploying_env).keys()):
         guard_do('create-backup', deploying_env, deploying_server_name)
-    for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
+    for deploying_server_name in sorted(list_veil_servers(deploying_env).keys()):
         deploy_server(deploying_env, deploying_server_name)
-    for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
+    for deploying_server_name in sorted(list_veil_servers(deploying_env).keys()):
         guard_do('delete-backup', deploying_env, deploying_server_name)
     tag_deploy(deploying_env)
 
 
 @script('rollback-env')
 def rollback_env(deploying_env):
-    for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
+    for deploying_server_name in sorted(list_veil_servers(deploying_env).keys()):
         guard_do('check-backup', deploying_env, deploying_server_name)
-    for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
+    for deploying_server_name in sorted(list_veil_servers(deploying_env).keys()):
         guard_do('rollback', deploying_env, deploying_server_name)
-    for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
+    for deploying_server_name in sorted(list_veil_servers(deploying_env).keys()):
         guard_do('delete-backup', deploying_env, deploying_server_name)
 
 
 @script('purge-left-overs')
 def purge_left_overs(deploying_env):
-    for deploying_server_name in sorted(get_veil_servers(deploying_env).keys()):
+    for deploying_server_name in sorted(list_veil_servers(deploying_env).keys()):
         guard_do('purge-left-overs', deploying_env, deploying_server_name)
 
 
 def guard_do(action, deploying_env, deploying_server_name):
-    deployed_via = get_remote_veil_server(deploying_env, deploying_server_name).deployed_via
-    fabric.api.env.host_string = deployed_via
+    fabric.api.env.host_string = get_veil_server_host_string(deploying_env, deploying_server_name)
     fabric.api.put(GUARD, '/opt/remote_deployer_guard.py', use_sudo=True, mode=0700)
     fabric.api.sudo('python /opt/remote_deployer_guard.py {} {} {}'.format(
         action,
@@ -58,8 +57,7 @@ def guard_do(action, deploying_env, deploying_server_name):
 
 
 def deploy_server(deploying_env, deploying_server_name):
-    deployed_via = get_remote_veil_server(deploying_env, deploying_server_name).deployed_via
-    fabric.api.env.host_string = deployed_via
+    fabric.api.env.host_string = get_veil_server_host_string(deploying_env, deploying_server_name)
     fabric.api.env.forward_agent = True
     fabric.api.put(PAYLOAD, '/opt/remote_deployer_payload.py', use_sudo=True, mode=0700)
     fabric.api.sudo('python /opt/remote_deployer_payload.py {} {} {}'.format(
