@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import os
 import fabric.api
+import fabric.state
 import tempfile
 from veil_installer import *
 from veil.utility.path import *
@@ -28,8 +29,8 @@ def veil_env_containers_resource(veil_env_name, config_dir):
 def veil_server_container_resource(veil_env_name, veil_server_name):
     veil_server = get_veil_server(veil_env_name, veil_server_name)
     veil_host = get_veil_host(veil_env_name, veil_server.hosted_on)
-    fabric.api.env.host_string = '{}:{}'.format(veil_host.ssh_ip, veil_host.ssh_port)
-    fabric.api.env.user = veil_host.ssh_user
+    fabric.state.env.host_string = '{}:{}'.format(veil_host.ssh_ip, veil_host.ssh_port)
+    fabric.state.env.user = veil_host.ssh_user
     veil_server_user_name = veil_host.ssh_user
     installer_file_content = render_installer_file(
         veil_env_name, veil_server_name, veil_server.sequence_no, veil_server_user_name)
@@ -92,10 +93,11 @@ def veil_server_container_file_resource(local_path, veil_env_name, veil_server_n
 
 
 def remote_get_content(remote_path):
-    temp_file_path = tempfile.mktemp()
-    fabric.api.get(remote_path, temp_file_path)
-    with open(temp_file_path) as f:
-        return f.read()
+    fabric.state.env.warn_only = True
+    try:
+        return fabric.api.run('cat {}'.format(remote_path))
+    finally:
+        fabric.state.env.warn_only = False
 
 
 def remote_put_content(remote_path, content, **kwargs):
