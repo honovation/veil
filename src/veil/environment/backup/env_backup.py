@@ -25,21 +25,21 @@ def env_backup_resource(backing_up_env):
 
 
 def bring_down_server(backing_up_env, veil_server_name):
-    deployed_via = get_veil_server_host_string(backing_up_env, veil_server_name)
+    deployed_via = get_veil_server_deploys_via(backing_up_env, veil_server_name)
     fabric.api.env.host_string = deployed_via
     with fabric.api.cd('/opt/{}/app'.format(backing_up_env)):
         fabric.api.sudo('veil :{}/{} down'.format(backing_up_env, veil_server_name))
 
 
 def bring_up_server(backing_up_env, veil_server_name):
-    deployed_via = get_veil_server_host_string(backing_up_env, veil_server_name)
+    deployed_via = get_veil_server_deploys_via(backing_up_env, veil_server_name)
     fabric.api.env.host_string = deployed_via
     with fabric.api.cd('/opt/{}/app'.format(backing_up_env)):
         fabric.api.sudo('veil :{}/{} up --daemonize'.format(backing_up_env, veil_server_name))
 
 
 def backup_server(backing_up_env, veil_server_name, timestamp):
-    deployed_via = get_veil_server_host_string(backing_up_env, veil_server_name)
+    deployed_via = get_veil_server_deploys_via(backing_up_env, veil_server_name)
     fabric.api.env.host_string = deployed_via
     backup_path = '/backup/{}-{}-{}.tar.gz'.format(
         backing_up_env, veil_server_name, timestamp)

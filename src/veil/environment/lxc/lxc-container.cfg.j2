@@ -1,8 +1,8 @@
 lxc.network.type=veth
 lxc.network.link=lxcbr0
 lxc.network.flags=up
-lxc.network.hwaddr = 00:16:3e:73:bb:{{ sequence_no }}
-lxc.network.ipv4 = 10.0.3.{{ sequence_no }}
+lxc.network.hwaddr = {{ mac_address }}
+lxc.network.ipv4 = {{ ip_address }}
 lxc.utsname = {{ name }}
 
 lxc.devttydir = lxc

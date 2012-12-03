@@ -34,12 +34,13 @@ def veil_server(hosted_on, sequence_no, programs, resources=(), supervisor_http_
     })
 
 
-def veil_server_host(ssh_ip, ssh_port=22, resources=()):
+def veil_host(ssh_ip, ssh_port=22, ssh_user='dejavu', resources=()):
     from veil.model.collection import objectify
 
     return objectify({
         'ssh_ip': ssh_ip,
         'ssh_port': ssh_port,
+        'ssh_user': ssh_user,
         'resources': resources
     })
 
@@ -48,12 +49,12 @@ def list_veil_servers(veil_env):
     return get_application().ENVIRONMENTS[veil_env].servers
 
 
-def list_veil_server_hosts(veil_env):
+def list_veil_hosts(veil_env):
     return get_application().ENVIRONMENTS[veil_env].server_hosts
 
 
-def get_veil_server_host(veil_env, veil_server_host_name):
-    return list_veil_server_hosts(veil_env)[veil_server_host_name]
+def get_veil_host(veil_env, veil_host_name):
+    return list_veil_hosts(veil_env)[veil_host_name]
 
 
 def get_veil_server(veil_env, veil_server_name):
@@ -64,10 +65,14 @@ def get_current_veil_server():
     return get_veil_server(VEIL_ENV, VEIL_SERVER_NAME)
 
 
-def get_veil_server_host_string(veil_env, veil_server_name):
-    veil_server_host_name = get_veil_server(veil_env, veil_server_name).hosted_on
-    veil_server_host = get_veil_server_host(veil_env, veil_server_host_name)
-    return '{}:{}'.format(veil_server_host.ssh_ip, veil_server_host.ssh_port)
+def get_veil_server_deploys_via(veil_env, veil_server_name):
+    veil_server = get_veil_server(veil_env, veil_server_name)
+    veil_host_name = veil_server.hosted_on
+    veil_host = get_veil_host(veil_env, veil_host_name)
+    return '{}@{}:{}'.format(
+        veil_host.ssh_user,
+        veil_host.ssh_ip,
+        '{}22'.format(veil_server.sequence_no))
 
 
 def get_application_codebase():

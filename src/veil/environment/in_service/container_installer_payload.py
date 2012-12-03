@@ -7,22 +7,13 @@ import subprocess
 
 
 def main():
-    container_name = sys.argv[1]
-    sequence_no = sys.argv[2]
-    user_name = sys.argv[3]
-    user_password = sys.argv[4]
-    installer_path = '/opt/INSTALLER-{}'.format(container_name)
+    installer_path = sys.argv[1]
 
     install_git()
     clone_veil()
     pull_veil()
-    create_installer_file(
-        installer_path=installer_path,
-        container_name=container_name,
-        sequence_no=sequence_no,
-        user_name=user_name,
-        user_password=user_password)
     install(installer_path)
+    mark_installed(installer_path)
 
 
 def install_git():
@@ -39,30 +30,15 @@ def pull_veil():
     shell_execute('git pull', cwd='/opt/veil')
 
 
-def create_installer_file(installer_path, container_name, sequence_no, user_name, user_password):
-    with open(installer_path, 'w') as f:
-        container_args = '&'.join([
-            'container_name={}'.format(container_name),
-            'sequence_no={}'.format(sequence_no),
-            'user_name={}'.format(user_name),
-            'user_password={}'.format(user_password)])
-        iptables_rule = 'PREROUTING -p tcp -m tcp --dport {}22 -j DNAT --to-destination 10.0.3.{}:22'.format(
-            sequence_no, sequence_no)
-        f.write(
-            """
-            veil.environment.lxc.lxc_container_ready_resource?{}
-            veil.environment.networking.iptables_rule_resource?table=nat&rule={}
-            veil.server.os.directory_resource?path={}/.ssh
-            veil.server.os.directory_resource?path=/root/.ssh
-            """.format(container_args, iptables_rule, os.getenv('HOME')))
-    os.chmod(installer_path, 0600)
-
-
 def install(installer_path):
     shell_execute('/opt/veil/bin/veil init', cwd='/opt/veil')
     env = os.environ.copy()
-#    env['VEIL_DEPENDENCY_MIRROR'] = 'http://10.0.3.254:80'
+    #    env['VEIL_DEPENDENCY_MIRROR'] = 'http://10.0.3.254:80'
     shell_execute('veil install veil_installer.installer_resource?{}'.format(installer_path), cwd='/opt/veil', env=env)
+
+
+def mark_installed(installer_path):
+    shell_execute('mv {} {}.installed'.format(installer_path, installer_path))
 
 
 def shell_execute(command_line, **kwargs):

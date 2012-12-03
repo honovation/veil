@@ -27,15 +27,6 @@ def lxc_container_user_resource(container_name, user_name):
 
 
 @atomic_installer
-def lxc_container_user_password_resource(container_name, user_name, user_password):
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        return
-    rootfs_path = '/var/lib/lxc/{}/rootfs'.format(container_name)
-    unsafe_call('echo {}:{} | chroot {} chpasswd'.format(user_name, user_password, rootfs_path))
-
-
-@atomic_installer
 def lxc_container_user_group_resource(container_name, user_name, group_name):
     rootfs_path = '/var/lib/lxc/{}/rootfs'.format(container_name)
     is_installed = group_name in unsafe_call('chroot {} groups {}'.format(rootfs_path, user_name))
