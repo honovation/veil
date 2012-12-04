@@ -33,7 +33,7 @@ def pull_veil():
 def install(installer_path):
     shell_execute('/opt/veil/bin/veil init', cwd='/opt/veil')
     env = os.environ.copy()
-    #    env['VEIL_DEPENDENCY_MIRROR'] = 'http://10.0.3.254:80'
+    env['VEIL_DEPENDENCY_MIRROR'] = 'http://10.0.3.99:80'
     shell_execute('veil install veil_installer.installer_resource?{}'.format(installer_path), cwd='/opt/veil', env=env)
 
 
