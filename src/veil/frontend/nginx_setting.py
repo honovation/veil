@@ -12,12 +12,14 @@ def nginx_program(servers):
     })
 
 
-def nginx_server(server_name, listen, locations, upstreams=None):
+def nginx_server(server_name, listen, locations, upstreams=None, error_page=None, error_page_dir=None):
     return {
         server_name: {
             'listen': listen,
             'locations': locations,
-            'upstreams': upstreams
+            'upstreams': upstreams,
+            'error_page': error_page,
+            'error_page_dir': error_page_dir
         }
     }
 

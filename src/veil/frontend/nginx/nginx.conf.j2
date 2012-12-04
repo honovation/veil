@@ -50,6 +50,17 @@ http {
                 {% endfor %}
             {% elif 'upstreams' == key %}
                 {# skip this #}
+            {% elif 'error_page_dir' == key %}
+                {# skip #}
+            {% elif 'error_page' == key %}
+                {% if value %}
+                    {% for error_number, error_page_name in value.items() %}
+                        error_page {{ error_number }} /{{ error_page_name }};
+                        location  /{{ error_page_name }} {
+                            root {{ server_properties['error_page_dir'] }};
+                            }
+                    {% endfor %}
+                {% endif %}
             {% else %}
                 {{ key }} {{ value }};
             {% endif %}
