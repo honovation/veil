@@ -57,7 +57,7 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
         veil_server_container_file_resource(
             local_path=server_config_dir / 'sudoers', veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/etc/sudoers',
-            owner='root', owner_group='root', mode=0600),
+            owner='root', owner_group='root', mode=0440),
         veil_server_container_directory_resource(
             veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/home/{}/.ssh'.format(veil_server_user_name),
