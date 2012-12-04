@@ -5,7 +5,7 @@ import os
 from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
-
+from veil.utility.shell import *
 
 @script('create')
 def create_env_backup():
@@ -14,6 +14,10 @@ def create_env_backup():
 
 @atomic_installer
 def env_backup_resource():
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        dry_run_result['env_backup'] = 'BACKUP'
+        return
     veil_server_names = sorted(list_veil_servers(VEIL_ENV).keys())
     veil_server_names.remove('@guard')
     for veil_server_name in veil_server_names:
@@ -22,6 +26,11 @@ def env_backup_resource():
         timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         for veil_server_name in veil_server_names:
             backup_server(VEIL_ENV, veil_server_name, timestamp)
+        try:
+            shell_execute('rm /backup/latest')
+        except:
+            pass
+        shell_execute('ln -s /backup/{} /backup/latest'.format(timestamp))
     finally:
         for veil_server_name in veil_server_names:
             bring_up_server(VEIL_ENV, veil_server_name)
