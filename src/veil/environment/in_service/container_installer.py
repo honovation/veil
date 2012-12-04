@@ -81,7 +81,7 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644)]
     if (server_config_dir / 'config').exists():
         for local_path in (server_config_dir / 'config').listdir():
-            remote_path = 'home/{}/{}'.format(veil_server_user_name, local_path.name)
+            remote_path = '/home/{}/{}'.format(veil_server_user_name, local_path.name)
             resources.append(veil_server_container_file_resource(
                 local_path=local_path, veil_env_name=veil_env_name,
                 veil_server_name=veil_server_name, remote_path=remote_path,
