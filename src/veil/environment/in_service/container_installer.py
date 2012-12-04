@@ -76,6 +76,10 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
             local_path=local_path, veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/home/{}/.ssh/known_hosts'.format(veil_server_user_name),
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644))
+        resources.append(veil_server_container_directory_resource(
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path='/root/.ssh',
+            owner='root', owner_group='root', mode=0755))
         resources.append(veil_server_container_file_resource(
             local_path=local_path, veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/root/.ssh/known_hosts',
@@ -94,7 +98,7 @@ def veil_server_container_directory_resource(
         return
     fabric.state.env.warn_only = True
     try:
-        fabric.api.sudo('mkdir -m {:o} {}'.format(mode, '{}/{}'.format(container_rootfs_path, remote_path)))
+        fabric.api.sudo('mkdir -m {:o} {}'.format(mode, '{}{}'.format(container_rootfs_path, remote_path)))
     finally:
         fabric.state.env.warn_only = False
     fabric.api.sudo('chroot {} chown {} {}'.format(container_rootfs_path, owner, remote_path))
@@ -105,7 +109,7 @@ def veil_server_container_directory_resource(
 def veil_server_container_file_resource(
         local_path, veil_env_name, veil_server_name, remote_path, owner, owner_group, mode):
     container_rootfs_path = '/var/lib/lxc/{}-{}/rootfs'.format(veil_env_name, veil_server_name)
-    full_remote_path = '{}/{}'.format(container_rootfs_path, remote_path)
+    full_remote_path = '{}{}'.format(container_rootfs_path, remote_path)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_server_container_file?{}-{}&path={}'.format(veil_env_name, veil_server_name, remote_path)
