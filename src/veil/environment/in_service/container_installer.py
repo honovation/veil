@@ -53,43 +53,67 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
     veil_server = get_veil_server(veil_env_name, veil_server_name)
     veil_host = get_veil_host(veil_env_name, veil_server.hosted_on)
     veil_server_user_name = veil_host.ssh_user
-    resources = [veil_server_container_file_resource(
-        local_path=server_config_dir / 'authorized_keys',
-        veil_env_name=veil_env_name, veil_server_name=veil_server_name,
-        remote_path='/home/{}/.ssh/authorized_keys'.format(veil_server_user_name))]
+    resources = [
+        veil_server_container_directory_resource(
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path='/home/{}/.ssh'.format(veil_server_user_name),
+            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0755),
+        veil_server_container_file_resource(
+            local_path=server_config_dir / 'authorized_keys',
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path='/home/{}/.ssh/authorized_keys'.format(veil_server_user_name),
+            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644)]
     if (server_config_dir / 'config').exists():
         for local_path in (server_config_dir / 'config').listdir():
             remote_path = 'home/{}/{}'.format(veil_server_user_name, local_path.name)
             resources.append(veil_server_container_file_resource(
                 local_path=local_path, veil_env_name=veil_env_name,
-                veil_server_name=veil_server_name, remote_path=remote_path))
+                veil_server_name=veil_server_name, remote_path=remote_path,
+                owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
     if (server_config_dir / 'known_hosts').exists():
         local_path = server_config_dir / 'known_hosts'
         resources.append(veil_server_container_file_resource(
             local_path=local_path, veil_env_name=veil_env_name, veil_server_name=veil_server_name,
-            remote_path='/home/{}/.ssh/known_hosts'.format(veil_server_user_name)))
+            remote_path='/home/{}/.ssh/known_hosts'.format(veil_server_user_name),
+            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644))
         resources.append(veil_server_container_file_resource(
             local_path=local_path, veil_env_name=veil_env_name, veil_server_name=veil_server_name,
-            remote_path='/root/.ssh/known_hosts'))
+            remote_path='/root/.ssh/known_hosts',
+            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644))
     return resources
 
 
 @atomic_installer
-def veil_server_container_file_resource(local_path, veil_env_name, veil_server_name, remote_path):
+def veil_server_container_directory_resource(
+        veil_env_name, veil_server_name, remote_path, owner, owner_group, mode):
+    container_rootfs_path = '/var/lib/lxc/{}-{}/rootfs'.format(veil_env_name, veil_server_name)
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        key = 'veil_server_container_directory?{}-{}&path={}'.format(veil_env_name, veil_server_name, remote_path)
+        dry_run_result[key] = 'INSTALL'
+        return
+    fabric.state.env.warn_only = True
+    try:
+        fabric.api.sudo('mkdir -m {:o} {}'.format(mode, '{}/{}'.format(container_rootfs_path, remote_path)))
+    finally:
+        fabric.state.env.warn_only = False
+    fabric.api.sudo('chroot {} chown {} {}'.format(container_rootfs_path, owner, remote_path))
+    fabric.api.sudo('chroot {} chgrp {} {}'.format(container_rootfs_path, owner_group, remote_path))
+
+
+@atomic_installer
+def veil_server_container_file_resource(
+        local_path, veil_env_name, veil_server_name, remote_path, owner, owner_group, mode):
     container_rootfs_path = '/var/lib/lxc/{}-{}/rootfs'.format(veil_env_name, veil_server_name)
     full_remote_path = '{}/{}'.format(container_rootfs_path, remote_path)
-    local_content = local_path.text()
-    remote_content = remote_get_content(full_remote_path)
-    is_installed = local_content == remote_content
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_server_container_file?{}-{}&path={}'.format(veil_env_name, veil_server_name, remote_path)
-        dry_run_result[key] = '-' if is_installed else 'INSTALL'
+        dry_run_result[key] = 'INSTALL'
         return
-    if is_installed:
-        return
-    fabric.api.sudo('mkdir -p -m 0755 {}'.format(os.path.dirname(full_remote_path)))
-    fabric.api.put(local_path, full_remote_path, use_sudo=True, mode=0600)
+    fabric.api.put(local_path, full_remote_path, use_sudo=True, mode=mode)
+    fabric.api.sudo('chroot {} chown {} {}'.format(container_rootfs_path, owner, remote_path))
+    fabric.api.sudo('chroot {} chgrp {} {}'.format(container_rootfs_path, owner_group, remote_path))
 
 
 def remote_get_content(remote_path):
