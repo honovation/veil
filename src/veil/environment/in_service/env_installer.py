@@ -43,7 +43,7 @@ def purge_left_overs(veil_env_name):
 
 def remote_do(action, veil_env_name, veil_server_name):
     fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, veil_server_name)
-    fabric.api.put(PAYLOAD, '/opt/env_installer_payload.py', use_sudo=True, mode=0700)
+    fabric.api.put(PAYLOAD, '/opt/env_installer_payload.py', use_sudo=True, mode=0600)
     fabric.api.sudo('python /opt/env_installer_payload.py {} {} {}'.format(
         action,
         veil_env_name,
