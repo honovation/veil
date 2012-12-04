@@ -1,32 +1,25 @@
 from __future__ import unicode_literals, print_function, division
 import os
 from veil.profile.installer import *
-from .lxc_container_user_installer import lxc_container_user_resource
-from .lxc_container_user_installer import lxc_container_user_group_resource
 
 LOGGER = logging.getLogger(__name__)
 
 @composite_installer
-def lxc_container_ready_resource(container_name, mac_address, ip_address, user_name):
+def lxc_container_resource(container_name, mac_address, ip_address):
     resources = [
         os_package_resource(name='lxc'),
         file_resource(path='/etc/default/lxc',
             content=render_config('lxc.cfg.j2', mirror='http://cn.archive.ubuntu.com/ubuntu')),
-        lxc_container_resource(name=container_name),
+        lxc_container_created_resource(name=container_name),
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name), content=render_config(
                 'lxc-container.cfg.j2', name=container_name,
-                mac_address=mac_address, ip_address=ip_address)),
-        lxc_container_user_resource(
-            container_name=container_name, user_name=user_name),
-        lxc_container_user_group_resource(
-            container_name=container_name, user_name=user_name, group_name='sudo'),
-        lxc_container_in_service_resource(name=container_name)
+                mac_address=mac_address, ip_address=ip_address))
     ]
     return resources
 
 
 @atomic_installer
-def lxc_container_resource(name):
+def lxc_container_created_resource(name):
     is_installed = os.path.exists('/var/lib/lxc/{}'.format(name))
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:

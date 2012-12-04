@@ -1,2 +1,6 @@
-veil.environment.lxc.lxc_container_ready_resource?container_name={{ container_name }}&mac_address={{ mac_address }}&ip_address={{ ip_address }}&user_name={{ user_name }}
+veil.environment.lxc.lxc_container_resource?container_name={{ container_name }}&mac_address={{ mac_address }}&ip_address={{ ip_address }
+veil.environment.lxc.lxc_container_user_resource?container_name={{ container_name }}&user_name={{ user_name }}
+veil.environment.lxc.lxc_container_user_group_resource?container_name={{ container_name }}&user_name={{ user_name }}&group_name=sudo
+veil.environment.lxc.lxc_container_timezone_resource?container_name={{ container_name }}&timezone=Asia/Shanghai
+veil.environment.lxc.lxc_container_in_service_resource?{{ container_name }}
 veil.environment.networking.iptables_rule_resource?table=nat&rule={{ iptables_rule }}
