@@ -54,6 +54,10 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
     veil_host = get_veil_host(veil_env_name, veil_server.hosted_on)
     veil_server_user_name = veil_host.ssh_user
     resources = [
+        veil_server_container_file_resource(
+            local_path=server_config_dir / 'sudoers', veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path='/etc/sudoers',
+            owner='root', owner_group='root', mode=0600),
         veil_server_container_directory_resource(
             veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/home/{}/.ssh'.format(veil_server_user_name),
@@ -62,6 +66,18 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
             local_path=server_config_dir / 'authorized_keys',
             veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/home/{}/.ssh/authorized_keys'.format(veil_server_user_name),
+            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644),
+        veil_server_container_file_resource(
+            local_path=server_config_dir / 'known_hosts', veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path='/home/{}/.ssh/known_hosts'.format(veil_server_user_name),
+            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644),
+        veil_server_container_directory_resource(
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path='/root/.ssh',
+            owner='root', owner_group='root', mode=0755),
+        veil_server_container_file_resource(
+            local_path=server_config_dir / 'known_hosts', veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path='/root/.ssh/known_hosts',
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644)]
     if (server_config_dir / 'config').exists():
         for local_path in (server_config_dir / 'config').listdir():
@@ -70,20 +86,6 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
                 local_path=local_path, veil_env_name=veil_env_name,
                 veil_server_name=veil_server_name, remote_path=remote_path,
                 owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
-    if (server_config_dir / 'known_hosts').exists():
-        local_path = server_config_dir / 'known_hosts'
-        resources.append(veil_server_container_file_resource(
-            local_path=local_path, veil_env_name=veil_env_name, veil_server_name=veil_server_name,
-            remote_path='/home/{}/.ssh/known_hosts'.format(veil_server_user_name),
-            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644))
-        resources.append(veil_server_container_directory_resource(
-            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
-            remote_path='/root/.ssh',
-            owner='root', owner_group='root', mode=0755))
-        resources.append(veil_server_container_file_resource(
-            local_path=local_path, veil_env_name=veil_env_name, veil_server_name=veil_server_name,
-            remote_path='/root/.ssh/known_hosts',
-            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644))
     return resources
 
 
