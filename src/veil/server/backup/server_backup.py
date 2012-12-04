@@ -4,6 +4,7 @@ from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
 from veil.server.supervisor import *
+from veil.utility.shell import *
 
 @script('create')
 def create_server_backup(backup_path):
