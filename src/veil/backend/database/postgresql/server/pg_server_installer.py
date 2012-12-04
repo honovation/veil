@@ -63,17 +63,20 @@ def postgresql_cluster_resource(purpose, owner, owner_password):
         return
     if is_installed:
         return
+    LOGGER.info('install postgresql cluster: for %(purpose)s', {
+        'purpose': purpose
+    })
     old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.dirname()), capture=True).strip()
-    shell_execute('chmod 777 {}'.format(pg_data_dir.dirname()))
-    install_resource(file_resource(path='/tmp/pg-owner-password', content=owner_password))
+    shell_execute('chmod 777 {}'.format(pg_data_dir.dirname()), capture=True)
+    install_resource(file_resource(path='/tmp/pg-{}-owner-password'.format(purpose), content=owner_password))
     try:
         shell_execute(
-            'su {pg_data_owner} -c "initdb  -E {encoding} --locale=en_US.UTF-8 -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-owner-password {pg_data_dir}"'.format(
-                encoding='UTF8', pg_data_owner=owner, pg_data_dir=pg_data_dir
-            ))
+            'su {pg_data_owner} -c "initdb  -E {encoding} --locale=en_US.UTF-8 -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-{purpose}-owner-password {pg_data_dir}"'.format(
+                encoding='UTF8', pg_data_owner=owner, pg_data_dir=pg_data_dir, purpose=purpose
+            ), capture=True)
     finally:
-        delete_file('/tmp/pg-owner-password')
-    shell_execute('chmod {} {}'.format(old_permission, pg_data_dir.dirname()))
+        delete_file('/tmp/pg-{}-owner-password'.format(purpose))
+    shell_execute('chmod {} {}'.format(old_permission, pg_data_dir.dirname()), capture=True)
     delete_file(pg_data_dir / 'postgresql.conf')
     delete_file(pg_data_dir / 'pg_hba.conf')
     delete_file(pg_data_dir / 'pg_ident.conf')
@@ -94,6 +97,10 @@ def postgresql_user_resource(purpose, user, password, owner, owner_password, hos
         return
     if is_installed:
         return
+    LOGGER.info('install postgresql user: %(user)s in %(purpose)s', {
+        'user': user,
+        'purpose': purpose
+    })
     with postgresql_server_running(pg_data_dir, owner):
         env = os.environ.copy()
         env['PGPASSWORD'] = owner_password
