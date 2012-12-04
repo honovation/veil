@@ -14,13 +14,14 @@ def create_env_backup():
 
 @atomic_installer
 def env_backup_resource():
-    for veil_server_name in sorted(list_veil_servers(VEIL_ENV).keys()):
+    veil_server_names = sorted(list_veil_servers(VEIL_ENV).keys())
+    veil_server_names.remove('@guard')
+    for veil_server_name in veil_server_names:
         bring_down_server(VEIL_ENV, veil_server_name)
     timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    for veil_server_name in sorted(list_veil_servers(VEIL_ENV).keys()):
-        if '@guard' != veil_server_name:
-            backup_server(VEIL_ENV, veil_server_name, timestamp)
-    for veil_server_name in sorted(list_veil_servers(VEIL_ENV).keys()):
+    for veil_server_name in veil_server_names:
+        backup_server(VEIL_ENV, veil_server_name, timestamp)
+    for veil_server_name in veil_server_names:
         bring_up_server(VEIL_ENV, veil_server_name)
 
 
