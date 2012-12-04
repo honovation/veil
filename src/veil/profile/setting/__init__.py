@@ -5,6 +5,7 @@ with veil_component.init_component(__name__):
     from veil.environment import *
     from veil.utility.setting import *
     from veil.environment.networking import *
+    from veil.server.vcs import *
     from veil.environment.guard_setting import guard_program
     from veil.backend.database.postgresql_setting import postgresql_program
     from veil.backend.redis_setting import redis_program
