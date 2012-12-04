@@ -86,6 +86,15 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
                 local_path=local_path, veil_env_name=veil_env_name,
                 veil_server_name=veil_server_name, remote_path=remote_path,
                 owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
+    if (server_config_dir / 'id_rsa').exists():
+        resources.append(veil_server_container_file_resource(
+            local_path=server_config_dir / 'id_rsa', veil_env_name=veil_env_name,
+            veil_server_name=veil_server_name, remote_path='/home/{}/.ssh/id_rsa'.format(veil_server_user_name),
+            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
+        resources.append(veil_server_container_file_resource(
+            local_path=server_config_dir / 'id_rsa', veil_env_name=veil_env_name,
+            veil_server_name=veil_server_name, remote_path='/root/id_rsa',
+            owner='root', owner_group='root', mode=0600))
     return resources
 
 
