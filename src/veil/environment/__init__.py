@@ -95,8 +95,14 @@ def get_application_version():
     from veil.utility.shell import shell_execute
 
     app_commit_hash = shell_execute('git rev-parse HEAD', cwd=VEIL_HOME, capture=True).strip()
-    framework_commit_hash = shell_execute('git rev-parse HEAD', cwd=VEIL_FRAMEWORK_HOME, capture=True).strip()
+    framework_commit_hash = get_veil_framework_version()
     return '{}-{}'.format(app_commit_hash, framework_commit_hash)
+
+
+def get_veil_framework_version():
+    from veil.utility.shell import shell_execute
+
+    return shell_execute('git rev-parse HEAD', cwd=VEIL_FRAMEWORK_HOME, capture=True).strip()
 
 
 def get_application():

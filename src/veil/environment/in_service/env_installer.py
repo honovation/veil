@@ -59,6 +59,7 @@ def update_branch(veil_env_name):
 
 
 def tag_deploy(veil_env_name):
-    tag_name = 'deploy-{}-{}'.format(veil_env_name, datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
+    tag_name = '{}-{}-{}'.format(
+        veil_env_name, datetime.datetime.now().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
     shell_execute('git tag {}'.format(tag_name))
     shell_execute('git push origin tag {}'.format(tag_name))
