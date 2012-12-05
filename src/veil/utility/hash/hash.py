@@ -39,8 +39,7 @@ def get_hmac(*parts, **kwargs):
     strong = kwargs.pop('strong', True)
 
     salt = kwargs.pop('salt', secure_hash_salt)
-    executing_test = get_executing_test(optional=True)
-    if executing_test:
+    if get_executing_test(optional=True):
         salt = DEFAULT_SECURE_HASH_SALT
 
     digestmod = hashlib.sha256 if strong else hashlib.sha1

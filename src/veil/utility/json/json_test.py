@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from datetime import datetime
+from decimal import Decimal
 import pytz
 from unittest.case import TestCase
 from ._json import to_json
@@ -44,3 +45,9 @@ class CustomJSONEncoderDecoderTest(TestCase):
                 encoded = to_json(to_encode)
                 decoded = from_json(encoded)
                 self.assertEqual(to_encode, decoded)
+
+    def test_decimal(self):
+        obj = Decimal('123.4567')
+        encoded = to_json(obj)
+        decoded = from_json(encoded)
+        self.assertEqual(obj, decoded)
