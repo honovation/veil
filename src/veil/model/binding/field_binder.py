@@ -131,6 +131,8 @@ def to_datetime(format='%Y-%m-%d %H:%M:%S'):
         if isinstance(value, datetime):
             return value
         else:
+            if not value:
+                raise Invalid(_('不是有效的日期时间'))
             try:
                 tz = DEFAULT_CLIENT_TIMEZONE
                 dt = datetime.strptime(value, bind.format)
