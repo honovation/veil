@@ -71,18 +71,21 @@ def configure_root_component_logger(component_name):
 
 
 class ColoredFormatter(logging.Formatter):
+
     def format(self, record):
+        record.msg = to_unicode(record.msg)
         if record.levelno >= logging.WARNING:
             return COLOR_WRAPPERS['RED'](super(ColoredFormatter, self).format(record))
         if record.args and isinstance(record.args, dict):
+#            record.args = {k: to_str(v) for k, v in record.args.items()}
             if record.args.get('__color__'):
                 wrap = COLOR_WRAPPERS.get(record.args['__color__'])
                 return wrap(super(ColoredFormatter, self).format(record))
         return super(ColoredFormatter, self).format(record)
 
-
 class EventFormatter(logging.Formatter):
     def format(self, record):
+        record.msg = to_unicode(record.msg)
         event_name = record.message.split(':')[0]
         event = {
             '@type': '{}/{}'.format(record.name, event_name),
@@ -96,3 +99,9 @@ class EventFormatter(logging.Formatter):
             event['@fields']['exception_type'] = unicode(record.exc_info[0])
             event['@fields']['exception_stack_trace'] = self.formatException(record.exc_info)
         return json.dumps(event)
+
+def to_unicode(s, encoding=None):
+    if isinstance(s, unicode):
+        return s
+    encoding = encoding or 'utf-8'
+    return unicode(s, encoding=encoding)
