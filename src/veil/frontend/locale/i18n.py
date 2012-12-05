@@ -51,7 +51,7 @@ def load_translations(locale):
 
 
 def get_current_locale():
-    return current_locales[-1] if current_locales else None
+    return current_locales[-1] if current_locales else DEFAULT_LOCALE
 
 
 def get_default_locale():
