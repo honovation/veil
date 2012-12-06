@@ -33,7 +33,6 @@ http {
     {% for server_name, server_properties in config.servers.items() %}
     server {
         server_name  {{ server_name }};
-        access_log	{{ config.log_directory }}/{{ server_name }}-access.log;
         error_log {{ config.log_directory }}/{{ server_name }}-error.log;
         {% for key, value in server_properties.items() %}
             {% if 'locations' == key %}
