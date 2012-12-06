@@ -3,7 +3,7 @@ from veil.profile.installer import *
 
 
 @composite_installer
-def redis_server_resource(purpose, host, port):
+def redis_server_resource(purpose, host, port, persisted_by_aof=False):
     resources = list(BASIC_LAYOUT_RESOURCES)
     data_directory = VEIL_VAR_DIR / '{}-redis'.format(purpose.replace('_', '-'))
     resources.extend([
@@ -17,7 +17,8 @@ def redis_server_resource(purpose, host, port):
             content=render_config('redis-server.conf.j2', config={
                 'host': host,
                 'port': port,
-                'data_directory': data_directory
+                'data_directory': data_directory,
+                'persisted_by_aof': persisted_by_aof
             }))
     ])
     return resources

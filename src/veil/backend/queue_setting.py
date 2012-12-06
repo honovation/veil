@@ -8,7 +8,7 @@ from veil.server.python import *
 
 def queue_program(host, port):
     return objectify({
-        'queue': redis_program('queue', host, port).queue_redis
+        'queue': redis_program('queue', host, port, persisted_by_aof=True).queue_redis
     })
 
 
