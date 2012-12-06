@@ -2,7 +2,6 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import argparse
 from jinja2.loaders import FileSystemLoader
-from veil.utility.hash import set_secure_hash_salt
 from veil.frontend.template import *
 from veil.frontend.cli import *
 from veil.environment import *
@@ -57,10 +56,6 @@ def start_website(purpose, port):
 
 def create_website_http_handler(purpose, config):
     locale_provider = lambda: None
-    if config.secure_cookie_salt:
-        set_secure_cookie_salt(config.secure_cookie_salt)
-    if config.secure_hash_salt:
-        set_secure_hash_salt(config.secure_hash_salt)
     set_inline_static_files_directory(VEIL_VAR_DIR / 'inline-static-files')
     set_external_static_files_directory(VEIL_HOME / 'static')
     master_template_directory = config.master_template_directory

@@ -2,16 +2,21 @@ from __future__ import unicode_literals, print_function, division
 import hashlib
 import hmac
 from logging import getLogger
+from veil.environment import *
 from veil.development.test import get_executing_test
 
 LOGGER = getLogger(__name__)
 
-DEFAULT_SECURE_HASH_SALT = '953236d83dd3401c9228f77ec2140b9d'
-secure_hash_salt = DEFAULT_SECURE_HASH_SALT
+_hash_salt = None
 
-def set_secure_hash_salt(value):
-    global secure_hash_salt
-    secure_hash_salt = value
+def get_hash_salt():
+    global _hash_salt
+
+    if get_executing_test(optional=True):
+        return 'secret'
+    if _hash_salt is None:
+        _hash_salt = (CURRENT_USER_HOME / '.veil-hash-salt').text().strip()
+    return _hash_salt
 
 
 def encode_token(*parts):
@@ -37,14 +42,9 @@ def get_password_hash(password):
 
 def get_hmac(*parts, **kwargs):
     strong = kwargs.pop('strong', True)
-
-    salt = kwargs.pop('salt', secure_hash_salt)
-    if get_executing_test(optional=True):
-        salt = DEFAULT_SECURE_HASH_SALT
-
     digestmod = hashlib.sha256 if strong else hashlib.sha1
     msg = '|'.join([str(part) for part in parts])
-    return hmac.new(str(salt), msg, digestmod).hexdigest()
+    return hmac.new(str(get_hash_salt()), msg, digestmod).hexdigest()
 
 
 def verify_hmac(hmac, *parts, **kwargs):
@@ -81,4 +81,4 @@ def calculate_file_md5_hash(file_object, reset_position=False, hex=True):
 def iter_file_in_chunks(file_object, chunk_size=8192):
     """Lazy function (generator) to read a file piece by piece.
     Default chunk size: 8k."""
-    return iter(lambda : file_object.read(chunk_size), b'')
+    return iter(lambda: file_object.read(chunk_size), b'')

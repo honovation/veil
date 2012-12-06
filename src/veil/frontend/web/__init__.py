@@ -35,7 +35,6 @@ with veil_component.init_component(__name__):
     from .tornado import clear_cookies
     from .tornado import clear_cookie
     from .tornado import set_cookie
-    from .tornado import set_secure_cookie_salt
     from .tornado import redirect_to
     from .tornado import get_http_argument
     from .tornado import get_http_arguments
@@ -87,7 +86,6 @@ with veil_component.init_component(__name__):
         clear_cookies.__name__,
         clear_cookie.__name__,
         set_cookie.__name__,
-        set_secure_cookie_salt.__name__,
         redirect_to.__name__,
         get_http_argument.__name__,
         get_http_arguments.__name__,

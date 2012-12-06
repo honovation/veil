@@ -1,7 +1,6 @@
 import veil_component
 
 with veil_component.init_component(__name__):
-    from .hash import set_secure_hash_salt
     from .hash import encode_token
     from .hash import decode_token
     from .hash import get_password_hash
@@ -13,7 +12,6 @@ with veil_component.init_component(__name__):
 
     __all__ = [
         # from hash
-        set_secure_hash_salt.__name__,
         encode_token.__name__,
         decode_token.__name__,
         get_password_hash.__name__,

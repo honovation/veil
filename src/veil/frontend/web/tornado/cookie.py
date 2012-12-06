@@ -14,7 +14,6 @@ from .context import get_current_http_request
 from .context import get_current_http_response
 
 LOGGER = getLogger(__name__)
-secure_cookie_salt = None
 
 def set_secure_cookie_salt(value):
     global  secure_cookie_salt
@@ -79,10 +78,23 @@ def get_cookies(request=None):
 
 
 def get_cookie(name, default=None, request=None):
+    cookie_from_response = get_cookie_from_response(name)
+    if cookie_from_response:
+        return cookie_from_response
     cookies = get_cookies(request=request)
     if name in cookies:
         return cookies[name].value
     return default
+
+
+def get_cookie_from_response(name):
+    if get_current_http_response()._cookies:
+        for written_cookie in get_current_http_response()._cookies:
+            cookies = Cookie.BaseCookie()
+            cookies.load(to_str(written_cookie))
+            if name in cookies:
+                return cookies[name].value
+    return None
 
 
 def clear_cookies(request=None, response=None):
@@ -99,6 +111,7 @@ def set_cookie(response=None, cookie=None, **kwargs):
     response = response or get_current_http_response()
     cookie = cookie or create_cookie(**kwargs)
     response.add_cookie(cookie.OutputString(None))
+
 
 def create_cookie(name, value, domain=None, expires=None, path='/', expires_days=None, **kwargs):
     base_cookie = Cookie.BaseCookie()

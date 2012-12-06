@@ -10,7 +10,7 @@ class XsrfTest(TestCase):
         super(XsrfTest, self).setUp()
         override_website_config('test',
             domain='', domain_port=0, start_port=4999,
-            secure_cookie_salt='secret', secure_hash_salt='secret', master_template_directory='',
+            master_template_directory='',
             prevents_xsrf=True, recalculates_static_file_hash=True,
             clears_template_cache=True)
 
