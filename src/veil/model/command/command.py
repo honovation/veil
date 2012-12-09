@@ -87,7 +87,7 @@ def args_to_raw_command(positional_args, keyword_args, command_handler):
     allow_extra_positional_args = arg_spec.varargs is not None
 
     if not allow_extra_positional_args and len(positional_args) > len(args_names):
-        raise InvalidCommand(errors={None: _('Extra fields found in the submitted data')})
+        raise InvalidCommand(errors={None: [_('Extra fields found in the submitted data')]})
     args_len = min(len(args_names), len(positional_args))
     extra_positional_args = positional_args[args_len:]
     raw_command.update(dict(zip(args_names[:args_len], positional_args[:args_len])))
@@ -101,7 +101,7 @@ def args_to_raw_command(positional_args, keyword_args, command_handler):
             raw_command[k] = v
         else:
             if not allow_extra_keyword_args:
-                raise InvalidCommand(errors={None: _('Extra fields found in the submitted data')})
+                raise InvalidCommand(errors={None: [_('Extra fields found in the submitted data')]})
             raw_command['kwargs'][k] = v
     return raw_command
 
