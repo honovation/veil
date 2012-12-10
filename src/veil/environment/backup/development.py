@@ -24,8 +24,12 @@ def restore_from_baseline(veil_env_name=None):
     else:
         if not BASELINE_DIR.exists():
             raise Exception('baseline not downloaded yet, pass env name to restore-from-baseline to download')
+    shell_execute('veil down')
     VEIL_VAR_DIR.rmtree()
     VEIL_VAR_DIR.mkdir()
     for backup_path in BASELINE_DIR.listdir():
         shell_execute('tar xzf {} -C {}'.format(backup_path, VEIL_VAR_DIR))
     shell_execute('veil install-server')
+    shell_execute('veil up --daemonize')
+    shell_execute('veil migrate')
+    shell_execute('veil down')

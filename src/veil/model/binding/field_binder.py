@@ -9,6 +9,7 @@ from datetime import datetime, time
 import pytz
 from pytz import timezone, UnknownTimeZoneError
 from dateutil.parser import parse
+from decimal import Decimal
 from veil.model.binding.invalid import Invalid
 from veil.frontend.locale import DEFAULT_CLIENT_TIMEZONE
 
@@ -86,6 +87,13 @@ def to_integer(value):
 def to_float(value):
     try:
         return float(value)
+    except (TypeError, ValueError):
+        raise Invalid(_('数据不合法'))
+
+
+def to_decimal(value):
+    try:
+        return Decimal(value)
     except (TypeError, ValueError):
         raise Invalid(_('数据不合法'))
 
