@@ -25,11 +25,14 @@ def bring_up_website(*argv):
     argument_parser = argparse.ArgumentParser('Website')
     argument_parser.add_argument('purpose', help='which website to bring up')
     argument_parser.add_argument('port', type=int, help='listen on which port')
-    argument_parser.add_argument('--component', type=str,
-        help='where @route is defined', nargs='+', dest='components')
+    argument_parser.add_argument('--component', type=str, action='append',
+        help='where @route is defined', dest='components')
     args = argument_parser.parse_args(argv)
     for component in args.components:
         __import__(component)
+        LOGGER.info('imported component: %(component)s', {
+            'component': component
+        })
     start_website(args.purpose, args.port)
 
 
