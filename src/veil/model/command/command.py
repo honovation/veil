@@ -22,9 +22,8 @@ def command_for(command_handler, errors=None, **command_values):
         raise Exception('{} is not command handler'.format(command_handler))
     for arg_name in args_names:
         command[arg_name] = ''
-    if not errors:
-        command.update(command_values or {})
     command.errors = errors or {}
+    command.update(command_values or {})
     return command
 
 
