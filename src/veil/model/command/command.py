@@ -1,10 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 import functools
+import logging
 from inspect import getargspec, isfunction
 from veil.model.binding import *
 from veil.model.collection import *
 from veil.utility.encoding import *
 
+LOGGER = logging.getLogger(__name__)
 
 def command(binders):
 # syntax sugar for CommandHandlerDecorator
@@ -100,6 +102,9 @@ def args_to_raw_command(positional_args, keyword_args, command_handler):
             raw_command[k] = v
         else:
             if not allow_extra_keyword_args:
+                LOGGER.debug('found extra keyword argument: %(keyword_argument_name)s', {
+                    'keyword_argument_name': k
+                })
                 raise InvalidCommand(errors={None: [_('Extra fields found in the submitted data')]})
             raw_command['kwargs'][k] = v
     return raw_command

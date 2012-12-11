@@ -24,6 +24,7 @@ def template_filter(func_or_name):
     else:
         def decorate(func):
             register_template_filter(func_or_name, func)
+            return func
         return decorate
 
 
