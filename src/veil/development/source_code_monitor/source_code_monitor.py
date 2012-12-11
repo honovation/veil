@@ -14,12 +14,16 @@ def source_code_monitored(func):
     @functools.wraps(func)
     def wrapper(**kwargs):
         components = kwargs.pop('components')
-        while not load_components(components):
-            time.sleep(3)
-
         if 'development' == VEIL_ENV:
-            SourceCodeMonitor().start()
-        return func(**kwargs)
+            if load_components(components):
+                SourceCodeMonitor().start()
+                return func(**kwargs)
+            else:
+                time.sleep(3)
+                os._exit(1)
+        else:
+            assert load_components(components)
+            return func(**kwargs)
 
     return wrapper
 
@@ -32,11 +36,14 @@ class SourceCodeMonitor(threading.Thread):
 
     def run(self):
         while True:
-            time.sleep(0.5)
-            current_hash = discipline_coach.calculate_git_status_hash()
-            if current_hash != self.init_hash:
-                LOGGER.info('detected file change')
-                os._exit(1)
+            try:
+                time.sleep(0.5)
+                current_hash = discipline_coach.calculate_git_status_hash()
+                if current_hash != self.init_hash:
+                    LOGGER.info('detected file change')
+                    os._exit(1)
+            except:
+                LOGGER.exception('source code monitor died')
 
 
 def load_components(components):
