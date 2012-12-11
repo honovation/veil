@@ -27,19 +27,34 @@ def is_self_check_passed():
 
 
 def calculate_git_status_hash():
-    RE_MODIFIED = re.compile('^(?:M|A)(\s+)(?P<name>.*)')
-    hashes = [shell_execute('git log -n 1 --pretty=format:%H', capture=True)]
-    files = []
-    shell_execute('git config core.quotepath false') # chinese filename
-    out = shell_execute('git status --porcelain', capture=True)
+    base_version, changes = get_git_dir_version()
+    hashes = [base_version]
+    for file, version in changes.items():
+        hashes.append('{} {}'.format(file, version))
+    return  '\n'.join(sorted(hashes))
+
+
+def get_git_dir_version(git_dir='.'):
+    base_version = shell_execute('git log -n 1 --pretty=format:%H', capture=True, cwd=git_dir)
+    RE_MODIFIED = re.compile('^(?:M|A|\?\?)(\s+)(?P<name>.*)')
+    RE_DELETED = re.compile('^(?:D)(\s+)(?P<name>.*)')
+    out = shell_execute('git status --porcelain', capture=True, cwd=git_dir)
+    modified_files = []
+    deleted_files = []
     for line in out.splitlines():
         match = RE_MODIFIED.match(line.strip())
         if match:
-            files.append(match.group('name'))
-    for file in files:
-        with open(file) as f:
-            hashes.append('{} {}'.format(file, calculate_file_md5_hash(f)))
-    return  '\n'.join(sorted(hashes))
+            modified_files.append(match.group('name'))
+        match = RE_DELETED.match(line.strip())
+        if match:
+            deleted_files.append(match.group('name'))
+    changes = {}
+    for file in modified_files:
+        with open(os.path.join(git_dir, file)) as f:
+            changes[file] = calculate_file_md5_hash(f)
+    for file in deleted_files:
+        changes[file] = 'DELETED'
+    return base_version, changes
 
 
 def calculate_file_md5_hash(file_object, reset_position=False, hex=True):
@@ -83,17 +98,17 @@ def shell_execute(command_line, capture=False, waits=True, **kwargs):
                     process.returncode, command_args, kwargs))
     return output
 
-def _wrap_with(code):
 
+def _wrap_with(code):
     def inner(text, bold=False):
         c = code
         if bold:
             c = "1;%s" % c
         return "\033[%sm%s\033[0m" % (c, text)
+
     return inner
 
 red = _wrap_with('31')
-
 
 if __name__ == '__main__':
     check_if_self_check_passed()

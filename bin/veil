@@ -48,6 +48,7 @@ function veil_init {
         source $VEIL_HOME/env/bin/activate
     fi
     if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then
+        git config core.quotepath false
         ln -s $VEIL_FRAMEWORK_HOME/src/discipline_coach.py $VEIL_HOME/.git/hooks/pre-commit
     fi
 }

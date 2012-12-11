@@ -32,29 +32,52 @@ class SourceCodeMonitor(threading.Thread):
     def __init__(self):
         super(SourceCodeMonitor, self).__init__()
         self.daemon = True
-        self.init_hash = discipline_coach.calculate_git_status_hash()
+        self.init_app_base_version, self.init_app_changes = discipline_coach.get_git_dir_version(VEIL_HOME)
+        self.init_framework_base_version, self.init_framework_changes = discipline_coach.get_git_dir_version(
+            VEIL_FRAMEWORK_HOME)
 
     def run(self):
         while True:
             try:
                 time.sleep(0.5)
-                current_hash = discipline_coach.calculate_git_status_hash()
-                if current_hash != self.init_hash:
-                    LOGGER.info('detected file change: \n%(init_hash)s \n --- \n %(current_hash)s', {
-                        'init_hash': self.init_hash,
-                        'current_hash': current_hash
-                    })
-                    init_hash_lines = set(self.init_hash.split('\n'))
-                    current_hash_lines = set(current_hash.split('\n'))
-                    diff_lines = (init_hash_lines - current_hash_lines).union(current_hash_lines - init_hash_lines)
-                    for line in diff_lines:
-                        if '.py' in line:
-                            LOGGER.info('python source code changed: reload now')
-                            os._exit(1)
-                    LOGGER.info('no python source code changed: continue on')
-                    self.init_hash = current_hash
+                if self.detect_change():
+                    os._exit(1)
             except:
                 LOGGER.exception('source code monitor died')
+
+    def detect_change(self):
+        current_app_base_version, current_app_changes = discipline_coach.get_git_dir_version(VEIL_HOME)
+        if current_app_base_version != self.init_app_base_version:
+            LOGGER.info('application base version changed: reload now')
+            return True
+        if is_python_source_code_changed(self.init_app_changes, current_app_changes):
+            LOGGER.info('application python source code changed: reload now')
+            return True
+        current_framework_base_version, current_framework_changes = discipline_coach.get_git_dir_version(
+            VEIL_FRAMEWORK_HOME)
+        if current_framework_base_version != self.init_framework_base_version:
+            LOGGER.info('framework base version changed: reload now')
+            return True
+        if is_python_source_code_changed(self.init_framework_changes, current_framework_changes):
+            LOGGER.info('framework python source code changed: reload now')
+            return True
+        self.init_app_base_version = current_app_base_version
+        self.init_app_changes = current_app_changes
+        self.init_framework_base_version = current_framework_base_version
+        self.init_framework_changes = current_framework_changes
+        return False
+
+
+def is_python_source_code_changed(init_changes, current_changes):
+    init_change_set = set(init_changes.items())
+    current_change_set = set(current_changes.items())
+    diff_change_set = init_change_set ^ current_change_set
+    for file, version in diff_change_set:
+        if '.py' in file:
+            return True
+    if diff_change_set:
+        LOGGER.info('file changed, but not python source code')
+    return False
 
 
 def load_components(components):
