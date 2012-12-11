@@ -40,8 +40,19 @@ class SourceCodeMonitor(threading.Thread):
                 time.sleep(0.5)
                 current_hash = discipline_coach.calculate_git_status_hash()
                 if current_hash != self.init_hash:
-                    LOGGER.info('detected file change')
-                    os._exit(1)
+                    LOGGER.info('detected file change: \n%(init_hash)s \n --- \n %(current_hash)s', {
+                        'init_hash': self.init_hash,
+                        'current_hash': current_hash
+                    })
+                    init_hash_lines = set(self.init_hash.split('\n'))
+                    current_hash_lines = set(current_hash.split('\n'))
+                    diff_lines = (init_hash_lines - current_hash_lines).union(current_hash_lines - init_hash_lines)
+                    for line in diff_lines:
+                        if '.py' in line:
+                            LOGGER.info('python source code changed: reload now')
+                            os._exit(1)
+                    LOGGER.info('no python source code changed: continue on')
+                    self.init_hash = current_hash
             except:
                 LOGGER.exception('source code monitor died')
 

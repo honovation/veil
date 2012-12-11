@@ -38,7 +38,7 @@ def calculate_git_status_hash():
             files.append(match.group('name'))
     for file in files:
         with open(file) as f:
-            hashes.append(calculate_file_md5_hash(f))
+            hashes.append('{} {}'.format(file, calculate_file_md5_hash(f)))
     return  '\n'.join(sorted(hashes))
 
 
