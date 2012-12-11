@@ -5,6 +5,7 @@ from jinja2.loaders import FileSystemLoader
 from veil.frontend.template import *
 from veil.frontend.cli import *
 from veil.environment import *
+from veil.development.source_code_monitor import *
 from .tornado import *
 from .locale import *
 from .routing import  *
@@ -21,19 +22,14 @@ def register_website_context_manager(website, context_manager):
 
 
 @script('up')
-def bring_up_website(*argv):
+def execute_bring_up_website(*argv):
     argument_parser = argparse.ArgumentParser('Website')
     argument_parser.add_argument('purpose', help='which website to bring up')
     argument_parser.add_argument('port', type=int, help='listen on which port')
     argument_parser.add_argument('--component', type=str, action='append',
         help='where @route is defined', dest='components')
     args = argument_parser.parse_args(argv)
-    for component in args.components:
-        __import__(component)
-        LOGGER.info('imported component: %(component)s', {
-            'component': component
-        })
-    start_website(args.purpose, args.port)
+    start_website(purpose=args.purpose, port=args.port, components=args.components)
 
 
 def start_test_website(purpose, **kwargs):
@@ -47,6 +43,7 @@ def start_test_website(purpose, **kwargs):
     return http_server
 
 
+@source_code_monitored
 def start_website(purpose, port):
     config = load_website_config(purpose)
     http_handler = create_website_http_handler(purpose, config)

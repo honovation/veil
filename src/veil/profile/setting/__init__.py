@@ -23,4 +23,3 @@ with veil_component.init_component(__name__):
     from veil.frontend.website_setting import website_programs
     from veil.frontend.website_setting import website_locations
     from veil.frontend.website_setting import website_upstreams
-    from veil.development.source_code_monitor_setting import source_code_monitor_program
