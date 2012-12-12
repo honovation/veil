@@ -26,7 +26,7 @@ def register_captcha(website):
         'captcha_answer_redis_client',
         lambda config: redis_client_resource(purpose='captcha_answer', **config))
     import_widget(captcha_widget)
-    route('GET', '/captcha', website=website)(captcha_widget)
+    route('GET', '/captcha', website=website, tags=('PUBLIC',))(captcha_widget)
     return captcha_protected
 
 
