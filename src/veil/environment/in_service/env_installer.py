@@ -3,6 +3,7 @@ import fabric.api
 import os
 import logging
 import datetime
+import sys
 from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
@@ -15,6 +16,14 @@ LOGGER = logging.getLogger(__name__)
 
 @script('deploy-env')
 def deploy_env(veil_env_name, config_dir):
+    deployment_memo = get_veil_env_deployment_memo(veil_env_name)
+    if deployment_memo:
+        print('!!! IMPORTANT !!!')
+        print(deployment_memo)
+        print('type "i will do it" without space to continue:')
+        while True:
+            if 'iwilldoit' == sys.stdin.readline().strip():
+                break
     update_branch(veil_env_name)
     install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     for deploying_server_name in sorted(list_veil_servers(veil_env_name).keys()):

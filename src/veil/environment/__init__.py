@@ -13,12 +13,13 @@ from .environment import CURRENT_USER_HOME
 from .environment import BASIC_LAYOUT_RESOURCES
 
 
-def veil_env(server_hosts, servers):
+def veil_env(server_hosts, servers, deployment_memo=None):
     from veil.model.collection import objectify
 
     return objectify({
         'server_hosts': server_hosts,
-        'servers': servers
+        'servers': servers,
+        'deployment_memo': deployment_memo
     })
 
 
@@ -51,6 +52,10 @@ def list_veil_servers(veil_env):
 
 def list_veil_hosts(veil_env):
     return get_application().ENVIRONMENTS[veil_env].server_hosts
+
+
+def get_veil_env_deployment_memo(veil_env):
+    return get_application().ENVIRONMENTS[veil_env].deployment_memo
 
 
 def get_veil_host(veil_env, veil_host_name):
