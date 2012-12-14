@@ -47,22 +47,15 @@ def first(collection):
 
 
 def objectify(o):
-    if isinstance(o, dict):
-        return to_dict_object({objectify(k): objectify(v) for k, v in o.items()})
+    if isinstance(o, DictObject):
+        return o
+    elif isinstance(o, dict):
+        return DictObject({k: objectify(v) for k, v in o.items()})
     elif isinstance(o, (tuple, set, list)):
         return [objectify(e) for e in o]
     else:
         return o
 
-
-def to_dict_object(o):
-    if isinstance(o, dict):
-        if isinstance(o, DictObject):
-            return o
-        else:
-            return DictObject(o)
-    else:
-        return o
 
 def freeze_dict_object(o):
     if isinstance(o, dict):

@@ -16,6 +16,10 @@ def fixture(fixture_type, fixture_name):
     return FixtureProviderDecorator(fixture_type, fixture_name)
 
 
+def delete_fixture_provider(fixture_name):
+    del fixture_providers[fixture_name]
+
+
 def get_fixture(fixture_name):
     return reload_fixture(fixture_providers[fixture_name].fixture_type, *fixtures[fixture_name])
 
