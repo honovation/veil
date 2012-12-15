@@ -258,10 +258,12 @@ veil.widget.clearErrorMessages = function (widget) {
 veil.widget.refresh = function (widget, options) {
     options = options || {};
     var refreshUrl = options.refreshUrl || widget.data('refreshUrl');
+    var data=options.data;
     var onSuccess = options.onSuccess;
     if (refreshUrl) {
         veil.resource.get({
             url:refreshUrl,
+            data:data,
             onSuccess:function (html) {
                 veil.widget.processWidget(html, function(html) {
                     var token = 'refreshed-' + Math.round(Math.random()*1000);
