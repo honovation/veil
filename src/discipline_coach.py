@@ -36,7 +36,7 @@ def calculate_git_status_hash():
 
 def get_git_dir_version(git_dir='.'):
     base_version = shell_execute('git log -n 1 --pretty=format:%H', capture=True, cwd=git_dir)
-    RE_MODIFIED = re.compile('^(?:M|A|\?\?)(\s+)(?P<name>.*)')
+    RE_MODIFIED = re.compile('^(?:M|A|\?\?|AM)(\s+)(?P<name>.*)')
     RE_DELETED = re.compile('^(?:D)(\s+)(?P<name>.*)')
     out = shell_execute('git status --porcelain', capture=True, cwd=git_dir)
     modified_files = []

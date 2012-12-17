@@ -60,11 +60,11 @@ def get_http_file(field, default=None, request=None, list_field=False, optional=
     return [DictObject(value) for value in values] if list_field else DictObject(values[0])
 
 
-def get_http_arguments(request=None, list_fields=(), **kwargs):
+def get_http_arguments(request=None, **kwargs):
     request = request or get_current_http_request()
     arguments = DictObject()
     for field, values in request.arguments.items():
-        arguments[field] = get_http_argument(field, request=request, list_field=field in list_fields)
+        arguments[field] = get_http_argument(field, request=request, list_field=len(values) > 1)
     arguments.update(kwargs)
     return arguments
 
