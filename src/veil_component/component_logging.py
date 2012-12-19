@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import datetime
 import logging
 import os
 import sys
@@ -71,17 +72,17 @@ def configure_root_component_logger(component_name):
 
 
 class ColoredFormatter(logging.Formatter):
-
     def format(self, record):
         record.msg = to_unicode(record.msg)
         if record.levelno >= logging.WARNING:
             return COLOR_WRAPPERS['RED'](super(ColoredFormatter, self).format(record))
         if record.args and isinstance(record.args, dict):
-#            record.args = {k: to_str(v) for k, v in record.args.items()}
+        #            record.args = {k: to_str(v) for k, v in record.args.items()}
             if record.args.get('__color__'):
                 wrap = COLOR_WRAPPERS.get(record.args['__color__'])
                 return wrap(super(ColoredFormatter, self).format(record))
         return super(ColoredFormatter, self).format(record)
+
 
 class EventFormatter(logging.Formatter):
     def format(self, record):
@@ -94,14 +95,25 @@ class EventFormatter(logging.Formatter):
             '@timestamp': time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created))
         }
         if record.args and isinstance(record.args, dict):
-            event['@fields'] = dict(record.args)
+            event['@fields'] = dump_dict(record.args)
         if record.exc_info:
             event['@fields']['exception_type'] = unicode(record.exc_info[0])
             event['@fields']['exception_stack_trace'] = self.formatException(record.exc_info)
         return json.dumps(event)
 
-def to_unicode(s, encoding=None):
+
+def dump_dict(args):
+    def format_value(v):
+        if isinstance(v, basestring):
+            return to_unicode(v)
+        if isinstance(v, (datetime.datetime, datetime.date, datetime.time)):
+            return v.isoformat()
+        return unicode(v)
+
+    return {unicode(k): format_value(v) for k, v in args.items()}
+
+
+def to_unicode(s):
     if isinstance(s, unicode):
         return s
-    encoding = encoding or 'utf-8'
-    return unicode(s, encoding=encoding)
+    return unicode(s, encoding='utf8')
