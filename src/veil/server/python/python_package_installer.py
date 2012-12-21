@@ -18,11 +18,12 @@ def python_package_resource(name, version=None, **kwargs):
     if installed:
         return
     LOGGER.info('installing python package: %(pip_package)s ...', {'pip_package': pip_package})
-    mirror = os.getenv('VEIL_DEPENDENCY_MIRROR', 'http://dependency-veil.googlecode.com/svn/trunk')
+    mirror = os.getenv('VEIL_DEPENDENCY_MIRROR')
     if mirror:
-        shell_execute('pip install {} --upgrade --no-index -f {}/'.format(pip_package, mirror), capture=True, **kwargs)
+        mirror = '{}:8080'.format(mirror)
     else:
-        shell_execute('pip install {} --upgrade'.format(pip_package), capture=True, **kwargs)
+        mirror = 'http://dependency-veil.googlecode.com/svn/trunk'
+    shell_execute('pip install {} --upgrade --no-index -f {}/'.format(pip_package, mirror), capture=True, **kwargs)
 
 
 def is_python_package_installed(pip_package):

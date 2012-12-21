@@ -12,6 +12,10 @@ def chrome_driver_resource():
         return
     if is_installed:
         return
-    mirror = os.getenv('VEIL_DEPENDENCY_MIRROR', 'http://chromedriver.googlecode.com/files')
+    mirror = os.getenv('VEIL_DEPENDENCY_MIRROR')
+    if mirror:
+        mirror = '{}:8080'.format(mirror)
+    else:
+        mirror = 'http://chromedriver.googlecode.com/files'
     shell_execute('wget {}/chromedriver_linux64_21.0.1180.4.zip -O /tmp/chromedriver_linux64_21.0.1180.4.zip'.format(mirror))
     shell_execute('unzip /tmp/chromedriver_linux64_21.0.1180.4.zip -d /usr/bin')
