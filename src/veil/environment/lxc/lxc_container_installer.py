@@ -8,9 +8,9 @@ LOGGER = logging.getLogger(__name__)
 def lxc_container_resource(container_name, mac_address, ip_address):
     mirror = os.getenv('VEIL_DEPENDENCY_MIRROR')
     if mirror:
-        mirror = '{}:3142/cn.archive.ubuntu.com/ubuntu'.format(mirror)
+        mirror = '{}:3142/mirrors.163.com/ubuntu'.format(mirror)
     else:
-        mirror = 'http://cn.archive.ubuntu.com/ubuntu'
+        mirror = 'http://mirrors.163.com/ubuntu'
     resources = [
         os_package_resource(name='lxc'),
         file_resource(path='/etc/default/lxc',
