@@ -33,13 +33,10 @@ def veil_server_container_resource(veil_env_name, veil_server_name):
     fabric.state.env.user = veil_host.ssh_user
     installer_file_content = render_installer_file(veil_env_name, veil_server_name)
     installer_file_path = '/opt/INSTALLER-{}-{}'.format(veil_env_name, veil_server_name)
-    is_installed = installer_file_content == remote_get_content('{}.installed'.format(installer_file_path))
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_server_container?{}-{}'.format(veil_env_name, veil_server_name)
-        dry_run_result[key] = '-' if is_installed else 'INSTALL'
-        return
-    if is_installed:
+        dry_run_result[key] = 'INSTALL'
         return
     remote_put_content(installer_file_path, installer_file_content, use_sudo=True, mode=0600)
     fabric.api.put(PAYLOAD, '/opt/container_installer_payload.py', use_sudo=True, mode=0600)
