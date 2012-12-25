@@ -91,6 +91,7 @@ def import_script_handlers(argv):
             'veil.development.source_code_monitor',
             'veil.environment.in_service',
             'veil.environment.backup',
+            'veil.environment.tunnel',
             'veil.server.in_service',
             'veil.server.backup',
             'veil.server.supervisor',

@@ -64,6 +64,11 @@ case "$1" in
         shift
         exec $@
         ;;
+    tunnel-to)
+        shift
+        sudo veil install veil_installer.component_resource?veil.environment.tunnel
+        exec veil environment tunnel tunnel-up $@
+        ;;
     up)
         shift
         find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
