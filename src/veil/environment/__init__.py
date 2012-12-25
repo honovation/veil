@@ -23,13 +23,14 @@ def veil_env(server_hosts, servers, deployment_memo=None):
     })
 
 
-def veil_server(hosted_on, sequence_no, programs, resources=(), supervisor_http_port=None):
+def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None):
     from veil.model.collection import objectify
 
     return objectify({
         'hosted_on': hosted_on,
         'sequence_no': sequence_no,
         'programs': programs,
+        'deploys_via': deploys_via,
         'resources': resources,
         'supervisor_http_port': supervisor_http_port
     })
@@ -79,7 +80,7 @@ def get_veil_server_deploys_via(veil_env, veil_server_name):
     veil_server = get_veil_server(veil_env, veil_server_name)
     veil_host_name = veil_server.hosted_on
     veil_host = get_veil_host(veil_env, veil_host_name)
-    return '{}@{}:{}'.format(
+    return veil_server.deploys_via or '{}@{}:{}'.format(
         veil_host.ssh_user,
         veil_host.ssh_ip,
         '{}22'.format(veil_server.sequence_no))
