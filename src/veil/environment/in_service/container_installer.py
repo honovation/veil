@@ -148,13 +148,14 @@ def render_installer_file(veil_env_name, veil_server_name):
     veil_server_user_name = veil_host.ssh_user
     container_name = '{}-{}'.format(veil_env_name, veil_server_name)
     mac_address = '{}:{}'.format(veil_host.mac_prefix, veil_server.sequence_no)
-    ip_address = '{}.{}/16'.format(veil_host.lan_range, veil_server.sequence_no)
+    ip_address = '{}.{}'.format(veil_host.lan_range, veil_server.sequence_no)
+    gateway = '{}.1'.format(veil_host.lan_range)
 
     iptables_rule = 'PREROUTING -p tcp -m tcp --dport {}22 -j DNAT --to-destination 10.0.3.{}:22'.format(
         veil_server.sequence_no, veil_server.sequence_no)
     installer_file_content = render_config(
-        'container-installer-file.j2', mac_address=mac_address, ip_address=ip_address,
-        lan_interface=veil_host.lan_interface, iptables_rule=iptables_rule,
+        'container-installer-file.j2', mac_address=mac_address, lan_interface=veil_host.lan_interface,
+        ip_address=ip_address, gateway=gateway, iptables_rule=iptables_rule,
         container_name=container_name, user_name=veil_server_user_name)
     lines = [installer_file_content]
     for resource in veil_host.resources:
