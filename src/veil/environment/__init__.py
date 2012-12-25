@@ -35,13 +35,18 @@ def veil_server(hosted_on, sequence_no, programs, resources=(), supervisor_http_
     })
 
 
-def veil_host(ssh_ip, ssh_port=22, ssh_user='dejavu', resources=()):
+def veil_host(ssh_ip, ssh_port=22, ssh_user='dejavu',
+              lan_range='10.0.3', lan_interface='lxcbr0', mac_prefix='00:16:3e:73:bb',
+              resources=()):
     from veil.model.collection import objectify
 
     return objectify({
         'ssh_ip': ssh_ip,
         'ssh_port': ssh_port,
         'ssh_user': ssh_user,
+        'lan_range': lan_range,
+        'lan_interface': lan_interface,
+        'mac_prefix': mac_prefix,
         'resources': resources
     })
 

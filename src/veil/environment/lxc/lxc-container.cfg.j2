@@ -1,5 +1,5 @@
 lxc.network.type=veth
-lxc.network.link=lxcbr0
+lxc.network.link={{ lan_interface }}
 lxc.network.flags=up
 lxc.network.hwaddr = {{ mac_address }}
 lxc.network.ipv4 = {{ ip_address }}
