@@ -5,4 +5,6 @@ veil.environment.lxc.lxc_container_user_group_resource?container_name={{ contain
 veil.environment.lxc.lxc_container_timezone_resource?container_name={{ container_name }}&timezone=Asia/Shanghai
 veil.environment.lxc.lxc_container_network_resource?container_name={{ container_name }}&ip_address={{ ip_address }}&gateway={{ gateway }}
 veil.environment.lxc.lxc_container_in_service_resource?{{ container_name }}
+{% for iptables_rule in iptables_rules %}
 veil.environment.networking.iptables_rule_resource?table=nat&rule={{ iptables_rule }}
+{% endfor %}

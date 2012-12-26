@@ -4,7 +4,6 @@ import os
 import fabric.api
 import fabric.state
 import tempfile
-import socket
 from veil_installer import *
 from veil.utility.path import *
 from veil.environment import *
@@ -152,11 +151,15 @@ def render_installer_file(veil_env_name, veil_server_name):
     ip_address = '{}.{}'.format(veil_host.lan_range, veil_server.sequence_no)
     gateway = '{}.1'.format(veil_host.lan_range)
 
-    iptables_rule = 'PREROUTING -p tcp -m tcp -d {} --dport {}22 -j DNAT --to-destination {}:22'.format(
-        socket.gethostbyname(veil_host.internal_ip), veil_server.sequence_no, ip_address)
+    iptables_rules = [
+        'PREROUTING -p tcp -m tcp -d {} --dport {}22 -j DNAT --to-destination {}:22'.format(
+            veil_host.internal_ip, veil_server.sequence_no, ip_address),
+        'POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(
+            veil_host.lan_range, veil_host.lan_range)
+    ]
     installer_file_content = render_config(
         'container-installer-file.j2', mac_address=mac_address, lan_interface=veil_host.lan_interface,
-        ip_address=ip_address, gateway=gateway, iptables_rule=iptables_rule,
+        ip_address=ip_address, gateway=gateway, iptables_rules=iptables_rules,
         container_name=container_name, user_name=veil_server_user_name)
     lines = [installer_file_content]
     for resource in veil_host.resources:
