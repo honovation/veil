@@ -4,6 +4,7 @@ import os
 import logging
 import datetime
 import sys
+from veil.utility.path import *
 from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
@@ -13,6 +14,15 @@ from .server_installer import veil_env_servers_resource
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'env_installer_payload.py')
 LOGGER = logging.getLogger(__name__)
+
+@script('update-env-authorized-keys')
+def update_env_authorized_keys(veil_env_name, config_dir):
+    veil_hosts = list_veil_hosts(veil_env_name)
+    for veil_host_name, veil_host in veil_hosts.items():
+        authorized_keys_path = as_path(config_dir) / 'host' / veil_host_name / 'authorized_keys'
+        fabric.state.env.host_string = '{}:{}'.format(veil_host.internal_ip, veil_host.ssh_port)
+        fabric.api.put(authorized_keys_path, '~/.ssh/authorized_keys')
+
 
 @script('deploy-env')
 def deploy_env(veil_env_name, config_dir):

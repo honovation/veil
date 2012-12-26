@@ -36,13 +36,14 @@ def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=()
     })
 
 
-def veil_host(ssh_ip, ssh_port=22, ssh_user='dejavu',
+def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu',
               lan_range='10.0.3', lan_interface='lxcbr0', mac_prefix='00:16:3e:73:bb',
               resources=()):
     from veil.model.collection import objectify
 
     return objectify({
-        'ssh_ip': ssh_ip,
+        'internal_ip': internal_ip,
+        'external_ip': external_ip,
         'ssh_port': ssh_port,
         'ssh_user': ssh_user,
         'lan_range': lan_range,
@@ -82,7 +83,7 @@ def get_veil_server_deploys_via(veil_env, veil_server_name):
     veil_host = get_veil_host(veil_env, veil_host_name)
     return veil_server.deploys_via or '{}@{}:{}'.format(
         veil_host.ssh_user,
-        veil_host.ssh_ip,
+        veil_host.internal_ip,
         '{}22'.format(veil_server.sequence_no))
 
 

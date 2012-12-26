@@ -4,6 +4,7 @@ import os
 import fabric.api
 import fabric.state
 import tempfile
+import socket
 from veil_installer import *
 from veil.utility.path import *
 from veil.environment import *
@@ -29,7 +30,7 @@ def veil_env_containers_resource(veil_env_name, config_dir):
 def veil_server_container_resource(veil_env_name, veil_server_name):
     veil_server = get_veil_server(veil_env_name, veil_server_name)
     veil_host = get_veil_host(veil_env_name, veil_server.hosted_on)
-    fabric.state.env.host_string = '{}:{}'.format(veil_host.ssh_ip, veil_host.ssh_port)
+    fabric.state.env.host_string = '{}:{}'.format(veil_host.internal_ip, veil_host.ssh_port)
     fabric.state.env.user = veil_host.ssh_user
     installer_file_content = render_installer_file(veil_env_name, veil_server_name)
     installer_file_path = '/opt/INSTALLER-{}-{}'.format(veil_env_name, veil_server_name)
@@ -151,8 +152,8 @@ def render_installer_file(veil_env_name, veil_server_name):
     ip_address = '{}.{}'.format(veil_host.lan_range, veil_server.sequence_no)
     gateway = '{}.1'.format(veil_host.lan_range)
 
-    iptables_rule = 'PREROUTING -p tcp -m tcp --dport {}22 -j DNAT --to-destination {}:22'.format(
-        veil_server.sequence_no, ip_address)
+    iptables_rule = 'PREROUTING -p tcp -m tcp -d {} --dport {}22 -j DNAT --to-destination {}:22'.format(
+        socket.gethostbyname(veil_host.internal_ip), veil_server.sequence_no, ip_address)
     installer_file_content = render_config(
         'container-installer-file.j2', mac_address=mac_address, lan_interface=veil_host.lan_interface,
         ip_address=ip_address, gateway=gateway, iptables_rule=iptables_rule,

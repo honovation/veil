@@ -1,9 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 import os.path
 import os
+import logging
 from veil.frontend.cli import *
 from veil.environment import *
 from veil.utility.shell import *
+
+LOGGER = logging.getLogger(__name__)
 
 @script('socks-proxy-up')
 def bring_up_socks_proxy(target_env=None, gateway_host_name=None):
@@ -11,8 +14,10 @@ def bring_up_socks_proxy(target_env=None, gateway_host_name=None):
     gateway_host_name = gateway_host_name or os.getenv('VEIL_TUNNEL_GATEWAY_HOST')
     hosts = list_veil_hosts(target_env)
     gateway_host = hosts[gateway_host_name] if gateway_host_name else hosts.values()[0]
-    pass_control_to('autossh -o StrictHostKeyChecking=no -D 1080 -p {} {}@{}'.format(
-        gateway_host.ssh_port, gateway_host.ssh_user, gateway_host.ssh_ip))
+    command = 'autossh -o StrictHostKeyChecking=no -D 1080 -p {} {}@{}'.format(
+        gateway_host.ssh_port, gateway_host.ssh_user, gateway_host.external_ip)
+    LOGGER.info('command: %(command)s', {'command': command})
+    pass_control_to(command)
 
 
 @script('redsocks-up')
