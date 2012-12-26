@@ -152,7 +152,7 @@ def render_installer_file(veil_env_name, veil_server_name):
     gateway = '{}.1'.format(veil_host.lan_range)
 
     iptables_rules = [
-        'PREROUTING -p tcp -m tcp -d {}/32 -p tcp -m tcp --dport {}22 -j DNAT --to-destination {}:22'.format(
+        'PREROUTING -d {}/32 -p tcp -m tcp --dport {}22 -j DNAT --to-destination {}:22'.format(
             veil_host.internal_ip, veil_server.sequence_no, ip_address),
         'POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(
             veil_host.lan_range, veil_host.lan_range)
