@@ -5,7 +5,7 @@ $.ajaxSetup({headers:{'X-XSRF':$.cookie('_xsrf')}});
 var veil = veil || {};
 
 veil.log = function(message) {
-    console.log(message);
+    typeof console != undefined && console.log(message);
 };
 
 executed = [];
@@ -280,7 +280,6 @@ veil.widget.refresh = function (widget, options) {
             }
         });
     }else{
-        console.log('refreshUrl undefine');
     }
 };
 
