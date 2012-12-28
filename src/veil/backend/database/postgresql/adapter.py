@@ -33,7 +33,7 @@ class PostgresqlAdapter(object):
                 user=self.user, password=self.password)
             conn.set_session(isolation_level=ISOLATION_LEVEL_READ_COMMITTED, autocommit=True)
         except:
-            LOGGER.critical('Cannot connect to database', exc_info=1)
+            LOGGER.critical('Cannot connect to database: %(adapter_with_connection_parameters)s', {'adapter_with_connection_parameters': repr(self)}, exc_info=1)
             try:
                 raise
             finally:

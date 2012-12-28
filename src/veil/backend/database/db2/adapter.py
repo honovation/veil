@@ -28,7 +28,7 @@ class DB2Adapter(object):
                 self.database, self.host, self.port, self.user, self.password)
             conn = ibm_db_dbi.connect(connection_string)
         except:
-            LOGGER.critical('Cannot connect to database', exc_info=1)
+            LOGGER.critical('Cannot connect to database: %(connection_string)s', {'connection_string': connection_string}, exc_info=1)
             try:
                 raise
             finally:
