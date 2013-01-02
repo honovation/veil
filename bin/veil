@@ -88,7 +88,7 @@ case "$1" in
         ;;
     deploy-env)
         shift
-        python -m veil_installer veil_installer.component_resource?veil.environment.in_service
+        sudo veil install veil_installer.component_resource?veil.environment.in_service
         exec veil environment in-service deploy-env $@
         ;;
     rollback-env)
