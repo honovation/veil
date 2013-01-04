@@ -92,7 +92,8 @@ class EventFormatter(logging.Formatter):
             '@type': '{}/{}'.format(record.name, event_name),
             '@tags': [record.levelname],
             '@message': record.getMessage(),
-            '@timestamp': time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created))
+            '@timestamp': time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)),
+            '@fields': {}
         }
         if record.args and isinstance(record.args, dict):
             event['@fields'] = dump_dict(record.args)
