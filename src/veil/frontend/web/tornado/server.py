@@ -45,7 +45,7 @@ def start_test_http_server(handler, host='127.0.0.1', port=8080):
 
 
 def create_http_server(handler, **kwargs):
-    return HTTPServer(HTTPHandler(handler), **kwargs)
+    return HTTPServer(HTTPHandler(handler), xheaders=True, **kwargs)
 
 
 class HTTPHandler(object):
