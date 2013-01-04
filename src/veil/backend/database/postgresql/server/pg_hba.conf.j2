@@ -79,6 +79,6 @@
 # "local" is for Unix domain socket connections only
 local   all             all                                     trust
 # IPv4 local connections:
-host    all             all             {{ host }} 255.255.255.0            md5
+host    all             all             {{ host }} 255.255.0.0            md5
 # IPv6 local connections:
 host    all             all             ::1/128                 trust
