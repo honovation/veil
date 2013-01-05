@@ -36,17 +36,19 @@ def check_web_service_dependencies(component_names, expected_dependencies):
 def require_web_service(purpose):
     if purpose not in instances:
         config = load_web_service_client_config(purpose)
-        suds_client = Client(config.url)
-        instances[purpose] = WebService(suds_client)
+        instances[purpose] = WebService(config.url)
     return instances[purpose]
 
 
 class WebService(object):
-    def __init__(self, suds_client):
-        self.suds_client = suds_client
+    def __init__(self, url):
+        self.suds_client = Client(url)
+        self.service_url = url.replace('?wsdl', '') # to work around erp tunnel port not preserved bug
 
     def new_object_of_type(self, wsdl_type):
         return self.suds_client.factory.create(wsdl_type)
 
     def __getattr__(self, item):
-        return getattr(self.suds_client.service, item)
+        service = getattr(self.suds_client.service, item)
+        service.method.location = self.service_url
+        return service
