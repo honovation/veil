@@ -12,15 +12,15 @@ def nginx_program(servers):
     })
 
 
-def nginx_server(server_name, listen, locations, upstreams=None, error_page=None, error_page_dir=None):
+def nginx_server(server_name, listen, locations, upstreams=None, error_page=None, error_page_dir=None, **kwargs):
     return {
-        server_name: {
+        server_name: dict({
             'listen': listen,
             'locations': locations,
             'upstreams': upstreams,
             'error_page': error_page,
             'error_page_dir': error_page_dir
-        }
+        }, **kwargs)
     }
 
 
