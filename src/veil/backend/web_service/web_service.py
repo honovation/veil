@@ -43,7 +43,7 @@ def require_web_service(purpose):
 class WebService(object):
     def __init__(self, url):
         self.suds_client = Client(url)
-        self.service_url = url.replace('?wsdl', '') # to work around erp tunnel port not preserved bug
+        self.service_url = str(url.replace('?wsdl', '')) # to work around erp tunnel port not preserved bug
 
     def new_object_of_type(self, wsdl_type):
         return self.suds_client.factory.create(wsdl_type)
