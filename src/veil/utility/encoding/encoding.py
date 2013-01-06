@@ -4,7 +4,7 @@ def to_str(s):
     if isinstance(s, (str, bytes, type(None))):
         return s
     if isinstance(s, unicode):
-        return s.encode("utf-8")
+        return s.encode('utf-8')
     raise Exception('to_str does not support {}'.format(type(s)))
 
 

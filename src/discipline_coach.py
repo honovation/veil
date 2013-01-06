@@ -8,6 +8,7 @@ import hashlib
 import shlex
 import subprocess
 import re
+from veil.utility.encoding import *
 
 # will be linked to $VEIL_HOME/.git/hooks/pre-commit by $VEIL_FRAMEWORK_HOME/bin/veil-init
 
@@ -31,7 +32,7 @@ def calculate_git_status_hash():
     hashes = [base_version]
     for file, version in changes.items():
         hashes.append('{} {}'.format(file, version))
-    return  '\n'.join(sorted(hashes))
+    return  to_str('\n'.join(sorted(hashes)))
 
 
 def get_git_dir_version(git_dir='.'):
@@ -44,10 +45,10 @@ def get_git_dir_version(git_dir='.'):
     for line in out.splitlines():
         match = RE_MODIFIED.match(line.strip())
         if match:
-            modified_files.append(match.group('name'))
+            modified_files.append(to_unicode(match.group('name')))
         match = RE_DELETED.match(line.strip())
         if match:
-            deleted_files.append(match.group('name'))
+            deleted_files.append(to_unicode(match.group('name')))
     changes = {}
     for file in modified_files:
         with open(os.path.join(git_dir, file)) as f:
