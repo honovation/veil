@@ -13,7 +13,7 @@ def uncompressed_directory_resource(compressed_file, path):
         return
     if is_installed:
         return
-    if compressed_file.endswith('.zip'):
+    if compressed_file.endswith('.zip') or compressed_file.endswith('.jar'):
         shell_execute('unzip {} -d {}'.format(compressed_file, path), capture=True)
     elif compressed_file.endswith('.tar.gz'):
         os.makedirs(path, mode=0755)
