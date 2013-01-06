@@ -134,7 +134,7 @@ def to_datetime_via_parse(value):
         raise Invalid(_('不是有效的日期时间'))
 
 
-def to_datetime(format='%Y-%m-%d %H:%M:%S'):
+def to_datetime(format='%Y-%m-%d %H:%M:%S', tz=DEFAULT_CLIENT_TIMEZONE):
     def bind(value):
         if isinstance(value, datetime):
             return value
@@ -142,7 +142,6 @@ def to_datetime(format='%Y-%m-%d %H:%M:%S'):
             if not value:
                 raise Invalid(_('不是有效的日期时间'))
             try:
-                tz = DEFAULT_CLIENT_TIMEZONE
                 dt = datetime.strptime(value, bind.format)
                 dt_localized = tz.localize(dt)
                 return dt_localized.astimezone(pytz.utc)
