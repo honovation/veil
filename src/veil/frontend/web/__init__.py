@@ -44,6 +44,7 @@ with veil_component.init_component(__name__):
     from .tornado import clear_http_arguments
     from .tornado import require_io_loop_executor
     from .xsrf import xsrf_token
+    from .xsrf import TAG_NO_XSRF_CHECK
 
     __all__ = [
         # from website
@@ -95,5 +96,6 @@ with veil_component.init_component(__name__):
         clear_http_arguments.__name__,
         require_io_loop_executor.__name__,
         # from xsrf
-        xsrf_token.__name__
+        xsrf_token.__name__,
+        'TAG_NO_XSRF_CHECK'
     ]
