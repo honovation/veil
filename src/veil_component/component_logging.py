@@ -63,7 +63,7 @@ def configure_root_component_logger(component_name):
     human_handler = logging.StreamHandler(os.fdopen(sys.stdout.fileno(), 'w', 0))
     human_handler.setFormatter(ColoredFormatter(
         fmt='%(asctime)s [%(name)s] %(message)s',
-        datefmt='%H:%M:%S'))
+        datefmt='%Y-%m-%d %H:%M:%S'))
     logger.addHandler(human_handler)
     if os.getenv('VEIL_LOGGING_EVENT'):
         machine_handler = logging.StreamHandler(os.fdopen(sys.stderr.fileno(), 'w', 0))
