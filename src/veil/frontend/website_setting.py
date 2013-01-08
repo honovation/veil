@@ -78,6 +78,18 @@ def website_locations(purpose):
             'alias': VEIL_VAR_DIR / 'inline-static-files' / '$1',
             'expires': '365d'
         },
+        '/favicon.ico': {
+            '_': """
+                access_log off; log_not_found off;
+            """,
+            'alias': VEIL_HOME / 'static' / 'favicon.ico'
+        },
+        '/robots.txt': {
+            '_': """
+                access_log off; log_not_found off;
+            """,
+            'alias': VEIL_HOME / 'static' / '{}-robots.txt'.format(purpose)
+        },
         '/static/': {
             '_': """
                 if ($args ~* v=(.+)) {
