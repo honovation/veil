@@ -49,3 +49,6 @@ def override_website_config(purpose, **overrides):
 def get_website_url_prefix(purpose):
     config = load_website_config(purpose)
     return 'http://{}:{}'.format(config.domain, config.domain_port)
+
+def get_website_domain(purpose):
+    return load_website_config(purpose).domain
