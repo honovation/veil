@@ -27,13 +27,16 @@ def bring_up_redsocks():
 
 @script('tunnel-up')
 def bring_up_tunnel(target_env, gateway_host_name=None):
+    hosts = list_veil_hosts(target_env)
     env = os.environ.copy()
     env['VEIL_TUNNEL_TARGET_ENV'] = target_env
     env['VEIL_TUNNEL_GATEWAY_HOST'] = gateway_host_name or ''
     try:
-        shell_execute('sudo iptables -t nat -I OUTPUT -p tcp -d 10.24.0.0/16 -j REDIRECT --to-ports 12345')
+        for host in hosts.values():
+            shell_execute('sudo iptables -t nat -I OUTPUT -p tcp -d {}.0/16 -j REDIRECT --to-ports 12345'.format(host.lan_range))
         shell_execute(
             'supervisord -c {}/tunnel-supervisord.cfg'.format(os.path.dirname(__file__)),
             env=env)
     finally:
-        shell_execute('sudo iptables -t nat -D OUTPUT -p tcp -d 10.24.0.0/16 -j REDIRECT --to-ports 12345')
+        for host in hosts.values():
+            shell_execute('sudo iptables -t nat -D OUTPUT -p tcp -d {}.0/16 -j REDIRECT --to-ports 12345'.format(host.lan_range))
