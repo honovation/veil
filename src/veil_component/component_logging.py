@@ -89,8 +89,9 @@ class EventFormatter(logging.Formatter):
         record.msg = to_unicode(record.msg)
         event_name = record.message.split(':')[0]
         event = {
-            '@type': '{}/{}'.format(record.name, event_name),
-            '@tags': [record.levelname],
+            '@type': 'veil',
+            '@source': record.name,
+            '@tags': [record.levelname, event_name],
             '@message': record.getMessage(),
             '@timestamp': time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)),
             '@fields': {}
