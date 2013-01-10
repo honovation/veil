@@ -3,11 +3,14 @@ import redis.client
 import time
 import datetime
 import os
+import logging
 from veil.environment import *
 from veil.frontend.cli import *
 from veil.utility.shell import *
 from .log_shipper_installer import load_log_shipper_config
 from .log_shipper_installer import VEIL_LOG_ARCHIVE_DIR
+
+LOGGER = logging.getLogger(__name__)
 
 @script('up')
 def bring_up_log_shipper():
@@ -27,7 +30,14 @@ def archive_old_logs():
     shell_execute('tar -pczf {} {}'.format(VEIL_LOG_ARCHIVE_DIR / '{}.tar.gz'.format(timestamp), VEIL_LOG_DIR))
     for root, dirs, files in os.walk(VEIL_LOG_DIR): # remove files keep dirs
         for file in files:
-            os.remove(os.path.join(root, file))
+            if 'log_shipper.log' != file:
+                os.remove(os.path.join(root, file))
+    ask_supervisord_to_reopen_child_process_log_files()
+
+
+def ask_supervisord_to_reopen_child_process_log_files():
+    supervisord_process_id = os.getppid()
+    shell_execute('kill -SIGUSR2 {}'.format(supervisord_process_id))
 
 
 class LogShipper(object):
@@ -52,6 +62,10 @@ class LogShipper(object):
             if latest_log_file_id != self.log_file_id:
                 self.log_file_id = latest_log_file_id
                 self.log_file = open(self.log_path, 'r')
+                LOGGER.info('reopened latest log file: %(path)s => %(file_id)s', {
+                    'path': self.log_path,
+                    'file_id': self.log_file_id
+                })
         else:
             self.open_log_file()
 
@@ -59,11 +73,18 @@ class LogShipper(object):
         if os.path.exists(self.log_path):
             self.log_file_id = load_file_id(self.log_path)
             self.log_file = open(self.log_path, 'r')
+            LOGGER.info('opened log file: %(path)s => %(file_id)s', {
+                'path': self.log_path,
+                'file_id': self.log_file_id
+            })
         else:
             self.log_file_id = None
             self.log_file = None
 
 
 def load_file_id(path):
-    st = os.stat(path)
-    return st.st_dev, st.st_ino
+    if os.path.exists(path):
+        st = os.stat(path)
+        return st.st_dev, st.st_ino
+    else:
+        return None
