@@ -34,13 +34,36 @@ class LogShipper(object):
     def __init__(self, log_path, redis_client, redis_key):
         super(LogShipper, self).__init__()
         self.log_path = log_path
-        self.log_file = open(log_path, 'r') if os.path.exists(log_path) else None
         self.redis_client = redis_client
         self.redis_key = redis_key
+        self.open_log_file()
 
     def ship(self):
-        if not self.log_file:
-            return
-        lines = self.log_file.readlines()
-        for line in lines:
-            self.redis_client.rpush(self.redis_key, line.strip())
+        self.open_latest_log_file()
+        if self.log_file:
+            lines = self.log_file.readlines()
+            for line in lines:
+                self.redis_client.rpush(self.redis_key, line.strip())
+
+    def open_latest_log_file(self):
+        # log path might point to different file due to log rotation
+        if self.log_file:
+            latest_log_file_id = load_file_id(self.log_path)
+            if latest_log_file_id != self.log_file_id:
+                self.log_file_id = latest_log_file_id
+                self.log_file = open(self.log_path, 'r')
+        else:
+            self.open_log_file()
+
+    def open_log_file(self):
+        if os.path.exists(self.log_path):
+            self.log_file_id = load_file_id(self.log_path)
+            self.log_file = open(self.log_path, 'r')
+        else:
+            self.log_file_id = None
+            self.log_file = None
+
+
+def load_file_id(path):
+    st = os.stat(path)
+    return st.st_dev, st.st_ino
