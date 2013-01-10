@@ -91,13 +91,15 @@ class EventFormatter(logging.Formatter):
         event = {
             '@type': 'veil',
             '@source': record.name,
-            '@tags': [record.levelname, event_name],
             '@message': record.getMessage(),
             '@timestamp': time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)),
-            '@fields': {}
+            '@fields': {
+                'level': record.levelname,
+                'event': event_name
+            }
         }
         if record.args and isinstance(record.args, dict):
-            event['@fields'] = dump_dict(record.args)
+            event['@fields'].update(dump_dict(record.args))
         if record.exc_info:
             event['@fields']['exception_type'] = unicode(record.exc_info[0])
             event['@fields']['exception_stack_trace'] = self.formatException(record.exc_info)
