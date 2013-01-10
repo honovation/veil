@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 from veil.backend.log_shipper_setting import LOG_SHIPPER_CONF_PATH
 
-VEIL_LOG_ARCHIVE_DIR = VEIL_HOME / 'log-archive'
+VEIL_LOG_ARCHIVE_DIR = VEIL_HOME / 'log-archive' / VEIL_ENV
 
 @composite_installer
 def log_shipper_resource(config):

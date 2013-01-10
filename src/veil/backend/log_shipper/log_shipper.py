@@ -15,7 +15,7 @@ def bring_up_log_shipper():
     shippers = []
     for log_path, redis_config in load_log_shipper_config().items():
         redis_client = redis.client.StrictRedis(host=redis_config.host, port=redis_config.port)
-        shippers.append(LogShipper(log_path, open(log_path, 'r'), redis_client, redis_config.key))
+        shippers.append(LogShipper(log_path, redis_client, redis_config.key))
     while True:
         for shipper in shippers:
             shipper.ship()
@@ -31,14 +31,16 @@ def archive_old_logs():
 
 
 class LogShipper(object):
-    def __init__(self, log_path, log_file, redis_client, redis_key):
+    def __init__(self, log_path, redis_client, redis_key):
         super(LogShipper, self).__init__()
         self.log_path = log_path
-        self.log_file = log_file
+        self.log_file = open(log_path, 'r') if os.path.exists(log_path) else None
         self.redis_client = redis_client
         self.redis_key = redis_key
 
     def ship(self):
+        if not self.log_file:
+            return
         lines = self.log_file.readlines()
         for line in lines:
             self.redis_client.rpush(self.redis_key, line.strip())
