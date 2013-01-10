@@ -1,11 +1,18 @@
 from __future__ import unicode_literals, print_function, division
 import redis.client
 import time
+import datetime
+from veil.environment import *
 from veil.frontend.cli import *
+from veil.utility.shell import *
 from .log_shipper_installer import load_log_shipper_config
+from .log_shipper_installer import VEIL_LOG_ARCHIVE_DIR
 
 @script('up')
 def bring_up_log_shipper():
+    timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    shell_execute('tar -pczf {} {}'.format(VEIL_LOG_ARCHIVE_DIR / '{}.tar.gz'.format(timestamp), VEIL_LOG_DIR))
+    shell_execute('rm -rf {}/*'.format(VEIL_LOG_DIR))
     shippers = []
     for log_path, redis_config in load_log_shipper_config().items():
         redis_client = redis.client.StrictRedis(host=redis_config.host, port=redis_config.port)
