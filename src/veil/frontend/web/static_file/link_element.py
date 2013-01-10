@@ -9,6 +9,8 @@ def process_link_elements(html):
     def on_link_element(match):
         if 'rel="stylesheet' not in match.group(1):
             return match.group(0)
+        if 'data-keep="data-keep"' in match.group(0):
+            return match.group(0)
         css_elements.append(match.group(0))
         return ''
 
