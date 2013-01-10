@@ -51,8 +51,9 @@ def get_git_dir_version(git_dir='.'):
             deleted_files.append(to_unicode(match.group('name')))
     changes = {}
     for file in modified_files:
-        with open(os.path.join(git_dir, file)) as f:
-            changes[file] = calculate_file_md5_hash(f)
+        if os.path.isfile(file):
+            with open(os.path.join(git_dir, file)) as f:
+                changes[file] = calculate_file_md5_hash(f)
     for file in deleted_files:
         changes[file] = 'DELETED'
     return base_version, changes
