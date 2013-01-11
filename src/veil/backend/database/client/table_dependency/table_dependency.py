@@ -174,7 +174,7 @@ def get_reading_table_names(sql):
     sql_froms, sql_joins = get_sql_froms_and_joins(sql)
     table_names = set(get_sql_froms_tables(sql_froms)).union(
         set(get_sql_joins_tables(sql_joins)))
-    return [t.split(' ')[0] for t in table_names]
+    return [t.split(' ')[0] for t in table_names if t and t[0] != '(']
 
 
 def get_sql_froms_and_joins(sql):
