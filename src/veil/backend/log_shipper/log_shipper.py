@@ -1,20 +1,18 @@
 from __future__ import unicode_literals, print_function, division
 import redis.client
 import time
-import datetime
 import os
 import logging
-from veil.environment import *
 from veil.frontend.cli import *
 from veil.utility.shell import *
 from .log_shipper_installer import load_log_shipper_config
-from .log_shipper_installer import VEIL_LOG_ARCHIVE_DIR
+
+# Written according to https://github.com/josegonzalez/beaver/blob/master/beaver/worker.py
 
 LOGGER = logging.getLogger(__name__)
 
 @script('up')
 def bring_up_log_shipper():
-    archive_old_logs()
     shippers = []
     for log_path, redis_config in load_log_shipper_config().items():
         redis_client = redis.client.StrictRedis(host=redis_config.host, port=redis_config.port)
@@ -23,17 +21,6 @@ def bring_up_log_shipper():
         for shipper in shippers:
             shipper.ship()
         time.sleep(0.1)
-
-
-def archive_old_logs():
-    timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    shell_execute('tar -pczf {} {}'.format(VEIL_LOG_ARCHIVE_DIR / '{}.tar.gz'.format(timestamp), VEIL_LOG_DIR))
-    for root, dirs, files in os.walk(VEIL_LOG_DIR): # remove files keep dirs
-        for file in files:
-            if 'log_shipper.log' != file:
-                os.remove(os.path.join(root, file))
-    ask_supervisord_to_reopen_child_process_log_files()
-
 
 def ask_supervisord_to_reopen_child_process_log_files():
     supervisord_process_id = os.getppid()
@@ -77,6 +64,7 @@ class LogShipper(object):
                 'path': self.log_path,
                 'file_id': self.log_file_id
             })
+            self.log_file.seek(os.path.getsize(self.log_file.name)) # skip old logs, assuming we started before them
         else:
             self.log_file_id = None
             self.log_file = None
