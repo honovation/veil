@@ -33,7 +33,7 @@ def date_filter(value, format='medium'):
 
 
 @template_filter('datetime')
-def datetime_filter(value, format='medium'):
+def datetime_filter(value, format='yyyy-MM-dd HH:mm'):
     if 'epoch' == format:
         epoch = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=pytz.utc)
         delta = value - epoch
