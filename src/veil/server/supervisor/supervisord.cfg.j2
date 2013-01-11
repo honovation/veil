@@ -85,6 +85,7 @@ exitcodes=0,2
 stopsignal={{ program.get('stop_signal', 'INT') }}
 startsecs={{ program.get('startsecs', 3) }}
 startretries={{ program.get('startretries', 3) }}
+priority={{ program.get('priority', 999) }}
 {% endfor %}
 
 ; The below sample eventlistener section shows all possible

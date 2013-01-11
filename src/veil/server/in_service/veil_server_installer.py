@@ -38,6 +38,8 @@ def to_supervisor_programs(veil_server_programs):
             supervisor_program['redirect_stderr'] = veil_server_program.redirect_stderr
         else:
             supervisor_program['redirect_stderr'] = True
+        if 'priority' in veil_server_program:
+            supervisor_program['priority'] = veil_server_program.priority
         supervisor_programs[program_name] = supervisor_program
     return supervisor_programs
 
