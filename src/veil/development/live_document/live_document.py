@@ -29,6 +29,7 @@ def document_statement(statement_name):
     return register
 
 document_statement('创建')(require_fixture)
+document_statement('选择')(require_fixture)
 
 
 @contextlib.contextmanager
