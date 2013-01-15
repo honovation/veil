@@ -27,7 +27,13 @@ def clone_veil():
 
 
 def pull_veil():
-    shell_execute('git pull', cwd='/opt/veil')
+    while True:
+        try:
+            shell_execute('git pull', cwd='/opt/veil')
+        except:
+            continue
+        else:
+            break
 
 
 def install(installer_path):

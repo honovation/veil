@@ -35,7 +35,13 @@ def clone_application(application_codebase, veil_home):
 
 def pull_application(application_branch, veil_home):
     shell_execute('git checkout {}'.format(application_branch), cwd=veil_home)
-    shell_execute('git pull', cwd=veil_home)
+    while True:
+        try:
+            shell_execute('git pull', cwd=veil_home)
+        except:
+            continue
+        else:
+            break
 
 
 def read_framework_version(veil_home):
@@ -55,7 +61,13 @@ def clone_veil(veil_framework_home):
 
 def pull_veil(framework_version, veil_framework_home):
     shell_execute('git checkout {}'.format(framework_version), cwd=veil_framework_home)
-    shell_execute('git pull', cwd=veil_framework_home)
+    while True:
+        try:
+            shell_execute('git pull', cwd=veil_framework_home)
+        except:
+            continue
+        else:
+            break
 
 
 def deploy(veil_framework_home, veil_home, veil_env, veil_server_name):
