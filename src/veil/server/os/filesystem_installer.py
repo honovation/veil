@@ -42,6 +42,8 @@ def install_directory(is_dry_run, path, owner='root', group='root', mode=0755, r
 
 @atomic_installer
 def file_resource(path, content, owner='root', group='root', mode=0644):
+    if isinstance(mode, basestring):
+        mode = int(mode)
     resource_name = 'file?{}'.format(path)
     args = dict(path=path, content=content, owner=owner, group=group, mode=mode)
     dry_run_result = get_dry_run_result()
