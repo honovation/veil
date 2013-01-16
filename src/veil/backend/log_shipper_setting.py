@@ -7,7 +7,6 @@ def log_shipper_program(config):
     return objectify({
         'log_shipper': {
             'execute_command': 'veil backend log-shipper up',
-            'run_as': 'root',
             'priority': 1, # first to start to ship other programs startup logs
             'resources': [('veil.backend.log_shipper.log_shipper_resource', {
                 'config': config

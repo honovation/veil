@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
+from veil.frontend.nginx_setting import NGINX_PID_PATH
 
 @composite_installer
 def nginx_resource(servers):
@@ -12,6 +13,7 @@ def nginx_resource(servers):
             'owner': CURRENT_USER,
             'owner_group': CURRENT_USER_GROUP,
             'log_directory': VEIL_LOG_DIR / 'nginx',
+            'pid_file': NGINX_PID_PATH,
             'servers': servers
         }))
     ])

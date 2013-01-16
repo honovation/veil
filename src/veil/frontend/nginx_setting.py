@@ -2,6 +2,8 @@ from __future__ import unicode_literals, print_function, division
 from veil.model.collection import *
 from veil.environment import *
 
+NGINX_PID_PATH = VEIL_VAR_DIR / 'nginx.pid'
+
 def nginx_program(servers):
     return objectify({
         'nginx': {

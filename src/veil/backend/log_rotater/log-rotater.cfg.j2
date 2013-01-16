@@ -1,0 +1,12 @@
+{% for action in config.get('_', []) %}
+{{ action }}
+{% endfor %}
+{% for path, actions in config.items() %}
+{% if '_' != path %}
+{{ path }} {
+    {% for action in actions %}
+    {{ action }}
+    {% endfor %}
+}
+{% endif %}
+{% endfor %}
