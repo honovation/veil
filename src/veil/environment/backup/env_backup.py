@@ -19,7 +19,8 @@ def env_backup_resource():
         dry_run_result['env_backup'] = 'BACKUP'
         return
     veil_server_names = sorted(list_veil_servers(VEIL_ENV).keys())
-    veil_server_names.remove('@guard')
+    if '@guard' in veil_server_names:
+        veil_server_names.remove('@guard')
     for veil_server_name in veil_server_names:
         bring_down_server(VEIL_ENV, veil_server_name)
     try:

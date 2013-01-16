@@ -22,10 +22,6 @@ def bring_up_log_shipper():
             shipper.ship()
         time.sleep(0.1)
 
-def ask_supervisord_to_reopen_child_process_log_files():
-    supervisord_process_id = os.getppid()
-    shell_execute('kill -SIGUSR2 {}'.format(supervisord_process_id))
-
 
 class LogShipper(object):
     def __init__(self, log_path, redis_client, redis_key):
@@ -36,11 +32,11 @@ class LogShipper(object):
         self.open_log_file()
 
     def ship(self):
-        self.open_latest_log_file()
         if self.log_file:
             lines = self.log_file.readlines()
             for line in lines:
                 self.redis_client.rpush(self.redis_key, line.strip())
+        self.open_latest_log_file()
 
     def open_latest_log_file(self):
         # log path might point to different file due to log rotation
