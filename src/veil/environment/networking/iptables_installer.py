@@ -16,6 +16,9 @@ def iptables_rule_resource(table, rule):
         return
     LOGGER.info('install iptables rule: %(rule)s to table %(table)s...', {'rule': rule, 'table': table})
     shell_execute('iptables -t {} -A {}'.format(table, rule))
+    updated_rules = shell_execute('iptables-save -t {}'.format(table), capture=True)
+    if rule not in updated_rules:
+        raise Exception('rule doest not match the exact format of iptables-save, which will cause duplicated entry in the future, please FIX IT.\n{}'.format(updated_rules))
 
 
 @atomic_installer
