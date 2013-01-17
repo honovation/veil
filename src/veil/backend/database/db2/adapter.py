@@ -16,10 +16,8 @@ class DB2Adapter(object):
         self.database = database
         self.user = user
         self.password = password
+        self.schema = schema
         self.conn = self._get_conn()
-        if schema:
-            with contextlib.closing(self.cursor()) as c:
-                c.execute('SET SCHEMA {}'.format(schema))
 
     def _get_conn(self):
         conn = None
@@ -27,6 +25,9 @@ class DB2Adapter(object):
             connection_string = 'DRIVER={IBM DB2 ODBC DRIVER};DATABASE=%s;HOSTNAME=%s;PORT=%s; PROTOCOL=TCPIP;UID=%s;PWD=%s;' % (
                 self.database, self.host, self.port, self.user, self.password)
             conn = ibm_db_dbi.connect(connection_string)
+            if self.schema:
+                with contextlib.closing(self.cursor()) as c:
+                    c.execute('SET SCHEMA {}'.format(self.schema))
         except:
             LOGGER.critical('Cannot connect to database: %(connection_string)s', {'connection_string': connection_string}, exc_info=1)
             try:
