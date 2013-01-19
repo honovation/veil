@@ -20,6 +20,19 @@ http {
     gzip  on;
     gzip_disable "MSIE [1-6]\.(?!.*SV1)";
 
+    log_format logstash_json '{ "@timestamp": "$time_iso8601", '
+                             '"@type": "nginx", '
+                             '"@fields": { '
+                             '"remote_addr": "$remote_addr", '
+                             '"remote_user": "$remote_user", '
+                             '"body_bytes_sent": "$body_bytes_sent", '
+                             '"request_time": "$request_time", '
+                             '"status": "$status", '
+                             '"request": "$request", '
+                             '"request_method": "$request_method", '
+                             '"http_referrer": "$http_referer", '
+                             '"http_user_agent": "$http_user_agent" } }';
+
     {% for server_properties in config.servers.values() %}
         {% for upstream_name, upstream_servers in (server_properties.get('upstreams') or {}).items() %}
         upstream {{ upstream_name }} {
@@ -34,6 +47,7 @@ http {
     server {
         server_name  {{ server_name }};
         error_log {{ config.log_directory }}/{{ server_name }}-error.log;
+        access_log {{ config.log_directory }}/{{ server_name }}-access.log logstash_json;
         {% for key, value in server_properties.items() %}
             {% if 'locations' == key %}
                 {% for location, location_properties in value.items() %}
