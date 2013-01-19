@@ -33,7 +33,7 @@ class Timer(object):
                 LOGGER.info('timer woke up')
                 before = time.time()
                 try:
-                    return func(*args, **kwargs)
+                    func(*args, **kwargs)
                 finally:
                     after = time.time()
                     LOGGER.info('timer work done: in %(elapsed_time)s seconds', {
