@@ -48,7 +48,9 @@ def create_secure_cookie(name, value, expires_days=30, **kwargs):
 
 
 def get_cookies(request=None):
-    request = request or get_current_http_request()
+    request = request or get_current_http_request(optional=True)
+    if not request:
+        return {}
     if not hasattr(request, '_cookies'):
         request._cookies = Cookie.BaseCookie()
         if 'Cookie' in request.headers:
@@ -70,8 +72,9 @@ def get_cookie(name, default=None, request=None):
 
 
 def get_cookie_from_response(name):
-    if get_current_http_response()._cookies:
-        for written_cookie in get_current_http_response()._cookies:
+    current_http_response = get_current_http_response(optional=True)
+    if current_http_response and current_http_response._cookies:
+        for written_cookie in current_http_response._cookies:
             cookies = Cookie.BaseCookie()
             cookies.load(to_str(written_cookie))
             if name in cookies:
