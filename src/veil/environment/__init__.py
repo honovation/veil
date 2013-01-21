@@ -23,7 +23,7 @@ def veil_env(server_hosts, servers, deployment_memo=None):
     })
 
 
-def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None):
+def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, dns='8.8.8.8'):
     from veil.model.collection import objectify
 
     return objectify({
@@ -32,7 +32,8 @@ def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=()
         'programs': programs,
         'deploys_via': deploys_via,
         'resources': resources,
-        'supervisor_http_port': supervisor_http_port
+        'supervisor_http_port': supervisor_http_port,
+        'dns': dns
     })
 
 
