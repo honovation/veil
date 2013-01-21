@@ -40,7 +40,7 @@ def convert_datetime_to_naive_local(dt):
 
 
 def convert_datetime_to_timezone(dt, tzinfo):
-    assert dt.tzinfo is not None
+    assert not is_naive_datetime(dt)
     converted = dt.astimezone(tzinfo)
     if hasattr(tzinfo, 'normalize'): # pytz
         converted = tzinfo.normalize(converted)
@@ -48,9 +48,12 @@ def convert_datetime_to_timezone(dt, tzinfo):
 
 
 def convert_naive_datetime_to_timezone(dt, tzinfo):
-    assert dt.tzinfo is None
+    assert is_naive_datetime(dt)
     if hasattr(tzinfo, 'localize'): # pytz
         converted = tzinfo.localize(dt)
     else:
         converted = dt.replace(tzinfo=tzinfo)
     return converted
+
+def is_naive_datetime(dt):
+    return dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None
