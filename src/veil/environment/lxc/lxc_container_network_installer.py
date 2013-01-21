@@ -3,6 +3,7 @@ import logging
 from veil_installer import *
 from veil.utility.path import *
 from veil.server.config import *
+from .lxc_container_user_installer import unsafe_call
 
 LOGGER = logging.getLogger(__name__)
 
@@ -39,9 +40,11 @@ def lxc_container_dns_resource(container_name, dns):
         dry_run_result[key] = '-' if is_installed else 'INSTALL'
         return
     if is_installed:
+        unsafe_call('chroot {} service resolvconf restart'.format(CONTAINER_ROOTFS_PATH))
         return
     LOGGER.info('set container dns: in %(container_name)s to %(dns)s', {
         'container_name': container_name,
         'dns': dns
     })
     RESOLVE_CONF_PATH.write_text(config_content)
+    unsafe_call('chroot {} service resolvconf restart'.format(CONTAINER_ROOTFS_PATH))
