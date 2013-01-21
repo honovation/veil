@@ -10,6 +10,7 @@ import pytz
 from pytz import timezone, UnknownTimeZoneError
 from dateutil.parser import parse
 from decimal import Decimal
+from veil.utility.clock import *
 from veil.model.binding.invalid import Invalid
 from veil.frontend.locale import DEFAULT_CLIENT_TIMEZONE
 
@@ -143,8 +144,9 @@ def to_datetime(format='%Y-%m-%d %H:%M:%S', tz=DEFAULT_CLIENT_TIMEZONE):
                 raise Invalid(_('不是有效的日期时间'))
             try:
                 dt = datetime.strptime(value, bind.format)
-                dt_localized = tz.localize(dt)
-                return dt_localized.astimezone(pytz.utc)
+                dt_localized = convert_naive_datetime_to_timezone(dt, tz)
+                dt_utc = convert_datetime_to_timezone(dt_localized, pytz.utc)
+                return dt_utc
             except ValueError:
                 raise Invalid(_('不是有效的日期时间'))
     bind.format = format
