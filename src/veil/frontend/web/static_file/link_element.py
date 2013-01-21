@@ -11,7 +11,8 @@ def process_link_elements(html):
             return match.group(0)
         if 'data-keep="data-keep"' in match.group(0):
             return match.group(0)
-        css_elements.append(match.group(0))
+        if match.group(0) not in css_elements:
+            css_elements.append(match.group(0))
         return ''
 
     html = RE_LINK.sub(on_link_element, html)
