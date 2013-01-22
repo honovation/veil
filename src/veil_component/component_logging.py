@@ -120,6 +120,8 @@ def dump_dict(args):
 
 
 def to_unicode(s):
+    if not isinstance(s, basestring):
+        return s
     if isinstance(s, unicode):
         return s
     return unicode(s, encoding='utf8')
