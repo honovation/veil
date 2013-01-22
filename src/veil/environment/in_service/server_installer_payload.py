@@ -24,6 +24,7 @@ def main():
 
 def install_git():
     #shell_execute('apt-get update')
+    shell_execute('service resolvconf restart')
     shell_execute('apt-get install -y git-core')
 
 
