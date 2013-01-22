@@ -60,6 +60,7 @@ veil.resource.get = function (options) {
     var dataType = options.dataType;
     var data=options.data;
     var _ = {
+        cache: false,
         type:'GET',
         url:url,
         data:data,
@@ -265,6 +266,7 @@ veil.widget.refresh = function (widget, options) {
             url:refreshUrl,
             data:data,
             onSuccess:function (html) {
+                veil.log(html);
                 veil.widget.processWidget(html, function(html) {
                     var token = 'refreshed-' + Math.round(Math.random()*1000);
                     widget.replaceWith($(html).attr('data-refresh-token', token));
@@ -280,6 +282,7 @@ veil.widget.refresh = function (widget, options) {
             }
         });
     }else{
+        veil.log('missing refreshUrl');
     }
 };
 
