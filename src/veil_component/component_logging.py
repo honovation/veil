@@ -5,6 +5,7 @@ import os
 import sys
 import json
 import time
+import socket
 from .component_map import get_root_component
 
 VEIL_LOGGING_LEVEL_CONFIG = 'VEIL_LOGGING_LEVEL_CONFIG'
@@ -90,10 +91,11 @@ class EventFormatter(logging.Formatter):
         event_name = record.message.split(':')[0]
         event = {
             '@type': 'veil',
-            '@source': record.name,
+            '@source': socket.gethostname(),
             '@message': record.getMessage(),
             '@timestamp': time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)),
             '@fields': {
+                'logged_by': record.name,
                 'level': record.levelname,
                 'event': event_name
             }
