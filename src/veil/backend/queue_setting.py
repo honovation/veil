@@ -72,10 +72,11 @@ def job_worker_program(
             logging_levels=application_logging_levels),
         component_resource(name='veil.backend.queue'),
         application_resource(component_names=application_component_names, config=application_config)]
+    pyrse_log_path = VEIL_LOG_DIR / '{}_worker-pyres.log'.format(worker_name)
     return objectify({
         '{}_worker'.format(worker_name): {
-            'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -l {} -f stderr {}'.format(
-                queue_host, queue_port, pyres_worker_logging_level, ','.join(queue_names)
+            'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -l {} -f {} {}'.format(
+                queue_host, queue_port, pyres_worker_logging_level, pyrse_log_path, ','.join(queue_names)
             ), # log instruction for the main process, a.k.a pyres_worker
             'environment_variables': {
                 'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path,
