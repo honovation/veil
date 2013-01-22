@@ -50,9 +50,20 @@ def load_logging_levels():
 
 def configure_component_logger(component_name):
     logger = logging.getLogger(component_name)
-    logger.setLevel(logging_levels.get(component_name, logging.DEBUG))
+    logging_level = get_logging_level(component_name)
+    logger.setLevel(logging_level)
     root_component_name = get_root_component(component_name)
     configure_root_component_logger(root_component_name or component_name)
+
+
+def get_logging_level(target):
+    matched_component_names = []
+    for component_name in logging_levels.keys():
+        if target == component_name or target.startswith('{}.'.format(component_name)):
+            matched_component_names.append(component_name)
+    if not matched_component_names:
+        return logging_levels.get('__default__', logging.DEBUG)
+    return logging_levels[max(matched_component_names)]
 
 
 def configure_root_component_logger(component_name):
