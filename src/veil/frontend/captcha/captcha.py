@@ -80,9 +80,9 @@ def generate(size=(180, 30),
              fg_color=(0, 0, 255),
              font_size=100,
              font_type="{}/wqy-microhei.ttc".format(os.path.dirname(__file__)),
-             draw_lines=True,
+             draw_lines=False,
              n_line=(1, 2),
-             draw_points=True,
+             draw_points=False,
              point_chance=2):
     '''
     @todo: 生成验证码图片
@@ -126,7 +126,7 @@ def generate(size=(180, 30),
         eval_question = question.replace(u'加', '+').replace(u'减', '-').replace(u'乘', '*')
         answer = str(eval(eval_question))
 
-        return question + u'等于？', answer
+        return question, answer
 
     def create_lines():
         '''绘制干扰线'''
