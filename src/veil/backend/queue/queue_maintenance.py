@@ -26,6 +26,21 @@ def count_failed_jobs(queue):
     print(count)
 
 
+@script('count-pending-jobs')
+def delete_pending_jobs(queue):
+    resq = get_resq()
+    count = resq.redis.llen('resque:queue:{}'.format(queue))
+    print(count)
+
+
+@script('delete-pending-jobs')
+def delete_pending_jobs(queue):
+    resq = get_resq()
+    count = resq.redis.llen('resque:queue:{}'.format(queue))
+    resq.redis.delete('resque:queue:{}'.format(queue))
+    print(count)
+
+
 def get_resq():
     config = load_queue_client_config()
     redis = Redis(host=config.host, port=config.port)
