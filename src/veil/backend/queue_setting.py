@@ -90,7 +90,8 @@ def job_worker_program(
                 'startretries': 10,
                 'startsecs': 10,
                 'redirect_stderr': False,
-                'reloads_on_change': application_component_names
+                'reloads_on_change': application_component_names,
+                'patchable': True
             }
         })
     return objectify(programs)

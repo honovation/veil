@@ -45,6 +45,13 @@ def deploy_env(veil_env_name, config_dir):
     tag_deploy(veil_env_name)
 
 
+@script('patch-env')
+def patch_env(veil_env_name):
+    update_branch(veil_env_name)
+    install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, is_patch=True))
+    tag_patch(veil_env_name)
+
+
 @script('rollback-env')
 def rollback_env(vel_env_name):
     for veil_server_name in sorted(list_veil_servers(vel_env_name).keys()):
@@ -80,6 +87,12 @@ def update_branch(veil_env_name):
 
 def tag_deploy(veil_env_name):
     tag_name = '{}-{}-{}'.format(
+        veil_env_name, datetime.datetime.now().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
+    shell_execute('git tag {}'.format(tag_name))
+    shell_execute('git push origin tag {}'.format(tag_name))
+
+def tag_patch(veil_env_name):
+    tag_name = '{}-{}-{}-patch'.format(
         veil_env_name, datetime.datetime.now().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
     shell_execute('git tag {}'.format(tag_name))
     shell_execute('git push origin tag {}'.format(tag_name))

@@ -30,6 +30,7 @@ def website_programs(
                 'resources': resources,
                 'reloads_on_change': application_component_names,
                 'group': '{}_website'.format(purpose),
+                'patchable': True
             }
         })
     return programs

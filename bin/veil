@@ -91,6 +91,11 @@ case "$1" in
         sudo veil install veil_installer.component_resource?veil.environment.in_service
         exec veil environment in-service deploy-env $@
         ;;
+    patch-env)
+        shift
+        sudo veil install veil_installer.component_resource?veil.environment.in_service
+        exec veil environment in-service patch-env $@
+        ;;
     rollback-env)
         shift
         exec veil environment in-service rollback-env $@
@@ -103,6 +108,10 @@ case "$1" in
         shift
         veil_init
         exec veil server in-service deploy $@
+        ;;
+    patch)
+        shift
+        exec veil server in-service patch $@
         ;;
     backup-env)
         shift

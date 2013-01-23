@@ -9,6 +9,7 @@ def main():
     application_codebase = sys.argv[1]
     veil_env = sys.argv[2]
     veil_server_name = sys.argv[3]
+    action = sys.argv[4]
     veil_home = '/opt/{}/app'.format(veil_env)
     veil_framework_home = '/opt/{}/veil'.format(veil_env)
     application_branch = 'env-{}'.format(veil_env)
@@ -19,7 +20,12 @@ def main():
     framework_version = read_framework_version(veil_home)
     clone_veil(veil_framework_home)
     pull_veil(framework_version, veil_framework_home)
-    deploy(veil_framework_home, veil_home, veil_env, veil_server_name)
+    if 'deploy' == action:
+        deploy(veil_framework_home, veil_home, veil_env, veil_server_name)
+    elif 'patch' == action:
+        patch(veil_framework_home, veil_home, veil_env, veil_server_name)
+    else:
+        raise Exception('unknown action: {}'.format(action))
 
 
 def install_git():
@@ -74,6 +80,12 @@ def pull_veil(framework_version, veil_framework_home):
 def deploy(veil_framework_home, veil_home, veil_env, veil_server_name):
     env = os.environ.copy()
     shell_execute('{}/bin/veil :{}/{} deploy'.format(
+        veil_framework_home, veil_env, veil_server_name), cwd=veil_home, env=env)
+
+
+def patch(veil_framework_home, veil_home, veil_env, veil_server_name):
+    env = os.environ.copy()
+    shell_execute('{}/bin/veil :{}/{} patch'.format(
         veil_framework_home, veil_env, veil_server_name), cwd=veil_home, env=env)
 
 

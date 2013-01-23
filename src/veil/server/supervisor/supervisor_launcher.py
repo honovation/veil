@@ -57,4 +57,6 @@ def bring_down_supervisor():
         time.sleep(3)
 
 
-
+@script('restart-program')
+def restart_program(program_name):
+    supervisorctl('restart', program_name)
