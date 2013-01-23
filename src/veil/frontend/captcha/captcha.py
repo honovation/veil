@@ -39,9 +39,9 @@ def captcha_widget():
 
 def generate_captcha():
     challenge_code = uuid.uuid4().get_hex()
-    image, answer = generate(size=(150, 30), font_size=20)
+    image, answer = generate(size=(150, 30), font_size=25)
     redis().set(challenge_code, answer)
-    redis().expire(challenge_code, 60) #expire 30 seconds
+    redis().expire(challenge_code, 60) #expire 60 seconds
     buffer = StringIO()
     image.save(buffer, 'GIF')
     buffer.reset()
@@ -108,13 +108,13 @@ def generate(size=(180, 30),
     draw = ImageDraw.Draw(img) # 创建画笔
 
     numbers = range(1, 11)
-    operator = [u'加', u'减', u'乘']
+    operator = [u'+', u'-', u'x']
 
     def get_question():
         first_number = random.choice(numbers)
         selected_operator = random.choice(operator)
         question = str(first_number) + selected_operator
-        if selected_operator == u'减':
+        if selected_operator == u'-':
             second_number = 0
             while True:
                 second_number = random.choice(numbers)
@@ -123,10 +123,10 @@ def generate(size=(180, 30),
             question += str(second_number)
         else:
             question += str(random.choice(numbers))
-        eval_question = question.replace(u'加', '+').replace(u'减', '-').replace(u'乘', '*')
+        eval_question = question.replace(u'+', '+').replace(u'-', '-').replace(u'x', '*')
         answer = str(eval(eval_question))
 
-        return question, answer
+        return question+'= ?', answer
 
     def create_lines():
         '''绘制干扰线'''
@@ -156,8 +156,7 @@ def generate(size=(180, 30),
 
         font = ImageFont.truetype(font_type, font_size)
         font_width, font_height = font.getsize(strs)
-        draw.text(((width - font_width) / 4, height / 4),
-            strs, font=font, fill=fg_color)
+        draw.text((0, 10), strs, font=font, fill=fg_color)
 
         return answer
 
@@ -177,7 +176,7 @@ def generate(size=(180, 30),
               0.001,
               float(random.randint(1, 2)) / 500
     ]
-    img = img.transform(size, Image.PERSPECTIVE, params) # 创建扭曲
+    #img = img.transform(size, Image.PERSPECTIVE, params) # 创建扭曲
 
     img = img.filter(ImageFilter.EDGE_ENHANCE_MORE) # 滤镜，边界加强（阈值更大）
 
