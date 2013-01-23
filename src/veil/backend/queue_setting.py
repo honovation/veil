@@ -64,7 +64,7 @@ def periodic_job_scheduler_program(logging_levels, dependencies):
 def job_worker_program(
         worker_name, pyres_worker_logging_level, application_logging_levels,
         queue_host, queue_port, queue_names,
-        application_component_names, application_config, run_as=None):
+        application_component_names, application_config, run_as=None, count=1):
     veil_logging_level_config_path = VEIL_ETC_DIR / '{}-worker-log.cfg'.format(worker_name)
     resources = [
         veil_logging_level_config_resource(
@@ -73,21 +73,24 @@ def job_worker_program(
         component_resource(name='veil.backend.queue'),
         application_resource(component_names=application_component_names, config=application_config)]
     pyrse_log_path = VEIL_LOG_DIR / '{}_worker-pyres.log'.format(worker_name)
-    return objectify({
-        '{}_worker'.format(worker_name): {
-            'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -l {} -f {} {}'.format(
-                queue_host, queue_port, pyres_worker_logging_level, pyrse_log_path, ','.join(queue_names)
-            ), # log instruction for the main process, a.k.a pyres_worker
-            'environment_variables': {
-                'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path,
-                'VEIL_LOGGING_EVENT': 'True'
-            }, # log instruction for the sub-process forked from pyres_worker, a.k.a our code
-            'group': 'workers',
-            'run_as': run_as or CURRENT_USER,
-            'resources': resources,
-            'startretries': 10,
-            'startsecs': 10,
-            'redirect_stderr': False,
-            'reloads_on_change': application_component_names
-        }
-    })
+    programs = {}
+    for i in range(count):
+        programs.update({
+            '{}_worker{}'.format(worker_name, i+1): {
+                'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -l {} -f {} {}'.format(
+                    queue_host, queue_port, pyres_worker_logging_level, pyrse_log_path, ','.join(queue_names)
+                ), # log instruction for the main process, a.k.a pyres_worker
+                'environment_variables': {
+                    'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path,
+                    'VEIL_LOGGING_EVENT': 'True'
+                }, # log instruction for the sub-process forked from pyres_worker, a.k.a our code
+                'group': 'workers',
+                'run_as': run_as or CURRENT_USER,
+                'resources': resources,
+                'startretries': 10,
+                'startsecs': 10,
+                'redirect_stderr': False,
+                'reloads_on_change': application_component_names
+            }
+        })
+    return objectify(programs)
