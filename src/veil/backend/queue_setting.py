@@ -77,7 +77,7 @@ def job_worker_program(
     for i in range(count):
         programs.update({
             '{}_worker{}'.format(worker_name, i+1): {
-                'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -l {} -f {} {}'.format(
+                'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -t 60 -l {} -f {} {}'.format(
                     queue_host, queue_port, pyres_worker_logging_level, pyrse_log_path, ','.join(queue_names)
                 ), # log instruction for the main process, a.k.a pyres_worker
                 'environment_variables': {
