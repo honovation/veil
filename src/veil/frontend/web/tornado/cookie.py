@@ -7,6 +7,7 @@ import email.utils
 from logging import getLogger
 import re
 import time
+import urllib
 from veil.utility.encoding import *
 from veil.utility.hash import *
 from .context import get_current_http_request
@@ -67,7 +68,7 @@ def get_cookie(name, default=None, request=None):
         return cookie_from_response
     cookies = get_cookies(request=request)
     if name in cookies:
-        return cookies[name].value
+        return urllib.unquote(cookies[name].value)
     return default
 
 
