@@ -2,11 +2,10 @@ from __future__ import unicode_literals, print_function, division
 import babel.dates
 import pytz
 import datetime
+from veil.utility.clock import DEFAULT_CLIENT_TIMEZONE
 from veil.frontend.template import template_filter
 from veil.utility.clock import get_current_time
 from .i18n import get_current_locale, _
-
-DEFAULT_CLIENT_TIMEZONE = pytz.timezone('Asia/Shanghai')
 
 @template_filter('timedelta')
 def timedelta_filter(value):

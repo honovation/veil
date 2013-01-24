@@ -4,6 +4,8 @@ from datetime import datetime
 import calendar
 import pytz
 
+DEFAULT_CLIENT_TIMEZONE = pytz.timezone('Asia/Shanghai')
+
 current_time = None
 
 @contextlib.contextmanager

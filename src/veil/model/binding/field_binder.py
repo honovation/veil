@@ -12,7 +12,6 @@ from dateutil.parser import parse
 from decimal import Decimal
 from veil.utility.clock import *
 from veil.model.binding.invalid import Invalid
-from veil.frontend.locale import DEFAULT_CLIENT_TIMEZONE
 
 _EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9_=%.+-]+@([a-zA-Z0-9_=%+-]+\.)+[a-zA-Z]{2,6}$')
 
