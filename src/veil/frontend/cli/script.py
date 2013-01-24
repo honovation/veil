@@ -35,6 +35,7 @@ def execute_script(*argv, **kwargs):
                 'valid_options': level.keys(),
             })
         sys.exit(1)
+    script_handler = None
     try:
         next_level = level[arg]
         if inspect.isfunction(next_level):
@@ -46,6 +47,12 @@ def execute_script(*argv, **kwargs):
                 executing_script_handlers.pop()
         else:
             return execute_script(level=next_level, *argv[1:])
+    except KeyboardInterrupt:
+        LOGGER.info('script terminated by KeyboardInterrupt: %(script_handler)s %(argv)s', {
+            'script_handler': script_handler,
+            'argv': argv
+        })
+        return
     except SystemExit:
         raise
     except:
