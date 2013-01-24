@@ -22,7 +22,7 @@ def postgresql_server_resource(purpose, config):
                 'port': config.port,
                 'log_destination': 'csvlog',
                 'logging_collector': True,
-                'log_directory': VEIL_LOG_DIR / '{}-postgresql'.format(purpose),
+                'log_directory': VEIL_LOG_DIR / '{}-postgresql'.format(purpose.replace('_', '-')),
                 'log_min_duration_statement': config.log_min_duration_statement,
                 'log_filename': config.get('log_filename')
             })),
