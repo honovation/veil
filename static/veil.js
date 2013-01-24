@@ -5,7 +5,10 @@ $.ajaxSetup({headers:{'X-XSRF':$.cookie('_xsrf')}});
 var veil = veil || {};
 
 veil.log = function(message) {
-    typeof console != undefined && console.log(message);
+    if(typeof console === "undefined"){
+    }else{
+        console.log(message);
+    }
 };
 
 executed = [];
