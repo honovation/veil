@@ -23,7 +23,8 @@ def postgresql_server_resource(purpose, config):
                 'log_destination': 'csvlog',
                 'logging_collector': True,
                 'log_directory': VEIL_LOG_DIR / '{}-postgresql'.format(purpose),
-                'log_min_duration_statement': config.log_min_duration_statement
+                'log_min_duration_statement': config.log_min_duration_statement,
+                'log_filename': config.get('log_filename')
             })),
         file_resource(path=pg_config_dir / 'pg_hba.conf', content=render_config('pg_hba.conf.j2', host=config.host)),
         file_resource(path=pg_config_dir / 'pg_ident.conf', content=render_config('pg_ident.conf.j2')),

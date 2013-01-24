@@ -4,7 +4,7 @@ from veil.environment import *
 
 def postgresql_program(
         purpose, host, port, owner, owner_password, user, password,
-        log_min_duration_statement):
+        log_min_duration_statement, log_filename=None):
     data_dir = VEIL_VAR_DIR / '{}-postgresql'.format(purpose.replace('_', '-'))
     return objectify({
         '{}_postgresql'.format(purpose): {
@@ -19,7 +19,8 @@ def postgresql_program(
                     'owner_password': owner_password,
                     'user': user,
                     'password': password,
-                    'log_min_duration_statement': log_min_duration_statement
+                    'log_min_duration_statement': log_min_duration_statement,
+                    'log_filename': log_filename # set to None, postgresql will rotate it for us
                 }
             })]
         }
