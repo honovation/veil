@@ -23,6 +23,7 @@ with veil_component.init_component(__name__):
     from .field_binder import to_datetime_via_parse
     from .field_binder import to_datetime_with_minute_precision_from_iso8601
     from .field_binder import to_timezone
+    from .field_binder import valid_password
     from .binder_maker import each
     from .binder_maker import optional
     from .object_binder import ObjectBinder
@@ -52,6 +53,7 @@ with veil_component.init_component(__name__):
         to_datetime_via_parse.__name__,
         to_datetime_with_minute_precision_from_iso8601.__name__,
         to_timezone.__name__,
+        valid_password.__name__,
         # from binder_maker
         each.__name__,
         optional.__name__,
