@@ -319,10 +319,16 @@ veil.widget.processWidget = function (html, processHtml) {
         if ($('body').html().indexOf(url) == -1) {
             if ($.inArray(url, veil.resource.loadedStylesheets) == -1) {
                 veil.widget.loadedStylesheets.push(url);
-                var link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.type = 'text/css';
-                link.href = url;
+                var link;
+                if(document.createStyleSheet) {
+                    link = document.createStyleSheet(url);
+                }
+                else {
+                    link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.type = 'text/css';
+                    link.href = url;
+                }
                 $('body').append(link);
             }
         }
