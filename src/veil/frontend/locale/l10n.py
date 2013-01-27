@@ -12,9 +12,9 @@ from .i18n import get_current_locale, _
 def timedelta_filter(delta, granularity='second', with_direction=False):
     if with_direction:
         if delta >= datetime.timedelta(seconds=0):
-            direction = _(' 后')
+            direction = _('后')
         else:
-            direction = _(' 前')
+            direction = _('前')
     else:
         direction = ''
     delta_str = format_timedelta(delta, granularity=granularity, locale=get_current_locale())
@@ -97,19 +97,11 @@ def format_timedelta(delta, granularity='second', threshold=.85, locale='zh_CN')
         seconds = int((delta.days * 86400) + delta.seconds)
     else:
         seconds = int(delta)
-    result = ''
-    reminder = abs(seconds)
     for unit, plural_form, secs_per_unit in TIMEDELTA_UNITS:
-        multiple = reminder // secs_per_unit
-        reminder = reminder % secs_per_unit
-        if unit == granularity:
-            if reminder / secs_per_unit >= threshold:
-                multiple += 1
-            result += '{}{}'.format(multiple, plural_form)
-            break
-        else:
-            if multiple >= 1:
-                result += '{}{}'.format(multiple, plural_form)
-                if reminder == 0:
-                    break
-    return result
+        value = abs(seconds) / secs_per_unit
+        if value >= threshold or unit == granularity:
+            if unit == granularity and value > 0:
+                value = max(1, value)
+            value = int(round(value))
+            return '{}{}'.format(value, plural_form)
+    return ''
