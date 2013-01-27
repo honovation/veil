@@ -164,12 +164,17 @@ veil.widget.createResource = function (widget, onSuccess, dataType) {
         onError:function () {
             veil.widget.showErrorMessage(widget, '操作失败');
         },
-        onValidationError:function (xhr) {
+        onValidationError:function (xhr, isShowErrorMessage) {
+            if(typeof(isShowErrorMessage) === 'undefined') {
+                isShowErrorMessage = false;
+            }
             veil.widget.processWidget(xhr.responseText, function(html){
                 var newWidget = $(html);
                 widget.replaceWith(newWidget);
                 widget = newWidget;
-//                veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
+                if (isShowErrorMessage === true) {
+                    veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
+                }
                 veil.widget.showFieldErrorMessage(widget);
             });
         }
@@ -189,12 +194,17 @@ veil.widget.updateResource = function (widget, onSuccess) {
         onError:function () {
             veil.widget.showErrorMessage(widget, '操作失败');
         },
-        onValidationError:function (xhr) {
+        onValidationError:function (xhr, isShowErrorMessage) {
+            if(typeof(isShowErrorMessage) === 'undefined') {
+                isShowErrorMessage = true;
+            }
             veil.widget.processWidget(xhr.responseText, function(html){
                 var newWidget = $(html);
                 widget.replaceWith(newWidget);
                 widget = newWidget;
-                veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
+                if (isShowErrorMessage === true) {
+                    veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
+                }
                 veil.widget.showFieldErrorMessage(widget);
             });
         }
@@ -214,12 +224,18 @@ veil.widget.getResource = function (widget, onSuccess) {
         onError:function () {
             veil.widget.showErrorMessage(widget, '操作失败');
         },
-        onValidationError:function (xhr) {
+        onValidationError:function (xhr, isShowErrorMessage) {
+            if(typeof(isShowErrorMessage) === 'undefined') {
+                isShowErrorMessage = true;
+            }
             veil.widget.processWidget(xhr.responseText, function(html){
                 var newWidget = $(html);
                 widget.replaceWith(newWidget);
                 widget = newWidget;
                 veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
+                if (isShowErrorMessage === true) {
+                    veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
+                }
                 veil.widget.showFieldErrorMessage(widget);
             });
         }
