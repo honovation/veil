@@ -23,6 +23,10 @@ def get_current_time():
     return current_time or datetime.now(pytz.utc)
 
 
+def get_current_time_in_client_timezone():
+    return convert_datetime_to_timezone(get_current_time(), DEFAULT_CLIENT_TIMEZONE)
+
+
 def get_current_timestamp():
     """
     Caveat: the guaranteed precision of timestamp is 1 second
