@@ -45,7 +45,7 @@ def convert_datetime_to_naive_local(dt):
     return datetime.fromtimestamp(convert_datetime_to_timestamp(dt))
 
 
-def convert_datetime_to_timezone(dt, tzinfo):
+def convert_datetime_to_timezone(dt, tzinfo=DEFAULT_CLIENT_TIMEZONE):
     assert not is_naive_datetime(dt)
     converted = dt.astimezone(tzinfo)
     if hasattr(tzinfo, 'normalize'): # pytz
