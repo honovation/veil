@@ -35,7 +35,17 @@ class LogShipper(object):
         if self.log_file:
             lines = self.log_file.readlines()
             for line in lines:
-                self.redis_client.rpush(self.redis_key, line.strip())
+                try:
+                    self.redis_client.rpush(self.redis_key, line.strip())
+                except:
+                    LOGGER.exception('failed to push log')
+                    self.wait_for_redis_back()
+                    try:
+                        self.redis_client.rpush(self.redis_key, line.strip())
+                    except:
+                        LOGGER.exception('failed to push log again: %(line)s', {
+                            'line': line.strip()
+                        })
         self.open_latest_log_file()
 
     def open_latest_log_file(self):
@@ -64,6 +74,16 @@ class LogShipper(object):
         else:
             self.log_file_id = None
             self.log_file = None
+
+    def wait_for_redis_back(self):
+        while True:
+            try:
+                time.sleep(1)
+                self.redis_client.llen(self.redis_key)
+                return
+            except:
+                LOGGER.exception('log collector still unavailable')
+
 
 
 def load_file_id(path):
