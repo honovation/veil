@@ -35,7 +35,7 @@ def deploy_env(veil_env_name, config_dir):
         while True:
             if 'iwilldoit' == sys.stdin.readline().strip():
                 break
-    check_locked_all_scripts()
+    check_all_locked_migration_scripts()
     update_branch(veil_env_name)
     install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     for deploying_server_name in sorted(list_veil_servers(veil_env_name).keys()):
@@ -48,7 +48,7 @@ def deploy_env(veil_env_name, config_dir):
 
 @script('patch-env')
 def patch_env(veil_env_name):
-    check_locked_all_scripts()
+    check_all_locked_migration_scripts()
     update_branch(veil_env_name)
     install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, is_patch=True))
     tag_patch(veil_env_name)
@@ -111,7 +111,7 @@ def _wrap_with(code):
 red = _wrap_with('31')
 green = _wrap_with('32')
 
-def check_locked_all_scripts():
+def check_all_locked_migration_scripts():
     migration_script_dir = VEIL_HOME / 'db'
     purposes = migration_script_dir.listdir()
     for purpose in purposes:
