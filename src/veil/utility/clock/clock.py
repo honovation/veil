@@ -53,7 +53,7 @@ def convert_datetime_to_timezone(dt, tzinfo=DEFAULT_CLIENT_TIMEZONE):
     return converted
 
 
-def convert_naive_datetime_to_timezone(dt, tzinfo):
+def convert_naive_datetime_to_timezone(dt, tzinfo=DEFAULT_CLIENT_TIMEZONE):
     assert is_naive_datetime(dt)
     if hasattr(tzinfo, 'localize'): # pytz
         converted = tzinfo.localize(dt)
