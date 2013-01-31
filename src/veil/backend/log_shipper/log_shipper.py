@@ -80,6 +80,7 @@ class LogShipper(object):
             try:
                 time.sleep(1)
                 self.redis_client.llen(self.redis_key)
+                LOGGER.info('log collector is available now')
                 return
             except:
                 LOGGER.exception('log collector still unavailable')
