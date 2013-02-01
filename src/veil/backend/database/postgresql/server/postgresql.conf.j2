@@ -106,8 +106,7 @@ unix_socket_directory = '/tmp'		# (change requires restart)
 
 # - Memory -
 
-shared_buffers = 24MB			# min 128kB
-					# (change requires restart)
+shared_buffers = {{ config.get('shared_buffers', '24MB') }} # min 128kB (change requires restart)
 #temp_buffers = 8MB			# min 800kB
 #max_prepared_transactions = 0		# zero disables the feature
 					# (change requires restart)
@@ -115,8 +114,8 @@ shared_buffers = 24MB			# min 128kB
 # per transaction slot, plus lock space (see max_locks_per_transaction).
 # It is not advisable to set max_prepared_transactions nonzero unless you
 # actively intend to use prepared transactions.
-#work_mem = 1MB				# min 64kB
-#maintenance_work_mem = 16MB		# min 1MB
+work_mem = {{ config.get('work_mem', '1MB') }} # min 64kB
+maintenance_work_mem = {{ config.get('maintenance_work_mem', '16MB') }} # min 1MB
 #max_stack_depth = 2MB			# min 100kB
 
 # - Kernel Resource Usage -
@@ -141,7 +140,7 @@ shared_buffers = 24MB			# min 128kB
 
 # - Asynchronous Behavior -
 
-#effective_io_concurrency = 1		# 1-1000. 0 disables prefetching
+effective_io_concurrency = {{ config.get('effective_io_concurrency', 1) }} # 1-1000. 0 disables prefetching
 
 
 #------------------------------------------------------------------------------
@@ -162,8 +161,7 @@ shared_buffers = 24MB			# min 128kB
 					#   fsync_writethrough
 					#   open_sync
 #full_page_writes = on			# recover from partial page writes
-#wal_buffers = 64kB			# min 32kB
-					# (change requires restart)
+wal_buffers = {{ config.get('wal_buffers', '64kB') }} # min 32kB (change requires restart)
 #wal_writer_delay = 200ms		# 1-10000 milliseconds
 
 #commit_delay = 0			# range 0-100000, in microseconds
@@ -171,9 +169,9 @@ shared_buffers = 24MB			# min 128kB
 
 # - Checkpoints -
 
-#checkpoint_segments = 3		# in logfile segments, min 1, 16MB each
+checkpoint_segments = {{ config.get('checkpoint_segments', 3) }} # in logfile segments, min 1, 16MB each
 #checkpoint_timeout = 5min		# range 30s-1h
-#checkpoint_completion_target = 0.5	# checkpoint target duration, 0.0 - 1.0
+checkpoint_completion_target = {{ config.get('checkpoint_completion_target', 0.5) }} # checkpoint target duration, 0.0 - 1.0
 #checkpoint_warning = 30s		# 0 disables
 
 # - Archiving -
@@ -228,7 +226,7 @@ shared_buffers = 24MB			# min 128kB
 #cpu_tuple_cost = 0.01			# same scale as above
 #cpu_index_tuple_cost = 0.005		# same scale as above
 #cpu_operator_cost = 0.0025		# same scale as above
-#effective_cache_size = 128MB
+effective_cache_size = {{ config.get('effective_cache_size', '128MB') }}
 
 # - Genetic Query Optimizer -
 
@@ -262,7 +260,7 @@ log_destination = '{{ config.get('log_destination', 'stderr') }}'		# Valid value
 					# requires logging_collector to be on.
 
 # This is used when logging to stderr:
-logging_collector = {{ 'on' if config.get('logging_collector',False) else 'off' }}		# Enable capturing of stderr and csvlog
+logging_collector = {{ 'on' if config.get('logging_collector', False) else 'off' }}		# Enable capturing of stderr and csvlog
 					# into log files. Required to be on for
 					# csvlogs.
 					# (change requires restart)
