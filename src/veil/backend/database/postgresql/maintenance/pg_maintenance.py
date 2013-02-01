@@ -207,13 +207,15 @@ def reset(purpose):
     shell_execute('veil backend database postgresql migrate {}'.format(purpose))
 
 def check_if_locked_migration_scripts_being_changed():
-    for purpose in os.listdir('./db'):
-        file_names = set(os.listdir('./db/{}'.format(purpose)))
+    if not os.path.exists(VEIL_HOME / 'db'):
+        return
+    for purpose in os.listdir(VEIL_HOME / 'db'):
+        file_names = set(os.listdir(VEIL_HOME / 'db' / purpose))
         for sql_file_name in file_names:
             locked_file_name = sql_file_name.replace('.sql', '.locked')
             if sql_file_name.endswith('.sql') and locked_file_name in file_names:
-                expected_md5 = open('./db/{}/{}'.format(purpose, locked_file_name)).read()
-                sql_path = './db/{}/{}'.format(purpose, sql_file_name)
+                expected_md5 = open(VEIL_HOME / 'db' / purpose / locked_file_name).read()
+                sql_path = VEIL_HOME / 'db' / purpose / sql_file_name
                 with open(sql_path) as f:
                     actual_md5 = calculate_file_md5_hash(f)
                 if actual_md5 != expected_md5:

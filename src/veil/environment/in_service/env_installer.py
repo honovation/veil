@@ -112,6 +112,8 @@ red = _wrap_with('31')
 green = _wrap_with('32')
 
 def check_all_locked_migration_scripts():
+    if not os.path.exists(VEIL_HOME / 'db'):
+        return
     migration_script_dir = VEIL_HOME / 'db'
     purposes = migration_script_dir.listdir()
     for purpose in purposes:
