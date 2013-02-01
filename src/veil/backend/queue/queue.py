@@ -69,7 +69,7 @@ class RedisQueue(object):
                 assert pytz.utc == value.tzinfo, 'must provide datetime in pytz.utc timezone'
         to_queue = to_queue or job_handler.queue
         self.resq.enqueue_at_from_string(
-            scheduled_at, '{}.{}'.format(job_handler.__module__, job_handler.__name__),
+            convert_datetime_to_naive_local(scheduled_at), '{}.{}'.format(job_handler.__module__, job_handler.__name__),
             to_queue, payload)
 
     def enqueue_then(self, job_handler, action, **payload):
