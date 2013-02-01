@@ -9,11 +9,6 @@ from veil.utility.shell import *
 
 @script('create')
 def create_env_backup():
-    return install_resource(env_backup_resource())
-
-
-@atomic_installer
-def env_backup_resource():
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         dry_run_result['env_backup'] = 'BACKUP'

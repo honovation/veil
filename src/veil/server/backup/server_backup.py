@@ -8,11 +8,6 @@ from veil.utility.shell import *
 
 @script('create')
 def create_server_backup(backup_path):
-    install_resource(server_backup_resource(backup_path=backup_path))
-
-
-@atomic_installer
-def server_backup_resource(backup_path):
     is_backup_there = os.path.exists(backup_path)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
