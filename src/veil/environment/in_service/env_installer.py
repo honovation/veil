@@ -119,6 +119,6 @@ def check_all_locked_migration_scripts():
         script_file_count = len(purpose.listdir('*.sql'))
         if locked_file_count < script_file_count:
             print(red('You must lock scripts in {}'.format(purpose)))
-            return
+            exit(-1)
         else:
             print(green('Migration script check in {} ...passed!'.format(purpose)))
