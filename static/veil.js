@@ -261,11 +261,7 @@ veil.widget.showFieldErrorMessage = function (widget) {
                 var $field = widget.find('[name=' + field + ']');
                 var $error = $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>'
                     + error + '</span>');
-                if( $field.parents('label').length==1){
-                    $error.insertBefore( $field );
-                } else{
-                    $error.insertAfter( $field );
-                }
+                $error.insertAfter( $field );
             });
         }
     }
