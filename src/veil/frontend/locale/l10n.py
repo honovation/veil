@@ -34,8 +34,9 @@ def time_filter(value, format='medium'):
 
 
 @template_filter('date')
-def date_filter(value, format='medium'):
-    return babel.dates.format_date(date=value, format=format, locale=get_current_locale())
+def date_filter(value, format='medium', delta=0):
+    date_to_show = value + datetime.timedelta(days=delta)
+    return babel.dates.format_date(date=date_to_show, format=format, locale=get_current_locale())
 
 
 @template_filter('datetime')
