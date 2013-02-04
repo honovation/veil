@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import functools
+from veil.utility.encoding import *
 
 def traced(level='INFO', color=None):
     level = getattr(logging, level)
@@ -8,7 +9,7 @@ def traced(level='INFO', color=None):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            args_message = ', '.join([unicode(arg) for arg in args])
+            args_message = to_unicode(str(', ').join([arg for arg in args]))
             if kwargs:
                 args_message = '{}, {}'.format(
                     args_message, ', '.join(['{}=%({})s'.format(k, k) for k in kwargs.keys()]))
