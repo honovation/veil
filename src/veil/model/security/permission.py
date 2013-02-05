@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import functools
 import contextlib
@@ -12,12 +13,12 @@ def permission_protected(*permissions):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            missing_permissions = permissions - grant_permissions
+            missing_permissions = permissions - granted_permissions
             if missing_permissions:
                 LOGGER.warn('permission denied: missing %(missing_permissions)s', {
                     'missing_permissions': missing_permissions
                 })
-                raise PermissionDenied('missing {}'.format(missing_permissions))
+                raise PermissionDenied('权限不足：{}'.format('，'.join(missing_permissions)))
             return func(*args, **kwargs)
 
         return wrapper

@@ -3,6 +3,7 @@ import contextlib
 import httplib
 from logging import getLogger
 from veil.model.command import *
+from veil.model.security import *
 from .context import get_current_http_response
 
 LOGGER = getLogger(__name__)
@@ -39,6 +40,10 @@ def handle_exception():
         response.finish()
     except CommandError, e:
         response.status_code = httplib.INTERNAL_SERVER_ERROR
+        response.write(e.message)
+        response.finish()
+    except PermissionDenied, e:
+        response.status_code = httplib.FORBIDDEN
         response.write(e.message)
         response.finish()
     except:
