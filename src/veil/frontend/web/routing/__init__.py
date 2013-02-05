@@ -12,6 +12,8 @@ with veil_component.init_component(__name__):
     from .routing import publish_new_website_event
     from .page_post_processor import register_page_post_processor
     from .page_post_processor import TAG_NO_POST_PROCESS
+    from .security import RoutePermissionProtector
+    from .security import TagBasedRoutePermissionProtector
 
     __all__ = [
         # from routing
@@ -26,5 +28,8 @@ with veil_component.init_component(__name__):
         publish_new_website_event.__name__,
         # from page_post_processor
         register_page_post_processor.__name__,
-        'TAG_NO_POST_PROCESS'
+        'TAG_NO_POST_PROCESS',
+        # from security
+        RoutePermissionProtector.__name__,
+        TagBasedRoutePermissionProtector.__name__
     ]

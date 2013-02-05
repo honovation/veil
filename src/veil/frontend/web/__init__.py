@@ -18,6 +18,8 @@ with veil_component.init_component(__name__):
     from .routing import register_page_post_processor
     from .routing import TAG_NO_POST_PROCESS
     from .routing import publish_new_website_event
+    from .routing import RoutePermissionProtector
+    from .routing import TagBasedRoutePermissionProtector
     from .static_file import static_url
     from .static_file import process_script_elements
     from .tornado import get_current_http_context
@@ -69,6 +71,8 @@ with veil_component.init_component(__name__):
         register_page_post_processor.__name__,
         'TAG_NO_POST_PROCESS',
         publish_new_website_event.__name__,
+        RoutePermissionProtector.__name__,
+        TagBasedRoutePermissionProtector.__name__,
         # from static_file
         static_url.__name__,
         process_script_elements.__name__,
