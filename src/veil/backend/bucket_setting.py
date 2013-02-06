@@ -5,7 +5,7 @@ def bucket_location(base_directory):
     return {
         '_': """
             if ($args ~* v=(.+)) {
-                expires 365d;
+                expires max;
             }
             """,
         'alias': as_path(base_directory) / ''

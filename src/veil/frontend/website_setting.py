@@ -47,7 +47,7 @@ def website_upstreams(purpose, start_port, processes_count):
 
 
 def website_locations(purpose):
-    return {
+    locations = {
         '/': {
             '_': """
                 if ($content_type ~* multipart/form-data) {
@@ -62,13 +62,7 @@ def website_locations(purpose):
                     break;
                 }
                 proxy_pass http://%s-tornado;
-                proxy_set_header   Host             $host;
-                proxy_set_header   X-Real-IP        $remote_addr;
-                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
-                proxy_intercept_errors on;
-                """ % (
-                VEIL_VAR_DIR / 'uploaded-files',
-                purpose),
+                """ % (VEIL_VAR_DIR / 'uploaded-files', purpose),
         },
         '@after_upload': {
             'proxy_pass': 'http://{}-tornado'.format(purpose)
@@ -77,26 +71,32 @@ def website_locations(purpose):
         # /static/v-xxxx/a-b.js
         '~ ^/static/v-(.*)/': {
             'alias': VEIL_VAR_DIR / 'inline-static-files' / '$1',
-            'expires': '365d'
-        },
-        '/favicon.ico': {
-            '_': """
-                access_log off; log_not_found off;
-            """,
-            'alias': VEIL_HOME / 'static' / 'favicon.ico'
-        },
-        '/robots.txt': {
-            '_': """
-                access_log off; log_not_found off;
-            """,
-            'alias': VEIL_HOME / 'static' / '{}-robots.txt'.format(purpose)
-        },
-        '/static/': {
-            '_': """
-                if ($args ~* v=(.+)) {
-                    expires 365d;
-                }
-                """,
-            'alias': VEIL_HOME / 'static' / ''
+            'expires': 'max'
         }
     }
+    if VEIL_ENV not in ['ljmall-public', 'ljmall-staging']:
+        locations.update({
+            '/favicon.ico': {
+                '_': """
+                    expires 60d;
+                    access_log off; log_not_found off;
+                    """,
+                'alias': VEIL_HOME / 'static' / 'favicon.ico'
+            },
+            '/robots.txt': {
+                '_': """
+                    access_log off; log_not_found off;
+                    """,
+                'alias': VEIL_HOME / 'static' / '{}-robots.txt'.format(purpose)
+            },
+            '/static/': {
+                '_': """
+                    expires 7d;
+                    if ($args ~* v=(.+)) {
+                        expires max;
+                    }
+                    """,
+                'alias': VEIL_HOME / 'static' / ''
+            }
+        })
+    return locations;
