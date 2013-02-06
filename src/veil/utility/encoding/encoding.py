@@ -9,7 +9,7 @@ def to_str(s):
 
 
 def to_unicode(s, encoding=None):
-    if isinstance(s, unicode):
+    if isinstance(s, (unicode, type(None))):
         return s
     encoding = encoding or 'utf-8'
     return unicode(s, encoding=encoding)
