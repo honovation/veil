@@ -5,7 +5,7 @@ def bucket_location(base_directory):
     return {
         '_': """
             expires max;
-            if ($args !~* v=(.+)) {
+            if ($query_string !~* "v=(.+)") {
                 expires 7d;
                 add_header Pragma public;
                 add_header Cache-Control "public, must-revalidate, proxy-revalidate";

@@ -11,14 +11,14 @@ events {
 }
 
 http {
-    default_type text/html;
+    default_type application/octet-stream;
 
     map_hash_bucket_size 128;
 
-    sendfile on;
-
     keepalive_timeout 120 75;
+    sendfile on;
     tcp_nodelay on;
+    tcp_nopush on;
 
     client_body_buffer_size 128k;
     client_max_body_size 10m;
@@ -38,12 +38,14 @@ http {
         gzip_static off;
     {% endif %}
 
+    proxy_read_timeout 200;
+    proxy_buffers 256 8k;
+    proxy_intercept_errors on;
     proxy_set_header Accept-Encoding "";
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_intercept_errors on;
-    proxy_buffers 256 8k;
+    proxy_set_header X-Scheme $scheme;
 
     log_format logstash_json '{ "@timestamp": "$time_iso8601", '
                              '"@type": "nginx", '

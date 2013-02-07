@@ -61,6 +61,8 @@ def website_locations(purpose):
                     upload_cleanup 400-599;
                     break;
                 }
+                proxy_redirect off;
+                proxy_next_upstream error;
                 proxy_pass http://%s-tornado;
                 """ % (VEIL_VAR_DIR / 'uploaded-files', purpose),
         },
@@ -92,7 +94,7 @@ def website_locations(purpose):
             '/static/': {
                 '_': """
                     expires max;
-                    if ($args !~* v=(.+)) {
+                    if ($query_string !~* "v=(.+)") {
                         expires 7d;
                         add_header Pragma public;
                         add_header Cache-Control "public, must-revalidate, proxy-revalidate";
