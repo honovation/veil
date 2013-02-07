@@ -11,6 +11,8 @@ events {
 }
 
 http {
+    default_type text/html;
+
     map_hash_bucket_size 128;
 
     sendfile on;
@@ -25,7 +27,7 @@ http {
         gzip on;
         gzip_static off;
         gzip_proxied any;
-        gzip_min_length 1024;
+        gzip_min_length 2k;
         gzip_comp_level 2;
         gzip_types text/plain text/css text/javascript application/javascript application/x-javascript application/json text/x-json text/xml application/xml application/xml+rss application/atom+xml image/x-icon image/bmp image/x-ms-bmp;
         gzip_vary on;
@@ -92,7 +94,7 @@ http {
                 {% if value %}
                     {% for error_number, error_page_name in value.items() %}
                         error_page {{ error_number }} /{{ error_page_name }};
-                        location  /{{ error_page_name }} {
+                        location = /{{ error_page_name }} {
                             root {{ server_properties['error_page_dir'] }};
                             }
                     {% endfor %}

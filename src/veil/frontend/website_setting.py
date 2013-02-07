@@ -76,14 +76,14 @@ def website_locations(purpose):
     }
     if VEIL_ENV not in ['ljmall-public', 'ljmall-staging']:
         locations.update({
-            '/favicon.ico': {
+            '= /favicon.ico': {
                 '_': """
-                    expires 60d;
                     access_log off; log_not_found off;
+                    expires 60d;
                     """,
                 'alias': VEIL_HOME / 'static' / 'favicon.ico'
             },
-            '/robots.txt': {
+            '= /robots.txt': {
                 '_': """
                     access_log off; log_not_found off;
                     """,
