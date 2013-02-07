@@ -91,9 +91,11 @@ def website_locations(purpose):
             },
             '/static/': {
                 '_': """
-                    expires 7d;
-                    if ($args ~* v=(.+)) {
-                        expires max;
+                    expires max;
+                    if ($args !~* v=(.+)) {
+                        expires 7d;
+                        add_header Pragma public;
+                        add_header Cache-Control "public, must-revalidate, proxy-revalidate";
                     }
                     """,
                 'alias': VEIL_HOME / 'static' / ''
