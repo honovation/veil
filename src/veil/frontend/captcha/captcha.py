@@ -5,7 +5,6 @@ import functools
 import random
 import uuid
 import os
-import logging
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from veil_installer import *
 from veil.frontend.template import *
@@ -16,7 +15,8 @@ from veil.environment import *
 
 bucket = register_bucket('captcha_image')
 redis = register_redis('captcha_answer')
-LOGGER = logging.getLogger(__name__)
+
+CAPTCHA_ANSWER_ALIVE_TIME_IN_SECONDS = 60
 
 def register_captcha(website):
     add_application_sub_resource(
@@ -40,8 +40,7 @@ def captcha_widget():
 def generate_captcha():
     challenge_code = uuid.uuid4().get_hex()
     image, answer = generate(size=(150, 30), font_size=25)
-    redis().set(challenge_code, answer)
-    redis().expire(challenge_code, 60) #expire 60 seconds
+    redis().setex(challenge_code, CAPTCHA_ANSWER_ALIVE_TIME_IN_SECONDS, answer)
     buffer = StringIO()
     image.save(buffer, 'GIF')
     buffer.reset()
