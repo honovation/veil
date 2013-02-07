@@ -21,14 +21,20 @@ http {
     client_body_buffer_size 128k;
     client_max_body_size 10m;
 
-    gzip on;
-    gzip_types text/html text/plain text/css text/javascript application/javascript application/x-javascript application/json text/x-json text/xml application/xml application/xml+rss application/atom+xml image/x-icon image/bmp image/x-ms-bmp;
-    gzip_min_length 1024;
-    gzip_buffers 128 8k;
-    gzip_comp_level 2;
-    gzip_proxied any;
-    gzip_vary on;
-    gzip_disable "MSIE [1-6]\.(?!.*SV1)";
+    {% if config.enable_compression %}
+        gzip on;
+        gzip_static off;
+        gzip_proxied any;
+        gzip_min_length 1024;
+        gzip_comp_level 2;
+        gzip_types text/html text/plain text/css text/javascript application/javascript application/x-javascript application/json text/x-json text/xml application/xml application/xml+rss application/atom+xml image/x-icon image/bmp image/x-ms-bmp;
+        gzip_vary on;
+        gzip_buffers 128 8k;
+        gzip_disable "MSIE [1-6]\.(?!.*SV1)";
+    {% else %}
+        gzip off;
+        gzip_static off;
+    {% endif %}
 
     proxy_set_header Accept-Encoding "";
     proxy_set_header Host $host;

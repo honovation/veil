@@ -4,20 +4,23 @@ from veil.environment import *
 
 NGINX_PID_PATH = VEIL_VAR_DIR / 'nginx.pid'
 
-def nginx_program(servers):
+def nginx_program(servers, enable_compression=False):
     return objectify({
         'nginx': {
             'execute_command': 'nginx -c {}'.format(VEIL_ETC_DIR / 'nginx.conf'),
             'run_as': 'root',
-            'resources': [('veil.frontend.nginx.nginx_resource', {'servers': servers})]
+            'resources': [('veil.frontend.nginx.nginx_resource', {
+                'servers': servers,
+                'enable_compression': enable_compression
+            })]
         }
     })
 
 
-def nginx_server(server_name, listen, locations, upstreams=None, error_page=None, error_page_dir=None, **kwargs):
+def nginx_server(server_name, listen, locations, upstreams=None, error_page=None, error_page_dir=None, default_server=False, **kwargs):
     return {
         server_name: dict({
-            'listen': listen,
+            'listen': '{}{}'.format(listen, ' default_server' if default_server else ''),
             'locations': locations,
             'upstreams': upstreams,
             'error_page': error_page,
