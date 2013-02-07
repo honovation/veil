@@ -37,6 +37,13 @@ class RouteDecorator(object):
     def __init__(self, method, path_template, website=None, tags=(), delegates_to=None, **path_template_params):
         self.method = method
         self.path_template = path_template
+        if website is None:
+            LOGGER.warn('[NOT RECOMMENDED]website is not specified: %(website)s, %(infer_website)s, %(method)s, %(path_template)s', {
+                'website': website,
+                'infer_website': infer_website(),
+                'method': method,
+                'path_template': path_template
+            })
         self.website = (website or infer_website()).upper()
         self.tags = tags
         self.delegates_to = delegates_to
