@@ -13,12 +13,11 @@ events {
 http {
     default_type application/octet-stream;
 
-    map_hash_bucket_size 128;
-
-    keepalive_timeout 120 75;
+    keepalive_timeout 120 60;
     sendfile on;
     tcp_nodelay on;
     tcp_nopush on;
+    server_tokens off;
 
     client_body_buffer_size 128k;
     client_max_body_size 10m;

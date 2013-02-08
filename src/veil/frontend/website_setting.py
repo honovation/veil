@@ -48,6 +48,13 @@ def website_upstreams(purpose, start_port, processes_count):
 
 def website_locations(purpose):
     locations = {
+        '= /': {
+            '_': """
+                proxy_pass http://%s-tornado;
+                proxy_redirect off;
+                proxy_next_upstream error;
+                """ % purpose
+        },
         '/': {
             '_': """
                 if ($content_type ~* multipart/form-data) {
@@ -61,10 +68,10 @@ def website_locations(purpose):
                     upload_cleanup 400-599;
                     break;
                 }
+                proxy_pass http://%s-tornado;
                 proxy_redirect off;
                 proxy_next_upstream error;
-                proxy_pass http://%s-tornado;
-                """ % (VEIL_VAR_DIR / 'uploaded-files', purpose),
+                """ % (VEIL_VAR_DIR / 'uploaded-files', purpose)
         },
         '@after_upload': {
             'proxy_pass': 'http://{}-tornado'.format(purpose)
