@@ -40,6 +40,7 @@ http {
     proxy_read_timeout 200;
     proxy_buffers 256 8k;
     proxy_intercept_errors on;
+    proxy_pass_header Server;
     proxy_set_header Accept-Encoding "";
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
