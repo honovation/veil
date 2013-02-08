@@ -1,10 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 import cookielib
 import httplib
-import threading
 import urllib
 import urllib2
-from veil.development.test import *
 from .website_launcher import start_test_website
 from .tornado import *
 

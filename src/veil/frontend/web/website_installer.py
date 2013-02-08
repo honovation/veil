@@ -52,3 +52,6 @@ def get_website_url_prefix(purpose):
 
 def get_website_domain(purpose):
     return load_website_config(purpose).domain
+
+def get_website_parent_domain(purpose):
+    return '.'.join(get_website_domain(purpose).split('.')[1:])

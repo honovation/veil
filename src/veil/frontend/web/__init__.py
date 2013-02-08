@@ -6,6 +6,7 @@ with veil_component.init_component(__name__):
     from .website_launcher import register_website_context_manager
     from .website_installer import get_website_url_prefix
     from .website_installer import get_website_domain
+    from .website_installer import get_website_parent_domain
     from .website_installer import website_resource
     from .client import start_website_and_client
     from .routing import route
@@ -57,6 +58,7 @@ with veil_component.init_component(__name__):
         # from website_installer
         get_website_url_prefix.__name__,
         get_website_domain.__name__,
+        get_website_parent_domain.__name__,
         website_resource.__name__,
         # from client
         start_website_and_client.__name__,
