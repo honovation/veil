@@ -80,6 +80,7 @@ def website_locations(purpose):
         # /static/v-xxxx/a-b.js
         '~ ^/static/v-(.*)/': {
             'alias': VEIL_VAR_DIR / 'inline-static-files' / '$1',
+            'access_log': 'off',
             'expires': 'max'
         }
     }
@@ -100,6 +101,7 @@ def website_locations(purpose):
             },
             '/static/': {
                 '_': """
+                    access_log off;
                     expires max;
                     if ($query_string !~* "v=(.+)") {
                         expires 7d;
