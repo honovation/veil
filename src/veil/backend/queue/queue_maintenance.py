@@ -16,7 +16,7 @@ def count_failed_jobs(queue):
 
 
 @script('delete-failed-jobs')
-def count_failed_jobs(queue):
+def delete_failed_jobs(queue):
     resq = get_resq()
     count = 0
     for job in pyres.failure.all(resq, 0, -1):
@@ -27,7 +27,7 @@ def count_failed_jobs(queue):
 
 
 @script('count-pending-jobs')
-def delete_pending_jobs(queue):
+def count_pending_jobs(queue):
     resq = get_resq()
     count = resq.redis.llen('resque:queue:{}'.format(queue))
     print(count)
