@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
 from datetime import datetime
+from datetime import timedelta
 import calendar
 import pytz
 
@@ -33,6 +34,7 @@ def get_current_timestamp():
     """
     return calendar.timegm(get_current_time().utctimetuple())
 
+
 def convert_datetime_to_timestamp(dt):
     return calendar.timegm(dt.utctimetuple())
 
@@ -61,5 +63,16 @@ def convert_naive_datetime_to_timezone(dt, tzinfo=DEFAULT_CLIENT_TIMEZONE):
         converted = dt.replace(tzinfo=tzinfo)
     return converted
 
+
+def convert_datetime_to_utc_timezone(dt):
+    if is_utc_datetime(dt):
+        return dt
+    return convert_naive_datetime_to_timezone(dt, pytz.utc) if is_naive_datetime(dt) else convert_datetime_to_timezone(dt, pytz.utc)
+
+
 def is_naive_datetime(dt):
     return dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None
+
+
+def is_utc_datetime(dt):
+    return dt.tzinfo is pytz.utc or dt.tzinfo.utcoffset(dt) in (0, timedelta(0))

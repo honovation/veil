@@ -59,7 +59,7 @@ class RedisQueue(object):
     def enqueue_at(self, job_handler, scheduled_at, to_queue=None, **payload):
         """
         pyres expects that scheduled_at is a naive local time
-        to_local_datetime is to convert a datetime to naive local date time, this is an okay workaround as all servers are in UTC in production
+        convert_datetime_to_naive_local is to convert a datetime to naive local date time, this is an okay workaround as all servers are in UTC in production
         ideally it is to change pyres to stick with UTC and convert aware datetime to UTC in pyres interfaces such as enqueu_at
         """
         assert scheduled_at.tzinfo == pytz.utc, 'must provide datetime in pytz.utc timezone'

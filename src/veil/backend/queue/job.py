@@ -2,8 +2,8 @@ from __future__ import unicode_literals, print_function, division
 from datetime import datetime
 from inspect import isfunction
 import contextlib
-import pytz
 from logging import getLogger
+from veil.utility.clock import convert_datetime_to_utc_timezone
 
 LOGGER = getLogger(__name__)
 context_managers = []
@@ -39,7 +39,7 @@ def perform(job_handler, payload):
         # restore datetime as utc timezone
         for key, value in payload.items():
             if isinstance(value, datetime):
-                payload[key] = value.replace(tzinfo=pytz.utc)
+                payload[key] = convert_datetime_to_utc_timezone(value)
         return job_handler(**payload)
 
 
