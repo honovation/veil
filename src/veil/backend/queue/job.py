@@ -44,7 +44,14 @@ def perform(job_handler, payload):
         for key, value in payload.items():
             if isinstance(value, datetime):
                 payload[key] = convert_datetime_to_utc_timezone(value)
-        return job_handler(**payload)
+        try:
+            return job_handler(**payload)
+        except InvalidJob:
+            LOGGER.exception('Invalid job: %(job_handler_name)s, %(payload)s', {
+                'job_handler_name': job_handler.__name__,
+                'payload': payload
+            })
+            return
 
 
 def nest_context_managers(*context_managers):
@@ -58,3 +65,7 @@ def as_context_manager(obj):
     if hasattr(obj, '__enter__') and hasattr(obj, '__exit__'):
         return obj
     raise Exception('{} is not context manager'.format(obj))
+
+
+class InvalidJob(Exception):
+    pass
