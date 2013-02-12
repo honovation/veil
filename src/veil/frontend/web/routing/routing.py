@@ -38,7 +38,7 @@ class RouteDecorator(object):
         self.method = method
         self.path_template = path_template
         if website is None:
-            LOGGER.warn('[NOT RECOMMENDED]website is not specified: %(website)s, %(infer_website)s, %(method)s, %(path_template)s', {
+            LOGGER.warn('[NOT RECOMMENDED]website is not explicitly specified: %(website)s, %(infer_website)s, %(method)s, %(path_template)s', {
                 'website': website,
                 'infer_website': infer_website(),
                 'method': method,
