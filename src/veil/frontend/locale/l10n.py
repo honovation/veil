@@ -35,7 +35,7 @@ def time_filter(value, format='HH:mm:ss'):
 @template_filter('date')
 def date_filter(value, format='yyyy-MM-dd', delta=0):
     date_to_show = value + datetime.timedelta(days=delta)
-    if isinstance(date_to_show, datetime):
+    if isinstance(date_to_show, datetime.datetime):
         date_to_show = convert_datetime_to_client_timezone(date_to_show)
     return babel.dates.format_date(date=date_to_show, format=format, locale=get_current_locale())
 
