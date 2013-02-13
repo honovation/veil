@@ -134,11 +134,3 @@ class ImmediateQueue(object):
 
     def __repr__(self):
         return 'Queue {} opened by {}'.format(self.__class__, self.opened_by)
-
-
-def convert_datetime_to_naive_local(dt):
-    return datetime.fromtimestamp(convert_datetime_to_timestamp(dt))
-
-
-def convert_datetime_to_timestamp(dt):
-    return calendar.timegm(dt.utctimetuple())

@@ -138,18 +138,15 @@ def to_datetime_via_parse(value):
         raise Invalid(_('不是有效的日期时间'))
 
 
-def to_datetime(format='%Y-%m-%d %H:%M:%S', tz=DEFAULT_CLIENT_TIMEZONE):
+def to_datetime(format='%Y-%m-%d %H:%M:%S'):
     def bind(value):
         if isinstance(value, datetime):
-            return value
+            return convert_datetime_to_utc_timezone(value)
         else:
             if not value:
                 raise Invalid(_('不是有效的日期时间'))
             try:
-                dt = datetime.strptime(value, bind.format)
-                dt_localized = convert_naive_datetime_to_timezone(dt, tz)
-                dt_utc = convert_datetime_to_timezone(dt_localized, pytz.utc)
-                return dt_utc
+                return convert_datetime_to_utc_timezone(datetime.strptime(value, bind.format))
             except ValueError:
                 raise Invalid(_('不是有效的日期时间'))
     bind.format = format

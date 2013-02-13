@@ -3,10 +3,9 @@ from __future__ import unicode_literals, print_function, division
 import datetime
 import pytz
 import babel.dates
-from veil.utility.clock import DEFAULT_CLIENT_TIMEZONE
-from veil.frontend.template import template_filter
-from veil.utility.clock import get_current_time
-from .i18n import get_current_locale, _
+from veil.frontend.template import *
+from veil.utility.clock import *
+from .i18n import *
 
 @template_filter('timedelta')
 def timedelta_filter(delta, granularity='second', with_direction=False):
@@ -28,14 +27,16 @@ def timedelta_by_now_filter(value, granularity='second'):
 
 
 @template_filter('time')
-def time_filter(value, format='medium'):
+def time_filter(value, format='HH:mm:ss'):
     return babel.dates.format_time(time=value, format=format, tzinfo=DEFAULT_CLIENT_TIMEZONE,
         locale=get_current_locale())
 
 
 @template_filter('date')
-def date_filter(value, format='medium', delta=0):
+def date_filter(value, format='yyyy-MM-dd', delta=0):
     date_to_show = value + datetime.timedelta(days=delta)
+    if isinstance(date_to_show, datetime):
+        date_to_show = convert_datetime_to_client_timezone(date_to_show)
     return babel.dates.format_date(date=date_to_show, format=format, locale=get_current_locale())
 
 

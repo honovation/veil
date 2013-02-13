@@ -3,7 +3,7 @@ from datetime import datetime
 from inspect import isfunction
 import contextlib
 from logging import getLogger
-from veil.utility.clock import convert_datetime_to_utc_timezone
+from veil.utility.clock import *
 
 LOGGER = getLogger(__name__)
 context_managers = []
