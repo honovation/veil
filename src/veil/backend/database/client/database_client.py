@@ -9,11 +9,15 @@ import uuid
 import veil_component
 from veil_installer import *
 from veil.development.test import *
+from veil.model.event import *
 from .table_dependency import check_table_dependencies
 from .database_client_installer import load_database_client_config
 from .database_client_installer import database_client_resource
 
 LOGGER = getLogger(__name__)
+EVENT_SQL_EXECUTED = 'sql-executed'
+EVENT_SQL_BATCH_EXECUTED = 'sql-batch-executed'
+EVENT_SQL_QUERIED = 'sql-queried'
 
 instances = {} # purpose => instance
 adapter_classes = {} # database type => adapter class
@@ -292,46 +296,55 @@ class Database(object):
         return self._query_large_result_set(sql, batch_size, db_fetch_size, **kwargs)
 
     def _execute(self, sql, **kwargs):
-        with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
-            try:
-                check_table_dependencies(self.component_name, sql)
-                cursor.execute(sql, kwargs)
-            except Exception as e:
-                LOGGER.exception('failed to execute statement: sql is %(sql)s and kwargs are %(kwargs)s', {
-                    'sql': sql,
-                    'kwargs': kwargs
-                })
-                self.conn.reconnect_if_broken_per_exception(e)
-                raise
-            return cursor.rowcount
+        with require_transaction_context(self): # ensure the sql and event handler in same transaction
+            with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
+                try:
+                    check_table_dependencies(self.component_name, sql)
+                    cursor.execute(sql, kwargs)
+                except Exception as e:
+                    LOGGER.exception('failed to execute statement: sql is %(sql)s and kwargs are %(kwargs)s', {
+                        'sql': sql,
+                        'kwargs': kwargs
+                    })
+                    self.conn.reconnect_if_broken_per_exception(e)
+                    raise
+                publish_event(EVENT_SQL_EXECUTED, purpose=self.purpose, sql=sql, kwargs=kwargs, rows_count=cursor.rowcount)
+                return cursor.rowcount
 
     def _executemany(self, sql, seq_of_parameters):
-        with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
-            try:
-                check_table_dependencies(self.component_name, sql)
-                cursor.executemany(sql, seq_of_parameters)
-            except Exception as e:
-                LOGGER.exception('failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s', {
-                    'sql': sql,
-                    'seq_of_parameters': seq_of_parameters
-                })
-                self.conn.reconnect_if_broken_per_exception(e)
-                raise
-            return cursor.rowcount
+        with require_transaction_context(self): # ensure the sql and event handler in same transaction
+            with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
+                try:
+                    check_table_dependencies(self.component_name, sql)
+                    cursor.executemany(sql, seq_of_parameters)
+                except Exception as e:
+                    LOGGER.exception('failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s', {
+                        'sql': sql,
+                        'seq_of_parameters': seq_of_parameters
+                    })
+                    self.conn.reconnect_if_broken_per_exception(e)
+                    raise
+                publish_event(EVENT_SQL_BATCH_EXECUTED, purpose=self.purpose, sql=sql,
+                    seq_of_parameters=seq_of_parameters, rows_count=cursor.rowcount)
+                return cursor.rowcount
 
     def _query(self, sql, returns_dict_object=True, **kwargs):
-        with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
-            try:
-                check_table_dependencies(self.component_name, sql)
-                cursor.execute(sql, kwargs)
-            except Exception as e:
-                LOGGER.exception('failed to execute query: sql is %(sql)s and kwargs are %(kwargs)s', {
-                    'sql': sql,
-                    'kwargs': kwargs
-                })
-                self.conn.reconnect_if_broken_per_exception(e)
-                raise
-            return cursor.fetchall()
+        with require_transaction_context(self): # ensure the sql and event handler in same transaction
+            with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
+                try:
+                    check_table_dependencies(self.component_name, sql)
+                    cursor.execute(sql, kwargs)
+                except Exception as e:
+                    LOGGER.exception('failed to execute query: sql is %(sql)s and kwargs are %(kwargs)s', {
+                        'sql': sql,
+                        'kwargs': kwargs
+                    })
+                    self.conn.reconnect_if_broken_per_exception(e)
+                    raise
+                result = cursor.fetchall()
+                publish_event(EVENT_SQL_QUERIED, purpose=self.purpose, sql=sql,
+                    kwargs=kwargs, rows_count=len(result))
+                return result
 
     def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, **kwargs):
         """

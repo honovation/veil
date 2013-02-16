@@ -131,7 +131,7 @@ def check_table_dependencies(component_name, sql):
 
 
 def check_writable_table_dependencies(writable_tables, component_name, sql):
-    sql = sql.strip().replace('\n', '').replace('\r', '').replace('\t', '')
+    sql = strip_sql(sql)
     writing_table_name = get_writing_table_name(sql)
     if writing_table_name and writing_table_name not in writable_tables.get(component_name, set()):
         raise Exception('{} should not write to table {}'.format(
@@ -139,6 +139,7 @@ def check_writable_table_dependencies(writable_tables, component_name, sql):
 
 
 def get_writing_table_name(sql):
+    sql = strip_sql(sql)
     match = RE_UPDATE.match(sql)
     if match:
         return match.group(1)
@@ -151,6 +152,9 @@ def get_writing_table_name(sql):
     match = RE_DELETE.match(sql)
     if match:
         return match.group(1)
+
+def strip_sql(sql):
+    return sql.strip().replace('\n', '').replace('\r', '').replace('\t', '')
 
 
 def check_readable_table_dependencies(readable_tables, component_name, sql):
