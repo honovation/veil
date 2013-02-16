@@ -23,6 +23,7 @@ def is_script_defined(*argv):
 
 
 def execute_script(*argv, **kwargs):
+    argv = [to_unicode(arg) for arg in argv]
     if 'level' in kwargs:
         level = kwargs.get('level')
     else:
