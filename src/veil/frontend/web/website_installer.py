@@ -5,6 +5,7 @@ from .routing import *
 
 overriden_website_configs = {}
 
+
 @event(EVENT_NEW_WEBSITE)
 def on_new_website(website):
     add_application_sub_resource(
