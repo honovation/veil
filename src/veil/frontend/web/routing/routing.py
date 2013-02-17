@@ -16,7 +16,7 @@ from .page_post_processor import post_process_page
 LOGGER = getLogger(__name__)
 original_routes = {}
 routes = {}
-EVENT_NEW_WEBSITE = 'new-website'
+EVENT_NEW_WEBSITE = define_event('new-website')
 
 
 @test_hook

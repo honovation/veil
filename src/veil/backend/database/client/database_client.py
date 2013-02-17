@@ -17,9 +17,9 @@ from .database_client_installer import load_database_client_config
 from .database_client_installer import database_client_resource
 
 LOGGER = getLogger(__name__)
-EVENT_SQL_EXECUTED = 'sql-executed'
-EVENT_SQL_BATCH_EXECUTED = 'sql-batch-executed'
-EVENT_SQL_QUERIED = 'sql-queried'
+EVENT_SQL_EXECUTED = define_event('sql-executed')
+EVENT_SQL_BATCH_EXECUTED = define_event('sql-batch-executed')
+EVENT_SQL_QUERIED = define_event('sql-queried')
 
 instances = {} # purpose => instance
 adapter_classes = {} # database type => adapter class
