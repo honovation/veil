@@ -47,10 +47,10 @@ def perform(job_handler, payload):
         try:
             return job_handler(**payload)
         except InvalidJob:
-            LOGGER.exception('Invalid job: %(job_handler_name)s, %(payload)s', {
+            LOGGER.warn('Invalid job: %(job_handler_name)s, %(payload)s', {
                 'job_handler_name': job_handler.__name__,
                 'payload': payload
-            })
+            }, exc_info=1)
             return
 
 
