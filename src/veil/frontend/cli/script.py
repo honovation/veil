@@ -23,6 +23,7 @@ def is_script_defined(*argv):
 
 
 def execute_script(*argv, **kwargs):
+    start_recording_dynamic_dependencies()
     argv = [to_unicode(arg) for arg in argv]
     if 'level' in kwargs:
         level = kwargs.get('level')
@@ -62,6 +63,11 @@ def execute_script(*argv, **kwargs):
         LOGGER.error(traceback.format_exc())
         LOGGER.error(value.message)
         sys.exit(1)
+
+
+def start_recording_dynamic_dependencies():
+    if VEIL_ENV in ['test', 'development']:
+        veil_component.start_recording_dynamic_dependencies(DYNAMIC_DEPENDENCIES_FILE)
 
 
 def import_script_handlers(argv):

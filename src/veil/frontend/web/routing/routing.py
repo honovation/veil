@@ -7,6 +7,7 @@ import httplib
 from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
+from veil.environment import *
 from veil.development.test import *
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
@@ -38,13 +39,15 @@ class RouteDecorator(object):
         self.method = method
         self.path_template = path_template
         if website is None:
-            LOGGER.warn('[NOT RECOMMENDED]website is not explicitly specified: %(website)s, %(infer_website)s, %(method)s, %(path_template)s', {
-                'website': website,
-                'infer_website': infer_website(),
-                'method': method,
-                'path_template': path_template
-            })
-        self.website = (website or infer_website()).upper()
+            LOGGER.warn(
+                '[NOT RECOMMENDED]website is not explicitly specified: %(website)s, %(infer_website)s, %(method)s, %(path_template)s',
+                {
+                    'website': website,
+                    'infer_website': infer_website(),
+                    'method': method,
+                    'path_template': path_template
+                })
+        self.website = (website or infer_website()).lower()
         self.tags = tags
         self.delegates_to = delegates_to
         self.path_template_params = path_template_params
@@ -54,6 +57,7 @@ class RouteDecorator(object):
         target = self.delegates_to or func
         loading_component_name = veil_component.get_loading_component_name()
         if loading_component_name:
+            veil_component.add_dynamic_dependency_provider(loading_component_name, 'website', self.website)
             widget_namespace = loading_component_name
         else:
             widget_namespace = None
@@ -107,8 +111,10 @@ def is_public_route(route):
 
 
 def get_routes(website):
-    website = website.upper()
+    website = website.lower()
     return routes.get(website, ())
+
+
 
 
 class RoutingHTTPHandler(object):

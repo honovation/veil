@@ -14,6 +14,7 @@ VEIL_HOME = getenv('VEIL_HOME') or '.'
 VEIL_HOME = os.path.abspath(VEIL_HOME)
 assert VEIL_HOME, 'must specify $VEIL_HOME'
 VEIL_HOME = as_path(VEIL_HOME)
+DYNAMIC_DEPENDENCIES_FILE = VEIL_HOME / 'dynamic-dependencies.txt'
 
 VEIL_FRAMEWORK_HOME = getenv('VEIL_FRAMEWORK_HOME')
 

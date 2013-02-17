@@ -3,19 +3,18 @@ from veil_installer import *
 from veil.utility.setting import *
 from veil.environment import *
 from veil.server.python import *
+from veil_component import *
 
 def website_programs(
-        purpose, logging_levels, application_component_names, application_config,
+        purpose, logging_levels, application_config,
         start_port, processes_count=1):
     veil_logging_level_config_path = VEIL_ETC_DIR / '{}-website-log.cfg'.format(purpose)
     resources = [
         veil_logging_level_config_resource(
             path=veil_logging_level_config_path,
             logging_levels=logging_levels),
-        application_resource(component_names=application_component_names, config=application_config)]
+        application_resource(component_names=list_website_components(purpose), config=application_config)]
     additional_args = []
-    for component in application_component_names:
-        additional_args.append('--component {}'.format(component))
     programs = {}
     for i in range(processes_count):
         programs = merge_settings(programs, {
@@ -28,12 +27,17 @@ def website_programs(
                 },
                 'redirect_stderr': False,
                 'resources': resources,
-                'reloads_on_change': application_component_names,
                 'group': '{}_website'.format(purpose),
                 'patchable': True
             }
         })
     return programs
+
+
+def list_website_components(website):
+    website = website.lower()
+    consumers, providers = list_dynamic_dependencies(DYNAMIC_DEPENDENCIES_FILE)
+    return consumers.get(('website', website)) or set()
 
 
 def website_upstreams(purpose, start_port, processes_count):
