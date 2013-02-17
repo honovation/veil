@@ -15,32 +15,36 @@ from .context import get_current_http_response
 
 LOGGER = getLogger(__name__)
 
-def get_secure_cookie(name, default=None, value=None, request=None):
-    if value is None: value = get_cookie(name, request=request)
-    if not value: return default
+def get_secure_cookie(name, value=None, default=None, max_age_days=31, request=None):
+    if value is None:
+        value = get_cookie(name, request=request)
+    if not value:
+        return default
     parts = value.split('|')
-    if len(parts) != 3: return default
+    if len(parts) != 3:
+        return default
     signature = get_hmac(name, parts[0], parts[1], strong=False)
     if not _time_independent_equals(parts[2], signature):
         LOGGER.warning('Invalid cookie signature %r', value)
         return default
     timestamp = int(parts[1])
-    if timestamp < time.time() - 31 * 86400:
+    if timestamp < time.time() - max_age_days * 86400:
         LOGGER.warning('Expired cookie %r', value)
         return default
     if parts[1].startswith('0'):
         LOGGER.warning('Tampered cookie %r', value)
+        return default
     try:
         return base64.b64decode(parts[0])
     except:
         return default
 
 
-def set_secure_cookie(response=None, cookie=None, **kwargs):
-    set_cookie(response, cookie=cookie or create_secure_cookie(**kwargs))
+def set_secure_cookie(response=None, cookie=None, name=None, value=None, expires_days=30, **kwargs):
+    set_cookie(response, cookie=cookie or create_secure_cookie(name, value, expires_days, **kwargs))
 
 
-def create_secure_cookie(name, value, expires_days=30, **kwargs):
+def create_secure_cookie(name, value, expires_days, **kwargs):
     timestamp = str(int(time.time()))
     value = base64.b64encode(value)
     signature = get_hmac(name, value, timestamp, strong=False)
@@ -118,6 +122,8 @@ def create_cookie(name, value, domain=None, expires=None, path='/', expires_days
     if path:
         cookie['path'] = path
     for k, v in kwargs.iteritems():
+        if 'max_age' == k:
+            k = 'max-age'
         cookie[k] = v
     return cookie
 
