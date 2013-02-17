@@ -6,6 +6,8 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
+import atexit
+import signal
 import veil_component
 from veil_installer import *
 from veil.development.test import *
@@ -216,7 +218,8 @@ class Database(object):
             })
         return rows[0][0]
 
-    def insert(self, table, objects=None, returns_id=False, returns_record=False, should_insert=None, **value_providers):
+    def insert(self, table, objects=None, returns_id=False, returns_record=False, should_insert=None,
+               **value_providers):
         if objects is not None:
             if not objects:
                 return None
@@ -308,7 +311,8 @@ class Database(object):
                     })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
-                publish_event(EVENT_SQL_EXECUTED, purpose=self.purpose, sql=sql, kwargs=kwargs, rows_count=cursor.rowcount)
+                publish_event(EVENT_SQL_EXECUTED, purpose=self.purpose, sql=sql, kwargs=kwargs,
+                    rows_count=cursor.rowcount)
                 return cursor.rowcount
 
     def _executemany(self, sql, seq_of_parameters):
@@ -318,10 +322,12 @@ class Database(object):
                     check_table_dependencies(self.component_name, sql)
                     cursor.executemany(sql, seq_of_parameters)
                 except Exception as e:
-                    LOGGER.exception('failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s', {
-                        'sql': sql,
-                        'seq_of_parameters': seq_of_parameters
-                    })
+                    LOGGER.exception(
+                        'failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s',
+                        {
+                            'sql': sql,
+                            'seq_of_parameters': seq_of_parameters
+                        })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
                 publish_event(EVENT_SQL_BATCH_EXECUTED, purpose=self.purpose, sql=sql,
@@ -406,3 +412,12 @@ class ConstValueProvider(object):
 
     def __call__(self, obj):
         return self.const
+
+
+def close_all_connections(*args, **kwargs):
+    for purpose, instance in instances.items():
+        LOGGER.debug('close connection at exit: %(purpose)s', {'purpose': purpose})
+        instance.close()
+
+atexit.register(close_all_connections)
+signal.signal(signal.SIGTERM, close_all_connections)
