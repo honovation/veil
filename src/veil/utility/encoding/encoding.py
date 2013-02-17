@@ -19,7 +19,6 @@ def to_unicode(s, encoding=None, remedial_encoding=None):
         return unicode(s, encoding=encoding)
     except UnicodeDecodeError:
         if remedial_encoding and remedial_encoding != encoding:
-            LOGGER.warn('cannot decode s to unicode: %(s)s, %(encoding)s', {'s': s, 'encoding': encoding}, exc_info=1)
             return unicode(s, encoding=remedial_encoding)
         else:
             raise
