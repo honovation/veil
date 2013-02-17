@@ -1,45 +1,54 @@
 from __future__ import unicode_literals, print_function, division
 import os
 
-recording_file = None
+dynamic_dependencies_file = None
+is_recording = False
 cached_content = None
 
+def set_dynamic_dependencies_file(file):
+    global dynamic_dependencies_file
+    dynamic_dependencies_file = file
 
-def start_recording_dynamic_dependencies(file):
-    global recording_file
+
+def start_recording_dynamic_dependencies():
+    global is_recording
     global cached_content
-    recording_file = file
-    if os.path.exists(recording_file):
-        with open(recording_file, 'r') as f:
+    is_recording = True
+    if os.path.exists(dynamic_dependencies_file):
+        with open(dynamic_dependencies_file, 'r') as f:
             cached_content = set(f.readlines())
     else:
         cached_content = set()
 
 
 def record_dynamic_dependency_provider(component_name, dynamic_dependency_type, dynamic_dependency_key):
-    if not component_name:
-        return
-    if not recording_file:
-        return
-    line = '{}<={}:{}\n'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
-    record_line(line)
+    if should_record(component_name):
+        line = '{}<={}:{}\n'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
+        record_line(line)
 
 
 def record_dynamic_dependency_consumer(component_name, dynamic_dependency_type, dynamic_dependency_key):
+    if should_record(component_name):
+        line = '{}=>{}:{}\n'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
+        record_line(line)
+
+
+def should_record(component_name):
     if not component_name:
-        return
-    if not recording_file:
-        return
-    line = '{}=>{}:{}\n'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
-    record_line(line)
+        return False
+    if not is_recording:
+        return False
+    if not dynamic_dependencies_file:
+        return False
+    return True
 
 
-def list_dynamic_dependencies(file):
+def list_dynamic_dependencies():
     providers = {}
     consumers = {}
-    if not os.path.exists(file):
+    if not os.path.exists(dynamic_dependencies_file):
         return {}, {}
-    with open(file, 'r') as f:
+    with open(dynamic_dependencies_file, 'r') as f:
         for line in f.readlines():
             line = line.strip()
             if not line:
@@ -59,5 +68,5 @@ def record_line(line):
     if line in cached_content:
         return
     cached_content.add(line)
-    with open(recording_file, 'a') as f:
+    with open(dynamic_dependencies_file, 'a') as f:
         f.write(line)

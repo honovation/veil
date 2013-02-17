@@ -36,7 +36,7 @@ def website_programs(
 
 def list_website_components(website):
     website = website.lower()
-    consumers, providers = list_dynamic_dependencies(DYNAMIC_DEPENDENCIES_FILE)
+    consumers, providers = list_dynamic_dependencies()
     return consumers.get(('website', website)) or set()
 
 
