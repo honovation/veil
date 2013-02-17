@@ -17,6 +17,8 @@ def start_recording_dynamic_dependencies(file):
 
 
 def record_dynamic_dependency_provider(component_name, dynamic_dependency_type, dynamic_dependency_key):
+    if not component_name:
+        return
     if not recording_file:
         return
     line = '{}<={}:{}\n'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
@@ -24,6 +26,8 @@ def record_dynamic_dependency_provider(component_name, dynamic_dependency_type, 
 
 
 def record_dynamic_dependency_consumer(component_name, dynamic_dependency_type, dynamic_dependency_key):
+    if not component_name:
+        return
     if not recording_file:
         return
     line = '{}=>{}:{}\n'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
