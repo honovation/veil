@@ -1,7 +1,4 @@
 from __future__ import unicode_literals, print_function, division
-import logging
-
-LOGGER = logging.getLogger(__name__)
 
 def to_str(s):
     if isinstance(s, (str, bytes, type(None))):
