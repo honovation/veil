@@ -16,7 +16,7 @@ def normalize_arguments():
     arguments = get_current_http_request().arguments
     for field in arguments:
         values = arguments[field]
-        values = [to_unicode(x) for x in values]
+        values = [to_unicode(x, remedial_encoding='gb18030') for x in values]
         values = [re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', x) for x in values]
         values = [x.strip() for x in values]
         arguments[field] = values
