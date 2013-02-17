@@ -9,12 +9,10 @@ def traced(level='INFO', color=None):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            args_message = to_unicode(str(', ').join([arg for arg in args]))
+            args_message = ', '.join([to_unicode(arg) for arg in args])
             if kwargs:
-                args_message = '{}, {}'.format(
-                    args_message, ', '.join(['{}=%({})s'.format(k, k) for k in kwargs.keys()]))
-            log_message = 'executing {}.{}({})...'.format(
-                func.__module__, func.__name__, args_message)
+                args_message = '{}, {}'.format(args_message, ', '.join(['{}=%({})s'.format(k, k) for k in kwargs]))
+            log_message = 'executing {}.{}({})...'.format(func.__module__, func.__name__, args_message)
             logging.getLogger(func.__module__).log(level, log_message, dict(kwargs, args=args, __color__=color))
             return func(*args, **kwargs)
 

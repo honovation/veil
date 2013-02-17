@@ -61,7 +61,7 @@ def get_password_hash(password):
 def get_hmac(*parts, **kwargs):
     strong = kwargs.pop('strong', True)
     digestmod = hashlib.sha256 if strong else hashlib.sha1
-    msg = '|'.join([part for part in parts])
+    msg = '|'.join([unicode(part) for part in parts])
     return hmac.new(str(get_hash_salt()), to_str(msg), digestmod).hexdigest()
 
 

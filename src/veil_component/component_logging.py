@@ -131,11 +131,11 @@ def dump_dict(args):
 
 
 def to_unicode(s):
-    if isinstance(s, (unicode, type(None))):
+    if isinstance(s, unicode):
         return s
-    if not isinstance(s, basestring):
-        return unicode(s)
-    try:
-        return unicode(s, encoding='utf-8')
-    except UnicodeDecodeError:
-        return unicode(s, encoding='gb18030')
+    if isinstance(s, (str, bytes)):
+        try:
+            return unicode(s, encoding='utf-8')
+        except UnicodeDecodeError:
+            return unicode(s, encoding='gb18030')
+    return unicode(s)
