@@ -4,6 +4,7 @@ import httplib
 from logging import getLogger
 from veil.model.command import *
 from veil.model.security import *
+from .context import get_current_http_request
 from .context import get_current_http_response
 
 LOGGER = getLogger(__name__)
@@ -25,6 +26,7 @@ class HTTPError(Exception):
 
 @contextlib.contextmanager
 def handle_exception():
+    request = get_current_http_request()
     response = get_current_http_response()
     try:
         yield
@@ -47,7 +49,10 @@ def handle_exception():
         response.write(e.message)
         response.finish()
     except:
-        LOGGER.exception('failed to handle http request')
+        LOGGER.exception('failed to handle http request', {
+            'url': request.uri,
+            'user_agent': request.headers.get('User-Agent')
+        } if request else {})
         try:
             response.status_code = httplib.INTERNAL_SERVER_ERROR
             response.finish()
