@@ -4,48 +4,48 @@ from .event import unsubscribe_event
 from veil.model.collection import DictObject
 from veil.model.collection import single
 
-def assert_event_published(*topics):
-    assert topics
+def assert_event_published(*event_types):
+    assert event_types
 
-    def check_events(topics, events):
+    def check_events(event_types, events):
         if not events:
-            if len(topics) == 1:
-                raise Exception('did not publish event {}'.format(single(topics)))
+            if len(event_types) == 1:
+                raise Exception('did not publish event {}'.format(single(event_types)))
             else:
-                raise Exception('did not publish event in any of these topics: {}'.format(topics))
+                raise Exception('did not publish event in any of these topics: {}'.format(event_types))
 
-    return AssertEventPublishedContext(topics, check_events)
+    return AssertEventPublishedContext(event_types, check_events)
 
 
-def assert_event_not_published(*topics):
-    assert topics
+def assert_event_not_published(*event_types):
+    assert event_types
 
-    def check_events(topics, events):
+    def check_events(event_types, events):
         if events:
-            if len(topics) == 1:
-                raise Exception('should not publish event {}'.format(single(topics)))
+            if len(event_types) == 1:
+                raise Exception('should not publish event {}'.format(single(event_types)))
             else:
-                raise Exception('should not publish event in any of these topics: {}'.format(topics))
+                raise Exception('should not publish event in any of these topics: {}'.format(event_types))
 
-    return AssertEventPublishedContext(topics, check_events)
+    return AssertEventPublishedContext(event_types, check_events)
 
 
 class AssertEventPublishedContext(object):
-    def __init__(self, topics, check_events):
-        self.topics = topics
+    def __init__(self, event_types, check_events):
+        self.event_types = event_types
         self.events = []
         self.check_events = check_events
 
     def __enter__(self):
-        for topic in self.topics:
-            subscribe_event(topic, self.on_event_published)
+        for event_type in self.event_types:
+            subscribe_event(event_type, self.on_event_published)
         return self.events
 
     def __exit__(self, type, value, traceback):
-        for topic in self.topics:
-            unsubscribe_event(topic, self.on_event_published)
+        for event_type in self.event_types:
+            unsubscribe_event(event_type, self.on_event_published)
         if not type:
-            self.check_events(self.topics, self.events)
+            self.check_events(self.event_types, self.events)
 
     def on_event_published(self, **kwargs):
         self.events.append(DictObject(kwargs))

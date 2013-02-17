@@ -17,7 +17,7 @@ from .page_post_processor import post_process_page
 LOGGER = getLogger(__name__)
 original_routes = {}
 routes = {}
-EVENT_NEW_WEBSITE = 'new-website'
+EVENT_NEW_WEBSITE = define_event('new-website')
 
 
 @test_hook
@@ -76,7 +76,7 @@ class RouteDecorator(object):
 
 
 def publish_new_website_event(website):
-    publish_event(EVENT_NEW_WEBSITE, records_dynamic_dependency=False, website=website.lower())
+    publish_event(EVENT_NEW_WEBSITE, website=website.lower())
 
 
 def route(method, path_template, website=None, tags=(), delegates_to=None, **path_template_params):

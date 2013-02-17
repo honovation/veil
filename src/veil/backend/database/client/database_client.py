@@ -17,9 +17,9 @@ from .database_client_installer import load_database_client_config
 from .database_client_installer import database_client_resource
 
 LOGGER = getLogger(__name__)
-EVENT_SQL_EXECUTED = 'sql-executed'
-EVENT_SQL_BATCH_EXECUTED = 'sql-batch-executed'
-EVENT_SQL_QUERIED = 'sql-queried'
+EVENT_SQL_EXECUTED = define_event('sql-executed')
+EVENT_SQL_BATCH_EXECUTED = define_event('sql-batch-executed')
+EVENT_SQL_QUERIED = define_event('sql-queried')
 
 instances = {} # purpose => instance
 adapter_classes = {} # database type => adapter class
@@ -311,7 +311,7 @@ class Database(object):
                     })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
-                publish_event(EVENT_SQL_EXECUTED, records_dynamic_dependency=False, purpose=self.purpose, sql=sql, kwargs=kwargs,
+                publish_event(EVENT_SQL_EXECUTED, purpose=self.purpose, sql=sql, kwargs=kwargs,
                     rows_count=cursor.rowcount)
                 return cursor.rowcount
 
@@ -330,7 +330,7 @@ class Database(object):
                         })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
-                publish_event(EVENT_SQL_BATCH_EXECUTED, records_dynamic_dependency=False, purpose=self.purpose, sql=sql,
+                publish_event(EVENT_SQL_BATCH_EXECUTED, purpose=self.purpose, sql=sql,
                     seq_of_parameters=seq_of_parameters, rows_count=cursor.rowcount)
                 return cursor.rowcount
 
@@ -348,7 +348,7 @@ class Database(object):
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
                 result = cursor.fetchall()
-                publish_event(EVENT_SQL_QUERIED, records_dynamic_dependency=False, purpose=self.purpose, sql=sql,
+                publish_event(EVENT_SQL_QUERIED, purpose=self.purpose, sql=sql,
                     kwargs=kwargs, rows_count=len(result))
                 return result
 
