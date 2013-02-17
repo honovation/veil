@@ -6,6 +6,7 @@ from veil_installer import *
 from veil.server.os import *
 from veil.environment import *
 from veil.utility.setting import *
+from veil.utility.encoding import *
 from veil.development.test import get_executing_test
 
 LOGGER = getLogger(__name__)
@@ -60,8 +61,8 @@ def get_password_hash(password):
 def get_hmac(*parts, **kwargs):
     strong = kwargs.pop('strong', True)
     digestmod = hashlib.sha256 if strong else hashlib.sha1
-    msg = '|'.join([str(part) for part in parts])
-    return hmac.new(str(get_hash_salt()), msg, digestmod).hexdigest()
+    msg = '|'.join([part for part in parts])
+    return hmac.new(str(get_hash_salt()), to_str(msg), digestmod).hexdigest()
 
 
 def verify_hmac(hmac, *parts, **kwargs):
