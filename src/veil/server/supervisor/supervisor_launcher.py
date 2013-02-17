@@ -6,6 +6,7 @@ import sys
 from veil.utility.shell import *
 from veil.environment import *
 from veil.frontend.cli import script
+from veil_component import *
 from .supervisorctl import are_all_supervisord_programs_running
 from .supervisorctl import supervisorctl
 from .supervisorctl import is_supervisord_running
@@ -28,6 +29,8 @@ def bring_up_program(program_name):
 
 
 def bring_up_supervisor(*argv):
+    if VEIL_ENV in ['test', 'development']:
+        update_dynamic_dependencies()
     argument_parser = argparse.ArgumentParser('Bring up the application')
     argument_parser.add_argument('--daemonize', action='store_true',
         help='should the process run in background')
@@ -46,6 +49,21 @@ def bring_up_supervisor(*argv):
         sys.exit(1)
     else:
         pass_control_to('supervisord -n -c {}'.format(VEIL_ETC_DIR / 'supervisor.cfg'))
+
+
+@script('update-dynamic-dependencies')
+def update_dynamic_dependencies():
+    for path in (VEIL_HOME / 'src').dirs():
+        find_and_import_component(path)
+
+def find_and_import_component(path):
+    if is_component((path / '__init__.py').text()):
+        component_name = (VEIL_HOME/ 'src').relpathto(path).replace('/', '.')
+        __import__(component_name)
+    else:
+        for subpath in path.dirs():
+            find_and_import_component(subpath)
+
 
 
 @script('down')

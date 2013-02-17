@@ -311,7 +311,7 @@ class Database(object):
                     })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
-                publish_event(EVENT_SQL_EXECUTED, purpose=self.purpose, sql=sql, kwargs=kwargs,
+                publish_event(EVENT_SQL_EXECUTED, records_dynamic_dependency=False, purpose=self.purpose, sql=sql, kwargs=kwargs,
                     rows_count=cursor.rowcount)
                 return cursor.rowcount
 
@@ -330,7 +330,7 @@ class Database(object):
                         })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
-                publish_event(EVENT_SQL_BATCH_EXECUTED, purpose=self.purpose, sql=sql,
+                publish_event(EVENT_SQL_BATCH_EXECUTED, records_dynamic_dependency=False, purpose=self.purpose, sql=sql,
                     seq_of_parameters=seq_of_parameters, rows_count=cursor.rowcount)
                 return cursor.rowcount
 
@@ -348,7 +348,7 @@ class Database(object):
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
                 result = cursor.fetchall()
-                publish_event(EVENT_SQL_QUERIED, purpose=self.purpose, sql=sql,
+                publish_event(EVENT_SQL_QUERIED, records_dynamic_dependency=False, purpose=self.purpose, sql=sql,
                     kwargs=kwargs, rows_count=len(result))
                 return result
 

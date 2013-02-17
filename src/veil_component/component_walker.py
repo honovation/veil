@@ -47,7 +47,7 @@ class ComponentWalker(object):
         if not path:
             raise InvalidComponentException('{} does not have source code'.format(module_name))
         source_code = module_loader.get_source() or ''
-        if self.is_component(source_code):
+        if is_component(source_code):
             if at_top_level:
                 visitor.visit_component_start(module_name, path, source_code)
                 self.walk_package(module_name, path, visitor, source_code)
@@ -68,8 +68,8 @@ class ComponentWalker(object):
             self.walk_module('{}.{}'.format(module_name, child), visitor)
             visitor.visit_package_end(module_name, path, source_code)
 
-    def is_component(self, source_code):
-        return RE_COMPONET.search(source_code)
+def is_component(source_code):
+    return RE_COMPONET.search(source_code)
 
 
 def find_module_loader_without_import(module_name):

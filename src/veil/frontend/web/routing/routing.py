@@ -57,7 +57,7 @@ class RouteDecorator(object):
         target = self.delegates_to or func
         loading_component_name = veil_component.get_loading_component_name()
         if loading_component_name:
-            veil_component.add_dynamic_dependency_provider(loading_component_name, 'website', self.website)
+            veil_component.record_dynamic_dependency_provider(loading_component_name, 'website', self.website)
             widget_namespace = loading_component_name
         else:
             widget_namespace = None
@@ -76,7 +76,7 @@ class RouteDecorator(object):
 
 
 def publish_new_website_event(website):
-    publish_event(EVENT_NEW_WEBSITE, website=website.lower())
+    publish_event(EVENT_NEW_WEBSITE, records_dynamic_dependency=False, website=website.lower())
 
 
 def route(method, path_template, website=None, tags=(), delegates_to=None, **path_template_params):

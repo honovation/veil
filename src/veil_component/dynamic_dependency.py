@@ -16,14 +16,14 @@ def start_recording_dynamic_dependencies(file):
         cached_content = set()
 
 
-def add_dynamic_dependency_provider(component_name, dynamic_dependency_type, dynamic_dependency_key):
+def record_dynamic_dependency_provider(component_name, dynamic_dependency_type, dynamic_dependency_key):
     if not recording_file:
         return
     line = '{}<={}:{}\n'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
     record_line(line)
 
 
-def add_dynamic_dependency_consumer(component_name, dynamic_dependency_type, dynamic_dependency_key):
+def record_dynamic_dependency_consumer(component_name, dynamic_dependency_type, dynamic_dependency_key):
     if not recording_file:
         return
     line = '{}=>{}:{}\n'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
@@ -31,10 +31,10 @@ def add_dynamic_dependency_consumer(component_name, dynamic_dependency_type, dyn
 
 
 def list_dynamic_dependencies(file):
-    consumers = {}
     providers = {}
+    consumers = {}
     if not os.path.exists(file):
-        return set()
+        return {}, {}
     with open(file, 'r') as f:
         for line in f.readlines():
             line = line.strip()
