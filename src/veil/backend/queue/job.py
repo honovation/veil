@@ -4,6 +4,7 @@ from inspect import isfunction
 import contextlib
 from logging import getLogger
 from veil.utility.clock import *
+from veil_component import *
 
 LOGGER = getLogger(__name__)
 context_managers = []
@@ -31,7 +32,9 @@ class JobHandlerDecorator(object):
         self.retry_timeout = retry_timeout
 
     def __call__(self, job_handler):
-        job_handler.queue = self.queue or job_handler.__name__.replace('_job', '')
+        queue = self.queue or job_handler.__name__.replace('_job', '')
+        record_dynamic_dependency_provider(get_loading_component_name(), 'job', queue)
+        job_handler.queue = queue
         job_handler.retry_every = self.retry_every
         job_handler.retry_timeout = self.retry_timeout
         job_handler.perform = lambda payload: perform(job_handler, payload)
