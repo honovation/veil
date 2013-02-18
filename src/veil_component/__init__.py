@@ -18,3 +18,4 @@ from .dynamic_dependency import start_recording_dynamic_dependencies
 from .dynamic_dependency import record_dynamic_dependency_consumer
 from .dynamic_dependency import record_dynamic_dependency_provider
 from .dynamic_dependency import list_dynamic_dependencies
+from .dynamic_dependency import load_dynamic_dependency_providers

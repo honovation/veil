@@ -4,6 +4,8 @@ import os
 dynamic_dependencies_file = None
 is_recording = False
 cached_content = None
+dynamic_dependencies = None
+loaded_providers = set()
 
 def set_dynamic_dependencies_file(file):
     global dynamic_dependencies_file
@@ -33,6 +35,15 @@ def record_dynamic_dependency_consumer(component_name, dynamic_dependency_type, 
         record_line(line)
 
 
+def load_dynamic_dependency_providers(dynamic_dependency_type, dynamic_dependency_key):
+    if (dynamic_dependency_type, dynamic_dependency_key) in loaded_providers:
+        return
+    loaded_providers.add((dynamic_dependency_type, dynamic_dependency_key))
+    providers, consumers = list_dynamic_dependencies()
+    for component_name in providers.get((dynamic_dependency_type, dynamic_dependency_key)) or []:
+        __import__(component_name)
+
+
 def should_record(component_name):
     if not component_name:
         return False
@@ -44,24 +55,29 @@ def should_record(component_name):
 
 
 def list_dynamic_dependencies():
-    providers = {}
-    consumers = {}
-    if not os.path.exists(dynamic_dependencies_file):
-        return {}, {}
-    with open(dynamic_dependencies_file, 'r') as f:
-        for line in f.readlines():
-            line = line.strip()
-            if not line:
-                continue
-            if '=>' in line:
-                consumer, type_and_key = line.split('=>')
-                consumers.setdefault(consumer, set()).add(tuple(type_and_key.split(':')))
-            elif '<=' in line:
-                provider, type_and_key = line.split('<=')
-                providers.setdefault(tuple(type_and_key.split(':')), set()).add(provider)
-            else:
-                raise Exception('invalid dynamic dependencies file: {}\n{}'.format(file, line))
-    return providers, consumers
+    global dynamic_dependencies
+    if not dynamic_dependencies:
+        providers = {}
+        consumers = {}
+        if not dynamic_dependencies_file:
+            return {}, {}
+        if not os.path.exists(dynamic_dependencies_file):
+            return {}, {}
+        with open(dynamic_dependencies_file, 'r') as f:
+            for line in f.readlines():
+                line = line.strip()
+                if not line:
+                    continue
+                if '=>' in line:
+                    consumer, type_and_key = line.split('=>')
+                    consumers.setdefault(consumer, set()).add(tuple(type_and_key.split(':')))
+                elif '<=' in line:
+                    provider, type_and_key = line.split('<=')
+                    providers.setdefault(tuple(type_and_key.split(':')), set()).add(provider)
+                else:
+                    raise Exception('invalid dynamic dependencies file: {}\n{}'.format(file, line))
+        dynamic_dependencies = providers, consumers
+    return dynamic_dependencies
 
 
 def record_line(line):

@@ -16,6 +16,7 @@ def define_event(topic):
 
 def publish_event(event_type, **kwargs):
     topic = get_topic(event_type)
+    load_dynamic_dependency_providers('event', topic)
     if topic not in subscribers:
         return
     for subscriber in subscribers[topic]:
