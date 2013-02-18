@@ -416,7 +416,7 @@ class ConstValueProvider(object):
 
 def close_all_connections(*args, **kwargs):
     for purpose, instance in instances.items():
-        LOGGER.debug('close connection at exit: %(purpose)s', {'purpose': purpose})
+        LOGGER.info('close connection at exit: %(purpose)s', {'purpose': purpose})
         instance.close()
 
 atexit.register(close_all_connections)
