@@ -35,19 +35,11 @@ def reset_routes():
 
 
 class RouteDecorator(object):
-    def __init__(self, method, path_template, website=None, tags=(), delegates_to=None, **path_template_params):
+    def __init__(self, method, path_template, website, tags=(), delegates_to=None, **path_template_params):
+        assert website is not None
         self.method = method
         self.path_template = path_template
-        if website is None:
-            LOGGER.warn(
-                '[NOT RECOMMENDED]website is not explicitly specified: %(website)s, %(infer_website)s, %(method)s, %(path_template)s',
-                {
-                    'website': website,
-                    'infer_website': infer_website(),
-                    'method': method,
-                    'path_template': path_template
-                })
-        self.website = (website or infer_website()).lower()
+        self.website = website.lower()
         self.tags = tags
         self.delegates_to = delegates_to
         self.path_template_params = path_template_params
@@ -79,7 +71,7 @@ def publish_new_website_event(website):
     publish_event(EVENT_NEW_WEBSITE, website=website.lower())
 
 
-def route(method, path_template, website=None, tags=(), delegates_to=None, **path_template_params):
+def route(method, path_template, website, tags=(), delegates_to=None, **path_template_params):
     return RouteDecorator(
         method=method, path_template=path_template,
         website=website, tags=tags, delegates_to=delegates_to,
@@ -88,10 +80,6 @@ def route(method, path_template, website=None, tags=(), delegates_to=None, **pat
 
 def route_for(website, tags=()):
     return functools.partial(route, website=website, tags=tags)
-
-
-def infer_website():
-    return veil_component.get_loading_component_name().split('.')[-1].upper()
 
 
 def async_route(*args, **kwargs):
