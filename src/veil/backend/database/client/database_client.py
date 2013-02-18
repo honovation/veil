@@ -311,8 +311,8 @@ class Database(object):
                     })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
-                publish_event(EVENT_SQL_EXECUTED, purpose=self.purpose, sql=sql, kwargs=kwargs,
-                    rows_count=cursor.rowcount)
+                publish_event(EVENT_SQL_EXECUTED, loads_event_handlers=False,
+                    purpose=self.purpose, sql=sql, kwargs=kwargs, rows_count=cursor.rowcount)
                 return cursor.rowcount
 
     def _executemany(self, sql, seq_of_parameters):
@@ -330,8 +330,8 @@ class Database(object):
                         })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
-                publish_event(EVENT_SQL_BATCH_EXECUTED, purpose=self.purpose, sql=sql,
-                    seq_of_parameters=seq_of_parameters, rows_count=cursor.rowcount)
+                publish_event(EVENT_SQL_BATCH_EXECUTED, loads_event_handlers=False,
+                    purpose=self.purpose, sql=sql, seq_of_parameters=seq_of_parameters, rows_count=cursor.rowcount)
                 return cursor.rowcount
 
     def _query(self, sql, returns_dict_object=True, **kwargs):
@@ -348,8 +348,8 @@ class Database(object):
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
                 result = cursor.fetchall()
-                publish_event(EVENT_SQL_QUERIED, purpose=self.purpose, sql=sql,
-                    kwargs=kwargs, rows_count=len(result))
+                publish_event(EVENT_SQL_QUERIED, loads_event_handlers=False,
+                    purpose=self.purpose, sql=sql, kwargs=kwargs, rows_count=len(result))
                 return result
 
     def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, **kwargs):

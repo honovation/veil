@@ -14,9 +14,10 @@ def define_event(topic):
     return EventType(component_name=component_name, topic=topic)
 
 
-def publish_event(event_type, **kwargs):
+def publish_event(event_type, loads_event_handlers=True, **kwargs):
     topic = get_topic(event_type)
-    load_dynamic_dependency_providers('event', topic)
+    if loads_event_handlers:
+        load_dynamic_dependency_providers('event', topic)
     if topic not in subscribers:
         return
     for subscriber in subscribers[topic]:
