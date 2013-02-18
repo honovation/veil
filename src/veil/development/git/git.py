@@ -12,7 +12,7 @@ def pull():
     pull_dir(VEIL_FRAMEWORK_HOME)
 
 def pull_dir(dir):
-    LOGGER.info('pull {} ...'.format(dir))
+    LOGGER.info('pull %(workspace)s ...', {'workspace': dir})
     having_changes = shell_execute('git diff-index HEAD', capture=True, cwd=dir)
     if having_changes:
         shell_execute('git stash', cwd=dir)

@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from datetime import timedelta
 from collections import defaultdict
 from croniter.croniter import croniter
+from veil_component import *
 from veil.utility.clock import get_current_timestamp
 from .job import JobHandlerDecorator
 
@@ -21,6 +22,7 @@ class PeriodicJobHandlerDecorator(object):
 
     def __call__(self, job_handler):
         job_handler = JobHandlerDecorator(self.queue)(job_handler)
+        record_dynamic_dependency_provider(get_loading_component_name(), 'periodic-job', '@')
         schedules[self.schedule].add(job_handler)
         return job_handler
 

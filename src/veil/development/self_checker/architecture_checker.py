@@ -11,8 +11,7 @@ architecture_checkers = {
 }
 
 def check_architecture():
-    for component_name in get_application_components():
-        __import__(component_name) # check if all components can be loaded
+    load_all_components() # populate component map
     architecture = get_application_architecture()
     for component_name, value in architecture.items():
         check_component_architecture([component_name], value)

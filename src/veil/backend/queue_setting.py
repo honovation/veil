@@ -45,12 +45,9 @@ def periodic_job_scheduler_program(logging_levels, dependencies):
         veil_logging_level_config_resource(path=veil_logging_level_config_path, logging_levels=logging_levels)]
     for dependency in dependencies:
         resources.append(component_resource(name=dependency))
-    additional_args = []
-    for dependency in dependencies:
-        additional_args.append('--dependency {}'.format(dependency))
     return objectify({
         'periodic_job_scheduler': {
-            'execute_command': 'veil backend queue periodic-job-scheduler-up {}'.format(' '.join(additional_args)),
+            'execute_command': 'veil backend queue periodic-job-scheduler-up',
             'environment_variables': {
                 'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path,
                 'VEIL_LOGGING_EVENT': 'True'

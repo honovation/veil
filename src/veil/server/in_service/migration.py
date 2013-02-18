@@ -9,7 +9,7 @@ LOGGER = logging.getLogger(__name__)
 @script('migrate')
 def migrate():
     for program_name, command in get_migration_commands().items():
-        LOGGER.info('migrating {}...'.format(program_name))
+        LOGGER.info('migrating %(program)s...', {'program': program_name})
         shell_execute(command)
 
 

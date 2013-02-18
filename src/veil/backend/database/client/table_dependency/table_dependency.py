@@ -42,15 +42,13 @@ def disable_logging():
 
 @script('writable-tables')
 def print_writable_table_dependencies(threshold=8):
-    for component_name in get_application_components():
-        __import__(component_name)
+    load_all_components()
     print_table_dependencies_for(list_writable_tables(), threshold)
 
 
 @script('readable-tables')
 def print_readable_table_dependencies(threshold=8):
-    for component_name in get_application_components():
-        __import__(component_name)
+    load_all_components()
     print_table_dependencies_for(list_readable_tables(), threshold)
 
 

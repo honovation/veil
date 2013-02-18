@@ -33,8 +33,6 @@ def self_check():
 
 @script('quick-check')
 def quick_check(checker_name=None):
-    for component_name in get_application_components():
-        __import__(component_name) # check if all components can be loaded
     if checker_name:
         SELF_CHECKERS[checker_name]()
         return

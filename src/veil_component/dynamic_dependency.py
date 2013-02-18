@@ -36,12 +36,16 @@ def record_dynamic_dependency_consumer(component_name, dynamic_dependency_type, 
 
 
 def load_dynamic_dependency_providers(dynamic_dependency_type, dynamic_dependency_key):
+    for component_name in list_dynamic_dependency_providers(dynamic_dependency_type, dynamic_dependency_key):
+        __import__(component_name)
+
+
+def list_dynamic_dependency_providers(dynamic_dependency_type, dynamic_dependency_key):
     if (dynamic_dependency_type, dynamic_dependency_key) in loaded_providers:
-        return
+        return []
     loaded_providers.add((dynamic_dependency_type, dynamic_dependency_key))
     providers, consumers = list_dynamic_dependencies()
-    for component_name in providers.get((dynamic_dependency_type, dynamic_dependency_key)) or []:
-        __import__(component_name)
+    return providers.get((dynamic_dependency_type, dynamic_dependency_key)) or []
 
 
 def should_record(component_name):
@@ -65,6 +69,7 @@ def list_dynamic_dependencies():
             return {}, {}
         with open(dynamic_dependencies_file, 'r') as f:
             for line in f.readlines():
+                line = line.decode('utf8')
                 line = line.strip()
                 if not line:
                     continue
@@ -81,6 +86,7 @@ def list_dynamic_dependencies():
 
 
 def record_line(line):
+    line = line.encode('utf8')
     if line in cached_content:
         return
     cached_content.add(line)

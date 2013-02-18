@@ -86,34 +86,7 @@ def import_script_handlers(argv):
                 else:
                     pass
     if not script_handlers:
-        component_names = [
-            'veil.backend.bucket',
-            'veil.backend.database.client',
-            'veil.backend.database.postgresql',
-            'veil.backend.database.db2',
-            'veil.backend.queue',
-            'veil.backend.redis',
-            'veil.backend.log_shipper',
-            'veil.development.architecture',
-            'veil.development.git',
-            'veil.development.loc',
-            'veil.development.pycharm',
-            'veil.development.test',
-            'veil.development.source_code_monitor',
-            'veil.environment.in_service',
-            'veil.environment.backup',
-            'veil.environment.tunnel',
-            'veil.server.in_service',
-            'veil.server.backup',
-            'veil.server.supervisor',
-            'veil.frontend.cli',
-            'veil.frontend.locale',
-            'veil.frontend.template',
-            'veil.frontend.nginx',
-            'veil.frontend.web'
-        ]
-        component_names.extend(get_application_components())
-        for component_name in component_names:
+        for component_name in (list_all_components()):
             try:
                 __import__(component_name)
             except:

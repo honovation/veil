@@ -11,6 +11,7 @@ from .environment import CURRENT_USER
 from .environment import CURRENT_USER_GROUP
 from .environment import CURRENT_USER_HOME
 from .environment import BASIC_LAYOUT_RESOURCES
+from veil_component import *
 
 
 def veil_env(server_hosts, servers, deployment_memo=None):
@@ -23,7 +24,8 @@ def veil_env(server_hosts, servers, deployment_memo=None):
     })
 
 
-def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, dns='8.8.8.8'):
+def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None,
+                dns='8.8.8.8'):
     from veil.model.collection import objectify
 
     return objectify({
@@ -96,8 +98,13 @@ def get_application_architecture():
     return getattr(get_application(), 'ARCHITECTURE', {})
 
 
-def get_application_components():
-    return get_application_architecture().keys()
+def load_all_components():
+    for component_name in list_all_components():
+        __import__(component_name)
+
+
+def list_all_components():
+    return search_components(VEIL_HOME / 'src').union(search_components(VEIL_FRAMEWORK_HOME / 'src'))
 
 
 def get_application_version():

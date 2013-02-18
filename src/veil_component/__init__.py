@@ -12,10 +12,10 @@ from .component_map import get_transitive_dependencies
 from .component_map import get_root_component
 from .component_map import get_leaf_component
 from .component_walker import find_module_loader_without_import
-from .component_walker import is_component
+from .component_walker import search_components
 from .dynamic_dependency import set_dynamic_dependencies_file
 from .dynamic_dependency import start_recording_dynamic_dependencies
 from .dynamic_dependency import record_dynamic_dependency_consumer
 from .dynamic_dependency import record_dynamic_dependency_provider
-from .dynamic_dependency import list_dynamic_dependencies
 from .dynamic_dependency import load_dynamic_dependency_providers
+from .dynamic_dependency import list_dynamic_dependency_providers

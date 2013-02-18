@@ -3,7 +3,7 @@ from logging import getLogger
 from math import ceil
 import time
 import signal
-import argparse
+from veil_component import *
 from veil.frontend.cli import *
 from veil.utility.clock import *
 from ..periodic_job import schedules
@@ -12,16 +12,8 @@ from ..queue import require_queue
 LOGGER = getLogger(__name__)
 
 @script('periodic-job-scheduler-up')
-def bring_up_periodic_job_scheduler(*argv):
-    argument_parser = argparse.ArgumentParser('Periodic job scheduler')
-    argument_parser.add_argument('--dependency', type=str, action='append',
-        help='where @periodic_job is defined', dest='dependencies')
-    args = argument_parser.parse_args(argv)
-    for dependency in args.dependencies:
-        __import__(dependency)
-        LOGGER.info('imported component: %(component)s', {
-            'component': dependency
-        })
+def bring_up_periodic_job_scheduler(*argv): # TODO: remove argv
+    load_dynamic_dependency_providers('periodic-job', '@')
     PeriodicJobScheduler().run()
 
 

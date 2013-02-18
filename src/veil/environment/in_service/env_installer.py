@@ -80,7 +80,7 @@ def remote_do(action, veil_env_name, veil_server_name):
 
 
 def update_branch(veil_env_name):
-    LOGGER.info('update env-{} branch...'.format(veil_env_name))
+    LOGGER.info('update env-%(env)s branch...', {'env': veil_env_name})
     shell_execute('git checkout env-{}'.format(veil_env_name), cwd=VEIL_HOME)
     shell_execute('git merge master --ff-only', cwd=VEIL_HOME)
     shell_execute('git push origin env-{}'.format(veil_env_name), cwd=VEIL_HOME)

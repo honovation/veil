@@ -6,7 +6,6 @@ import sys
 from veil.utility.shell import *
 from veil.environment import *
 from veil.frontend.cli import script
-from veil_component import *
 from .supervisorctl import are_all_supervisord_programs_running
 from .supervisorctl import supervisorctl
 from .supervisorctl import is_supervisord_running
@@ -53,17 +52,7 @@ def bring_up_supervisor(*argv):
 
 @script('update-dynamic-dependencies')
 def update_dynamic_dependencies():
-    for path in (VEIL_HOME / 'src').dirs():
-        find_and_import_component(path)
-
-def find_and_import_component(path):
-    if is_component((path / '__init__.py').text()):
-        component_name = (VEIL_HOME/ 'src').relpathto(path).replace('/', '.')
-        __import__(component_name)
-    else:
-        for subpath in path.dirs():
-            find_and_import_component(subpath)
-
+    load_all_components() # import module will execute a lot record_dynamic_dependency_provider
 
 
 @script('down')

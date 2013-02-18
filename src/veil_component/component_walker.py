@@ -29,6 +29,19 @@ class ComponentInternalVisitor(object):
         pass
 
 
+def search_components(root_path, path=None):
+    path = path or root_path
+    component_names = set()
+    init_path = path / '__init__.py'
+    if init_path.exists() and is_component(init_path.text()):
+        component_name = root_path.relpathto(path).replace('/', '.')
+        component_names.add(component_name)
+    else:
+        for sub_path in path.dirs():
+            component_names = component_names.union(search_components(root_path, sub_path))
+    return component_names
+
+
 # walk through the internals of a component
 # stops at sub component
 # passing path/source_code to ModuleCollector

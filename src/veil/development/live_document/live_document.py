@@ -3,6 +3,7 @@ from __future__ import unicode_literals, print_function, division
 import contextlib
 import atexit
 from veil.environment import *
+from veil_component import *
 from veil.development.test import *
 
 root_context = {}
@@ -14,8 +15,7 @@ def register_document_statement(statement_name, statement_executor):
 
 def execute_document_statement(statement_name, *args):
     if not get_executing_test(optional=True):
-        for component_name in get_application_components():
-            __import__(component_name) # load document statements and fixtures
+        load_dynamic_dependency_providers('document-statement', statement_name)
         set_up_fake_test()
         atexit.register(tear_down_fake_test)
     return contexts[-1](statement_name, args)
@@ -23,6 +23,7 @@ def execute_document_statement(statement_name, *args):
 
 def document_statement(statement_name):
     def register(func):
+        record_dynamic_dependency_provider(get_loading_component_name(), 'document-statement', statement_name)
         register_document_statement(statement_name, func)
         return func
 

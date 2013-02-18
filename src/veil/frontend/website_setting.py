@@ -35,9 +35,7 @@ def website_programs(
 
 
 def list_website_components(website):
-    website = website.lower()
-    consumers, providers = list_dynamic_dependencies()
-    return consumers.get(('website', website)) or set()
+    return list_dynamic_dependency_providers('website', website.lower())
 
 
 def website_upstreams(purpose, start_port, processes_count):
