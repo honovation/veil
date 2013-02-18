@@ -28,8 +28,6 @@ def bring_up_program(program_name):
 
 
 def bring_up_supervisor(*argv):
-    if VEIL_ENV in ['test', 'development']:
-        update_dynamic_dependencies()
     argument_parser = argparse.ArgumentParser('Bring up the application')
     argument_parser.add_argument('--daemonize', action='store_true',
         help='should the process run in background')
@@ -47,6 +45,8 @@ def bring_up_supervisor(*argv):
         })
         sys.exit(1)
     else:
+        if VEIL_ENV in ['test', 'development']:
+            update_dynamic_dependencies()
         pass_control_to('supervisord -n -c {}'.format(VEIL_ETC_DIR / 'supervisor.cfg'))
 
 

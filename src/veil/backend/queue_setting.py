@@ -61,8 +61,12 @@ def periodic_job_scheduler_program(logging_levels, dependencies):
 def job_worker_program(
         worker_name, pyres_worker_logging_level, application_logging_levels,
         queue_host, queue_port, queue_names,
-        application_component_names, application_config, run_as=None, count=1, timeout=120):
+        application_config, run_as=None, count=1, timeout=120):
     veil_logging_level_config_path = VEIL_ETC_DIR / '{}-worker-log.cfg'.format(worker_name)
+    application_component_names = set()
+    for queue_name in queue_names:
+        providers = list_dynamic_dependency_providers('job', queue_name)
+        application_component_names = application_component_names.union(set(providers))
     resources = [
         veil_logging_level_config_resource(
             path=veil_logging_level_config_path,
