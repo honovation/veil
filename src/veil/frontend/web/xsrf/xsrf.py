@@ -27,7 +27,7 @@ def prevent_xsrf():
                 'path': request.path
             })
         request._xsrf_token = token
-    if 'GET' != request.method.upper() and TAG_NO_XSRF_CHECK not in get_current_http_context().route.tags:
+    if request.method.upper() not in ['GET', 'HEAD'] and TAG_NO_XSRF_CHECK not in get_current_http_context().route.tags:
         token = get_http_argument('_xsrf', optional=True) or request.headers.get('X-XSRF', None)
         if not token:
             response.status_code = httplib.FORBIDDEN
