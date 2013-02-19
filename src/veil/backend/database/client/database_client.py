@@ -8,6 +8,7 @@ from logging import getLogger
 import uuid
 import atexit
 import signal
+import os
 import veil_component
 from veil_installer import *
 from veil.development.test import *
@@ -414,10 +415,14 @@ class ConstValueProvider(object):
         return self.const
 
 
-def close_all_connections(*args, **kwargs):
+def close_all_connections(signum, frame):
     for purpose, instance in instances.items():
         LOGGER.info('close connection at exit: %(purpose)s', {'purpose': purpose})
         instance.close()
+    signal.signal(signum, signal.SIG_DFL)
+    os.kill(os.getpid(), signum) # Rethrow signal
+
 
 atexit.register(close_all_connections)
 signal.signal(signal.SIGTERM, close_all_connections)
+signal.signal(signal.SIGINT, close_all_connections)

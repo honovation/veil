@@ -7,7 +7,6 @@ import httplib
 from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
-from veil.environment import *
 from veil.development.test import *
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
@@ -155,12 +154,8 @@ class RoutingHTTPHandler(object):
 
 
 def is_method_matched(route_method, request_method):
-    if route_method == request_method:
-        return True
-    if 'GET' == route_method and 'HEAD' == request_method:
-        return True
-    else:
-        return False
+    return route_method == request_method or ('GET' == route_method and 'HEAD' == request_method)
+
 
 def nest_context_managers(*context_managers):
     context_managers = [as_context_manager(obj) for obj in context_managers]
