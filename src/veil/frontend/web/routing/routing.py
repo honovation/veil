@@ -118,7 +118,7 @@ class RoutingHTTPHandler(object):
 
     def try_route(self, route):
         request = get_current_http_request()
-        if route.method.upper() != request.method.upper():
+        if not is_method_matched(route.method.upper(), request.method.upper()):
             return False
         path = request.path.rstrip('/')
         if not path:
@@ -153,6 +153,14 @@ class RoutingHTTPHandler(object):
             LOGGER.error('failed to post-process route: %(route)s', {'route': route})
             raise
 
+
+def is_method_matched(route_method, request_method):
+    if route_method == request_method:
+        return True
+    if 'GET' == route_method and 'HEAD' == request_method:
+        return True
+    else:
+        return False
 
 def nest_context_managers(*context_managers):
     context_managers = [as_context_manager(obj) for obj in context_managers]
