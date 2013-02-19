@@ -44,3 +44,24 @@ BASIC_LAYOUT_RESOURCES = [
     directory_resource(path=VEIL_HOME / 'var'),
     directory_resource(path=VEIL_VAR_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
 ]
+
+_application_version = None
+def get_application_version():
+    if 'development' == VEIL_SERVER:
+        return 'development'
+    if 'test' == VEIL_SERVER:
+        return 'test'
+    global _application_version
+    from veil.utility.shell import shell_execute
+
+    if not _application_version:
+        app_commit_hash = shell_execute('git rev-parse HEAD', cwd=VEIL_HOME, capture=True).strip()
+        framework_commit_hash = get_veil_framework_version()
+        _application_version = '{}-{}'.format(app_commit_hash, framework_commit_hash)
+    return _application_version
+
+
+def get_veil_framework_version():
+    from veil.utility.shell import shell_execute
+
+    return shell_execute('git rev-parse HEAD', cwd=VEIL_FRAMEWORK_HOME, capture=True).strip()

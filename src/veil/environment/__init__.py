@@ -11,6 +11,8 @@ from .environment import CURRENT_USER
 from .environment import CURRENT_USER_GROUP
 from .environment import CURRENT_USER_HOME
 from .environment import BASIC_LAYOUT_RESOURCES
+from .environment import get_application_version
+from .environment import get_veil_framework_version
 from veil_component import *
 
 
@@ -108,24 +110,6 @@ def list_all_components():
     if VEIL_FRAMEWORK_HOME:
         all_components = all_components.union(search_components(VEIL_FRAMEWORK_HOME / 'src'))
     return all_components
-
-
-def get_application_version():
-    if 'development' == VEIL_SERVER:
-        return 'development'
-    if 'test' == VEIL_SERVER:
-        return 'test'
-    from veil.utility.shell import shell_execute
-
-    app_commit_hash = shell_execute('git rev-parse HEAD', cwd=VEIL_HOME, capture=True).strip()
-    framework_commit_hash = get_veil_framework_version()
-    return '{}-{}'.format(app_commit_hash, framework_commit_hash)
-
-
-def get_veil_framework_version():
-    from veil.utility.shell import shell_execute
-
-    return shell_execute('git rev-parse HEAD', cwd=VEIL_FRAMEWORK_HOME, capture=True).strip()
 
 
 def get_application():
