@@ -75,7 +75,6 @@ def list_readable_tables():
     if readable_tables is not None:
         return readable_tables
     readable_tables = {}
-    load_all_components()
     for component_name in veil_component.get_component_map().keys():
         readable_tables[component_name] = set(list_writable_tables().get(component_name, set()))
         transitive_dependencies = veil_component.get_transitive_dependencies(component_name)
