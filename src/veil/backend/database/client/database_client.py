@@ -415,14 +415,18 @@ class ConstValueProvider(object):
         return self.const
 
 
-def close_all_connections(signum, frame):
+def close_all_connections():
     for purpose, instance in instances.items():
         LOGGER.info('close connection at exit: %(purpose)s', {'purpose': purpose})
         instance.close()
+
+
+def close_all_connections_before_exit_handler(signum, frame):
+    close_all_connections()
     signal.signal(signum, signal.SIG_DFL)
     os.kill(os.getpid(), signum) # Rethrow signal
 
 
 atexit.register(close_all_connections)
-signal.signal(signal.SIGTERM, close_all_connections)
-signal.signal(signal.SIGINT, close_all_connections)
+signal.signal(signal.SIGTERM, close_all_connections_before_exit_handler)
+signal.signal(signal.SIGINT, close_all_connections_before_exit_handler)
