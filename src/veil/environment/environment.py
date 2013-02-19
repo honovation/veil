@@ -18,7 +18,7 @@ VEIL_HOME = as_path(VEIL_HOME)
 set_dynamic_dependencies_file(VEIL_HOME / 'dynamic-dependencies.txt')
 
 VEIL_FRAMEWORK_HOME = getenv('VEIL_FRAMEWORK_HOME')
-VEIL_FRAMEWORK_HOME = as_path(VEIL_FRAMEWORK_HOME)
+VEIL_FRAMEWORK_HOME = as_path(VEIL_FRAMEWORK_HOME) if VEIL_FRAMEWORK_HOME else None
 
 VEIL_SERVER = getenv('VEIL_SERVER') or 'development'
 VEIL_ENV = None

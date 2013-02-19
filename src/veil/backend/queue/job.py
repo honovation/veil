@@ -4,6 +4,8 @@ from inspect import isfunction
 from logging import getLogger
 from veil.utility.clock import *
 from veil_component import *
+from veil.model.event import *
+from veil.server.process import *
 
 LOGGER = getLogger(__name__)
 
@@ -32,18 +34,23 @@ class JobHandlerDecorator(object):
 
 
 def perform(job_handler, payload):
-    # restore datetime as utc timezone
-    for key, value in payload.items():
-        if isinstance(value, datetime):
-            payload[key] = convert_datetime_to_utc_timezone(value)
     try:
-        return job_handler(**payload)
-    except InvalidJob:
-        LOGGER.warn('Invalid job: %(job_handler_name)s, %(payload)s', {
-            'job_handler_name': job_handler.__name__,
-            'payload': payload
-        }, exc_info=1)
-        return
+        publish_event(EVENT_PROCESS_SETUP, loads_event_handlers=False)
+        # restore datetime as utc timezone
+        for key, value in payload.items():
+            if isinstance(value, datetime):
+                payload[key] = convert_datetime_to_utc_timezone(value)
+        try:
+            return job_handler(**payload)
+        except InvalidJob:
+            LOGGER.warn('Invalid job: %(job_handler_name)s, %(payload)s', {
+                'job_handler_name': job_handler.__name__,
+                'payload': payload
+            }, exc_info=1)
+            return
+    finally:
+        publish_event(EVENT_PROCESS_TEARDOWN, loads_event_handlers=False)
+
 
 class InvalidJob(Exception):
     pass

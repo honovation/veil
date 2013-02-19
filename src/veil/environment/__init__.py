@@ -104,7 +104,10 @@ def load_all_components():
 
 
 def list_all_components():
-    return search_components(VEIL_HOME / 'src').union(search_components(VEIL_FRAMEWORK_HOME / 'src'))
+    all_components = search_components(VEIL_HOME / 'src')
+    if VEIL_FRAMEWORK_HOME:
+        all_components = all_components.union(search_components(VEIL_FRAMEWORK_HOME / 'src'))
+    return all_components
 
 
 def get_application_version():

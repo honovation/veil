@@ -8,6 +8,8 @@ import sys
 from veil.development.test import *
 from veil.frontend.template import *
 from veil.environment import *
+from veil.model.event import *
+from veil.server.process import *
 
 LOGGER = getLogger(__name__)
 LOCALE_DIR = VEIL_HOME / 'locale'
@@ -63,6 +65,7 @@ def _(*args, **kwargs):
 
     return sys.modules['__builtin__']._(*args, **kwargs)
 
+@event(EVENT_PROCESS_SETUP)
 @test_hook
 def install_null_translation():
     def clean_up():

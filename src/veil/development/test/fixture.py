@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.model.collection import *
+from veil_component import *
 from .case import test_hook
 from .case import get_executing_test
 
@@ -25,6 +26,7 @@ def get_fixture(fixture_name):
 
 
 def require_fixture(expected_fixture_type, fixture_name):
+    load_dynamic_dependency_providers('fixture-type', expected_fixture_type)
     provider = fixture_providers[fixture_name]
     if expected_fixture_type != provider.fixture_type:
         raise Exception('{} is not {}'.format(fixture_name, expected_fixture_type))
@@ -37,6 +39,7 @@ class FixtureProviderDecorator(object):
         self.fixture_name = fixture_name
 
     def __call__(self, provider):
+        record_dynamic_dependency_provider(get_loading_component_name(), 'fixture-type', self.fixture_type)
         return FixtureProvider(self.fixture_type, self.fixture_name or provider.__name__, provider)
 
 

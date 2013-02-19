@@ -103,7 +103,7 @@ class ImmediateQueue(object):
         if self.stopped:
             self.queued_jobs.append((job_handler, payload))
         else:
-            job_handler.perform(payload)
+            job_handler(**payload)
 
     def enqueue_at(self, job_handler, scheduled_at, to_queue=None, **payload):
         self.enqueue(job_handler, **payload)
@@ -121,8 +121,8 @@ class ImmediateQueue(object):
     def start(self):
         self.stopped = False
         jobs = self.clear_queued_jobs()
-        for job, payload in jobs:
-            job.perform(payload)
+        for job_handler, payload in jobs:
+            job_handler(**payload)
 
     def clear_queued_jobs(self):
         ret = self.queued_jobs

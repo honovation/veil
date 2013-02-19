@@ -8,6 +8,8 @@ import veil_component
 from veil.environment import *
 from veil.utility.tracing import *
 from veil.utility.encoding import *
+from veil.model.event import *
+from veil.server.process import *
 
 script_handlers = {}
 LOGGER = logging.getLogger(__name__)
@@ -22,15 +24,26 @@ def is_script_defined(*argv):
     return True
 
 
-def execute_script(*argv, **kwargs):
-    if VEIL_ENV in ['test', 'development']:
-        veil_component.start_recording_dynamic_dependencies()
-    argv = [to_unicode(arg) for arg in argv]
-    if 'level' in kwargs:
-        level = kwargs.get('level')
-    else:
+def execute_script(*argv):
+    try:
+        if VEIL_ENV in ['test', 'development']:
+            veil_component.start_recording_dynamic_dependencies()
+        argv = [to_unicode(arg) for arg in argv]
         import_script_handlers(argv)
+        # after components loaded, so necessary event handlers installed
+        publish_event(EVENT_PROCESS_SETUP, loads_event_handlers=False)
         level = script_handlers
+        execute_script_at_level(level, argv)
+    except SystemExit:
+        raise
+    except:
+        type, value, tb = sys.exc_info()
+        LOGGER.error(traceback.format_exc())
+        LOGGER.error(value.message)
+        sys.exit(1)
+
+
+def execute_script_at_level(level, argv):
     arg = argv[0] if argv else None
     if arg not in level:
         LOGGER.warn(
@@ -39,31 +52,23 @@ def execute_script(*argv, **kwargs):
                 'valid_options': level.keys(),
             })
         sys.exit(1)
-    script_handler = None
-    try:
-        next_level = level[arg]
-        if inspect.isfunction(next_level):
-            script_handler = next_level
+    next_level = level[arg]
+    if inspect.isfunction(next_level):
+        script_handler = next_level
+        try:
+            executing_script_handlers.append(script_handler)
             try:
-                executing_script_handlers.append(script_handler)
                 return script_handler(*argv[1:])
-            finally:
-                executing_script_handlers.pop()
-        else:
-            return execute_script(level=next_level, *argv[1:])
-    except KeyboardInterrupt:
-        LOGGER.info('script terminated by KeyboardInterrupt: %(script_handler)s %(argv)s', {
-            'script_handler': script_handler,
-            'argv': argv
-        })
-        return
-    except SystemExit:
-        raise
-    except:
-        type, value, tb = sys.exc_info()
-        LOGGER.error(traceback.format_exc())
-        LOGGER.error(value.message)
-        sys.exit(1)
+            except KeyboardInterrupt:
+                LOGGER.info('script terminated by KeyboardInterrupt: %(script_handler)s %(argv)s', {
+                    'script_handler': script_handler,
+                    'argv': argv
+                })
+                return
+        finally:
+            executing_script_handlers.pop()
+    else:
+        return execute_script_at_level(next_level, argv[1:])
 
 
 def import_script_handlers(argv):
