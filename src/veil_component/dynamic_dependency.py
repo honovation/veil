@@ -3,7 +3,6 @@ import os
 
 dynamic_dependencies_file = None
 is_recording = False
-cached_content = None
 dynamic_dependencies = None
 loaded_providers = set()
 
@@ -14,14 +13,7 @@ def set_dynamic_dependencies_file(file):
 
 def start_recording_dynamic_dependencies():
     global is_recording
-    global cached_content
     is_recording = True
-    if os.path.exists(dynamic_dependencies_file):
-        with open(dynamic_dependencies_file, 'r') as f:
-            cached_content = set(f.readlines())
-    else:
-        cached_content = set()
-
 
 def record_dynamic_dependency_provider(component_name, dynamic_dependency_type, dynamic_dependency_key):
     if should_record(component_name):
@@ -87,8 +79,8 @@ def list_dynamic_dependencies():
 
 def record_line(line):
     line = line.encode('utf8')
-    if line in cached_content:
-        return
-    cached_content.add(line)
+    with open(dynamic_dependencies_file) as f:
+        if line in f.read():
+            return
     with open(dynamic_dependencies_file, 'a') as f:
         f.write(line)
