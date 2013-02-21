@@ -53,4 +53,7 @@ def get_website_domain(purpose):
     return load_website_config(purpose).domain
 
 def get_website_parent_domain(purpose):
-    return '.'.join(get_website_domain(purpose).split('.')[1:])
+    parts = get_website_domain(purpose).split('.')[1:]
+    if parts[0].lower() in ['dev', 'test', 'staging', 'uat', 'prod']:
+        parts = parts[1:]
+    return '.'.join(parts)
