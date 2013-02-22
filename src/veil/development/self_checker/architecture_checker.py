@@ -11,10 +11,30 @@ architecture_checkers = {
 }
 
 def check_architecture():
+    for component_name in list_all_components():
+        scan_component(component_name)
+    check_circular_dependency(get_component_map().keys())
     load_all_components() # populate component map
     architecture = get_application_architecture()
     for component_name, value in architecture.items():
         check_component_architecture([component_name], value)
+
+
+def check_circular_dependency(comps, visiting=(), visited=()):
+# this function is slow, as it need to go through all paths of the graph
+# if we reach one node and stop searching when enter from another path, cycle might still form from another path
+# it can be multi-threaded, but not a trivial job, refer to:
+# http://stackoverflow.com/questions/10697355/multithreaded-algo-for-cycle-detection-in-a-directed-graph
+    for comp in comps:
+        if comp in visiting:
+            raise Exception('found circular dependency {}=>{}'.format('=>'.join(visiting), comp))
+        if comp in visited:
+            continue
+        next_visiting = set(visiting)
+        next_visiting.add(comp)
+        check_circular_dependency(get_dependent_component_names(comp, includes_children=True), next_visiting, visited)
+        visited = set(visited)
+        visited.add(comp)
 
 
 def check_component_architecture(component_names, architecture):
