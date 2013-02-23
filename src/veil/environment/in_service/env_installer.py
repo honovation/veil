@@ -25,8 +25,7 @@ def update_env_authorized_keys(veil_env_name, config_dir):
         fabric.api.put(authorized_keys_path, '~/.ssh/authorized_keys')
 
 
-@script('deploy-env')
-def deploy_env(veil_env_name, config_dir):
+def display_deployment_memo(veil_env_name):
     deployment_memo = get_veil_env_deployment_memo(veil_env_name)
     if deployment_memo:
         print('!!! IMPORTANT !!!')
@@ -35,6 +34,11 @@ def deploy_env(veil_env_name, config_dir):
         while True:
             if 'iwilldoit' == sys.stdin.readline().strip():
                 break
+
+
+@script('deploy-env')
+def deploy_env(veil_env_name, config_dir):
+    display_deployment_memo(veil_env_name)
     check_all_locked_migration_scripts()
     update_branch(veil_env_name)
     install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
@@ -48,6 +52,7 @@ def deploy_env(veil_env_name, config_dir):
 
 @script('patch-env')
 def patch_env(veil_env_name):
+    display_deployment_memo(veil_env_name)
     check_all_locked_migration_scripts()
     update_branch(veil_env_name)
     install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, is_patch=True))
