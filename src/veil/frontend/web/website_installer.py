@@ -47,10 +47,15 @@ def override_website_config(purpose, **overrides):
 
 def get_website_url_prefix(purpose):
     config = load_website_config(purpose)
-    return 'http://{}:{}'.format(config.domain, config.domain_port)
+    if 80 == config.domain_port:
+        return 'http://{}'.format(config.domain)
+    else:
+        return 'http://{}:{}'.format(config.domain, config.domain_port)
+
 
 def get_website_domain(purpose):
     return load_website_config(purpose).domain
+
 
 def get_website_parent_domain(purpose):
     parts = get_website_domain(purpose).split('.')[1:]
