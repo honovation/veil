@@ -8,8 +8,8 @@ LOGGER = logging.getLogger(__name__)
 PIP_FREEZE_OUTPUT = None
 
 @atomic_installer
-def python_package_resource(name, version=None, **kwargs):
-    pip_package = '{}=={}'.format(name, version) if version else name
+def python_package_resource(name, url=None, **kwargs):
+    pip_package = name
     installed = is_python_package_installed(pip_package)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
@@ -23,7 +23,7 @@ def python_package_resource(name, version=None, **kwargs):
         mirror = '{}:8080'.format(mirror)
     else:
         mirror = 'http://dependency-veil.googlecode.com/svn/trunk'
-    shell_execute('pip install {} --upgrade --no-index -f {}/'.format(pip_package, mirror), capture=True, **kwargs)
+    shell_execute('pip install {} --upgrade --no-index -f {}/'.format(url if url else pip_package, mirror), capture=True, **kwargs)
 
 
 def is_python_package_installed(pip_package):
