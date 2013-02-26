@@ -21,8 +21,11 @@ def get_dependent_component_names(component_name, includes_children=False):
     direct = component_map.get(component_name, set())
     if not includes_children:
         return direct
-    children = set([c for c in component_map.keys() if c.startswith('{}.'.format(component_name))])
-    return direct.union(children)
+    return direct.union(list_child_component_names(component_name))
+
+
+def list_child_component_names(component_name):
+    return set([c for c in component_map.keys() if c.startswith('{}.'.format(component_name))])
 
 
 def get_component_map():

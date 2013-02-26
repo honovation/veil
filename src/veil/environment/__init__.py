@@ -13,7 +13,6 @@ from .environment import CURRENT_USER_HOME
 from .environment import BASIC_LAYOUT_RESOURCES
 from .environment import get_application_version
 from .environment import get_veil_framework_version
-from veil_component import *
 
 
 def veil_env(server_hosts, servers, deployment_memo=None):
@@ -106,6 +105,8 @@ def load_all_components():
 
 
 def list_all_components():
+    from veil_component import search_components
+
     all_components = search_components(VEIL_HOME / 'src')
     if VEIL_FRAMEWORK_HOME:
         all_components = all_components.union(search_components(VEIL_FRAMEWORK_HOME / 'src'))

@@ -8,6 +8,7 @@ from .component_map import scan_component
 from .component_map import get_component_map
 from .component_map import get_component_dependencies
 from .component_map import get_dependent_component_names
+from .component_map import list_child_component_names
 from .component_map import get_transitive_dependencies
 from .component_map import get_root_component
 from .component_map import get_leaf_component
@@ -18,6 +19,7 @@ from .dynamic_dependency import record_dynamic_dependency_consumer
 from .dynamic_dependency import record_dynamic_dependency_provider
 from .dynamic_dependency import load_dynamic_dependency_providers
 from .dynamic_dependency import list_dynamic_dependency_providers
+from .dynamic_dependency import list_dynamic_dependencies
 from .path import as_path
 from .environment import VEIL_FRAMEWORK_HOME
 from .environment import VEIL_HOME

@@ -5,6 +5,7 @@ import logging
 from veil.environment import *
 from veil.frontend.cli import *
 from veil.utility.encoding import *
+from veil_component import *
 
 RE_UPDATE = re.compile(r'UPDATE\s+(\w+)\s+', re.IGNORECASE)
 RE_INSERT = re.compile(r'INSERT\s+(\w+)[\s\(]+', re.IGNORECASE)
@@ -81,6 +82,14 @@ def list_readable_tables():
         for dependency in transitive_dependencies:
             readable_tables[component_name] = readable_tables[component_name].union(
                 set(list_writable_tables().get(dependency, set())))
+    providers, consumers = list_dynamic_dependencies()
+    for component_name, deps in consumers.items():
+        for dep in deps:
+            dep_type, db_and_table = dep
+            if 'table' != dep_type:
+                continue
+            table = db_and_table.split('/')[1] # TODO: check against db/table instead of just table
+            readable_tables.setdefault(component_name, set()).add(table)
     return readable_tables
 
 
@@ -89,33 +98,15 @@ def list_writable_tables():
     if writable_tables is not None:
         return writable_tables
     writable_tables = {}
-    try:
-        architecture = get_application_architecture()
-        for component_name, value in architecture.items():
-            collect_writable_tables([component_name], value)
-    except:
-        writable_tables = None
-        raise
+    providers, consumers = list_dynamic_dependencies()
+    for dep, component_names in providers.items():
+        dep_type, db_and_table = dep
+        if 'table' != dep_type:
+            continue
+        table = db_and_table.split('/')[1] # TODO: check against db/table instead of just table
+        for component_name in component_names:
+            writable_tables.setdefault(component_name, set()).add(table)
     return writable_tables
-
-
-def collect_writable_tables(component_names, architecture):
-    if not isinstance(architecture, dict):
-        return
-    for key, value in architecture.items():
-        if 'TABLES' == key:
-            update_writable_tables(component_names, value)
-        elif key.startswith('.'):
-            inner_component_names = list(component_names)
-            inner_component_names.append(key)
-            inner_architecture = value
-            collect_writable_tables(inner_component_names, inner_architecture)
-
-
-def update_writable_tables(component_names, expected_dependencies):
-    if writable_tables is None:
-        return
-    writable_tables[''.join(component_names)] = expected_dependencies
 
 
 def check_table_dependencies(component_name, sql):

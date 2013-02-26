@@ -4,6 +4,7 @@ from veil.model.collection import *
 from veil.environment import *
 from veil.backend.redis_setting import redis_program
 from veil.server.python import *
+from veil_component import list_dynamic_dependency_providers
 
 
 def queue_program(host, port):
