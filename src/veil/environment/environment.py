@@ -4,21 +4,11 @@ from os import getenv
 import os
 from veil_component import *
 from veil.server.os import *
-from veil_component import *
 
 def split_veil_server_code(code):
     env = code[:code.find('/')]
     server_name = code[code.find('/') + 1:]
     return env, server_name
-
-VEIL_HOME = getenv('VEIL_HOME') or '.'
-VEIL_HOME = os.path.abspath(VEIL_HOME)
-assert VEIL_HOME, 'must specify $VEIL_HOME'
-VEIL_HOME = as_path(VEIL_HOME)
-set_dynamic_dependencies_file(VEIL_HOME / 'dynamic-dependencies.txt')
-
-VEIL_FRAMEWORK_HOME = getenv('VEIL_FRAMEWORK_HOME')
-VEIL_FRAMEWORK_HOME = as_path(VEIL_FRAMEWORK_HOME) if VEIL_FRAMEWORK_HOME else None
 
 VEIL_SERVER = getenv('VEIL_SERVER') or 'development'
 VEIL_ENV = None

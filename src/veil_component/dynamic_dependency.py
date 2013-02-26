@@ -1,15 +1,11 @@
 from __future__ import unicode_literals, print_function, division
 import os
+from .environment import VEIL_HOME
 
-dynamic_dependencies_file = None
+DEP_DYNAMIC_RECORDED = VEIL_HOME / 'DEP-DYNAMIC-RECORDED'
 is_recording = False
 dynamic_dependencies = None
 loaded_providers = set()
-
-def set_dynamic_dependencies_file(file):
-    global dynamic_dependencies_file
-    dynamic_dependencies_file = file
-
 
 def start_recording_dynamic_dependencies():
     global is_recording
@@ -45,8 +41,6 @@ def should_record(component_name):
         return False
     if not is_recording:
         return False
-    if not dynamic_dependencies_file:
-        return False
     return True
 
 
@@ -55,11 +49,11 @@ def list_dynamic_dependencies():
     if not dynamic_dependencies:
         providers = {}
         consumers = {}
-        if not dynamic_dependencies_file:
+        if not DEP_DYNAMIC_RECORDED:
             return {}, {}
-        if not os.path.exists(dynamic_dependencies_file):
+        if not os.path.exists(DEP_DYNAMIC_RECORDED):
             return {}, {}
-        with open(dynamic_dependencies_file, 'r') as f:
+        with open(DEP_DYNAMIC_RECORDED, 'r') as f:
             for line in f.readlines():
                 line = line.decode('utf8')
                 line = line.strip()
@@ -79,8 +73,8 @@ def list_dynamic_dependencies():
 
 def record_line(line):
     line = line.encode('utf8')
-    with open(dynamic_dependencies_file) as f:
+    with open(DEP_DYNAMIC_RECORDED) as f:
         if line in f.read():
             return
-    with open(dynamic_dependencies_file, 'a') as f:
+    with open(DEP_DYNAMIC_RECORDED, 'a') as f:
         f.write(line)
