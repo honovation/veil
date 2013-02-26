@@ -2,6 +2,8 @@ from __future__ import unicode_literals, print_function, division
 import logging
 from .dependency_collector import list_dependencies
 from .dependency_collector import OnceComponentWalker
+from .environment import VEIL_HOME
+from .environment import VEIL_FRAMEWORK_HOME
 
 component_map = {}
 component_dependencies = {}
@@ -84,6 +86,20 @@ def get_leaf_component(module_name):
     if not matched_component_names:
         return None
     return max(matched_component_names)
+
+
+def load_all_components():
+    for component_name in list_all_components():
+        __import__(component_name)
+
+
+def list_all_components():
+    from veil_component import search_components
+
+    all_components = search_components(VEIL_HOME / 'src')
+    if VEIL_FRAMEWORK_HOME:
+        all_components = all_components.union(search_components(VEIL_FRAMEWORK_HOME / 'src'))
+    return all_components
 
 
 if '__main__' == __name__:

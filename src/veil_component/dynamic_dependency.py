@@ -2,6 +2,9 @@ from __future__ import unicode_literals, print_function, division
 import os
 from .environment import VEIL_HOME
 
+# dynamic dependency recorded and manually maintained to reflect
+# relationship between components other than direct import
+
 DEP_DYNAMIC_RECORDED = VEIL_HOME / 'DEP-DYNAMIC-RECORDED'
 DEP_DYNAMIC_MANUAL = VEIL_HOME / 'DEP-DYNAMIC-MANUAL'
 is_recording = False

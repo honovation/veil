@@ -7,7 +7,7 @@ from veil.utility.shell import *
 from veil.development.live_document import check_live_document
 from veil.development.test import check_correctness
 from veil.backend.database.postgresql import check_if_locked_migration_scripts_being_changed
-from .architecture_checker import check_architecture
+from veil_component import check_static_dependency_integrity
 from .encapsulation_checker import check_encapsulation
 from .loc_checker import check_loc
 from .logger_checker import check_logger
@@ -15,7 +15,7 @@ from .logger_checker import check_logger
 LOGGER = logging.getLogger(__name__)
 
 SELF_CHECKERS = {
-    'architecture': check_architecture,
+    'dep-static': check_static_dependency_integrity,
     'encapsulation': check_encapsulation,
     'loc': check_loc,
     'live-document': check_live_document,

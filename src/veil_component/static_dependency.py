@@ -1,22 +1,26 @@
 from __future__ import unicode_literals, print_function, division
-import veil_component
-from veil.environment import *
-from veil.backend.web_service import check_web_service_dependencies
-from veil.backend.database.client import check_database_dependencies
-from veil_component import *
+from .environment import VEIL_HOME
+from .component_map import get_dependent_component_names
+from .component_map import list_all_components
+from .component_map import list_child_component_names
+from .component_map import scan_component
+from .component_map import get_component_map
 
-architecture_checkers = {
-    'web-service': check_web_service_dependencies, # TODO, not checked yet
-    'database': check_database_dependencies # TODO, not checked yet
-}
+# static dependency is declared manually assert architecture assertion
 
-def check_architecture():
+def list_static_dependencies():
+    file = VEIL_HOME / 'DEP-STATIC'
+    code = compile(file.text(), file, 'exec')
+    context = {}
+    exec code in context
+    return context['STATIC_DEPENDENCIES']
+
+
+def check_static_dependency_integrity():
     for component_name in list_all_components():
         scan_component(component_name)
-#    check_circular_dependency(get_component_map().keys())
-    architecture = get_application_architecture()
-    for component_name, value in architecture.items():
-        check_component_architecture([component_name], value)
+    check_circular_dependency(get_component_map().keys())
+    check_component_static_dependency([], list_static_dependencies())
 
 
 def check_circular_dependency(comps, visiting=(), visited=()):
@@ -37,19 +41,19 @@ def check_circular_dependency(comps, visiting=(), visited=()):
         visited.add(comp)
 
 
-def check_component_architecture(component_names, architecture):
-    if isinstance(architecture, list):
-        return check_component_dependencies(component_names, architecture, includes_children=True)
-    if not isinstance(architecture, dict):
+def check_component_static_dependency(component_names, expected_dependencies):
+    if isinstance(expected_dependencies, list):
+        return check_component_dependencies(component_names, expected_dependencies, includes_children=True)
+    if not isinstance(expected_dependencies, dict):
         raise Exception('do not know how to check architecture for: {}'.format(component_names))
-    if '@' not in architecture:
-        raise Exception('must check component itself dependencies using @: {}'.format(component_names))
-    check_component_dependencies(component_names, architecture.pop('@'), includes_children=False)
-    for key, value in architecture.items():
+    if component_names:
+        if '@' not in expected_dependencies:
+            raise Exception('must check component itself dependencies using @: {}'.format(component_names))
+        check_component_dependencies(component_names, expected_dependencies.pop('@'), includes_children=False)
+    for key, value in expected_dependencies.items():
         inner_component_names = list(component_names)
         inner_component_names.append(key)
-        inner_architecture = value
-        check_component_architecture(inner_component_names, inner_architecture)
+        check_component_static_dependency(inner_component_names, value)
 
 
 def check_component_dependencies(component_names, expected_dependencies, includes_children=False):
@@ -67,11 +71,12 @@ def check_component_dependencies(component_names, expected_dependencies, include
 
 
 def calculate_actual_dependencies(this_component_name, includes_children):
-    actual_dependencies = veil_component.get_dependent_component_names(this_component_name)
+    actual_dependencies = get_dependent_component_names(this_component_name)
     if includes_children:
         children = list_child_component_names(this_component_name)
         for child_component_name in children:
-            actual_dependencies = actual_dependencies.union(calculate_actual_dependencies(child_component_name, includes_children))
+            actual_dependencies = actual_dependencies.union(
+                calculate_actual_dependencies(child_component_name, includes_children))
     return actual_dependencies
 
 
@@ -93,4 +98,3 @@ def filter_dependencies(dependencies, *white_list):
             continue
         filtered_dependencies.add(dependency)
     return filtered_dependencies
-

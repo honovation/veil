@@ -4,12 +4,12 @@ import logging
 import sys
 import inspect
 import traceback
-import veil_component
 from veil.environment import *
 from veil.utility.tracing import *
 from veil.utility.encoding import *
 from veil.model.event import *
 from veil.server.process import *
+from veil_component import *
 
 script_handlers = {}
 LOGGER = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ def is_script_defined(*argv):
 def execute_script(*argv):
     try:
         if VEIL_ENV in ['test', 'development']:
-            veil_component.start_recording_dynamic_dependencies()
+            start_recording_dynamic_dependencies()
         argv = [to_unicode(arg) for arg in argv]
         import_script_handlers(argv)
         # after components loaded, so necessary event handlers installed
@@ -86,7 +86,7 @@ def import_script_handlers(argv):
             try:
                 __import__(module_name)
             except:
-                if veil_component.find_module_loader_without_import(module_name):
+                if find_module_loader_without_import(module_name):
                     raise
                 else:
                     pass
@@ -134,7 +134,7 @@ class ScriptHandlerDecorator(object):
 
 
 def get_current_level_names():
-    component_name = veil_component.get_loading_component_name()
+    component_name = get_loading_component_name()
     if not component_name:
         return []
     level_names = component_name.split('.')

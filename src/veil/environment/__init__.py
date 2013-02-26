@@ -95,24 +95,6 @@ def get_application_codebase():
     return get_application().CODEBASE
 
 
-def get_application_architecture():
-    return getattr(get_application(), 'ARCHITECTURE', {})
-
-
-def load_all_components():
-    for component_name in list_all_components():
-        __import__(component_name)
-
-
-def list_all_components():
-    from veil_component import search_components
-
-    all_components = search_components(VEIL_HOME / 'src')
-    if VEIL_FRAMEWORK_HOME:
-        all_components = all_components.union(search_components(VEIL_FRAMEWORK_HOME / 'src'))
-    return all_components
-
-
 def get_application():
     import __veil__
 
