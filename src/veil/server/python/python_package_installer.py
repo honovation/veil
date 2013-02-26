@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import os
+import re
 from veil_installer import *
 from veil.utility.shell import *
 
@@ -10,11 +11,13 @@ PIP_FREEZE_OUTPUT = None
 @atomic_installer
 def python_package_resource(name, url=None, **kwargs):
     pip_package = name
-    action = None if is_python_package_installed(pip_package) else 'INSTALL'
+    installed_version = get_python_package_version(pip_package)
+    action = None if installed_version else 'INSTALL'
     if UPGRADE_MODE_LATEST == get_upgrade_mode():
         action = 'UPGRADE'
     elif UPGRADE_MODE_FAST == get_upgrade_mode():
-        raise NotImplementedError()
+        latest_version = get_resource_latest_version('python:{}'.format(pip_package))
+        action = None if latest_version == installed_version else 'UPGRADE'
     elif UPGRADE_MODE_NO == get_upgrade_mode():
         pass
     else:
@@ -33,10 +36,23 @@ def python_package_resource(name, url=None, **kwargs):
     if 'UPGRADE' == action:
         pip_arg = '{} --upgrade'.format(pip_arg)
     shell_execute('pip install {} {}'.format(url if url else pip_package, pip_arg), capture=True, **kwargs)
+    package_version = get_python_package_version(pip_package, from_cache=False)
+    set_resource_latest_version('python:{}'.format(pip_package), package_version)
 
 
 def is_python_package_installed(pip_package):
+    return get_python_package_version(pip_package)
+
+
+def get_python_package_version(pip_package, from_cache=True):
     global PIP_FREEZE_OUTPUT
+    if not from_cache:
+        PIP_FREEZE_OUTPUT = None
     if not PIP_FREEZE_OUTPUT:
         PIP_FREEZE_OUTPUT = shell_execute('pip freeze', capture=True)
-    return pip_package in PIP_FREEZE_OUTPUT
+    lines = PIP_FREEZE_OUTPUT.splitlines(False)
+    for line in lines:
+        match = re.match('{}==(.*)'.format(pip_package), line)
+        if match:
+            return match.group(1)
+    return None

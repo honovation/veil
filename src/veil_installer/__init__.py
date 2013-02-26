@@ -14,6 +14,8 @@ with veil_component.init_component(__name__):
     from .installer import UPGRADE_MODE_LATEST
     from .component_installer import component_resource
     from .component_installer import installer_resource
+    from .latest_version_cache import set_resource_latest_version
+    from .latest_version_cache import get_resource_latest_version
 
     __all__ = [
         # from installer
@@ -30,5 +32,8 @@ with veil_component.init_component(__name__):
         'UPGRADE_MODE_LATEST',
         # from component_installer
         component_resource.__name__,
-        installer_resource.__name__
+        installer_resource.__name__,
+        # from latest_version_cache
+        set_resource_latest_version.__name__,
+        get_resource_latest_version.__name__
     ]
