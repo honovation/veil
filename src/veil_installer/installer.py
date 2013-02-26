@@ -13,6 +13,10 @@ dry_run_result = None
 application_sub_resources = None
 installing = False
 stack = []
+UPGRADE_MODE_NO = 'no'
+UPGRADE_MODE_FAST = 'fast'
+UPGRADE_MODE_LATEST = 'latest'
+upgrade_mode = None
 
 def atomic_installer(func):
     assert inspect.isfunction(func)
@@ -165,3 +169,10 @@ def dry_run():
 
 def is_installing():
     return installing
+
+def set_upgrade_mode(value):
+    global upgrade_mode
+    upgrade_mode = value
+
+def get_upgrade_mode():
+    return upgrade_mode or UPGRADE_MODE_NO

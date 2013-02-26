@@ -10,20 +10,29 @@ PIP_FREEZE_OUTPUT = None
 @atomic_installer
 def python_package_resource(name, url=None, **kwargs):
     pip_package = name
-    installed = is_python_package_installed(pip_package)
+    action = None if is_python_package_installed(pip_package) else 'INSTALL'
+    if UPGRADE_MODE_LATEST == get_upgrade_mode():
+        action = 'UPGRADE'
+    elif UPGRADE_MODE_FAST == get_upgrade_mode():
+        raise NotImplementedError()
+    elif UPGRADE_MODE_NO == get_upgrade_mode():
+        pass
+    else:
+        raise NotImplementedError()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['python_package?{}'.format(pip_package)] = '-' if installed else 'INSTALL'
+        dry_run_result['python_package?{}'.format(pip_package)] = action or '-'
         return
-    if installed:
+    if not action:
         return
     LOGGER.info('installing python package: %(pip_package)s ...', {'pip_package': pip_package})
+    pip_arg = ''
     mirror = os.getenv('VEIL_DEPENDENCY_MIRROR')
     if mirror:
-        mirror = '{}:8080'.format(mirror)
-    else:
-        mirror = 'http://dependency-veil.googlecode.com/svn/trunk'
-    shell_execute('pip install {} --upgrade --no-index -f {}/'.format(url if url else pip_package, mirror), capture=True, **kwargs)
+        pip_arg = '--no-index -f {}:8080'.format(mirror)
+    if 'UPGRADE' == action:
+        pip_arg = '{} --upgrade'.format(pip_arg)
+    shell_execute('pip install {} {}'.format(url if url else pip_package, pip_arg), capture=True, **kwargs)
 
 
 def is_python_package_installed(pip_package):
