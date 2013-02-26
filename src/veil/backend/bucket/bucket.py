@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 from veil_installer import *
 from veil.utility.hash import *
-from veil.utility.path import *
+from veil_component import *
 from .bucket_installer import load_bucket_config
 from .bucket_installer import bucket_resource
 

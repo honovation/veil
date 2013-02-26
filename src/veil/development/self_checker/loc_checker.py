@@ -3,7 +3,7 @@ import os.path
 import veil_component
 import sys
 
-WHITE_LIST = {'veil.utility.path', 'veil.frontend.web.tornado'} # copied from somewhere
+WHITE_LIST = {'veil.frontend.web.tornado'} # copied from somewhere
 THRESHOLD = 600
 GOAL = 500
 

@@ -5,7 +5,7 @@ import fabric.api
 import fabric.state
 import tempfile
 from veil_installer import *
-from veil.utility.path import *
+from veil_component import *
 from veil.environment import *
 from veil.server.config import *
 

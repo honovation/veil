@@ -5,7 +5,7 @@ import re
 import logging
 from markupsafe import Markup
 from veil.development.test import *
-from veil.utility.path import as_path
+from veil_component import as_path
 from veil.utility.hash import *
 from veil.frontend.template import *
 from veil.utility.encoding import *

@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import getpass
 from os import getenv
 import os
-from veil.utility.path import *
+from veil_component import *
 from veil.server.os import *
 from veil_component import *
 

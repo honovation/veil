@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 from veil_installer import *
-from veil.utility.path import *
+from veil_component import *
 from .lxc_container_user_installer import unsafe_call
 
 LOGGER = logging.getLogger(__name__)

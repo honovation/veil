@@ -3,7 +3,7 @@ from cStringIO import StringIO
 import tempfile
 from veil.environment import *
 from veil.development.test import *
-from veil.utility.path import *
+from veil_component import *
 from .bucket import register_bucket
 from .bucket_installer import override_bucket_config
 

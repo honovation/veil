@@ -19,3 +19,4 @@ from .dynamic_dependency import record_dynamic_dependency_consumer
 from .dynamic_dependency import record_dynamic_dependency_provider
 from .dynamic_dependency import load_dynamic_dependency_providers
 from .dynamic_dependency import list_dynamic_dependency_providers
+from .path import as_path

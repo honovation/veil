@@ -9,7 +9,7 @@ from veil.frontend.cli import *
 from veil.environment import *
 from veil.server.supervisor import *
 from veil.utility.clock import *
-from veil.utility.path import *
+from veil_component import *
 from veil.backend.database.client import *
 from ..server.pg_server_installer import load_postgresql_maintenance_config
 

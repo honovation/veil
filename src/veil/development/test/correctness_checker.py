@@ -6,7 +6,7 @@ from unittest.runner import TextTestResult
 from threading import Timer
 import os
 import sys
-from veil.utility.path import *
+from veil_component import *
 from veil.environment import *
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))

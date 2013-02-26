@@ -4,7 +4,7 @@ import os
 import logging
 import datetime
 import sys
-from veil.utility.path import *
+from veil_component import *
 from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
