@@ -46,7 +46,7 @@ def get_os_package_installed_version(name):
         lines = shell_execute('dpkg -s {}'.format(name), capture=True).splitlines(False)
         for line in lines:
             if line.startswith('Version:'):
-                return line.split(':')[1].strip()
+                return line.split('Version:')[1].strip()
         return None
     except ShellExecutionError, e:
         if 'not installed' in e.output:

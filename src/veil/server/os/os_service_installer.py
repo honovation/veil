@@ -20,8 +20,15 @@ def os_service_resource(name, path, state):
             'name': name,
             'path': path
         })
-        shell_execute('service {} stop'.format(name), capture=True)
+        stop_service(name)
         shell_execute('update-rc.d -f {} remove'.format(name), capture=True)
     if UPGRADE_MODE_NO != get_upgrade_mode():
     # some upgrade will restart the service
+        stop_service(name)
+
+
+def stop_service(name):
+    try:
         shell_execute('service {} stop'.format(name), capture=True)
+    except:
+        pass
