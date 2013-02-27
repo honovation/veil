@@ -88,8 +88,8 @@ def list_readable_tables():
             dep_type, db_and_table = dep
             if 'table' != dep_type:
                 continue
-            table = db_and_table.split('/')[1] # TODO: check against db/table instead of just table
-            readable_tables.setdefault(component_name, set()).add(table)
+            purpose, table = db_and_table.split('/')
+            readable_tables.setdefault(component_name, set()).add((purpose, table))
     return readable_tables
 
 
@@ -103,28 +103,28 @@ def list_writable_tables():
         dep_type, db_and_table = dep
         if 'table' != dep_type:
             continue
-        table = db_and_table.split('/')[1] # TODO: check against db/table instead of just table
+        purpose, table = db_and_table.split('/')
         for component_name in component_names:
-            writable_tables.setdefault(component_name, set()).add(table)
+            writable_tables.setdefault(component_name, set()).add((purpose, table))
     return writable_tables
 
 
-def check_table_dependencies(component_name, sql):
+def check_table_dependencies(component_name, purpose, sql):
     if VEIL_SERVER not in {'development', 'test'}:
         return
     if not component_name:
         return
     sql = to_unicode(sql)
-    check_writable_table_dependencies(list_writable_tables(), component_name, sql)
-    check_readable_table_dependencies(list_readable_tables(), component_name, sql)
+    check_writable_table_dependencies(list_writable_tables(), component_name, purpose, sql)
+    check_readable_table_dependencies(list_readable_tables(), component_name, purpose, sql)
 
 
-def check_writable_table_dependencies(writable_tables, component_name, sql):
+def check_writable_table_dependencies(writable_tables, component_name, purpose, sql):
     sql = strip_sql(sql)
     writing_table_name = get_writing_table_name(sql)
-    if writing_table_name and writing_table_name not in writable_tables.get(component_name, set()):
-        raise Exception('{} should not write to table {}'.format(
-            component_name, writing_table_name))
+    if writing_table_name and (purpose, writing_table_name) not in writable_tables.get(component_name, set()):
+        raise Exception('{} should not write to table {} in database {}'.format(
+            component_name, writing_table_name, purpose))
 
 
 def get_writing_table_name(sql):
@@ -146,14 +146,14 @@ def strip_sql(sql):
     return sql.strip().replace('\n', '').replace('\r', '').replace('\t', '')
 
 
-def check_readable_table_dependencies(readable_tables, component_name, sql):
+def check_readable_table_dependencies(readable_tables, component_name, purpose, sql):
     sql = sql.strip().replace('\n', '').replace('\r', '').replace('\t', '')
     reading_table_names = get_reading_table_names(sql)
     component_tables = readable_tables.get(component_name, set())
     for table in reading_table_names:
-        if table not in component_tables:
-            raise Exception('{} should not read from table {}'.format(
-                component_name, table))
+        if (purpose, table) not in component_tables:
+            raise Exception('{} should not read from table {} in database {}'.format(
+                component_name, table, purpose))
 
 
 def get_reading_table_names(sql):

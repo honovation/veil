@@ -301,7 +301,7 @@ class Database(object):
         with require_transaction_context(self): # ensure the sql and event handler in same transaction
             with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
                 try:
-                    check_table_dependencies(self.component_name, sql)
+                    check_table_dependencies(self.component_name, self.purpose, sql)
                     cursor.execute(sql, kwargs)
                 except Exception as e:
                     LOGGER.exception('failed to execute statement: sql is %(sql)s and kwargs are %(kwargs)s', {
@@ -318,7 +318,7 @@ class Database(object):
         with require_transaction_context(self): # ensure the sql and event handler in same transaction
             with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
                 try:
-                    check_table_dependencies(self.component_name, sql)
+                    check_table_dependencies(self.component_name, self.purpose, sql)
                     cursor.executemany(sql, seq_of_parameters)
                 except Exception as e:
                     LOGGER.exception(
@@ -337,7 +337,7 @@ class Database(object):
         with require_transaction_context(self): # ensure the sql and event handler in same transaction
             with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
                 try:
-                    check_table_dependencies(self.component_name, sql)
+                    check_table_dependencies(self.component_name, self.purpose, sql)
                     cursor.execute(sql, kwargs)
                 except Exception as e:
                     LOGGER.exception('failed to execute query: sql is %(sql)s and kwargs are %(kwargs)s', {
