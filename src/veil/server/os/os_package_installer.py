@@ -41,10 +41,6 @@ def to_resource_key(pip_package):
     return 'veil.server.os.os_package_resource?{}'.format(pip_package)
 
 
-def is_os_package_installed(name):
-    return get_os_package_installed_version(name)
-
-
 def get_os_package_installed_version(name):
     try:
         lines = shell_execute('dpkg -s {}'.format(name), capture=True).splitlines(False)

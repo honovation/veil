@@ -44,10 +44,6 @@ def to_resource_key(pip_package):
     return 'veil.server.python.python_package_resource?{}'.format(pip_package)
 
 
-def is_python_package_installed(pip_package):
-    return get_python_package_installed_version(pip_package)
-
-
 def get_python_package_installed_version(pip_package, from_cache=True):
     global PIP_FREEZE_OUTPUT
     if not from_cache:

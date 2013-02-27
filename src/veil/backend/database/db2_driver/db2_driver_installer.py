@@ -4,19 +4,36 @@ from veil.profile.installer import *
 
 @atomic_installer
 def db2_driver_resource():
-    is_installed = is_python_package_installed('ibm-db')
+    installed_version = get_python_package_installed_version('ibm-db')
+    action = None if installed_version else 'INSTALL'
+    if UPGRADE_MODE_LATEST == get_upgrade_mode():
+        action = 'UPGRADE'
+    elif UPGRADE_MODE_FAST == get_upgrade_mode():
+        latest_version = get_resource_latest_version('veil.backend.database.db2_driver.db2_driver_resource')
+        action = None if latest_version == installed_version else 'UPGRADE'
+    elif UPGRADE_MODE_NO == get_upgrade_mode():
+        pass
+    else:
+        raise NotImplementedError()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['db2-driver'] = '-' if is_installed else 'INSTALL'
+        dry_run_result['db2-driver'] = action or '-'
         return
-    if is_installed:
+    if not action:
         return
-    download_db2_driver()
-    env = os.environ.copy()
-    env['IBM_DB_HOME'] = '/opt/db2-clidriver'
-    install_resource(python_package_resource(name='ibm-db', env=env))
-    install_resource(file_resource(path='/etc/ld.so.conf.d/db2-clidriver.conf', content='/opt/db2-clidriver/lib'))
-    shell_execute('ldconfig')
+    if 'INSTALL' == action:
+        download_db2_driver()
+        env = os.environ.copy()
+        env['IBM_DB_HOME'] = '/opt/db2-clidriver'
+        install_resource(python_package_resource(name='ibm-db', env=env))
+        install_resource(file_resource(path='/etc/ld.so.conf.d/db2-clidriver.conf', content='/opt/db2-clidriver/lib'))
+        shell_execute('ldconfig')
+    elif 'UPGRADE' == action:
+        env = os.environ.copy()
+        env['IBM_DB_HOME'] = '/opt/db2-clidriver'
+        install_resource(python_package_resource(name='ibm-db', env=env))
+    package_version = get_python_package_installed_version('ibm-db', from_cache=False)
+    set_resource_latest_version('veil.backend.database.db2_driver.db2_driver_resource', package_version)
 
 
 def download_db2_driver():
