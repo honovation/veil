@@ -83,9 +83,9 @@ databases {{ config.get('max_databases_count', 100) }}
 #
 #   save ""
 
-save 900 1
-save 300 10
-save 60 10000
+{% for save_config in config.get('save_configs', []) %}
+save {{ save_config.interval }} {{ save_config.changed_keys }}
+{% endfor %}
 
 # By default Redis will stop accepting writes if RDB snapshots are enabled
 # (at least one save point) and the latest background save failed.
@@ -118,7 +118,7 @@ rdbcompression yes
 rdbchecksum yes
 
 # The filename where to dump the DB
-dbfilename dump.rdb
+dbfilename {{ config.get('dump_file', 'dump.rdb') }}
 
 # The working directory.
 #
@@ -128,7 +128,7 @@ dbfilename dump.rdb
 # Also the Append Only File will be created inside this directory.
 #
 # Note that you must specify a directory here, not a file name.
-dir /var/lib/redis/
+dir {{ config.data_directory }}
 
 ################################# REPLICATION #################################
 
