@@ -22,3 +22,6 @@ def os_service_resource(name, path, state):
         })
         shell_execute('service {} stop'.format(name), capture=True)
         shell_execute('update-rc.d -f {} remove'.format(name), capture=True)
+    if UPGRADE_MODE_NO != get_upgrade_mode():
+    # some upgrade will restart the service
+        shell_execute('service {} stop'.format(name), capture=True)
