@@ -3,6 +3,7 @@ import logging
 from veil_installer import *
 from veil.utility.shell import *
 from veil_component import *
+from .os_package_installer import os_package_resource
 
 LOGGER = logging.getLogger(__name__)
 
@@ -17,6 +18,8 @@ def os_package_repository_resource(name):
     if not action:
         return
     LOGGER.info('installing os package repository: %(name)s ...', {'name': name})
+    # install command add-apt-repository
+    install_resource(os_package_resource(name='python-software-properties'))
     shell_execute('add-apt-repository ppa:{} -y'.format(name), capture=True)
     shell_execute('apt-get update -q', capture=True)
 

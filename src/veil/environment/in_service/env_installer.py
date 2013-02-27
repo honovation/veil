@@ -38,15 +38,20 @@ def display_deployment_memo(veil_env_name):
 
 
 @script('deploy-env')
-def deploy_env(veil_env_name, config_dir):
-    display_deployment_memo(veil_env_name)
-    check_all_locked_migration_scripts()
-    check_if_locked_migration_scripts_being_changed()
-    update_branch(veil_env_name)
+def deploy_env(veil_env_name, config_dir, skips_backup=False):
+    skips_backup = str(True) == skips_backup
+    do_local_preparation(veil_env_name)
+    if not skips_backup:
+        # create permanent backup to minimize data loss in case we found there is
+        # problem after a successful deployment which deleted the temporary backup
+        fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, '@guard')
+        with fabric.api.cd('/opt/{}/app'.format(veil_env_name)):
+            fabric.api.sudo('/opt/{}/veil/bin/veil :{}/@guard environment backup create'.format(
+                veil_env_name, veil_env_name))
     install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     for deploying_server_name in sorted(list_veil_servers(veil_env_name).keys()):
         remote_do('create-backup', veil_env_name, deploying_server_name)
-    install_resource(veil_env_servers_resource(veil_env_name=veil_env_name))
+    install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, action='DEPLOY'))
     for deploying_server_name in sorted(list_veil_servers(veil_env_name).keys()):
         remote_do('delete-backup', veil_env_name, deploying_server_name)
     tag_deploy(veil_env_name)
@@ -54,12 +59,16 @@ def deploy_env(veil_env_name, config_dir):
 
 @script('patch-env')
 def patch_env(veil_env_name):
+    do_local_preparation(veil_env_name)
+    install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, action='PATCH'))
+    tag_patch(veil_env_name)
+
+
+def do_local_preparation(veil_env_name):
     display_deployment_memo(veil_env_name)
     check_all_locked_migration_scripts()
     check_if_locked_migration_scripts_being_changed()
     update_branch(veil_env_name)
-    install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, is_patch=True))
-    tag_patch(veil_env_name)
 
 
 @script('rollback-env')
@@ -101,11 +110,13 @@ def tag_deploy(veil_env_name):
     shell_execute('git tag {}'.format(tag_name))
     shell_execute('git push origin tag {}'.format(tag_name))
 
+
 def tag_patch(veil_env_name):
     tag_name = '{}-{}-{}-patch'.format(
         veil_env_name, datetime.datetime.now().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
     shell_execute('git tag {}'.format(tag_name))
     shell_execute('git push origin tag {}'.format(tag_name))
+
 
 def _wrap_with(code):
     def inner(text, bold=False):

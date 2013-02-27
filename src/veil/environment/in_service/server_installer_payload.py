@@ -20,9 +20,9 @@ def main():
     framework_version = read_framework_version(veil_home)
     clone_veil(veil_framework_home)
     pull_veil(framework_version, veil_framework_home)
-    if 'deploy' == action:
+    if 'DEPLOY' == action:
         deploy(veil_framework_home, veil_home, veil_env, veil_server_name)
-    elif 'patch' == action:
+    elif 'PATCH' == action:
         patch(veil_framework_home, veil_home, veil_env, veil_server_name)
     else:
         raise Exception('unknown action: {}'.format(action))
