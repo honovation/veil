@@ -23,4 +23,4 @@ def list_all():
 
 
 def save_all(versions):
-    RESOURCE_LATEST_VERSION.write_text('\n'.join(['{}={}'.format(key, version) for key, version in versions.items()]))
+    RESOURCE_LATEST_VERSION.write_text('\n'.join(['{}={}'.format(key, versions[key]) for key in sorted(versions.keys())]))

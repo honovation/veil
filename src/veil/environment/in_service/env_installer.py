@@ -41,6 +41,7 @@ def display_deployment_memo(veil_env_name):
 def deploy_env(veil_env_name, config_dir, skips_backup=False):
     skips_backup = str(True) == skips_backup
     do_local_preparation(veil_env_name)
+    install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     if not skips_backup:
         # create permanent backup to minimize data loss in case we found there is
         # problem after a successful deployment which deleted the temporary backup
@@ -48,7 +49,6 @@ def deploy_env(veil_env_name, config_dir, skips_backup=False):
         with fabric.api.cd('/opt/{}/app'.format(veil_env_name)):
             fabric.api.sudo('/opt/{}/veil/bin/veil :{}/@guard environment backup create'.format(
                 veil_env_name, veil_env_name))
-    install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     for deploying_server_name in sorted(list_veil_servers(veil_env_name).keys()):
         remote_do('create-backup', veil_env_name, deploying_server_name)
     install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, action='DEPLOY'))
