@@ -7,7 +7,7 @@ from .component_map import get_component_map
 
 # static dependency is declared manually assert architecture assertion
 
-def list_static_dependencies():
+def list_expected_static_dependencies():
     file = VEIL_HOME / 'DEP-STATIC'
     code = compile(file.text(), file, 'exec')
     context = {}
@@ -17,7 +17,7 @@ def list_static_dependencies():
 
 def check_static_dependency_integrity():
     scan_all_components()
-    check_integrity([], list_static_dependencies())
+    check_integrity([], list_expected_static_dependencies())
 
 
 def check_static_dependency_cycle():
@@ -52,10 +52,21 @@ def check_integrity(component_names, expected_dependencies):
         if '@' not in expected_dependencies:
             raise Exception('must check component itself dependencies using @: {}'.format(component_names))
         check_component_dependencies(component_names, expected_dependencies.pop('@'), includes_children=False)
+    missing_children = list_missing_children(component_names, expected_dependencies.keys())
+    if missing_children:
+        raise Exception('missing children in DEP-STATIC {}'.format(missing_children))
     for key, value in expected_dependencies.items():
         inner_component_names = list(component_names)
         inner_component_names.append(key)
         check_integrity(inner_component_names, value)
+
+
+def list_missing_children(component_names, listed_children):
+    component_name = ''.join(component_names)
+    expected_children = set('{}{}'.format(component_name, child) for child in listed_children)
+    actual_descendants = list_child_component_names(component_name)
+    actual_children = set(child for child in actual_descendants if len(child.split('.')) == len(component_name.split('.')) + 1)
+    return actual_children - expected_children
 
 
 def check_component_dependencies(component_names, expected_dependencies, includes_children=False):
