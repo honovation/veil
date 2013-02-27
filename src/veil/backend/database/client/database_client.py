@@ -6,7 +6,7 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
-import veil_component
+from veil_component import *
 from veil_installer import *
 from veil.development.test import *
 from veil.model.event import *
@@ -22,37 +22,31 @@ EVENT_SQL_QUERIED = define_event('sql-queried')
 
 instances = {} # purpose => instance
 adapter_classes = {} # database type => adapter class
-dependencies = {}
 
 def register_adapter_class(type, adapter_class):
     adapter_classes[type] = adapter_class
 
 
 def register_database(purpose, verify_db=False):
-    component_name = veil_component.get_loading_component_name()
-    dependencies.setdefault(component_name, set()).add(purpose)
+    component_name = get_loading_component_name()
+    if not can_use_database(component_name, purpose):
+        raise Exception('{} can not use database {}'.format(component_name, purpose))
     add_application_sub_resource(
         '{}_database_client'.format(purpose),
         lambda config: database_client_resource(purpose=purpose, config=config))
     return lambda: require_database(purpose, component_name, verify_db)
 
 
-def check_database_dependencies(component_names, expected_dependencies):
-    component_name_prefix = ''.join(component_names)
-    actual_dependencies = set()
-    for component_name, component_dependencies in dependencies.items():
-        if component_name.startswith(component_name_prefix):
-            actual_dependencies = actual_dependencies.union(component_dependencies)
-    unexpected_dependencies = actual_dependencies - set(expected_dependencies)
-    if unexpected_dependencies:
-        raise Exception('{} should not reference database {}'.format(component_name_prefix, unexpected_dependencies))
-    unreal_dependencies = set(expected_dependencies) - actual_dependencies
-    if unreal_dependencies:
-        raise Exception('{} did not reference database {}'.format(component_name_prefix, unreal_dependencies))
+def can_use_database(component_name, purpose):
+    for provider in list_dynamic_dependency_providers('database', purpose):
+        authorized = component_name == provider or component_name.startswith('{}.'.format(provider))
+        if authorized:
+            return True
+    return False
 
 
 def require_database(purpose, component_name=None, verify_db=False):
-    if veil_component.get_loading_component_name():
+    if get_loading_component_name():
         raise Exception('use register_database whenever possible')
     if verify_db and purpose in instances:
         instances[purpose].reconnect_if_broken_per_verification()
