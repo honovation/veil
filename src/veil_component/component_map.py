@@ -9,6 +9,10 @@ component_map = {}
 component_dependencies = {}
 component_walker = OnceComponentWalker()
 
+def scan_all_components():
+    for component_name in list_all_components():
+        scan_component(component_name)
+
 def scan_component(component_name):
     if component_name in component_map:
         return

@@ -1,9 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 from .environment import VEIL_HOME
 from .component_map import get_dependent_component_names
-from .component_map import list_all_components
 from .component_map import list_child_component_names
-from .component_map import scan_component
+from .component_map import scan_all_components
 from .component_map import get_component_map
 
 # static dependency is declared manually assert architecture assertion
@@ -17,13 +16,16 @@ def list_static_dependencies():
 
 
 def check_static_dependency_integrity():
-    for component_name in list_all_components():
-        scan_component(component_name)
-    check_circular_dependency(get_component_map().keys())
-    check_component_static_dependency([], list_static_dependencies())
+    scan_all_components()
+    check_integrity([], list_static_dependencies())
 
 
-def check_circular_dependency(comps, visiting=(), visited=()):
+def check_static_dependency_cycle():
+    scan_all_components()
+    check_cycle(get_component_map().keys())
+
+
+def check_cycle(comps, visiting=(), visited=()):
 # this function is slow, as it need to go through all paths of the graph
 # if we reach one node and stop searching then enter same node from another path,
 # cycle might still form from another path
@@ -36,12 +38,12 @@ def check_circular_dependency(comps, visiting=(), visited=()):
             continue
         next_visiting = set(visiting)
         next_visiting.add(comp)
-        check_circular_dependency(get_dependent_component_names(comp, includes_children=True), next_visiting, visited)
+        check_cycle(get_dependent_component_names(comp, includes_children=True), next_visiting, visited)
         visited = set(visited)
         visited.add(comp)
 
 
-def check_component_static_dependency(component_names, expected_dependencies):
+def check_integrity(component_names, expected_dependencies):
     if isinstance(expected_dependencies, list):
         return check_component_dependencies(component_names, expected_dependencies, includes_children=True)
     if not isinstance(expected_dependencies, dict):
@@ -53,7 +55,7 @@ def check_component_static_dependency(component_names, expected_dependencies):
     for key, value in expected_dependencies.items():
         inner_component_names = list(component_names)
         inner_component_names.append(key)
-        check_component_static_dependency(inner_component_names, value)
+        check_integrity(inner_component_names, value)
 
 
 def check_component_dependencies(component_names, expected_dependencies, includes_children=False):
