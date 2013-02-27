@@ -4,25 +4,55 @@ from veil_installer import *
 from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
+apt_get_update_executed = False
 
 @atomic_installer
 def os_package_resource(name):
-    installed = is_os_package_installed(name)
+    installed_version = get_os_package_installed_version(name)
+    action = None if installed_version else 'INSTALL'
+    if UPGRADE_MODE_LATEST == get_upgrade_mode():
+        action = 'UPGRADE'
+    elif UPGRADE_MODE_FAST == get_upgrade_mode():
+        latest_version = get_resource_latest_version(to_resource_key(name))
+        action = None if latest_version == installed_version else 'UPGRADE'
+    elif UPGRADE_MODE_NO == get_upgrade_mode():
+        pass
+    else:
+        raise NotImplementedError()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['os_package?{}'.format(name)] = '-' if installed else 'INSTALL'
+        dry_run_result['os_package?{}'.format(name)] = action or '-'
         return
-    if installed:
+    if not action:
         return
+    if 'UPGRADE' == action:
+        global apt_get_update_executed
+        if not apt_get_update_executed:
+            apt_get_update_executed = True
+            LOGGER.info('updating os package catalogue...')
+            shell_execute('apt-get update -q', capture=True)
     LOGGER.info('installing os package: %(name)s ...', {'name': name})
     shell_execute('apt-get -y install {}'.format(name), capture=True)
+    package_version = get_os_package_installed_version(name)
+    set_resource_latest_version(to_resource_key(name), package_version)
+
+
+def to_resource_key(pip_package):
+    return 'veil.server.os.os_package_resource?{}'.format(pip_package)
 
 
 def is_os_package_installed(name):
+    return get_os_package_installed_version(name)
+
+
+def get_os_package_installed_version(name):
     try:
-        shell_execute('dpkg -L {}'.format(name), capture=True)
-        return True
+        lines = shell_execute('dpkg -s {}'.format(name), capture=True).splitlines(False)
+        for line in lines:
+            if line.startswith('Version:'):
+                return line.split(':')[1].strip()
+        return None
     except ShellExecutionError, e:
         if 'not installed' in e.output:
-            return False
+            return None
         raise

@@ -11,7 +11,7 @@ PIP_FREEZE_OUTPUT = None
 @atomic_installer
 def python_package_resource(name, url=None, **kwargs):
     pip_package = name
-    installed_version = get_python_package_version(pip_package)
+    installed_version = get_python_package_installed_version(pip_package)
     action = None if installed_version else 'INSTALL'
     if UPGRADE_MODE_LATEST == get_upgrade_mode():
         action = 'UPGRADE'
@@ -36,7 +36,7 @@ def python_package_resource(name, url=None, **kwargs):
     if 'UPGRADE' == action:
         pip_arg = '{} --upgrade'.format(pip_arg)
     shell_execute('pip install {} {}'.format(url if url else pip_package, pip_arg), capture=True, **kwargs)
-    package_version = get_python_package_version(pip_package, from_cache=False)
+    package_version = get_python_package_installed_version(pip_package, from_cache=False)
     set_resource_latest_version(to_resource_key(pip_package), package_version)
 
 
@@ -45,10 +45,10 @@ def to_resource_key(pip_package):
 
 
 def is_python_package_installed(pip_package):
-    return get_python_package_version(pip_package)
+    return get_python_package_installed_version(pip_package)
 
 
-def get_python_package_version(pip_package, from_cache=True):
+def get_python_package_installed_version(pip_package, from_cache=True):
     global PIP_FREEZE_OUTPUT
     if not from_cache:
         PIP_FREEZE_OUTPUT = None
