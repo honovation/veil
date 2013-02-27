@@ -16,7 +16,7 @@ def python_package_resource(name, url=None, **kwargs):
     if UPGRADE_MODE_LATEST == get_upgrade_mode():
         action = 'UPGRADE'
     elif UPGRADE_MODE_FAST == get_upgrade_mode():
-        latest_version = get_resource_latest_version('python:{}'.format(pip_package))
+        latest_version = get_resource_latest_version(to_resource_key(pip_package))
         action = None if latest_version == installed_version else 'UPGRADE'
     elif UPGRADE_MODE_NO == get_upgrade_mode():
         pass
@@ -37,7 +37,11 @@ def python_package_resource(name, url=None, **kwargs):
         pip_arg = '{} --upgrade'.format(pip_arg)
     shell_execute('pip install {} {}'.format(url if url else pip_package, pip_arg), capture=True, **kwargs)
     package_version = get_python_package_version(pip_package, from_cache=False)
-    set_resource_latest_version('python:{}'.format(pip_package), package_version)
+    set_resource_latest_version(to_resource_key(pip_package), package_version)
+
+
+def to_resource_key(pip_package):
+    return 'veil.server.python.python_package_resource?{}'.format(pip_package)
 
 
 def is_python_package_installed(pip_package):
