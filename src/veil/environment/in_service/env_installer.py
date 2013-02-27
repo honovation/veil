@@ -9,6 +9,7 @@ from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
 from veil.utility.shell import *
+from veil.backend.database.postgresql import *
 from .container_installer import veil_env_containers_resource
 from .server_installer import veil_env_servers_resource
 
@@ -40,6 +41,7 @@ def display_deployment_memo(veil_env_name):
 def deploy_env(veil_env_name, config_dir):
     display_deployment_memo(veil_env_name)
     check_all_locked_migration_scripts()
+    check_if_locked_migration_scripts_being_changed()
     update_branch(veil_env_name)
     install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     for deploying_server_name in sorted(list_veil_servers(veil_env_name).keys()):
@@ -54,6 +56,7 @@ def deploy_env(veil_env_name, config_dir):
 def patch_env(veil_env_name):
     display_deployment_memo(veil_env_name)
     check_all_locked_migration_scripts()
+    check_if_locked_migration_scripts_being_changed()
     update_branch(veil_env_name)
     install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, is_patch=True))
     tag_patch(veil_env_name)
@@ -115,17 +118,3 @@ def _wrap_with(code):
 
 red = _wrap_with('31')
 green = _wrap_with('32')
-
-def check_all_locked_migration_scripts():
-    if not os.path.exists(VEIL_HOME / 'db'):
-        return
-    migration_script_dir = VEIL_HOME / 'db'
-    purposes = migration_script_dir.listdir()
-    for purpose in purposes:
-        locked_file_count = len(purpose.listdir('*.locked'))
-        script_file_count = len(purpose.listdir('*.sql'))
-        if locked_file_count < script_file_count:
-            print(red('You must lock scripts in {}'.format(purpose)))
-            exit(-1)
-        else:
-            print(green('Migration script check in {} ...passed!'.format(purpose)))

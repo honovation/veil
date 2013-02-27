@@ -1,12 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 import discipline_coach
 import logging
+import os
 from veil.frontend.cli import *
 from veil.environment import *
 from veil.utility.shell import *
 from veil.development.live_document import check_live_document
 from veil.development.test import check_correctness
-from veil.backend.database.postgresql import check_if_locked_migration_scripts_being_changed
 from veil_component import check_static_dependency_integrity
 from veil_component import check_static_dependency_cycle
 from .encapsulation_checker import check_encapsulation
@@ -22,15 +22,18 @@ SELF_CHECKERS = {
     'loc': check_loc,
     'live-document': check_live_document,
     'correctness': check_correctness,
-    'migration-scripts': check_if_locked_migration_scripts_being_changed,
     'logger': check_logger
 }
 
 @script('self-check')
 def self_check():
+    if 0 == os.getuid():
+        raise Exception('self-check can not be executed using root privilege')
+    shell_execute('sudo echo self-checking ...')
     shell_execute('git add .')
     shell_execute('veil pull')
-    quick_check()
+    shell_execute('sudo veil install-server --upgrade=fast')
+    shell_execute('veil quick-check')
 
 
 @script('quick-check')

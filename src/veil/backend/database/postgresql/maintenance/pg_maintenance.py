@@ -220,3 +220,18 @@ def check_if_locked_migration_scripts_being_changed():
                     actual_md5 = calculate_file_md5_hash(f)
                 if actual_md5 != expected_md5:
                     raise Exception('locked migration script {} should not be changed'.format(sql_path))
+
+
+def check_all_locked_migration_scripts():
+    if not os.path.exists(VEIL_HOME / 'db'):
+        return
+    migration_script_dir = VEIL_HOME / 'db'
+    purposes = migration_script_dir.listdir()
+    for purpose in purposes:
+        locked_file_count = len(purpose.listdir('*.locked'))
+        script_file_count = len(purpose.listdir('*.sql'))
+        if locked_file_count < script_file_count:
+            print('You must lock scripts in {}'.format(purpose))
+            exit(-1)
+        else:
+            print('Migration script check in {} ...passed!'.format(purpose))

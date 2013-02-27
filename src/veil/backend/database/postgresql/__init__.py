@@ -2,6 +2,7 @@ import veil_component
 
 with veil_component.init_component(__name__):
     from .maintenance.pg_maintenance import check_if_locked_migration_scripts_being_changed
+    from .maintenance.pg_maintenance import check_all_locked_migration_scripts
     from .server.pg_server_installer import postgresql_server_resource
     from .server.pg_server_installer import postgresql_global_bin_resource
     from .server.pg_server_installer import postgresql_user_resource
@@ -9,6 +10,7 @@ with veil_component.init_component(__name__):
 
     __all__ = [
         check_if_locked_migration_scripts_being_changed.__name__,
+        check_all_locked_migration_scripts.__name__,
         postgresql_server_resource.__name__,
         postgresql_global_bin_resource.__name__,
         postgresql_user_resource.__name__,
