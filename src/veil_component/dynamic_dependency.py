@@ -41,6 +41,11 @@ def list_dynamic_dependency_providers(dynamic_dependency_type, dynamic_dependenc
     return providers.get((dynamic_dependency_type, dynamic_dependency_key)) or []
 
 
+def list_consumed_dynamic_dependencies(component_name):
+    providers, consumers = list_dynamic_dependencies()
+    return consumers.get(component_name) or []
+
+
 def should_record(component_name):
     if not component_name:
         return False

@@ -159,7 +159,7 @@ def get_url(purpose, path):
 
 @jinjatag.simple_block()
 def doc(body):
-    if 'test' == VEIL_SERVER:
+    if 'test' == VEIL_ENV:
         return '<script type="text/javascript" src="{}"></script>\n{}'.format(static_url('veil-doc.js'), body)
     else:
         return ''

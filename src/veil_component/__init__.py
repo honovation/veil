@@ -21,6 +21,7 @@ from .dynamic_dependency import record_dynamic_dependency_consumer
 from .dynamic_dependency import record_dynamic_dependency_provider
 from .dynamic_dependency import load_dynamic_dependency_providers
 from .dynamic_dependency import list_dynamic_dependency_providers
+from .dynamic_dependency import list_consumed_dynamic_dependencies
 from .dynamic_dependency import list_dynamic_dependencies
 from .static_dependency import check_static_dependency_integrity
 from .static_dependency import check_static_dependency_cycle
