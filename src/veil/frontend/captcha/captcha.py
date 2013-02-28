@@ -69,7 +69,7 @@ def validate_captcha(challenge_code, captcha_answer):
     if real_answer == captcha_answer:
         return {}
     else:
-        return {'captcha_answer': ['验证码错误']}
+        return {'captcha_answer': ['验证码错误，请输入正确的计算结果']}
 
 
 def generate(size=(180, 30),
@@ -164,19 +164,6 @@ def generate(size=(180, 30),
     if draw_points:
         create_points()
     answer = create_strs()
-
-    # 图形扭曲参数
-    params = [1 - float(random.randint(1, 2)) / 100,
-              0,
-              0,
-              0,
-              1 - float(random.randint(1, 10)) / 100,
-              float(random.randint(1, 2)) / 500,
-              0.001,
-              float(random.randint(1, 2)) / 500
-    ]
-    #img = img.transform(size, Image.PERSPECTIVE, params) # 创建扭曲
-
-    img = img.filter(ImageFilter.EDGE_ENHANCE_MORE) # 滤镜，边界加强（阈值更大）
+    #img = img.filter(ImageFilter.EDGE_ENHANCE_MORE) # 滤镜，边界加强（阈值更大）
 
     return img, answer
