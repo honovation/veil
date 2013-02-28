@@ -8,8 +8,7 @@ from veil.environment import *
 from veil.utility.shell import *
 
 @script('create')
-def create_env_backup(stays_at_stopped_state=False):
-    stays_at_stopped_state = str(True) == stays_at_stopped_state
+def create_env_backup():
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         dry_run_result['env_backup'] = 'BACKUP'
@@ -29,9 +28,8 @@ def create_env_backup(stays_at_stopped_state=False):
             pass
         shell_execute('ln -s /backup/{} /backup/latest'.format(timestamp))
     finally:
-        if not stays_at_stopped_state:
-            for veil_server_name in veil_server_names:
-                bring_up_server(VEIL_ENV, veil_server_name)
+        for veil_server_name in veil_server_names:
+            bring_up_server(VEIL_ENV, veil_server_name)
 
 
 def bring_down_server(backing_up_env, veil_server_name):
