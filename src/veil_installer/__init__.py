@@ -12,6 +12,7 @@ with veil_component.init_component(__name__):
     from .installer import UPGRADE_MODE_NO
     from .installer import UPGRADE_MODE_FAST
     from .installer import UPGRADE_MODE_LATEST
+    from .installer import should_download_while_dry_run
     from .component_installer import component_resource
     from .component_installer import installer_resource
     from .latest_version_cache import set_resource_latest_version
@@ -30,6 +31,7 @@ with veil_component.init_component(__name__):
         'UPGRADE_MODE_NO',
         'UPGRADE_MODE_FAST',
         'UPGRADE_MODE_LATEST',
+        should_download_while_dry_run.__name__,
         # from component_installer
         component_resource.__name__,
         installer_resource.__name__,

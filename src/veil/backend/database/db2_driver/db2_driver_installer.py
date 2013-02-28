@@ -21,17 +21,12 @@ def db2_driver_resource():
         return
     if not action:
         return
-    if 'INSTALL' == action:
-        download_db2_driver()
-        env = os.environ.copy()
-        env['IBM_DB_HOME'] = '/opt/db2-clidriver'
-        install_resource(python_package_resource(name='ibm-db', env=env))
-        install_resource(file_resource(path='/etc/ld.so.conf.d/db2-clidriver.conf', content='/opt/db2-clidriver/lib'))
-        shell_execute('ldconfig')
-    elif 'UPGRADE' == action:
-        env = os.environ.copy()
-        env['IBM_DB_HOME'] = '/opt/db2-clidriver'
-        install_resource(python_package_resource(name='ibm-db', env=env))
+    download_db2_driver()
+    env = os.environ.copy()
+    env['IBM_DB_HOME'] = '/opt/db2-clidriver'
+    install_resource(python_package_resource(name='ibm-db', env=env))
+    install_resource(file_resource(path='/etc/ld.so.conf.d/db2-clidriver.conf', content='/opt/db2-clidriver/lib'))
+    shell_execute('ldconfig')
     package_version = get_python_package_installed_version('ibm-db', from_cache=False)
     set_resource_latest_version('veil.backend.database.db2_driver.db2_driver_resource', package_version)
 

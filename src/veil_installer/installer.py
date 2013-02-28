@@ -17,6 +17,7 @@ UPGRADE_MODE_NO = 'no'
 UPGRADE_MODE_FAST = 'fast'
 UPGRADE_MODE_LATEST = 'latest'
 upgrade_mode = None
+download_while_dry_run = False
 
 def atomic_installer(func):
     assert inspect.isfunction(func)
@@ -84,8 +85,10 @@ def add_application_sub_resource(section, resource_provider):
 def get_executing_installer():
     return executing_installers[-1]
 
+
 def install_resource(resource):
     install_resources([resource])
+
 
 def install_resources(resources):
     global installing
@@ -170,9 +173,20 @@ def dry_run():
 def is_installing():
     return installing
 
+
 def set_upgrade_mode(value):
     global upgrade_mode
     upgrade_mode = value
 
+
 def get_upgrade_mode():
     return upgrade_mode or UPGRADE_MODE_NO
+
+
+def set_download_while_dry_run(value):
+    global download_while_dry_run
+    download_while_dry_run = value
+
+
+def should_download_while_dry_run():
+    return download_while_dry_run

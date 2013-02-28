@@ -21,20 +21,28 @@ def os_package_resource(name):
         raise NotImplementedError()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
+        if should_download_while_dry_run():
+            download_os_package(name)
         dry_run_result['os_package?{}'.format(name)] = action or '-'
         return
     if not action:
         return
     if 'UPGRADE' == action:
-        global apt_get_update_executed
-        if not apt_get_update_executed:
-            apt_get_update_executed = True
-            LOGGER.info('updating os package catalogue...')
-            shell_execute('apt-get update -q', capture=True)
+        download_os_package(name)
     LOGGER.info('installing os package: %(name)s ...', {'name': name})
     shell_execute('apt-get -y install {}'.format(name), capture=True)
     package_version = get_os_package_installed_version(name)
     set_resource_latest_version(to_resource_key(name), package_version)
+
+
+def download_os_package(name):
+    LOGGER.info('downloading os package: %(name)s ...', {'name': name})
+    global apt_get_update_executed
+    if not apt_get_update_executed:
+        apt_get_update_executed = True
+        LOGGER.info('updating os package catalogue...')
+        shell_execute('apt-get update -q', capture=True)
+    shell_execute('apt-get -d install {}'.format(name), capture=True)
 
 
 def to_resource_key(pip_package):
