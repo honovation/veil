@@ -78,19 +78,9 @@ def pull_veil(framework_version, veil_framework_home):
 
 
 def deploy(veil_framework_home, veil_home, veil_env, veil_server_name):
-    assert_no_local_change(veil_framework_home)
-    assert_no_local_change(veil_home)
     env = os.environ.copy()
     shell_execute('{}/bin/veil :{}/{} deploy'.format(
         veil_framework_home, veil_env, veil_server_name), cwd=veil_home, env=env)
-    assert_no_local_change(veil_framework_home)
-    assert_no_local_change(veil_home)
-
-
-def assert_no_local_change(dir):
-    output = shell_execute('git status -s', cwd=dir, capture=True)
-    if output:
-        raise Exception('Local change detected:\n{}'.format(output))
 
 
 def patch(veil_framework_home, veil_home, veil_env, veil_server_name):

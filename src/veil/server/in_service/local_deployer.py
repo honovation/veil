@@ -11,12 +11,22 @@ LOGGER = logging.getLogger(__name__)
 
 @script('deploy')
 def deploy():
+    assert_no_local_change(VEIL_FRAMEWORK_HOME)
+    assert_no_local_change(VEIL_HOME)
     shell_execute('veil install veil_installer.component_resource?veil.server.supervisor'
                   ' --upgrade-mode={}'.format(UPGRADE_MODE_FAST))
     shell_execute('veil down')
     shell_execute('veil install-server --upgrade-mode={}'.format(UPGRADE_MODE_FAST))
     shell_execute('veil up --daemonize')
     shell_execute('veil migrate')
+    assert_no_local_change(VEIL_FRAMEWORK_HOME)
+    assert_no_local_change(VEIL_HOME)
+
+
+def assert_no_local_change(dir):
+    output = shell_execute('git status -s', cwd=dir, capture=True)
+    if output:
+        raise Exception('Local change detected:\n{}'.format(output))
 
 
 @script('patch')
