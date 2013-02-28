@@ -42,7 +42,7 @@ def download_os_package(name):
         apt_get_update_executed = True
         LOGGER.info('updating os package catalogue...')
         shell_execute('apt-get update -q', capture=True)
-    shell_execute('apt-get -d install {}'.format(name), capture=True)
+    shell_execute('apt-get -y -d install {}'.format(name), capture=True)
 
 
 def to_resource_key(pip_package):
