@@ -37,6 +37,7 @@ def create_backup(src_dir, backup_dir, veil_server):
         raise Exception('{} already exists, backup procedure abandoned')
     shell_execute('veil :{} down'.format(veil_server), cwd='{}/app'.format(src_dir))
     shell_execute('cp -r -p {} {}'.format(src_dir, backup_dir))
+    shell_execute('git reset --hard HEAD'.format(veil_server), cwd='{}/app'.format(src_dir))
 
 
 def rollback(src_dir, backup_dir, veil_server):
