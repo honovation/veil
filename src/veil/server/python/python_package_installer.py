@@ -3,7 +3,6 @@ import logging
 import re
 from veil_installer import *
 from veil.utility.shell import *
-from veil_component import *
 
 LOGGER = logging.getLogger(__name__)
 PIP_FREEZE_OUTPUT = None
@@ -24,38 +23,23 @@ def python_package_resource(name, url=None, **kwargs):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         if should_download_while_dry_run():
-            download_python_package(name, latest_version)
+            download_python_package(name)
         dry_run_result['python_package?{}'.format(name)] = action or '-'
         return
     if not action:
         return
-    download_python_package(name, None if UPGRADE_MODE_LATEST == get_upgrade_mode() else latest_version)
+    download_python_package(name)
     LOGGER.info('installing python package: %(name)s ...', {'name': name})
     pip_arg = '--upgrade' if 'UPGRADE' == action else ''
-    shell_execute('pip install {} --index-url=file:///opt/pypi/simple {}'.format(url if url else name, pip_arg),
+    shell_execute('pip install {} {}'.format(url if url else name, pip_arg),
         capture=True, **kwargs)
     package_version = get_python_package_installed_version(name, from_cache=False)
     set_resource_latest_version(to_resource_key(name), package_version)
 
 
-def download_python_package(name, version=None):
-    install_pip2pi()
-    OPT_PYPI = as_path('/opt/pypi')
-    cache_dir = OPT_PYPI / 'simple' / name
-    if version and cache_dir.exists():
-        for path in cache_dir.files():
-            if path.basename().startswith('{}-{}'.format(name, version)):
-                return
-    LOGGER.info('downloading python package: %(name)s==%(version)s ...', {'name': name, 'version': version or '-'})
-    if version:
-        shell_execute('pip2pi {} {}=={}'.format(OPT_PYPI, name, version))
-    else:
-        shell_execute('pip2pi {} {}'.format(OPT_PYPI, name))
-
-
-def install_pip2pi():
-    if not get_python_package_installed_version('pip2pi'):
-        shell_execute('pip install pip2pi', capture=True)
+def download_python_package(name):
+    LOGGER.info('downloading python package: %(name)s ...', {'name': name})
+    shell_execute('pip install {} --no-install'.format(name))
 
 
 def to_resource_key(pip_package):
