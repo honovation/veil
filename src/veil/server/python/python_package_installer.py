@@ -15,7 +15,7 @@ def python_package_resource(name, url=None, **kwargs):
     if UPGRADE_MODE_LATEST == get_upgrade_mode():
         action = action or 'UPGRADE'
     elif UPGRADE_MODE_FAST == get_upgrade_mode():
-        action = action or None if latest_version == installed_version else 'UPGRADE'
+        action = action or (None if latest_version == installed_version else 'UPGRADE')
     elif UPGRADE_MODE_NO == get_upgrade_mode():
         pass
     else:
@@ -28,6 +28,7 @@ def python_package_resource(name, url=None, **kwargs):
         return
     if not action:
         return
+    print(action)
     download_python_package(name)
     LOGGER.info('installing python package: %(name)s ...', {'name': name})
     pip_arg = '--upgrade' if 'UPGRADE' == action else ''

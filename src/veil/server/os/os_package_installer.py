@@ -14,7 +14,7 @@ def os_package_resource(name):
     if UPGRADE_MODE_LATEST == get_upgrade_mode():
         action = action or 'UPGRADE'
     elif UPGRADE_MODE_FAST == get_upgrade_mode():
-        action = action or None if latest_version == installed_version else 'UPGRADE'
+        action = action or (None if latest_version == installed_version else 'UPGRADE')
     elif UPGRADE_MODE_NO == get_upgrade_mode():
         pass
     else:
