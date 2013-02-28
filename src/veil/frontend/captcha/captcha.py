@@ -16,7 +16,7 @@ from veil.environment import *
 bucket = register_bucket('captcha_image')
 redis = register_redis('captcha_answer')
 
-CAPTCHA_ANSWER_ALIVE_TIME_IN_SECONDS = 60
+CAPTCHA_ANSWER_ALIVE_TIME_IN_SECONDS = 60 * 5
 
 def register_captcha(website):
     add_application_sub_resource(
@@ -62,14 +62,12 @@ def captcha_protected(func):
 
 
 def validate_captcha(challenge_code, captcha_answer):
-    bucket().delete(challenge_code)
     real_answer = redis().get(challenge_code)
-    if 'test' == VEIL_SERVER:
-        return {}
-    if real_answer == captcha_answer:
+    if 'test' == VEIL_SERVER or (captcha_answer and real_answer == captcha_answer):
+        bucket().delete(challenge_code)
         return {}
     else:
-        return {'captcha_answer': ['验证码错误，请输入正确的计算结果']}
+        return {'captcha_answer': ['验证码错误，请填入正确的计算结果']}
 
 
 def generate(size=(180, 30),
