@@ -28,7 +28,6 @@ def os_package_resource(name):
     if not action:
         return
     LOGGER.info('installing os package: %(name)s ...', {'name': name})
-    update_os_package_catalogue()
     shell_execute('apt-get -y install {}'.format(name), capture=True)
     package_version = get_os_package_installed_version(name)
     set_resource_latest_version(to_resource_key(name), package_version)
