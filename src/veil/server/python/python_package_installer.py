@@ -13,9 +13,9 @@ def python_package_resource(name, url=None, **kwargs):
     latest_version = get_resource_latest_version(to_resource_key(name))
     action = None if installed_version else 'INSTALL'
     if UPGRADE_MODE_LATEST == get_upgrade_mode():
-        action = 'UPGRADE'
+        action = action or 'UPGRADE'
     elif UPGRADE_MODE_FAST == get_upgrade_mode():
-        action = None if latest_version == installed_version else 'UPGRADE'
+        action = action or None if latest_version == installed_version else 'UPGRADE'
     elif UPGRADE_MODE_NO == get_upgrade_mode():
         pass
     else:

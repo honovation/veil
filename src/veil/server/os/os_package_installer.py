@@ -9,12 +9,12 @@ apt_get_update_executed = False
 @atomic_installer
 def os_package_resource(name):
     installed_version = get_os_package_installed_version(name)
+    latest_version = get_resource_latest_version(to_resource_key(name))
     action = None if installed_version else 'INSTALL'
     if UPGRADE_MODE_LATEST == get_upgrade_mode():
-        action = 'UPGRADE'
+        action = action or 'UPGRADE'
     elif UPGRADE_MODE_FAST == get_upgrade_mode():
-        latest_version = get_resource_latest_version(to_resource_key(name))
-        action = None if latest_version == installed_version else 'UPGRADE'
+        action = action or None if latest_version == installed_version else 'UPGRADE'
     elif UPGRADE_MODE_NO == get_upgrade_mode():
         pass
     else:
@@ -27,9 +27,8 @@ def os_package_resource(name):
         return
     if not action:
         return
-    if 'UPGRADE' == action:
-        download_os_package(name)
     LOGGER.info('installing os package: %(name)s ...', {'name': name})
+    update_os_package_catalogue()
     shell_execute('apt-get -y install {}'.format(name), capture=True)
     package_version = get_os_package_installed_version(name)
     set_resource_latest_version(to_resource_key(name), package_version)
@@ -37,12 +36,16 @@ def os_package_resource(name):
 
 def download_os_package(name):
     LOGGER.info('downloading os package: %(name)s ...', {'name': name})
+    update_os_package_catalogue()
+    shell_execute('apt-get -y -d install {}'.format(name), capture=True)
+
+
+def update_os_package_catalogue():
     global apt_get_update_executed
     if not apt_get_update_executed:
         apt_get_update_executed = True
         LOGGER.info('updating os package catalogue...')
         shell_execute('apt-get update -q', capture=True)
-    shell_execute('apt-get -y -d install {}'.format(name), capture=True)
 
 
 def to_resource_key(pip_package):
