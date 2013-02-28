@@ -25,6 +25,8 @@ def main():
         purge_left_overs()
     elif 'rollback' == action:
         rollback(src_dir, backup_dir, veil_server)
+    elif 'download-packages' == action:
+        download_packages(src_dir, veil_server)
     else:
         raise Exception('unknown action: {}'.format(action))
 
@@ -59,6 +61,13 @@ def purge_left_overs():
     for name in os.listdir('/opt'):
         if 'to-be-deleted' in name or name.endswith('-backup'):
             shell_execute('rm -rf {}'.format('/opt/{}'.format(name)))
+
+
+def download_packages(src_dir, veil_server):
+    if not os.path.exists('{}/app'.format(src_dir)):
+        print('{} does not exists, skipped backup'.format('{}/app'.format(src_dir)))
+        return
+    shell_execute('veil :{} install-server --download-only'.format(veil_server), cwd='{}/app'.format(src_dir))
 
 
 def shell_execute(command_line, **kwargs):
