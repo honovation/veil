@@ -47,7 +47,7 @@ def deploy_env(veil_env_name, config_dir, skips_backup=False):
         # problem after a successful deployment which deleted the temporary backup
         fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, '@guard')
         with fabric.api.cd('/opt/{}/app'.format(veil_env_name)):
-            fabric.api.sudo('/opt/{}/veil/bin/veil :{}/@guard environment backup create'.format(
+            fabric.api.sudo('/opt/{}/veil/bin/veil :{}/@guard environment backup create True'.format(
                 veil_env_name, veil_env_name))
     for deploying_server_name in sorted(list_veil_servers(veil_env_name).keys()):
         remote_do('create-backup', veil_env_name, deploying_server_name)
