@@ -9,7 +9,7 @@ def redis_server_resource(purpose, host, port, persisted_by_aof=False):
     resources.extend([
         os_package_repository_resource(name='rwky/redis'), # for latest redis-server
         os_package_resource(name='redis-server'),
-        os_service_resource(state='not_installed', name='redis-server', path='/etc/rc0.d/K20redis-server'),
+        os_service_resource(state='not_installed', name='redis-server'),
         directory_resource(
             path=data_directory,
             owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770),

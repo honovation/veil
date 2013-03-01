@@ -26,6 +26,14 @@ def shell_execute(command_line, capture=False, waits=True, **kwargs):
     return output
 
 
+def try_shell_execute(command_line, capture=False, waits=True, **kwargs):
+    try:
+        shell_execute(command_line, capture=capture, waits=waits, **kwargs)
+    except:
+        LOGGER.info('ignored exception in shell execute', exc_info=1)
+        pass
+
+
 class ShellExecutionError(Exception):
     def __init__(self, message, output=None):
         super(ShellExecutionError, self).__init__(message)

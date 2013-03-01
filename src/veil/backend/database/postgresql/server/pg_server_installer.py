@@ -10,7 +10,7 @@ def postgresql_server_resource(purpose, config):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
         os_package_resource(name='postgresql-9.1'),
-        os_service_resource(state='not_installed', name='postgresql', path='/etc/rc0.d/K21postgresql'),
+        os_service_resource(state='not_installed', name='postgresql'),
         postgresql_global_bin_resource(),
         postgresql_cluster_resource(purpose=purpose, owner=config.owner, owner_password=config.owner_password),
         directory_resource(path=pg_config_dir),
@@ -134,20 +134,17 @@ def delete_file(path):
 
 @contextlib.contextmanager
 def postgresql_server_running(data_directory, owner):
-    shell_execute('su {} -c "pg_ctl -D {} start"'.format(
-        owner, data_directory))
+    shell_execute('su {} -c "pg_ctl -D {} start"'.format(owner, data_directory))
     time.sleep(5)
     try:
         yield
     finally:
-        shell_execute('su {} -c "pg_ctl -D {} stop"'.format(
-            owner, data_directory))
+        shell_execute('su {} -c "pg_ctl -D {} stop"'.format(owner, data_directory))
 
 
 def load_postgresql_maintenance_config(purpose):
     config_dir = get_config_dir(purpose)
-    return load_config_from(config_dir / 'postgresql-maintenance.cfg',
-        'owner', 'owner_password')
+    return load_config_from(config_dir / 'postgresql-maintenance.cfg', 'owner', 'owner_password')
 
 
 def get_config_dir(purpose):
