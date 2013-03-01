@@ -3,6 +3,8 @@ import logging
 import re
 from veil_installer import *
 from veil.utility.shell import *
+from .pip_hack import download_package
+from .pip_hack import search_downloaded_python_package
 
 LOGGER = logging.getLogger(__name__)
 PIP_FREEZE_OUTPUT = None
@@ -23,24 +25,32 @@ def python_package_resource(name, url=None, **kwargs):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         if should_download_while_dry_run():
-            download_python_package(name)
+            download_if_missing(name, latest_version, **kwargs)
         dry_run_result['python_package?{}'.format(name)] = action or '-'
         return
     if not action:
         return
-    print(action)
-    download_python_package(name)
-    LOGGER.info('installing python package: %(name)s ...', {'name': name})
+    if not url: # url can be pinned to specific version or custom build
+        url = search_downloaded_python_package(name, latest_version)
+        if not url or UPGRADE_MODE_LATEST == get_upgrade_mode():
+            url = download_latest(name, **kwargs)
+    LOGGER.info('installing python package: %(name)s from %(url)s...', {'name': name, 'url': url})
     pip_arg = '--upgrade' if 'UPGRADE' == action else ''
-    shell_execute('pip install {} {}'.format(url if url else name, pip_arg),
-        capture=True, **kwargs)
+    shell_execute('pip install {} --no-index -f file:///opt/pypi {}'.format(url, pip_arg), capture=True, **kwargs)
     package_version = get_python_package_installed_version(name, from_cache=False)
     set_resource_latest_version(to_resource_key(name), package_version)
 
 
-def download_python_package(name):
+def download_if_missing(name, version, **kwargs):
+    if not search_downloaded_python_package(name, version):
+        download_latest(name, **kwargs)
+
+
+def download_latest(name, **kwargs):
     LOGGER.info('downloading python package: %(name)s ...', {'name': name})
-    shell_execute('pip install {} --no-install'.format(name))
+    version, url = download_package(name, **kwargs)[name]
+    set_resource_latest_version(to_resource_key(name), version)
+    return url
 
 
 def to_resource_key(pip_package):
