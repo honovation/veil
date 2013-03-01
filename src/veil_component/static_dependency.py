@@ -4,6 +4,8 @@ from .component_map import get_dependent_component_names
 from .component_map import list_child_component_names
 from .component_map import scan_all_components
 from .component_map import get_component_map
+from .component_map import get_leaf_component
+from .import_collector import list_imports
 
 # static dependency is declared manually assert architecture assertion
 
@@ -18,6 +20,60 @@ def list_expected_static_dependencies():
 def check_static_dependency_integrity():
     scan_all_components()
     check_integrity([], list_expected_static_dependencies())
+    for file in (VEIL_HOME / 'src').walk('*.py'):
+        module_name = get_module_name(file)
+        absolute_imports, relative_imports = list_imports(file.text(), file)
+        for relative_import in relative_imports:
+            check_relative_import(module_name, relative_import)
+        for absolute_import in absolute_imports:
+            check_absolute_import(module_name, absolute_import)
+
+
+def check_relative_import(this_mod, relative_import):
+    level, rel, _ = relative_import
+    this_comp = get_leaf_component(this_mod)
+    if 1 == level:
+        base = this_comp
+    else:
+        base = '.'.join(this_comp.split('.')[:-(level - 1)])
+    that_mod = '{}.{}'.format(base, rel)
+    that_comp = get_leaf_component(that_mod)
+    if this_comp and that_comp and not that_comp.startswith(this_comp):
+        print(red('WARNING: {} referenced other component through relative import {}'.format(this_mod, that_mod)))
+
+
+def check_absolute_import(this_mod, absolute_import):
+    if absolute_import in get_component_map():
+        return
+    that_comp = get_leaf_component(absolute_import)
+    this_comp = get_leaf_component(this_mod)
+    if this_comp and that_comp and this_comp == that_comp:
+        print(red('WARNING: {} should not absolute import {}, use relative import instead'.format(this_mod, absolute_import)))
+        return
+    if not that_comp:
+        return
+    if '{}.*'.format(that_comp) == absolute_import:
+        return
+    print(red('WARNING: {} should absolute import {} using .*'.format(this_mod, absolute_import)))
+
+
+def _wrap_with(code):
+    def inner(text, bold=False):
+        c = code
+        if bold:
+            c = "1;%s" % c
+        return "\033[%sm%s\033[0m" % (c, text)
+
+    return inner
+
+red = _wrap_with('31')
+
+def get_module_name(file):
+    relpath = (VEIL_HOME / 'src').relpathto(file)
+    relpath = relpath.replace('/__init__.py', '')
+    relpath = relpath.replace('.py', '')
+    relpath = relpath.replace('/', '.')
+    return relpath
 
 
 def check_static_dependency_cycle():
@@ -65,7 +121,8 @@ def list_missing_children(component_names, listed_children):
     component_name = ''.join(component_names)
     expected_children = set('{}{}'.format(component_name, child) for child in listed_children)
     actual_descendants = list_child_component_names(component_name)
-    actual_children = set(child for child in actual_descendants if len(child.split('.')) == len(component_name.split('.')) + 1)
+    actual_children = set(
+        child for child in actual_descendants if len(child.split('.')) == len(component_name.split('.')) + 1)
     return actual_children - expected_children
 
 
