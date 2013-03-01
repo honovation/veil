@@ -33,14 +33,14 @@
     </span>
     <div class="inline-block ml-5" style="font-size: 12px">
         计算：
-        <a href="javascript:void(0)" title="看不清？换一个">
-            <img style="border: 1px solid #CCC" name="captcha_image" src="{{ captcha_image_url }}"/>
+        <a id="change-captcha" href="javascript:void(0)" title="看不清？换一个">
+            <img style="border: 1px solid #CCC" src="{{ captcha_image_url }}"/>
         </a>
     </div>
 </div>
 <script type="text/javascript">
     $(document).ready(function () {
-        $('#captcha a').live('click', function (e) {
+        $('#change-captcha').live('click', function (e) {
             $.get('/captcha', function (html) {
                 $('#captcha').html(html);
             });
