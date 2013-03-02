@@ -304,9 +304,10 @@ class Database(object):
                     })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
+                rowcount = cursor.rowcount
                 publish_event(EVENT_SQL_EXECUTED, loads_event_handlers=False,
-                    purpose=self.purpose, sql=sql, kwargs=kwargs, rows_count=cursor.rowcount)
-                return cursor.rowcount
+                    purpose=self.purpose, sql=sql, kwargs=kwargs, rowcount=rowcount)
+                return rowcount
 
     def _executemany(self, sql, seq_of_parameters):
         with require_transaction_context(self): # ensure the sql and event handler in same transaction
@@ -323,9 +324,10 @@ class Database(object):
                         })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
+                rowcount = cursor.rowcount
                 publish_event(EVENT_SQL_BATCH_EXECUTED, loads_event_handlers=False,
-                    purpose=self.purpose, sql=sql, seq_of_parameters=seq_of_parameters, rows_count=cursor.rowcount)
-                return cursor.rowcount
+                    purpose=self.purpose, sql=sql, seq_of_parameters=seq_of_parameters, rowcount=rowcount)
+                return rowcount
 
     def _query(self, sql, returns_dict_object=True, **kwargs):
         with require_transaction_context(self): # ensure the sql and event handler in same transaction
@@ -342,7 +344,7 @@ class Database(object):
                     raise
                 result = cursor.fetchall()
                 publish_event(EVENT_SQL_QUERIED, loads_event_handlers=False,
-                    purpose=self.purpose, sql=sql, kwargs=kwargs, rows_count=len(result))
+                    purpose=self.purpose, sql=sql, kwargs=kwargs, rowcount=len(result))
                 return result
 
     def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, **kwargs):
