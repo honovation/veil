@@ -1,11 +1,12 @@
 #coding=utf-8
 from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
+from datetime import timedelta
 import functools
 import random
 import uuid
 import os
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont
 from veil_installer import *
 from veil.frontend.template import *
 from veil.frontend.web import *
@@ -16,7 +17,7 @@ from veil.environment import *
 bucket = register_bucket('captcha_image')
 redis = register_redis('captcha_answer')
 
-CAPTCHA_ANSWER_ALIVE_TIME_IN_SECONDS = 60 * 5
+CAPTCHA_ANSWER_ALIVE_TIME = timedelta(minutes=5)
 
 def register_captcha(website):
     add_application_sub_resource(
@@ -40,7 +41,7 @@ def captcha_widget():
 def generate_captcha():
     challenge_code = uuid.uuid4().get_hex()
     image, answer = generate(size=(150, 30), font_size=25)
-    redis().setex(challenge_code, CAPTCHA_ANSWER_ALIVE_TIME_IN_SECONDS, answer)
+    redis().setex(challenge_code, CAPTCHA_ANSWER_ALIVE_TIME, answer)
     buffer = StringIO()
     image.save(buffer, 'GIF')
     buffer.reset()
