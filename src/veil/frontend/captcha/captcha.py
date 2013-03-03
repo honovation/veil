@@ -69,7 +69,7 @@ def validate_captcha(challenge_code, captcha_answer):
     request = get_current_http_request()
     real_answer = redis().get(challenge_code)
     if 'test' == VEIL_SERVER or (captcha_answer and real_answer == captcha_answer):
-        if request and 'test' != VEIL_SERVER:
+        if 'test' != VEIL_SERVER:
             LOGGER.info('[sensitive]validate captcha succeeded: %(site)s, %(function)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
                 'site': request.host,
                 'function': 'captcha',
@@ -81,17 +81,16 @@ def validate_captcha(challenge_code, captcha_answer):
         bucket().delete(challenge_code)
         return {}
     else:
-        if request:
-            LOGGER.warn('[sensitive]validate captcha failed: %(site)s, %(function)s, %(user_answer)s, %(real_answer)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
-                'site': request.host,
-                'function': 'captcha',
-                'user_answer': captcha_answer,
-                'real_answer': real_answer,
-                'uri': request.uri,
-                'referer': request.headers.get('Referer'),
-                'remote_ip': request.remote_ip,
-                'user_agent': request.headers.get('User-Agent')
-            })
+        LOGGER.warn('[sensitive]validate captcha failed: %(site)s, %(function)s, %(user_answer)s, %(real_answer)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
+            'site': request.host,
+            'function': 'captcha',
+            'user_answer': captcha_answer,
+            'real_answer': real_answer,
+            'uri': request.uri,
+            'referer': request.headers.get('Referer'),
+            'remote_ip': request.remote_ip,
+            'user_agent': request.headers.get('User-Agent')
+        })
         return {'captcha_answer': ['验证码错误，请填入正确的计算结果']}
 
 
