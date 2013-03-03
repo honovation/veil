@@ -49,10 +49,16 @@ def handle_exception():
         response.write(e.message)
         response.finish()
     except:
-        LOGGER.exception('failed to handle http request', {
-            'url': request.uri,
-            'user_agent': request.headers.get('User-Agent')
-        } if request else {})
+        if request:
+            LOGGER.exception('failed to handle http request: %(site)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
+                'site': request.host,
+                'uri': request.uri,
+                'referer': request.headers.get('Referer'),
+                'remote_ip': request.remote_ip,
+                'user_agent': request.headers.get('User-Agent')
+            })
+        else:
+            LOGGER.exception('failed to handle http request')
         try:
             response.status_code = httplib.INTERNAL_SERVER_ERROR
             response.finish()
