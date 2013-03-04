@@ -20,5 +20,5 @@ def create_server_backup(backup_path):
     backup_dir = os.path.dirname(backup_path)
     if not os.path.exists(backup_dir):
         os.makedirs(backup_dir, mode=0755)
-    shell_execute('tar czf {} --exclude *.pid -C {} .'.format(
-        backup_path, VEIL_VAR_DIR))
+    shell_execute('tar czf {} --exclude=*.pid --exclude=uploaded-files --exclude=inline-static-files -C {} .'.format(
+        backup_path, VEIL_VAR_DIR, VEIL_VAR_DIR, VEIL_VAR_DIR))
