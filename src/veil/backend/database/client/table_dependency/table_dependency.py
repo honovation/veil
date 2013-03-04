@@ -57,6 +57,7 @@ def print_table_dependencies_for(component_tables, threshold=8):
     threshold = int(threshold)
     for component_name in sorted(component_tables.keys()):
         tables = component_tables[component_name]
+        tables = ['{}/{}'.format(db, tbl) for db, tbl in tables]
         if tables:
             tables = list(tables)
             if len(tables) > threshold:
@@ -141,6 +142,7 @@ def get_writing_table_name(sql):
     match = RE_DELETE.match(sql)
     if match:
         return match.group(1)
+
 
 def strip_sql(sql):
     return sql.strip().replace('\n', '').replace('\r', '').replace('\t', '')
