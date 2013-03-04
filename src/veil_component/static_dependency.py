@@ -35,26 +35,48 @@ def check_relative_import(this_mod, relative_import):
     if 1 == level:
         base = this_comp
     else:
-        base = '.'.join(this_comp.split('.')[:-(level - 1)])
+        base = '.'.join(this_mod.split('.')[:-level])
     that_mod = '{}.{}'.format(base, rel)
     that_comp = get_leaf_component(that_mod)
-    if this_comp and that_comp and not that_comp.startswith(this_comp):
-        print(red('WARNING: {} referenced other component through relative import {}'.format(this_mod, that_mod)))
+    if this_comp and that_comp:
+        if this_comp == that_comp:
+            pass # relative import within the same component is fine
+        elif that_comp.startswith('{}.'.format(this_comp)):
+            # relative import child component is allowed, but do not peek inside it
+            # a import a.b is ok
+            # a import a.b.c is also ok, as long as a.b exposed it (we did not check if it is exposed or not yet)
+            # a import a.b.c.d is not ok, given a.b is a component which already encapsulated internal
+            if that_comp != that_mod and that_comp != '.'.join(that_mod.split('.')[:-1]):
+                print(red('WARNING: {} should not peek inside other component {}'.format(this_mod, that_mod)))
+        else:
+            # relative backwards is not allowed, from a.b to a
+            # relative import sibling is not allowed, from a.b to a.c
+            print(red('WARNING: {} referenced other component through relative import {}'.format(this_mod, that_mod)))
 
 
 def check_absolute_import(this_mod, absolute_import):
-    if absolute_import in get_component_map():
-        return
     that_comp = get_leaf_component(absolute_import)
     this_comp = get_leaf_component(this_mod)
-    if this_comp and that_comp and this_comp == that_comp:
-        print(red('WARNING: {} should not absolute import {}, use relative import instead'.format(this_mod, absolute_import)))
+    if not this_comp:
         return
     if not that_comp:
         return
-    if '{}.*'.format(that_comp) == absolute_import:
+    if this_comp == that_comp or that_comp.startswith('{}.'.format(this_comp)):
+        # from a to reference any thing below a, such as a.b or a.b.c, always use relative import
+        print(red(
+            'WARNING: {} should not absolute import {}, use relative import instead'.format(this_mod, absolute_import)))
         return
-    print(red('WARNING: {} should absolute import {} using .*'.format(this_mod, absolute_import)))
+    if '__' in absolute_import:
+        # allow __fixture__ or other special export
+        return
+    if that_comp == absolute_import:
+        # normal import a.b
+        return
+    if that_comp == '.'.join(absolute_import.split('.')[:-1]):
+        # from a.b import c, just reference one level, assume c is exposed from a.b (we did not check it yet)
+        return
+    # given a.b is component, import a.b.c.d is always not allowed
+    print(red('WARNING: {} should not peek inside other component {}'.format(this_mod, absolute_import)))
 
 
 def _wrap_with(code):
