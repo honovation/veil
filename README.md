@@ -1,1 +1,1 @@
-Start Small, Think Big!
+Think Big, Do Small!
