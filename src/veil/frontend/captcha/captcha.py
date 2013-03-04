@@ -124,9 +124,9 @@ def generate(size=(180, 30),
     @return: [1]: 验证码图片中的字符串
     '''
 
-    width, height = size # 宽， 高
-    img = Image.new(mode, size, bg_color) # 创建图形
-    draw = ImageDraw.Draw(img) # 创建画笔
+    width, height = size
+    img = Image.new(mode, size, bg_color)
+    draw = ImageDraw.Draw(img)
 
     numbers = range(1, 11)
     operator = [u'+', u'-', u'x']
@@ -177,7 +177,7 @@ def generate(size=(180, 30),
 
         font = ImageFont.truetype(font_type, font_size)
         font_width, font_height = font.getsize(strs)
-        draw.text((0, 10), strs, font=font, fill=fg_color)
+        draw.text((0, 0), strs, font=font, fill=fg_color)
 
         return answer
 
