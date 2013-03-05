@@ -37,6 +37,10 @@ http {
         gzip_static off;
     {% endif %}
 
+    perl_set $unix_timestamp 'sub {
+      time();
+    }';
+
     proxy_read_timeout 200;
     proxy_buffers 256 8k;
     proxy_intercept_errors on;
@@ -45,6 +49,7 @@ http {
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Request-Code $unix_timestamp-$cookie_vbcode;
 
     log_format logstash_json '{ "@timestamp": "$time_iso8601", '
                              '"@type": "nginx", '
@@ -53,9 +58,10 @@ http {
                              '"body_bytes_sent": "$body_bytes_sent", '
                              '"request_time": "$request_time", '
                              '"status": "$status", '
-                             '"user_id": "$cookie_vuid", '
+                             '"user_code": "$cookie_vucode", '
                              '"browser_code": "$cookie_vbcode", '
                              '"request": "$request", '
+                             '"request_code": "$unix_timestamp-$cookie_vbcode", '
                              '"request_method": "$request_method", '
                              '"http_referrer": "$http_referer", '
                              '"http_user_agent": "$http_user_agent", } }';

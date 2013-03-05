@@ -109,11 +109,13 @@ with veil_component.init_component(__name__):
     ]
 
     def init():
-        from veil.frontend.nginx import VEIL_USER_ID_COOKIE_NAME
+        from veil.frontend.nginx import VEIL_USER_CODE_COOKIE_NAME
         from veil.frontend.nginx import VEIL_BROWSER_CODE_COOKIE_NAME
+        from veil.frontend.nginx import X_REQUEST_CODE_HEADER_NAME
         from veil_component import add_log_context_provider
 
         add_log_context_provider(lambda: {
-            'user_id': get_cookie(VEIL_USER_ID_COOKIE_NAME) or '',
+            'request_code': get_current_http_request().headers.get(X_REQUEST_CODE_HEADER_NAME) if get_current_http_request(optional=True) else '',
+            'user_code': get_cookie(VEIL_USER_CODE_COOKIE_NAME) or '',
             'browser_code': get_cookie(VEIL_BROWSER_CODE_COOKIE_NAME) or ''
         })
