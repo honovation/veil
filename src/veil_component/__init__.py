@@ -1,4 +1,5 @@
 from .component_logging import configure_logging
+from .component_logging import add_log_context_provider
 
 configure_logging('veil_component')
 

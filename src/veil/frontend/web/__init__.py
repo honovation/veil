@@ -107,3 +107,13 @@ with veil_component.init_component(__name__):
         xsrf_token.__name__,
         'TAG_NO_XSRF_CHECK'
     ]
+
+    def init():
+        from veil.frontend.nginx import VEIL_USER_ID_COOKIE_NAME
+        from veil.frontend.nginx import VEIL_BROWSER_CODE_COOKIE_NAME
+        from veil_component import add_log_context_provider
+
+        add_log_context_provider(lambda: {
+            'user_id': get_cookie(VEIL_USER_ID_COOKIE_NAME) or '',
+            'browser_code': get_cookie(VEIL_BROWSER_CODE_COOKIE_NAME) or ''
+        })

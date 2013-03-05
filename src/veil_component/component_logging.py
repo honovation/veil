@@ -6,12 +6,17 @@ import sys
 import json
 import time
 import socket
+import traceback
 from .component_map import get_root_component
 
 VEIL_LOGGING_LEVEL_CONFIG = 'VEIL_LOGGING_LEVEL_CONFIG'
 VEIL_LOGGING_EVENT = 'VEIL_LOGGING_EVENT'
 logging_levels = None
 configured_root_loggers = set()
+log_context_providers = []
+
+def add_log_context_provider(provider):
+    log_context_providers.append(provider)
 
 def wrap_console_text_with_color(code):
     def inner(text, bold=False):
@@ -116,8 +121,18 @@ class EventFormatter(logging.Formatter):
         if record.exc_info:
             event['@fields']['exception_type'] = unicode(record.exc_info[0])
             event['@fields']['exception_stack_trace'] = self.formatException(record.exc_info)
+        event['@fields'].update(get_log_context())
         return json.dumps(event)
 
+
+def get_log_context():
+    context = {}
+    for provider in log_context_providers:
+        try:
+            context.update(provider())
+        except:
+            traceback.print_exc()
+    return context
 
 def dump_dict(args):
     def format_value(v):
