@@ -68,7 +68,8 @@ veil.resource.get = function (options) {
         dataType:dataType,
         success:onSuccess,
         statusCode:{
-            400:onValidationError
+            400:onValidationError,
+            403:function() {alert('权限不足');}
         }
     };
     $.ajax(_);
@@ -91,7 +92,8 @@ veil.resource.create = function (options) {
         success:onSuccess,
         error:onError,
         statusCode:{
-            400:onValidationError
+            400:onValidationError,
+            403:function() {alert('权限不足');}
         }
     };
     $.ajax(_);
@@ -110,7 +112,8 @@ veil.resource.update = function (options) {
         success:onSuccess,
         error:onError,
         statusCode:{
-            400:onValidationError
+            400:onValidationError,
+            403:function() {alert('权限不足');}
         }
     };
     $.ajax(_);
@@ -122,7 +125,10 @@ veil.resource.del = function (options) {
     var _ = {
         type:'DELETE',
         url:url,
-        success:onSuccess
+        success:onSuccess,
+        statusCode:{
+            403:function() {alert('权限不足');}
+        }
     };
     $.ajax(_);
 };
