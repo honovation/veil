@@ -10,7 +10,7 @@ def shell_execute(command_line, capture=False, waits=True, **kwargs):
     command_args = shlex.split(command_line)
     if capture:
         kwargs.update(dict(stderr=subprocess.STDOUT, stdout=subprocess.PIPE, stdin=subprocess.PIPE))
-    process = subprocess.Popen(command_args, **kwargs)
+    process = subprocess.Popen(command_line if kwargs.get('shell') else command_args, **kwargs)
     if not waits:
         return process
     output = process.communicate()[0]

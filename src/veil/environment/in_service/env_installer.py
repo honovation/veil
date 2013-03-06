@@ -88,6 +88,26 @@ def purge_left_overs(veil_env_name):
         remote_do('purge-left-overs', veil_env_name, veil_server_name)
 
 
+@script('print-deployed-at')
+def print_deployed_at():
+    print(get_deployed_at())
+
+
+def get_deployed_at():
+    last_commit = shell_execute('git rev-parse HEAD', capture=True).strip()
+    lines = shell_execute("git show-ref --tags -d | grep ^%s | sed -e 's,.* refs/tags/,,' -e 's/\^{}//'" % last_commit,
+        shell=True, capture=True)
+    deployed_ats = []
+    for tag in lines.splitlines(False):
+        if tag.startswith('{}-'.format(VEIL_ENV)):
+            formatted_deployed_at = tag.replace('{}-'.format(VEIL_ENV), '').split('-')[0]
+            deployed_ats.append(datetime.datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S'))
+    if not deployed_ats:
+        return None
+    else:
+        return max(deployed_ats)
+
+
 def remote_do(action, veil_env_name, veil_server_name):
     fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, veil_server_name)
     fabric.api.put(PAYLOAD, '/opt/env_installer_payload.py', use_sudo=True, mode=0600)
