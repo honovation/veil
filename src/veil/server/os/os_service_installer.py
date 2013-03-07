@@ -21,9 +21,6 @@ def os_service_resource(name, state):
         stop_service(name)
         try_shell_execute('update-rc.d {} disable'.format(name), capture=True)
         try_shell_execute('sh -c "echo manual > /etc/init/{}.override"'.format(name), capture=False)
-    if UPGRADE_MODE_NO != get_upgrade_mode():
-    # some upgrade will restart the service
-        stop_service(name)
 
 
 def stop_service(name):
