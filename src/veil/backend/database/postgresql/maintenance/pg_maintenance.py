@@ -231,7 +231,7 @@ def check_all_locked_migration_scripts():
         locked_file_count = len(purpose.listdir('*.locked'))
         script_file_count = len(purpose.listdir('*.sql'))
         if locked_file_count < script_file_count:
-            print('You must lock scripts in {}'.format(purpose))
+            print('You must lock scripts in {} using: veil backend database postgresql lock-migration-scripts {}'.format(purpose, purpose))
             exit(-1)
         else:
             print('Migration script check in {} ...passed!'.format(purpose))
