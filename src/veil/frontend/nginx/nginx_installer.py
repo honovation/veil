@@ -3,7 +3,7 @@ from veil.profile.installer import *
 from veil.frontend.nginx_setting import NGINX_PID_PATH
 
 @composite_installer
-def nginx_resource(servers, enable_compression):
+def nginx_resource(servers, enable_compression, has_bunker, is_bunker, bunker_ip):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
         os_package_resource(name='nginx-extras'),
@@ -15,7 +15,10 @@ def nginx_resource(servers, enable_compression):
             'log_directory': VEIL_LOG_DIR / 'nginx',
             'pid_file': NGINX_PID_PATH,
             'servers': servers,
-            'enable_compression': enable_compression
+            'enable_compression': enable_compression,
+            'has_bunker': has_bunker,
+            'is_bunker': is_bunker,
+            'bunker_ip': bunker_ip
         }))
     ])
     uploaded_files_directory = VEIL_VAR_DIR / 'uploaded-files'

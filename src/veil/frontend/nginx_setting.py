@@ -4,14 +4,17 @@ from veil.environment import *
 
 NGINX_PID_PATH = VEIL_VAR_DIR / 'nginx.pid'
 
-def nginx_program(servers, enable_compression=False):
+def nginx_program(servers, enable_compression=False, has_bunker=False, is_bunker=False, bunker_ip=None):
     return objectify({
         'nginx': {
             'execute_command': 'nginx -c {}'.format(VEIL_ETC_DIR / 'nginx.conf'),
             'run_as': 'root',
             'resources': [('veil.frontend.nginx.nginx_resource', {
                 'servers': servers,
-                'enable_compression': enable_compression
+                'enable_compression': enable_compression,
+                'has_bunker': has_bunker,
+                'is_bunker': is_bunker,
+                'bunker_ip': bunker_ip
             })]
         }
     })
@@ -33,8 +36,5 @@ def nginx_reverse_proxy_location(upstream_host, upstream_port):
     return {
         '_': """
             proxy_pass http://%s:%s;
-            proxy_set_header   Host             $host;
-            proxy_set_header   X-Real-IP        $remote_addr;
-            proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
             """ % (upstream_host, upstream_port)
     }
