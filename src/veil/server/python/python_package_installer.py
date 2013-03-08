@@ -66,6 +66,7 @@ def download_if_missing(name, version, **kwargs):
         download_latest(name, **kwargs)
 
 
+@script('download-latest')
 def download_latest(name, **kwargs):
     LOGGER.info('downloading python package: %(name)s ...', {'name': name})
     version, url = download_package(name, **kwargs)[name]
