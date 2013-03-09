@@ -33,8 +33,8 @@ def self_check():
     shell_execute('git add .')
     shell_execute('veil pull')
     shell_execute('sudo veil :test down')
-    shell_execute('sudo veil install-server --upgrade=fast')
-    shell_execute('sudo veil :test install-server --upgrade=fast')
+    shell_execute('sudo veil install-server --upgrade-mode=fast')
+    shell_execute('sudo veil :test install-server --upgrade-mode=fast')
     shell_execute('sudo veil :test up --daemonize')
     shell_execute('veil quick-check')
 
