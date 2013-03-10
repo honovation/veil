@@ -4,6 +4,7 @@ from veil_component import *
 def bucket_location(base_directory):
     return {
         '_': """
+            access_log off;
             expires max;
             if ($query_string !~* "v=(.+)") {
                 expires 7d;
