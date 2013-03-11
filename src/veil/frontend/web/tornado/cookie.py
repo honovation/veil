@@ -40,16 +40,17 @@ def get_secure_cookie(name, value=None, default=None, max_age_days=31, request=N
         return default
 
 
-def set_secure_cookie(response=None, cookie=None, name=None, value=None, expires_days=30, **kwargs):
-    set_cookie(response, cookie=cookie or create_secure_cookie(name, value, expires_days, **kwargs))
+def set_secure_cookie(response=None, name=None, value=None, expires_days=30, **kwargs):
+    response = response or get_current_http_response()
+    create_secure_cookie(response.get_cookies(), name, value, expires_days, **kwargs)
 
 
-def create_secure_cookie(name, value, expires_days, **kwargs):
+def create_secure_cookie(cookies, name, value, expires_days, **kwargs):
     timestamp = str(int(time.time()))
     value = base64.b64encode(value)
     signature = get_hmac(name, value, timestamp, strong=False)
     value = '|'.join([value, timestamp, signature])
-    return create_cookie(name=name, value=value, expires_days=expires_days, **kwargs)
+    return create_cookie(cookies, name=name, value=value, expires_days=expires_days, **kwargs)
 
 
 def get_cookies(request=None):
@@ -97,21 +98,19 @@ def clear_cookie(name, path='/', domain=None, response=None):
     set_cookie(response=response, name=name, value='', path=path, expires=expires, domain=domain)
 
 
-def set_cookie(response=None, cookie=None, **kwargs):
+def set_cookie(response=None, **kwargs):
     response = response or get_current_http_response()
-    cookie = cookie or create_cookie(**kwargs)
-    response.add_cookie(cookie.OutputString(None))
+    create_cookie(response.get_cookies(), **kwargs)
 
 
-def create_cookie(name, value, domain=None, expires=None, path='/', expires_days=None, **kwargs):
-    base_cookie = Cookie.BaseCookie()
+def create_cookie(cookies, name, value, domain=None, expires=None, path='/', expires_days=None, **kwargs):
     name = to_str(name)
     value = to_str(value)
     if re.search(r'[\x00-\x20]', name + value):
         # Don't let us accidentally inject bad stuff
         raise ValueError('Invalid cookie %r: %r' % (name, value))
-    base_cookie[name] = value
-    cookie = base_cookie[name]
+    cookies[name] = value
+    cookie = cookies[name]
     if domain:
         cookie['domain'] = domain
     if expires_days is not None and not expires:

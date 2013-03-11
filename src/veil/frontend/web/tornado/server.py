@@ -9,6 +9,7 @@ from logging import getLogger
 import re
 import tornado
 import traceback
+import Cookie
 from tornado.httpserver import HTTPServer
 from tornado.stack_context import StackContext
 from tornado.ioloop import IOLoop
@@ -74,7 +75,7 @@ class HTTPResponse(object):
     def __init__(self, request):
         self._headers_written = None
         self._finished = False
-        self._cookies = []
+        self._cookies = Cookie.SimpleCookie()
         self.request = request
         self.connection = self.request.connection
         self.clear()
@@ -116,8 +117,8 @@ class HTTPResponse(object):
         self._write_buffer = []
         self._status_code = 200
 
-    def add_cookie(self, cookie):
-        self._cookies.append(cookie)
+    def get_cookies(self):
+        return self._cookies
 
     def set_header(self, name, value):
         if self.headers_written:
@@ -195,6 +196,7 @@ class HTTPResponse(object):
         lines = [self.request.version + " " + str(self._status_code) + " " +
                  httplib.responses[self._status_code]]
         lines.extend(['%s: %s' % (n, v) for n, v in self._headers.iteritems()])
-        for cookie in self._cookies:
-            lines.append(to_str("Set-Cookie: " + cookie))
+        for cookie in self._cookies.values():
+            LOGGER.debug(to_str("Set-Cookie: " + cookie.OutputString(None)))
+            lines.append(to_str("Set-Cookie: " + cookie.OutputString(None)))
         return '\r\n'.join(lines) + '\r\n\r\n'
