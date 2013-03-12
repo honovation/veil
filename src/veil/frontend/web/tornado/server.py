@@ -75,7 +75,7 @@ class HTTPResponse(object):
     def __init__(self, request):
         self._headers_written = None
         self._finished = False
-        self._cookies = Cookie.SimpleCookie()
+        self._cookies = Cookie.BaseCookie()
         self.request = request
         self.connection = self.request.connection
         self.clear()
