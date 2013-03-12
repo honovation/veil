@@ -2,10 +2,15 @@ from __future__ import unicode_literals, print_function, division
 import fabric.api
 import datetime
 import os
+import logging
 from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
 from veil.utility.shell import *
+from veil_component import *
+
+LOGGER = logging.getLogger(__name__)
+KEEP_BACKUP_FOR_DAYS = 30
 
 @script('create')
 def create_env_backup():
@@ -19,7 +24,8 @@ def create_env_backup():
     for veil_server_name in veil_server_names:
         bring_down_server(VEIL_ENV, veil_server_name)
     try:
-        timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        now = datetime.datetime.now()
+        timestamp = now.strftime('%Y%m%d%H%M%S')
         for veil_server_name in veil_server_names:
             backup_server(VEIL_ENV, veil_server_name, timestamp)
         try:
@@ -27,9 +33,26 @@ def create_env_backup():
         except:
             pass
         shell_execute('ln -s /backup/{} /backup/latest'.format(timestamp))
+        delete_old_backups()
     finally:
         for veil_server_name in veil_server_names:
             bring_up_server(VEIL_ENV, veil_server_name)
+
+
+@script('delete-old-backups')
+def delete_old_backups():
+    now = datetime.datetime.now()
+    for path in as_path('/backup').dirs():
+        if 'latest' == path.basename:
+            continue
+        try:
+            backup_time = datetime.datetime.strptime(path.basename(), '%Y%m%d%H%M%S')
+            print(now - backup_time)
+            if now - backup_time > datetime.timedelta(days=KEEP_BACKUP_FOR_DAYS):
+                LOGGER.info('delete old back: %(path)s', {'path': path})
+                path.rmtree()
+        except:
+            LOGGER.exception('failed to parse datetime from %(path)s', {'path': path})
 
 
 def bring_down_server(backing_up_env, veil_server_name):
@@ -59,3 +82,4 @@ def backup_server(backing_up_env, veil_server_name, timestamp):
     if not os.path.exists('/backup/{}'.format(timestamp)):
         os.mkdir('/backup/{}'.format(timestamp), 0755)
     fabric.api.get(backup_path, backup_path)
+    fabric.api.sudo('rm -rf /backup') # backup is centrally stored in @guard lxc container
