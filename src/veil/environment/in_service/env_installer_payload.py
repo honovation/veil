@@ -64,9 +64,8 @@ def purge_left_overs():
 
 
 def download_packages(src_dir, veil_server):
-    shell_execute('apt-get update')
     if not os.path.exists('{}/app'.format(src_dir)):
-        print('{} does not exists, skipped backup'.format('{}/app'.format(src_dir)))
+        print('{} does not exists, skipped download'.format('{}/app'.format(src_dir)))
         return
     shell_execute('veil :{} install-server --download-only'.format(veil_server), cwd='{}/app'.format(src_dir))
 
