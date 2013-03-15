@@ -26,8 +26,10 @@ def python_package_resource(name, url=None, **kwargs):
         raise NotImplementedError()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        if should_download_while_dry_run():
-            download_if_missing(name, latest_version, **kwargs)
+        if should_download_while_dry_run() and not search_downloaded_python_package(name, latest_version):
+            # TODO: currently use our own pyres distribution based on 1.4.1 and need use the official future release
+            if 'pyres' != name or get_remote_latest_version(name) > '1.4.1':
+                download_latest(name, **kwargs)
         dry_run_result['python_package?{}'.format(name)] = action or '-'
         return
     if not action:
@@ -35,16 +37,14 @@ def python_package_resource(name, url=None, **kwargs):
     if not url: # url can be pinned to specific version or custom build
         url = search_downloaded_python_package(name, latest_version)
         remote_latest_version = get_remote_latest_version(name)
-        should_download_latest = UPGRADE_MODE_LATEST == get_upgrade_mode() and\
-                                 installed_version is not None and\
-                                 installed_version != remote_latest_version
-        if not url or should_download_latest:
-            url = download_latest(name, **kwargs)
-    LOGGER.info('installing python package: %(name)s from %(url)s...', {'name': name, 'url': url})
-    pip_arg = '--upgrade' if 'UPGRADE' == action else ''
-    shell_execute('pip install {} --no-index -f file:///opt/pypi {}'.format(url, pip_arg), capture=True, **kwargs)
-    package_version = get_python_package_installed_version(name, from_cache=False)
-    set_resource_latest_version(to_resource_key(name), package_version)
+        if remote_latest_version is None:
+            LOGGER.error('get remote latest version for python package failed: %(name)s', {'name': name})
+        if not url or (UPGRADE_MODE_LATEST == get_upgrade_mode() and latest_version != remote_latest_version):
+            url, latest_version = download_latest(name, **kwargs)
+    if not installed_version or installed_version != latest_version:
+        LOGGER.info('installing python package: %(name)s from %(url)s...', {'name': name, 'url': url})
+        pip_arg = '--upgrade' if 'UPGRADE' == action else ''
+        shell_execute('pip install {} --no-index -f file:///opt/pypi {}'.format(url, pip_arg), capture=True, **kwargs)
 
 
 @script('print-remote-latest-version')
@@ -58,12 +58,9 @@ def get_remote_latest_version(package):
     if versions:
         return versions[0]
     else:
+        if 'ibm-db' == package:
+            return get_remote_latest_version('ibm_db')
         return None
-
-
-def download_if_missing(name, version, **kwargs):
-    if not search_downloaded_python_package(name, version):
-        download_latest(name, **kwargs)
 
 
 @script('download-latest')
@@ -71,7 +68,7 @@ def download_latest(name, **kwargs):
     LOGGER.info('downloading python package: %(name)s ...', {'name': name})
     version, url = download_package(name, **kwargs)[name]
     set_resource_latest_version(to_resource_key(name), version)
-    return url
+    return url, version
 
 
 def to_resource_key(pip_package):

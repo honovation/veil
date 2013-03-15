@@ -8,7 +8,7 @@ apt_get_update_executed = False
 
 @atomic_installer
 def os_package_resource(name):
-    installed_version = get_os_package_installed_version(name)
+    installed_version, downloaded_version = get_local_os_package_versions(name)
     latest_version = get_resource_latest_version(to_resource_key(name))
     action = None if installed_version else 'INSTALL'
     if UPGRADE_MODE_LATEST == get_upgrade_mode():
@@ -21,22 +21,26 @@ def os_package_resource(name):
         raise NotImplementedError()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        if should_download_while_dry_run():
+        if should_download_while_dry_run() and (not downloaded_version or downloaded_version != latest_version):
             download_os_package(name)
         dry_run_result['os_package?{}'.format(name)] = action or '-'
         return
     if not action:
         return
-    LOGGER.info('installing os package: %(name)s ...', {'name': name})
-    shell_execute('apt-get -y install {}'.format(name), capture=True)
-    package_version = get_os_package_installed_version(name)
-    set_resource_latest_version(to_resource_key(name), package_version)
+    if not downloaded_version or downloaded_version != latest_version or UPGRADE_MODE_LATEST == get_upgrade_mode():
+        downloaded_version = download_os_package(name)
+    if not installed_version or installed_version != downloaded_version:
+        LOGGER.info('installing os package: %(name)s ...', {'name': name})
+        shell_execute('apt-get -y install {}'.format(name), capture=True)
 
 
 def download_os_package(name):
     LOGGER.info('downloading os package: %(name)s ...', {'name': name})
     update_os_package_catalogue()
     shell_execute('apt-get -y -d install {}'.format(name), capture=True)
+    _, downloaded_version = get_local_os_package_versions(name)
+    set_resource_latest_version(to_resource_key(name), downloaded_version)
+    return downloaded_version
 
 
 def update_os_package_catalogue():
@@ -51,14 +55,13 @@ def to_resource_key(pip_package):
     return 'veil.server.os.os_package_resource?{}'.format(pip_package)
 
 
-def get_os_package_installed_version(name):
-    try:
-        lines = shell_execute('dpkg -s {}'.format(name), capture=True).splitlines(False)
-        for line in lines:
-            if line.startswith('Version:'):
-                return line.split('Version:')[1].strip()
-        return None
-    except ShellExecutionError, e:
-        if 'not installed' in e.output:
-            return None
-        raise
+def get_local_os_package_versions(name):
+    installed_version = None
+    downloaded_version = None
+    lines = shell_execute('apt-cache policy {}'.format(name), capture=True).splitlines(False)
+    if len(lines) >= 3:
+        installed_version = lines[1].split('Installed:')[1].strip()
+        if '(none)' == installed_version:
+            installed_version = None
+        downloaded_version = lines[2].split('Candidate:')[1].strip()
+    return installed_version, downloaded_version

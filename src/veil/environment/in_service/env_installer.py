@@ -39,6 +39,7 @@ def display_deployment_memo(veil_env_name):
 
 @script('deploy-env')
 def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
+    """ should_download_packages: set to FALSE when download-packages before deploy-env """
     do_local_preparation(veil_env_name)
     tag_deploy(veil_env_name)
     install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
