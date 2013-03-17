@@ -109,6 +109,17 @@ class CheckReadableTableDependencyTest(TestCase):
     def test_implicit_as(self):
         check_read({'a': ['xxx']}, 'a', 'SELECT * FROM xxx x WHERE ...')
 
+    @skip('to be fixed')
+    def test_subquery(self):
+        check_read({'a': ['xxx']}, 'a', 'SELECT * FROM (SELECT c1, c2 FROM xxx x) AS zzz WHERE ...')
+
+    @skip('to be fixed')
+    def test_join_start_with_subquery(self):
+        check_read({'a': ['xxx', 'zzz']}, 'a', 'SELECT * FROM (SELECT c1, c2 FROM xxx x) AS yyy INNER JOIN zzz ON y=z WHERE ...')
+
+    def test_joined_subquery(self):
+        check_read({'a': ['yyy', 'xxx']}, 'a', 'SELECT * FROM yyy INNER JOIN (SELECT c1, c2 FROM xxx x) AS zzz ON y=z WHERE ...')
+
 
 def check_read(readable_tables, component_name, sql):
     readable_tables_as_in_xxx = {k: [('xxx', e) for e in v] for k, v in readable_tables.items()}
