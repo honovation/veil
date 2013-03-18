@@ -53,7 +53,10 @@ def bring_up_supervisor(*argv):
 
 @script('update-dynamic-dependencies')
 def update_dynamic_dependencies():
-    load_all_components() # import module will execute a lot record_dynamic_dependency_provider
+    try:
+        load_all_components() # import module will execute a lot record_dynamic_dependency_provider
+    except:
+        pass
 
 
 @script('down')
