@@ -32,6 +32,8 @@ RE_FROM_TERMINATORS = [
 RE_AS = re.compile(r'\s+AS\s+\w+', re.IGNORECASE)
 # pick tables from join
 RE_JOIN = re.compile(r'\s+JOIN\s(\w+)\s+', re.IGNORECASE)
+# parentheses
+RE_PARENTHESES = re.compile(r'\((.*?)\)')
 
 writable_tables = None # from __veil__.ARCHITECTURE
 readable_tables = None # infer from writable_tables based on component dependencies
@@ -150,13 +152,26 @@ def strip_sql(sql):
 
 def check_readable_table_dependencies(readable_tables, component_name, purpose, sql):
     sql = sql.strip().replace('\n', '').replace('\r', '').replace('\t', '')
-    reading_table_names = get_reading_table_names(sql)
+    sub_queries = extract_sub_queries(sql)
+    reading_table_names = set()
+    for sub_query in sub_queries:
+        reading_table_names = reading_table_names.union(get_reading_table_names(sub_query))
+    reading_table_names -= {'__SUB_QUERY__'}
     component_tables = readable_tables.get(component_name, set())
     for table in reading_table_names:
         if (purpose, table) not in component_tables:
             raise Exception('{} should not read from table {} in database {}'.format(
                 component_name, table, purpose))
 
+
+def extract_sub_queries(sql):
+    queries = []
+    def collect(match):
+        queries.append(match.group(1))
+        return '__SUB_QUERY__'
+
+    queries.append(RE_PARENTHESES.sub(collect, sql))
+    return queries
 
 def get_reading_table_names(sql):
     if not RE_SELECT.match(sql):

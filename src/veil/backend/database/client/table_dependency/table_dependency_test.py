@@ -3,6 +3,7 @@ from veil.development.test import *
 from .table_dependency import check_writable_table_dependencies
 from .table_dependency import check_readable_table_dependencies
 from .table_dependency import disable_logging
+from .table_dependency import RE_PARENTHESES
 
 class CheckWritableTableDependencyTest(TestCase):
     def setUp(self):
@@ -109,11 +110,9 @@ class CheckReadableTableDependencyTest(TestCase):
     def test_implicit_as(self):
         check_read({'a': ['xxx']}, 'a', 'SELECT * FROM xxx x WHERE ...')
 
-    @skip('to be fixed')
     def test_subquery(self):
         check_read({'a': ['xxx']}, 'a', 'SELECT * FROM (SELECT c1, c2 FROM xxx x) AS zzz WHERE ...')
 
-    @skip('to be fixed')
     def test_join_start_with_subquery(self):
         check_read({'a': ['xxx', 'zzz']}, 'a', 'SELECT * FROM (SELECT c1, c2 FROM xxx x) AS yyy INNER JOIN zzz ON y=z WHERE ...')
 
