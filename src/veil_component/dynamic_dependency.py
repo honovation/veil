@@ -59,8 +59,10 @@ def list_dynamic_dependencies():
     if not dynamic_dependencies:
         providers = {}
         consumers = {}
-        read_from_file(DEP_DYNAMIC_RECORDED, providers, consumers)
-        read_from_file(DEP_DYNAMIC_MANUAL, providers, consumers)
+        if DEP_DYNAMIC_RECORDED.exists():
+            read_from_file(DEP_DYNAMIC_RECORDED, providers, consumers)
+        if DEP_DYNAMIC_MANUAL.exists():
+            read_from_file(DEP_DYNAMIC_MANUAL, providers, consumers)
         dynamic_dependencies = providers, consumers
     return dynamic_dependencies
 
@@ -88,8 +90,9 @@ def read_from_file(file, providers, consumers):
 
 def record_line(line):
     line = line.encode('utf8')
-    with open(DEP_DYNAMIC_RECORDED) as f:
-        if line in f.read():
-            return
+    if DEP_DYNAMIC_RECORDED.exists():
+        with open(DEP_DYNAMIC_RECORDED) as f:
+            if line in f.read():
+                return
     with open(DEP_DYNAMIC_RECORDED, 'a') as f:
         f.write(line)
