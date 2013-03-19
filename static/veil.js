@@ -157,11 +157,11 @@ veil.widget.delResource = function (widget, onSuccess) {
     veil.resource.del(_);
 };
 
-veil.widget.createResource = function (widget, onSuccess, dataType) {
+veil.widget.createResource = function (widget, onSuccess, dataType, data) {
     veil.widget.clearErrorMessages(widget);
     var _ = {
         url:widget.attr('action'),
-        data:widget.serialize(),
+        data:data || widget.serialize(),
         dataType:dataType,
         onSuccess:function (s) {
             widget[0].reset();
