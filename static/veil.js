@@ -306,9 +306,10 @@ veil.widget.refresh = function (widget, options) {
     }
 };
 
-veil.widget.get = function (url, onSuccess) {
+veil.widget.get = function (url, onSuccess, data) {
     veil.resource.get({
         url:url,
+        data:data,
         onSuccess:function (html) {
             veil.widget.processWidget(html, onSuccess);
         }
