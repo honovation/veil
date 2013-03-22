@@ -157,7 +157,7 @@ veil.widget.delResource = function (widget, onSuccess) {
     veil.resource.del(_);
 };
 
-veil.widget.createResource = function (widget, onSuccess, dataType, data) {
+veil.widget.createResource = function (widget, onSuccess, data, dataType) {
     veil.widget.clearErrorMessages(widget);
     var _ = {
         url:widget.attr('action'),
