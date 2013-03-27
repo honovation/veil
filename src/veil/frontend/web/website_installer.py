@@ -45,13 +45,16 @@ def override_website_config(purpose, **overrides):
     overriden_website_configs.setdefault(purpose, {}).update(overrides)
 
 
-def get_website_url_prefix(purpose, ssl=False):
+def get_website_url_prefix(purpose, ssl=False, with_scheme=True):
     config = load_website_config(purpose)
-    scheme = 'https' if ssl else 'http'
-    if 80 == config.domain_port:
-        return '{}://{}'.format(scheme, config.domain)
+    if with_scheme:
+        scheme = 'https://' if ssl else 'http://'
     else:
-        return '{}://{}:{}'.format(scheme, config.domain, config.domain_port)
+        scheme = ''
+    if 80 == config.domain_port:
+        return '{}{}'.format(scheme, config.domain)
+    else:
+        return '{}{}:{}'.format(scheme, config.domain, config.domain_port)
 
 
 def get_website_domain(purpose):
