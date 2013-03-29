@@ -39,13 +39,16 @@ def delayed_job_scheduler_program(queue_host, queue_port, logging_level):
     })
 
 
-def periodic_job_scheduler_program(logging_levels, dependencies):
+def periodic_job_scheduler_program(application_logging_levels, application_config):
     veil_logging_level_config_path = VEIL_ETC_DIR / 'periodic-job-scheduler-log.cfg'
+    application_component_names = set(list_dynamic_dependency_providers('periodic-job', '@'))
     resources = [
+        veil_logging_level_config_resource(
+            path=veil_logging_level_config_path,
+            logging_levels=application_logging_levels),
         component_resource(name='veil.backend.queue'),
-        veil_logging_level_config_resource(path=veil_logging_level_config_path, logging_levels=logging_levels)]
-    for dependency in dependencies:
-        resources.append(component_resource(name=dependency))
+        application_resource(component_names=application_component_names, config=application_config)
+    ]
     return objectify({
         'periodic_job_scheduler': {
             'execute_command': 'veil backend queue periodic-job-scheduler-up',
@@ -73,7 +76,8 @@ def job_worker_program(
             path=veil_logging_level_config_path,
             logging_levels=application_logging_levels),
         component_resource(name='veil.backend.queue'),
-        application_resource(component_names=application_component_names, config=application_config)]
+        application_resource(component_names=application_component_names, config=application_config)
+    ]
     pyrse_log_path = VEIL_LOG_DIR / '{}_worker-pyres.log'.format(worker_name)
     programs = {}
     for i in range(count):
