@@ -33,7 +33,7 @@ def optional(*binders, **kwargs):
     def bind(value):
         composite_binder = CompositeBinder(binders)
 
-        if value is None:
+        if value is None or '' == value:
             return kwargs.get('default')
         return composite_binder(value)
 
