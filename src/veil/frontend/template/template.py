@@ -122,6 +122,7 @@ def get_or_create_environment():
     jinja_tag = jinjatag.JinjaTag()
     env = Environment(
         loader=PrefixLoader(loaders, delimiter=':'),
+        trim_blocks=True,
         autoescape=True,
         extensions=['jinja2.ext.autoescape', 'jinja2.ext.i18n', jinja_tag])
     jinja_tag.init()
