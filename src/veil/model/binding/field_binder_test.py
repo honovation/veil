@@ -27,13 +27,13 @@ class FieldBinderTest(TestCase):
     def test_is_mobile(self):
         with self.assertRaises(Invalid):
             is_mobile('')
+        with self.assertRaises(Invalid):
+            is_mobile('013588888888')
         good_phone = '13588888888'
         self.assertEquals(good_phone, is_mobile(good_phone))
+        with self.assertRaises(Invalid):
+            is_mobile('015988888888')
         good_phone = '15988888888'
-        self.assertEquals(good_phone, is_mobile(good_phone))
-        good_phone = '013588888888'
-        self.assertEquals(good_phone, is_mobile(good_phone))
-        good_phone = '015988888888'
         self.assertEquals(good_phone, is_mobile(good_phone))
 
     def test_is_landline(self):
