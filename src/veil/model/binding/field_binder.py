@@ -16,7 +16,7 @@ from veil.model.binding.invalid import Invalid
 _EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9_=%.+-]+@([a-zA-Z0-9_=%+-]+\.)+[a-zA-Z]{2,6}$')
 _PASSWORD_PATTERN = re.compile(r'[A-Za-z0-9`~!@#$%^&*()=+\[\]\{\};:,\/?.]{8,16}')
 # reference to http://www.cnfgg.com/article/Asp/Asp_phoneCheck.htm
-_MOBILE_PATTERN = re.compile(r'^0?1[3458]\d{9}$') # can reference to 支付宝账户支持绑定的手机号段有哪些？(http://help.alipay.com/lab/help_detail.htm?help_id=255119)
+_MOBILE_PATTERN = re.compile(r'^1[3458]\d{9}$') # can reference to 支付宝账户支持绑定的手机号段有哪些？(http://help.alipay.com/lab/help_detail.htm?help_id=255119)
 _LANDLIINE_PATTERN = re.compile(r'^(\d{2,4}[-.\s_－—]?)?\d{3,8}([-.\s_－—]?\d{3,8})?([-.\s_－—]?\d{1,7})?$')
 
 
