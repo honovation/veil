@@ -9,11 +9,19 @@ import subprocess
 def main():
     installer_path = sys.argv[1]
 
+    config_time_sync()
     install_git()
     clone_veil()
     pull_veil()
     install(installer_path)
     mark_installed(installer_path)
+
+
+def config_time_sync():
+    if os.path.exists('/etc/cron.hourly/ntpdate'):
+        return
+    shell_execute('printf "#!/bin/sh\n/usr/sbin/ntpdate 210.72.145.44 ntp.fudan.edu.cn pool.ntp.org" > /etc/cron.hourly/ntpdate')
+    shell_execute('chmod 755 /etc/cron.hourly/ntpdate')
 
 
 def install_git():

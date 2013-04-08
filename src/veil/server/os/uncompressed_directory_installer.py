@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
 import os
-import os.path
 from veil_installer import *
 from veil.utility.shell import *
 
