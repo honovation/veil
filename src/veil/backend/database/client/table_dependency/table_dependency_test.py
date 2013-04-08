@@ -3,7 +3,6 @@ from veil.development.test import *
 from .table_dependency import check_writable_table_dependencies
 from .table_dependency import check_readable_table_dependencies
 from .table_dependency import disable_logging
-from .table_dependency import RE_PARENTHESES
 
 class CheckWritableTableDependencyTest(TestCase):
     def setUp(self):
@@ -112,6 +111,20 @@ class CheckReadableTableDependencyTest(TestCase):
 
     def test_subquery(self):
         check_read({'a': ['xxx']}, 'a', 'SELECT * FROM (SELECT c1, c2 FROM xxx x) AS zzz WHERE ...')
+        check_read({'a': ['xxx']}, 'a', 'SELECT * FROM (SELECT c1, RANK() OVER (PARTITION BY c2) rank FROM xxx x) AS zzz WHERE ...')
+
+    def test_subquery_with_joins(self):
+        check_read({'a': ['xxx', 'yyy']}, 'a', 'SELECT * FROM (SELECT c1, RANK() OVER (PARTITION BY c2) rank FROM xxx x INNER JOIN yyy y) AS zzz WHERE ...')
+        check_read({'a': ['product_variant', 'comment']}, 'a', '''
+            SELECT *
+            FROM (
+                SELECT pv.product_id,
+                    c.content
+                FROM product_variant pv INNER JOIN comment c ON pv.id = c.product_variant_id
+                WHERE pv.product_id IN (100, 200) AND c.visible
+                ) psrc
+            WHERE rank = 1
+            ''')
 
     def test_join_start_with_subquery(self):
         check_read({'a': ['xxx', 'zzz']}, 'a', 'SELECT * FROM (SELECT c1, c2 FROM xxx x) AS yyy INNER JOIN zzz ON y=z WHERE ...')
@@ -121,7 +134,5 @@ class CheckReadableTableDependencyTest(TestCase):
 
 
 def check_read(readable_tables, component_name, sql):
-    readable_tables_as_in_xxx = {k: [('xxx', e) for e in v] for k, v in readable_tables.items()}
-    check_readable_table_dependencies(readable_tables_as_in_xxx, component_name, 'xxx', sql)
-
-
+    readable_tables_as_in_purpose = {k: [('purpose', e) for e in v] for k, v in readable_tables.items()}
+    check_readable_table_dependencies(readable_tables_as_in_purpose, component_name, 'purpose', sql)
