@@ -21,7 +21,7 @@ def os_package_resource(name):
         raise NotImplementedError()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        if should_download_while_dry_run() and (not downloaded_version or downloaded_version != latest_version):
+        if should_download_while_dry_run():
             download_os_package(name)
         dry_run_result['os_package?{}'.format(name)] = action or '-'
         return
