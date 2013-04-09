@@ -14,12 +14,16 @@ LOGGER = logging.getLogger(__name__)
 @contextlib.contextmanager
 def normalize_arguments():
     arguments = get_current_http_request().arguments
-    for field in arguments:
+    for field in arguments.keys():
         values = arguments[field]
         values = [to_unicode(x, remedial_encoding='gb18030') for x in values]
         values = [re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', x) for x in values]
         values = [x.strip() for x in values]
-        arguments[field] = values
+        values = [x for x in values if x]
+        if values:
+            arguments[field] = values
+        else:
+            del arguments[field]
     yield
 
 
