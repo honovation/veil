@@ -14,7 +14,6 @@ from .environment import BASIC_LAYOUT_RESOURCES
 from .environment import get_application_version
 from .environment import get_veil_framework_version
 
-
 def veil_env(server_hosts, servers, deployment_memo=None):
     from veil.model.collection import objectify
 

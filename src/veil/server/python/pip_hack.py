@@ -5,6 +5,8 @@ from veil.frontend.cli import *
 from veil_component import *
 from veil.utility.shell import *
 
+PACKAGE_SUFFIX = '.tar.gz'
+
 @script('download-package')
 def download_package(package, **kwargs):
 # modified from https://github.com/wolever/pip2pi/blob/master/libpip2pi/commands.py
@@ -44,8 +46,8 @@ def download_package(package, **kwargs):
         old_input_dir = os.path.join('build/', pkg)
         new_input_dir = '%s-%s' % (pkg, version)
         os.rename(old_input_dir, new_input_dir)
-        output_name = os.path.join("..", new_input_dir + ".tar.gz")
-        downloaded_packages[pkg] = (version, 'file://{}'.format(outdir / '{}.tar.gz'.format(new_input_dir)))
+        output_name = os.path.join("..", new_input_dir + PACKAGE_SUFFIX)
+        downloaded_packages[pkg] = (version, 'file://{}'.format(outdir / '{}{}'.format(new_input_dir, PACKAGE_SUFFIX)))
         shell_execute('tar -czf {} {}'.format(output_name, new_input_dir), capture=True)
 
     os.chdir(previous_cwd)
@@ -53,12 +55,14 @@ def download_package(package, **kwargs):
     return downloaded_packages
 
 
-def search_downloaded_python_package(name, version):
-    if not version:
-        return None
+def get_downloaded_python_package_version(name):
+    versions = []
     OPT_PYPI = as_path('/opt/pypi')
     if OPT_PYPI.exists():
+        prefix = '{}-'.format(name)
         for path in OPT_PYPI.files():
-            if path.basename().startswith('{}-{}'.format(name, version)):
-                return 'file://{}'.format(path)
-    return None
+             filename = path.basename()
+             if filename.startswith(prefix) and filename.endswith(PACKAGE_SUFFIX):
+                versions.append((filename[len(prefix): -len(PACKAGE_SUFFIX)], 'file://{}'.format(path)))
+        versions.sort(reverse=True)
+    return versions[0] if versions else (None, None)

@@ -4,9 +4,9 @@ import re
 import xmlrpclib
 from veil_installer import *
 from veil.utility.shell import *
+from veil.utility.env_consts import *
 from veil.frontend.cli import *
-from .pip_hack import download_package
-from .pip_hack import search_downloaded_python_package
+from .pip_hack import *
 
 LOGGER = logging.getLogger(__name__)
 PIP_FREEZE_OUTPUT = None
@@ -14,37 +14,71 @@ PIP_FREEZE_OUTPUT = None
 @atomic_installer
 def python_package_resource(name, url=None, **kwargs):
     installed_version = get_python_package_installed_version(name)
+    downloaded_version, local_url = get_downloaded_python_package_version(name)
     latest_version = get_resource_latest_version(to_resource_key(name))
     action = None if installed_version else 'INSTALL'
-    if UPGRADE_MODE_LATEST == get_upgrade_mode():
+    upgrade_mode = get_upgrade_mode()
+    if UPGRADE_MODE_LATEST == upgrade_mode:
         action = action or 'UPGRADE'
-    elif UPGRADE_MODE_FAST == get_upgrade_mode():
+    elif UPGRADE_MODE_FAST == upgrade_mode:
         action = action or (None if latest_version == installed_version else 'UPGRADE')
-    elif UPGRADE_MODE_NO == get_upgrade_mode():
+    elif UPGRADE_MODE_NO == upgrade_mode:
         pass
     else:
         raise NotImplementedError()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        if should_download_while_dry_run() and not search_downloaded_python_package(name, latest_version):
-            # TODO: currently use our own pyres distribution based on 1.4.1 and need use the official future release
-            if 'pyres' != name or get_remote_latest_version(name) > '1.4.1':
-                download_latest(name, **kwargs)
+        # TODO: currently use our own pyres distribution based on 1.4.1 and need use the official future release
+        if should_download_while_dry_run() and not (url and 'pyres' != name):
+            remote_latest_version = get_remote_latest_version(name)
+            if (url and 'pyres' == name and remote_latest_version > '1.4.1') or (not url and not (downloaded_version and downloaded_version == remote_latest_version)):
+                LOGGER.debug('To download python package: %(name)s, %(downloaded_version)s, %(latest_version)s, %(remote_latest_version)s', {
+                    'name': name,
+                    'downloaded_version': downloaded_version,
+                    'latest_version': latest_version,
+                    'remote_latest_version': remote_latest_version
+                })
+                new_downloaded_version, _ = download_latest(name, **kwargs)
+                if new_downloaded_version != downloaded_version:
+                    LOGGER.warn('python package with new version downloaded: %(name)s, %(downloaded_version)s, %(new_downloaded_version)s', {
+                        'name': name,
+                        'downloaded_version': downloaded_version,
+                        'new_downloaded_version': new_downloaded_version
+                    })
         dry_run_result['python_package?{}'.format(name)] = action or '-'
         return
     if not action:
         return
     if not url: # url can be pinned to specific version or custom build
-        url = search_downloaded_python_package(name, latest_version)
         remote_latest_version = get_remote_latest_version(name)
-        if remote_latest_version is None:
-            LOGGER.error('get remote latest version for python package failed: %(name)s', {'name': name})
-        if not url or (UPGRADE_MODE_LATEST == get_upgrade_mode() and latest_version != remote_latest_version):
-            url, latest_version = download_latest(name, **kwargs)
-    if not installed_version or installed_version != latest_version:
+        if (UPGRADE_MODE_LATEST == upgrade_mode and not (downloaded_version and downloaded_version == remote_latest_version)) or (UPGRADE_MODE_LATEST != upgrade_mode and not (downloaded_version and downloaded_version == latest_version)):
+            LOGGER.debug('To download python package: %(name)s, %(downloaded_version)s, %(latest_version)s, %(remote_latest_version)s', {
+                'name': name,
+                'downloaded_version': downloaded_version,
+                'latest_version': latest_version,
+                'remote_latest_version': remote_latest_version
+            })
+            downloaded_version, local_url = download_latest(name, **kwargs)
+        url = local_url
+    if not (installed_version and installed_version == downloaded_version):
         LOGGER.info('installing python package: %(name)s from %(url)s...', {'name': name, 'url': url})
         pip_arg = '--upgrade' if 'UPGRADE' == action else ''
         shell_execute('pip install {} --no-index -f file:///opt/pypi {}'.format(url, pip_arg), capture=True, **kwargs)
+        if downloaded_version != latest_version:
+            if VEIL_ENV == 'development':
+                set_resource_latest_version(to_resource_key(name), downloaded_version)
+                LOGGER.info('python package upgraded to new version: %(name)s, %(installed_version)s, %(downloaded_version)s', {
+                    'name': name,
+                    'installed_version': installed_version,
+                    'downloaded_version': downloaded_version
+                })
+            else:
+                LOGGER.error('PYTHON PACKAGE UPGRADED TO A VERSION OTHER THAN LATEST VERSION: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s', {
+                    'name': name,
+                    'installed_version': installed_version,
+                    'latest_version': latest_version,
+                    'downloaded_version': downloaded_version
+                })
 
 
 @script('print-remote-latest-version')
@@ -52,23 +86,26 @@ def print_remote_latest_version(package):
     print(get_remote_latest_version(package))
 
 
-def get_remote_latest_version(package):
+def get_remote_latest_version(name):
+    version = None
     server = xmlrpclib.Server('http://pypi.python.org/pypi')
-    versions = server.package_releases(package)
+    versions = server.package_releases(name)
     if versions:
-        return versions[0]
+        version = versions[0].strip().replace('-', '_')
     else:
-        if 'ibm-db' == package:
+        # TODO: idb-db hack
+        if 'ibm-db' == name:
             return get_remote_latest_version('ibm_db')
-        return None
+    if version is None:
+        LOGGER.error('get remote latest version for python package failed: %(name)s', {'name': name})
+    return version
 
 
 @script('download-latest')
 def download_latest(name, **kwargs):
     LOGGER.info('downloading python package: %(name)s ...', {'name': name})
     version, url = download_package(name, **kwargs)[name]
-    set_resource_latest_version(to_resource_key(name), version)
-    return url, version
+    return version, url
 
 
 def to_resource_key(pip_package):
