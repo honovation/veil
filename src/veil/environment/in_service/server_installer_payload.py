@@ -32,7 +32,8 @@ def main():
 def config_time_sync():
     if os.path.exists('/etc/cron.hourly/ntpdate'):
         return
-    shell_execute('printf "#!/bin/sh\n/usr/sbin/ntpdate 210.72.145.44 ntp.fudan.edu.cn pool.ntp.org" > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate')
+    shell_execute('printf "#!/bin/sh\n/usr/sbin/ntpdate 210.72.145.44 ntp.fudan.edu.cn pool.ntp.org" > /etc/cron.hourly/ntpdate')
+    shell_execute('chmod 755 /etc/cron.hourly/ntpdate')
 
 
 def install_git():
