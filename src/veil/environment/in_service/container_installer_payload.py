@@ -20,8 +20,7 @@ def main():
 def config_time_sync():
     if os.path.exists('/etc/cron.hourly/ntpdate'):
         return
-    shell_execute('printf "#!/bin/sh\n/usr/sbin/ntpdate 210.72.145.44 ntp.fudan.edu.cn pool.ntp.org" > /etc/cron.hourly/ntpdate')
-    shell_execute('chmod 755 /etc/cron.hourly/ntpdate')
+    unsafe_call('''printf '#!/bin/sh\n/usr/sbin/ntpdate 210.72.145.44 ntp.fudan.edu.cn pool.ntp.org' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
 
 
 def install_git():
@@ -66,6 +65,14 @@ def shell_execute(command_line, **kwargs):
     if process.returncode:
         raise Exception(red('shell_execute return code: {}, command: {}, kwargs: {}'.format(
             process.returncode, command_args, kwargs)))
+    return output
+
+
+def unsafe_call(command):
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+    output = process.communicate()[0]
+    if process.returncode:
+        raise Exception('failed to execute: {}'.format(command))
     return output
 
 
