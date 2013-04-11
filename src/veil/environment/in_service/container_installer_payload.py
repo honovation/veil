@@ -18,9 +18,10 @@ def main():
 
 
 def config_time_sync():
+    """config time sync for host, need not config on lxc servers because they share the same time as lxc host"""
     if os.path.exists('/etc/cron.hourly/ntpdate'):
         return
-    unsafe_call('''printf '#!/bin/sh\n/usr/sbin/ntpdate time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
+    unsafe_call('''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
 
 
 def install_git():
