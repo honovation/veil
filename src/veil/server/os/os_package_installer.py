@@ -12,11 +12,12 @@ def os_package_resource(name):
     installed_version, downloaded_version = get_local_os_package_versions(name)
     latest_version = get_resource_latest_version(to_resource_key(name))
     action = None if installed_version else 'INSTALL'
-    if UPGRADE_MODE_LATEST == get_upgrade_mode():
+    upgrade_mode = get_upgrade_mode()
+    if UPGRADE_MODE_LATEST == upgrade_mode:
         action = action or 'UPGRADE'
-    elif UPGRADE_MODE_FAST == get_upgrade_mode():
+    elif UPGRADE_MODE_FAST == upgrade_mode:
         action = action or (None if latest_version == installed_version else 'UPGRADE')
-    elif UPGRADE_MODE_NO == get_upgrade_mode():
+    elif UPGRADE_MODE_NO == upgrade_mode:
         pass
     else:
         raise NotImplementedError()
@@ -34,23 +35,25 @@ def os_package_resource(name):
         return
     if not action:
         return
-    if UPGRADE_MODE_LATEST == get_upgrade_mode() or not (downloaded_version and downloaded_version == latest_version):
-        if UPGRADE_MODE_LATEST != get_upgrade_mode():
-            LOGGER.debug('To download os package: %(name)s, %(downloaded_version)s, %(latest_version)s', {
+    if UPGRADE_MODE_LATEST == upgrade_mode or (installed_version != latest_version and downloaded_version != latest_version):
+        if UPGRADE_MODE_LATEST != upgrade_mode:
+            LOGGER.debug('To download os package when upgrade mode is not latest: %(name)s, %(installed_version)s, %(downloaded_version)s, %(latest_version)s', {
                 'name': name,
+                'installed_version': installed_version,
                 'downloaded_version': downloaded_version,
                 'latest_version': latest_version
             })
         downloaded_version = download_os_package(name)
-    if not (installed_version and installed_version == downloaded_version):
+    if not installed_version or (UPGRADE_MODE_LATEST == upgrade_mode and installed_version != downloaded_version) or (UPGRADE_MODE_LATEST != upgrade_mode and installed_version != latest_version):
         LOGGER.info('installing os package: %(name)s ...', {'name': name})
         shell_execute('apt-get -y install {}'.format(name), capture=True)
         if downloaded_version != latest_version:
             if VEIL_ENV == 'development':
                 set_resource_latest_version(to_resource_key(name), downloaded_version)
-                LOGGER.info('os package upgraded to new version: %(name)s, %(installed_version)s, %(downloaded_version)s', {
+                LOGGER.info('os package upgraded to new version: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s', {
                     'name': name,
                     'installed_version': installed_version,
+                    'latest_version': latest_version,
                     'downloaded_version': downloaded_version
                 })
             else:

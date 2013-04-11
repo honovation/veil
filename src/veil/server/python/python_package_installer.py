@@ -51,25 +51,28 @@ def python_package_resource(name, url=None, **kwargs):
         return
     if not url: # url can be pinned to specific version or custom build
         remote_latest_version = get_remote_latest_version(name)
-        if (UPGRADE_MODE_LATEST == upgrade_mode and not (downloaded_version and downloaded_version == remote_latest_version)) or (UPGRADE_MODE_LATEST != upgrade_mode and not (downloaded_version and downloaded_version == latest_version)):
-            LOGGER.debug('To download python package: %(name)s, %(downloaded_version)s, %(latest_version)s, %(remote_latest_version)s', {
+        if (UPGRADE_MODE_LATEST == upgrade_mode and not (downloaded_version and downloaded_version == remote_latest_version)) or (UPGRADE_MODE_LATEST != upgrade_mode and installed_version != latest_version and downloaded_version != latest_version):
+            LOGGER.debug('To download python package: %(name)s, %(upgrade_mode)s, %(installed_version)s, %(downloaded_version)s, %(latest_version)s, %(remote_latest_version)s', {
                 'name': name,
+                'upgrade_mode': upgrade_mode,
+                'installed_version': installed_version,
                 'downloaded_version': downloaded_version,
                 'latest_version': latest_version,
                 'remote_latest_version': remote_latest_version
             })
             downloaded_version, local_url = download_latest(name, **kwargs)
         url = local_url
-    if not (installed_version and installed_version == downloaded_version):
+    if not installed_version or (UPGRADE_MODE_LATEST == upgrade_mode and installed_version != downloaded_version) or (UPGRADE_MODE_LATEST != upgrade_mode and installed_version != latest_version):
         LOGGER.info('installing python package: %(name)s from %(url)s...', {'name': name, 'url': url})
         pip_arg = '--upgrade' if 'UPGRADE' == action else ''
         shell_execute('pip install {} --no-index -f file:///opt/pypi {}'.format(url, pip_arg), capture=True, **kwargs)
         if downloaded_version != latest_version:
             if VEIL_ENV == 'development':
                 set_resource_latest_version(to_resource_key(name), downloaded_version)
-                LOGGER.info('python package upgraded to new version: %(name)s, %(installed_version)s, %(downloaded_version)s', {
+                LOGGER.info('python package upgraded to new version: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s', {
                     'name': name,
                     'installed_version': installed_version,
+                    'latest_version': latest_version,
                     'downloaded_version': downloaded_version
                 })
             else:
