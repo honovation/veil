@@ -104,7 +104,7 @@ class ColoredFormatter(logging.Formatter):
 class EventFormatter(logging.Formatter):
     def format(self, record):
         record.msg = to_unicode(record.msg)
-        event_name = record.message.split(':')[0]
+        event_name = record.msg.split(':')[0]
         event = {
             '@type': 'veil',
             '@source': socket.gethostname(),
