@@ -1,4 +1,7 @@
 from __future__ import unicode_literals, print_function, division
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 def to_str(s):
     if isinstance(s, (str, bytes)):
@@ -8,7 +11,18 @@ def to_str(s):
     return str(s)
 
 
-def to_unicode(s, encoding=None, remedial_encoding=None):
+def to_unicode(s, encoding=None, remedial_encoding=None, catch_exception=False):
+    try:
+        return _to_unicode(s, encoding, remedial_encoding)
+    except UnicodeDecodeError:
+        if catch_exception:
+            LOGGER.exception('to_unicode failed')
+            return ''
+        else:
+            raise
+
+
+def _to_unicode(s, encoding, remedial_encoding):
     if isinstance(s, unicode):
         return s
     if isinstance(s, (str, bytes)):
