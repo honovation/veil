@@ -8,12 +8,13 @@ pid {{ config.pid_file }};
 
 events {
     worker_connections  {{ config.get('connections_count_per_worker', 1024) }};
+    use epoll;
 }
 
 http {
     default_type application/octet-stream;
 
-    keepalive_timeout 120 60;
+    keepalive_timeout 120 65;
     sendfile on;
     tcp_nodelay on;
     tcp_nopush on;
@@ -45,8 +46,8 @@ http {
     proxy_buffers 256 8k;
     proxy_intercept_errors on;
     proxy_pass_header Server;
-    proxy_set_header Accept-Encoding "";
     proxy_set_header Host $host;
+    proxy_set_header Accept-Encoding "";
     {% if not config.has_bunker or config.is_bunker %}
     proxy_set_header X-Real-IP $remote_addr;
     {% else %}
