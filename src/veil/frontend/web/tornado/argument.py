@@ -15,16 +15,27 @@ LOGGER = logging.getLogger(__name__)
 def normalize_arguments():
     arguments = get_current_http_request().arguments
     for field in arguments.keys():
-        values = arguments[field]
-        values = [to_unicode(x, remedial_encoding='gb18030', catch_exception=True) for x in values]
-        values = [re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', x) for x in values]
-        values = [x.strip() for x in values]
-        values = [x for x in values if x]
+        values = []
+        for v in arguments[field]:
+            v = _unicode(v)
+            v = re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', v)
+            v = v.strip()
+            if v:
+                values.append(v)
         if values:
             arguments[field] = values
         else:
             del arguments[field]
     yield
+
+
+def _unicode(value):
+    try:
+        return to_unicode(value)
+    except UnicodeDecodeError:
+        # why comes to here? Is value urlencoded, or in gb18030 or base64-encoded? Fix per the scenario
+        LOGGER.exception('to_unicode failed: %(value)s', {'value': to_str(value)})
+        return ''
 
 
 def delete_http_argument(field, request=None):
