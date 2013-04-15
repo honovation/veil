@@ -297,6 +297,7 @@ class Database(object):
                 try:
                     check_table_dependencies(self.component_name, self.purpose, sql)
                     cursor.execute(sql, kwargs)
+                    rowcount = cursor.rowcount
                 except Exception as e:
                     LOGGER.exception('failed to execute statement: sql is %(sql)s and kwargs are %(kwargs)s', {
                         'sql': sql,
@@ -304,10 +305,10 @@ class Database(object):
                     })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
-                rowcount = cursor.rowcount
-                publish_event(EVENT_SQL_EXECUTED, loads_event_handlers=False,
-                    purpose=self.purpose, sql=sql, kwargs=kwargs, rowcount=rowcount)
-                return rowcount
+                else:
+                    publish_event(EVENT_SQL_EXECUTED, loads_event_handlers=False, purpose=self.purpose, sql=sql,
+                        kwargs=kwargs, rowcount=rowcount)
+                    return rowcount
 
     def _executemany(self, sql, seq_of_parameters):
         with require_transaction_context(self): # ensure the sql and event handler in same transaction
@@ -315,6 +316,7 @@ class Database(object):
                 try:
                     check_table_dependencies(self.component_name, self.purpose, sql)
                     cursor.executemany(sql, seq_of_parameters)
+                    rowcount = cursor.rowcount
                 except Exception as e:
                     LOGGER.exception(
                         'failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s',
@@ -324,10 +326,10 @@ class Database(object):
                         })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
-                rowcount = cursor.rowcount
-                publish_event(EVENT_SQL_BATCH_EXECUTED, loads_event_handlers=False,
-                    purpose=self.purpose, sql=sql, seq_of_parameters=seq_of_parameters, rowcount=rowcount)
-                return rowcount
+                else:
+                    publish_event(EVENT_SQL_BATCH_EXECUTED, loads_event_handlers=False, purpose=self.purpose, sql=sql,
+                        seq_of_parameters=seq_of_parameters, rowcount=rowcount)
+                    return rowcount
 
     def _query(self, sql, returns_dict_object=True, **kwargs):
         with require_transaction_context(self): # ensure the sql and event handler in same transaction
@@ -335,6 +337,7 @@ class Database(object):
                 try:
                     check_table_dependencies(self.component_name, self.purpose, sql)
                     cursor.execute(sql, kwargs)
+                    result = cursor.fetchall()
                 except Exception as e:
                     LOGGER.exception('failed to execute query: sql is %(sql)s and kwargs are %(kwargs)s', {
                         'sql': sql,
@@ -342,10 +345,10 @@ class Database(object):
                     })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
-                result = cursor.fetchall()
-                publish_event(EVENT_SQL_QUERIED, loads_event_handlers=False,
-                    purpose=self.purpose, sql=sql, kwargs=kwargs, rowcount=len(result))
-                return result
+                else:
+                    publish_event(EVENT_SQL_QUERIED, loads_event_handlers=False, purpose=self.purpose, sql=sql,
+                        kwargs=kwargs, rowcount=len(result))
+                    return result
 
     def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, **kwargs):
         """
