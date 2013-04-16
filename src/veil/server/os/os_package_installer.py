@@ -78,7 +78,7 @@ def update_os_package_catalogue():
     if not apt_get_update_executed:
         apt_get_update_executed = True
         LOGGER.info('updating os package catalogue...')
-        shell_execute('apt-get update -q', capture=True)
+        shell_execute('apt-get -q update', capture=True)
 
 
 def to_resource_key(pip_package):

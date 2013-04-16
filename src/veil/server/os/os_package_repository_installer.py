@@ -21,7 +21,7 @@ def os_package_repository_resource(name):
     # install command add-apt-repository
     install_resource(os_package_resource(name='python-software-properties'))
     shell_execute('add-apt-repository ppa:{} -y'.format(name), capture=True)
-    shell_execute('apt-get update -q', capture=True)
+    shell_execute('apt-get -q update', capture=True)
 
 
 def is_os_package_repository_installed(name):

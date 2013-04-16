@@ -14,6 +14,7 @@ def main():
     veil_framework_home = '/opt/{}/veil'.format(veil_env)
     application_branch = 'env-{}'.format(veil_env)
 
+    disable_time_sync()
     install_git()
     clone_application(application_codebase, veil_home)
     pull_application(application_branch, veil_home)
@@ -28,9 +29,14 @@ def main():
         raise Exception('unknown action: {}'.format(action))
 
 
+def disable_time_sync():
+    """disable time sync on lxc guests"""
+    shell_execute('apt-get -y remove ntpdate ntp')
+
+
 def install_git():
     shell_execute('service resolvconf restart')
-    shell_execute('apt-get install -y git-core')
+    shell_execute('apt-get -y install git-core')
 
 
 def clone_application(application_codebase, veil_home):
