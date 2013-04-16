@@ -17,7 +17,7 @@ def normalize_arguments():
     for field in arguments.keys():
         values = []
         for v in arguments[field]:
-            v = _unicode(v)
+            v = _unicode(v, field)
             v = re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', v)
             v = v.strip()
             if v:
@@ -29,11 +29,11 @@ def normalize_arguments():
     yield
 
 
-def _unicode(value):
+def _unicode(value, field):
     try:
         return to_unicode(value)
     except UnicodeDecodeError:
-        LOGGER.exception('to_unicode failed: %(value)s', {'value': str(value)})
+        LOGGER.exception('to_unicode failed: %(field)s', {'field': field})
         return ''
 
 
