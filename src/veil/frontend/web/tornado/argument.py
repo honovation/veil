@@ -13,11 +13,20 @@ LOGGER = logging.getLogger(__name__)
 
 @contextlib.contextmanager
 def normalize_arguments():
-    arguments = get_current_http_request().arguments
+    request = get_current_http_request()
+    arguments = request.arguments
     for field in arguments.keys():
         values = []
         for v in arguments[field]:
-            v = _unicode(v, field)
+            try:
+                v = to_unicode(v)
+            except UnicodeDecodeError:
+                LOGGER.exception('to_unicode failed: %(field)s, %(value)s, %(uri)s', {
+                    'field': field,
+                    'value': repr(v),
+                    'uri': repr(request.uri)
+                })
+                v = repr(v)
             v = re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', v)
             v = v.strip()
             if v:
@@ -27,14 +36,6 @@ def normalize_arguments():
         else:
             del arguments[field]
     yield
-
-
-def _unicode(value, field):
-    try:
-        return to_unicode(value)
-    except UnicodeDecodeError:
-        LOGGER.exception('to_unicode failed: %(field)s, %(value)s', {'field': field, 'value': repr(value)})
-        return repr(value)
 
 
 def delete_http_argument(field, request=None):

@@ -119,7 +119,7 @@ class EventFormatter(logging.Formatter):
         if record.args and isinstance(record.args, dict):
             event['@fields'].update(dump_dict(record.args))
         if record.exc_info:
-            event['@fields']['exception_type'] = unicode(record.exc_info[0])
+            event['@fields']['exception_type'] = to_unicode(record.exc_info[0])
             event['@fields']['exception_stack_trace'] = self.formatException(record.exc_info)
         event['@fields'].update(get_log_context())
         return json.dumps(event)
@@ -136,13 +136,11 @@ def get_log_context():
 
 def dump_dict(args):
     def format_value(v):
-        if isinstance(v, basestring):
-            return to_unicode(v)
         if isinstance(v, (datetime.datetime, datetime.date, datetime.time)):
             return v.isoformat()
-        return unicode(v)
+        return to_unicode(v)
 
-    return {unicode(k): format_value(v) for k, v in args.items()}
+    return {to_unicode(k): format_value(v) for k, v in args.items()}
 
 
 def to_unicode(s):

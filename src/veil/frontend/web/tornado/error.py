@@ -51,8 +51,8 @@ def handle_exception():
     except:
         LOGGER.exception('failed to handle http request: %(site)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
             'site': request.host,
-            'uri': request.uri,
-            'referer': request.headers.get('Referer'),
+            'uri': repr(request.uri),
+            'referer': repr(request.headers.get('Referer')),
             'remote_ip': request.remote_ip,
             'user_agent': request.headers.get('User-Agent')
         })
