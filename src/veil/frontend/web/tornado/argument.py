@@ -21,10 +21,13 @@ def normalize_arguments():
             try:
                 v = to_unicode(v)
             except UnicodeDecodeError:
-                LOGGER.exception('to_unicode failed: %(field)s, %(value)s, %(uri)s', {
+                LOGGER.exception('to_unicode failed: %(field)s, %(value)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
                     'field': field,
                     'value': repr(v),
-                    'uri': repr(request.uri)
+                    'uri': repr(request.uri),
+                    'referer': repr(request.headers.get('Referer')),
+                    'remote_ip': request.remote_ip,
+                    'user_agent': request.headers.get('User-Agent')
                 })
                 v = repr(v)
             v = re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', v)
