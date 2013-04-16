@@ -33,8 +33,8 @@ def _unicode(value, field):
     try:
         return to_unicode(value)
     except UnicodeDecodeError:
-        LOGGER.exception('to_unicode failed: %(field)s', {'field': field})
-        return ''
+        LOGGER.exception('to_unicode failed: %(field)s, %(value)s', {'field': field, 'value': repr(value)})
+        return repr(value)
 
 
 def delete_http_argument(field, request=None):

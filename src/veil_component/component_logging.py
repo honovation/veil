@@ -152,5 +152,5 @@ def to_unicode(s):
         try:
             return unicode(s, encoding='utf-8')
         except UnicodeDecodeError:
-            return 'UnicodeDecodeError'
+            return repr(s)
     return unicode(s)
