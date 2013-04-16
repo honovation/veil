@@ -33,7 +33,7 @@ def _unicode(value):
     try:
         return to_unicode(value)
     except UnicodeDecodeError:
-        LOGGER.exception('to_unicode failed: %(value)s', {'value': value.encode('utf-8')})
+        LOGGER.exception('to_unicode failed: %(value)s', {'value': str(value)})
         return ''
 
 
