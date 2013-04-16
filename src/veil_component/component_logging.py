@@ -9,6 +9,8 @@ import socket
 import traceback
 from .component_map import get_root_component
 
+LOGGER = logging.getLogger(__name__)
+
 VEIL_LOGGING_LEVEL_CONFIG = 'VEIL_LOGGING_LEVEL_CONFIG'
 VEIL_LOGGING_EVENT = 'VEIL_LOGGING_EVENT'
 logging_levels = None
@@ -152,5 +154,6 @@ def to_unicode(s):
         try:
             return unicode(s, encoding='utf-8')
         except UnicodeDecodeError:
-            return unicode(s, encoding='gb18030')
+            LOGGER.exception('to_unicode failed: %(s)s', {'s': s.encode('utf-8')})
+            return 'UnicodeDecodeError'
     return unicode(s)

@@ -33,8 +33,7 @@ def _unicode(value):
     try:
         return to_unicode(value)
     except UnicodeDecodeError:
-        # why comes to here? Is value urlencoded, or in gb18030 or base64-encoded? Fix per the scenario
-        LOGGER.exception('to_unicode failed: %(value)s', {'value': to_str(value)})
+        LOGGER.exception('to_unicode failed: %(value)s', {'value': value.encode('utf-8')})
         return ''
 
 
