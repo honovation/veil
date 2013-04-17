@@ -51,9 +51,9 @@ def get_http_argument(field, default=None, request=None, list_field=False, optio
     if field not in request.arguments:
         if optional:
             if list_field:
-                return []
+                return default or []
             else:
-                return None
+                return default
         if default is not None:
             return default
         LOGGER.error('http argument not found: field %(field)s can not be found among %(arguments)s\n%(stack_trace)s', {
