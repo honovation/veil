@@ -104,10 +104,7 @@ def get_deployed_at():
         if tag.startswith('{}-'.format(VEIL_ENV)):
             formatted_deployed_at = tag.replace('{}-'.format(VEIL_ENV), '').split('-')[0]
             deployed_ats.append(datetime.datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S'))
-    if not deployed_ats:
-        return None
-    else:
-        return max(deployed_ats)
+    return max(deployed_ats) if deployed_ats else None
 
 
 def remote_do(action, veil_env_name, veil_server_name):
