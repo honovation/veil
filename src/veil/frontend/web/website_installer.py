@@ -20,7 +20,11 @@ def website_resource(purpose, config):
     return resources
 
 
+website_config = {}
+
 def load_website_config(purpose):
+    if purpose in website_config:
+        return website_config[purpose]
     try:
         config = load_config_from(VEIL_ETC_DIR / '{}-website.cfg'.format(purpose),
             'domain', 'domain_port', 'start_port',
@@ -37,6 +41,7 @@ def load_website_config(purpose):
             raise
     if 'test' == VEIL_SERVER:
         config.update(overriden_website_configs.get(purpose, {}))
+    website_config[purpose] = config
     return config
 
 

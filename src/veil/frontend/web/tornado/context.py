@@ -14,7 +14,7 @@ def get_current_http_context(optional=False):
 
 
 def get_current_http_request(optional=False):
-    context =get_current_http_context(optional=optional)
+    context = get_current_http_context(optional=optional)
     return context.request if context else None
 
 
