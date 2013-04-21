@@ -49,16 +49,53 @@ def website_upstreams(purpose, start_port, processes_count):
 
 
 def website_locations(purpose):
+    if VEIL_ENV in ['ljmall-public', 'ljmall-staging']:
+        # done in bunker
+        extra_headers = ''
+        extra_locations = {}
+    else:
+        extra_headers = '''
+            add_header X-Frame-Options SAMEORIGIN;
+            add_header X-UA-Compatible "IE=Edge,chrome=1";
+            '''
+        extra_locations = {
+            '= /favicon.ico': {
+                '_': '''
+                    access_log off; log_not_found off;
+                    expires 60d;
+                    ''',
+                'alias': VEIL_HOME / 'static' / 'favicon.ico'
+            },
+            '= /robots.txt': {
+                '_': '''
+                    access_log off; log_not_found off;
+                    ''',
+                'alias': VEIL_HOME / 'static' / '{}-robots.txt'.format(purpose)
+            },
+            '/static/': {
+                '_': '''
+                    access_log off;
+                    expires max;
+                    if ($query_string !~* "v=(.+)") {
+                        expires 7d;
+                        add_header Pragma public;
+                        add_header Cache-Control "public, must-revalidate, proxy-revalidate";
+                    }
+                    ''',
+                'alias': VEIL_HOME / 'static' / ''
+            }
+        }
     locations = {
         '= /': {
-            '_': """
+            '_': '''
                 proxy_pass http://%s-tornado;
                 proxy_redirect off;
                 proxy_next_upstream error;
-                """ % purpose
+                %s
+                ''' % (purpose, extra_headers)
         },
         '/': {
-            '_': """
+            '_': '''
                 if ($content_type ~* multipart/form-data) {
                     upload_pass @after_upload;
                     upload_store %s 1;
@@ -73,7 +110,8 @@ def website_locations(purpose):
                 proxy_pass http://%s-tornado;
                 proxy_redirect off;
                 proxy_next_upstream error;
-                """ % (VEIL_VAR_DIR / 'uploaded-files', purpose)
+                %s
+                ''' % (VEIL_VAR_DIR / 'uploaded-files', purpose, extra_headers)
         },
         '@after_upload': {
             'proxy_pass': 'http://{}-tornado'.format(purpose)
@@ -86,32 +124,5 @@ def website_locations(purpose):
             'expires': 'max'
         }
     }
-    if VEIL_ENV not in ['ljmall-public', 'ljmall-staging']:
-        locations.update({
-            '= /favicon.ico': {
-                '_': """
-                    access_log off; log_not_found off;
-                    expires 60d;
-                    """,
-                'alias': VEIL_HOME / 'static' / 'favicon.ico'
-            },
-            '= /robots.txt': {
-                '_': """
-                    access_log off; log_not_found off;
-                    """,
-                'alias': VEIL_HOME / 'static' / '{}-robots.txt'.format(purpose)
-            },
-            '/static/': {
-                '_': """
-                    access_log off;
-                    expires max;
-                    if ($query_string !~* "v=(.+)") {
-                        expires 7d;
-                        add_header Pragma public;
-                        add_header Cache-Control "public, must-revalidate, proxy-revalidate";
-                    }
-                    """,
-                'alias': VEIL_HOME / 'static' / ''
-            }
-        })
+    locations.update(extra_locations)
     return locations;
