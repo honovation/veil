@@ -30,6 +30,10 @@ def get_current_time_in_client_timezone():
     return convert_datetime_to_client_timezone(get_current_time())
 
 
+def get_current_date_in_client_timezone():
+    return get_current_time_in_client_timezone().date()
+
+
 def get_current_timestamp():
     """
     Caveat: the guaranteed precision of timestamp is 1 second
