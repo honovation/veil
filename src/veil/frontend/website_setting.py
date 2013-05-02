@@ -5,9 +5,7 @@ from veil.environment import *
 from veil.server.python import *
 from veil_component import *
 
-def website_programs(
-        purpose, logging_levels, application_config,
-        start_port, processes_count=1):
+def website_programs(purpose, logging_levels, application_config, start_port, processes_count=1):
     veil_logging_level_config_path = VEIL_ETC_DIR / '{}-website-log.cfg'.format(purpose)
     resources = [
         veil_logging_level_config_resource(
