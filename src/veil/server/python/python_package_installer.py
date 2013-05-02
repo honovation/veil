@@ -62,7 +62,7 @@ def python_package_resource(name, url=None, **kwargs):
             })
             downloaded_version, local_url = download_latest(name, **kwargs)
         url = local_url
-    if not installed_version or (UPGRADE_MODE_LATEST == upgrade_mode and installed_version != downloaded_version) or (UPGRADE_MODE_LATEST != upgrade_mode and installed_version != latest_version):
+    if not installed_version or (UPGRADE_MODE_LATEST == upgrade_mode and (installed_version != downloaded_version or latest_version != downloaded_version)) or (UPGRADE_MODE_LATEST != upgrade_mode and installed_version != latest_version):
         LOGGER.info('installing python package: %(name)s from %(url)s...', {'name': name, 'url': url})
         pip_arg = '--upgrade' if 'UPGRADE' == action else ''
         shell_execute('pip install {} --no-index -f file:///opt/pypi {}'.format(url, pip_arg), capture=True, **kwargs)

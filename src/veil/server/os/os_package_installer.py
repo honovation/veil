@@ -44,7 +44,7 @@ def os_package_resource(name):
                 'latest_version': latest_version
             })
         downloaded_version = download_os_package(name)
-    if not installed_version or (UPGRADE_MODE_LATEST == upgrade_mode and installed_version != downloaded_version) or (UPGRADE_MODE_LATEST != upgrade_mode and installed_version != latest_version):
+    if not installed_version or (UPGRADE_MODE_LATEST == upgrade_mode and (installed_version != downloaded_version or latest_version != downloaded_version)) or (UPGRADE_MODE_LATEST != upgrade_mode and installed_version != latest_version):
         LOGGER.info('installing os package: %(name)s ...', {'name': name})
         shell_execute('apt-get -y install {}'.format(name), capture=True)
         if downloaded_version != latest_version:
