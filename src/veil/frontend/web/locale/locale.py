@@ -21,6 +21,8 @@ def get_browser_locale():
         locales = []
         for language in languages:
             parts = language.strip().split(';')
+            if parts[0] == '*':
+                continue
             if len(parts) > 1 and parts[1].startswith('q='):
                 try:
                     score = float(parts[1][2:])
