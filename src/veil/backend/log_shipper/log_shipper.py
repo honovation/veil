@@ -34,17 +34,16 @@ class LogShipper(object):
         if self.log_file:
             lines = self.log_file.readlines()
             for line in lines:
+                line = line.strip()
                 try:
-                    self.redis_client.rpush(self.redis_key, line.strip())
+                    self.redis_client.rpush(self.redis_key, line)
                 except:
                     LOGGER.exception('failed to push log')
                     self.wait_for_redis_back()
                     try:
-                        self.redis_client.rpush(self.redis_key, line.strip())
+                        self.redis_client.rpush(self.redis_key, line)
                     except:
-                        LOGGER.exception('failed to push log again: %(line)s', {
-                            'line': line.strip()
-                        })
+                        LOGGER.exception('failed to push log again: %(line)s', {'line': line})
         self.open_latest_log_file()
 
     def open_latest_log_file(self):

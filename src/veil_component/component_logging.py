@@ -94,7 +94,6 @@ class ColoredFormatter(logging.Formatter):
         if record.levelno >= logging.WARNING:
             return COLOR_WRAPPERS['RED'](super(ColoredFormatter, self).format(record))
         if record.args and isinstance(record.args, dict):
-        #            record.args = {k: to_str(v) for k, v in record.args.items()}
             if record.args.get('__color__'):
                 wrap = COLOR_WRAPPERS.get(record.args['__color__'])
                 return wrap(super(ColoredFormatter, self).format(record))
@@ -150,5 +149,11 @@ def to_unicode(s):
         try:
             return unicode(s, encoding='utf-8')
         except UnicodeDecodeError:
-            return repr(s)
-    return unicode(s)
+            try:
+                return unicode(s, encoding='gb18030')
+            except UnicodeDecodeError:
+                return unicode(repr(s)[1:-1])
+    try:
+        return unicode(s)
+    except UnicodeDecodeError:
+        return unicode(repr(s))

@@ -18,21 +18,13 @@ def normalize_arguments():
     for field in arguments.keys():
         values = []
         for v in arguments[field]:
-            try:
-                v = to_unicode(v, encoding='utf-8')
-            except UnicodeDecodeError:
-                try:
-                    v = to_unicode(v, encoding='gb18030')
-                except UnicodeDecodeError:
-                    LOGGER.warning('to_unicode failed (tried both utf8 and gb18030 encoding): %(field)s, %(value)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
-                        'field': field,
-                        'value': repr(v),
-                        'uri': repr(request.uri),
-                        'referer': repr(request.headers.get('Referer')),
-                        'remote_ip': request.remote_ip,
-                        'user_agent': request.headers.get('User-Agent')
-                    })
-                    v = repr(v)
+            v = to_unicode(v, strict=False, additional={
+                    'field': field,
+                    'uri': request.uri,
+                    'referer': request.headers.get('Referer'),
+                    'remote_ip': request.remote_ip,
+                    'user_agent': request.headers.get('User-Agent')
+                })
             v = re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', v)
             v = v.strip()
             if v:
