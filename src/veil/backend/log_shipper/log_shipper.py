@@ -4,7 +4,6 @@ import time
 import os
 import logging
 from veil.frontend.cli import *
-from veil.utility.shell import *
 from .log_shipper_installer import load_log_shipper_config
 
 # Written according to https://github.com/josegonzalez/beaver/blob/master/beaver/worker.py

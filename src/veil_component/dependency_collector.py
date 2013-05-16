@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-import traceback
 from .component_walker import ComponentInternalVisitor
 from .component_walker import OnceComponentWalker
 from .component_walker import InvalidComponentException

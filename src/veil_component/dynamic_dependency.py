@@ -79,11 +79,11 @@ def read_from_file(file, providers, consumers):
             if not line:
                 continue
             if '=>' in line:
-                consumer, type_and_key = line.split('=>')
-                consumers.setdefault(consumer, set()).add(tuple(type_and_key.split(':')))
+                consumer, type_and_key = [x.strip() for x in line.split('=>')]
+                consumers.setdefault(consumer, set()).add(tuple([x.strip() for x in type_and_key.split(':')]))
             elif '<=' in line:
-                provider, type_and_key = line.split('<=')
-                providers.setdefault(tuple(type_and_key.split(':')), set()).add(provider)
+                provider, type_and_key = [x.strip() for x in line.split('<=')]
+                providers.setdefault(tuple([x.strip() for x in type_and_key.split(':')]), set()).add(provider)
             else:
                 raise Exception('invalid dynamic dependencies file: {}\n{}'.format(file, line))
 

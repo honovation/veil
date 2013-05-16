@@ -48,8 +48,8 @@ def load_logging_levels():
     with open(veil_logging_level_config) as f:
         lines = f.readlines()
     for line in lines:
-        logger_name, logging_level = line.split('=')
-        logging_level = getattr(logging, logging_level.strip())
+        logger_name, logging_level = [x.strip() for x in line.split('=')]
+        logging_level = getattr(logging, logging_level)
         logging_levels[logger_name] = logging_level
 
 
@@ -104,7 +104,7 @@ class ColoredFormatter(logging.Formatter):
 class EventFormatter(logging.Formatter):
     def format(self, record):
         record.msg = to_unicode(record.msg)
-        event_name = record.msg.split(':')[0]
+        event_name = record.msg.split(':', 1)[0].strip()
         event = {
             '@type': 'veil',
             '@source': socket.gethostname(),
