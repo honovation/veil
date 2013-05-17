@@ -91,18 +91,23 @@ def configure_root_component_logger(component_name):
 class ColoredFormatter(logging.Formatter):
     def format(self, record):
         record.msg = to_unicode(record.msg)
-        if record.levelno >= logging.WARNING:
-            return COLOR_WRAPPERS['RED'](super(ColoredFormatter, self).format(record))
         if record.args and isinstance(record.args, dict):
-            if record.args.get('__color__'):
-                wrap = COLOR_WRAPPERS.get(record.args['__color__'])
-                return wrap(super(ColoredFormatter, self).format(record))
-        return super(ColoredFormatter, self).format(record)
+            record.args = {k: to_unicode(v) for k, v in record.args.items()}
+        s = super(ColoredFormatter, self).format(record)
+        if record.levelno >= logging.WARNING:
+            wrap = COLOR_WRAPPERS['RED']
+        elif record.args and isinstance(record.args, dict) and record.args.get('__color__'):
+            wrap = COLOR_WRAPPERS.get(record.args['__color__'])
+        else:
+            wrap = None
+        return wrap(s) if wrap else s
 
 
 class EventFormatter(logging.Formatter):
     def format(self, record):
         record.msg = to_unicode(record.msg)
+        if record.args and isinstance(record.args, dict):
+            record.args = {k: to_unicode(v) for k, v in record.args.items()}
         event_name = record.msg.split(':', 1)[0].strip()
         event = {
             '@type': 'veil',
