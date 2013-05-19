@@ -1,4 +1,3 @@
-from __future__ import unicode_literals, print_function, division
 import veil_component
 
 with veil_component.init_component(__name__):
@@ -35,11 +34,11 @@ with veil_component.init_component(__name__):
     from .tornado import end_http_request_processing
     from .tornado import get_secure_cookie
     from .tornado import set_secure_cookie
-    from .tornado import get_cookies
     from .tornado import get_cookie
-    from .tornado import clear_cookies
-    from .tornado import clear_cookie
     from .tornado import set_cookie
+    from .tornado import clear_cookie
+    from .tornado import get_cookies
+    from .tornado import clear_cookies
     from .tornado import redirect_to
     from .tornado import get_http_argument
     from .tornado import get_http_arguments
@@ -91,11 +90,11 @@ with veil_component.init_component(__name__):
         end_http_request_processing.__name__,
         get_secure_cookie.__name__,
         set_secure_cookie.__name__,
-        get_cookies.__name__,
         get_cookie.__name__,
-        clear_cookies.__name__,
-        clear_cookie.__name__,
         set_cookie.__name__,
+        clear_cookie.__name__,
+        get_cookies.__name__,
+        clear_cookies.__name__,
         redirect_to.__name__,
         get_http_argument.__name__,
         get_http_arguments.__name__,

@@ -35,7 +35,7 @@ def get_secure_cookie(name, value=None, default=None, max_age_days=31, request=N
         LOGGER.warning('Tampered cookie %r', value)
         return default
     try:
-        return base64.b64decode(parts[0])
+        return to_unicode(base64.b64decode(parts[0]))
     except:
         return default
 
@@ -47,7 +47,7 @@ def set_secure_cookie(response=None, name=None, value=None, expires_days=30, **k
 
 def create_secure_cookie(cookies, name, value, expires_days, **kwargs):
     timestamp = str(int(time.time()))
-    value = base64.b64encode(value)
+    value = base64.b64encode(to_str(value))
     signature = get_hmac(name, value, timestamp, strong=False)
     value = '|'.join([value, timestamp, signature])
     return create_cookie(cookies, name=name, value=value, expires_days=expires_days, **kwargs)
@@ -73,7 +73,7 @@ def get_cookie(name, default=None, request=None):
         return cookie_from_response
     cookies = get_cookies(request=request)
     if name in cookies:
-        return urllib.unquote(cookies[name].value)
+        return to_unicode(urllib.unquote(cookies[name].value))
     return default
 
 

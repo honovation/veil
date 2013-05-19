@@ -12,11 +12,11 @@ with veil_component.init_component(__name__):
     from .error import end_http_request_processing
     from .cookie import get_secure_cookie
     from .cookie import set_secure_cookie
-    from .cookie import get_cookies
     from .cookie import get_cookie
-    from .cookie import clear_cookies
-    from .cookie import clear_cookie
     from .cookie import set_cookie
+    from .cookie import clear_cookie
+    from .cookie import get_cookies
+    from .cookie import clear_cookies
     from .redirection import redirect_to
     from .argument import get_http_argument
     from .argument import get_http_arguments
@@ -43,11 +43,11 @@ with veil_component.init_component(__name__):
         # from cookie
         get_secure_cookie.__name__,
         set_secure_cookie.__name__,
-        get_cookies.__name__,
         get_cookie.__name__,
-        clear_cookies.__name__,
-        clear_cookie.__name__,
         set_cookie.__name__,
+        clear_cookie.__name__,
+        get_cookies.__name__,
+        clear_cookies.__name__,
         # from redirection
         redirect_to.__name__,
         # from argument
