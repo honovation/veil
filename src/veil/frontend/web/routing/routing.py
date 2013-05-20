@@ -18,7 +18,6 @@ original_routes = {}
 routes = {}
 EVENT_NEW_WEBSITE = define_event('new-website')
 
-
 @test_hook
 def remember_original_routes():
     get_executing_test().addCleanup(reset_routes)
@@ -100,8 +99,6 @@ def is_public_route(route):
 def get_routes(website):
     website = website.lower()
     return routes.get(website, ())
-
-
 
 
 class RoutingHTTPHandler(object):
