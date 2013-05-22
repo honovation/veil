@@ -21,4 +21,6 @@ class TemplateTest(TestCase):
 
     def test_utility(self):
         register_template_utility('a', 'hello')
+        register_template_utility('x', lambda x: x)
         self.assertEqual('hello', get_template(template_source='{{ a }}').render())
+        self.assertEqual('hello', get_template(template_source='{{ x("hello") }}').render())

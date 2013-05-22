@@ -101,14 +101,12 @@ def get_template_from_file(template_path):
             else:
                 raise Exception('unable to get {} from unknown template directory'.format(template_path))
         template_path = os.path.join(current_template_directory, template_path)
-    template = get_or_create_environment().get_template(
-        'root:{}'.format(template_path), globals=dict(utilities))
+    template = get_or_create_environment().get_template('root:{}'.format(template_path), globals=utilities)
     return template
 
 
 def get_template_from_string(template_source):
-    return get_or_create_environment().from_string(
-        template_source, globals=dict(utilities))
+    return get_or_create_environment().from_string(template_source, globals=utilities)
 
 
 def get_template_environment():
@@ -123,6 +121,7 @@ def get_or_create_environment():
     env = Environment(
         loader=PrefixLoader(loaders, delimiter=':'),
         trim_blocks=True,
+        lstrip_blocks=True,
         autoescape=True,
         extensions=['jinja2.ext.autoescape', 'jinja2.ext.i18n', jinja_tag])
     jinja_tag.init()
