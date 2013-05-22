@@ -37,8 +37,7 @@ def register_captcha(website):
 @widget
 def captcha_widget():
     challenge_code, captcha_image_url = generate_captcha()
-    return get_template('captcha.html').render(challenge_code=challenge_code,
-        captcha_image_url=captcha_image_url)
+    return get_template('captcha.html').render(challenge_code=challenge_code, captcha_image_url=captcha_image_url)
 
 
 def generate_captcha():
@@ -55,7 +54,7 @@ def generate_captcha():
 def captcha_protected(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        challenge_code = get_http_argument('captcha_challenge_code')
+        challenge_code = get_http_argument('captcha_challenge_code', optional=True)
         delete_http_argument('captcha_challenge_code')
         captcha_answer = get_http_argument('captcha_answer', optional=True)
         delete_http_argument('captcha_answer')
