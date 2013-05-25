@@ -318,12 +318,10 @@ class Database(object):
                     cursor.executemany(sql, seq_of_parameters)
                     rowcount = cursor.rowcount
                 except Exception as e:
-                    LOGGER.exception(
-                        'failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s',
-                        {
-                            'sql': sql,
-                            'seq_of_parameters': seq_of_parameters
-                        })
+                    LOGGER.exception('failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s', {
+                        'sql': sql,
+                        'seq_of_parameters': seq_of_parameters
+                    })
                     self.conn.reconnect_if_broken_per_exception(e)
                     raise
                 else:

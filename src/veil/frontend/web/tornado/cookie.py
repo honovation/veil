@@ -25,14 +25,14 @@ def get_secure_cookie(name, value=None, default=None, max_age_days=31, request=N
         return default
     signature = get_hmac(name, parts[0], parts[1], strong=False)
     if not _time_independent_equals(parts[2], signature):
-        LOGGER.warning('Invalid cookie signature %r', value)
+        LOGGER.warning('Invalid cookie signature: %r', value)
         return default
     timestamp = int(parts[1])
     if timestamp < time.time() - max_age_days * 86400:
-        LOGGER.warning('Expired cookie %r', value)
+        LOGGER.warning('Expired cookie: %r', value)
         return default
     if parts[1].startswith('0'):
-        LOGGER.warning('Tampered cookie %r', value)
+        LOGGER.warning('Tampered cookie: %r', value)
         return default
     try:
         return to_unicode(base64.b64decode(parts[0]))

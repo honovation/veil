@@ -14,7 +14,6 @@ TAG_NO_XSRF_CHECK = 'NO-XSRF'
 @contextlib.contextmanager
 def prevent_xsrf():
     request = get_current_http_request()
-    response = get_current_http_response()
     if not hasattr(request, '_xsrf_token'):
         token = get_cookie(name='_xsrf', request=request)
         request.is_new_xsrf_token = False
@@ -30,7 +29,7 @@ def prevent_xsrf():
     if request.method.upper() not in ['GET', 'HEAD'] and TAG_NO_XSRF_CHECK not in get_current_http_context().route.tags:
         token = get_http_argument('_xsrf', optional=True) or request.headers.get('X-XSRF', None)
         if not token:
-            LOGGER.warn('XSRF token not found: request is %(request)s', {'request': str(request)})
+            LOGGER.warn('XSRF token not found: request is %(request)s', {'request': request})
             raise HTTPError(httplib.FORBIDDEN, 'XSRF token missing')
         expected_token = xsrf_token()
         if expected_token != token:
@@ -46,7 +45,7 @@ def prevent_xsrf():
 
 def set_xsrf_cookie_for_page(route_handler, data):
     if get_current_http_request().is_new_xsrf_token:
-        if data and '<html' in data.lower():
+        if data and str('<html') in data.lower():
             # only set to page to avoid concurrent http request issue
             set_cookie(name='_xsrf', value=xsrf_token())
     return data

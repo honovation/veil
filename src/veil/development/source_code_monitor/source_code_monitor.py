@@ -87,9 +87,7 @@ def load_components(components):
         try:
             __import__(component)
         except:
-            LOGGER.exception('failed to load component: %(component)s', {
-                'component': component
-            })
+            LOGGER.exception('failed to load component: %(component)s', {'component': component})
             return False
     after = time.time()
     LOGGER.info('all components loaded: took %(elapsed_seconds)s seconds', {

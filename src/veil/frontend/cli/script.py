@@ -46,11 +46,10 @@ def execute_script(*argv):
 def execute_script_at_level(level, argv):
     arg = argv[0] if argv else None
     if arg not in level:
-        LOGGER.warn(
-            '%(unknown_option)s is unknown, choose from: %(valid_options)s', {
-                'unknown_option': arg,
-                'valid_options': level.keys(),
-            })
+        LOGGER.warn('unknown option found: unknown_option=%(unknown_option)s, valid_options=%(valid_options)s', {
+            'unknown_option': arg,
+            'valid_options': level.keys(),
+        })
         sys.exit(1)
     next_level = level[arg]
     if inspect.isfunction(next_level):
