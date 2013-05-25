@@ -9,13 +9,11 @@ from .context import get_current_http_response
 
 LOGGER = getLogger(__name__)
 
-
 def end_http_request_processing():
     raise HTTPError(None)
 
 
 class HTTPError(Exception):
-
     EXPECTED_WIDGET_ERROR = 'true'
 
     def __init__(self, status_code, body=None):
