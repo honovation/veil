@@ -14,8 +14,8 @@ from .link_element import process_link_elements
 from .style_element import process_style_elements
 
 LOGGER = logging.getLogger(__name__)
-RE_BODY_END_TAG = re.compile(r'</body>', re.IGNORECASE)
-RE_HEAD_END_TAG = re.compile(r'</head>', re.IGNORECASE)
+RE_HEAD_END_TAG = re.compile(r'</head>', re.IGNORECASE) # first occurrance of </head>
+RE_BODY_END_TAG = re.compile(r'(.*)(</body>.*)', re.IGNORECASE|re.DOTALL) # last occurrence of </body>
 
 static_file_hashes = {}
 inline_static_files_directory = None
@@ -104,14 +104,12 @@ def process_javascript(page_handler, html):
         combined_js_text = '\n'.join([wrap_js_to_ensure_load_once(js_text) for js_text in js_texts])
         url = '/static/{}'.format(write_inline_static_file(page_handler, 'js', combined_js_text))
         script_elements.append('<script type="text/javascript" src="{}"></script>'.format(url))
-
-    def append_script_elements_before_body_end_tag(match):
-        return Markup('{}\n{}'.format('\n'.join(script_elements), match.group(0)))
-
     if script_elements:
-        html, found = RE_BODY_END_TAG.subn(append_script_elements_before_body_end_tag, html, 1)
-        if not found:
+        match = RE_BODY_END_TAG.search(html)
+        if match is None:
             html = '{}\n{}'.format(html, Markup('\n'.join(script_elements)))
+        else:
+            html = '{}{}\n{}'.format(match.group(1), Markup('\n'.join(script_elements)), match.group(2))
     return html
 
 
