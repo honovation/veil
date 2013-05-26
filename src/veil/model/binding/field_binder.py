@@ -103,7 +103,7 @@ def to_decimal(value):
 
 
 def to_bool(value):
-    if value in ['0', 'false', 'False']:
+    if isinstance(value, basestring) and value.lower() in ['0', 'f', 'false']:
         return False
     return bool(value)
 
