@@ -47,8 +47,9 @@ def generate_captcha():
     buffer = StringIO()
     image.save(buffer, 'GIF')
     buffer.reset()
-    bucket().store(challenge_code, buffer)
-    return challenge_code, bucket().get_url(challenge_code)
+    key = '{}.gif'.format(challenge_code)
+    bucket().store(key, buffer)
+    return challenge_code, bucket().get_url(key)
 
 
 def captcha_protected(func):
