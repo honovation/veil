@@ -14,8 +14,8 @@ from .link_element import process_link_elements
 from .style_element import process_style_elements
 
 LOGGER = logging.getLogger(__name__)
-RE_HEAD_END_TAG = re.compile(r'</head>', re.IGNORECASE) # first occurrance of </head>
-RE_BODY_END_TAG = re.compile(r'(.*)(</body>.*)', re.IGNORECASE|re.DOTALL) # last occurrence of </body>
+RE_HEAD_END_TAG = re.compile(r'</\s*head\s*>', re.IGNORECASE) # first occurrance of </head>
+RE_BODY_END_TAG = re.compile(r'(.*)(</\s*body\s*>.*)', re.IGNORECASE|re.DOTALL) # last occurrence of </body>
 
 static_file_hashes = {}
 inline_static_files_directory = None
