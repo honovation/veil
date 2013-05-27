@@ -14,13 +14,10 @@ from .link_element import process_link_elements
 from .style_element import process_style_elements
 
 LOGGER = logging.getLogger(__name__)
-RE_HEAD_END_TAG = re.compile(r'</\s*head\s*>', re.IGNORECASE) # first occurrance of </head>
-RE_BODY_END_TAG = re.compile(r'(.*)(</\s*body\s*>.*)', re.IGNORECASE|re.DOTALL) # last occurrence of </body>
 
 static_file_hashes = {}
 inline_static_files_directory = None
 external_static_files_directory = None
-
 
 def set_inline_static_files_directory(value):
     global inline_static_files_directory
@@ -82,14 +79,12 @@ def process_stylesheet(page_handler, html):
         combined_css_text = '\n'.join(css_texts)
         url = '/static/{}'.format(write_inline_static_file(page_handler, css_type, combined_css_text))
         link_elements.append('<link rel="stylesheet" type="text/{}" media="screen" href="{}"/>'.format(css_type, url))
-
-    def append_link_elements_before_head_end_tag(match):
-        return Markup('{}\n{}'.format('\n'.join(link_elements), match.group(0)))
-
     if link_elements:
-        html, found = RE_HEAD_END_TAG.subn(append_link_elements_before_head_end_tag, html, 1)
-        if not found:
-            html = '{}\n{}'.format(Markup('\n'.join(link_elements)), html)
+        pos = html.find('</head>')
+        if pos == -1:
+            html = '{}{}'.format(Markup('\n'.join(link_elements)), html)
+        else:
+            html = '{}{}{}'.format(html[:pos], Markup('\n'.join(link_elements)), html[pos:])
     return html
 
 def get_css_type(html):
@@ -105,11 +100,11 @@ def process_javascript(page_handler, html):
         url = '/static/{}'.format(write_inline_static_file(page_handler, 'js', combined_js_text))
         script_elements.append('<script type="text/javascript" src="{}"></script>'.format(url))
     if script_elements:
-        match = RE_BODY_END_TAG.search(html)
-        if match is None:
-            html = '{}\n{}'.format(html, Markup('\n'.join(script_elements)))
+        pos = html.rfind('</body>')
+        if pos == -1:
+            html = '{}{}'.format(html, Markup('\n'.join(script_elements)))
         else:
-            html = '{}{}\n{}'.format(match.group(1), Markup('\n'.join(script_elements)), match.group(2))
+            html = '{}{}{}'.format(html[:pos], Markup('\n'.join(script_elements)), html[pos:])
     return html
 
 
