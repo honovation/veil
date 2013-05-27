@@ -38,10 +38,10 @@ class ProcessJavascriptTest(TestCase):
         processed_html = process_javascript(None,
             """
             <html>
-            <BODY>
+            <BoDY>
             <script src="abc"></script>
             <p/>
-            </BODY>
+            </BoDY>
             </html>
             """).strip()
         doc = lxml.etree.fromstring(processed_html)

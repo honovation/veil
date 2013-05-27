@@ -72,19 +72,20 @@ def get_static_file_hash(path):
 
 
 def process_stylesheet(page_handler, html):
-    html, link_elements = process_link_elements(html)
-    css_type = get_css_type(html)
-    html, css_texts = process_style_elements(html)
-    if css_texts:
-        combined_css_text = '\n'.join(css_texts)
-        url = '/static/{}'.format(write_inline_static_file(page_handler, css_type, combined_css_text))
-        link_elements.append('<link rel="stylesheet" type="text/{}" media="screen" href="{}"/>'.format(css_type, url))
-    if link_elements:
-        pos = html.find('</head>')
-        if pos == -1:
-            html = '{}{}'.format(Markup('\n'.join(link_elements)), html)
-        else:
-            html = '{}{}{}'.format(html[:pos], Markup('\n'.join(link_elements)), html[pos:])
+    if html:
+        html, link_elements = process_link_elements(html)
+        css_type = get_css_type(html)
+        html, css_texts = process_style_elements(html)
+        if css_texts:
+            combined_css_text = '\n'.join(css_texts)
+            url = '/static/{}'.format(write_inline_static_file(page_handler, css_type, combined_css_text))
+            link_elements.append('<link rel="stylesheet" type="text/{}" media="screen" href="{}"/>'.format(css_type, url))
+        if link_elements:
+            pos = html.lower().find('</head>')
+            if pos == -1:
+                html = '{}{}'.format(Markup('\n'.join(link_elements)), html)
+            else:
+                html = '{}{}{}'.format(html[:pos], Markup('\n'.join(link_elements)), html[pos:])
     return html
 
 def get_css_type(html):
@@ -94,17 +95,18 @@ def get_css_type(html):
 
 
 def process_javascript(page_handler, html):
-    html, script_elements, js_texts = process_script_elements(html)
-    if js_texts:
-        combined_js_text = '\n'.join([wrap_js_to_ensure_load_once(js_text) for js_text in js_texts])
-        url = '/static/{}'.format(write_inline_static_file(page_handler, 'js', combined_js_text))
-        script_elements.append('<script type="text/javascript" src="{}"></script>'.format(url))
-    if script_elements:
-        pos = html.rfind('</body>')
-        if pos == -1:
-            html = '{}{}'.format(html, Markup('\n'.join(script_elements)))
-        else:
-            html = '{}{}{}'.format(html[:pos], Markup('\n'.join(script_elements)), html[pos:])
+    if html:
+        html, script_elements, js_texts = process_script_elements(html)
+        if js_texts:
+            combined_js_text = '\n'.join([wrap_js_to_ensure_load_once(js_text) for js_text in js_texts])
+            url = '/static/{}'.format(write_inline_static_file(page_handler, 'js', combined_js_text))
+            script_elements.append('<script type="text/javascript" src="{}"></script>'.format(url))
+        if script_elements:
+            pos = html.lower().rfind('</body>')
+            if pos == -1:
+                html = '{}{}'.format(html, Markup('\n'.join(script_elements)))
+            else:
+                html = '{}{}{}'.format(html[:pos], Markup('\n'.join(script_elements)), html[pos:])
     return html
 
 
