@@ -29,7 +29,7 @@ def is_supervisord_running():
 
 
 def are_all_supervisord_programs_running():
-    for line in supervisorctl('status', capture=True).split('\n'):
+    for line in supervisorctl('status', capture=True).splitlines(False):
         if line and 'RUNNING' not in line:
             return False
     return True

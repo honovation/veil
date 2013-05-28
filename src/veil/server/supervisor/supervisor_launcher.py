@@ -46,7 +46,7 @@ def bring_up_supervisor(*argv):
         })
         sys.exit(1)
     else:
-        if VEIL_ENV in ['test', 'development']:
+        if VEIL_ENV in {'development', 'test'}:
             update_dynamic_dependencies()
         pass_control_to('supervisord -n -c {}'.format(VEIL_ETC_DIR / 'supervisor.cfg'))
 

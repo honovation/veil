@@ -128,26 +128,20 @@ def generate(size=(180, 30),
     img = Image.new(mode, size, bg_color)
     draw = ImageDraw.Draw(img)
 
-    numbers = range(1, 11)
-    operator = [u'+', u'-', u'x']
+    numbers = range(10)
+    operator = ['+', '-', 'x']
 
     def get_question():
         first_number = random.choice(numbers)
         selected_operator = random.choice(operator)
-        question = str(first_number) + selected_operator
-        if selected_operator == u'-':
-            second_number = 0
-            while True:
-                second_number = random.choice(numbers)
-                if second_number <= first_number:
-                    break
-            question += str(second_number)
+        if selected_operator == '-':
+            second_number = random.choice(range(first_number + 1))
         else:
-            question += str(random.choice(numbers))
-        eval_question = question.replace(u'+', '+').replace(u'-', '-').replace(u'x', '*')
+            second_number = random.choice(numbers)
+        question = '{}{}{}'.format(first_number, selected_operator, second_number)
+        eval_question = question.replace('x', '*')
         answer = str(eval(eval_question))
-
-        return question+'= ?', answer
+        return '{}= ?'.format(question), answer
 
     def create_lines():
         '''绘制干扰线'''

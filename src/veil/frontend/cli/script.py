@@ -26,7 +26,7 @@ def is_script_defined(*argv):
 
 def execute_script(*argv):
     try:
-        if VEIL_ENV in ['test', 'development']:
+        if VEIL_ENV in {'development', 'test'}:
             start_recording_dynamic_dependencies()
         argv = [to_unicode(arg) for arg in argv]
         import_script_handlers(argv)
@@ -126,8 +126,7 @@ class ScriptHandlerDecorator(object):
             if not level_name.startswith('_'):
                 level = level.setdefault(level_name.replace('_', '-'), {})
         if self.command in level:
-            raise Exception('{}=>{} script has already been registered'.format(
-                '=>'.join(level_names), self.command))
+            raise Exception('{}=>{} script has already been registered'.format('=>'.join(level_names), self.command))
         level[self.command] = wrapper
         return script_handler
 

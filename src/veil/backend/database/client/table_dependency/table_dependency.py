@@ -147,11 +147,11 @@ def get_writing_table_name(sql):
 
 
 def strip_sql(sql):
-    return sql.strip().replace('\n', '').replace('\r', '').replace('\t', '')
+    return ' '.join(sql.split())
 
 
 def check_readable_table_dependencies(readable_tables, component_name, purpose, sql):
-    sql = sql.strip().replace('\n', '').replace('\r', '').replace('\t', '')
+    sql = strip_sql(sql)
     reading_table_names = set()
     sub_queries = []
     extract_sub_queries(sql, sub_queries)

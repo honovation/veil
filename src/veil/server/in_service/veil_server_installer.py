@@ -54,4 +54,4 @@ def to_supervisor_program_groups(veil_server_programs):
 
 
 def format_environment_variables(environment_variables):
-    return ','.join(['{}={}'.format(k, v) for k, v in environment_variables.items()])
+    return ','.join('{}={}'.format(k, v) for k, v in environment_variables.items())

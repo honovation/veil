@@ -43,9 +43,10 @@ def prevent_xsrf():
     yield
 
 
+HTML_START_TAG_PREFIX = '<html'
 def set_xsrf_cookie_for_page(route_handler, data):
     if get_current_http_request().is_new_xsrf_token:
-        if data and str('<html') in data.lower():
+        if data and HTML_START_TAG_PREFIX in data.lower():
             # only set to page to avoid concurrent http request issue
             set_cookie(name='_xsrf', value=xsrf_token())
     return data

@@ -49,7 +49,7 @@ def create_secure_cookie(cookies, name, value, expires_days, **kwargs):
     timestamp = str(int(time.time()))
     value = base64.b64encode(to_str(value))
     signature = get_hmac(name, value, timestamp, strong=False)
-    value = '|'.join([value, timestamp, signature])
+    value = '|'.join((value, timestamp, signature))
     return create_cookie(cookies, name=name, value=value, expires_days=expires_days, **kwargs)
 
 

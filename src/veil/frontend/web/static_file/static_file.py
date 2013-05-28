@@ -71,6 +71,7 @@ def get_static_file_hash(path):
     return static_file_hashes.get(path)
 
 
+HEAD_START_TAG = '</head>'
 def process_stylesheet(page_handler, html):
     if html:
         html, link_elements = process_link_elements(html)
@@ -81,7 +82,7 @@ def process_stylesheet(page_handler, html):
             url = '/static/{}'.format(write_inline_static_file(page_handler, css_type, combined_css_text))
             link_elements.append('<link rel="stylesheet" type="text/{}" media="screen" href="{}"/>'.format(css_type, url))
         if link_elements:
-            pos = html.lower().find('</head>')
+            pos = html.lower().find(HEAD_START_TAG)
             if pos == -1:
                 html = '{}{}'.format(Markup('\n'.join(link_elements)), html)
             else:
@@ -94,15 +95,16 @@ def get_css_type(html):
     return 'css'
 
 
+BODY_END_TAG = '</body>'
 def process_javascript(page_handler, html):
     if html:
         html, script_elements, js_texts = process_script_elements(html)
         if js_texts:
-            combined_js_text = '\n'.join([wrap_js_to_ensure_load_once(js_text) for js_text in js_texts])
+            combined_js_text = '\n'.join(wrap_js_to_ensure_load_once(js_text) for js_text in js_texts)
             url = '/static/{}'.format(write_inline_static_file(page_handler, 'js', combined_js_text))
             script_elements.append('<script type="text/javascript" src="{}"></script>'.format(url))
         if script_elements:
-            pos = html.lower().rfind('</body>')
+            pos = html.lower().rfind(BODY_END_TAG)
             if pos == -1:
                 html = '{}{}'.format(html, Markup('\n'.join(script_elements)))
             else:

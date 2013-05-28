@@ -103,6 +103,7 @@ class ColoredFormatter(logging.Formatter):
         return wrap(s) if wrap else s
 
 
+STR_NEWLINE_REPLACEMENT = str(' >> ')
 class EventFormatter(logging.Formatter):
     def format(self, record):
         record.msg = to_unicode(record.msg)
@@ -126,7 +127,7 @@ class EventFormatter(logging.Formatter):
             event['@fields']['exception_type'] = to_unicode(record.exc_info[0])
             event['@fields']['exception_stack_trace'] = to_unicode(self.formatException(record.exc_info))
         event['@fields'].update(get_log_context())
-        return json.dumps(event)
+        return STR_NEWLINE_REPLACEMENT.join(json.dumps(event).splitlines(False))
 
 
 def get_log_context():

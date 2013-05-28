@@ -68,6 +68,6 @@ def get_website_domain(purpose):
 
 def get_website_parent_domain(purpose):
     parts = get_website_domain(purpose).split('.')[1:]
-    if parts[0].lower() in ['dev', 'test', 'staging', 'uat', 'prod']:
+    if parts[0].lower() in {'dev', 'test', 'staging', 'uat', 'prod'}:
         parts = parts[1:]
     return '.'.join(parts)

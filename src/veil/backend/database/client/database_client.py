@@ -262,7 +262,7 @@ class Database(object):
                 else:
                     fragments.append(', ')
                 arg_index += 1
-                arg_name = ''.join(['a', unicode(arg_index)])
+                arg_name = ''.join(('a', unicode(arg_index)))
                 fragments.append('%(')
                 fragments.append(arg_name)
                 fragments.append(')s')
@@ -386,8 +386,7 @@ class Database(object):
         self.close()
 
     def __repr__(self):
-        return 'Database {} opened by {}'.format(
-            self.purpose, self.opened_by)
+        return 'Database {} opened by {}'.format(self.purpose, self.opened_by)
 
 
 class FunctionValueProvider(object):

@@ -47,7 +47,7 @@ def website_upstreams(purpose, start_port, processes_count):
 
 
 def website_locations(purpose):
-    if VEIL_ENV in ['ljmall-public', 'ljmall-staging']:
+    if VEIL_ENV in {'ljmall-public', 'ljmall-staging'}:
         # done in bunker
         extra_headers = ''
         extra_locations = {}

@@ -162,7 +162,7 @@ def render_installer_file(veil_env_name, veil_server_name):
     lines = [installer_file_content]
     for resource in veil_host.resources:
         installer_name, installer_args = resource
-        line = '{}?{}'.format(installer_name, '&'.join(['{}={}'.format(k, v) for k, v in installer_args.items()]))
+        line = '{}?{}'.format(installer_name, '&'.join('{}={}'.format(k, v) for k, v in installer_args.items()))
         lines.append(line)
     return '\n'.join(lines)
 

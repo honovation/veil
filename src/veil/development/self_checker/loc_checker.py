@@ -23,7 +23,7 @@ def check_loc():
             max_loc = max(component_loc, max_loc)
             if component_loc > THRESHOLD:
                 raise Exception('{} contains {} lines of code, extract component out!\n{}'.format(
-                    component_name, component_loc, '\n'.join([str(f) for f in files])))
+                    component_name, component_loc, '\n'.join(str(f) for f in files)))
     if THRESHOLD > GOAL and THRESHOLD - max_loc > 50:
         raise Exception('Threshold can be reduced to {} now', max_loc)
 
