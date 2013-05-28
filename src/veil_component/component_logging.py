@@ -46,11 +46,10 @@ def load_logging_levels():
     if not veil_logging_level_config:
         return
     with open(veil_logging_level_config) as f:
-        lines = f.readlines()
-    for line in lines:
-        logger_name, logging_level = [x.strip() for x in line.split('=')]
-        logging_level = getattr(logging, logging_level)
-        logging_levels[logger_name] = logging_level
+        for line in f:
+            logger_name, logging_level = [x.strip() for x in line.split('=')]
+            logging_level = getattr(logging, logging_level)
+            logging_levels[logger_name] = logging_level
 
 
 def configure_component_logger(component_name):
@@ -78,9 +77,7 @@ def configure_root_component_logger(component_name):
 
     logger = logging.getLogger(component_name)
     human_handler = logging.StreamHandler(os.fdopen(sys.stdout.fileno(), 'w', 0))
-    human_handler.setFormatter(ColoredFormatter(
-        fmt='%(asctime)s [%(name)s] %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'))
+    human_handler.setFormatter(ColoredFormatter(fmt='%(asctime)s [%(name)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
     logger.addHandler(human_handler)
     if os.getenv('VEIL_LOGGING_EVENT'):
         machine_handler = logging.StreamHandler(os.fdopen(sys.stderr.fileno(), 'w', 0))
@@ -103,7 +100,6 @@ class ColoredFormatter(logging.Formatter):
         return wrap(s) if wrap else s
 
 
-STR_NEWLINE_REPLACEMENT = str(' >> ')
 class EventFormatter(logging.Formatter):
     def format(self, record):
         record.msg = to_unicode(record.msg)
@@ -127,7 +123,7 @@ class EventFormatter(logging.Formatter):
             event['@fields']['exception_type'] = to_unicode(record.exc_info[0])
             event['@fields']['exception_stack_trace'] = to_unicode(self.formatException(record.exc_info))
         event['@fields'].update(get_log_context())
-        return STR_NEWLINE_REPLACEMENT.join(json.dumps(event).splitlines(False))
+        return json.dumps(event)
 
 
 def get_log_context():

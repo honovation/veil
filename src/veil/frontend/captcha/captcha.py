@@ -20,7 +20,7 @@ LOGGER = logging.getLogger(__name__)
 bucket = register_bucket('captcha_image')
 redis = register_redis('captcha_answer')
 
-CAPTCHA_ANSWER_ALIVE_TIME = timedelta(minutes=5)
+CAPTCHA_ANSWER_ALIVE_TIME = timedelta(minutes=10)
 
 def register_captcha(website):
     add_application_sub_resource(
@@ -91,7 +91,7 @@ def validate_captcha(challenge_code, captcha_answer):
             'remote_ip': request.remote_ip,
             'user_agent': request.headers.get('User-Agent')
         })
-        return {'captcha_answer': ['验证码错误，请填入正确的计算结果']}
+        return {'captcha_answer': ['验证码{}，请重新填入正确的计算结果'.format('错误' if real_answer else '过期')]}
 
 
 def generate(size=(180, 30),
