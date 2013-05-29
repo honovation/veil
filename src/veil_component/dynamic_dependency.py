@@ -74,7 +74,7 @@ def read_from_file(file, providers, consumers):
         return {}, {}
     with open(file, 'r') as f:
         for line in f.readlines():
-            line = line.decode('utf8')
+            line = line.decode('UTF-8')
             line = line.strip()
             if not line:
                 continue
@@ -89,7 +89,7 @@ def read_from_file(file, providers, consumers):
 
 
 def record_line(line):
-    line = line.encode('utf8')
+    line = line.encode('UTF-8')
     if DEP_DYNAMIC_RECORDED.exists():
         with open(DEP_DYNAMIC_RECORDED) as f:
             if line in f.read():

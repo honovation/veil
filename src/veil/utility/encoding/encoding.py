@@ -7,11 +7,11 @@ def to_str(s):
     if isinstance(s, (str, bytes)):
         return s
     if isinstance(s, unicode):
-        return s.encode('utf-8')
+        return s.encode('UTF-8')
     return str(s)
 
 
-def to_unicode(s, encoding='utf-8', remedial_encodings=('gb18030',), strict=True, additional=None):
+def to_unicode(s, encoding='UTF-8', remedial_encodings=('gb18030',), strict=True, additional=None):
     if isinstance(s, unicode):
         return s
 

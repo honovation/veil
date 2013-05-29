@@ -46,7 +46,7 @@ def as_path(p):
     return Path(to_str(p))
 
 def to_str(p):
-    return p.encode('utf8') if isinstance(p, unicode) else p
+    return p.encode('UTF-8') if isinstance(p, unicode) else p
 
 class Path(_base):
     """ Represents a filesystem path.

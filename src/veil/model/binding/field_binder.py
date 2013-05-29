@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: UTF-8 -*-
 """
 field binder takes single value and returns transformed single value in expected case
 otherwise throw Invalid exception

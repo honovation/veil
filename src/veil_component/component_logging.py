@@ -142,7 +142,7 @@ def to_unicode(s):
 
     if isinstance(s, (str, bytes)):
         try:
-            return unicode(s, encoding='utf-8')
+            return unicode(s, encoding='UTF-8')
         except UnicodeDecodeError:
             try:
                 return unicode(s, encoding='gb18030')

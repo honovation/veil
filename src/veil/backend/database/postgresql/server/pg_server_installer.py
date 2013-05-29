@@ -81,7 +81,7 @@ def postgresql_cluster_resource(purpose, owner, owner_password):
     try:
         shell_execute(
             'su {pg_data_owner} -c "initdb  -E {encoding} --locale=en_US.UTF-8 -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-{purpose}-owner-password {pg_data_dir}"'.format(
-                encoding='UTF8', pg_data_owner=owner, pg_data_dir=pg_data_dir, purpose=purpose
+                encoding='UTF-8', pg_data_owner=owner, pg_data_dir=pg_data_dir, purpose=purpose
             ), capture=True)
     finally:
         delete_file('/tmp/pg-{}-owner-password'.format(purpose))

@@ -83,7 +83,7 @@ def migrate(purpose):
                 'from_version': to_version - 1,
                 'to_version': to_version
             })
-            db().execute(versions[to_version].text('utf8'))
+            db().execute(versions[to_version].text('UTF-8'))
         db().insert(
             'database_migration_event', from_version=from_version,
             to_version=to_version, migrated_at=get_current_time())
@@ -120,7 +120,7 @@ def create_database_if_not_exists(purpose):
             port=config.port,
             owner=maintenance_config.owner,
             database=config.database,
-            encoding='UTF8'), env=env, capture=True)
+            encoding='UTF-8'), env=env, capture=True)
     except ShellExecutionError, e:
         if 'already exists' in e.output:
             pass # ignore

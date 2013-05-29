@@ -1,4 +1,4 @@
-#coding=utf-8
+# -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
 from datetime import timedelta
@@ -16,7 +16,6 @@ from veil.backend.redis import *
 from veil.environment import *
 
 LOGGER = logging.getLogger(__name__)
-
 bucket = register_bucket('captcha_image')
 redis = register_redis('captcha_answer')
 

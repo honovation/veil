@@ -11,7 +11,7 @@ def log_shipper_resource(config):
 
 
 def load_log_shipper_config():
-    lines = LOG_SHIPPER_CONF_PATH.lines(encoding='utf8')
+    lines = LOG_SHIPPER_CONF_PATH.lines(encoding='UTF-8')
     config = {}
     for line in lines:
         if not line.strip():

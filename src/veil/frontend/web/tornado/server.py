@@ -109,7 +109,7 @@ class HTTPResponse(object):
     def clear(self):
         self._headers = {
             'Server': 'TornadoServer/%s' % tornado.version,
-            'Content-Type': 'text/html; charset=utf-8',
+            'Content-Type': 'text/html; charset=UTF-8',
         }
         if not self.request.supports_http_1_1():
             if self.request.headers.get('Connection') == 'Keep-Alive':
