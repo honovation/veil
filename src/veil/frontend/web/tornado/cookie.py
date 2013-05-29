@@ -106,7 +106,7 @@ def set_cookie(response=None, **kwargs):
 def create_cookie(cookies, name, value, domain=None, expires=None, path='/', expires_days=None, **kwargs):
     name = to_str(name)
     value = to_str(value)
-    if re.search(r'[\x00-\x20]', name + value):
+    if re.search(br'[\x00-\x20]', name + value):
         # Don't let us accidentally inject bad stuff
         raise ValueError('Invalid cookie %r: %r' % (name, value))
     cookies[name] = value

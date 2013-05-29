@@ -142,6 +142,27 @@ class HTTPResponse(object):
                 raise ValueError('Unsafe header value %r', value)
         self._headers[to_str(name)] = value
 
+    def clear_header(self, name):
+        """Clears an outgoing header, undoing a previous `set_header` call.
+
+        Note that this method does not apply to multi-valued headers
+        set by `add_header`.
+        """
+        name = to_str(name)
+        if name in self._headers:
+            del self._headers[name]
+
+    def _clear_headers_for_304(self):
+        # 304 responses should not contain entity headers (defined in
+        # http://www.w3.org/Protocols/rfc2616/rfc2616-sec7.html#sec7.1)
+        # not explicitly allowed by
+        # http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5
+        headers = ["Allow", "Content-Encoding", "Content-Language",
+                   "Content-Length", "Content-MD5", "Content-Range",
+                   "Content-Type", "Last-Modified"]
+        for h in headers:
+            self.clear_header(h)
+
     def write(self, chunk):
         assert not self._finished
         chunk = to_str(chunk)
@@ -176,13 +197,15 @@ class HTTPResponse(object):
                 for part in self._write_buffer:
                     hasher.update(part)
                 etag = '"%s"' % hasher.hexdigest()
+                self.set_header('Etag', etag)
                 inm = self.request.headers.get('If-None-Match')
                 if inm and inm.find(etag) != -1:
                     self._write_buffer = []
                     self.status_code = 304
-                else:
-                    self.set_header('Etag', etag)
-            if 'Content-Length' not in self._headers:
+            if self._status_code == 304:
+                assert not self._write_buffer, "Cannot send body with 304"
+                self._clear_headers_for_304()
+            elif 'Content-Length' not in self._headers:
                 content_length = sum(len(part) for part in self._write_buffer)
                 self.set_header('Content-Length', content_length)
 
