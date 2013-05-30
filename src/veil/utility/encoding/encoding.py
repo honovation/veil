@@ -36,6 +36,15 @@ def to_unicode(s, encoding='UTF-8', remedial_encodings=('gb18030',), strict=True
                     else:
                         return u
 
+    if isinstance(s, tuple):
+        return unicode(tuple(to_unicode(e) for e in s))
+
+    if isinstance(s, list):
+        return unicode([to_unicode(e) for e in s])
+
+    if isinstance(s, dict):
+        return unicode({to_unicode(k): to_unicode(v) for k, v in s.items()})
+
     try:
         return unicode(s)
     except UnicodeDecodeError:

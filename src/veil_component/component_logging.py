@@ -89,7 +89,7 @@ class ColoredFormatter(logging.Formatter):
     def format(self, record):
         record.msg = to_unicode(record.msg)
         if record.args and isinstance(record.args, dict):
-            record.args = {k: to_unicode(v) for k, v in record.args.items()}
+            record.args = {to_unicode(k): to_unicode(v) for k, v in record.args.items()}
         s = super(ColoredFormatter, self).format(record)
         if record.levelno >= logging.WARNING:
             wrap = COLOR_WRAPPERS['RED']
@@ -104,15 +104,15 @@ class EventFormatter(logging.Formatter):
     def format(self, record):
         record.msg = to_unicode(record.msg)
         if record.args and isinstance(record.args, dict):
-            record.args = {k: to_unicode(v) for k, v in record.args.items()}
+            record.args = {to_unicode(k): to_unicode(v) for k, v in record.args.items()}
         event_name = record.msg.split(':', 1)[0].strip()
         event = {
             '@type': 'veil',
-            '@source': socket.gethostname(),
-            '@message': record.getMessage(),
+            '@source': to_unicode(socket.gethostname()),
+            '@message': to_unicode(record.getMessage()),
             '@timestamp': time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)),
             '@fields': {
-                'logged_by': record.name,
+                'logged_by': to_unicode(record.name),
                 'level': record.levelname,
                 'event': event_name
             }
@@ -151,6 +151,15 @@ def to_unicode(s):
 
     if isinstance(s, (datetime.datetime, datetime.date, datetime.time)):
         return unicode(s.isoformat())
+
+    if isinstance(s, tuple):
+        return unicode(tuple(to_unicode(e) for e in s))
+
+    if isinstance(s, list):
+        return unicode([to_unicode(e) for e in s])
+
+    if isinstance(s, dict):
+        return unicode({to_unicode(k): to_unicode(v) for k, v in s.items()})
 
     try:
         return unicode(s)

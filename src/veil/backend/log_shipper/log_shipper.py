@@ -1,8 +1,8 @@
 from __future__ import unicode_literals, print_function, division
-import redis.client
 import time
 import os
 import logging
+import redis.client
 from veil.frontend.cli import *
 from veil.model.event import event
 from veil.server.process import EVENT_PROCESS_TEARDOWN
