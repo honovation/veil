@@ -11,31 +11,14 @@ from .component_map import get_root_component
 
 VEIL_LOGGING_LEVEL_CONFIG = 'VEIL_LOGGING_LEVEL_CONFIG'
 VEIL_LOGGING_EVENT = 'VEIL_LOGGING_EVENT'
-logging_levels = None
-configured_root_loggers = set()
-log_context_providers = []
-
-def add_log_context_provider(provider):
-    log_context_providers.append(provider)
-
-def wrap_console_text_with_color(code):
-    def inner(text, bold=False):
-        c = code
-        if bold:
-            c = "1;%s" % c
-        return "\033[%sm%s\033[0m" % (c, text)
-
-    return inner
-
-COLOR_WRAPPERS = {
-    'RED': wrap_console_text_with_color('31'),
-    'GREEN': wrap_console_text_with_color('32')
-}
 
 def configure_logging(component_name):
-    load_logging_levels()
-    configure_component_logger(component_name)
+    logger = logging.getLogger(component_name)
+    logger.setLevel(get_logging_level(component_name))
+    configure_root_component_logger(get_root_component(component_name) or component_name)
 
+
+logging_levels = None
 
 def load_logging_levels():
     global logging_levels
@@ -51,16 +34,8 @@ def load_logging_levels():
             logging_level = getattr(logging, logging_level)
             logging_levels[logger_name] = logging_level
 
-
-def configure_component_logger(component_name):
-    logger = logging.getLogger(component_name)
-    logging_level = get_logging_level(component_name)
-    logger.setLevel(logging_level)
-    root_component_name = get_root_component(component_name)
-    configure_root_component_logger(root_component_name or component_name)
-
-
 def get_logging_level(target):
+    load_logging_levels()
     matched_component_names = []
     for component_name in logging_levels.keys():
         if target == component_name or target.startswith('{}.'.format(component_name)):
@@ -70,12 +45,14 @@ def get_logging_level(target):
     return logging_levels[max(matched_component_names)]
 
 
-def configure_root_component_logger(component_name):
-    if component_name in configured_root_loggers:
-        return
-    configured_root_loggers.add(component_name)
+configured_root_loggers = set()
 
-    logger = logging.getLogger(component_name)
+def configure_root_component_logger(root_component_name):
+    if root_component_name in configured_root_loggers:
+        return
+    configured_root_loggers.add(root_component_name)
+    logger = logging.getLogger(root_component_name)
+    clear_logger_handlers(logger)
     human_handler = logging.StreamHandler(os.fdopen(sys.stdout.fileno(), 'w', 0))
     human_handler.setFormatter(ColoredFormatter(fmt='%(asctime)s [%(name)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
     logger.addHandler(human_handler)
@@ -83,6 +60,11 @@ def configure_root_component_logger(component_name):
         machine_handler = logging.StreamHandler(os.fdopen(sys.stderr.fileno(), 'w', 0))
         machine_handler.setFormatter(EventFormatter())
         logger.addHandler(machine_handler)
+
+def clear_logger_handlers(logger):
+    for h in logger.handlers:
+        h.close()
+    logger.handlers = []
 
 
 class ColoredFormatter(logging.Formatter):
@@ -98,6 +80,19 @@ class ColoredFormatter(logging.Formatter):
         else:
             wrap = None
         return wrap(s) if wrap else s
+
+def wrap_console_text_with_color(code):
+    def inner(text, bold=False):
+        c = code
+        if bold:
+            c = "1;%s" % c
+        return "\033[%sm%s\033[0m" % (c, text)
+    return inner
+
+COLOR_WRAPPERS = {
+    'RED': wrap_console_text_with_color('31'),
+    'GREEN': wrap_console_text_with_color('32')
+}
 
 
 class EventFormatter(logging.Formatter):
@@ -125,6 +120,11 @@ class EventFormatter(logging.Formatter):
         event['@fields'].update(get_log_context())
         return json.dumps(event)
 
+
+log_context_providers = []
+
+def add_log_context_provider(provider):
+    log_context_providers.append(provider)
 
 def get_log_context():
     context = {}
