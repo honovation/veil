@@ -18,6 +18,7 @@ def supervisor_resource(programs, inet_http_server_port=None, program_groups=Non
     }
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
+        os_package_resource(name='mercurial'), # The installation of supervisor 3.0b2 depends on mercurial hg
         python_package_resource(name='supervisor'),
         file_resource(path=VEIL_ETC_DIR / 'supervisor.cfg', content=render_config('supervisord.cfg.j2',
             config=merge_multiple_settings(
