@@ -35,18 +35,6 @@ class ProcessJavascriptTest(TestCase):
         doc = lxml.etree.fromstring(processed_html)
         script_element = doc[0][1]
         self.assertEqual('abc', script_element.attrib['src'])
-        processed_html = process_javascript(None,
-            """
-            <html>
-            <BoDY>
-            <script src="abc"></script>
-            <p/>
-            </BoDY>
-            </html>
-            """).strip()
-        doc = lxml.etree.fromstring(processed_html)
-        script_element = doc[0][1]
-        self.assertEqual('abc', script_element.attrib['src'])
 
     def test_script_element_relocated_even_body_end_not_found(self):
         processed_html = process_javascript(None, '<script src="abc"></script>')

@@ -7,6 +7,7 @@ from markupsafe import Markup
 from tornado.escape import xhtml_escape
 from veil.frontend.template import template_utility
 from veil.frontend.web.tornado import *
+from ..consts import HTML_START_TAG_PREFIX
 
 LOGGER = getLogger(__name__)
 TAG_NO_XSRF_CHECK = 'NO-XSRF'
@@ -43,10 +44,9 @@ def prevent_xsrf():
     yield
 
 
-HTML_START_TAG_PREFIX = '<html'
 def set_xsrf_cookie_for_page(route_handler, data):
     if get_current_http_request().is_new_xsrf_token:
-        if data and HTML_START_TAG_PREFIX in data.lower():
+        if data and HTML_START_TAG_PREFIX in data:
             # only set to page to avoid concurrent http request issue
             set_cookie(name='_xsrf', value=xsrf_token())
     return data

@@ -12,6 +12,7 @@ from veil_component import check_static_dependency_cycle
 from .encapsulation_checker import check_encapsulation
 from .loc_checker import check_loc
 from .logger_checker import check_logger
+from .html_checker import check_html
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,7 +23,8 @@ SELF_CHECKERS = {
     'loc': check_loc,
     'live-document': check_live_document,
     'correctness': check_correctness,
-    'logger': check_logger
+    'logger': check_logger,
+    'html': check_html,
 }
 
 @script('self-check')
