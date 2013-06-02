@@ -4,8 +4,8 @@ import os
 import logging
 from redis.client import StrictRedis
 from veil.frontend.cli import *
-#from veil.model.event import event
-#from veil.server.process import EVENT_PROCESS_TEARDOWN
+from veil.model.event import event
+from veil.server.process import EVENT_PROCESS_TEARDOWN
 from .log_shipper_installer import load_log_shipper_config
 
 # Written according to https://github.com/josegonzalez/beaver/blob/master/beaver/worker.py
@@ -28,11 +28,11 @@ def bring_up_log_shipper():
         time.sleep(0.1)
 
 
-#@event(EVENT_PROCESS_TEARDOWN)
-#def close_shipper_log_files():
-#    for shipper in shippers:
-#        LOGGER.info('close shipper log file at exit: %(path)s', {'path': shipper.log_path})
-#        shipper.close_log_file()
+@event(EVENT_PROCESS_TEARDOWN)
+def close_shipper_log_files():
+    for shipper in shippers:
+        LOGGER.info('close shipper log file at exit: %(path)s', {'path': shipper.log_path})
+        shipper.close_log_file()
 
 
 class LogShipper(object):
