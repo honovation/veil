@@ -52,6 +52,8 @@ def configure_root_component_logger(root_component_name):
         return
     configured_root_loggers.add(root_component_name)
     logger = logging.getLogger(root_component_name)
+    #TODO: still have dup logs and donot know why, maybe the dup is relevant to supervisord;
+    #After fix this, remove the config excluding logs with tag _jsonparsefailure in ljinsight elasticsearch
     clear_logger_handlers(logger)
     human_handler = logging.StreamHandler(os.fdopen(sys.stdout.fileno(), 'w', 0))
     human_handler.setFormatter(ColoredFormatter(fmt='%(asctime)s [%(name)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))

@@ -1,5 +1,4 @@
 from __future__ import unicode_literals, print_function, division
-import calendar
 import traceback
 import pytz
 from logging import getLogger
@@ -8,6 +7,7 @@ from redis.client import Redis
 from pyres import ResQ
 from veil_installer import *
 from veil.utility.clock import *
+from .job import InvalidJob
 from .queue_client_installer import load_queue_client_config
 from .queue_client_installer import queue_client_resource
 
@@ -72,7 +72,10 @@ class RedisQueue(object):
             convert_datetime_to_naive_local(scheduled_at), '{}.{}'.format(job_handler.__module__, job_handler.__name__),
             to_queue, payload)
 
-    def enqueue_then(self, job_handler, action, **payload):
+    def enqueue_after(self, job_handler, seconds_to_delay=5, **payload):
+        self.enqueue_at(job_handler, get_current_time() + timedelta(seconds=seconds_to_delay), **payload)
+
+    def enqueue_then(self, job_handler, action, seconds_to_delay=5, **payload):
         """
         if the action being executed before enqueue the job
         there is a chance that the action succeeds, but the job is not enqueued
@@ -80,7 +83,7 @@ class RedisQueue(object):
         even if the job being executed before the completion of the action or the action fails
         we still have chance to retry the job from pyres web several times before we decide to pass it
         """
-        self.enqueue_at(job_handler, get_current_time() + timedelta(seconds=5), **payload)
+        self.enqueue_after(job_handler, seconds_to_delay=seconds_to_delay, **payload)
         action()
 
     def clear(self):
@@ -103,12 +106,15 @@ class ImmediateQueue(object):
         if self.stopped:
             self.queued_jobs.append((job_handler, payload))
         else:
-            job_handler(**payload)
+            self.perform_job(job_handler, payload)
 
     def enqueue_at(self, job_handler, scheduled_at, to_queue=None, **payload):
         self.enqueue(job_handler, **payload)
 
-    def enqueue_then(self, job_handler, action, **payload):
+    def enqueue_after(self, job_handler, seconds_to_delay=5, **payload):
+        self.enqueue(job_handler, **payload)
+
+    def enqueue_then(self, job_handler, action, seconds_to_delay=5, **payload):
         action()
         self.enqueue(job_handler, **payload)
 
@@ -122,7 +128,7 @@ class ImmediateQueue(object):
         self.stopped = False
         jobs = self.clear_queued_jobs()
         for job_handler, payload in jobs:
-            job_handler(**payload)
+            self.perform_job(job_handler, payload)
 
     def clear_queued_jobs(self):
         ret = self.queued_jobs
@@ -131,6 +137,16 @@ class ImmediateQueue(object):
 
     def clear(self):
         self.clear_queued_jobs()
+
+    def perform_job(self, job_handler, payload):
+        try:
+            return job_handler(**payload)
+        except InvalidJob:
+            LOGGER.warn('Invalid job: %(job_handler_name)s, %(payload)s', {
+                'job_handler_name': job_handler.__name__,
+                'payload': payload
+            }, exc_info=1)
+            return
 
     def __repr__(self):
         return 'Queue {} opened by {}'.format(self.__class__, self.opened_by)
