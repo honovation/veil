@@ -41,83 +41,105 @@ class LogShipper(object):
         self.log_path = log_path
         self.redis_client = redis_client
         self.redis_key = redis_key
-        self.log_file_id = None
-        self.log_file = None
+        self.open_log_file() # open the log file as soon as possible
 
     def ship(self):
-        self.open_latest_log_file()
+        if not self.log_file:
+            self.open_log_file()
         if self.log_file:
-            lines = self.log_file.readlines()
-            for line in lines:
+            cur_pos, eof_pos = get_file_current_and_eof_positions(self.log_file)
+            for line in iter(self.log_file.readline, ''): # donot use "for line in self.log_file" due to its read-ahead behavior
                 line = line.strip()
-                if not line:
-                    continue
-                try:
-                    self.redis_client.rpush(self.redis_key, line)
-                except:
-                    LOGGER.exception('failed to push log: %(line)s, %(path)s', {
-                        'line': line,
-                        'path': self.log_path
-                    })
-                    self.wait_for_redis_back()
+                if line:
                     try:
                         self.redis_client.rpush(self.redis_key, line)
                     except:
-                        LOGGER.exception('failed to push log again: %(line)s, %(path)s', {
+                        LOGGER.exception('failed to push log: %(line)s, %(path)s', {
                             'line': line,
                             'path': self.log_path
                         })
+                        self.wait_for_redis_back()
+                        try:
+                            self.redis_client.rpush(self.redis_key, line)
+                        except:
+                            LOGGER.critical('failed to push log again: %(line)s, %(path)s', {
+                                'line': line,
+                                'path': self.log_path
+                            }, exc_info=1)
+                            self.log_file.seek(cur_pos)
+                            break
+                cur_pos = self.log_file.tell()
+                if cur_pos >= eof_pos:
+                    break
+            self.open_latest_log_file()
 
     def open_latest_log_file(self):
         # log path might point to different file due to log rotation
-        if self.log_file:
-            latest_log_file_id = load_file_id(self.log_path)
-            if latest_log_file_id and latest_log_file_id != self.log_file_id:
-                latest_log_file = open(self.log_path, 'r')
-                self.close_log_file()
-                self.log_file_id = latest_log_file_id
-                self.log_file = latest_log_file
-                LOGGER.info('reopened latest log file: %(path)s => %(file_id)s', {
-                    'path': self.log_path,
-                    'file_id': self.log_file_id
-                })
-        else:
-            self.open_log_file()
-
-    def open_log_file(self):
-        if os.path.exists(self.log_path):
-            self.log_file_id = load_file_id(self.log_path)
-            self.log_file = open(self.log_path, 'r')
-            LOGGER.info('opened log file: %(path)s => %(file_id)s', {
+        cur_pos, eof_pos = get_file_current_and_eof_positions(self.log_file)
+        if cur_pos < eof_pos:
+            return
+        latest_log_file_id = load_file_id(self.log_path)
+        if latest_log_file_id and latest_log_file_id != self.log_file_id:
+            latest_log_file = open(self.log_path, 'r')
+            self.close_log_file()
+            self.log_file_id = latest_log_file_id
+            self.log_file = latest_log_file
+            LOGGER.info('reopened latest log file: %(path)s => %(file_id)s', {
                 'path': self.log_path,
                 'file_id': self.log_file_id
             })
-            self.log_file.seek(0, os.SEEK_END) # skip old logs, assuming we started before them
+
+    def open_log_file(self):
+        if os.path.exists(self.log_path):
+            try:
+                self.log_file_id = load_file_id(self.log_path)
+                self.log_file = open(self.log_path, 'r')
+                LOGGER.info('opened log file: %(path)s => %(file_id)s', {
+                    'path': self.log_path,
+                    'file_id': self.log_file_id
+                })
+                self.log_file.seek(0, os.SEEK_END) # skip old logs, assuming we started before them
+            except:
+                LOGGER.critical('failed to open log file: %(path)s', {'path': self.log_path}, exc_info=1)
+                self.log_file_id = None
+                self.log_file = None
+        else:
+            LOGGER.warn('log file not found or no permission to access: %(path)s', {'path': self.log_path})
+            self.log_file_id = None
+            self.log_file = None
 
     def close_log_file(self):
         if self.log_file and not self.log_file.closed:
             try:
                 self.log_file.close()
             except:
-                LOGGER.exception('Cannot close log file: %(path)s', {'path': self.log_path})
+                LOGGER.warn('Cannot close log file: %(path)s', {'path': self.log_path}, exc_info=1)
 
     def wait_for_redis_back(self):
         while True:
+            time.sleep(1)
             try:
-                time.sleep(1)
                 self.redis_client.llen(self.redis_key)
-                LOGGER.info('log collector is available now')
-                return
             except:
                 LOGGER.exception('log collector still unavailable')
+            else:
+                LOGGER.info('log collector back to available now')
+                return
 
     def __repr__(self):
         return 'Shipper with log_path <{}> and redis_key <{}>'.format(self.log_path, self.redis_key)
 
 
 def load_file_id(path):
-    if os.path.exists(path):
-        st = os.stat(path)
-        return st.st_dev, st.st_ino
-    else:
+    if not os.path.exists(path):
         return None
+    st = os.stat(path)
+    return st.st_dev, st.st_ino
+
+
+def get_file_current_and_eof_positions(file):
+    cur_pos = file.tell()
+    file.seek(0, os.SEEK_END)
+    eof_pos = file.tell()
+    file.seek(cur_pos)
+    return cur_pos, eof_pos
