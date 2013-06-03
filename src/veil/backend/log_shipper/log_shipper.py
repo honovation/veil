@@ -47,7 +47,7 @@ class LogShipper(object):
         if not self.log_file:
             self.open_log_file()
         if self.log_file:
-            cur_pos, eof_pos = get_file_current_and_eof_positions(self.log_file)
+            cur_pos, eof_pos_at_start_time = get_file_current_and_eof_positions(self.log_file)
             for line in iter(self.log_file.readline, ''): # donot use "for line in self.log_file" due to its read-ahead behavior
                 line = line.strip()
                 if line:
@@ -69,7 +69,7 @@ class LogShipper(object):
                             self.log_file.seek(cur_pos)
                             break
                 cur_pos = self.log_file.tell()
-                if cur_pos >= eof_pos:
+                if cur_pos >= eof_pos_at_start_time: # avoid the current shipper keeps shipping and other shipers get no chance
                     break
             self.open_latest_log_file()
 
@@ -94,15 +94,18 @@ class LogShipper(object):
             try:
                 self.log_file_id = load_file_id(self.log_path)
                 self.log_file = open(self.log_path, 'r')
-                LOGGER.info('opened log file: %(path)s => %(file_id)s', {
-                    'path': self.log_path,
-                    'file_id': self.log_file_id
-                })
-                self.log_file.seek(0, os.SEEK_END) # skip old logs, assuming we started before them
+                #TODO: [enhancement] remember the latest file position (file_id, latest_pos) to avoid losing logs when restarting log shipper
+                self.log_file.seek(0, os.SEEK_END)
             except:
                 LOGGER.critical('failed to open log file: %(path)s', {'path': self.log_path}, exc_info=1)
                 self.log_file_id = None
                 self.log_file = None
+                self.close_log_file()
+            else:
+                LOGGER.info('opened log file: %(path)s => %(file_id)s', {
+                    'path': self.log_path,
+                    'file_id': self.log_file_id
+                })
         else:
             LOGGER.warn('log file not found or no permission to access: %(path)s', {'path': self.log_path})
             self.log_file_id = None
