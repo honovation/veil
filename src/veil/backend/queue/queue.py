@@ -7,6 +7,8 @@ from redis.client import Redis
 from pyres import ResQ
 from veil_installer import *
 from veil.utility.clock import *
+from veil.model.event import *
+from veil.server.process import *
 from .job import InvalidJob
 from .queue_client_installer import load_queue_client_config
 from .queue_client_installer import queue_client_resource
@@ -35,10 +37,13 @@ def require_queue():
     return _current_queue
 
 
+@event(EVENT_PROCESS_TEARDOWN)
 def release_queue():
     global _current_queue
-    _current_queue.close()
-    _current_queue = None
+    if _current_queue:
+        LOGGER.info('close queue at exit: %(queue)s', {'queue': _current_queue})
+        _current_queue.close()
+        _current_queue = None
 
 
 class RedisQueue(object):
