@@ -140,3 +140,21 @@ def get_current_level_names():
         level_names = level_names[1:]
     return level_names
 
+
+def ask_for_confirmation(prompt, default_answer=False):
+    """
+    prompts for yes or no response from the user. Returns True for yes and False for no.
+    default_answer is assumed by the caller when user simply types ENTER.
+    """
+    if default_answer:
+        prompt = '{} [{}]|{}: '.format(prompt, 'Y', 'N')
+    else:
+        prompt = '{} {}|[{}]: '.format(prompt, 'Y', 'N')
+    while True:
+        answer = raw_input(prompt)
+        if not answer:
+            return default_answer
+        if answer not in ('Y', 'N'):
+            print('Please enter Y or N')
+            continue
+        return answer == 'Y'
