@@ -6,6 +6,7 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
+from veil.utility.encoding import to_unicode
 from veil_component import *
 from veil_installer import *
 from veil.development.test import *
@@ -115,7 +116,7 @@ class Database(object):
     def __init__(self, purpose, component_name, conn):
         self.purpose = purpose
         self.component_name = component_name
-        self.opened_by = str('\n').join(traceback.format_stack())
+        self.opened_by = to_unicode(str('').join(traceback.format_stack()))
         self.conn = conn
 
     @property

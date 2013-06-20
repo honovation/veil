@@ -9,6 +9,7 @@ from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
 from veil.development.test import get_executing_test
 from veil.frontend.cli import get_executing_script_handler
+from veil.utility.encoding import to_unicode
 
 filters = {}
 utilities = {}
@@ -127,7 +128,7 @@ def get_or_create_environment():
     jinja_tag.init()
     env.filters.update(filters)
     env.install_null_translations()
-    env.created_by = str('\n').join(traceback.format_stack())
+    env.created_by = to_unicode(str('').join(traceback.format_stack()))
     executing_test = get_executing_test(optional=True)
     if executing_test:
         executing_test.addCleanup(reset_template_environment)
