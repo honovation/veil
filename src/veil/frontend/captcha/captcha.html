@@ -1,44 +1,23 @@
 <style type="text/css">
-    #captcha {
-        margin: 10px 0 10px 0;
-    }
-    #captcha_answer {
-        width: 94px;
-        height: 28px;
-        border: 0;
-        margin: 2px;
-        font-size: 1.5em;
-        display: inline-block !important;
-    }
     img[name=captcha_image] {
         vertical-align: top;
     }
-    #captcha a {
-        display: inline-block;
-    }
-    span#captcha-input-holder {
-        display: inline-block;
-        background: url('{{ static_url("shopper/images/captcha_bg.jpg") }}') no-repeat;
-    }
 </style>
-<div id="captcha">
+<span id="captcha-input-holder">
     <input name="captcha_challenge_code" value="{{ challenge_code }}" type="hidden"/>
-    <label for="captcha_answer">验证码</label>
-    <span id="captcha-input-holder">
-        <input name="captcha_answer" id="captcha_answer"/>
-    </span>
-    <div class="inline-block ml-5" style="font-size: 12px">
-        计算：
-        <a id="change-captcha" href="javascript:void(0);" title="看不清？换一个">
-            <img style="border: 1px solid #CCC" src="{{ captcha_image_url }}" alt="验证码"/>
-        </a>
-    </div>
+    <input name="captcha_answer" id="captcha_answer"/>
+</span>
+<div class="captcha-image" style="font-size: 12px">
+    计算：
+    <a id="change-captcha" href="javascript:void(0);" title="看不清？换一个">
+        <img style="border: 1px solid #CCC" src="{{ captcha_image_url }}" alt="验证码"/>
+    </a>
 </div>
 <script type="text/javascript">
 $(document).ready(function () {
     $('#change-captcha').live('click', function (e) {
         $.get('/captcha', function (html) {
-            $('#captcha').html(html);
+            $('#captcha-wrap').html(html);
         });
     });
 });
