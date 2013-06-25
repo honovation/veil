@@ -16,7 +16,7 @@
 <script type="text/javascript">
 $(document).ready(function () {
     $('#change-captcha').live('click', function (e) {
-        $.get('/captcha', function (html) {
+        $.get('/captcha', {'_': $.now()},function (html) {
             $('#captcha-wrap').html(html);
         });
     });
