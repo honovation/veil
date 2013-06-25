@@ -33,6 +33,8 @@ def normalize_arguments():
             arguments[field] = values
         else:
             del arguments[field]
+    if request.headers.get('X-Upload-File-Path'):
+        arguments['upload-file-path'] = [to_unicode(request.headers.get('X-Upload-File-Path'), strict=False)]
     yield
 
 

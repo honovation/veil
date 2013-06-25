@@ -92,24 +92,24 @@ def website_locations(purpose):
                 %s
                 ''' % (purpose, extra_headers)
         },
+        '^~ /fupload/': {
+            '_': '''
+                client_body_temp_path %s 1;
+                client_body_in_file_only on;
+                client_body_buffer_size 128K;
+                client_max_body_size 1000M;
+                proxy_pass_request_headers on;
+                proxy_set_header X-UPLOAD-FILE-PATH $request_body_file;
+                proxy_pass http://%s-tornado;
+            ''' % (VEIL_VAR_DIR / 'uploaded-files', purpose)
+        },
         '/': {
             '_': '''
-                if ($content_type ~* multipart/form-data) {
-                    upload_pass @after_upload;
-                    upload_store %s 1;
-                    upload_set_form_field $upload_field_name.name "$upload_file_name";
-                    upload_set_form_field $upload_field_name.content_type "$upload_content_type";
-                    upload_set_form_field $upload_field_name.path "$upload_tmp_path";
-                    upload_pass_args on;
-                    upload_pass_form_field "^.*$";
-                    upload_cleanup 400-599;
-                    break;
-                }
                 proxy_pass http://%s-tornado;
                 proxy_redirect off;
                 proxy_next_upstream error;
                 %s
-                ''' % (VEIL_VAR_DIR / 'uploaded-files', purpose, extra_headers)
+                ''' % (purpose, extra_headers)
         },
         '@after_upload': {
             'proxy_pass': 'http://{}-tornado'.format(purpose)
