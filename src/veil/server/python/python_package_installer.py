@@ -28,10 +28,9 @@ def python_package_resource(name, url=None, **kwargs):
         raise NotImplementedError()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        # TODO: currently use our own pyres distribution based on 1.4.1 and need use the official future release
-        if should_download_while_dry_run() and not (url and 'pyres' != name):
+        if should_download_while_dry_run() and not url:
             remote_latest_version = get_remote_latest_version(name)
-            if (url and 'pyres' == name and remote_latest_version > '1.4.1') or (not url and not (downloaded_version and downloaded_version == remote_latest_version)):
+            if not (downloaded_version and downloaded_version == remote_latest_version):
                 LOGGER.debug('To download python package: %(name)s, %(downloaded_version)s, %(latest_version)s, %(remote_latest_version)s', {
                     'name': name,
                     'downloaded_version': downloaded_version,

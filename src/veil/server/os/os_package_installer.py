@@ -35,10 +35,6 @@ def os_package_resource(name):
         return
     if not action:
         return
-    # TODO: remove below until we do not depend on nginx-upload module which no longer works with nginx 1.3.x and above
-    if name == 'nginx-extras':
-        LOGGER.warn('skip install latest nginx-extras 1.4.1 because it dropped nginx-upload which ljmall currently depends on')
-        return
     if UPGRADE_MODE_LATEST == upgrade_mode or (installed_version != latest_version and downloaded_version != latest_version):
         if UPGRADE_MODE_LATEST != upgrade_mode:
             LOGGER.debug('To download os package when upgrade mode is not latest: %(name)s, %(installed_version)s, %(downloaded_version)s, %(latest_version)s', {

@@ -1,3 +1,3 @@
 veil.server.python.python_package_resource?pytz
-veil.server.python.python_package_resource?pyres&url=http://dependency-veil.googlecode.com/svn/trunk/pyres-1.4.1.20121126.tar.gz
+veil.server.python.python_package_resource?pyres
 veil.server.python.python_package_resource?croniter
