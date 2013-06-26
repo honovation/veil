@@ -66,7 +66,7 @@ TIMEDELTA_UNITS = (
     ('second', '秒', 1)
     )
 
-def format_timedelta(delta, granularity='second', threshold=.85, locale='zh_CN'):
+def format_timedelta(delta, granularity='second', threshold=.95, locale='zh_CN'):
     """Return a time delta according to the rules of the given locale.
     >>> format_timedelta(timedelta(weeks=12), locale='en_US')
     '3 mths'
