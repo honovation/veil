@@ -87,8 +87,6 @@ def website_locations(purpose):
         '= /': {
             '_': '''
                 proxy_pass http://%s-tornado;
-                proxy_redirect off;
-                proxy_next_upstream error;
                 %s
                 ''' % (purpose, extra_headers)
         },
@@ -96,23 +94,17 @@ def website_locations(purpose):
             '_': '''
                 client_body_temp_path %s 1;
                 client_body_in_file_only on;
-                client_body_buffer_size 128K;
-                client_max_body_size 1000M;
-                proxy_pass_request_headers on;
                 proxy_set_header X-UPLOAD-FILE-PATH $request_body_file;
+                proxy_set_body off;
                 proxy_pass http://%s-tornado;
-            ''' % (VEIL_VAR_DIR / 'uploaded-files', purpose)
+                %s
+            ''' % (VEIL_VAR_DIR / 'uploaded-files', purpose, extra_headers)
         },
         '/': {
             '_': '''
                 proxy_pass http://%s-tornado;
-                proxy_redirect off;
-                proxy_next_upstream error;
                 %s
                 ''' % (purpose, extra_headers)
-        },
-        '@after_upload': {
-            'proxy_pass': 'http://{}-tornado'.format(purpose)
         },
         # inline static files
         # /static/v-xxxx/a-b.js

@@ -45,6 +45,7 @@ http {
     proxy_read_timeout 200;
     proxy_buffers 256 8k;
     proxy_intercept_errors on;
+    proxy_pass_request_headers on;
     proxy_set_header Host $host;
     proxy_set_header Accept-Encoding "";
     {% if not config.has_bunker or config.is_bunker %}
@@ -56,6 +57,8 @@ http {
     {% endif %}
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Request-Code $unix_timestamp-$cookie_vbcode;
+    proxy_redirect off;
+    proxy_next_upstream error timeout;
 
     log_format logstash_json '{ "@timestamp": "$time_iso8601", '
                              '"@type": "nginx", '
