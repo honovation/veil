@@ -32,16 +32,16 @@ def merge_settings(base, updates, overrides=False):
     return freeze_dict_object(base)
 
 
-def load_config_from(path, *expected_keys):
+def load_config_from(path, *required_keys):
     config = DictObject()
     with open(path) as f:
         lines = f.readlines()
     for line in lines:
         line = line.strip()
         if line and not line.startswith('#'):
-            key, value = [x.strip() for x in line.split('=')]
+            key, value = [x.strip() for x in line.split('=', 1)]
             config[key] = value
-    assert set(expected_keys) == set(config.keys()),\
+    assert set(required_keys) <= set(config.keys()),\
     'config file {} does not provide exact keys we want, expected: {}, actual: {}'.format(
-        path, set(expected_keys), set(config.keys()))
+        path, set(required_keys), set(config.keys()))
     return config
