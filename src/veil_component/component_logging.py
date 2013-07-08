@@ -72,6 +72,9 @@ def clear_logger_handlers(logger):
 class ColoredFormatter(logging.Formatter):
     def format(self, record):
         record.msg = to_unicode(record.msg)
+        log_context = get_log_context()
+        if log_context and any(log_context[k] for k in log_context):
+            record.msg = '{}, LOG CONTEXT: {}'.format(record.msg, log_context)
         if record.args and isinstance(record.args, dict):
             record.args = {to_unicode(k): to_unicode(v) for k, v in record.args.items()}
         s = super(ColoredFormatter, self).format(record)
