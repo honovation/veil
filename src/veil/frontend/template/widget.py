@@ -12,12 +12,12 @@ from veil.utility.encoding import *
 from .template import register_template_utility
 from .template import require_current_template_directory_relative_to
 
+LOGGER = logging.getLogger(__name__)
+
 # === global state ===
 original_widgets = None
 widgets = {}
 current_widget_template_namespaces = []
-
-LOGGER = logging.getLogger(__name__)
 
 @test_hook
 def remember_original_widgets():
