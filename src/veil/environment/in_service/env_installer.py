@@ -2,12 +2,13 @@ from __future__ import unicode_literals, print_function, division
 import fabric.api
 import os
 import logging
-import datetime
+from datetime import datetime
 import sys
 from veil_component import *
 from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
+from veil.utility.clock import *
 from veil.utility.shell import *
 from veil.backend.database.postgresql import *
 from .container_installer import veil_env_containers_resource
@@ -103,7 +104,7 @@ def get_deployed_at():
     for tag in lines.splitlines(False):
         if tag.startswith('{}-'.format(VEIL_ENV)):
             formatted_deployed_at = tag.replace('{}-'.format(VEIL_ENV), '').split('-')[0]
-            deployed_ats.append(datetime.datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S'))
+            deployed_ats.append(convert_datetime_to_client_timezone(datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S')))
     return max(deployed_ats) if deployed_ats else None
 
 
@@ -126,14 +127,14 @@ def update_branch(veil_env_name):
 
 def tag_deploy(veil_env_name):
     tag_name = '{}-{}-{}'.format(
-        veil_env_name, datetime.datetime.now().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
+        veil_env_name, get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
     shell_execute('git tag {}'.format(tag_name))
     shell_execute('git push origin tag {}'.format(tag_name))
 
 
 def tag_patch(veil_env_name):
     tag_name = '{}-{}-{}-patch'.format(
-        veil_env_name, datetime.datetime.now().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
+        veil_env_name, get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
     shell_execute('git tag {}'.format(tag_name))
     shell_execute('git push origin tag {}'.format(tag_name))
 
