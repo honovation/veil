@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import re
 from suds.client import Client
 from suds.client import WebFault
+from suds.sudsobject import Object
 from veil_installer import *
 from veil_component import *
 from veil.model.collection import *
@@ -9,6 +10,7 @@ from .web_service_client_installer import load_web_service_client_config
 from .web_service_client_installer import web_service_client_resource
 
 WebFault = WebFault
+Object = Object
 
 instances = {} # purpose => instance
 
