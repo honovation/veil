@@ -35,7 +35,7 @@ def require_web_service(purpose):
     return instances[purpose]
 
 
-RE_NETLOC = re.compile(r'(?<=//)[^/]+(?=/)')
+RE_NETLOC = re.compile(br'(?<=//)[^/]+(?=/)')
 
 class WebService(object):
     def __init__(self, url, username=None, password=None, proxy_netloc=None):
@@ -44,7 +44,7 @@ class WebService(object):
             self.suds_client = Client(url, username=username, password=password, timeout=timeout)
         else:
             self.suds_client = Client(url, timeout=timeout)
-        self.proxy_netloc = proxy_netloc
+        self.proxy_netloc = str(proxy_netloc) if proxy_netloc else None
 
     def new_object_of_type(self, wsdl_type, returns_dict_object=False):
         suds_object = self.suds_client.factory.create(wsdl_type)
