@@ -79,6 +79,12 @@ class DictObject(dict):
         except KeyError:
             raise AttributeError('"{}" object has no attribute "{}"'.format(self.__class__.__name__, name))
 
+    def __delattr__(self, name):
+        try:
+            del self[name]
+        except KeyError:
+            raise AttributeError('"{}" object has no attribute "{}"'.format(self.__class__.__name__, name))
+
 
 class FrozenDictObject(DictObject):
     def __setattr__(self, key, value):
