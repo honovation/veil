@@ -248,6 +248,9 @@ veil.widget.showFieldErrorMessage = function (widget) {
     for (var field in allErrors) {
         if (allErrors.hasOwnProperty(field)) {
             var errors = $(allErrors[field]);
+            if(typeof allErrors[field] == 'string') {
+                errors = $([allErrors[field]]);
+            }
             errors.each(function () {
                 var error = this;
                 var $field = widget.find('[name=' + field + ']');
