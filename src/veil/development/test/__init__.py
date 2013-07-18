@@ -12,6 +12,9 @@ with veil_component.init_component(__name__):
     from .fixture import require_fixture
     from .fixture import reload_fixture
     from .fixture import delete_fixture_provider
+    from .mock import mockable
+    from .mock import mock_function
+    from .mock import not_implemented
     from unittest import skip
     from .correctness_checker import check_correctness
 
@@ -32,6 +35,10 @@ with veil_component.init_component(__name__):
         reload_fixture.__name__,
         delete_fixture_provider.__name__,
         'g',
+        # from mock
+        mockable.__name__,
+        mock_function.__name__,
+        not_implemented.__name__,
         # from unittest
         skip.__name__,
         check_correctness.__name__
