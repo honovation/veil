@@ -6,6 +6,17 @@ from .case import get_executing_test
 
 mockable_functions = {}
 mock_functions = {}
+enabled = True
+
+def enable_mock():
+    global enabled
+    enabled = True
+
+
+def disable_mock():
+    global enabled
+    enabled = False
+
 
 def mockable(func):
     if 'test' == VEIL_ENV:
@@ -23,6 +34,8 @@ def mockable(func):
 
 
 def execute_mock_function(mockable_function, args, kwargs):
+    if not enabled:
+        return mockable_function(*args, **kwargs)
     mockable_code = mockable_function.__dict__['mockable_code']
     for mock_function in mock_functions.get(mockable_code, []):
         try:

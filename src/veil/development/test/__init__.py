@@ -15,6 +15,8 @@ with veil_component.init_component(__name__):
     from .mock import mockable
     from .mock import mock_function
     from .mock import not_implemented
+    from .mock import enable_mock
+    from .mock import disable_mock
     from unittest import skip
     from .correctness_checker import check_correctness
 
@@ -39,6 +41,8 @@ with veil_component.init_component(__name__):
         mockable.__name__,
         mock_function.__name__,
         not_implemented.__name__,
+        enable_mock.__name__,
+        disable_mock.__name__,
         # from unittest
         skip.__name__,
         check_correctness.__name__
