@@ -155,7 +155,7 @@ def remove_parameter_labels(sql):
 
 
 def remove_insert_values(sql):
-    return re.sub('values\s?\(.*\)+,*', '', sql, flags=re.I)
+    return re.sub('values\s?\(.*?\)(\s?,\s?\(.*?\))*', '', sql, flags=re.I)
 
 
 def check_readable_table_dependencies(readable_tables, component_name, purpose, sql):
