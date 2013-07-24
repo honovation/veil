@@ -18,7 +18,7 @@ def extract_translation():
 @script('init')
 def execute_init_translation(*argv):
     argument_parser = ArgumentParser('Initialize localization *.po file for specific locale')
-    argument_parser.add_argument('--locale', default='zh')
+    argument_parser.add_argument('--locale', default='zh_CN.UTF-8')
     args = argument_parser.parse_args(argv)
     init_translation(args.locale)
 
@@ -34,7 +34,7 @@ def init_translation(locale):
 @script('update')
 def execute_update_translation(*argv):
     argument_parser = ArgumentParser('Update localization *.po file for specific locale')
-    argument_parser.add_argument('--locale', default='zh')
+    argument_parser.add_argument('--locale', default='zh_CN.UTF-8')
     args = argument_parser.parse_args(argv)
     update_translation(args.locale)
 
@@ -50,7 +50,7 @@ def update_translation(locale):
 @script('compile')
 def execute_compile_translation(*argv):
     argument_parser = ArgumentParser('Compile localization *.po file for specific locale')
-    argument_parser.add_argument('--locale', default='zh')
+    argument_parser.add_argument('--locale', default='zh_CN.UTF-8')
     args = argument_parser.parse_args(argv)
     compile_translation(args.locale)
 

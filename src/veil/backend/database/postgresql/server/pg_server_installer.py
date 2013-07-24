@@ -80,8 +80,8 @@ def postgresql_cluster_resource(purpose, owner, owner_password):
     install_resource(file_resource(path='/tmp/pg-{}-owner-password'.format(purpose), content=owner_password))
     try:
         shell_execute(
-            'su {pg_data_owner} -c "initdb  -E {encoding} --locale=en_US.UTF-8 -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-{purpose}-owner-password {pg_data_dir}"'.format(
-                encoding='UTF-8', pg_data_owner=owner, pg_data_dir=pg_data_dir, purpose=purpose
+            'su {pg_data_owner} -c "initdb -E UTF-8 --locale=zh_CN.UTF-8 -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-{purpose}-owner-password {pg_data_dir}"'.format(
+                pg_data_owner=owner, pg_data_dir=pg_data_dir, purpose=purpose
             ), capture=True)
     finally:
         delete_file('/tmp/pg-{}-owner-password'.format(purpose))

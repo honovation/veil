@@ -115,12 +115,11 @@ def create_database_if_not_exists(purpose):
         maintenance_config = load_postgresql_maintenance_config(purpose)
         env = os.environ.copy()
         env['PGPASSWORD'] = maintenance_config.owner_password
-        shell_execute('createdb -h {host} -p {port} -U {owner} {database} -E {encoding}'.format(
+        shell_execute('createdb -h {host} -p {port} -U {owner} {database} -E UTF-8 -l zh_CN.UTF-8 --lc-collate=C'.format(
             host=config.host,
             port=config.port,
             owner=maintenance_config.owner,
-            database=config.database,
-            encoding='UTF-8'), env=env, capture=True)
+            database=config.database), env=env, capture=True)
     except ShellExecutionError, e:
         if 'already exists' in e.output:
             pass # ignore
