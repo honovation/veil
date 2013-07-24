@@ -150,8 +150,19 @@ def strip_sql(sql):
     return ' '.join(sql.split())
 
 
+def remove_parameter_labels(sql):
+    return re.sub('%\(\w+\)s', '', sql)
+
+
+def remove_insert_values(sql):
+    return re.sub('values\s?\(.*\)+,*', '', sql, flags=re.I)
+
+
 def check_readable_table_dependencies(readable_tables, component_name, purpose, sql):
     sql = strip_sql(sql)
+    sql = remove_parameter_labels(sql)
+    sql = remove_insert_values(sql)
+    LOGGER.debug('SQL IS: %(sql)s', {'sql': sql})
     reading_table_names = set()
     sub_queries = []
     extract_sub_queries(sql, sub_queries)
