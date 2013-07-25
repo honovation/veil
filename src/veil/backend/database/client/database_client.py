@@ -216,10 +216,10 @@ class Database(object):
                **value_providers):
         if objects is not None:
             if not objects:
-                return None
+                return None if returns_id or returns_record else 0
         else:
             if not value_providers:
-                return None
+                return None if returns_id or returns_record else 0
 
         column_names = list(value_providers.keys())
 
@@ -239,48 +239,42 @@ class Database(object):
                 yield [value_providers[column_name] for column_name in column_names]
 
         fragments = ['INSERT INTO ', table, ' (']
-        first = True
+        first_column_name = True
         arg_index = 0
         args = {}
         for column_name in column_names:
-            if first:
-                first = False
+            if first_column_name:
+                first_column_name = False
             else:
                 fragments.append(', ')
             fragments.append(column_name)
         fragments.append(' ) VALUES ')
-        first = True
+        first_row_values = True
         for row_values in get_rows_values():
-            if first:
-                first = False
+            if first_row_values:
+                first_row_values = False
             else:
                 fragments.append(', ')
-            first = True
+            first_column_value = True
             fragments.append('(')
-            for cell_value in row_values:
-                if first:
-                    first = False
+            for column_value in row_values:
+                if first_column_value:
+                    first_column_value = False
                 else:
                     fragments.append(', ')
+                fragments.append('%(')
                 arg_index += 1
                 arg_name = ''.join(('a', unicode(arg_index)))
-                fragments.append('%(')
                 fragments.append(arg_name)
                 fragments.append(')s')
-                args[arg_name] = cell_value
+                args[arg_name] = column_value
             fragments.append(')')
-        if returns_record:
-            fragments.append(' RETURNING *')
-            if objects:
-                return self.list(''.join(fragments), **args)
-            else:
-                return self.get(''.join(fragments), **args)
-        elif returns_id:
+        if returns_id:
             fragments.append(' RETURNING id')
-            if objects:
-                return self.list_scalar(''.join(fragments), **args)
-            else:
-                return self.get_scalar(''.join(fragments), **args)
+            return self.list_scalar(''.join(fragments), **args) if objects else self.get_scalar(''.join(fragments), **args)
+        elif returns_record:
+            fragments.append(' RETURNING *')
+            return self.list(''.join(fragments), **args) if objects else self.get(''.join(fragments), **args)
         else:
             return self.execute(''.join(fragments), **args)
 
