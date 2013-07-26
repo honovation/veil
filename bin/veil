@@ -37,7 +37,7 @@ fi
 function veil_init {
     find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
     find $VEIL_HOME -type f -name "*.pyc" -delete
-    sudo apt-get -y install iptables python-dev python-virtualenv python-pip language-pack-en language-pack-zh unzip wget
+    sudo apt-get -y install iptables python-dev python-virtualenv python-pip language-pack-en unzip wget
     if [ ! -f /usr/bin/veil ]; then
         sudo ln -s $VEIL_FRAMEWORK_HOME/bin/veil /usr/bin/veil
     fi
