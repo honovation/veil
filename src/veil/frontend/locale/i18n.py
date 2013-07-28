@@ -29,7 +29,7 @@ def get_locale(*codes):
             break
     return locale
 
-DEFAULT_LOCALE = get_locale('zh_CN.UTF-8')
+DEFAULT_LOCALE = get_locale('zh_Hans_CN.UTF-8')
 assert DEFAULT_LOCALE is not None
 
 current_locales = []
