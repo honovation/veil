@@ -7,7 +7,7 @@ from veil_component import *
 from .bucket import register_bucket
 from .bucket_installer import override_bucket_config
 
-if 'test' == VEIL_ENV:
+if 'test' == VEIL_ENV_TYPE:
     bucket = register_bucket('test')
 
 class FilesystemBucketTest(TestCase):

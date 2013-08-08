@@ -48,7 +48,7 @@ def os_package_resource(name):
         LOGGER.info('installing os package: %(name)s ...', {'name': name})
         shell_execute('apt-get -y install {}'.format(name), capture=True)
         if downloaded_version != latest_version:
-            if VEIL_ENV == 'development':
+            if VEIL_ENV_TYPE == 'development':
                 set_resource_latest_version(to_resource_key(name), downloaded_version)
                 LOGGER.info('os package upgraded to new version: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s', {
                     'name': name,

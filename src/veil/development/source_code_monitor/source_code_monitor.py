@@ -15,7 +15,7 @@ def source_code_monitored(func):
     def wrapper(**kwargs):
         components = kwargs.pop('components')
         LOGGER.info('load components: %(components)s', {'components': components})
-        if 'development' == VEIL_ENV:
+        if 'development' == VEIL_ENV_TYPE:
             if load_components(components):
                 SourceCodeMonitor().start()
                 return func(**kwargs)

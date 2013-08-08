@@ -6,6 +6,7 @@ from .environment import VEIL_ETC_DIR
 from .environment import VEIL_VAR_DIR
 from .environment import VEIL_SERVER
 from .environment import VEIL_ENV
+from .environment import VEIL_ENV_TYPE
 from .environment import VEIL_SERVER_NAME
 from .environment import CURRENT_USER
 from .environment import CURRENT_USER_GROUP

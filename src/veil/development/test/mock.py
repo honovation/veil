@@ -19,7 +19,7 @@ def disable_mock():
 
 
 def mockable(func):
-    if 'test' == VEIL_ENV:
+    if 'test' == VEIL_ENV_TYPE:
         mockable_code = uuid.uuid4().get_hex()
         func.__dict__['mockable_code'] = mockable_code
         mockable_functions[mockable_code] = func

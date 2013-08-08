@@ -66,7 +66,7 @@ def python_package_resource(name, url=None, **kwargs):
         pip_arg = '--upgrade' if 'UPGRADE' == action else ''
         shell_execute('pip install {} --no-index -f file:///opt/pypi {}'.format(url, pip_arg), capture=True, **kwargs)
         if downloaded_version != latest_version:
-            if VEIL_ENV == 'development':
+            if VEIL_ENV_TYPE == 'development':
                 set_resource_latest_version(to_resource_key(name), downloaded_version)
                 LOGGER.info('python package upgraded to new version: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s', {
                     'name': name,

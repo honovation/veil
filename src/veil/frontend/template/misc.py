@@ -12,5 +12,5 @@ def json(value):
 
 
 @template_utility
-def get_veil_env():
-    return VEIL_ENV
+def get_veil_env_type():
+    return VEIL_ENV_TYPE
