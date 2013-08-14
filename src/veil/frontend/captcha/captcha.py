@@ -17,7 +17,7 @@ from veil.environment import *
 
 LOGGER = logging.getLogger(__name__)
 bucket = register_bucket('captcha_image')
-redis = register_redis('captcha_answer')
+redis = register_redis('persist_store')
 
 CAPTCHA_ANSWER_ALIVE_TIME = timedelta(minutes=10)
 
@@ -26,8 +26,8 @@ def register_captcha(website):
         'captcha_image_bucket',
         lambda config: bucket_resource(purpose='captcha_image', config=config))
     add_application_sub_resource(
-        'captcha_answer_redis_client',
-        lambda config: redis_client_resource(purpose='captcha_answer', **config))
+        'persist_store_redis_client',
+        lambda config: redis_client_resource(purpose='persist_store', **config))
     import_widget(captcha_widget)
     route('GET', '/captcha', website=website, tags=('PUBLIC',))(captcha_widget)
     return captcha_protected
@@ -40,7 +40,7 @@ def captcha_widget():
 
 
 def generate_captcha():
-    challenge_code = uuid.uuid4().get_hex()
+    challenge_code = 'CAPTCHA:'.format(uuid.uuid4().get_hex())
     image, answer = generate(size=(150, 30), font_size=25)
     redis().setex(challenge_code, CAPTCHA_ANSWER_ALIVE_TIME, answer)
     buffer = StringIO()
