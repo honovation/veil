@@ -162,7 +162,6 @@ def check_readable_table_dependencies(readable_tables, component_name, purpose, 
     sql = strip_sql(sql)
     sql = remove_parameter_labels(sql)
     sql = remove_insert_values(sql)
-    LOGGER.debug('SQL IS: %(sql)s', {'sql': sql})
     reading_table_names = set()
     sub_queries = []
     extract_sub_queries(sql, sub_queries)
