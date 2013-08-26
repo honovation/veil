@@ -4,7 +4,7 @@ import logging
 import re
 import ibm_db_dbi
 import ibm_db
-from ibm_db_dbi import OperationalError
+from ibm_db_dbi import Error, OperationalError
 from veil.model.collection import *
 
 LOGGER = logging.getLogger(__name__)
@@ -50,7 +50,8 @@ class DB2Adapter(object):
             self._reconnect()
 
     def reconnect_if_broken_per_exception(self, e):
-        if isinstance(e, OperationalError):
+        if isinstance(e, OperationalError) \
+            or isinstance(e, Error) and "SystemError('error return without exception set',)" in str(e): # ibm-db driver bug: should raise OperationalError this case
             self._reconnect()
 
     def _reconnect(self):
