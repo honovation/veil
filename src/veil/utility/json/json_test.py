@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from datetime import datetime
 from decimal import Decimal
 import pytz
+from uuid import uuid4
 from unittest.case import TestCase
 from ._json import to_json
 from ._json import from_json
@@ -48,6 +49,12 @@ class CustomJSONEncoderDecoderTest(TestCase):
 
     def test_decimal(self):
         obj = Decimal('123.4567')
+        encoded = to_json(obj)
+        decoded = from_json(encoded)
+        self.assertEqual(obj, decoded)
+
+    def test_uuid(self):
+        obj = uuid4()
         encoded = to_json(obj)
         decoded = from_json(encoded)
         self.assertEqual(obj, decoded)
