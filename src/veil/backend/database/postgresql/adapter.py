@@ -5,6 +5,7 @@ import psycopg2
 from psycopg2.extensions import  ISOLATION_LEVEL_READ_COMMITTED
 from veil.model.collection import *
 from psycopg2.extras import NamedTupleCursor
+from psycopg2.extras import register_uuid
 from psycopg2.extensions import cursor as NormalCursor
 from psycopg2 import OperationalError
 
@@ -12,6 +13,7 @@ LOGGER = getLogger(__name__)
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
+psycopg2.extensions.register_type(register_uuid())
 
 class PostgresqlAdapter(object):
     def __init__(self, host, port, database, user, password, schema):
