@@ -1,11 +1,30 @@
 from __future__ import unicode_literals, print_function, division
+import logging
 import contextlib
+import traceback
 from veil.frontend.locale import *
 from veil.frontend.web.tornado import *
 
+LOGGER = logging.getLogger(__name__)
+
 @contextlib.contextmanager
 def install_translations(locale_provider):
-    locale = locale_provider() or get_browser_locale() or get_default_locale()
+    locale = locale_provider()
+    if not locale:
+        try:
+            locale = get_browser_locale()
+        except:
+            request = get_current_http_request()
+            LOGGER.exception('failed to get browser locale: %(site)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s, %(accept_language)s\n%(stack_trace)s', {
+                'site': request.host,
+                'uri': request.uri,
+                'referer': request.headers.get('Referer'),
+                'remote_ip': request.remote_ip,
+                'user_agent': request.headers.get('User-Agent'),
+                'accept_language': request.headers.get('Accept-Language'),
+                'stack_trace': str('').join(traceback.format_stack())
+            })
+            locale = get_default_locale()
     with require_current_locale_being(locale):
         yield
 

@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
+import logging
 import contextlib
 import httplib
-import logging
 import re
 import traceback
 from veil.model.collection import *
