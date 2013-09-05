@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
 import re
-import logging
 from suds.client import Client
 from suds.client import WebFault
 from suds.sudsobject import Object
@@ -12,7 +11,6 @@ from .web_service_client_installer import web_service_client_resource
 
 WebFault = WebFault
 Object = Object
-LOGGER = logging.getLogger(__name__)
 
 instances = {} # purpose => instance
 
@@ -30,10 +28,6 @@ def require_web_service(purpose):
     if purpose not in instances:
         config = load_web_service_client_config(purpose)
         if config.user:
-            LOGGER.info(config)
-            LOGGER.info(config.user)
-            LOGGER.info(config.password)
-            LOGGER.info(config.proxy_netloc)
             instances[purpose] = WebService(config.url, username=config.user, password=config.password,
                 proxy_netloc=config.proxy_netloc)
         else:
