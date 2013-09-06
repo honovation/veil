@@ -34,8 +34,7 @@ def publish_event(event_type, loads_event_handlers=True, **kwargs):
 def subscribe_event(event_type, subscriber):
     topic = get_topic(event_type)
     record_dynamic_dependency_provider(get_loading_component_name(), 'event', topic)
-    subscribers[topic] = subscribers.get(topic, [])
-    subscribers[topic].append(subscriber)
+    subscribers.setdefault(topic, []).append(subscriber)
 
 
 def unsubscribe_event(event_type, subscriber):
