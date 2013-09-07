@@ -9,8 +9,9 @@ from veil_component import *
 from veil.environment import *
 from veil.server.config import *
 
-PAYLOAD = os.path.join(os.path.dirname(__file__), 'container_installer_payload.py')
 LOGGER = logging.getLogger(__name__)
+
+PAYLOAD = os.path.join(os.path.dirname(__file__), 'container_installer_payload.py')
 
 @composite_installer
 def veil_env_containers_resource(veil_env_name, config_dir):
@@ -40,7 +41,7 @@ def veil_server_container_resource(veil_env_name, veil_server_name):
         return
     remote_put_content(installer_file_path, installer_file_content, use_sudo=True, mode=0600)
     fabric.api.put(PAYLOAD, '/opt/container_installer_payload.py', use_sudo=True, mode=0600)
-    fabric.api.sudo('python /opt/container_installer_payload.py {}'.format(installer_file_path))
+    fabric.api.sudo('python /opt/container_installer_payload.py {} {}'.format(VEIL_FRAMEWORK_CODEBASE, installer_file_path))
 
 
 @composite_installer

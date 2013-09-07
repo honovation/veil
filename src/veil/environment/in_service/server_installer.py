@@ -26,7 +26,8 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
     fabric.state.env.host_string = get_veil_server_deploys_via(veil_env_name, veil_server_name)
     fabric.state.env.forward_agent = True
     fabric.api.put(PAYLOAD, '/opt/server_installer_payload.py', use_sudo=True, mode=0600)
-    fabric.api.sudo('python /opt/server_installer_payload.py {} {} {} {}'.format(
+    fabric.api.sudo('python /opt/server_installer_payload.py {} {} {} {} {}'.format(
+        VEIL_FRAMEWORK_CODEBASE,
         get_application_codebase(),
         veil_env_name,
         veil_server_name,

@@ -3,6 +3,8 @@ from os import getenv
 import os
 from .path import as_path
 
+VEIL_FRAMEWORK_CODEBASE = 'git://github.com/honovation/veil.git'
+
 VEIL_HOME = getenv('VEIL_HOME') or '.'
 VEIL_HOME = os.path.abspath(VEIL_HOME)
 assert VEIL_HOME, 'must specify $VEIL_HOME'

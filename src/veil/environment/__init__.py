@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from .environment import VEIL_HOME
 from .environment import VEIL_FRAMEWORK_HOME
+from .environment import VEIL_FRAMEWORK_CODEBASE
 from .environment import VEIL_LOG_DIR
 from .environment import VEIL_ETC_DIR
 from .environment import VEIL_VAR_DIR

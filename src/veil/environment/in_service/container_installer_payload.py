@@ -7,11 +7,12 @@ import subprocess
 
 
 def main():
-    installer_path = sys.argv[1]
+    veil_framework_codebase = sys.argv[1]
+    installer_path = sys.argv[2]
 
     enable_time_sync()
     install_git()
-    clone_veil()
+    clone_veil(veil_framework_codebase)
     pull_veil()
     install(installer_path)
     mark_installed(installer_path)
@@ -29,10 +30,10 @@ def install_git():
     shell_execute('apt-get -y install git-core')
 
 
-def clone_veil():
+def clone_veil(veil_framework_codebase):
     if os.path.exists('/opt/veil'):
         return
-    shell_execute('git clone git://github.com/honovation/veil.git /opt/veil')
+    shell_execute('git clone {} /opt/veil'.format(veil_framework_codebase))
 
 
 def pull_veil():

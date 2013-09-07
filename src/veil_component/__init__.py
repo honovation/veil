@@ -28,5 +28,6 @@ from .dynamic_dependency import list_dynamic_dependencies
 from .static_dependency import check_static_dependency_integrity
 from .static_dependency import check_static_dependency_cycle
 from .path import as_path
+from .environment import VEIL_FRAMEWORK_CODEBASE
 from .environment import VEIL_FRAMEWORK_HOME
 from .environment import VEIL_HOME

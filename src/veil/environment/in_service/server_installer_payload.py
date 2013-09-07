@@ -6,10 +6,11 @@ import sys
 import os
 
 def main():
-    application_codebase = sys.argv[1]
-    veil_env = sys.argv[2]
-    veil_server_name = sys.argv[3]
-    action = sys.argv[4]
+    veil_framework_codebase = sys.argv[1]
+    application_codebase = sys.argv[2]
+    veil_env = sys.argv[3]
+    veil_server_name = sys.argv[4]
+    action = sys.argv[5]
     veil_home = '/opt/{}/app'.format(veil_env)
     veil_framework_home = '/opt/{}/veil'.format(veil_env)
     application_branch = 'env-{}'.format(veil_env)
@@ -19,7 +20,7 @@ def main():
     clone_application(application_codebase, veil_home)
     pull_application(application_branch, veil_home)
     framework_version = read_framework_version(veil_home)
-    clone_veil(veil_framework_home)
+    clone_veil(veil_framework_codebase, veil_framework_home)
     pull_veil(framework_version, veil_framework_home)
     if 'DEPLOY' == action:
         deploy(veil_framework_home, veil_home, veil_env, veil_server_name)
@@ -65,10 +66,10 @@ def read_framework_version(veil_home):
     return framework_version
 
 
-def clone_veil(veil_framework_home):
+def clone_veil(veil_framework_codebase, veil_framework_home):
     if os.path.exists(veil_framework_home):
         return
-    shell_execute('git clone git://github.com/honovation/veil.git {}'.format(veil_framework_home))
+    shell_execute('git clone {} {}'.format(veil_framework_codebase, veil_framework_home))
 
 
 def pull_veil(framework_version, veil_framework_home):
