@@ -1,6 +1,10 @@
 import veil_component
 
 with veil_component.init_component(__name__):
+    from .host_installer import veil_env_hosts_resource
+    from .host_installer import veil_host_config_resource
+    from .host_installer import veil_host_directory_resource
+    from .host_installer import veil_host_file_resource
     from .container_installer import veil_env_containers_resource
     from .container_installer import veil_server_container_resource
     from .container_installer import veil_server_container_config_resource
@@ -11,6 +15,11 @@ with veil_component.init_component(__name__):
     from .env_installer import get_deployed_at
 
     __all__ = [
+        # from host_installer
+        veil_env_hosts_resource.__name__,
+        veil_host_config_resource.__name__,
+        veil_host_directory_resource.__name__,
+        veil_host_file_resource.__name__,
         # from container_installer
         veil_env_containers_resource.__name__,
         veil_server_container_resource.__name__,
