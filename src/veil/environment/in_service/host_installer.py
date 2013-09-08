@@ -26,11 +26,10 @@ def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
     veil_server_user_name = veil_host.ssh_user
     resources = [
         veil_host_file_resource(
-            local_path=host_config_dir / 'sudoers',
+            local_path=host_config_dir / 'sudoers.d.ssh-auth-sock',
             veil_env_name=veil_env_name, veil_host_name=veil_host_name,
-            remote_path='/etc/sudoers',
-            owner='root', owner_group='root', mode=0440,
-            set_owner_first=True
+            remote_path='/etc/sudoers.d/ssh-auth-sock',
+            owner='root', owner_group='root', mode=0440
         ),
         veil_host_directory_resource(
             veil_env_name=veil_env_name, veil_host_name=veil_host_name,
