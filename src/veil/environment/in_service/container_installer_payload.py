@@ -39,6 +39,7 @@ def clone_veil(veil_framework_codebase):
 def pull_veil():
     while True:
         try:
+            shell_execute('echo $SSH_AUTH_SOCK')
             shell_execute('git pull', cwd='/opt/veil')
         except:
             continue
