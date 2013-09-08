@@ -47,7 +47,7 @@ def clone_application(application_codebase, veil_home):
 
 
 def pull_application(application_branch, veil_home):
-    shell_execute('echo $SSH_AUTH_SOCK')
+    green(os.getenv('SSH_AUTH_SOCK'))
     shell_execute('git checkout {}'.format(application_branch), cwd=veil_home)
     while True:
         try:
