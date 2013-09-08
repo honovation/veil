@@ -106,11 +106,7 @@ def veil_server_container_directory_resource(
         key = 'veil_server_container_directory?{}-{}&path={}'.format(veil_env_name, veil_server_name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
-    fabric.state.env.warn_only = True
-    try:
-        fabric.api.sudo('mkdir -m {:o} {}'.format(mode, '{}{}'.format(container_rootfs_path, remote_path)))
-    finally:
-        fabric.state.env.warn_only = False
+    fabric.api.sudo('mkdir -p -m {:o} {}'.format(mode, '{}{}'.format(container_rootfs_path, remote_path)))
     fabric.api.sudo('chroot {} chown {} {}'.format(container_rootfs_path, owner, remote_path))
     fabric.api.sudo('chroot {} chgrp {} {}'.format(container_rootfs_path, owner_group, remote_path))
 
@@ -131,11 +127,7 @@ def veil_server_container_file_resource(
 
 
 def remote_get_content(remote_path):
-    fabric.state.env.warn_only = True
-    try:
-        return fabric.api.run('cat {}'.format(remote_path))
-    finally:
-        fabric.state.env.warn_only = False
+    return fabric.api.run('test -e {remote_path} && cat {remote_path}'.format(remote_path))
 
 
 def remote_put_content(remote_path, content, **kwargs):
