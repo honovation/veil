@@ -33,6 +33,7 @@ def veil_server_container_resource(veil_env_name, veil_server_name):
     fabric.state.env.host_string = '{}:{}'.format(veil_host.internal_ip, veil_host.ssh_port)
     fabric.state.env.user = veil_host.ssh_user
     fabric.state.env.forward_agent = True
+    fabric.state.env.reject_unknown_hosts = False
     installer_file_content = render_installer_file(veil_env_name, veil_server_name)
     installer_file_path = '/opt/INSTALLER-{}-{}'.format(veil_env_name, veil_server_name)
     dry_run_result = get_dry_run_result()
