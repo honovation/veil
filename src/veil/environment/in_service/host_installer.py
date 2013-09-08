@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import uuid
 import fabric.api
 import fabric.state
 from veil_installer import *
@@ -28,7 +29,8 @@ def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
             local_path=host_config_dir / 'sudoers',
             veil_env_name=veil_env_name, veil_host_name=veil_host_name,
             remote_path='/etc/sudoers',
-            owner='root', owner_group='root', mode=0440
+            owner='root', owner_group='root', mode=0440,
+            set_owner_first=True
         ),
         veil_host_directory_resource(
             veil_env_name=veil_env_name, veil_host_name=veil_host_name,
@@ -74,11 +76,18 @@ def veil_host_directory_resource(veil_env_name, veil_host_name, remote_path, own
 
 
 @atomic_installer
-def veil_host_file_resource(local_path, veil_env_name, veil_host_name, remote_path, owner, owner_group, mode):
+def veil_host_file_resource(local_path, veil_env_name, veil_host_name, remote_path, owner, owner_group, mode,
+                            set_owner_first=False):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_host_file?{}-{}&path={}'.format(veil_env_name, veil_host_name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
-    fabric.api.put(local_path, remote_path, use_sudo=True, mode=mode)
-    fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
+    if set_owner_first:
+        temp_file = '/tmp/{}'.format(uuid.uuid4().get_hex())
+        fabric.api.put(local_path, temp_file, use_sudo=True, mode=mode)
+        fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, temp_file))
+        fabric.api.sudo('mv -f {} {}'.format(temp_file, remote_path))
+    else:
+        fabric.api.put(local_path, remote_path, use_sudo=True, mode=mode)
+        fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
