@@ -3,7 +3,7 @@ from os import getenv
 import os
 from .path import as_path
 
-VEIL_FRAMEWORK_CODEBASE = 'git://github.com/honovation/veil.git'
+VEIL_FRAMEWORK_CODEBASE = 'git@121.101.216.93:/opt/git/veil.git'
 
 VEIL_HOME = getenv('VEIL_HOME') or '.'
 VEIL_HOME = os.path.abspath(VEIL_HOME)
