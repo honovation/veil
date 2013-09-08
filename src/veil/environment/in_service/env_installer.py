@@ -11,21 +11,13 @@ from veil.environment import *
 from veil.utility.clock import *
 from veil.utility.shell import *
 from veil.backend.database.postgresql import *
+from .host_installer import veil_env_hosts_resource
 from .container_installer import veil_env_containers_resource
 from .server_installer import veil_env_servers_resource
 
-PAYLOAD = os.path.join(os.path.dirname(__file__), 'env_installer_payload.py')
 LOGGER = logging.getLogger(__name__)
 
-@script('update-env-authorized-keys')
-def update_env_authorized_keys(veil_env_name, config_dir):
-    veil_hosts = list_veil_hosts(veil_env_name)
-    for veil_host_name, veil_host in veil_hosts.items():
-        veil_host_name = veil_host_name.split('/')[0] # ljhost-005/3 => ljhost-005
-        authorized_keys_path = as_path(config_dir) / 'host' / veil_host_name / 'authorized_keys'
-        fabric.state.env.host_string = '{}:{}'.format(veil_host.internal_ip, veil_host.ssh_port)
-        fabric.api.put(authorized_keys_path, '~/.ssh/authorized_keys')
-
+PAYLOAD = os.path.join(os.path.dirname(__file__), 'env_installer_payload.py')
 
 def display_deployment_memo(veil_env_name):
     deployment_memo = get_veil_env_deployment_memo(veil_env_name)
@@ -43,6 +35,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     """ should_download_packages: set to FALSE when download-packages before deploy-env """
     do_local_preparation(veil_env_name)
     tag_deploy(veil_env_name)
+    install_resource(veil_env_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     if 'TRUE' == should_download_packages:
         download_packages(veil_env_name)

@@ -32,4 +32,3 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
         veil_env_name,
         veil_server_name,
         action))
-

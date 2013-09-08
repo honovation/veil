@@ -1,5 +1,4 @@
 from __future__ import unicode_literals, print_function, division
-import logging
 import os
 import fabric.api
 import fabric.state
@@ -8,8 +7,6 @@ from veil_installer import *
 from veil_component import *
 from veil.environment import *
 from veil.server.config import *
-
-LOGGER = logging.getLogger(__name__)
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'container_installer_payload.py')
 
@@ -107,8 +104,7 @@ def veil_server_container_directory_resource(
         dry_run_result[key] = 'INSTALL'
         return
     fabric.api.sudo('mkdir -p -m {:o} {}'.format(mode, '{}{}'.format(container_rootfs_path, remote_path)))
-    fabric.api.sudo('chroot {} chown {} {}'.format(container_rootfs_path, owner, remote_path))
-    fabric.api.sudo('chroot {} chgrp {} {}'.format(container_rootfs_path, owner_group, remote_path))
+    fabric.api.sudo('chroot {} chown {}:{} {}'.format(container_rootfs_path, owner, owner_group, remote_path))
 
 
 @atomic_installer
@@ -122,8 +118,7 @@ def veil_server_container_file_resource(
         dry_run_result[key] = 'INSTALL'
         return
     fabric.api.put(local_path, full_remote_path, use_sudo=True, mode=mode)
-    fabric.api.sudo('chroot {} chown {} {}'.format(container_rootfs_path, owner, remote_path))
-    fabric.api.sudo('chroot {} chgrp {} {}'.format(container_rootfs_path, owner_group, remote_path))
+    fabric.api.sudo('chroot {} chown {}:{} {}'.format(container_rootfs_path, owner, owner_group, remote_path))
 
 
 def remote_get_content(remote_path):
@@ -159,6 +154,3 @@ def render_installer_file(veil_env_name, veil_server_name):
         line = '{}?{}'.format(installer_name, '&'.join('{}={}'.format(k, v) for k, v in installer_args.items()))
         lines.append(line)
     return '\n'.join(lines)
-
-
-
