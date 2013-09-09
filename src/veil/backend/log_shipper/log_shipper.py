@@ -31,7 +31,7 @@ def bring_up_log_shipper():
 @event(EVENT_PROCESS_TEARDOWN)
 def close_shipper_log_files():
     for shipper in shippers:
-        LOGGER.info('close shipper log file at exit: %(path)s', {'path': shipper.log_path})
+        LOGGER.debug('close shipper log file at exit: %(path)s', {'path': shipper.log_path})
         shipper.close_log_file()
 
 

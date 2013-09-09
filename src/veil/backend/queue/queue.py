@@ -42,7 +42,7 @@ def require_queue():
 def release_queue():
     global _current_queue
     if _current_queue:
-        LOGGER.info('close queue at exit: %(queue)s', {'queue': _current_queue})
+        LOGGER.debug('close queue at exit: %(queue)s', {'queue': _current_queue})
         _current_queue.close()
         _current_queue = None
 
