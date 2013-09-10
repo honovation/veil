@@ -7,6 +7,7 @@ def check_html():
     check_strict_html_start_tag_prefix(VEIL_HOME)
     check_strict_head_end_tag(VEIL_HOME)
     check_strict_body_end_tag(VEIL_HOME)
+    check_no_commented_script_or_style_or_link_element(VEIL_HOME)
 
 
 def check_strict_html_start_tag_prefix(dir):
@@ -39,6 +40,18 @@ def check_strict_body_end_tag(dir):
         raise Exception('HTML files are not with strict body end tag under folder {}: \n{}'.format(
             dir,
             '\n'.join(htmls_without_strict_body_end_tag)
+        ))
+
+
+def check_no_commented_script_or_style_or_link_element(dir):
+    htmls_with_commented_script_element = get_html_files_with_content_matching_pattern(dir, '<\!--\s*<script\s*', ignore_case=True)
+    htmls_with_commented_style_element = get_html_files_with_content_matching_pattern(dir, '<\!--\s*<style\s*', ignore_case=True)
+    htmls_with_commented_link_element = get_html_files_with_content_matching_pattern(dir, '<\!--\s*<link\s*', ignore_case=True)
+    htmls_with_commented_script_or_style_or_link_element = htmls_with_commented_script_element + htmls_with_commented_style_element + htmls_with_commented_link_element
+    if htmls_with_commented_script_or_style_or_link_element:
+        raise Exception('HTML files contain commented script or style or link element under folder {}: \n{}'.format(
+            dir,
+            '\n'.join(htmls_with_commented_script_or_style_or_link_element)
         ))
 
 
