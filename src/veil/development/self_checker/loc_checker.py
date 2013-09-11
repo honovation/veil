@@ -4,7 +4,7 @@ import veil_component
 import sys
 
 WHITE_LIST = {'veil.frontend.web.tornado'} # copied from somewhere
-THRESHOLD = 600
+THRESHOLD = 610
 GOAL = 500
 
 def check_loc():

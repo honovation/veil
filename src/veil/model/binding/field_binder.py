@@ -59,15 +59,21 @@ def one_of(seq):
     return bind
 
 
-def is_email(value):
+def is_email(value, return_none_when_invalid=False):
     if _EMAIL_PATTERN.match(value) is None:
-        raise Invalid(_('不是有效的电子邮件地址'))
+        if return_none_when_invalid:
+            return None
+        else:
+            raise Invalid(_('不是有效的电子邮件地址'))
     return value
 
 
-def is_mobile(value):
+def is_mobile(value, return_none_when_invalid=False):
     if _MOBILE_PATTERN.match(value) is None:
-        raise Invalid(_('不是有效的移动电话号码'))
+        if return_none_when_invalid:
+            return None
+        else:
+            raise Invalid(_('不是有效的移动电话号码'))
     return value
 
 def valid_password(value):
@@ -75,17 +81,23 @@ def valid_password(value):
         raise Invalid(_('密码不符合规范'))
     return value
 
-def is_landline(value):
+def is_landline(value, return_none_when_invalid=False):
     if _LANDLIINE_PATTERN.match(value) is None:
-        raise Invalid(_('不是有效的座机号码'))
+        if return_none_when_invalid:
+            return None
+        else:
+            raise Invalid(_('不是有效的座机号码'))
     return value
 
 
-def to_integer(value):
+def to_integer(value, return_none_when_invalid=False):
     try:
         return int(value)
     except (TypeError, ValueError):
-        raise Invalid(_('不是整数'))
+        if return_none_when_invalid:
+            return None
+        else:
+            raise Invalid(_('不是整数'))
 
 
 def to_float(value):
@@ -117,14 +129,17 @@ def to_time(value):
         return time(dt.hour, dt.minute)
 
 
-def to_date(format='%Y-%m-%d'):
+def to_date(format='%Y-%m-%d', return_none_when_invalid=False):
     def bind(value):
         if isinstance(value, datetime):
             return value.date()
         try:
             dt = datetime.strptime(value, bind.format)
         except ValueError:
-            raise Invalid(_('不是有效的日期'))
+            if return_none_when_invalid:
+                return None
+            else:
+                raise Invalid(_('不是有效的日期'))
         else:
             return dt.date()
     bind.format = format
