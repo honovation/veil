@@ -21,7 +21,7 @@ def download_package(package, **kwargs):
 
     bundle_zip = tempdir / 'bundle.zip'
     build_dir = tempdir / 'build'
-    shell_execute('pip bundle -b {} {} {}'.format(build_dir, bundle_zip, package), capture=True, **kwargs)
+    shell_execute('pip bundle -b {} {} {}'.format(build_dir, bundle_zip, '{}>=2013d'.format(package) if package == 'pytz' else package), capture=True, **kwargs)
 
     previous_cwd = os.getcwd()
     tempdir.chdir()
