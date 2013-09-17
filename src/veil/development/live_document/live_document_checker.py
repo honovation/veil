@@ -5,6 +5,10 @@ from veil.utility.encoding import *
 from veil.environment import *
 from veil.development.test import *
 
+# imports required in mock functions
+from veil.model.collection import DictObject
+from veil.utility.clock import get_current_time, get_current_date_in_client_timezone
+
 LOGGER = logging.getLogger(__name__)
 
 def check_live_document():

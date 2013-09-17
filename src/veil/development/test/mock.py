@@ -37,21 +37,21 @@ def execute_mock_function(mockable_function, args, kwargs):
     if not enabled:
         return mockable_function(*args, **kwargs)
     mockable_code = mockable_function.__dict__['mockable_code']
-    for mock_function in mock_functions.get(mockable_code, []):
+    for mock_func in mock_functions.get(mockable_code, []):
         try:
-            return mock_function(mockable_function, *args, **kwargs)
+            return mock_func(mockable_function, *args, **kwargs)
         except NotImplementedError:
             pass # it is ok to only mock for certain known input
-    raise NotImplementedError('did not specify how to mock {} with {}'.format(mockable_function, kwargs))
+    raise NotImplementedError('did not specify how to mock {} with args: {} and kwargs: {}'.format(mockable_function, args, kwargs))
 
 
-def mock_function(mockable_function, mock_function, append=True):
+def mock_function(mockable_func, mock_func, append=True):
     get_executing_test().addCleanup(mock_functions.clear)
-    mockable_code = mockable_function.__dict__['mockable_code']
+    mockable_code = mockable_func.__dict__['mockable_code']
     if append:
-        mock_functions.setdefault(mockable_code, []).append(mock_function)
+        mock_functions.setdefault(mockable_code, []).append(mock_func)
     else:
-        mock_functions[mockable_code] = [mock_function]
+        mock_functions[mockable_code] = [mock_func]
 
 
 def not_implemented():
