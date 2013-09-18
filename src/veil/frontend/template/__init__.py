@@ -28,9 +28,9 @@ with veil_component.init_component(__name__):
             require_current_template_directory_relative_to.__name__,
             get_template.__name__,
             get_template_environment.__name__,
+            clear_template_caches.__name__,
             # from widget
             widget.__name__,
-            clear_template_caches.__name__,
             require_current_widget_namespace_being.__name__,
             import_widget.__name__
     ]

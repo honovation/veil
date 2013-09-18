@@ -7,11 +7,11 @@ from __future__ import unicode_literals, print_function, division
 import re
 from datetime import datetime, time
 import pytz
-from pytz import timezone, UnknownTimeZoneError
 from dateutil.parser import parse
 from decimal import Decimal
+import sys
 from veil.utility.clock import *
-from veil.model.binding.invalid import Invalid
+from ..invalid import Invalid
 
 _EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9_=%.+-]+@([a-zA-Z0-9_=%+-]+\.)+[a-zA-Z]{2,6}$')
 _PASSWORD_PATTERN = re.compile(r'[A-Za-z0-9`~!@#$%^&*()=+\[\]\{\};:,\/?.]{8,16}')
@@ -195,8 +195,8 @@ def to_datetime_with_minute_precision_from_iso8601(value):
 
 def to_timezone(value):
     try:
-        return timezone(value)
-    except UnknownTimeZoneError:
+        return pytz.timezone(value)
+    except pytz.UnknownTimeZoneError:
         raise Invalid(_('不是有效的时区'))
 
 
@@ -236,3 +236,8 @@ def not_duplicate(value):
     if len(set(value)) != len(value):
         raise Invalid(_('有重复值'))
     return value
+
+
+def _(*args, **kwargs):
+# to supress the warning of pycharm
+    return sys.modules['__builtin__']._(*args, **kwargs)

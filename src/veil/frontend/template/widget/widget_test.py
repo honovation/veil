@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.development.test import TestCase
-from .template import get_template
+from ..template import get_template
 from .widget import widget
 from .widget import require_current_widget_namespace_being
 from .widget import import_widget

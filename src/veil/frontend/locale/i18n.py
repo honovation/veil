@@ -65,7 +65,6 @@ def get_default_locale():
 
 def _(*args, **kwargs):
 # to supress the warning of pycharm
-
     return sys.modules['__builtin__']._(*args, **kwargs)
 
 @event(EVENT_PROCESS_SETUP)

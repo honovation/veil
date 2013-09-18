@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import functools
 import logging
 from inspect import getargspec, isfunction
+import sys
 from veil.model.binding import *
 from veil.model.collection import *
 from veil.utility.encoding import *
@@ -171,9 +172,7 @@ class NotFoundError(CommandError):
 
 def _(*args, **kwargs):
 # to supress the warning of pycharm
-    from __builtin__ import _
-
-    return _(*args, **kwargs)
+    return sys.modules['__builtin__']._(*args, **kwargs)
 
 def generate_signature(obj):
     if isinstance(obj, (dict, DictObject)):

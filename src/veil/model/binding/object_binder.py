@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import itertools
+import sys
 from veil.model.binding.binder_maker import compose, each
 from veil.model.binding.invalid import Invalid
 
@@ -78,6 +79,4 @@ def get_expected_fields_names(fields_binders):
 
 def _(*args, **kwargs):
 # to supress the warning of pycharm
-    from __builtin__ import _
-
-    return _(*args, **kwargs)
+    return sys.modules['__builtin__']._(*args, **kwargs)

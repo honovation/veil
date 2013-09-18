@@ -4,13 +4,13 @@ import sys
 import inspect
 import traceback
 import logging
-from markupsafe import Markup
 import contextlib
+from markupsafe import Markup
 import veil_component
 from veil.development.test import *
 from veil.utility.encoding import *
-from .template import register_template_utility
-from .template import require_current_template_directory_relative_to
+from ..template import register_template_utility
+from ..template import require_current_template_directory_relative_to
 
 LOGGER = logging.getLogger(__name__)
 

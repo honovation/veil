@@ -1,9 +1,9 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 import __builtin__
+from datetime import datetime, date, time
 from veil.development.test import TestCase
 from .field_binder import *
-import datetime
 
 class FieldBinderTest(TestCase):
     def setUp(self):
@@ -91,18 +91,18 @@ class FieldBinderTest(TestCase):
         self.assertEquals(good_phone, is_landline(good_phone))
 
     def test_validate_date(self):
-        datetime.date(2007, 07, 30)
+        date(2007, 07, 30)
         converted = to_date()('2007-7-30')
-        self.assertEquals(datetime.date(2007, 07, 30), converted)
+        self.assertEquals(date(2007, 07, 30), converted)
         converted = to_date(format='%m/%d/%Y')('07/30/2007')
-        self.assertEquals(datetime.date(2007, 07, 30), converted)
+        self.assertEquals(date(2007, 07, 30), converted)
 
         with self.assertRaises(Invalid):
             to_date(format='%m/%d/%Y')('07-30-2007')
 
     def test_validate_time(self):
         converted = to_time('07:30 pm')
-        self.assertEquals(datetime.time(19, 30), converted)
+        self.assertEquals(time(19, 30), converted)
 
         with self.assertRaises(Invalid):
             to_time('07.30')
@@ -111,7 +111,7 @@ class FieldBinderTest(TestCase):
         #Creating localtimes is also tricky, and the reason why working with local times is not recommended. Unfortunately, you cannot just pass a ‘tzinfo’ argument when constructing a datetime.
         tz = pytz.timezone('Asia/Shanghai')
         self.assertEquals(
-            tz.localize(datetime.datetime(2011, 07, 01, 0, 10, 0,)).astimezone(pytz.utc), to_datetime()('2011-07-01 00:10:00'))
+            tz.localize(datetime(2011, 07, 01, 0, 10, 0,)).astimezone(pytz.utc), to_datetime()('2011-07-01 00:10:00'))
         with self.assertRaises(Invalid):
             to_datetime()('2011-07-01 00:10')
         with self.assertRaises(Invalid):
@@ -119,13 +119,13 @@ class FieldBinderTest(TestCase):
 
     def test_validate_datetime_from_iso8601(self):
         converted = to_datetime_with_minute_precision_from_iso8601('2011-07-01 00:10 +08:00')
-        self.assertEquals(datetime.datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.FixedOffset(480)), converted)
+        self.assertEquals(datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.FixedOffset(480)), converted)
         converted = to_datetime_with_minute_precision_from_iso8601('2011-07-01 00:10 +0800')
-        self.assertEquals(datetime.datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.FixedOffset(480)), converted)
+        self.assertEquals(datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.FixedOffset(480)), converted)
         converted = to_datetime_with_minute_precision_from_iso8601('2011-07-01 00:10+0800')
-        self.assertEquals(datetime.datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.FixedOffset(480)), converted)
+        self.assertEquals(datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.FixedOffset(480)), converted)
         converted = to_datetime_with_minute_precision_from_iso8601('2011-07-01 00:10 -08:00')
-        self.assertEquals(datetime.datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.FixedOffset(-480)), converted)
+        self.assertEquals(datetime(2011, 07, 01, 0, 10, 0, tzinfo=pytz.FixedOffset(-480)), converted)
 
         with self.assertRaises(Invalid):
             to_datetime_with_minute_precision_from_iso8601('2011-07-01 +08:00')
