@@ -40,10 +40,11 @@ RE_NETLOC = re.compile(br'(?<=//)[^/]+(?=/)')
 class WebService(object):
     def __init__(self, url, username=None, password=None, proxy_netloc=None):
         timeout = 180 # default suds transport timeout is 90 seconds
+        faults = True # raise faults raised by server, else return tuple from service method invocation as (httpcode, object).
         if username:
-            self.suds_client = Client(url, username=username, password=password, timeout=timeout)
+            self.suds_client = Client(url, username=username, password=password, timeout=timeout, faults=faults)
         else:
-            self.suds_client = Client(url, timeout=timeout)
+            self.suds_client = Client(url, timeout=timeout, faults=faults)
         self.proxy_netloc = str(proxy_netloc) if proxy_netloc else None
 
     def new_object_of_type(self, wsdl_type, returns_dict_object=False):
