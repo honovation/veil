@@ -5,7 +5,7 @@ otherwise throw Invalid exception
 """
 from __future__ import unicode_literals, print_function, division
 import re
-from datetime import datetime, time
+from datetime import datetime, date, time
 import pytz
 from dateutil.parser import parse
 from decimal import Decimal
@@ -132,7 +132,9 @@ def to_time(value):
 def to_date(format='%Y-%m-%d', return_none_when_invalid=False):
     def bind(value):
         if isinstance(value, datetime):
-            return value.date()
+            return convert_datetime_to_client_timezone(value).date()
+        elif isinstance(value, date):
+            return value
         try:
             dt = datetime.strptime(value, bind.format)
         except ValueError:
