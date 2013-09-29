@@ -64,3 +64,10 @@ class WebService(object):
         if self.proxy_netloc:
             service.method.location = RE_NETLOC.sub(self.proxy_netloc, service.method.location, count=1)
         return service
+
+
+def log_web_fault(exception_info, logger):
+    type, value, tb = exception_info
+    if isinstance(value, WebFault):
+        logger.error('web fault: %(faultstring)s', {'faultstring': value.fault.faultstring})
+    return exception_info

@@ -3,13 +3,13 @@ import logging
 import sys
 import time
 import os
-import hashlib
+from veil.environment import *
+from veil_component import *
+from veil.utility.misc import *
+from veil.utility.clock import *
 from veil.utility.shell import *
 from veil.frontend.cli import *
-from veil.environment import *
 from veil.server.supervisor import *
-from veil.utility.clock import *
-from veil_component import *
 from veil.backend.database.client import *
 from ..server.pg_server_installer import load_postgresql_maintenance_config
 
@@ -178,27 +178,6 @@ def lock_migration_scripts(purpose):
             md5 = calculate_file_md5_hash(sql_file)
         lock_path = as_path(sql_path.replace('.sql', '.locked'))
         lock_path.write_text(md5)
-
-def calculate_file_md5_hash(file_object, reset_position=False, hex=True):
-    """ Calculate the md5 hash for this file.
-
-    This reads through the entire file.
-    """
-    assert file_object is not None and file_object.tell() == 0
-    try:
-        m = hashlib.md5()
-        for chunk in iter_file_in_chunks(file_object):
-            m.update(chunk)
-        return m.hexdigest() if hex else m.digest()
-    finally:
-        if reset_position:
-            file_object.seek(0)
-
-
-def iter_file_in_chunks(file_object, chunk_size=8192):
-    """Lazy function (generator) to read a file piece by piece.
-    Default chunk size: 8k."""
-    return iter(lambda: file_object.read(chunk_size), b'')
 
 @script('reset')
 def reset(purpose):

@@ -3,8 +3,8 @@ import hashlib
 import hmac
 from logging import getLogger
 from veil_installer import *
-from veil.server.os import *
 from veil.environment import *
+from veil.server.os import *
 from veil.utility.setting import *
 from veil.utility.encoding import *
 from veil.development.test import get_executing_test
@@ -13,6 +13,11 @@ LOGGER = getLogger(__name__)
 
 _hash_salt = None
 
+add_application_sub_resource(
+    'hash',
+    lambda config: hash_resource(**config))
+
+
 @composite_installer
 def hash_resource(salt):
     resources = list(BASIC_LAYOUT_RESOURCES)
@@ -20,11 +25,6 @@ def hash_resource(salt):
         file_resource(path=VEIL_ETC_DIR / 'hash.cfg',
                       content='salt={}'.format(salt)))
     return resources
-
-
-add_application_sub_resource(
-    'hash',
-    lambda config: hash_resource(**config))
 
 
 def get_hash_salt():

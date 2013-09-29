@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 from veil_installer import *
-from veil.utility.hash import *
+from veil.utility.misc import *
 from veil_component import *
 from .bucket_installer import load_bucket_config
 from .bucket_installer import bucket_resource
@@ -85,9 +85,3 @@ class FilesystemBucket(Bucket):
         path = self.base_directory.joinpath(key)
         assert path.abspath().startswith(self.base_directory.abspath())
         return path
-
-
-def iter_file_in_chunks(file_object, chunk_size=8192):
-    """Lazy function (generator) to read a file piece by piece.
-    Default chunk size: 8k."""
-    return iter(lambda: file_object.read(chunk_size), b'')
