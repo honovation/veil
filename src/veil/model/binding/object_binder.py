@@ -23,7 +23,7 @@ class ObjectBinder(object):
             fields_data = tuple(result.get(field_name, data.get(field_name)) for field_name in fields_names)
             try:
                 updated_fields_data = binder(fields_data)
-            except Invalid, e:
+            except Invalid as e:
                 updated_fields_data = tuple(itertools.repeat(None, len(fields_data)))
                 if e.current_error:
                     for field_name in fields_names:

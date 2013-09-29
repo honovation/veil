@@ -76,7 +76,7 @@ class BrowserPageContext(object):
                 report_error('statement {} not defined'.format(statement_name))
             else:
                 return return_value
-        except selenium.common.exceptions.WebDriverException, e:
+        except selenium.common.exceptions.WebDriverException as e:
             if 'modal dialog' in e.msg:
                 require_webdriver().switch_to_alert().accept()
             else:

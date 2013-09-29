@@ -22,7 +22,7 @@ def load_bucket_config(purpose):
         try:
             config = load_config_from(VEIL_ETC_DIR / '{}-bucket.cfg'.format(purpose.replace('_', '-')),
                 'type', 'base_directory', 'base_url')
-        except IOError, e:
+        except IOError:
             config = DictObject()
         config.update(overridden_bucket_configs.get(purpose, {}))
         return config

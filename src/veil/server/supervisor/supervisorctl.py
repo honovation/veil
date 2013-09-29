@@ -21,7 +21,7 @@ def is_supervisord_running():
         output = shell_execute('veil execute supervisorctl -c {} {}'.format(
             VEIL_ETC_DIR / 'supervisor.cfg', 'status'), capture=True)
         return 'refused' not in output
-    except Exception, e:
+    except Exception as e:
         if isinstance(e, ShellExecutionError) and 'SHUTDOWN_STATE' in e.output:
             return True
         LOGGER.exception('Exception occurred while checking if supervisord is running')

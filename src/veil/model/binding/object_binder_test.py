@@ -13,7 +13,7 @@ class ObjectBinderTest(TestCase):
         binder = ObjectBinder({'name': not_empty, 'age': not_empty, })
         try:
             binder({'name': '', 'age': ''})
-        except Invalid, e:
+        except Invalid as e:
             pass
         self.assertEqual(2, len(e.fields_errors))
 
@@ -21,6 +21,6 @@ class ObjectBinderTest(TestCase):
         binder = ObjectBinder({'name': (not_empty, clamp_length(min=3, max=5)) })
         try:
             binder({'name': 'a'})
-        except Invalid, e:
+        except Invalid as e:
             pass
         self.assertEqual(1, len(e.fields_errors))

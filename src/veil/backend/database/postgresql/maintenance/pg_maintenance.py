@@ -32,7 +32,7 @@ def drop_database(purpose):
             port=config.port,
             owner=maintenance_config.owner,
             database=config.database), env=env, capture=True)
-    except ShellExecutionError, e:
+    except ShellExecutionError as e:
         if 'not exist' in e.output:
             pass # ignore
         else:
@@ -120,7 +120,7 @@ def create_database_if_not_exists(purpose):
             port=config.port,
             owner=maintenance_config.owner,
             database=config.database), env=env, capture=True)
-    except ShellExecutionError, e:
+    except ShellExecutionError as e:
         if 'already exists' in e.output:
             pass # ignore
         else:

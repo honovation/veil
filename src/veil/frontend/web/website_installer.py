@@ -34,7 +34,7 @@ def load_website_config(purpose):
         config.prevents_xsrf = unicode(True) == config.prevents_xsrf
         config.recalculates_static_file_hash = unicode(True) == config.recalculates_static_file_hash
         config.clears_template_cache = unicode(True) == config.clears_template_cache
-    except IOError, e:
+    except IOError:
         if 'test' == VEIL_SERVER:
             config = DictObject()
         else:

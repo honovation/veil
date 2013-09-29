@@ -28,21 +28,21 @@ def handle_exception():
     response = get_current_http_response()
     try:
         yield
-    except HTTPError, e:
+    except HTTPError as e:
         if e.status_code:
             response.status_code = e.status_code
         if e.body is not None:
             response.write(e.body)
         response.finish()
-    except NotFoundError, e:
+    except NotFoundError as e:
         response.status_code = httplib.NOT_FOUND
         response.write(e.message)
         response.finish()
-    except CommandError, e:
+    except CommandError as e:
         response.status_code = httplib.INTERNAL_SERVER_ERROR
         response.write(e.message)
         response.finish()
-    except PermissionDenied, e:
+    except PermissionDenied as e:
         response.status_code = httplib.FORBIDDEN
         response.write(e.message)
         response.finish()

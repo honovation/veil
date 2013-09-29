@@ -119,7 +119,7 @@ def postgresql_user_resource(purpose, user, password, owner, owner_password, hos
                 "CREATE USER {} WITH PASSWORD '{}'".format(pg_user, pg_password)
             ), env=env, capture=True)
             user_installed_tag_file.touch()
-        except ShellExecutionError, e:
+        except ShellExecutionError as e:
             if 'already exists' in e.output:
                 user_installed_tag_file.touch()
             else:

@@ -46,9 +46,9 @@ class CommandHandlerDecorator(object):
             positional_args, keyword_args = command_to_args(command, command_handler)
             try:
                 return command_handler(*positional_args, **keyword_args)
-            except Invalid, e:
+            except Invalid as e:
                 raise InvalidCommand(e.fields_errors)
-            except CommandError, e:
+            except CommandError as e:
                 e.command = command
                 raise
 
@@ -115,7 +115,7 @@ def args_to_raw_command(positional_args, keyword_args, command_handler):
 def raw_command_to_command(raw_command, command_binder):
     try:
         return command_binder(raw_command)
-    except Invalid, e:
+    except Invalid as e:
         raise InvalidCommand(e.fields_errors)
 
 
