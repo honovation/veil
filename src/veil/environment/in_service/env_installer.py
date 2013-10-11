@@ -78,6 +78,14 @@ def rollback_env(vel_env_name):
         remote_do('delete-backup', vel_env_name, veil_server_name)
 
 
+@script('backup-env')
+def backup_env(veil_env_name, should_bring_up_servers='TRUE', veil_guard_name='@guard'):
+    deployed_via = get_veil_server_deploys_via(veil_env_name, veil_guard_name)
+    fabric.api.env.host_string = deployed_via
+    with fabric.api.cd('/opt/{}/app'.format(veil_env_name)):
+        fabric.api.sudo('veil :{}/{} backup-env {}'.format(veil_env_name, veil_guard_name, should_bring_up_servers))
+
+
 @script('purge-left-overs')
 def purge_left_overs(veil_env_name):
     for veil_server_name in sorted(list_veil_servers(veil_env_name).keys()):

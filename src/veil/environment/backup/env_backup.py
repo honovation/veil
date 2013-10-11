@@ -45,7 +45,7 @@ def create_env_backup(should_bring_up_servers='TRUE'):
 def delete_old_backups():
     now = datetime.datetime.now()
     for path in as_path('/backup').dirs():
-        if 'latest' == path.basename:
+        if 'latest' == path.basename():
             continue
         try:
             backup_time = datetime.datetime.strptime(path.basename(), '%Y%m%d%H%M%S')
