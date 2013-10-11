@@ -13,8 +13,9 @@ LOGGER = logging.getLogger(__name__)
 def deploy():
     assert_no_local_change(VEIL_FRAMEWORK_HOME)
     assert_no_local_change(VEIL_HOME)
-    shell_execute('veil install veil_installer.component_resource?veil.server.supervisor'
-                  ' --upgrade-mode={}'.format(UPGRADE_MODE_FAST))
+    shell_execute('veil install veil_installer.component_resource?veil.server.supervisor --upgrade-mode={}'.format(
+        UPGRADE_MODE_FAST
+    ))
     shell_execute('veil down')
     shell_execute('veil install-server --upgrade-mode={}'.format(UPGRADE_MODE_FAST))
     shell_execute('veil up --daemonize')
@@ -37,8 +38,8 @@ def patch():
         if program.get('patchable'):
             program_name = '{}:{}'.format(program['group'], program_name) if program.get('group') else program_name
             thread = threading.Thread(
-                target=functools.partial(shell_execute,
-                    'veil server supervisor restart-program {}'.format(program_name)))
+                target=functools.partial(shell_execute, 'veil server supervisor restart-program {}'.format(program_name))
+            )
             threads.append(thread)
     for thread in threads:
         thread.start()

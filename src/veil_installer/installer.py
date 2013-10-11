@@ -149,9 +149,9 @@ def to_resource_code(resource):
     installer_name, installer_args = resource
     if not isinstance(installer_args, dict):
         raise Exception('invalid resource: {}, {}'.format(installer_name, installer_args))
-    resource_code = '{}?{}'.format(installer_name, '&'.join(
-        ['{}={}'.format(k, installer_args[k])
-         for k in sorted(installer_args.keys())]))
+    resource_code = '{}?{}'.format(
+        installer_name, '&'.join(['{}={}'.format(k, installer_args[k]) for k in sorted(installer_args.keys())])
+    )
     return resource_code
 
 

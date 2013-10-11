@@ -13,7 +13,7 @@ PAYLOAD = os.path.join(os.path.dirname(__file__), 'container_installer_payload.p
 @composite_installer
 def veil_env_containers_resource(veil_env_name, config_dir):
     resources = []
-    for veil_server_name in list_veil_servers(veil_env_name).keys():
+    for veil_server_name in list_veil_server_names(veil_env_name):
         server_config_dir = as_path('{}/env/{}/{}'.format(config_dir, veil_env_name, veil_server_name))
         resources.append(veil_server_container_resource(
             veil_env_name=veil_env_name, veil_server_name=veil_server_name))

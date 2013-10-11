@@ -85,14 +85,14 @@ def pull_veil(framework_version, veil_framework_home):
 
 def deploy(veil_framework_home, veil_home, veil_env, veil_server_name):
     env = os.environ.copy()
-    shell_execute('{}/bin/veil :{}/{} deploy'.format(
-        veil_framework_home, veil_env, veil_server_name), cwd=veil_home, env=env)
+    shell_execute('{}/bin/veil :{}/{} deploy'.format(veil_framework_home, veil_env, veil_server_name), cwd=veil_home, env=env)
 
 
 def patch(veil_framework_home, veil_home, veil_env, veil_server_name):
     env = os.environ.copy()
-    shell_execute('{}/bin/veil :{}/{} patch'.format(
-        veil_framework_home, veil_env, veil_server_name), cwd=veil_home, env=env)
+    shell_execute(
+        '{}/bin/veil :{}/{} patch'.format(veil_framework_home, veil_env, veil_server_name), cwd=veil_home, env=env
+    )
 
 
 def shell_execute(command_line, **kwargs):
@@ -106,7 +106,8 @@ def shell_execute(command_line, **kwargs):
     output = process.communicate()[0]
     if process.returncode:
         raise Exception(red('shell_execute return code: {}, command: {}, kwargs: {}'.format(
-            process.returncode, command_args, kwargs)))
+            process.returncode, command_args, kwargs
+        )))
     return output
 
 

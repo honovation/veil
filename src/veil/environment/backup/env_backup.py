@@ -15,11 +15,15 @@ KEEP_BACKUP_FOR_DAYS = 7 if VEIL_ENV_TYPE == 'staging' else 30
 
 @script('create')
 def create_env_backup(should_bring_up_servers='TRUE'):
+    """
+    Bring down veil servers in sorted server names order
+    Bring up veil servers in reversed sorted server names order
+    """
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         dry_run_result['env_backup'] = 'BACKUP'
         return
-    veil_server_names = sorted(list_veil_servers(VEIL_ENV).keys())
+    veil_server_names = list_veil_server_names(VEIL_ENV)
     if '@guard' in veil_server_names:
         veil_server_names.remove('@guard')
     for veil_server_name in veil_server_names:
@@ -37,7 +41,7 @@ def create_env_backup(should_bring_up_servers='TRUE'):
         delete_old_backups()
     finally:
         if should_bring_up_servers == 'TRUE':
-            for veil_server_name in veil_server_names:
+            for veil_server_name in reversed(veil_server_names):
                 bring_up_server(VEIL_ENV, veil_server_name)
 
 

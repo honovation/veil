@@ -10,10 +10,10 @@ PAYLOAD = os.path.join(os.path.dirname(__file__), 'server_installer_payload.py')
 @composite_installer
 def veil_env_servers_resource(veil_env_name, action='PATCH'):
     resources = []
-    for veil_server_name in sorted(list_veil_servers(veil_env_name).keys()):
+    for veil_server_name in reversed(list_veil_server_names(veil_env_name)):
         resources.append(veil_server_resource(
-            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
-            action=action))
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name, action=action
+        ))
     return resources
 
 
@@ -27,8 +27,5 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
     fabric.state.env.forward_agent = True
     fabric.api.put(PAYLOAD, '/opt/server_installer_payload.py', use_sudo=True, mode=0600)
     fabric.api.sudo('python /opt/server_installer_payload.py {} {} {} {} {}'.format(
-        VEIL_FRAMEWORK_CODEBASE,
-        get_application_codebase(),
-        veil_env_name,
-        veil_server_name,
-        action))
+        VEIL_FRAMEWORK_CODEBASE, get_application_codebase(), veil_env_name, veil_server_name, action
+    ))

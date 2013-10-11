@@ -17,9 +17,10 @@ def bring_up_socks_proxy(target_env=None, gateway_host_name=None, gateway_host_s
     gateway_host_ssh_user = gateway_host_ssh_user or os.getenv('VEIL_TUNNEL_GATEWAY_HOST_SSH_USER')
     hosts = list_veil_hosts(target_env)
     if gateway_host_name:
-        gateway_host = hosts.get(gateway_host_name, DictObject(
-            external_ip=gateway_host_name, ssh_port=gateway_host_ssh_port, ssh_user=gateway_host_ssh_user
-        ))
+        gateway_host = hosts.get(
+            gateway_host_name,
+            DictObject(external_ip=gateway_host_name, ssh_port=gateway_host_ssh_port, ssh_user=gateway_host_ssh_user)
+        )
     else:
         gateway_host = hosts.values()[0]
     command = 'autossh -o StrictHostKeyChecking=no -D 1080 -p {} {}@{}'.format(

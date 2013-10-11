@@ -25,6 +25,8 @@ def main():
         purge_left_overs()
     elif 'rollback' == action:
         rollback(src_dir, backup_dir, veil_server)
+    elif 'bring-up-server' == action:
+        bring_up_server(src_dir, veil_server)
     elif 'download-packages' == action:
         download_packages(src_dir, veil_server)
     else:
@@ -54,6 +56,9 @@ def rollback(src_dir, backup_dir, veil_server):
     except:
         pass # do not care if it is there
     shell_execute('cp -r -p {} {}'.format(backup_dir, src_dir))
+
+
+def bring_up_server(src_dir, veil_server):
     shell_execute('veil :{} up --daemonize'.format(veil_server), cwd='{}/app'.format(src_dir))
 
 

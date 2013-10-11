@@ -32,17 +32,23 @@ def display_deployment_memo(veil_env_name):
 
 @script('deploy-env')
 def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
-    """ should_download_packages: set to FALSE when download-packages before deploy-env """
+    """
+    Bring down veil servers in sorted server names order (in create-backup)
+    Bring up veil servers in reversed sorted server names order (in veil_env_servers_resource and local_deployer:deploy)
+
+    should_download_packages: set to FALSE when download-packages before deploy-env
+    """
     do_local_preparation(veil_env_name)
     tag_deploy(veil_env_name)
     install_resource(veil_env_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     if 'TRUE' == should_download_packages:
         download_packages(veil_env_name)
-    for deploying_server_name in sorted(list_veil_servers(veil_env_name).keys()):
+    veil_server_names = list_veil_server_names(veil_env_name)
+    for deploying_server_name in veil_server_names:
         remote_do('create-backup', veil_env_name, deploying_server_name)
     install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, action='DEPLOY'))
-    for deploying_server_name in sorted(list_veil_servers(veil_env_name).keys()):
+    for deploying_server_name in veil_server_names:
         remote_do('delete-backup', veil_env_name, deploying_server_name)
 
 
@@ -50,12 +56,16 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
 def download_packages(veil_env_name):
     # this command should not interrupt normal website operation
     # designed to run when website is still running, to prepare for a full deployment
-    for deploying_server_name in sorted(list_veil_servers(veil_env_name).keys()):
+    for deploying_server_name in list_veil_server_names(veil_env_name):
         remote_do('download-packages', veil_env_name, deploying_server_name)
 
 
 @script('patch-env')
 def patch_env(veil_env_name):
+    """
+    Iterate veil server in reversed sorted server names order (in veil_env_servers_resource and local_deployer:patch)
+        and patch programs
+    """
     do_local_preparation(veil_env_name)
     tag_patch(veil_env_name)
     install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, action='PATCH'))
@@ -69,13 +79,20 @@ def do_local_preparation(veil_env_name):
 
 
 @script('rollback-env')
-def rollback_env(vel_env_name):
-    for veil_server_name in sorted(list_veil_servers(vel_env_name).keys()):
-        remote_do('check-backup', vel_env_name, veil_server_name)
-    for veil_server_name in sorted(list_veil_servers(vel_env_name).keys()):
-        remote_do('rollback', vel_env_name, veil_server_name)
-    for veil_server_name in sorted(list_veil_servers(vel_env_name).keys()):
-        remote_do('delete-backup', vel_env_name, veil_server_name)
+def rollback_env(veil_env_name):
+    """
+    Bring down veil servers in sorted server names order (in rollback)
+    Bring up veil servers in reversed sorted server names order
+    """
+    veil_server_names = list_veil_server_names(veil_env_name)
+    for veil_server_name in veil_server_names:
+        remote_do('check-backup', veil_env_name, veil_server_name)
+    for veil_server_name in veil_server_names:
+        remote_do('rollback', veil_env_name, veil_server_name)
+    for veil_server_name in reversed(veil_server_names):
+        remote_do('bring-up-server', veil_env_name, veil_server_name)
+    for veil_server_name in veil_server_names:
+        remote_do('delete-backup', veil_env_name, veil_server_name)
 
 
 @script('backup-env')
@@ -88,7 +105,7 @@ def backup_env(veil_env_name, should_bring_up_servers='TRUE', veil_guard_name='@
 
 @script('purge-left-overs')
 def purge_left_overs(veil_env_name):
-    for veil_server_name in sorted(list_veil_servers(veil_env_name).keys()):
+    for veil_server_name in list_veil_server_names(veil_env_name):
         remote_do('purge-left-overs', veil_env_name, veil_server_name)
 
 

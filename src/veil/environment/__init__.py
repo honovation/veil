@@ -16,12 +16,13 @@ from .environment import BASIC_LAYOUT_RESOURCES
 from .environment import get_application_version
 from .environment import get_veil_framework_version
 
-def veil_env(server_hosts, servers, deployment_memo=None):
+def veil_env(server_hosts, servers, sorted_server_names=None, deployment_memo=None):
     from veil.model.collection import objectify
 
     return objectify({
         'server_hosts': server_hosts,
         'servers': servers,
+        'sorted_server_names': sorted_server_names,
         'deployment_memo': deployment_memo
     })
 
@@ -56,6 +57,11 @@ def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu',
         'mac_prefix': mac_prefix,
         'resources': resources
     })
+
+
+def list_veil_server_names(veil_env):
+    env = get_application().ENVIRONMENTS[veil_env]
+    return env.sorted_server_names or sorted(env.servers.keys())
 
 
 def list_veil_servers(veil_env):
