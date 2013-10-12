@@ -37,10 +37,10 @@ def bring_up_supervisor(*argv):
     daemonize = args.daemonize
     if daemonize:
         shell_execute('supervisord -c {}'.format(VEIL_ETC_DIR / 'supervisor.cfg'))
-        for i in range(10):
+        for i in range(20):
             if are_all_supervisord_programs_running():
                 return
-            time.sleep(3)
+            time.sleep(6)
         LOGGER.info('failed to bring up supervisor: latest status: %(status)s', {
             'status': supervisorctl('status', capture=True)
         })
