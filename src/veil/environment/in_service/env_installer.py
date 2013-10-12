@@ -89,8 +89,7 @@ def rollback_env(veil_env_name):
         remote_do('check-backup', veil_env_name, veil_server_name)
     for veil_server_name in veil_server_names:
         remote_do('rollback', veil_env_name, veil_server_name)
-    for veil_server_name in reversed(veil_server_names):
-        remote_do('bring-up-server', veil_env_name, veil_server_name)
+    start_env(veil_env_name)
     for veil_server_name in veil_server_names:
         remote_do('delete-backup', veil_env_name, veil_server_name)
 
@@ -107,6 +106,34 @@ def backup_env(veil_env_name, should_bring_up_servers='TRUE', veil_guard_name='@
 def purge_left_overs(veil_env_name):
     for veil_server_name in list_veil_server_names(veil_env_name):
         remote_do('purge-left-overs', veil_env_name, veil_server_name)
+
+
+@script('restart-env')
+def restart_env(veil_env_name):
+    """
+    Bring down veil servers in sorted server names order
+    Bring up veil servers in reversed sorted server names order
+    """
+    stop_env(veil_env_name)
+    start_env(veil_env_name)
+
+
+@script('stop-env')
+def stop_env(veil_env_name):
+    """
+    Bring down veil servers in sorted server names order
+    """
+    for veil_server_name in list_veil_server_names(veil_env_name):
+        remote_do('bring-down-server', veil_env_name, veil_server_name)
+
+
+@script('start-env')
+def start_env(veil_env_name):
+    """
+    Bring up veil servers in reversed sorted server names order
+    """
+    for veil_server_name in reversed(list_veil_server_names(veil_env_name)):
+        remote_do('bring-up-server', veil_env_name, veil_server_name)
 
 
 @script('print-deployed-at')

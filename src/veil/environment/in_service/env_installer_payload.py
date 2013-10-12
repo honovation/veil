@@ -25,6 +25,8 @@ def main():
         purge_left_overs()
     elif 'rollback' == action:
         rollback(src_dir, backup_dir, veil_server)
+    elif 'bring-down-server' == action:
+        bring_down_server(src_dir, veil_server)
     elif 'bring-up-server' == action:
         bring_up_server(src_dir, veil_server)
     elif 'download-packages' == action:
@@ -39,7 +41,7 @@ def create_backup(src_dir, backup_dir, veil_server):
         return
     if os.path.exists(backup_dir):
         raise Exception('{} already exists, backup procedure abandoned')
-    shell_execute('veil :{} down'.format(veil_server), cwd='{}/app'.format(src_dir))
+    bring_down_server(src_dir, veil_server)
     shell_execute('cp -r -p {} {}'.format(src_dir, backup_dir))
     shell_execute('git reset --hard HEAD'.format(veil_server), cwd='{}/app'.format(src_dir))
 
@@ -48,7 +50,7 @@ def rollback(src_dir, backup_dir, veil_server):
     if not os.path.exists(backup_dir):
         raise Exception('{} does not exists, can not rollback'.format(backup_dir))
     if os.path.exists(src_dir):
-        shell_execute('veil :{} down'.format(veil_server), cwd='{}/app'.format(src_dir))
+        bring_down_server(src_dir, veil_server)
         shell_execute('mv {} {}-to-be-deleted-{}'.format(
             src_dir, src_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
     try:
@@ -56,6 +58,10 @@ def rollback(src_dir, backup_dir, veil_server):
     except:
         pass # do not care if it is there
     shell_execute('cp -r -p {} {}'.format(backup_dir, src_dir))
+
+
+def bring_down_server(src_dir, veil_server):
+    shell_execute('veil :{} down'.format(veil_server), cwd='{}/app'.format(src_dir))
 
 
 def bring_up_server(src_dir, veil_server):
