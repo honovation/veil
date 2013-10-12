@@ -62,15 +62,13 @@ def delete_old_backups():
 
 
 def bring_down_server(backing_up_env, veil_server_name):
-    deployed_via = get_veil_server_deploys_via(backing_up_env, veil_server_name)
-    fabric.api.env.host_string = deployed_via
+    fabric.api.env.host_string = get_veil_server_deploys_via(backing_up_env, veil_server_name)
     with fabric.api.cd('/opt/{}/app'.format(backing_up_env)):
         fabric.api.sudo('veil :{}/{} down'.format(backing_up_env, veil_server_name))
 
 
 def bring_up_server(backing_up_env, veil_server_name):
-    deployed_via = get_veil_server_deploys_via(backing_up_env, veil_server_name)
-    fabric.api.env.host_string = deployed_via
+    fabric.api.env.host_string = get_veil_server_deploys_via(backing_up_env, veil_server_name)
     with fabric.api.cd('/opt/{}/app'.format(backing_up_env)):
         fabric.api.sudo('veil :{}/{} up --daemonize'.format(backing_up_env, veil_server_name))
 

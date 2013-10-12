@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
 import fabric.api
-import fabric.state
 from veil.environment import *
 from veil.frontend.cli import *
 from veil.utility.shell import *
@@ -12,7 +11,7 @@ def download_baseline(veil_env_name, pattern):
     if BASELINE_DIR.exists():
         BASELINE_DIR.rmtree()
     BASELINE_DIR.mkdir()
-    fabric.state.env.host_string = get_veil_server_deploys_via(veil_env_name, '@guard')
+    fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, '@guard')
     dir = fabric.api.run('readlink /backup/latest')
     fabric.api.get('{}/{}'.format(dir, '*{}*'.format(pattern) if pattern else '*'), VEIL_HOME / 'baseline')
 

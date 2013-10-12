@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import uuid
 import fabric.api
-import fabric.state
 from veil_installer import *
 from veil_component import *
 from veil.environment import *
@@ -21,8 +20,7 @@ def veil_env_hosts_resource(veil_env_name, config_dir):
 @composite_installer
 def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
     veil_host = get_veil_host(veil_env_name, veil_host_name)
-    fabric.state.env.host_string = '{}:{}'.format(veil_host.internal_ip, veil_host.ssh_port)
-    fabric.state.env.user = veil_host.ssh_user
+    fabric.api.env.host_string = '{}@{}:{}'.format(veil_host.ssh_user, veil_host.internal_ip, veil_host.ssh_port)
     veil_server_user_name = veil_host.ssh_user
     resources = [
         veil_host_file_resource(

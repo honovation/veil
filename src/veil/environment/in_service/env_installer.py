@@ -18,6 +18,7 @@ from .server_installer import veil_env_servers_resource
 LOGGER = logging.getLogger(__name__)
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'env_installer_payload.py')
+veil_servers_with_payload_uploaded = []
 
 def display_deployment_memo(veil_env_name):
     deployment_memo = get_veil_env_deployment_memo(veil_env_name)
@@ -96,8 +97,7 @@ def rollback_env(veil_env_name):
 
 @script('backup-env')
 def backup_env(veil_env_name, should_bring_up_servers='TRUE', veil_guard_name='@guard'):
-    deployed_via = get_veil_server_deploys_via(veil_env_name, veil_guard_name)
-    fabric.api.env.host_string = deployed_via
+    fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, veil_guard_name)
     with fabric.api.cd('/opt/{}/app'.format(veil_env_name)):
         fabric.api.sudo('veil :{}/{} backup-env {}'.format(veil_env_name, veil_guard_name, should_bring_up_servers))
 
@@ -155,7 +155,9 @@ def get_deployed_at():
 
 def remote_do(action, veil_env_name, veil_server_name):
     fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, veil_server_name)
-    fabric.api.put(PAYLOAD, '/opt/env_installer_payload.py', use_sudo=True, mode=0600)
+    if fabric.api.env.host_string not in veil_servers_with_payload_uploaded:
+        fabric.api.put(PAYLOAD, '/opt/env_installer_payload.py', use_sudo=True, mode=0600)
+        veil_servers_with_payload_uploaded.append(fabric.api.env.host_string)
     fabric.api.sudo('python /opt/env_installer_payload.py {} {} {}'.format(action, veil_env_name, veil_server_name))
 
 

@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import os
 import fabric.api
-import fabric.state
 import tempfile
 from veil_installer import *
 from veil_component import *
@@ -9,6 +8,7 @@ from veil.environment import *
 from veil.server.config import *
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'container_installer_payload.py')
+veil_hosts_with_payload_uploaded = []
 
 @composite_installer
 def veil_env_containers_resource(veil_env_name, config_dir):
@@ -27,9 +27,8 @@ def veil_env_containers_resource(veil_env_name, config_dir):
 def veil_server_container_resource(veil_env_name, veil_server_name):
     veil_server = get_veil_server(veil_env_name, veil_server_name)
     veil_host = get_veil_host(veil_env_name, veil_server.hosted_on)
-    fabric.state.env.host_string = '{}:{}'.format(veil_host.internal_ip, veil_host.ssh_port)
-    fabric.state.env.user = veil_host.ssh_user
-    fabric.state.env.forward_agent = True
+    fabric.api.env.host_string = '{}@{}:{}'.format(veil_host.ssh_user, veil_host.internal_ip, veil_host.ssh_port)
+    fabric.api.env.forward_agent = True
     installer_file_content = render_installer_file(veil_env_name, veil_server_name)
     installer_file_path = '/opt/INSTALLER-{}-{}'.format(veil_env_name, veil_server_name)
     dry_run_result = get_dry_run_result()
@@ -38,7 +37,9 @@ def veil_server_container_resource(veil_env_name, veil_server_name):
         dry_run_result[key] = 'INSTALL'
         return
     remote_put_content(installer_file_path, installer_file_content, use_sudo=True, mode=0600)
-    fabric.api.put(PAYLOAD, '/opt/container_installer_payload.py', use_sudo=True, mode=0600)
+    if fabric.api.env.host_string not in veil_hosts_with_payload_uploaded:
+        fabric.api.put(PAYLOAD, '/opt/container_installer_payload.py', use_sudo=True, mode=0600)
+        veil_hosts_with_payload_uploaded.append(fabric.api.env.host_string)
     fabric.api.sudo('python /opt/container_installer_payload.py {} {}'.format(VEIL_FRAMEWORK_CODEBASE, installer_file_path))
 
 
