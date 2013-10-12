@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import fabric.api
+import fabric.contrib.files
 import datetime
 import os
 import logging
@@ -12,6 +13,8 @@ from veil_component import *
 LOGGER = logging.getLogger(__name__)
 
 KEEP_BACKUP_FOR_DAYS = 7 if VEIL_ENV_TYPE == 'staging' else 30
+BACKUP_MIRROR_HOST = get_veil_host(VEIL_ENV, 'ljhost-003')
+BACKUP_MIRROR_PATH = '/backup-mirror'
 
 @script('create')
 def create_env_backup(should_bring_up_servers='TRUE'):
@@ -37,12 +40,13 @@ def create_env_backup(should_bring_up_servers='TRUE'):
             shell_execute('rm /backup/latest')
         except:
             pass
-        shell_execute('ln -s /backup/{} /backup/latest'.format(timestamp))
+        shell_execute('cd /backup && ln -s {} latest'.format(timestamp))
         delete_old_backups()
     finally:
         if should_bring_up_servers == 'TRUE':
             for veil_server_name in reversed(veil_server_names):
                 bring_up_server(VEIL_ENV, veil_server_name)
+    rsync_to_backup_mirror()
 
 
 @script('delete-old-backups')
@@ -84,3 +88,15 @@ def backup_server(backing_up_env, veil_server_name, timestamp):
         os.mkdir('/backup/{}'.format(timestamp), 0755)
     fabric.api.get(backup_path, backup_path)
     fabric.api.sudo('rm -rf /backup') # backup is centrally stored in @guard lxc container
+
+
+def rsync_to_backup_mirror():
+    fabric.api.env.host_string = '{}@{}:{}'.format(BACKUP_MIRROR_HOST.ssh_user, BACKUP_MIRROR_HOST.internal_ip,
+                                                   BACKUP_MIRROR_HOST.ssh_port)
+    if not fabric.contrib.files.exists(BACKUP_MIRROR_PATH):
+        fabric.api.sudo('mkdir {}'.format(BACKUP_MIRROR_PATH))
+        fabric.api.sudo('chown {}:{} {}'.format(BACKUP_MIRROR_HOST.ssh_user, BACKUP_MIRROR_HOST.ssh_user,
+                                                BACKUP_MIRROR_PATH))
+    #check backup mirror dir's own ?
+    shell_execute('''rsync -e "ssh" --bwlimit=7000 --progress -av /backup/* {}@{}:{}'''.format(
+        BACKUP_MIRROR_HOST.ssh_user, BACKUP_MIRROR_HOST.internal_ip, BACKUP_MIRROR_PATH))
