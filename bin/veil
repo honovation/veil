@@ -101,6 +101,18 @@ case "$1" in
         shift
         exec veil environment in-service rollback-env $@
         ;;
+    stop-env)
+        shift
+        exec veil environment in-service stop-env $@
+        ;;
+    start-env)
+        shift
+        exec veil environment in-service start-env $@
+        ;;
+    restart-env)
+        shift
+        exec veil environment in-service restart-env $@
+        ;;
     init)
         shift
         veil_init
