@@ -38,7 +38,7 @@ def create_env_backup(should_bring_up_servers='TRUE'):
             shell_execute('rm /backup/latest')
         except:
             pass
-        shell_execute('cd /backup && ln -s {} latest'.format(timestamp))
+        shell_execute('ln -s {} latest'.format(timestamp), cwd='/backup')
         delete_old_backups()
     finally:
         if should_bring_up_servers == 'TRUE':
@@ -81,9 +81,9 @@ def backup_server(backing_up_env, veil_server_name, timestamp):
     with fabric.api.cd('/opt/{}/app'.format(backing_up_env)):
         fabric.api.sudo('veil :{}/{} backup {}'.format(backing_up_env, veil_server_name, backup_path))
     if not os.path.exists('/backup'):
-        shell_execute('sudo mkdir /backup')
+        os.mkdir('/backup', 0755)
     if not os.path.exists('/backup/{}'.format(timestamp)):
-        shell_execute('sudo mkdir /backup/{}'.format(timestamp))
+        os.mkdir('/backup/{}'.format(timestamp), 0755)
     fabric.api.get(backup_path, backup_path)
     fabric.api.sudo('rm -rf /backup') # backup is centrally stored in @guard lxc container
 
