@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
 import fabric.api
-import fabric.contrib.files
 import datetime
 import os
 import logging
@@ -27,23 +26,20 @@ def create_env_backup(should_bring_up_servers='TRUE'):
     veil_server_names = list_veil_server_names(VEIL_ENV)
     if '@guard' in veil_server_names:
         veil_server_names.remove('@guard')
-    for veil_server_name in veil_server_names:
-        bring_down_server(VEIL_ENV, veil_server_name)
     try:
+        for veil_server_name in veil_server_names:
+            bring_down_server(VEIL_ENV, veil_server_name)
         now = datetime.datetime.now()
         timestamp = now.strftime('%Y%m%d%H%M%S')
         for veil_server_name in veil_server_names:
             backup_server(VEIL_ENV, veil_server_name, timestamp)
-        try:
-            shell_execute('rm /backup/latest')
-        except:
-            pass
+        shell_execute('rm -f latest', cwd='/backup')
         shell_execute('ln -s {} latest'.format(timestamp), cwd='/backup')
-        delete_old_backups()
     finally:
         if should_bring_up_servers == 'TRUE':
             for veil_server_name in reversed(veil_server_names):
                 bring_up_server(VEIL_ENV, veil_server_name)
+    delete_old_backups()
     rsync_to_backup_mirror()
 
 
@@ -89,16 +85,16 @@ def backup_server(backing_up_env, veil_server_name, timestamp):
 
 
 def rsync_to_backup_mirror():
-    current_veil_server = get_current_veil_server()
-    if not current_veil_server.backup_mirror_host_string:
+    backup_mirror = get_current_veil_server().backup_mirror
+    if not backup_mirror:
         return
-    fabric.api.env.host_string = current_veil_server.backup_mirror_host_string
-    mirror_host_user = current_veil_server.backup_mirror_host_user
-    mirror_host_ip = current_veil_server.backup_mirror_host_ip
-    mirror_host_port = current_veil_server.backup_mirror_host_port
-    bandwidth_limit = current_veil_server.bandwidth_limit
+    fabric.api.env.host_string = '{}@{}:{}'.format(backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror.ssh_port)
     backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV)
-    if not fabric.contrib.files.exists(backup_mirror_path):
-        fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
-    shell_execute('''rsync -ave "ssh -p {}" --progress --bwlimit={} --delete /backup/* {}@{}:{}'''.format(
-        mirror_host_port, bandwidth_limit, mirror_host_user, mirror_host_ip, backup_mirror_path), shell='sh')
+    fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
+    shell_execute(
+        '''rsync -ave "ssh -p {}" --progress --bwlimit={} --delete /backup/* {}@{}:{}'''.format(
+            backup_mirror.ssh_port, backup_mirror.bandwidth_limit,
+            backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror_path
+        ),
+        shell='sh'
+    )

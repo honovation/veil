@@ -28,8 +28,7 @@ def veil_env(server_hosts, servers, sorted_server_names=None, deployment_memo=No
 
 
 def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None,
-                dns='8.8.8.8', backup_mirror_host_user=None, backup_mirror_host_ip=None, backup_mirror_host_port=22,
-                bandwidth_limit=3000):
+                dns='8.8.8.8', backup_mirror=None):
     from veil.model.collection import objectify
 
     return objectify({
@@ -40,11 +39,7 @@ def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=()
         'resources': resources,
         'supervisor_http_port': supervisor_http_port,
         'dns': dns,
-        'backup_mirror_host_user': backup_mirror_host_user,
-        'backup_mirror_host_ip': backup_mirror_host_ip,
-        'backup_mirror_host_port': backup_mirror_host_port,
-        'backup_mirror_host_string': '{}@{}:{}'.format(backup_mirror_host_user, backup_mirror_host_ip, backup_mirror_host_port) if (backup_mirror_host_user and backup_mirror_host_ip and backup_mirror_host_port) else None,
-        'bandwidth_limit': bandwidth_limit
+        'backup_mirror': backup_mirror
     })
 
 
