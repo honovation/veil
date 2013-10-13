@@ -13,8 +13,6 @@ from veil_component import *
 LOGGER = logging.getLogger(__name__)
 
 KEEP_BACKUP_FOR_DAYS = 7 if VEIL_ENV_TYPE == 'staging' else 30
-BACKUP_MIRROR_HOST = get_veil_host(VEIL_ENV, 'ljhost-003')
-BACKUP_MIRROR_PATH = '/backup-mirror'
 
 @script('create')
 def create_env_backup(should_bring_up_servers='TRUE'):
@@ -91,12 +89,16 @@ def backup_server(backing_up_env, veil_server_name, timestamp):
 
 
 def rsync_to_backup_mirror():
-    fabric.api.env.host_string = '{}@{}:{}'.format(BACKUP_MIRROR_HOST.ssh_user, BACKUP_MIRROR_HOST.internal_ip,
-                                                   BACKUP_MIRROR_HOST.ssh_port)
-    if not fabric.contrib.files.exists(BACKUP_MIRROR_PATH):
-        fabric.api.sudo('mkdir {}'.format(BACKUP_MIRROR_PATH))
-        fabric.api.sudo('chown {}:{} {}'.format(BACKUP_MIRROR_HOST.ssh_user, BACKUP_MIRROR_HOST.ssh_user,
-                                                BACKUP_MIRROR_PATH))
-    #check backup mirror dir's own ?
-    shell_execute('''rsync -e "ssh" --bwlimit=7000 --progress -av /backup/* {}@{}:{}'''.format(
-        BACKUP_MIRROR_HOST.ssh_user, BACKUP_MIRROR_HOST.internal_ip, BACKUP_MIRROR_PATH))
+    current_veil_server = get_current_veil_server()
+    if not current_veil_server.programs.get('backup_mirror_host_string'):
+        return
+    fabric.api.env.host_string = current_veil_server.programs.get('backup_mirror_host_string')
+    mirror_host_user = current_veil_server.programs.get('backup_mirror_host_user')
+    mirror_host_ip = current_veil_server.programs.get('backup_mirror_host_ip')
+    mirror_host_port = current_veil_server.programs.get('backup_mirror_host_port')
+    bandwidth_limit = current_veil_server.programs.get('bandwidth_limit')
+    backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV)
+    if not fabric.contrib.files.exists(backup_mirror_path):
+        fabric.api.sudo('mkdir -p {}'.format(backup_mirror_path))
+    shell_execute('''rsync -ae "ssh -p {}" --bwlimit={} --delete /backup/* {}@{}:{}'''.format(
+        mirror_host_port, bandwidth_limit, mirror_host_user, mirror_host_ip, backup_mirror_path))
