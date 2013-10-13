@@ -81,7 +81,7 @@ def backup_server(backing_up_env, veil_server_name, timestamp):
     with fabric.api.cd('/opt/{}/app'.format(backing_up_env)):
         fabric.api.sudo('veil :{}/{} backup {}'.format(backing_up_env, veil_server_name, backup_path))
     if not os.path.exists('/backup'):
-        os.mkdir('/backup', 0755)
+        shell_execute('sudo mkdir /backup')
     if not os.path.exists('/backup/{}'.format(timestamp)):
         os.mkdir('/backup/{}'.format(timestamp), 0755)
     fabric.api.get(backup_path, backup_path)
