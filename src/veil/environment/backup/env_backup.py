@@ -90,13 +90,13 @@ def backup_server(backing_up_env, veil_server_name, timestamp):
 
 def rsync_to_backup_mirror():
     current_veil_server = get_current_veil_server()
-    if not current_veil_server.programs.get('backup_mirror_host_string'):
+    if not current_veil_server.backup_mirror_host_string:
         return
-    fabric.api.env.host_string = current_veil_server.programs.get('backup_mirror_host_string')
-    mirror_host_user = current_veil_server.programs.get('backup_mirror_host_user')
-    mirror_host_ip = current_veil_server.programs.get('backup_mirror_host_ip')
-    mirror_host_port = current_veil_server.programs.get('backup_mirror_host_port')
-    bandwidth_limit = current_veil_server.programs.get('bandwidth_limit')
+    fabric.api.env.host_string = current_veil_server.backup_mirror_host_string
+    mirror_host_user = current_veil_server.backup_mirror_host_user
+    mirror_host_ip = current_veil_server.backup_mirror_host_ip
+    mirror_host_port = current_veil_server.backup_mirror_host_port
+    bandwidth_limit = current_veil_server.bandwidth_limit
     backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV)
     if not fabric.contrib.files.exists(backup_mirror_path):
         fabric.api.sudo('mkdir -p {}'.format(backup_mirror_path))
