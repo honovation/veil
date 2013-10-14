@@ -95,5 +95,5 @@ def rsync_to_backup_mirror():
             backup_mirror.ssh_port, backup_mirror.bandwidth_limit,
             backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror_path
         ),
-        shell='sh'
+        shell=True
     )

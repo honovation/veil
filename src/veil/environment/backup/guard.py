@@ -21,4 +21,4 @@ def bring_up_guard(crontab_expression):
 
 @event(EVENT_PROCESS_TEARDOWN)
 def on_process_teardown():
-    shell_execute('touch ~/has_shutdown_at_{}'.format(datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
+    shell_execute('touch ~/has_shutdown_at_{}'.format(datetime.datetime.now().strftime('%Y%m%d%H%M%S')), shell=True)
