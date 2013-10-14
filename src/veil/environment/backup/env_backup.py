@@ -91,7 +91,7 @@ def rsync_to_backup_mirror():
     backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV)
     fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
     shell_execute(
-        '''rsync -ave "ssh -p {}" --progress --bwlimit={} --delete /backup/* {}@{}:{}'''.format(
+        '''rsync -ave "ssh -p {} -o StrictHostKeyChecking=no" --progress --bwlimit={} --delete /backup/* {}@{}:{}'''.format(
             backup_mirror.ssh_port, backup_mirror.bandwidth_limit,
             backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror_path
         ),
