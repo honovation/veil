@@ -33,8 +33,7 @@ def create_env_backup(should_bring_up_servers='TRUE'):
         timestamp = now.strftime('%Y%m%d%H%M%S')
         for veil_server_name in veil_server_names:
             backup_server(VEIL_ENV, veil_server_name, timestamp)
-        shell_execute('rm -f latest', cwd='/backup')
-        shell_execute('ln -s {} latest'.format(timestamp), cwd='/backup')
+        shell_execute('ln -snf {} latest'.format(timestamp), cwd='/backup')
     finally:
         if should_bring_up_servers == 'TRUE':
             for veil_server_name in reversed(veil_server_names):
