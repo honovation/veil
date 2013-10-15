@@ -31,9 +31,11 @@ def lxc_container_created_resource(name):
         dry_run_result['lxc_container?{}'.format(name)] = '-' if is_installed else 'INSTALL'
         return
     if is_installed:
+        shell_execute('ln -s /var/lib/lxc/{}/config /etc/lxc/auto/{}.conf'.format(name, name))
         return
     LOGGER.info('create lxc container: %(name)s ...', {'name': name})
     shell_execute('lxc-create -t ubuntu -n {}'.format(name))
+    shell_execute('ln -s /var/lib/lxc/{}/config /etc/lxc/auto/{}.conf'.format(name, name))
 
 
 @atomic_installer
