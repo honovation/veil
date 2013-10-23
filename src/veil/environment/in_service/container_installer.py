@@ -15,11 +15,10 @@ def veil_env_containers_resource(veil_env_name, config_dir):
     resources = []
     for veil_server_name in list_veil_server_names(veil_env_name):
         server_config_dir = as_path('{}/env/{}/{}'.format(config_dir, veil_env_name, veil_server_name))
-        resources.append(veil_server_container_resource(
-            veil_env_name=veil_env_name, veil_server_name=veil_server_name))
+        resources.append(veil_server_container_resource(veil_env_name=veil_env_name, veil_server_name=veil_server_name))
         resources.append(veil_server_container_config_resource(
-            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
-            server_config_dir=server_config_dir))
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name, server_config_dir=server_config_dir
+        ))
     return resources
 
 

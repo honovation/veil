@@ -59,5 +59,21 @@ def remove_elements_without_value_from_dict(d):
             del d[key]
 
 
+def list_toggled_bit_offsets(int_val):
+    if not int_val: # None or 0
+        return []
+    toggled_offsets = []
+    val = abs(int_val)
+    offset = 1
+    while True:
+        mask = 1 << (offset -1)
+        if val < mask:
+            break
+        if (val & mask) == mask:
+            toggled_offsets.append(offset)
+        offset += 1
+    return toggled_offsets
+
+
 def format_exception(exception_info):
     return to_unicode(b''.join(traceback.format_exception(*exception_info)))
