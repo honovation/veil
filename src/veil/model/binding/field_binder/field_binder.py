@@ -123,7 +123,7 @@ def to_bool(value):
 def to_time(value):
     try:
         dt = datetime.strptime(value, '%I:%M %p')
-    except ValueError:
+    except (TypeError, ValueError):
         raise Invalid(_('不是有效的时间'))
     else:
         return time(dt.hour, dt.minute)
@@ -137,7 +137,7 @@ def to_date(format='%Y-%m-%d', return_none_when_invalid=False):
             return value
         try:
             dt = datetime.strptime(value, bind.format)
-        except ValueError:
+        except (TypeError, ValueError):
             if return_none_when_invalid:
                 return None
             else:
@@ -151,7 +151,7 @@ def to_date(format='%Y-%m-%d', return_none_when_invalid=False):
 def to_datetime_via_parse(value):
     try:
         return parse(value, yearfirst=True)
-    except ValueError:
+    except (TypeError, ValueError):
         raise Invalid(_('不是有效的日期时间'))
 
 
@@ -164,7 +164,7 @@ def to_datetime(format='%Y-%m-%d %H:%M:%S'):
                 raise Invalid(_('不是有效的日期时间'))
             try:
                 return convert_datetime_to_utc_timezone(datetime.strptime(value, bind.format))
-            except ValueError:
+            except (TypeError, ValueError):
                 raise Invalid(_('不是有效的日期时间'))
     bind.format = format
     return bind
