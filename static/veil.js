@@ -138,7 +138,7 @@ veil.resource.del = function (options) {
 veil.widget = {};
 
 veil.widget.handle = function (widget_selector, child_selector, event, handler) {
-    $(widget_selector + ' ' + child_selector).live(event, function () {
+    $(document).on(event, widget_selector + ' ' + child_selector, function () {
         var widget = $(this).parents(widget_selector);
         var newArgs = [widget];
         for(var i = 0; i < arguments.length; i++) {
