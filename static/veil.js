@@ -1,3 +1,10 @@
+/*!
+ * veil.js
+ *
+ * @requires jQuery v1.8+, jQuery Cookie Plugin v1.4+
+ *
+ */
+
 $.ajaxSetup({headers:{'X-XSRF':$.cookie('_xsrf')}});
 
 var veil = veil || {};
