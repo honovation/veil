@@ -25,9 +25,10 @@ http {
 
     {% if config.enable_compression %}
         gzip on;
+        gzip_http_version 1.1;
         gzip_static off;
         gzip_proxied any;
-        gzip_min_length 512;
+        gzip_min_length 1400;
         gzip_comp_level 3;
         gzip_types text/plain text/css text/javascript application/javascript application/x-javascript application/json text/x-json text/xml application/xml application/xml+rss application/atom+xml image/x-icon image/bmp image/x-ms-bmp;
         gzip_vary on;
@@ -42,6 +43,7 @@ http {
       time();
     }';
 
+    proxy_http_version 1.1;
     proxy_read_timeout 200;
     proxy_buffers 256 8k;
     proxy_intercept_errors on;
