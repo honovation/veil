@@ -4,7 +4,6 @@ import os
 import logging
 from datetime import datetime
 import sys
-from veil_component import *
 from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
@@ -19,6 +18,7 @@ LOGGER = logging.getLogger(__name__)
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'env_installer_payload.py')
 veil_servers_with_payload_uploaded = []
+
 
 def display_deployment_memo(veil_env_name):
     deployment_memo = get_veil_env_deployment_memo(veil_env_name)

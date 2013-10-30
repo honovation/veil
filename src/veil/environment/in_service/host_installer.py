@@ -5,11 +5,12 @@ from veil_installer import *
 from veil_component import *
 from veil.environment import *
 
+
 @composite_installer
 def veil_env_hosts_resource(veil_env_name, config_dir):
     resources = []
     for veil_host_name in list_veil_hosts(veil_env_name):
-        veil_host_base_name = veil_host_name.split('/')[0] # ljhost-005/3 => ljhost-005
+        veil_host_base_name = veil_host_name.split('/')[0]  # ljhost-005/3 => ljhost-005
         host_config_dir = as_path('{}/host/{}'.format(config_dir, veil_host_base_name))
         resources.append(veil_host_config_resource(
             veil_env_name=veil_env_name, veil_host_name=veil_host_name, host_config_dir=host_config_dir

@@ -7,6 +7,7 @@ from veil.environment import *
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'server_installer_payload.py')
 veil_servers_with_payload_uploaded = []
 
+
 @composite_installer
 def veil_env_servers_resource(veil_env_name, action='PATCH'):
     resources = []

@@ -141,8 +141,7 @@ def render_installer_file(veil_env_name, veil_server_name):
     gateway = '{}.1'.format(veil_host.lan_range)
 
     iptables_rules = [
-        'POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(
-            veil_host.lan_range, veil_host.lan_range)
+        'POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(veil_host.lan_range, veil_host.lan_range)
     ]
     installer_file_content = render_config(
         'container-installer-file.j2', mac_address=mac_address, lan_interface=veil_host.lan_interface,

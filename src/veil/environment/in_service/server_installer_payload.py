@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 import subprocess
 import shlex
-import os.path
 import sys
 import os
+
 
 def main():
     veil_framework_codebase = sys.argv[1]

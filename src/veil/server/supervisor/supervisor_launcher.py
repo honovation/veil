@@ -30,8 +30,7 @@ def bring_up_program(program_name):
 
 def bring_up_supervisor(*argv):
     argument_parser = argparse.ArgumentParser('Bring up the application')
-    argument_parser.add_argument('--daemonize', action='store_true',
-        help='should the process run in background')
+    argument_parser.add_argument('--daemonize', action='store_true', help='should the process run in background')
     args = argument_parser.parse_args(argv)
 
     daemonize = args.daemonize

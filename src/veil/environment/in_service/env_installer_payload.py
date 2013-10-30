@@ -5,6 +5,7 @@ import shlex
 import subprocess
 import datetime
 
+
 def main():
     action = sys.argv[1]
     veil_env = sys.argv[2]
@@ -56,7 +57,7 @@ def rollback(src_dir, backup_dir, veil_server):
     try:
         shell_execute('killall supervisord')
     except:
-        pass # do not care if it is there
+        pass  # do not care if it is there
     shell_execute('cp -r -p {} {}'.format(backup_dir, src_dir))
 
 
