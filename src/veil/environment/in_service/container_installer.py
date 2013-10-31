@@ -49,6 +49,16 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
     veil_server_user_name = veil_host.ssh_user
     resources = [
         veil_server_container_file_resource(
+            local_path=server_config_dir / 'iptables' / 'iptablesload',
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path='/etc/network/if-pre-up.d/iptablesload',
+            owner='root', owner_group='root', mode=0755),
+        veil_server_container_file_resource(
+            local_path=server_config_dir / 'iptables' / 'iptablessave',
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path='/etc/network/if-post-down.d/iptablessave',
+            owner='root', owner_group='root', mode=0755),
+        veil_server_container_file_resource(
             local_path=server_config_dir / 'sudoers', veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/etc/sudoers',
             owner='root', owner_group='root', mode=0440),
