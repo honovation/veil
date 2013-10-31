@@ -12,10 +12,22 @@ from veil.utility.misc import *
 
 # will be linked to $VEIL_HOME/.git/hooks/pre-commit by $VEIL_FRAMEWORK_HOME/bin/veil-init
 
+FORBIDDEN_COMMIT_BRANCH_PREFIX = 'env-'
+RE_MODIFIED = re.compile('^(?:M|A|\?\?|AM)(\s+)(?P<name>.*)')
+RE_DELETED = re.compile('^(?:D)(\s+)(?P<name>.*)')
+
+
 def check_if_self_check_passed():
     if not is_self_check_passed():
         print(red('[Orz] LISTEN!!! Read after me: "I should run veil self-check before commit"'))
         sys.exit(1)
+
+
+def check_if_commit_in_forbidden_branch():
+    current_branch = shell_execute('git rev-parse --abbrev-ref HEAD', capture=True)
+    if current_branch.startswith(FORBIDDEN_COMMIT_BRANCH_PREFIX):
+        print(red('[Orz] LISTEN!!! Read after me: "I should not commit in this branch"'))
+        sys.exit(-1)
 
 
 def is_self_check_passed():
@@ -30,15 +42,13 @@ def is_self_check_passed():
 def calculate_git_status_hash():
     base_version, changes = get_git_dir_version()
     hashes = [base_version]
-    for file, version in changes.items():
-        hashes.append('{} {}'.format(file, version))
-    return  to_str('\n'.join(sorted(hashes)))
+    for f, version in changes.items():
+        hashes.append('{} {}'.format(f, version))
+    return to_str('\n'.join(sorted(hashes)))
 
 
 def get_git_dir_version(git_dir='.'):
     base_version = shell_execute('git log -n 1 --pretty=format:%H', capture=True, cwd=git_dir)
-    RE_MODIFIED = re.compile('^(?:M|A|\?\?|AM)(\s+)(?P<name>.*)')
-    RE_DELETED = re.compile('^(?:D)(\s+)(?P<name>.*)')
     out = shell_execute('git status --porcelain', capture=True, cwd=git_dir)
     modified_files = []
     deleted_files = []
@@ -91,4 +101,5 @@ def _wrap_with(code):
 red = _wrap_with('31')
 
 if __name__ == '__main__':
+    check_if_commit_in_forbidden_branch()
     check_if_self_check_passed()
