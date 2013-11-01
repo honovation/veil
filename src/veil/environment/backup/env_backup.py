@@ -11,7 +11,7 @@ from veil_component import *
 
 LOGGER = logging.getLogger(__name__)
 
-KEEP_BACKUP_FOR_DAYS = 7 if VEIL_ENV_TYPE == 'staging' else 30
+KEEP_BACKUP_FOR_DAYS = 3 if VEIL_ENV_TYPE == 'staging' else 15
 
 @script('create')
 def create_env_backup(should_bring_up_servers='TRUE'):
