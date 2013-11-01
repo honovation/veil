@@ -36,6 +36,7 @@ def veil_server_container_resource(veil_env_name, veil_server_name):
         dry_run_result[key] = 'INSTALL'
         return
     remote_put_content(installer_file_path, installer_file_content, use_sudo=True, mode=0600)
+    remote_put_content('/etc/init.d/start-app', render_start_app_init_script(veil_env_name, veil_server_name), use_sudo=True, mode=0755)
     if fabric.api.env.host_string not in veil_hosts_with_payload_uploaded:
         fabric.api.put(PAYLOAD, '/opt/container_installer_payload.py', use_sudo=True, mode=0600)
         veil_hosts_with_payload_uploaded.append(fabric.api.env.host_string)
@@ -163,3 +164,8 @@ def render_installer_file(veil_env_name, veil_server_name):
         line = '{}?{}'.format(installer_name, '&'.join('{}={}'.format(k, v) for k, v in installer_args.items()))
         lines.append(line)
     return '\n'.join(lines)
+
+
+def render_start_app_init_script(veil_env_name, veil_server_name):
+    return render_config('start_app_init_script.j2',
+        do_start_command='sudo veil :{}/{} up --daemonize'.format(veil_env_name, veil_server_name), do_stop_command='')
