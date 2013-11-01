@@ -39,4 +39,5 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
 
 def render_start_app_init_script(veil_env_name, veil_server_name):
     return render_config('start_app_init_script.j2',
-        do_start_command='sudo veil :{}/{} up --daemonize'.format(veil_env_name, veil_server_name), do_stop_command='')
+        do_start_command='cd /opt/{}/app && sudo veil :{}/{} up --daemonize'.format(veil_env_name, veil_env_name, veil_server_name),
+        do_stop_command='')
