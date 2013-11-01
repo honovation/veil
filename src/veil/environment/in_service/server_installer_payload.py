@@ -3,6 +3,7 @@ import subprocess
 import shlex
 import sys
 import os
+import time
 
 
 def main():
@@ -15,6 +16,7 @@ def main():
     veil_framework_home = '/opt/{}/veil'.format(veil_env)
     application_branch = 'env-{}'.format(veil_env)
 
+    update_startup_script()
     disable_time_sync()
     install_git()
     clone_application(application_codebase, veil_home)
@@ -28,6 +30,14 @@ def main():
         patch(veil_framework_home, veil_home, veil_env, veil_server_name)
     else:
         raise Exception('unknown action: {}'.format(action))
+
+
+def update_startup_script():
+    if os.path.exists('/etc/init.d/start-app'):
+        shell_execute('update-rc.d start-app defaults 80')
+    else:
+        print(red('Not found start app script...sleeping 5 seconds'))
+        time.sleep(5)
 
 
 def disable_time_sync():

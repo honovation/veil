@@ -1,8 +1,10 @@
 from __future__ import unicode_literals, print_function, division
 import os
 import fabric.api
+from veil.server.config import *
 from veil_installer import *
 from veil.environment import *
+from .container_installer import remote_put_content
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'server_installer_payload.py')
 veil_servers_with_payload_uploaded = []
@@ -29,6 +31,12 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
     if fabric.api.env.host_string not in veil_servers_with_payload_uploaded:
         fabric.api.put(PAYLOAD, '/opt/server_installer_payload.py', use_sudo=True, mode=0600)
         veil_servers_with_payload_uploaded.append(fabric.api.env.host_string)
+    remote_put_content('/etc/init.d/start-app', render_start_app_init_script(veil_env_name, veil_server_name), use_sudo=True, mode=0755)
     fabric.api.sudo('python /opt/server_installer_payload.py {} {} {} {} {}'.format(
         VEIL_FRAMEWORK_CODEBASE, get_application_codebase(), veil_env_name, veil_server_name, action
     ))
+
+
+def render_start_app_init_script(veil_env_name, veil_server_name):
+    return render_config('start_app_init_script.j2',
+        do_start_command='sudo veil :{}/{} up --daemonize'.format(veil_env_name, veil_server_name), do_stop_command='')

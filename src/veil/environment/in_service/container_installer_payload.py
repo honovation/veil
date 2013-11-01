@@ -3,7 +3,6 @@ import sys
 import shlex
 import os
 import subprocess
-import time
 
 
 def main():
@@ -15,7 +14,6 @@ def main():
     clone_veil(veil_framework_codebase)
     pull_veil()
     install(installer_path)
-    update_startup_script()
     mark_installed(installer_path)
 
 
@@ -55,14 +53,6 @@ def install(installer_path):
 
 def mark_installed(installer_path):
     shell_execute('mv {} {}.installed'.format(installer_path, installer_path))
-
-
-def update_startup_script():
-    if os.path.exists('/etc/init.d/start-app'):
-        shell_execute('update-rc.d start-app defaults 80')
-    else:
-        print(red('Not found start app script...sleeping 5 seconds'))
-        time.sleep(5)
 
 
 def shell_execute(command_line, **kwargs):
