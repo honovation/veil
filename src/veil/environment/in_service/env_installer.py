@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import fabric.api
 import os
-import logging
 from datetime import datetime
 import sys
 from veil_installer import *
@@ -13,8 +12,6 @@ from veil.backend.database.postgresql import *
 from .host_installer import veil_env_hosts_resource
 from .container_installer import veil_env_containers_resource
 from .server_installer import veil_env_servers_resource
-
-LOGGER = logging.getLogger(__name__)
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'env_installer_payload.py')
 veil_servers_with_payload_uploaded = []
@@ -162,7 +159,7 @@ def remote_do(action, veil_env_name, veil_server_name):
 
 
 def update_branch(veil_env_name):
-    LOGGER.info('update env-%(env)s branch...', {'env': veil_env_name})
+    print('update env-{} branch...'.format(veil_env_name))
     try:
         shell_execute('git checkout env-{}'.format(veil_env_name), cwd=VEIL_HOME)
         shell_execute('git merge master --ff-only', cwd=VEIL_HOME)
