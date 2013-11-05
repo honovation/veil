@@ -3,20 +3,21 @@ import subprocess
 import shlex
 import sys
 import os
-import time
 
 
 def main():
     veil_framework_codebase = sys.argv[1]
     application_codebase = sys.argv[2]
-    veil_env = sys.argv[3]
+    veil_env_name = sys.argv[3]
     veil_server_name = sys.argv[4]
     action = sys.argv[5]
-    veil_home = '/opt/{}/app'.format(veil_env)
-    veil_framework_home = '/opt/{}/veil'.format(veil_env)
-    application_branch = 'env-{}'.format(veil_env)
+    veil_home = '/opt/{}/app'.format(veil_env_name)
+    veil_framework_home = '/opt/{}/veil'.format(veil_env_name)
+    application_branch = 'env-{}'.format(veil_env_name)
 
-    update_startup_script()
+    if action not in ('DEPLOY', 'PATCH'):
+        raise Exception('unknown action: {}'.format(action))
+
     disable_time_sync()
     install_git()
     clone_application(application_codebase, veil_home)
@@ -24,20 +25,11 @@ def main():
     framework_version = read_framework_version(veil_home)
     clone_veil(veil_framework_codebase, veil_framework_home)
     pull_veil(framework_version, veil_framework_home)
+
     if 'DEPLOY' == action:
-        deploy(veil_framework_home, veil_home, veil_env, veil_server_name)
-    elif 'PATCH' == action:
-        patch(veil_framework_home, veil_home, veil_env, veil_server_name)
-    else:
-        raise Exception('unknown action: {}'.format(action))
-
-
-def update_startup_script():
-    if os.path.exists('/etc/init.d/start-app'):
-        shell_execute('update-rc.d start-app defaults 80')
-    else:
-        print(red('Not found start app script...sleeping 5 seconds'))
-        time.sleep(5)
+        deploy(veil_framework_home, veil_home, veil_env_name, veil_server_name)
+    else:  # PATCH
+        patch(veil_framework_home, veil_home, veil_env_name, veil_server_name)
 
 
 def disable_time_sync():
@@ -93,16 +85,14 @@ def pull_veil(framework_version, veil_framework_home):
             break
 
 
-def deploy(veil_framework_home, veil_home, veil_env, veil_server_name):
+def deploy(veil_framework_home, veil_home, veil_env_name, veil_server_name):
     env = os.environ.copy()
-    shell_execute('{}/bin/veil :{}/{} deploy'.format(veil_framework_home, veil_env, veil_server_name), cwd=veil_home, env=env)
+    shell_execute('{}/bin/veil :{}/{} deploy'.format(veil_framework_home, veil_env_name, veil_server_name), cwd=veil_home, env=env)
 
 
-def patch(veil_framework_home, veil_home, veil_env, veil_server_name):
+def patch(veil_framework_home, veil_home, veil_env_name, veil_server_name):
     env = os.environ.copy()
-    shell_execute(
-        '{}/bin/veil :{}/{} patch'.format(veil_framework_home, veil_env, veil_server_name), cwd=veil_home, env=env
-    )
+    shell_execute('{}/bin/veil :{}/{} patch'.format(veil_framework_home, veil_env_name, veil_server_name), cwd=veil_home, env=env)
 
 
 def shell_execute(command_line, **kwargs):
@@ -115,9 +105,7 @@ def shell_execute(command_line, **kwargs):
         raise
     output = process.communicate()[0]
     if process.returncode:
-        raise Exception(red('shell_execute return code: {}, command: {}, kwargs: {}'.format(
-            process.returncode, command_args, kwargs
-        )))
+        raise Exception(red('shell_execute return code: {}, command: {}, kwargs: {}'.format(process.returncode, command_args, kwargs)))
     return output
 
 

@@ -6,6 +6,7 @@ import os
 
 LOGGER = logging.getLogger(__name__)
 
+
 def shell_execute(command_line, capture=False, waits=True, **kwargs):
     command_args = shlex.split(command_line)
     if capture:

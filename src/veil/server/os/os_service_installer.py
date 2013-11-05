@@ -7,6 +7,7 @@ from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
 
+
 @atomic_installer
 def os_service_resource(name, state):
     if 'not_installed' != state:
@@ -29,7 +30,5 @@ def stop_service(name):
 
 def is_service_installed(name):
     return any(glob.glob('/etc/rc{}.d/S[1-9][0-9]{}'.format(i, name)) for i in range(7)) or (
-        os.path.exists('/etc/init/{}.conf'.format(name))
-        and
-        not os.path.exists('/etc/init/{}.override'.format(name))
+        os.path.exists('/etc/init/{}.conf'.format(name)) and not os.path.exists('/etc/init/{}.override'.format(name))
     )

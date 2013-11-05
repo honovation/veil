@@ -14,4 +14,4 @@ if '/' in VEIL_SERVER:
 else:
     VEIL_ENV = VEIL_SERVER
     VEIL_SERVER_NAME = '@'
-VEIL_ENV_TYPE = VEIL_ENV.rsplit('-', 1)[-1] # development, test, staging, public (i.e. production)
+VEIL_ENV_TYPE = VEIL_ENV.rsplit('-', 1)[-1]  # development, test, staging, public (i.e. production)

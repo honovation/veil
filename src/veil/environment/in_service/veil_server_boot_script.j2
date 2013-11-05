@@ -1,20 +1,21 @@
 #! /bin/sh
+
 ### BEGIN INIT INFO
-# Provides:          start_app
-# Required-Start:    $remote_fs $syslog
-# Required-Stop:     $remote_fs $syslog
+# Provides:          {{ script_name }}
+# Required-Start:    $local_fs  $remote_fs $network $syslog
+# Required-Stop:     $local_fs  $remote_fs $network $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Do something when start container
-# Description:       Do something when start container
+# Short-Description: starts up & shuts down {{ script_name }}
+# Description:       starts up & shuts down {{ script_name }}
 ### END INIT INFO
 
 # Author: dawncold <loooseleaves@gmail.com>
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="Do something when start container"
-NAME=start_app_with_container_startup
+NAME={{ script_name }}
+DESC={{ script_name }}
 
 #
 # Function that starts the daemon/service
@@ -59,6 +60,8 @@ case "$1" in
   stop)
 	do_stop
 	;;
+  *)
+	echo "Usage: $NAME {start|stop}" >&2
+    exit 1
+	;;
 esac
-
-:
