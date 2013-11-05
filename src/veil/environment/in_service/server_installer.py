@@ -38,11 +38,13 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
 
 def remote_install_boot_script(veil_env_name, veil_server_name):
     boot_script_name = '{}-{}'.format(veil_env_name, veil_server_name)
+    print('install boot script: {} ...'.format(boot_script_name))
     boot_script_path = '/etc/init.d/{}'.format(boot_script_name)
     fabric.api.sudo('update-rc.d -f {} remove'.format(boot_script_name))
     temp_file_path = as_path(tempfile.mktemp())
     temp_file_path.write_text(render_boot_script(boot_script_name, veil_env_name, veil_server_name))
     fabric.api.put(temp_file_path, boot_script_path, use_sudo=True, mode=0755)
+    fabric.api.sudo('chown root:root {}'.format(boot_script_path))
     fabric.api.sudo('update-rc.d {} defaults 90 10'.format(boot_script_name))
 
 
