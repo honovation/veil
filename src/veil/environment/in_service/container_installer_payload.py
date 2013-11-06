@@ -65,8 +65,7 @@ def shell_execute(command_line, **kwargs):
         raise
     output = process.communicate()[0]
     if process.returncode:
-        raise Exception(red('shell_execute return code: {}, command: {}, kwargs: {}'.format(
-            process.returncode, command_args, kwargs)))
+        raise Exception(red('shell_execute return code: {}, command: {}, kwargs: {}'.format(process.returncode, command_args, kwargs)))
     return output
 
 

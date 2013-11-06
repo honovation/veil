@@ -140,8 +140,7 @@ def print_deployed_at():
 
 def get_deployed_at():
     last_commit = shell_execute('git rev-parse HEAD', capture=True).strip()
-    lines = shell_execute("git show-ref --tags -d | grep ^%s | sed -e 's,.* refs/tags/,,' -e 's/\^{}//'" % last_commit,
-        shell=True, capture=True)
+    lines = shell_execute("git show-ref --tags -d | grep ^%s | sed -e 's,.* refs/tags/,,' -e 's/\^{}//'" % last_commit, shell=True, capture=True)
     deployed_ats = []
     for tag in lines.splitlines(False):
         if tag.startswith('{}-'.format(VEIL_ENV)):

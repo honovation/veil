@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+"""
+will be linked to $VEIL_HOME/.git/hooks/pre-commit by $VEIL_FRAMEWORK_HOME/bin/veil-init
+"""
 
 from __future__ import unicode_literals, print_function, division
 import sys
 import os
-import shlex
-import subprocess
 import re
 from veil.utility.encoding import *
 from veil.utility.misc import *
-
-# will be linked to $VEIL_HOME/.git/hooks/pre-commit by $VEIL_FRAMEWORK_HOME/bin/veil-init
+from veil.utility.shell import *
 
 FORBIDDEN_COMMIT_BRANCH_PREFIX = 'env-'
 RE_MODIFIED = re.compile('^(?:M|A|\?\?|AM)(\s+)(?P<name>.*)')
@@ -67,26 +67,6 @@ def get_git_dir_version(git_dir='.'):
     for file in deleted_files:
         changes[file] = 'DELETED'
     return base_version, changes
-
-
-def shell_execute(command_line, capture=False, waits=True, **kwargs):
-    command_args = shlex.split(command_line)
-    if capture:
-        kwargs.update(dict(stderr=subprocess.STDOUT, stdout=subprocess.PIPE, stdin=subprocess.PIPE))
-    process = subprocess.Popen(command_args, **kwargs)
-    if not waits:
-        return process
-    output = process.communicate()[0]
-    if process.returncode:
-        if capture:
-            raise Exception(
-                'Subprocess return code: {}, command: {}, kwargs: {}, output: {}'.format(
-                    process.returncode, command_args, kwargs, output))
-        else:
-            raise Exception(
-                'Subprocess return code: {}, command: {}, kwargs: {}'.format(
-                    process.returncode, command_args, kwargs))
-    return output
 
 
 def _wrap_with(code):

@@ -18,12 +18,9 @@ def shell_execute(command_line, capture=False, waits=True, **kwargs):
     if process.returncode:
         if capture:
             raise ShellExecutionError(
-                'Subprocess return code: {}, command: {}, kwargs: {}, output: {}'.format(
-                    process.returncode, command_args, kwargs, output), output)
+                'Subprocess return code: {}, command: {}, kwargs: {}, output: {}'.format(process.returncode, command_args, kwargs, output), output)
         else:
-            raise ShellExecutionError(
-                'Subprocess return code: {}, command: {}, kwargs: {}'.format(
-                    process.returncode, command_args, kwargs))
+            raise ShellExecutionError('Subprocess return code: {}, command: {}, kwargs: {}'.format(process.returncode, command_args, kwargs))
     return output
 
 
