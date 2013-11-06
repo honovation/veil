@@ -23,15 +23,7 @@ def nginx_resource(servers, enable_compression, has_bunker, is_bunker, bunker_ip
         }))
     ])
     uploaded_files_directory = VEIL_VAR_DIR / 'uploaded-files'
-    resources.append(directory_resource(
-        path=uploaded_files_directory,
-        owner=CURRENT_USER,
-        group=CURRENT_USER_GROUP,
-        mode=0770))
+    resources.append(directory_resource(path=uploaded_files_directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770))
     for i in range(10):
-        resources.append(directory_resource(
-            path=uploaded_files_directory / str(i),
-            owner=CURRENT_USER,
-            group=CURRENT_USER_GROUP,
-            mode=0770))
+        resources.append(directory_resource(path=uploaded_files_directory / str(i), owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770))
     return resources

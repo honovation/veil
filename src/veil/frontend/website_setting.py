@@ -5,24 +5,20 @@ from veil.environment import *
 from veil.server.python import *
 from veil_component import *
 
+
 def website_programs(purpose, logging_levels, application_config, start_port, processes_count=1):
     veil_logging_level_config_path = VEIL_ETC_DIR / '{}-website-log.cfg'.format(purpose)
     resources = [
-        veil_logging_level_config_resource(
-            path=veil_logging_level_config_path,
-            logging_levels=logging_levels),
-        application_resource(component_names=list_website_components(purpose), config=application_config)]
+        veil_logging_level_config_resource(path=veil_logging_level_config_path, logging_levels=logging_levels),
+        application_resource(component_names=list_website_components(purpose), config=application_config)
+    ]
     additional_args = []
     programs = {}
     for i in range(processes_count):
         programs = merge_settings(programs, {
             '{}_tornado{}'.format(purpose, i + 1): {
-                'execute_command': 'veil frontend web up {} {} {}'.format(
-                    purpose, start_port + i, ' '.join(additional_args)),
-                'environment_variables': {
-                    'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path,
-                    'VEIL_LOGGING_EVENT': 'True'
-                },
+                'execute_command': 'veil frontend web up {} {} {}'.format(purpose, start_port + i, ' '.join(additional_args)),
+                'environment_variables': {'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path, 'VEIL_LOGGING_EVENT': 'True'},
                 'redirect_stderr': False,
                 'resources': resources,
                 'group': '{}_website'.format(purpose),
@@ -38,11 +34,12 @@ def list_website_components(website):
 
 def website_upstreams(purpose, start_port, processes_count):
     return {
-        '{}-tornado'.format(purpose):
-            [{
-                 'host': '127.0.0.1', # nginx and tornado has to live side by side, as they share upload/static files
+        '{}-tornado'.format(purpose): [
+            {
+                 'host': '127.0.0.1',  # nginx and tornado has to live side by side, as they share upload/static files
                  'port': start_port + i
-             } for i in range(processes_count)]
+            } for i in range(processes_count)
+        ]
     }
 
 
@@ -115,4 +112,4 @@ def website_locations(purpose):
         }
     }
     locations.update(extra_locations)
-    return locations;
+    return locations
