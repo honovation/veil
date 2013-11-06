@@ -33,7 +33,8 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
     fabric.api.sudo('python /opt/server_installer_payload.py {} {} {} {} {}'.format(
         VEIL_FRAMEWORK_CODEBASE, get_application_codebase(), veil_env_name, veil_server_name, action
     ))
-    remote_install_boot_script(veil_env_name, veil_server_name)
+    if action == 'DEPLOY':
+        remote_install_boot_script(veil_env_name, veil_server_name)
 
 
 def remote_install_boot_script(veil_env_name, veil_server_name):
