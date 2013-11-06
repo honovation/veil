@@ -197,9 +197,9 @@ veil.widget.updateResource = function (widget, onSuccess) {
     var _ = {
         url:widget.attr('action'),
         data:widget.serialize(),
-        onSuccess:function () {
+        onSuccess:function (s) {
             widget[0].reset();
-            onSuccess();
+            onSuccess(s);
         },
         onError:function () {
             veil.widget.showErrorMessage(widget, '操作失败');
