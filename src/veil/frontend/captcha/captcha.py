@@ -8,6 +8,8 @@ import random
 import uuid
 import os
 from PIL import Image, ImageDraw, ImageFont
+from veil.frontend.cli import *
+from veil.utility.shell import *
 from veil_installer import *
 from veil.frontend.template import *
 from veil.frontend.web import *
@@ -19,7 +21,8 @@ LOGGER = logging.getLogger(__name__)
 bucket = register_bucket('captcha_image')
 redis = register_redis('persist_store')
 
-CAPTCHA_ANSWER_ALIVE_TIME = timedelta(minutes=10)
+CAPTCHA_ANSWER_ALIVE_MINUTES = 10
+CAPTCHA_ANSWER_ALIVE_TIME = timedelta(minutes=CAPTCHA_ANSWER_ALIVE_MINUTES)
 
 
 def register_captcha(website):
@@ -74,7 +77,6 @@ def validate_captcha(challenge_code, captcha_answer):
                 'remote_ip': request.remote_ip,
                 'user_agent': request.headers.get('User-Agent')
             })
-        bucket().delete(captcha_bucket_key(challenge_code))
         return {}
     else:
         LOGGER.warn('[sensitive]validate captcha failed: %(site)s, %(function)s, %(user_answer)s, %(real_answer)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
@@ -90,18 +92,9 @@ def validate_captcha(challenge_code, captcha_answer):
         return {'captcha_answer': ['验证码{}，请重新填入正确的计算结果'.format('错误' if real_answer else '过期')]}
 
 
-def generate(size=(180, 30),
-             img_type="GIF",
-             mode="RGB",
-             bg_color=(255, 255, 255),
-             fg_color=(0, 0, 255),
-             font_size=100,
-             font_type="{}/wqy-microhei.ttc".format(os.path.dirname(__file__)),
-             draw_lines=False,
-             n_line=(1, 2),
-             draw_points=False,
-             point_chance=2):
-    '''
+def generate(size=(180, 30), img_type="GIF", mode="RGB", bg_color=(255, 255, 255), fg_color=(0, 0, 255), font_size=100,
+        font_type="{}/wqy-microhei.ttc".format(os.path.dirname(__file__)), draw_lines=False, n_line=(1, 2), draw_points=False, point_chance=2):
+    """
     @todo: 生成验证码图片
     @param size: 图片的大小，格式（宽，高），默认为(120, 30)
     @param chars: 允许的字符集合，格式字符串
@@ -118,8 +111,7 @@ def generate(size=(180, 30),
     @param point_chance: 干扰点出现的概率，大小范围[0, 100]
     @return: [0]: PIL Image实例
     @return: [1]: 验证码图片中的字符串
-    '''
-
+    """
     width, height = size
     img = Image.new(mode, size, bg_color)
     draw = ImageDraw.Draw(img)
@@ -187,3 +179,13 @@ def captcha_redis_key(challenge_code):
 
 def captcha_bucket_key(challenge_code):
     return '{}/{}/{}.gif'.format(challenge_code[:2], challenge_code[2:4], challenge_code)
+
+
+@script('remove-expired-captcha-images')
+def remove_expired_captcha_images():
+    if not hasattr(bucket(), 'base_directory'):
+        print('failed as captcha images are not saved in file-system-based bucket')
+        return
+    command_line = 'cd {} && find . -type f -cmin +{} -delete'.format(bucket().base_directory, CAPTCHA_ANSWER_ALIVE_MINUTES)
+    print('try to remove expired captcha images: command_line={}'.format(command_line))
+    shell_execute(command_line, capture=True, shell=True)

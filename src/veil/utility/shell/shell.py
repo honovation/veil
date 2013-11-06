@@ -8,10 +8,14 @@ LOGGER = logging.getLogger(__name__)
 
 
 def shell_execute(command_line, capture=False, waits=True, **kwargs):
-    command_args = shlex.split(command_line)
     if capture:
         kwargs.update(dict(stderr=subprocess.STDOUT, stdout=subprocess.PIPE, stdin=subprocess.PIPE))
-    process = subprocess.Popen(command_line if kwargs.get('shell') else command_args, **kwargs)
+    command_args = command_line if kwargs.get('shell') else shlex.split(command_line)
+    try:
+        process = subprocess.Popen(command_args, **kwargs)
+    except:
+        LOGGER.exception('failed to invoke: %(command_args)s, %(kwargs)s', {'command_args': command_args, 'kwargs': kwargs})
+        raise
     if not waits:
         return process
     output = process.communicate()[0]
@@ -32,11 +36,12 @@ def try_shell_execute(command_line, capture=False, waits=True, **kwargs):
         pass
 
 
+def pass_control_to(command_line):
+    command_args = shlex.split(command_line)
+    os.execlp(command_args[0], *command_args)
+
+
 class ShellExecutionError(Exception):
     def __init__(self, message, output=None):
         super(ShellExecutionError, self).__init__(message)
         self.output = output
-
-def pass_control_to(command_line):
-    command_args = shlex.split(command_line)
-    os.execlp(command_args[0], *command_args)

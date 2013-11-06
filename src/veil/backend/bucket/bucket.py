@@ -7,7 +7,8 @@ from .bucket_installer import load_bucket_config
 from .bucket_installer import bucket_resource
 
 LOGGER = logging.getLogger(__name__)
-instances = {} # purpose => instance
+instances = {}  # purpose => instance
+
 
 def register_bucket(purpose):
     add_application_sub_resource('{}_bucket'.format(purpose), lambda config: bucket_resource(purpose=purpose, config=config))
@@ -23,7 +24,6 @@ def require_bucket(purpose):
         else:
             raise NotImplementedError('unknown bucket type: {}'.format(bucket_type))
     return instances[purpose]
-
 
 
 class Bucket(object):
