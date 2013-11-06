@@ -10,9 +10,7 @@ LOGGER = logging.getLogger(__name__)
 instances = {} # purpose => instance
 
 def register_bucket(purpose):
-    add_application_sub_resource(
-        '{}_bucket'.format(purpose),
-        lambda config: bucket_resource(purpose=purpose, config=config))
+    add_application_sub_resource('{}_bucket'.format(purpose), lambda config: bucket_resource(purpose=purpose, config=config))
     return lambda: require_bucket(purpose)
 
 
@@ -21,8 +19,7 @@ def require_bucket(purpose):
         config = load_bucket_config(purpose)
         bucket_type = config.type
         if 'filesystem' == bucket_type:
-            instances[purpose] = FilesystemBucket(
-                config.base_directory, config.base_url)
+            instances[purpose] = FilesystemBucket(config.base_directory, config.base_url)
         else:
             raise NotImplementedError('unknown bucket type: {}'.format(bucket_type))
     return instances[purpose]
