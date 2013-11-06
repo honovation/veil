@@ -21,6 +21,7 @@ redis = register_redis('persist_store')
 
 CAPTCHA_ANSWER_ALIVE_TIME = timedelta(minutes=10)
 
+
 def register_captcha(website):
     add_application_sub_resource('captcha_image_bucket', lambda config: bucket_resource(purpose='captcha_image', config=config))
     add_application_sub_resource('persist_store_redis_client', lambda config: redis_client_resource(purpose='persist_store', **config))
@@ -36,15 +37,15 @@ def captcha_widget():
 
 
 def generate_captcha():
-    challenge_code = 'CAPTCHA:{}'.format(uuid.uuid4().get_hex())
+    challenge_code = uuid.uuid4().get_hex()
     image, answer = generate(size=(150, 30), font_size=25)
-    redis().setex(challenge_code, CAPTCHA_ANSWER_ALIVE_TIME, answer)
+    redis().setex(captcha_redis_key(challenge_code), CAPTCHA_ANSWER_ALIVE_TIME, answer)
     buffer = StringIO()
     image.save(buffer, 'GIF')
     buffer.reset()
-    key = '{}.gif'.format(challenge_code)
-    bucket().store(key, buffer)
-    return challenge_code, bucket().get_url(key)
+    bucket_key = captcha_bucket_key(challenge_code)
+    bucket().store(bucket_key, buffer)
+    return challenge_code, bucket().get_url(bucket_key)
 
 
 def captcha_protected(func):
@@ -62,7 +63,7 @@ def captcha_protected(func):
 
 def validate_captcha(challenge_code, captcha_answer):
     request = get_current_http_request()
-    real_answer = redis().get(challenge_code)
+    real_answer = redis().get(captcha_redis_key(challenge_code))
     if 'test' == VEIL_SERVER or (captcha_answer and real_answer == captcha_answer):
         if 'test' != VEIL_SERVER:
             LOGGER.info('[sensitive]validate captcha succeeded: %(site)s, %(function)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
@@ -73,7 +74,7 @@ def validate_captcha(challenge_code, captcha_answer):
                 'remote_ip': request.remote_ip,
                 'user_agent': request.headers.get('User-Agent')
             })
-        bucket().delete(challenge_code)
+        bucket().delete(captcha_bucket_key(challenge_code))
         return {}
     else:
         LOGGER.warn('[sensitive]validate captcha failed: %(site)s, %(function)s, %(user_answer)s, %(real_answer)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
@@ -178,3 +179,11 @@ def generate(size=(180, 30),
     #img = img.filter(ImageFilter.EDGE_ENHANCE_MORE) # 滤镜，边界加强（阈值更大）
 
     return img, answer
+
+
+def captcha_redis_key(challenge_code):
+    return 'CAPTCHA:{}'.format(challenge_code)
+
+
+def captcha_bucket_key(challenge_code):
+    return '{}/{}/{}.gif'.format(challenge_code[:2], challenge_code[2:4], challenge_code)
