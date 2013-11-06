@@ -90,7 +90,7 @@ def website_locations(purpose):
         '^~ /fupload/': {
             '_': '''
                 client_body_temp_path %s 1;
-                client_body_in_file_only on;
+                client_body_in_file_only clean;
                 proxy_set_header X-UPLOAD-FILE-PATH $request_body_file;
                 proxy_set_body off;
                 proxy_pass http://%s-tornado;
