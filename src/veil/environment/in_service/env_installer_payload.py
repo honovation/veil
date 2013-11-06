@@ -41,7 +41,7 @@ def create_backup(src_dir, backup_dir, veil_server):
         print('{} does not exists, skipped backup'.format('{}/app'.format(src_dir)))
         return
     if os.path.exists(backup_dir):
-        raise Exception('{} already exists, backup procedure abandoned')
+        raise Exception('{} already exists, backup procedure abandoned'.format(backup_dir))
     bring_down_server(src_dir, veil_server)
     shell_execute('cp -r -p {} {}'.format(src_dir, backup_dir))
     shell_execute('git reset --hard HEAD'.format(veil_server), cwd='{}/app'.format(src_dir))
