@@ -178,7 +178,7 @@ def captcha_redis_key(challenge_code):
 
 
 def captcha_bucket_key(challenge_code):
-    return '{}/{}/{}.gif'.format(challenge_code[:2], challenge_code[2:4], challenge_code)
+    return '{}/{}.gif'.format(challenge_code[0], challenge_code)
 
 
 @script('remove-expired-captcha-images')
