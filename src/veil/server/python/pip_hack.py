@@ -48,7 +48,7 @@ def download_package(package, **kwargs):
         os.rename(old_input_dir, new_input_dir)
         output_name = os.path.join("..", new_input_dir + PACKAGE_SUFFIX)
         downloaded_packages[pkg] = (version, 'file://{}'.format(outdir / '{}{}'.format(new_input_dir, PACKAGE_SUFFIX)))
-        shell_execute('tar -czf {} {}'.format(output_name, new_input_dir), capture=True)
+        shell_execute('tar czf {} {}'.format(output_name, new_input_dir), capture=True)
 
     os.chdir(previous_cwd)
     tempdir.rmtree()

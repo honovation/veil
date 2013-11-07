@@ -186,6 +186,6 @@ def remove_expired_captcha_images():
     if not hasattr(bucket(), 'base_directory'):
         print('failed as captcha images are not saved in file-system-based bucket')
         return
-    command_line = 'cd {} && find . -type f -cmin +{} -delete'.format(bucket().base_directory, CAPTCHA_ANSWER_ALIVE_MINUTES)
-    print('try to remove expired captcha images: command_line={}'.format(command_line))
+    command_line = 'find {} -type f -cmin +{} -delete'.format(bucket().base_directory, CAPTCHA_ANSWER_ALIVE_MINUTES)
+    print('try to remove expired captcha images: {}'.format(command_line))
     shell_execute(command_line, capture=True, shell=True)

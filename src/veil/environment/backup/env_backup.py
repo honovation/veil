@@ -13,6 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 KEEP_BACKUP_FOR_DAYS = 3 if VEIL_ENV_TYPE == 'staging' else 15
 
+
 @script('create')
 def create_env_backup(should_bring_up_servers='TRUE'):
     """
@@ -80,7 +81,7 @@ def backup_server(backing_up_env, veil_server_name, timestamp):
     if not os.path.exists('/backup/{}'.format(timestamp)):
         os.mkdir('/backup/{}'.format(timestamp), 0755)
     fabric.api.get(backup_path, backup_path)
-    fabric.api.sudo('rm -rf /backup') # backup is centrally stored in @guard lxc container
+    fabric.api.sudo('rm -rf /backup')  # backup is centrally stored in @guard lxc container
 
 
 def rsync_to_backup_mirror():
