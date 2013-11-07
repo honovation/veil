@@ -38,7 +38,7 @@ def clone_veil(veil_framework_codebase):
 def pull_veil():
     while True:
         try:
-            shell_execute('git pull', cwd='/opt/veil')
+            shell_execute('git pull --rebase', cwd='/opt/veil')
         except:
             continue
         else:

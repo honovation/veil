@@ -52,7 +52,7 @@ def pull_application(application_branch, veil_home):
     shell_execute('git checkout {}'.format(application_branch), cwd=veil_home)
     while True:
         try:
-            shell_execute('git pull', cwd=veil_home)
+            shell_execute('git pull --rebase', cwd=veil_home)
         except:
             continue
         else:
@@ -78,7 +78,7 @@ def pull_veil(framework_version, veil_framework_home):
     shell_execute('git checkout {}'.format(framework_version), cwd=veil_framework_home)
     while True:
         try:
-            shell_execute('git pull', cwd=veil_framework_home)
+            shell_execute('git pull --rebase', cwd=veil_framework_home)
         except:
             continue
         else:
