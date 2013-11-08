@@ -2,7 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 import hashlib
 import traceback
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import Decimal, ROUND_HALF_UP, ROUND_FLOOR
 from veil.utility.encoding import to_unicode
 
 TWO_PLACES = Decimal('0.01')
@@ -49,8 +49,12 @@ def calculate_file_md5_hash(file_object, reset_position=False, hex=True):
             file_object.seek(0)
 
 
-def round_money(d):
-    return d.quantize(TWO_PLACES, rounding=ROUND_HALF_UP)
+def round_money_half_up(d):
+    return d.quantize(TWO_PLACES, ROUND_HALF_UP)
+
+
+def round_money_floor(d):
+    return d.quantize(TWO_PLACES, ROUND_FLOOR)
 
 
 def remove_elements_without_value_from_dict(d):
