@@ -44,8 +44,7 @@ class ObjectBinder(object):
             if not self.allow_extra:
                 extra_fields_names = actual_fields_names.difference(expected_fields_names)
                 if extra_fields_names:
-                    raise Invalid(_(
-                        'Extra fields found in the submitted data: {}'.format(', '.join(extra_fields_names))))
+                    raise Invalid(_('Extra fields found in the submitted data: {}'.format(', '.join(extra_fields_names))))
             if not self.allow_missing:
                 if expected_fields_names.difference(actual_fields_names):
                     raise Invalid(_('Missing fields in the submitted data'))

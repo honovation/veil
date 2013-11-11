@@ -5,7 +5,7 @@ import pytz
 import babel.dates
 from veil.frontend.template import *
 from veil.utility.clock import *
-from .i18n import *
+from .i18n import get_current_locale, _
 
 @template_filter('timedelta')
 def timedelta_filter(delta, granularity='second', with_direction=False):
@@ -42,6 +42,8 @@ def date_filter(value, format='yyyy-MM-dd', delta=0):
 
 @template_filter('datetime')
 def datetime_filter(value, format='yyyy-MM-dd HH:mm:ss'):
+    if isinstance(value, basestring):
+        return value
     if 'epoch' == format:
         epoch = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=pytz.utc)
         delta = value - epoch

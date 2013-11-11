@@ -103,10 +103,8 @@ def args_to_raw_command(positional_args, keyword_args, command_handler):
             raw_command[k] = v
         else:
             if not allow_extra_keyword_args:
-                LOGGER.debug('found extra keyword argument: %(keyword_argument_name)s', {
-                    'keyword_argument_name': k
-                })
-                raise InvalidCommand(errors={None: [_('Extra fields found in the submitted data')]})
+                LOGGER.debug('found extra keyword argument: %(keyword_argument_name)s', {'keyword_argument_name': k})
+                raise InvalidCommand(errors={None: [_('Extra fields found in the submitted data: {}'.format(k))]})
             raw_command['kwargs'][k] = v
     return raw_command
 
