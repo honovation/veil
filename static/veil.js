@@ -81,7 +81,7 @@ veil.resource.get = function (options) {
             403:function() {alert('权限不足');}
         }
     };
-    $.ajax(_);
+    return $.ajax(_);
 };
 
 veil.resource.create = function (options) {
@@ -105,7 +105,7 @@ veil.resource.create = function (options) {
             403:function() {alert('权限不足');}
         }
     };
-    $.ajax(_);
+    return $.ajax(_);
 };
 
 veil.resource.update = function (options) {
@@ -125,7 +125,7 @@ veil.resource.update = function (options) {
             403:function() {alert('权限不足');}
         }
     };
-    $.ajax(_);
+    return $.ajax(_);
 };
 
 veil.resource.del = function (options) {
@@ -139,7 +139,7 @@ veil.resource.del = function (options) {
             403:function() {alert('权限不足');}
         }
     };
-    $.ajax(_);
+    return $.ajax(_);
 };
 
 veil.widget = {};
@@ -163,7 +163,7 @@ veil.widget.delResource = function (widget, onSuccess) {
             onSuccess();
         }
     };
-    veil.resource.del(_);
+    return veil.resource.del(_);
 };
 
 veil.widget.createResource = function (widget, onSuccess, data, dataType) {
@@ -189,7 +189,7 @@ veil.widget.createResource = function (widget, onSuccess, data, dataType) {
             });
         }
     };
-    veil.resource.create(_);
+    return veil.resource.create(_);
 };
 
 veil.widget.updateResource = function (widget, onSuccess) {
@@ -214,7 +214,7 @@ veil.widget.updateResource = function (widget, onSuccess) {
             });
         }
     };
-    veil.resource.update(_);
+    return veil.resource.update(_);
 };
 
 veil.widget.getResource = function (widget, onSuccess) {
@@ -239,7 +239,7 @@ veil.widget.getResource = function (widget, onSuccess) {
             });
         }
     };
-    veil.resource.get(_);
+    return veil.resource.get(_);
 };
 
 veil.widget.showErrorMessage = function (widget, defaultErrorMessage) {
@@ -303,7 +303,7 @@ veil.widget.refresh = function (widget, options) {
 };
 
 veil.widget.get = function (url, onSuccess, data) {
-    veil.resource.get({
+    return veil.resource.get({
         url:url,
         data:data,
         onSuccess:function (html) {
