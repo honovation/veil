@@ -19,7 +19,7 @@ def get_current_http_request(optional=False):
 
 
 def get_current_http_response(optional=False):
-    context =get_current_http_context(optional=optional)
+    context = get_current_http_context(optional=optional)
     return context.response if context else None
 
 

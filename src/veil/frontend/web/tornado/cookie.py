@@ -103,7 +103,7 @@ def set_cookie(response=None, **kwargs):
     create_cookie(response.get_cookies(), **kwargs)
 
 
-def create_cookie(cookies, name, value, domain=None, expires=None, path='/', expires_days=None, **kwargs):
+def create_cookie(cookies, name, value, domain=None, expires=None, path='/', expires_days=None, expires_minutes=None, **kwargs):
     name = to_str(name)
     value = to_str(value)
     if re.search(br'[\x00-\x20]', name + value):
@@ -113,8 +113,8 @@ def create_cookie(cookies, name, value, domain=None, expires=None, path='/', exp
     cookie = cookies[name]
     if domain:
         cookie['domain'] = domain
-    if expires_days is not None and not expires:
-        expires = datetime.datetime.utcnow() + datetime.timedelta(days=expires_days)
+    if not expires and (expires_days is not None or expires_minutes is not None):
+        expires = datetime.datetime.utcnow() + datetime.timedelta(days=expires_days or 0, minutes=expires_minutes or 0)
     if expires:
         timestamp = calendar.timegm(expires.utctimetuple())
         cookie['expires'] = email.utils.formatdate(timestamp, localtime=False, usegmt=True)
