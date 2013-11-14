@@ -18,9 +18,11 @@ def create_server_backup(backup_path):
         return
     if is_supervisord_running():
         raise Exception('can not backup while supervisord is executing')
-    backup_dir = os.path.dirname(backup_path)
-    if not os.path.exists(backup_dir):
-        os.makedirs(backup_dir, mode=0755)
-    shell_execute('tar czf {} --exclude=*.pid --exclude=uploaded-files --exclude=inline-static-files --exclude=captcha-image -C {} .'.format(
-        backup_path, VEIL_VAR_DIR
+    backup_to_dir = os.path.dirname(backup_path)
+    if not os.path.exists(backup_to_dir):
+        os.makedirs(backup_to_dir, mode=0755)
+    backup_dirs = get_current_veil_server().backup_dirs
+    backup_dir_list = [VEIL_VAR_DIR] if not backup_dirs else [VEIL_VAR_DIR] + backup_dirs
+    shell_execute('tar czf {} --exclude=*.pid --exclude=uploaded-files --exclude=inline-static-files --exclude=captcha-image {}'.format(
+        backup_path, ' '.join(backup_dir_list)
     ))
