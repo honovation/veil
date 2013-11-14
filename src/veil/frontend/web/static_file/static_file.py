@@ -122,9 +122,9 @@ def write_inline_static_file(page_handler, suffix, content):
     dir = as_path(inline_static_files_directory)
     if not dir.exists():
         dir.mkdir(0755)
-    inline_static_file = dir / hash
+    inline_static_file = dir / hash[:2] / hash[2:]
     if not inline_static_file.exists():
         inline_static_file.write_text(to_str(content))
     page_name = page_handler.__name__.replace('_widget', '').replace('_page', '').replace('_', '-')
     pseudo_file_name = '{}.{}'.format(page_name, suffix)
-    return 'v-{}/{}'.format(hash, pseudo_file_name)
+    return 'v-{}-{}/{}'.format(hash[:2], hash[2:], pseudo_file_name)

@@ -105,8 +105,8 @@ def website_locations(purpose):
         },
         # inline static files
         # /static/v-xxxx/a-b.js
-        '~ ^/static/v-(.*)/': {
-            'alias': VEIL_VAR_DIR / 'inline-static-files' / '$1',
+        '~ ^/static/v-(.*)-(.*)/': {
+            'alias': VEIL_VAR_DIR / 'inline-static-files' / '$1' / '$2',
             'access_log': 'off',
             'expires': 'max'
         }
