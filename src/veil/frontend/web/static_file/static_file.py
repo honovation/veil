@@ -119,11 +119,12 @@ def wrap_js_to_ensure_load_once(js):
 def write_inline_static_file(page_handler, suffix, content):
     assert inline_static_files_directory
     hash = hashlib.md5(to_str(content)).hexdigest()
-    dir = as_path(inline_static_files_directory)
-    if not dir.exists():
-        dir.mkdir(0755)
-    inline_static_file = dir / hash[:2] / hash[2:]
-    if not inline_static_file.exists():
+    dir = as_path(inline_static_files_directory) / hash[:2]
+    dir_not_exist = not dir.exists()
+    if dir_not_exist:
+        dir.makedirs(0755)
+    inline_static_file = dir / hash[2:]
+    if dir_not_exist or not inline_static_file.exists():
         inline_static_file.write_text(to_str(content))
     page_name = page_handler.__name__.replace('_widget', '').replace('_page', '').replace('_', '-')
     pseudo_file_name = '{}.{}'.format(page_name, suffix)
