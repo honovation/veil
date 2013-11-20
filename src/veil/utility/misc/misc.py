@@ -19,10 +19,14 @@ def chunks(seq, size, padding=False, padding_element=None):
     if padding:
         remain = len(seq) % size
         if remain != 0:
-            for i in xrange(0, size - remain):
-                seq.append(padding_element)
+            if isinstance(seq, basestring):
+                assert isinstance(padding_element, basestring) and len(padding_element) == 1
+                seq = '{}{}'.format(seq, padding_element * (size - remain))
+            else:
+                for i in xrange(0, size - remain):
+                    seq.append(padding_element)
     for i in xrange(0, len(seq), size):
-        yield seq[i:i+size]
+        yield seq[i: i + size]
 
 
 def iter_file_in_chunks(file_object, chunk_size=8192):
