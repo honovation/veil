@@ -12,7 +12,11 @@ from veil.utility.clock import get_current_time, get_current_date_in_client_time
 LOGGER = logging.getLogger(__name__)
 
 def check_live_document():
-    for doc in (VEIL_HOME / '文档').walkfiles('*.py'):
+    live_doc_path = (VEIL_HOME / '文档')
+    if not live_doc_path.exists():
+        LOGGER.warn('live document directory not found: %(live_doc_path)s', {'live_doc_path': live_doc_path})
+        return
+    for doc in live_doc_path.walkfiles('*.py'):
         LOGGER.info('checking live document: %(doc)s', {'doc': to_unicode(doc)})
         exec(compile(doc.text(), doc, 'exec'))
         tear_down_fake_test()
