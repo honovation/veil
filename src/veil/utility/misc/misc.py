@@ -61,10 +61,27 @@ def round_money_floor(d):
     return d.quantize(TWO_PLACES, ROUND_FLOOR)
 
 
+def remove_exponent_and_insignificant_zeros(d):
+    """
+    Remove exponent and trailing zeros
+    @param d: a decimal
+    """
+    return d.quantize(Decimal(1)) if d == d.to_integral() else d.normalize()
+
+
 def remove_elements_without_value_from_dict(d):
     for key in list(d.keys()):
         if not d[key]:
             del d[key]
+
+
+def whitespace2none(l_or_d_or_str):
+    if isinstance(l_or_d_or_str, (str, unicode)):
+        return l_or_d_or_str.strip() or None
+    elif isinstance(l_or_d_or_str, (list, dict)):
+        for k in range(len(l_or_d_or_str)) if isinstance(l_or_d_or_str, list) else l_or_d_or_str.keys():
+            l_or_d_or_str[k] = whitespace2none(l_or_d_or_str[k])
+    return l_or_d_or_str
 
 
 def list_toggled_bit_offsets(int_val):
@@ -74,7 +91,7 @@ def list_toggled_bit_offsets(int_val):
     val = abs(int_val)
     offset = 1
     while True:
-        mask = 1 << (offset -1)
+        mask = 1 << (offset - 1)
         if val < mask:
             break
         if (val & mask) == mask:
