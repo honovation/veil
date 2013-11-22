@@ -3,13 +3,12 @@ import logging
 import re
 import xmlrpclib
 from veil_installer import *
-from veil.utility.shell import *
 from veil.utility.env_consts import *
-from veil.frontend.cli import *
 from .pip_hack import *
 
 LOGGER = logging.getLogger(__name__)
 PIP_FREEZE_OUTPUT = None
+
 
 @atomic_installer
 def python_package_resource(name, url=None, **kwargs):

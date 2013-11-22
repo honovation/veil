@@ -38,7 +38,7 @@ function veil_init {
     find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
     find $VEIL_HOME -type f -name "*.pyc" -delete
     if [[ "$VEIL_SERVER" != "development" && "$VEIL_SERVER" != "test" ]] ; then
-        sudo apt-get -sy remove network-manager
+        sudo apt-get -y remove network-manager
     fi
     sudo apt-get -y install iptables python-dev python-virtualenv python-pip language-pack-en unzip wget
     if [ ! -f /usr/bin/veil ]; then
@@ -49,7 +49,11 @@ function veil_init {
         echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
         echo "$VEIL_HOME/src" >> env/lib/python2.7/site-packages/veil.pth
         source $VEIL_HOME/env/bin/activate
-        (cd $VEIL_HOME; sudo veil execute pip install pytz)
+        sudo veil execute pip install --upgrade pip==1.4.1
+        sudo veil execute pip install pytz
+        if [[ "$VEIL_SERVER" == "development" || "$VEIL_SERVER" == "test" ]] ; then
+            sudo veil :$VEIL_SERVER install veil_installer.component_resource?veil.development.self_checker
+        fi
     fi
     if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then
         git config core.quotepath false
