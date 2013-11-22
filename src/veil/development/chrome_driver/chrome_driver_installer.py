@@ -1,7 +1,11 @@
 from __future__ import unicode_literals, print_function, division
+import logging
 import os
 from veil_installer import *
 from veil.utility.shell import *
+
+LOGGER = logging.getLogger(__name__)
+
 
 @atomic_installer
 def chrome_driver_resource():
@@ -16,6 +20,10 @@ def chrome_driver_resource():
     if mirror:
         mirror = '{}:8080'.format(mirror)
     else:
-        mirror = 'http://chromedriver.googlecode.com/files'
-    shell_execute('wget {}/chromedriver_linux64_21.0.1180.4.zip -O /tmp/chromedriver_linux64_21.0.1180.4.zip'.format(mirror))
-    shell_execute('unzip /tmp/chromedriver_linux64_21.0.1180.4.zip -d /usr/bin')
+        mirror = 'http://chromedriver.storage.googleapis.com'
+    version = '2.6'
+    url = '{}/{}/chromedriver_linux64.zip'.format(mirror, version)
+    local_path = '/tmp/chromedriver_linux64_{}.zip'.format(version)
+    LOGGER.info('installing selenium webdriver for chrome: from %(url)s...', {'url': url})
+    shell_execute('wget {} -O {}'.format(url, local_path))
+    shell_execute('unzip {} -d /usr/bin'.format(local_path))
