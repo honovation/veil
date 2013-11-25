@@ -22,15 +22,14 @@ def set_resource_latest_version(key, version):
 
 
 def get_resource_latest_version(key):
-    assert VEIL_ENV_TYPE in ('development', 'test')
     load_all()
-    if VEIL_ENV_TYPE == 'development':
-        if key not in version_cache['development'] and key in version_cache['test']:
+    if VEIL_ENV_TYPE == 'test':
+        return version_cache['test'].get(key)
+    else:
+        if VEIL_ENV_TYPE == 'development' and key not in version_cache['development'] and key in version_cache['test']:
             version_cache['development'][key] = version_cache['test'][key]
             save_all()
         return version_cache['development'].get(key)
-    else:
-        return version_cache['test'].get(key)
 
 
 def load_all():
