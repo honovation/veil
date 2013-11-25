@@ -51,9 +51,6 @@ function veil_init {
         source $VEIL_HOME/env/bin/activate
         sudo veil execute pip install --upgrade pip==1.4.1
         sudo veil execute pip install pytz
-        if [[ "$VEIL_SERVER" == "development" || "$VEIL_SERVER" == "test" ]] ; then
-            sudo veil :$VEIL_SERVER install veil_installer.component_resource?veil.development.self_checker
-        fi
     fi
     if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then
         git config core.quotepath false
