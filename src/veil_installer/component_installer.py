@@ -17,8 +17,7 @@ def component_resource(name):
     installer_path = os.path.join(module_dir, 'INSTALLER')
     resources = []
     veil_component.scan_component(name)
-    for dependent_component_name in veil_component.get_dependent_component_names(component_name,
-        includes_children=True):
+    for dependent_component_name in veil_component.get_dependent_component_names(component_name, includes_children=True):
         resources.append(component_resource(name=dependent_component_name))
     resources.append(installer_resource(name=installer_path))
     return resources

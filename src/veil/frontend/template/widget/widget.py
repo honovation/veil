@@ -6,7 +6,7 @@ import traceback
 import logging
 import contextlib
 from markupsafe import Markup
-import veil_component
+from veil_component import get_loading_component_name
 from veil.development.test import *
 from veil.utility.encoding import *
 from ..template import register_template_utility
@@ -58,7 +58,7 @@ class WidgetDecorator(object):
         def wrapper(*args, **kwargs):
             return widget.render(*args, **kwargs)
 
-        loading_component_name = veil_component.get_loading_component_name()
+        loading_component_name = get_loading_component_name()
         if loading_component_name:
             namespace = loading_component_name
         else:
@@ -93,7 +93,7 @@ class Widget(object):
         self.name = name
         self.func = func
         self.registered_by = to_unicode(str('').join(traceback.format_stack()))
-        loading_component_name = veil_component.get_loading_component_name()
+        loading_component_name = get_loading_component_name()
         if loading_component_name:
             self.namespace = loading_component_name
         else:
@@ -120,7 +120,7 @@ class Widget(object):
 def import_widget(widget_handler):
     if is_abstract_widget(widget_handler):
         raise Exception('can not import abstract widget: {}'.format(widget_handler))
-    loading_component_name = veil_component.get_loading_component_name()
+    loading_component_name = get_loading_component_name()
     if loading_component_name:
         namespace = loading_component_name
     else:

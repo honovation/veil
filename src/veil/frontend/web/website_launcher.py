@@ -9,7 +9,7 @@ from veil.development.source_code_monitor import *
 from veil.frontend.website_setting import list_website_components
 from .tornado import *
 from .locale import *
-from .routing import  *
+from .routing import *
 from .static_file import *
 from .xsrf import *
 from .website_installer import load_website_config

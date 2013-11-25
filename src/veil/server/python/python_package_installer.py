@@ -2,8 +2,8 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import re
 import xmlrpclib
+from veil.utility.env_consts import VEIL_ENV_TYPE
 from veil_installer import *
-from veil.utility.env_consts import *
 from .pip_hack import *
 
 LOGGER = logging.getLogger(__name__)

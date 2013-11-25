@@ -2,8 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
 import atexit
-from veil.environment import *
-from veil_component import *
+from veil_component import load_all_components, record_dynamic_dependency_provider, get_loading_component_name
 from veil.development.test import *
 
 root_context = {}

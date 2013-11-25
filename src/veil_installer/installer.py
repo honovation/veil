@@ -25,9 +25,7 @@ def atomic_installer(func):
     @functools.wraps(func)
     def wrapper(**kwargs):
         if not kwargs.pop('do_install', False):
-            return '{}.{}'.format(
-                veil_component.get_leaf_component(func.__module__),
-                func.__name__), kwargs
+            return '{}.{}'.format(veil_component.get_leaf_component(func.__module__), func.__name__), kwargs
         try:
             executing_installers.append(func)
             return func(**kwargs)

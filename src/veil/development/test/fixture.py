@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
+from veil_component import load_dynamic_dependency_providers, record_dynamic_dependency_provider, get_loading_component_name
 from veil.model.collection import *
-from veil_component import *
 from .case import test_hook
 from .case import get_executing_test
 

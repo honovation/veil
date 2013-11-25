@@ -1,8 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 import logging
+from veil.utility.env_consts import VEIL_ENV_TYPE
 from veil_installer import *
 from veil.utility.shell import *
-from veil.utility.env_consts import *
 
 LOGGER = logging.getLogger(__name__)
 apt_get_update_executed = False
