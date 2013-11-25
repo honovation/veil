@@ -1,5 +1,4 @@
 from __future__ import unicode_literals, print_function, division
-import os
 from veil.profile.installer import *
 
 @atomic_installer
@@ -31,7 +30,8 @@ def db2_driver_resource():
     install_resource(file_resource(path='/etc/ld.so.conf.d/db2-clidriver.conf', content='/opt/db2-clidriver/lib'))
     shell_execute('ldconfig')
     package_version = get_python_package_installed_version('ibm-db', from_cache=False)
-    set_resource_latest_version('veil.backend.database.db2_driver.db2_driver_resource', package_version)
+    if VEIL_ENV_TYPE in ('development', 'test'):
+        set_resource_latest_version('veil.backend.database.db2_driver.db2_driver_resource', package_version)
 
 
 def download_db2_driver():
