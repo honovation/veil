@@ -30,8 +30,8 @@ def install_translations(locale_provider):
 
 
 def get_browser_locale():
-    """Determines the user's locale from Accept-Language header.
-
+    """
+    Determines the user's locale from Accept-Language header.
     See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
     """
     request = get_current_http_request()

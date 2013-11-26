@@ -41,7 +41,6 @@ def load_config_from(path, *required_keys):
         if line and not line.startswith('#'):
             key, value = [x.strip() for x in line.split('=', 1)]
             config[key] = value
-    assert set(required_keys) <= set(config.keys()),\
-    'config file {} does not provide exact required keys we want, expected: {}, actual: {}'.format(
+    assert set(required_keys) <= set(config.keys()), 'config file {} does not provide exact required keys we want, expected: {}, actual: {}'.format(
         path, set(required_keys), set(config.keys()))
     return config

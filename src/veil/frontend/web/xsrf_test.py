@@ -8,11 +8,8 @@ from .website_installer import override_website_config
 class XsrfTest(TestCase):
     def setUp(self):
         super(XsrfTest, self).setUp()
-        override_website_config('test',
-            domain='', domain_port=0, start_port=4999,
-            master_template_directory='',
-            prevents_xsrf=True, recalculates_static_file_hash=True,
-            clears_template_cache=True)
+        override_website_config('test', domain='', domain_port=0, start_port=4999, locale='', master_template_directory='', prevents_xsrf=True,
+            recalculates_static_file_hash=True, clears_template_cache=True)
 
     def test_form_submission(self):
         @route('POST', '/', website='test')

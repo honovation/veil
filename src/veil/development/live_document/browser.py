@@ -5,8 +5,16 @@ import contextlib
 import os
 import jinjatag
 import atexit
-
 from veil.utility.env_consts import VEIL_ENV_TYPE
+from veil.frontend.web import *
+from veil.development.test import *
+from .live_document import require_current_context_being
+from .live_document import document_statement
+
+LOGGER = logging.getLogger(__name__)
+current_http_server = None
+webdriver = None
+
 if 'test' != VEIL_ENV_TYPE:
     def open_browser_page(website_purpose, path, page_name):
         pass
@@ -16,14 +24,6 @@ if 'test' != VEIL_ENV_TYPE:
 else:
     import selenium.webdriver
     import selenium.common.exceptions
-    from veil.frontend.web import *
-    from veil.development.test import *
-    from .live_document import require_current_context_being
-    from .live_document import document_statement
-
-    LOGGER = logging.getLogger(__name__)
-    current_http_server = None
-    webdriver = None
 
     @contextlib.contextmanager
     def open_browser_page(website_purpose, path, page_name):
@@ -153,6 +153,7 @@ else:
     def get_url(purpose, path):
         url_prefix = get_website_url_prefix(purpose)
         return '{}{}'.format(url_prefix, path)
+
 
 @jinjatag.simple_block()
 def doc(body):

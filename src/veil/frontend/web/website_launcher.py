@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import argparse
 from jinja2.loaders import FileSystemLoader
+from veil.frontend.locale import get_locale
 from veil.frontend.template import *
 from veil.frontend.cli import *
 from veil.environment import *
@@ -40,10 +41,7 @@ def execute_bring_up_website(*argv):
 def start_test_website(purpose, **kwargs):
     config = load_website_config(purpose)
     http_handler = create_website_http_handler(purpose, config, **kwargs)
-    http_server = start_test_http_server(
-        http_handler,
-        host='localhost',
-        port=config.start_port)
+    http_server = start_test_http_server(http_handler, host='localhost', port=config.start_port)
     http_server.purpose = purpose
     return http_server
 
@@ -54,13 +52,14 @@ def start_website(purpose, port):
     http_handler = create_website_http_handler(purpose, config)
     io_loop = IOLoop.instance()
     io_loop.add_callback(lambda: LOGGER.info('started website: %(purpose)s', {'purpose': purpose}))
-    start_http_server(
-        http_handler, io_loop=io_loop,
-        host='localhost', port=port)
+    start_http_server(http_handler, io_loop=io_loop, host='localhost', port=port)
 
 
 def create_website_http_handler(purpose, config):
-    locale_provider = lambda: None
+    if config.locale:
+        locale_provider = lambda: get_locale(config.locale)
+    else:
+        locale_provider = lambda: None
     set_inline_static_files_directory(VEIL_VAR_DIR / 'inline-static-files')
     set_external_static_files_directory(VEIL_HOME / 'static')
     master_template_directory = config.master_template_directory
