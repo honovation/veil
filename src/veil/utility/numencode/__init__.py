@@ -5,6 +5,6 @@ with veil_component.init_component(__name__):
     from .numencode import code2num
 
     __all__ = [
-        numencode.__name__,
+        num2code.__name__,
         code2num.__name__
     ]
