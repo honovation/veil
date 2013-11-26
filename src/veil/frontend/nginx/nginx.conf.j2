@@ -12,8 +12,6 @@ events {
 }
 
 http {
-    default_type application/octet-stream;
-
     keepalive_timeout 120 65;
     sendfile on;
     tcp_nodelay on;
@@ -29,7 +27,7 @@ http {
         gzip_static off;
         gzip_proxied any;
         gzip_min_length 1400;
-        gzip_comp_level 3;
+        gzip_comp_level 4;
         gzip_types text/plain text/css text/javascript application/javascript application/x-javascript application/json text/x-json text/xml application/xml application/xml+rss application/atom+xml image/x-icon image/bmp image/x-ms-bmp;
         gzip_vary on;
         gzip_buffers 64 8k;
@@ -60,7 +58,10 @@ http {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Request-Code $unix_timestamp-$cookie_vbcode;
     proxy_redirect off;
-    proxy_next_upstream error timeout;
+    # Only retry if there was a communication error, not a timeout
+    # on the Tornado server (to avoid propagating "queries of death"
+    # to all frontends)
+    proxy_next_upstream error;
 
     log_format logstash_json '{ "@timestamp": "$time_iso8601", '
                              '"@type": "nginx", '
@@ -126,6 +127,12 @@ http {
     }
     {% endfor %}
 
+    open_file_cache max=50000 inactive=30s;
+    open_file_cache_valid 60s;
+    open_file_cache_min_uses 2;
+    open_file_cache_errors on;
+
+    default_type application/octet-stream;
     types {
         text/html                             html htm shtml;
         text/css                              css;
