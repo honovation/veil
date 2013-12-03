@@ -2,7 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 import hashlib
 import traceback
-from decimal import Decimal, ROUND_HALF_UP, ROUND_FLOOR
+from decimal import Decimal, ROUND_HALF_UP, ROUND_FLOOR, ROUND_CEILING
 from veil.utility.encoding import to_unicode
 
 TWO_PLACES = Decimal('0.01')
@@ -59,6 +59,10 @@ def round_money_half_up(d):
 
 def round_money_floor(d):
     return d.quantize(TWO_PLACES, ROUND_FLOOR)
+
+
+def round_money_ceiling(d):
+    return d.quantize(TWO_PLACES, ROUND_CEILING)
 
 
 def remove_exponent_and_insignificant_zeros(d):

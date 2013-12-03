@@ -7,6 +7,7 @@ with veil_component.init_component(__name__):
     from .misc import calculate_file_md5_hash
     from .misc import round_money_half_up
     from .misc import round_money_floor
+    from .misc import round_money_ceiling
     from .misc import remove_exponent_and_insignificant_zeros
     from .misc import list_toggled_bit_offsets
     from .misc import remove_elements_without_value_from_dict
@@ -21,6 +22,7 @@ with veil_component.init_component(__name__):
         calculate_file_md5_hash.__name__,
         round_money_half_up.__name__,
         round_money_floor.__name__,
+        round_money_ceiling.__name__,
         remove_exponent_and_insignificant_zeros.__name__,
         list_toggled_bit_offsets.__name__,
         remove_elements_without_value_from_dict.__name__,
