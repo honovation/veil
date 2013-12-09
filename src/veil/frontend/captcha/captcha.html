@@ -8,10 +8,12 @@
     <input name="captcha_answer" id="captcha_answer"/>
 </span>
 <div class="captcha-image" style="font-size: 12px">
-    计算：
-    <a id="change-captcha" href="javascript:void(0);" title="看不清？换一个">
-        <img style="border: 1px solid #CCC" src="{{ captcha_image_url }}" alt="验证码"/>
-    </a>
+    <p class="inline">计算：</p>
+    <img id="change-captcha" style="border: 1px solid #CCC;cursor: pointer" title="看不清？点击更换" src="{{ captcha_image_url }}" alt="验证码"/>
+</div>
+<div class="inline" id="captcha-result">
+    <i class="cus-accept accept" style="display: none"></i>
+    <i class="cus-cross error" style="display: none"></i>
 </div>
 <script type="text/javascript">
     $(document).ready(function () {
@@ -19,6 +21,19 @@
             $.get('/captcha', {'_': $.now()},function (html) {
                 $('#captcha-wrap').html(html);
             });
+        });
+        $(document).on('focus', '#captcha_answer', function(){
+            $('#captcha-result').find('i').hide();
+        });
+        $(document).on('blur', '#captcha_answer', function(){
+            var $captchaResult = $('#captcha-result');
+            if(!$(this).val()) {
+                $captchaResult.find('.accept').hide();
+                $captchaResult.find('.error').show();
+            } else {
+                $captchaResult.find('.error').hide();
+                $captchaResult.find('.accept').show();
+            }
         });
     });
 </script>
