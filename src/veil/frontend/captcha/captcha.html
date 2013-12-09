@@ -14,11 +14,11 @@
     </a>
 </div>
 <script type="text/javascript">
-$(document).ready(function () {
-    $('.captcha-image').on('click', '#change-captcha', function (e) {
-        $.get('/captcha', {'_': $.now()},function (html) {
-            $('#captcha-wrap').html(html);
+    $(document).ready(function () {
+        $(document).on('click', '#change-captcha', function (e) {
+            $.get('/captcha', {'_': $.now()},function (html) {
+                $('#captcha-wrap').html(html);
+            });
         });
     });
-});
 </script>
