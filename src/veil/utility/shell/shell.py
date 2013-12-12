@@ -20,6 +20,12 @@ def shell_execute(command_line, capture=False, waits=True, **kwargs):
         return process
     output = process.communicate()[0]
     if process.returncode:
+        LOGGER.warn('received nonzero return code: %(return_code)s, %(command_line)s, %(kwargs)s, %(output)s', {
+            'return_code': process.returncode,
+            'command_line': command_line,
+            'kwargs': kwargs,
+            'output': output
+        })
         if capture:
             raise ShellExecutionError(
                 'Subprocess return code: {}, command: {}, kwargs: {}, output: {}'.format(process.returncode, command_args, kwargs, output), output)
