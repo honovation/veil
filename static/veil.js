@@ -142,6 +142,26 @@ veil.resource.del = function (options) {
     return $.ajax(_);
 };
 
+veil.resource.patch = function (options) {
+    var url = options.url;
+    var data = options.data;
+    var onSuccess = options.onSuccess;
+    var onError = options.onError;
+    var onValidationError = options.onValidationError;
+    var _ = {
+        type:'PATCH',
+        url:url,
+        data:data,
+        success:onSuccess,
+        error:onError,
+        statusCode:{
+            400:onValidationError,
+            403:function() {alert('权限不足');}
+        }
+    };
+    return $.ajax(_);
+};
+
 veil.widget = {};
 
 veil.widget.handle = function (widget_selector, child_selector, event, handler) {
