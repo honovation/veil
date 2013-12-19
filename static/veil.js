@@ -101,8 +101,9 @@ veil.resource.create = function (options) {
         success:onSuccess,
         error:onError,
         statusCode:{
-            400:onValidationError,
-            403:function() {alert('权限不足');}
+            400: onValidationError,
+            401: function(){alert('用户名或密码错误')},
+            403: function() {alert('权限不足');}
         }
     };
     return $.ajax(_);
@@ -197,7 +198,7 @@ veil.widget.createResource = function (widget, onSuccess, data, dataType) {
             onSuccess(s);
         },
         onError:function () {
-            veil.widget.showErrorMessage(widget, '操作失败');
+            //veil.widget.showErrorMessage(widget, '操作失败');
         },
         onValidationError:function (xhr) {
             veil.widget.processWidget(xhr.responseText, function(html){
@@ -222,7 +223,7 @@ veil.widget.updateResource = function (widget, onSuccess) {
             onSuccess(s);
         },
         onError:function () {
-            veil.widget.showErrorMessage(widget, '操作失败');
+            //veil.widget.showErrorMessage(widget, '操作失败');
         },
         onValidationError:function (xhr) {
             veil.widget.processWidget(xhr.responseText, function(html){
@@ -247,7 +248,7 @@ veil.widget.getResource = function (widget, onSuccess) {
             veil.widget.processWidget(html, onSuccess);
         },
         onError:function () {
-            veil.widget.showErrorMessage(widget, '操作失败');
+            //veil.widget.showErrorMessage(widget, '操作失败');
         },
         onValidationError:function (xhr) {
             veil.widget.processWidget(xhr.responseText, function(html){
