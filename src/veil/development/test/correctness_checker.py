@@ -12,7 +12,9 @@ CURRENT_DIR = as_path(os.path.dirname(__file__))
 
 def check_correctness():
     package_names = ['veil']
-    load_all_components() # load all so sys.modules contains module to be tested
+    all_components = load_all_components() # load all so sys.modules contains module to be tested
+    for component_name in all_components:
+        package_names.append(component_name)
     test_package(*package_names)
 
 

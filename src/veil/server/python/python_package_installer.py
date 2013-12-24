@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import re
 import xmlrpclib
-from veil.utility.env_consts import VEIL_ENV_TYPE
+from veil.env_consts import VEIL_ENV_TYPE
 from veil_installer import *
 from .pip_hack import *
 

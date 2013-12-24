@@ -57,6 +57,17 @@ def objectify(o):
         return o
 
 
+def entitify(o, primary_keys=None):
+    if isinstance(o, Entity):
+        return o
+    elif isinstance(o, (dict, DictObject)):
+        return Entity({k: entitify(v, primary_keys=primary_keys) for k, v in o.items()}, primary_keys=primary_keys)
+    elif isinstance(o, (tuple, set, list)):
+        return [entitify(e, primary_keys=primary_keys) for e in o]
+    else:
+        return o
+
+
 def freeze_dict_object(o):
     if isinstance(o, dict):
         return FrozenDictObject({k: freeze_dict_object(v) for k, v in o.items()})
@@ -95,13 +106,15 @@ class FrozenDictObject(DictObject):
 
 
 class Entity(DictObject):
-    PRIMARY_KEYS = ('id',)
+    primary_keys = ('id',)
 
-    def __init__(self, seq=None, **kwargs):
+    def __init__(self, seq=None, primary_keys=None, **kwargs):
         super(Entity, self).__init__(seq, **kwargs)
-        assert self.PRIMARY_KEYS, 'must specify PRIMARY_KEYS'
-        if all(getattr(self, primary_key, None) is None for primary_key in self.PRIMARY_KEYS):
-            raise Exception('{} does not have any of {}'.format(self, self.PRIMARY_KEYS))
+        if primary_keys:
+            self.primary_keys = primary_keys
+        assert self.primary_keys, 'must specify primary_keys'
+        if all(getattr(self, primary_key, None) is None for primary_key in self.primary_keys):
+            raise Exception('{} does not have any of {}'.format(self, self.primary_keys))
 
     @classmethod
     def serialize(cls, **kwargs):
@@ -120,13 +133,13 @@ class Entity(DictObject):
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return False
-        return tuple(getattr(self, k) for k in self.PRIMARY_KEYS) == tuple(getattr(other, k) for k in self.PRIMARY_KEYS)
+        return tuple(getattr(self, k) for k in self.primary_keys) == tuple(getattr(other, k) for k in self.primary_keys)
 
     def __hash__(self):
         if not self.get('_hash'):
-            self._hash = hash(tuple(self.get(k) for k in self.PRIMARY_KEYS))
+            self._hash = hash(tuple(self.get(k) for k in self.primary_keys))
         return self._hash
 
     def __repr__(self):
         return '<{}: {}>'.format(type(self).__name__, ', '.join(
-            tuple('{}={}'.format(k, getattr(self, k, None)) for k in self.PRIMARY_KEYS)))
+            tuple('{}={}'.format(k, getattr(self, k, None)) for k in self.primary_keys)))

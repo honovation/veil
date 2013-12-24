@@ -3,7 +3,7 @@ import getpass
 import os
 from veil_component import *
 from veil.server.os import *
-from veil.utility.env_consts import *
+from veil.env_consts import *
 
 VEIL_LOG_DIR = VEIL_HOME / 'log' / VEIL_ENV
 VEIL_ETC_DIR = VEIL_HOME / 'etc' / VEIL_ENV

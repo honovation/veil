@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import functools
 import uuid
-from veil.utility.env_consts import VEIL_ENV_TYPE
+from veil.env_consts import VEIL_ENV_TYPE
 from .case import get_executing_test
 
 mockable_functions = {}

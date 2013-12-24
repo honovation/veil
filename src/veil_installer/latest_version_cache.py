@@ -2,7 +2,7 @@
 serves as cache to speed up upgrade decision
 """
 from __future__ import unicode_literals, print_function, division
-from veil.utility.env_consts import VEIL_ENV_TYPE
+from veil.env_consts import VEIL_ENV_TYPE
 from veil_component import VEIL_HOME
 
 RESOURCE_LATEST_VERSION = VEIL_HOME / 'RESOURCE-LATEST-VERSION'

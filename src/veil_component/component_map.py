@@ -93,8 +93,10 @@ def get_leaf_component(module_name):
 
 
 def load_all_components():
-    for component_name in list_all_components():
+    all_components = list_all_components()
+    for component_name in all_components:
         __import__(component_name)
+    return all_components
 
 
 def list_all_components():

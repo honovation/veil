@@ -5,6 +5,7 @@ from logging import getLogger
 from datetime import timedelta, datetime
 from redis.client import Redis
 from pyres import ResQ
+from veil.env_consts import VEIL_ENV_TYPE
 from veil.utility.encoding import to_unicode
 from veil_installer import *
 from veil.utility.clock import *
@@ -42,7 +43,8 @@ def require_queue():
 def release_queue():
     global _current_queue
     if _current_queue:
-        LOGGER.debug('close queue at exit: %(queue)s', {'queue': _current_queue})
+        if 'test' != VEIL_ENV_TYPE:
+            LOGGER.debug('close queue at exit: %(queue)s', {'queue': _current_queue})
         _current_queue.close()
         _current_queue = None
 

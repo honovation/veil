@@ -7,6 +7,7 @@ from functools import wraps
 from logging import getLogger
 import uuid
 from veil.utility.encoding import to_unicode
+from veil.env_consts import VEIL_ENV_TYPE
 from veil_component import *
 from veil_installer import *
 from veil.development.test import *
@@ -407,5 +408,6 @@ class ConstValueProvider(object):
 @event(EVENT_PROCESS_TEARDOWN)
 def close_all_connections():
     for purpose, instance in instances.items():
-        LOGGER.debug('close connection at exit: %(purpose)s', {'purpose': purpose})
+        if 'test' != VEIL_ENV_TYPE:
+            LOGGER.debug('close connection at exit: %(purpose)s', {'purpose': purpose})
         instance.close()

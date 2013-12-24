@@ -3,6 +3,7 @@ import time
 import os
 import logging
 from redis.client import StrictRedis
+from veil.env_consts import VEIL_ENV_TYPE
 from veil.frontend.cli import *
 from veil.model.event import event
 from veil.server.process import EVENT_PROCESS_TEARDOWN
@@ -31,7 +32,8 @@ def bring_up_log_shipper():
 @event(EVENT_PROCESS_TEARDOWN)
 def close_shipper_log_files():
     for shipper in shippers:
-        LOGGER.debug('close shipper log file at exit: %(path)s', {'path': shipper.log_path})
+        if 'test' != VEIL_ENV_TYPE:
+            LOGGER.debug('close shipper log file at exit: %(path)s', {'path': shipper.log_path})
         shipper.close_log_file()
 
 
