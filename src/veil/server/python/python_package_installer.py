@@ -21,9 +21,9 @@ def python_package_resource(name, url=None, version=None, **kwargs):
     latest_version = get_resource_latest_version(to_resource_key(name))
     if VEIL_ENV_TYPE not in ('development', 'test'):
         if not installed_version or installed_version != latest_version:
-            while not download_python_package(name, version=latest_version):
+            while not download_python_package(name, version=latest_version, **kwargs):
                 pass
-            while not install_python_package(name, latest_version):
+            while not install_python_package(name, latest_version, **kwargs):
                 pass
     else:
         remote_latest_version = None
@@ -47,7 +47,7 @@ def python_package_resource(name, url=None, version=None, **kwargs):
                         LOGGER.info('To download python package %(name)s from url: %(url)s, version: %(version)s', {
                             'name': name, 'url': url, 'version': version
                         })
-                        while not download_python_package(name, url=url, version=version):
+                        while not download_python_package(name, url=url, version=version, **kwargs):
                             pass
 
                 if upgrade_mode == UPGRADE_MODE_LATEST and remote_latest_version and not (downloaded_version and downloaded_version == remote_latest_version):
@@ -57,7 +57,7 @@ def python_package_resource(name, url=None, version=None, **kwargs):
                         'latest_version': latest_version,
                         'remote_latest_version': remote_latest_version
                     })
-                    while not download_python_package(name, version=remote_latest_version):
+                    while not download_python_package(name, version=remote_latest_version, **kwargs):
                         pass
                 elif upgrade_mode == UPGRADE_MODE_FAST and not (downloaded_version and downloaded_version == latest_version):
                     LOGGER.debug('To download python package: %(name)s, %(downloaded_version)s, %(latest_version)s', {
@@ -65,7 +65,7 @@ def python_package_resource(name, url=None, version=None, **kwargs):
                         'downloaded_version': downloaded_version,
                         'latest_version': latest_version,
                     })
-                    while not download_python_package(name, version=latest_version):
+                    while not download_python_package(name, version=latest_version, **kwargs):
                         pass
             if upgrade_mode == UPGRADE_MODE_LATEST and not remote_latest_version:
                 dry_run_result['python_package?{}'.format(name)] = '-'
@@ -81,11 +81,11 @@ def python_package_resource(name, url=None, version=None, **kwargs):
                 LOGGER.info('To download python package %(name)s from url: %(url)s, version: %(version)s', {
                     'name': name, 'url': url, 'version': version
                 })
-                while not download_python_package(name, url=url, version=version):
+                while not download_python_package(name, url=url, version=version, **kwargs):
                     pass
         else:
             if not downloaded_version:
-                while not download_python_package(name, version=latest_version):
+                while not download_python_package(name, version=latest_version, **kwargs):
                     pass
             else:
                 if upgrade_mode == UPGRADE_MODE_LATEST and (downloaded_version != remote_latest_version or downloaded_version != latest_version):
@@ -96,7 +96,7 @@ def python_package_resource(name, url=None, version=None, **kwargs):
                         'downloaded_version': downloaded_version,
                         'latest_version': latest_version,
                     })
-                    while not download_python_package(name, version=remote_latest_version or latest_version):
+                    while not download_python_package(name, version=remote_latest_version or latest_version, **kwargs):
                         pass
                 elif upgrade_mode != UPGRADE_MODE_LATEST and downloaded_version != latest_version:
                     LOGGER.debug('To download python package: %(name)s, %(downloaded_version)s, %(latest_version)s', {
@@ -104,20 +104,20 @@ def python_package_resource(name, url=None, version=None, **kwargs):
                         'downloaded_version': downloaded_version,
                         'latest_version': latest_version,
                     })
-                    while not download_python_package(name, version=latest_version):
+                    while not download_python_package(name, version=latest_version, **kwargs):
                         pass
 
         downloaded_version, local_url = get_downloaded_python_package_version(name)
         if not installed_version:
-            while not install_python_package(name, version=latest_version):
+            while not install_python_package(name, version=latest_version, **kwargs):
                 pass
         else:
             if UPGRADE_MODE_LATEST == upgrade_mode and (installed_version != downloaded_version or latest_version != downloaded_version):
-                while not install_python_package(name, version=downloaded_version):
+                while not install_python_package(name, version=downloaded_version, **kwargs):
                     pass
                 set_resource_latest_version(to_resource_key(name), downloaded_version)
             elif UPGRADE_MODE_LATEST != upgrade_mode and installed_version != latest_version:
-                while not install_python_package(name, version=latest_version):
+                while not install_python_package(name, version=latest_version, **kwargs):
                     pass
                 set_resource_latest_version(to_resource_key(name), latest_version)
             LOGGER.info('python package upgraded to new version: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s', {
@@ -165,12 +165,12 @@ def get_python_package_installed_version(pip_package, from_cache=True):
 
 
 @script('download-package')
-def download_python_package(name, version=None, url=None):
+def download_python_package(name, version=None, url=None, **kwargs):
     if url and not version:
         raise Exception('package version is required if url is specified')
     if version:
         try:
-            shell_execute('ls {} | grep {} | grep {}'.format(LOCAL_PYTHON_PACKAGE_DIR, name, version), capture=True, shell=True)
+            shell_execute('ls {} | grep {} | grep {}'.format(LOCAL_PYTHON_PACKAGE_DIR, name, version), capture=True, shell=True, **kwargs)
         except Exception as e:
             pass
         else:
@@ -178,11 +178,11 @@ def download_python_package(name, version=None, url=None):
     pip_args = '-i http://pypi.douban.com/simple --extra-index-url https://pypi.python.com/simple'
     try:
         if url:
-            shell_execute('pip install {} -d {} {}'.format(url, LOCAL_PYTHON_PACKAGE_DIR, pip_args), capture=True)
+            shell_execute('pip install {} -d {} {}'.format(url, LOCAL_PYTHON_PACKAGE_DIR, pip_args), capture=True, **kwargs)
         elif version:
-            shell_execute('pip install {}=={} -d {} {}'.format(name, version, LOCAL_PYTHON_PACKAGE_DIR, pip_args), capture=True)
+            shell_execute('pip install {}=={} -d {} {}'.format(name, version, LOCAL_PYTHON_PACKAGE_DIR, pip_args), capture=True, **kwargs)
         else:
-            shell_execute('pip install {} -d {} {}'.format(name, LOCAL_PYTHON_PACKAGE_DIR, pip_args), capture=True)
+            shell_execute('pip install {} -d {} {}'.format(name, LOCAL_PYTHON_PACKAGE_DIR, pip_args), capture=True, **kwargs)
     except Exception as e:
         return False
     else:
@@ -190,12 +190,12 @@ def download_python_package(name, version=None, url=None):
 
 
 @script('install-package')
-def install_python_package(name, version=None):
+def install_python_package(name, version=None, **kwargs):
     try:
         if version:
-            shell_execute('pip install --no-index --find-links {} {}=={}'.format(LOCAL_PYTHON_PACKAGE_DIR, name, version), capture=True)
+            shell_execute('pip install --no-index --find-links {} {}=={}'.format(LOCAL_PYTHON_PACKAGE_DIR, name, version), capture=True, **kwargs)
         else:
-            shell_execute('pip install --no-index --find-links {} {}'.format(LOCAL_PYTHON_PACKAGE_DIR, name), capture=True)
+            shell_execute('pip install --no-index --find-links {} {}'.format(LOCAL_PYTHON_PACKAGE_DIR, name), capture=True, **kwargs)
     except Exception as e:
         return False
     else:
@@ -225,9 +225,9 @@ def fetch_remote_latest_version():
                 )
 
 
-def upgrade_python_package(name):
+def upgrade_python_package(name, **kwargs):
     try:
-        shell_execute('pip install {} --upgrade --find-links {}'.format(name, LOCAL_PYTHON_PACKAGE_DIR), capture=True)
+        shell_execute('pip install {} --upgrade --find-links {}'.format(name, LOCAL_PYTHON_PACKAGE_DIR), capture=True, **kwargs)
     except Exception as e:
         return False
     else:
