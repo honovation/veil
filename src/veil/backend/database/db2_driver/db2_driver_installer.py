@@ -3,7 +3,7 @@ from veil.profile.installer import *
 
 @atomic_installer
 def db2_driver_resource():
-    installed_version = get_python_package_installed_version('ibm-db')
+    installed_version = get_python_package_installed_version('ibm_db')
     action = None if installed_version else 'INSTALL'
     if UPGRADE_MODE_LATEST == get_upgrade_mode():
         action = action or 'UPGRADE'
@@ -19,17 +19,17 @@ def db2_driver_resource():
     if dry_run_result is not None:
         if should_download_while_dry_run():
             download_db2_driver()
-            install_resource(python_package_resource(name='ibm-db', env=env))
+            install_resource(python_package_resource(name='ibm_db', env=env))
         dry_run_result['db2-driver'] = action or '-'
         return
     if not action:
         return
     download_db2_driver()
     env['IBM_DB_HOME'] = '/opt/db2-clidriver'
-    install_resource(python_package_resource(name='ibm-db', env=env))
+    install_resource(python_package_resource(name='ibm_db', env=env))
     install_resource(file_resource(path='/etc/ld.so.conf.d/db2-clidriver.conf', content='/opt/db2-clidriver/lib'))
     shell_execute('ldconfig')
-    package_version = get_python_package_installed_version('ibm-db', from_cache=False)
+    package_version = get_python_package_installed_version('ibm_db', from_cache=False)
     if VEIL_ENV_TYPE in ('development', 'test'):
         set_resource_latest_version('veil.backend.database.db2_driver.db2_driver_resource', package_version)
 

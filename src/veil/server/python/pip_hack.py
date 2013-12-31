@@ -1,13 +1,11 @@
 from __future__ import unicode_literals, print_function, division
 import os
 import zipfile
-from veil.frontend.cli import *
 from veil_component import *
 from veil.utility.shell import *
 
 PACKAGE_SUFFIX = '.tar.gz'
 
-@script('download-package')
 def download_package(package, **kwargs):
 # modified from https://github.com/wolever/pip2pi/blob/master/libpip2pi/commands.py
     outdir = as_path('/opt/pypi')

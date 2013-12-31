@@ -16,14 +16,13 @@ if '__main__' == __name__:
 
     argument_parser = argparse.ArgumentParser('Install resource')
     argument_parser.add_argument('resource', type=str, help='<installer_name>?<installer_arg1>&<installer_arg2>...')
-    argument_parser.add_argument('--dry-run', help='list the resources required and installed or not',
-        action='store_true')
-    argument_parser.add_argument('--upgrade-mode',
-        help='no will keep current version, latest will check remote and upgrade from remote, '
-             'fast will check local and upgrade from remote only if necessary',
-        choices=[UPGRADE_MODE_FAST, UPGRADE_MODE_LATEST, UPGRADE_MODE_NO])
-    argument_parser.add_argument('--download-only',
-        help='download necessary files from remote, but do not install them', action='store_true')
+    argument_parser.add_argument('--dry-run', help='list the resources required and installed or not', action='store_true')
+    argument_parser.add_argument('--upgrade-mode', help='''
+        no will keep current version
+        latest will check remote and upgrade from remote
+        fast will check local and upgrade from remote only if necessary
+        ''', choices=[UPGRADE_MODE_FAST, UPGRADE_MODE_LATEST, UPGRADE_MODE_NO])
+    argument_parser.add_argument('--download-only', help='download necessary files from remote, but do not install them', action='store_true')
     args = argument_parser.parse_args(sys.argv[1:])
 
     resource = parse_resource(args.resource)
