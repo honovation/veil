@@ -3,6 +3,7 @@ import logging
 import re
 from veil.env_consts import VEIL_ENV_TYPE
 from veil_installer import *
+from veil.frontend.cli import *
 from .pip_hack import *
 
 LOGGER = logging.getLogger(__name__)
