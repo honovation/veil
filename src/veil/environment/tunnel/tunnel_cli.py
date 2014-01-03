@@ -23,7 +23,7 @@ def bring_up_socks_proxy(target_env=None, gateway_host_name=None, gateway_host_s
         )
     else:
         gateway_host = hosts.values()[0]
-    command = 'autossh -o StrictHostKeyChecking=no -D 1080 -p {} {}@{}'.format(
+    command = 'autossh -o StrictHostKeyChecking=no -D 0.0.0.0:1080 -p {} {}@{}'.format(
         gateway_host.ssh_port, gateway_host.ssh_user, gateway_host.external_ip)
     LOGGER.info('command: %(command)s', {'command': command})
     pass_control_to(command)
