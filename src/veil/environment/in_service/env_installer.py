@@ -133,6 +133,15 @@ def start_env(veil_env_name):
         remote_do('bring-up-server', veil_env_name, veil_server_name)
 
 
+@script('upgrade-env-pip')
+def upgrade_env_pip(veil_env_name, setuptools_version, pip_version):
+    """
+    Upgrade pip and setuptools on veil servers
+    """
+    for veil_server_name in list_veil_server_names(veil_env_name):
+        remote_do('upgrade-pip', veil_env_name, veil_server_name, setuptools_version, pip_version)
+
+
 @script('print-deployed-at')
 def print_deployed_at():
     print(get_deployed_at())
@@ -149,12 +158,12 @@ def get_deployed_at():
     return max(deployed_ats) if deployed_ats else None
 
 
-def remote_do(action, veil_env_name, veil_server_name):
+def remote_do(action, veil_env_name, veil_server_name, *args):
     fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, veil_server_name)
     if fabric.api.env.host_string not in veil_servers_with_payload_uploaded:
         fabric.api.put(PAYLOAD, '/opt/env_installer_payload.py', use_sudo=True, mode=0600)
         veil_servers_with_payload_uploaded.append(fabric.api.env.host_string)
-    fabric.api.sudo('python /opt/env_installer_payload.py {} {} {}'.format(action, veil_env_name, veil_server_name))
+    fabric.api.sudo('python /opt/env_installer_payload.py {} {} {} {}'.format(action, veil_env_name, veil_server_name, ' '.join(arg for arg in args)))
 
 
 def update_branch(veil_env_name):

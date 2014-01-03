@@ -15,7 +15,7 @@ LOCAL_PYTHON_PACKAGE_DIR = as_path('/opt/pypi')
 @atomic_installer
 def python_package_resource(name, url=None, version=None, **kwargs):
     if url and not version:
-        raise Exception('package version is required if url is specified')
+        raise Exception('package version not specified for <{}> with urle <{}>'.format(name, url))
     installed_version = get_python_package_installed_version(name)
     downloaded_version, local_url = get_downloaded_python_package_version(name)
     latest_version = get_resource_latest_version(to_resource_key(name))
@@ -232,3 +232,9 @@ def upgrade_python_package(name, **kwargs):
         return False
     else:
         return True
+
+
+@script('upgrade-pip')
+def upgrade_pip(setuptools_version, pip_version):
+    shell_execute('veil execute pip install --upgrade setuptools=={}'.format(setuptools_version))
+    shell_execute('veil execute pip install --upgrade pip=={}'.format(pip_version))

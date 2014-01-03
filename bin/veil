@@ -49,6 +49,7 @@ function veil_init {
         echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
         echo "$VEIL_HOME/src" >> env/lib/python2.7/site-packages/veil.pth
         source $VEIL_HOME/env/bin/activate
+        sudo veil execute pip install --upgrade setuptools==2.0.2
         sudo veil execute pip install --upgrade pip==1.4.1
         sudo veil execute pip install pytz
     fi
@@ -117,9 +118,17 @@ case "$1" in
         shift
         exec veil environment in-service restart-env $@
         ;;
+    upgrade-env-pip)
+        shift
+        exec veil environment in-service upgrade-env-pip $@
+        ;;
     init)
         shift
         veil_init
+        ;;
+    upgrade-pip)
+        shift
+        exec veil server python upgrade-pip $@
         ;;
     deploy)
         shift

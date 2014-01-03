@@ -32,6 +32,10 @@ def main():
         bring_up_server(src_dir, veil_server)
     elif 'download-packages' == action:
         download_packages(src_dir, veil_server)
+    elif 'upgrade-pip' == action:
+        setuptools_version = sys.argv[4]
+        pip_version = sys.argv[5]
+        upgrade_pip(src_dir, veil_server, setuptools_version, pip_version)
     else:
         raise Exception('unknown action: {}'.format(action))
 
@@ -67,6 +71,10 @@ def bring_down_server(src_dir, veil_server):
 
 def bring_up_server(src_dir, veil_server):
     shell_execute('veil :{} up --daemonize'.format(veil_server), cwd='{}/app'.format(src_dir))
+
+
+def upgrade_pip(src_dir, veil_server, setuptools_version, pip_version):
+    shell_execute('veil :{} upgrade-pip {} {}'.format(veil_server, setuptools_version, pip_version), cwd='{}/app'.format(src_dir))
 
 
 def purge_left_overs():
