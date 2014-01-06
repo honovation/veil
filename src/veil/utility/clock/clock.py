@@ -68,7 +68,7 @@ def convert_datetime_to_utc_timezone(dt):
         return dt if is_utc_datetime(dt) else convert_aware_datetime_to_timezone(dt, pytz.utc)
 
 
-def convert_naive_datetime_to_aware(dt, tzinfo):
+def convert_naive_datetime_to_aware(dt, tzinfo=DEFAULT_CLIENT_TIMEZONE):
     assert is_naive_datetime(dt)
     if hasattr(tzinfo, 'localize'): # pytz
         converted = tzinfo.localize(dt)

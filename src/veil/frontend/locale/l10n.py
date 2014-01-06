@@ -14,12 +14,17 @@ def timedelta_filter(delta, granularity='second', add_direction=False):
 
 @template_filter('timedelta_by_now')
 def timedelta_by_now_filter(value, granularity='second'):
+    if value and is_naive_datetime(value):
+        value = convert_naive_datetime_to_aware(value)
     current_time = get_current_time()
     return timedelta_filter(value - current_time, granularity, add_direction=True)
 
 
 @template_filter('time')
 def time_filter(value, format='HH:mm:ss'):
+    if isinstance(value, datetime.datetime):
+        if is_naive_datetime(value):
+            value = convert_naive_datetime_to_aware(value)
     return babel.dates.format_time(time=value, format=format, tzinfo=DEFAULT_CLIENT_TIMEZONE, locale=get_current_locale())
 
 
@@ -35,6 +40,8 @@ def date_filter(value, format='yyyy-MM-dd', delta=0):
 def datetime_filter(value, format='yyyy-MM-dd HH:mm:ss'):
     if isinstance(value, basestring):
         return value
+    if value and is_naive_datetime(value):
+        value = convert_naive_datetime_to_aware(value)
     if 'epoch' == format:
         epoch = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=pytz.utc)
         delta = value - epoch
