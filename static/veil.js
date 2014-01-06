@@ -78,6 +78,10 @@ veil.resource.get = function (options) {
         error:onError,
         statusCode:{
             400:onValidationError,
+            401: function(){
+                alert('用户名、密码错误或登录超时');
+                window.location.href='/login';
+            },
             403:function() {alert('权限不足');}
         }
     };
@@ -102,7 +106,10 @@ veil.resource.create = function (options) {
         error:onError,
         statusCode:{
             400: onValidationError,
-            401: function(){alert('用户名或密码错误')},
+            401: function(){
+                alert('用户名、密码错误或登录超时');
+                window.location.href='/login';
+            },
             403: function() {alert('权限不足');}
         }
     };
@@ -123,6 +130,10 @@ veil.resource.update = function (options) {
         error:onError,
         statusCode:{
             400:onValidationError,
+            401: function(){
+                alert('用户名、密码错误或登录超时');
+                window.location.href='/login';
+            },
             403:function() {alert('权限不足');}
         }
     };
@@ -137,6 +148,10 @@ veil.resource.del = function (options) {
         url:url,
         success:onSuccess,
         statusCode:{
+            401: function(){
+                alert('用户名、密码错误或登录超时');
+                window.location.href='/login';
+            },
             403:function() {alert('权限不足');}
         }
     };
@@ -157,6 +172,10 @@ veil.resource.patch = function (options) {
         error:onError,
         statusCode:{
             400:onValidationError,
+            401: function(){
+                alert('用户名、密码错误或登录超时');
+                window.location.href='/login';
+            },
             403:function() {alert('权限不足');}
         }
     };

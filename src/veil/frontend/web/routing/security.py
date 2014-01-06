@@ -1,7 +1,11 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
+import httplib
 from veil.frontend.web.tornado import *
 from veil.model.security import *
+
+RESOURCE_URI_PREFIX = '/r'
+
 
 class RoutePermissionProtector(object):
     def list_granting_permissions(self):
@@ -43,4 +47,7 @@ class TagBasedRoutePermissionProtector(RoutePermissionProtector):
         return {self.requires_permission}
 
     def on_permission_denied(self):
+        if get_current_http_request().uri.startswith(RESOURCE_URI_PREFIX):
+            set_http_status_code(httplib.FORBIDDEN)
+            end_http_request_processing()
         return redirect_to(self.login_url)
