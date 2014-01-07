@@ -9,11 +9,15 @@ from .i18n import get_current_locale, _
 
 @template_filter('timedelta')
 def timedelta_filter(delta, granularity='second', add_direction=False):
+    if isinstance(delta, basestring):
+        return delta
     return babel.dates.format_timedelta(delta, granularity=granularity, threshold=.95, add_direction=add_direction, locale=get_current_locale())
 
 
 @template_filter('timedelta_by_now')
 def timedelta_by_now_filter(value, granularity='second'):
+    if isinstance(value, basestring):
+        return value
     if value and is_naive_datetime(value):
         value = convert_naive_datetime_to_aware(value)
     current_time = get_current_time()
@@ -22,6 +26,8 @@ def timedelta_by_now_filter(value, granularity='second'):
 
 @template_filter('time')
 def time_filter(value, format='HH:mm:ss'):
+    if isinstance(value, basestring):
+        return value
     if isinstance(value, datetime.datetime):
         if is_naive_datetime(value):
             value = convert_naive_datetime_to_aware(value)
@@ -30,6 +36,8 @@ def time_filter(value, format='HH:mm:ss'):
 
 @template_filter('date')
 def date_filter(value, format='yyyy-MM-dd', delta=0):
+    if isinstance(value, basestring):
+        return value
     date_to_show = value + datetime.timedelta(days=delta)
     if isinstance(date_to_show, datetime.datetime):
         date_to_show = convert_datetime_to_client_timezone(date_to_show)
