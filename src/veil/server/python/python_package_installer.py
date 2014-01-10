@@ -1,237 +1,202 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import re
+from pkg_resources import safe_name, safe_version, parse_version
 from veil.env_consts import VEIL_ENV_TYPE
+from veil.utility.shell import *
+from veil_component import *
 from veil_installer import *
 from veil.frontend.cli import *
-from .pip_hack import *
 
 LOGGER = logging.getLogger(__name__)
-PIP_FREEZE_OUTPUT = None
-REMOTE_LATEST_VERSION = {}
-LOCAL_PYTHON_PACKAGE_DIR = as_path('/opt/pypi')
+
+LOCAL_ARCHIVE_DIR = as_path('/opt/pypi')
+LOCAL_ARCHIVE_DIR.makedirs()
 
 
 @atomic_installer
-def python_package_resource(name, url=None, version=None, **kwargs):
-    if url and not version:
-        raise Exception('package version not specified for <{}> with urle <{}>'.format(name, url))
-    installed_version = get_python_package_installed_version(name)
-    downloaded_version, local_url = get_downloaded_python_package_version(name)
-    latest_version = get_resource_latest_version(to_resource_key(name))
-    if VEIL_ENV_TYPE not in ('development', 'test'):
-        if not installed_version or installed_version != latest_version:
-            while not download_python_package(name, version=latest_version, **kwargs):
-                pass
-            while not install_python_package(name, latest_version, **kwargs):
-                pass
-    else:
-        remote_latest_version = None
-        action = None if installed_version else 'INSTALL'
-        upgrade_mode = get_upgrade_mode()
-        if UPGRADE_MODE_LATEST == upgrade_mode:
-            remote_latest_version = get_installed_package_remote_latest_version(name)
-            action = action or 'UPGRADE'
-        elif UPGRADE_MODE_FAST == upgrade_mode:
-            action = action or (None if latest_version == installed_version else 'UPGRADE')
-        elif UPGRADE_MODE_NO == upgrade_mode:
-            pass
-        else:
-            raise NotImplementedError()
-
-        dry_run_result = get_dry_run_result()
-        if dry_run_result is not None:
-            if should_download_while_dry_run():
-                if url:
-                    if not downloaded_version or downloaded_version != version:
-                        LOGGER.info('To download python package %(name)s from url: %(url)s, version: %(version)s', {
-                            'name': name, 'url': url, 'version': version
-                        })
-                        while not download_python_package(name, url=url, version=version, **kwargs):
-                            pass
-
-                if upgrade_mode == UPGRADE_MODE_LATEST and remote_latest_version and not (downloaded_version and downloaded_version == remote_latest_version):
-                    LOGGER.debug('To download python package: %(name)s, %(downloaded_version)s, %(latest_version)s, %(remote_latest_version)s', {
-                        'name': name,
-                        'downloaded_version': downloaded_version,
-                        'latest_version': latest_version,
-                        'remote_latest_version': remote_latest_version
-                    })
-                    while not download_python_package(name, version=remote_latest_version, **kwargs):
-                        pass
-                elif upgrade_mode == UPGRADE_MODE_FAST and not (downloaded_version and downloaded_version == latest_version):
-                    LOGGER.debug('To download python package: %(name)s, %(downloaded_version)s, %(latest_version)s', {
-                        'name': name,
-                        'downloaded_version': downloaded_version,
-                        'latest_version': latest_version,
-                    })
-                    while not download_python_package(name, version=latest_version, **kwargs):
-                        pass
-            if upgrade_mode == UPGRADE_MODE_LATEST and not remote_latest_version:
-                dry_run_result['python_package?{}'.format(name)] = '-'
-                return
-            dry_run_result['python_package?{}'.format(name)] = action or '-'
-            return
-
-        if not action:
-            return
-
-        if url:
-            if not downloaded_version or downloaded_version != version:
-                LOGGER.info('To download python package %(name)s from url: %(url)s, version: %(version)s', {
-                    'name': name, 'url': url, 'version': version
-                })
-                while not download_python_package(name, url=url, version=version, **kwargs):
-                    pass
-        else:
-            if not downloaded_version:
-                while not download_python_package(name, version=latest_version, **kwargs):
-                    pass
-            else:
-                if upgrade_mode == UPGRADE_MODE_LATEST and (downloaded_version != remote_latest_version or downloaded_version != latest_version):
-                    LOGGER.debug('To download python package: %(name)s, %(upgrade_mode)s, %(installed_version)s, %(downloaded_version)s, %(latest_version)s', {
-                        'name': name,
-                        'upgrade_mode': upgrade_mode,
-                        'installed_version': installed_version,
-                        'downloaded_version': downloaded_version,
-                        'latest_version': latest_version,
-                    })
-                    while not download_python_package(name, version=remote_latest_version or latest_version, **kwargs):
-                        pass
-                elif upgrade_mode != UPGRADE_MODE_LATEST and downloaded_version != latest_version:
-                    LOGGER.debug('To download python package: %(name)s, %(downloaded_version)s, %(latest_version)s', {
-                        'name': name,
-                        'downloaded_version': downloaded_version,
-                        'latest_version': latest_version,
-                    })
-                    while not download_python_package(name, version=latest_version, **kwargs):
-                        pass
-
-        downloaded_version, local_url = get_downloaded_python_package_version(name)
-        if not installed_version:
-            while not install_python_package(name, version=latest_version, **kwargs):
-                pass
-        else:
-            if UPGRADE_MODE_LATEST == upgrade_mode and (installed_version != downloaded_version or latest_version != downloaded_version):
-                while not install_python_package(name, version=downloaded_version, **kwargs):
-                    pass
-                set_resource_latest_version(to_resource_key(name), downloaded_version)
-            elif UPGRADE_MODE_LATEST != upgrade_mode and installed_version != latest_version:
-                while not install_python_package(name, version=latest_version, **kwargs):
-                    pass
-                set_resource_latest_version(to_resource_key(name), latest_version)
-            LOGGER.info('python package upgraded to new version: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s', {
-                'name': name,
-                'installed_version': installed_version,
-                'latest_version': latest_version,
-                'downloaded_version': downloaded_version
+def python_package_resource(name, version=None, url=None, **ignore):
+    name = safe_name(name)
+    if version:
+        version = safe_version(version)
+    if url:
+        if not version:
+            raise Exception('python package version not specified for <{}> with url <{}>'.format(name, url))
+        if version not in url:
+            LOGGER.warn('please double check and ensure python package version is consistent with url: %(version)s, %(url)s', {
+                'version': version,
+                'url': url
             })
 
+    upgrade_mode = get_upgrade_mode()
+    if upgrade_mode == UPGRADE_MODE_LATEST and VEIL_ENV_TYPE not in ('development', 'test'):
+        raise Exception('please upgrade latest under development or test environment')
+
+    installed_version = get_python_package_installed_version(name)
+    downloaded_version = get_downloaded_python_package_version(name, version)
+    latest_version = get_resource_latest_version(to_resource_key(name))
+    if UPGRADE_MODE_LATEST == upgrade_mode:
+        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
+        if installed_version:
+            if version:
+                if version == installed_version:
+                    need_install = False
+                    need_download = False
+                    action = None
+                else:
+                    need_install = True
+                    need_download = downloaded_version != version
+                    action = 'UPGRADE'
+            else:
+                need_install = None
+                need_download = True
+                action = 'UPGRADE'
+        else:
+            need_install = True
+            need_download = True
+            action = 'INSTALL'
+    elif UPGRADE_MODE_FAST == upgrade_mode:
+        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and not latest_version
+        need_install = (version or latest_version) and (version or latest_version) != installed_version
+        need_download = need_install and (version or latest_version) != downloaded_version
+        if need_install:
+            action = 'UPGRADE' if installed_version else 'INSTALL'
+        else:
+            action = None
+    else:
+        assert upgrade_mode == UPGRADE_MODE_NO
+        may_update_resource_latest_version = need_install = need_download = False
+        action = None
+
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        if need_download and should_download_while_dry_run():
+            new_downloaded_version = download_python_package(name, (version or latest_version) if UPGRADE_MODE_FAST == upgrade_mode else version, url=url)
+            if new_downloaded_version != downloaded_version:
+                LOGGER.debug('python package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s, %(url)s', {
+                    'name': name,
+                    'installed_version': downloaded_version,
+                    'latest_version': downloaded_version,
+                    'downloaded_version': downloaded_version,
+                    'new_downloaded_version': new_downloaded_version,
+                    'url': url
+                })
+                downloaded_version = new_downloaded_version
+            if UPGRADE_MODE_LATEST == upgrade_mode and action == 'UPGRADE' and installed_version == downloaded_version:
+                action = None
+        dry_run_result['python_package?{}'.format(name)] = action or '-'
+        return
+
+    if need_download:
+        new_downloaded_version = download_python_package(name, (version or latest_version) if UPGRADE_MODE_FAST == upgrade_mode else version, url=url)
+        if new_downloaded_version != downloaded_version:
+            LOGGER.debug('python package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s, %(url)s', {
+                'name': name,
+                'installed_version': downloaded_version,
+                'latest_version': downloaded_version,
+                'downloaded_version': downloaded_version,
+                'new_downloaded_version': new_downloaded_version,
+                'url': url
+            })
+            downloaded_version = new_downloaded_version
+        if UPGRADE_MODE_LATEST == upgrade_mode and need_install is None:
+            need_install = installed_version != downloaded_version
+
+    if need_install:
+        if installed_version:
+            LOGGER.info('upgrading python package: %(name)s, %(latest_version)s, %(installed_version)s, %(new_installed_version)s', {
+                'name': name,
+                'latest_version': latest_version,
+                'installed_version': installed_version,
+                'new_installed_version': downloaded_version
+            })
+        else:
+            LOGGER.info('installing python package: %(name)s, %(latest_version)s, %(new_installed_version)s', {
+                'name': name,
+                'latest_version': latest_version,
+                'new_installed_version': downloaded_version
+            })
+        shell_execute('pip install --no-index --find-links {} {}=={}'.format(LOCAL_ARCHIVE_DIR, name, downloaded_version), capture=True)
+        installed_version = downloaded_version
+
+    if may_update_resource_latest_version and installed_version and installed_version != latest_version:
+        set_resource_latest_version(to_resource_key(name), installed_version)
+        LOGGER.info('updated python package resource latest version: %(name)s, %(latest_version)s, %(new_latest_version)s', {
+            'name': name,
+            'latest_version': latest_version,
+            'new_latest_version': installed_version
+        })
 
 
-@script('print-remote-latest-version')
-def print_remote_latest_version(name):
-    print(get_installed_package_remote_latest_version(name))
+def to_resource_key(package_name):
+    return 'veil.server.python.python_package_resource?{}'.format(package_name)
 
+
+installed_package_name2version = None
+
+def get_python_package_installed_version(name, from_cache=True):
+    global installed_package_name2version
+    if not from_cache:
+        installed_package_name2version = None
+    if installed_package_name2version is None:
+        installed_package_name2version = {}
+        pip_freeze_output = shell_execute('pip freeze', capture=True)
+        for line in pip_freeze_output.splitlines(False):
+            parts = line.split('==', 1)
+            if len(parts) == 2:
+                installed_package_name2version[parts[0]] = parts[1]
+    return installed_package_name2version.get(safe_name(name))
+
+
+RE_OUTDATED_PACKAGE = re.compile(r'^(.+) \(Current: .+ Latest: (.+)\)$')
+outdated_package_name2latest_version = None
 
 def get_installed_package_remote_latest_version(name):
-    if not REMOTE_LATEST_VERSION:
-        LOGGER.info('fetching installed packages remote latest version...')
-        fetch_remote_latest_version()
-    return REMOTE_LATEST_VERSION.get(name)
+    global outdated_package_name2latest_version
+    if outdated_package_name2latest_version is None:
+        outdated_package_name2latest_version = {}
+        for line in shell_execute('pip list -l -o | grep Latest:', capture=True, shell=True).splitlines(False):
+            match = RE_OUTDATED_PACKAGE.match(line)
+            outdated_package_name2latest_version[match.group(1)] = match.group(2)
+    return outdated_package_name2latest_version.get(name)
 
 
-def to_resource_key(pip_package):
-    return 'veil.server.python.python_package_resource?{}'.format(pip_package)
-
-
-@script('print-installed-package-version')
-def print_get_python_package_installed_version(name):
-    print(get_python_package_installed_version(name))
-
-
-def get_python_package_installed_version(pip_package, from_cache=True):
-    global PIP_FREEZE_OUTPUT
-    if not from_cache:
-        PIP_FREEZE_OUTPUT = None
-    if not PIP_FREEZE_OUTPUT:
-        PIP_FREEZE_OUTPUT = shell_execute('pip freeze', capture=True)
-    lines = PIP_FREEZE_OUTPUT.splitlines(False)
-    for line in lines:
-        match = re.match('{}==(.*)'.format(pip_package), line)
-        if match:
-            return match.group(1)
-    return None
-
-
-@script('download-package')
-def download_python_package(name, version=None, url=None, **kwargs):
-    if url and not version:
-        raise Exception('package version is required if url is specified')
-    if version:
-        try:
-            shell_execute('ls {} | grep {} | grep {}'.format(LOCAL_PYTHON_PACKAGE_DIR, name, version), capture=True, shell=True, **kwargs)
-        except Exception as e:
-            pass
-        else:
-            return True
-    pip_args = '-i http://pypi.douban.com/simple --extra-index-url https://pypi.python.com/simple'
-    try:
-        if url:
-            shell_execute('pip install {} -d {} {}'.format(url, LOCAL_PYTHON_PACKAGE_DIR, pip_args), capture=True, **kwargs)
-        elif version:
-            shell_execute('pip install {}=={} -d {} {}'.format(name, version, LOCAL_PYTHON_PACKAGE_DIR, pip_args), capture=True, **kwargs)
-        else:
-            shell_execute('pip install {} -d {} {}'.format(name, LOCAL_PYTHON_PACKAGE_DIR, pip_args), capture=True, **kwargs)
-    except Exception as e:
-        return False
+def download_python_package(name, version=None, url=None):
+    LOGGER.info('downloading python package: %(name)s, %(version)s, %(url)s...', {'name': name, 'version': version, 'url': url})
+    if url:
+        shell_execute('pip install -d {} {}'.format(LOCAL_ARCHIVE_DIR, url), capture=True)
     else:
-        return True
+        shell_execute('pip install -d {} {}{}'.format(LOCAL_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''), capture=True)
+    downloaded_version = get_downloaded_python_package_version(name, version)
+    assert not version or version == downloaded_version, \
+        'the downloaded version of python package {} is {}, different from the specific version {}'.format(name, downloaded_version, version)
+    return downloaded_version
 
 
-@script('install-package')
-def install_python_package(name, version=None, **kwargs):
-    try:
+RE_ARCHIVE_FILENAME = re.compile(r'^.+\-(.+)\-$')
+
+def get_downloaded_python_package_version(name, version=None):
+    versions = []
+    prefix = '{}-'.format(name)
+    for archive_file in LOCAL_ARCHIVE_DIR.files('{}*'.format(prefix)):
+        archive_filename = archive_file.basename()
+        pos = archive_filename.find('.tar.')
+        if pos == -1:
+            if archive_file.ext != '.whl':
+                continue
+            pos = archive_filename[len(prefix):].find('-')
+            if pos == -1:
+                continue
+            else:
+                pos += len(prefix)
+        archive_version = archive_filename[len(prefix): pos]
         if version:
-            shell_execute('pip install --no-index --find-links {} {}=={}'.format(LOCAL_PYTHON_PACKAGE_DIR, name, version), capture=True, **kwargs)
+            if version == archive_version:
+                return version
         else:
-            shell_execute('pip install --no-index --find-links {} {}'.format(LOCAL_PYTHON_PACKAGE_DIR, name), capture=True, **kwargs)
-    except Exception as e:
-        return False
-    else:
-        return True
-
-
-def fetch_remote_latest_version():
-    try:
-        could_update_packages = shell_execute('pip list -o | grep Current:', capture=True, shell=True)
-    except Exception as e:
-        LOGGER.info('found no updated python packages or something went wrong')
-    else:
-        for line in could_update_packages.split('\n'):
-            if line:
-                name, versions = line.split(' ', 1)
-                match = re.match('.*Current: (.*?) Latest: (.*)\)', versions)
-                if match:
-                    current_version = match.group(1)
-                    remote_latest_version = match.group(2)
-                else:
-                    raise Exception('can not find package version')
-                REMOTE_LATEST_VERSION[name] = remote_latest_version
-                LOGGER.info(
-                    'found updated python package: %(name)s, current installed version: %(c_version)s, remote latest version: %(r_version)s', {
-                        'name': name, 'r_version': remote_latest_version, 'c_version': current_version
-                    }
-                )
-
-
-def upgrade_python_package(name, **kwargs):
-    try:
-        shell_execute('pip install {} --upgrade --find-links {}'.format(name, LOCAL_PYTHON_PACKAGE_DIR), capture=True, **kwargs)
-    except Exception as e:
-        return False
-    else:
-        return True
+            versions.append(archive_version)
+    versions.sort(key=lambda v: parse_version(v), reverse=True)
+    return versions[0] if versions else None
 
 
 @script('upgrade-pip')
