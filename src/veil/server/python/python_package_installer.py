@@ -162,11 +162,18 @@ def get_installed_package_remote_latest_version(name):
 
 
 def download_python_package(name, version=None, url=None):
-    LOGGER.info('downloading python package: %(name)s, %(version)s, %(url)s...', {'name': name, 'version': version, 'url': url})
-    if url:
-        shell_execute('pip install -d {} {}'.format(LOCAL_ARCHIVE_DIR, url), capture=True)
-    else:
-        shell_execute('pip install -d {} {}{}'.format(LOCAL_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''), capture=True)
+    retry = 0
+    while retry < 5:
+        try:
+            if url:
+                shell_execute('pip install -d {} {}'.format(LOCAL_ARCHIVE_DIR, url), capture=True)
+            else:
+                shell_execute('pip install -d {} {}{}'.format(LOCAL_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''), capture=True)
+        except:
+            LOGGER.warn('pip install failed', exc_info=1)
+            retry += 1
+        else:
+            break
     downloaded_version = get_downloaded_python_package_version(name, version)
     assert not version or version == downloaded_version, \
         'the downloaded version of python package {} is {}, different from the specific version {}'.format(name, downloaded_version, version)
