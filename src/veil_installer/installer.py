@@ -147,9 +147,7 @@ def to_resource_code(resource):
     installer_name, installer_args = resource
     if not isinstance(installer_args, dict):
         raise Exception('invalid resource: {}, {}'.format(installer_name, installer_args))
-    resource_code = '{}?{}'.format(
-        installer_name, '&'.join(['{}={}'.format(k, installer_args[k]) for k in sorted(installer_args.keys())])
-    )
+    resource_code = '{}?{}'.format(installer_name, '&'.join(['{}={}'.format(k, installer_args[k]) for k in sorted(installer_args.keys())]))
     return resource_code
 
 
@@ -174,6 +172,8 @@ def is_installing():
 
 def set_upgrade_mode(value):
     global upgrade_mode
+    if value and value not in (UPGRADE_MODE_LATEST, UPGRADE_MODE_FAST, UPGRADE_MODE_NO):
+        raise ValueError('invalid upgrade mode: {}'.format(value))
     upgrade_mode = value
 
 

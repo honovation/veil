@@ -40,7 +40,7 @@ function veil_init {
     if [[ "$VEIL_SERVER" != "development" && "$VEIL_SERVER" != "test" ]] ; then
         sudo apt-get -y remove network-manager
     fi
-    sudo apt-get -y install iptables python-dev python-virtualenv python-pip language-pack-en unzip wget
+    sudo apt-get -y install iptables python-dev python-pip python-virtualenv language-pack-en unzip wget
     if [ ! -f /usr/bin/veil ]; then
         sudo ln -s $VEIL_FRAMEWORK_HOME/bin/veil /usr/bin/veil
     fi
@@ -49,8 +49,8 @@ function veil_init {
         echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
         echo "$VEIL_HOME/src" >> env/lib/python2.7/site-packages/veil.pth
         source $VEIL_HOME/env/bin/activate
-        sudo veil execute pip install --upgrade setuptools==2.0.2
-        sudo veil execute pip install --upgrade pip==1.4.1
+        sudo veil execute pip install --upgrade "setuptools>=2.1"
+        sudo veil execute pip install --upgrade "pip>=1.5"
         sudo veil execute pip install pytz
     fi
     if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then

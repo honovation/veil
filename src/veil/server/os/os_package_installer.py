@@ -9,67 +9,95 @@ apt_get_update_executed = False
 
 @atomic_installer
 def os_package_resource(name):
+    upgrade_mode = get_upgrade_mode()
+    if upgrade_mode == UPGRADE_MODE_LATEST and VEIL_ENV_TYPE not in ('development', 'test'):
+        raise Exception('please upgrade latest under development or test environment')
+
     installed_version, downloaded_version = get_local_os_package_versions(name)
     latest_version = get_resource_latest_version(to_resource_key(name))
-    action = None if installed_version else 'INSTALL'
-    upgrade_mode = get_upgrade_mode()
     if UPGRADE_MODE_LATEST == upgrade_mode:
-        action = action or 'UPGRADE'
+        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
+        need_install = None if installed_version else True
+        need_download = True
+        action = 'UPGRADE' if installed_version else 'INSTALL'
     elif UPGRADE_MODE_FAST == upgrade_mode:
-        action = action or (None if latest_version == installed_version else 'UPGRADE')
-    elif UPGRADE_MODE_NO == upgrade_mode:
-        pass
+        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and not latest_version
+        need_install = latest_version and latest_version != installed_version
+        need_download = need_install and latest_version != downloaded_version
+        if need_install:
+            action = 'UPGRADE' if installed_version else 'INSTALL'
+        else:
+            action = None
     else:
-        raise NotImplementedError()
+        assert upgrade_mode == UPGRADE_MODE_NO
+        may_update_resource_latest_version = need_install = need_download = False
+        action = None
+
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        if should_download_while_dry_run():
-            new_downloaded_version = download_os_package(name)
+        if need_download and should_download_while_dry_run():
+            new_downloaded_version = download_os_package(name, version=latest_version if UPGRADE_MODE_FAST == upgrade_mode else None)
             if new_downloaded_version != downloaded_version:
-                LOGGER.warn('os package with new version downloaded: %(name)s, %(downloaded_version)s, %(new_downloaded_version)s', {
+                LOGGER.warn('os package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s', {
                     'name': name,
+                    'installed_version': installed_version,
+                    'latest_version': latest_version,
                     'downloaded_version': downloaded_version,
                     'new_downloaded_version': new_downloaded_version
                 })
+                downloaded_version = new_downloaded_version
+            if UPGRADE_MODE_LATEST == upgrade_mode and action == 'UPGRADE' and installed_version == downloaded_version:
+                action = None
         dry_run_result['os_package?{}'.format(name)] = action or '-'
         return
-    if not action:
-        return
-    if UPGRADE_MODE_LATEST == upgrade_mode or (installed_version != latest_version and downloaded_version != latest_version):
-        if UPGRADE_MODE_LATEST != upgrade_mode:
-            LOGGER.debug('To download os package when upgrade mode is not latest: %(name)s, %(installed_version)s, %(downloaded_version)s, %(latest_version)s', {
+
+    if need_download:
+        new_downloaded_version = download_os_package(name, version=latest_version if UPGRADE_MODE_FAST == upgrade_mode else None)
+        if new_downloaded_version != downloaded_version:
+            LOGGER.warn('os package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s', {
                 'name': name,
                 'installed_version': installed_version,
+                'latest_version': latest_version,
                 'downloaded_version': downloaded_version,
-                'latest_version': latest_version
+                'new_downloaded_version': new_downloaded_version
             })
-        downloaded_version = download_os_package(name)
-    if not installed_version or (UPGRADE_MODE_LATEST == upgrade_mode and (installed_version != downloaded_version or latest_version != downloaded_version)) or (UPGRADE_MODE_LATEST != upgrade_mode and installed_version != latest_version):
-        LOGGER.info('installing os package: %(name)s ...', {'name': name})
-        shell_execute('apt-get -y install {}'.format(name), capture=True)
-        if downloaded_version != latest_version:
-            if VEIL_ENV_TYPE in ('development', 'test'):
-                set_resource_latest_version(to_resource_key(name), downloaded_version)
-                LOGGER.info('os package upgraded to new version: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s', {
-                    'name': name,
-                    'installed_version': installed_version,
-                    'latest_version': latest_version,
-                    'downloaded_version': downloaded_version
-                })
-            else:
-                LOGGER.warn('OS PACKAGE UPGRADED TO A VERSION OTHER THAN LATEST VERSION: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s', {
-                    'name': name,
-                    'installed_version': installed_version,
-                    'latest_version': latest_version,
-                    'downloaded_version': downloaded_version
-                })
+            downloaded_version = new_downloaded_version
+        if UPGRADE_MODE_LATEST == upgrade_mode and need_install is None:
+            need_install = installed_version != downloaded_version
+
+    if need_install:
+        if installed_version:
+            LOGGER.info('upgrading os package: %(name)s, %(latest_version)s, %(installed_version)s, %(version_to_install)s', {
+                'name': name,
+                'latest_version': latest_version,
+                'installed_version': installed_version,
+                'version_to_install': downloaded_version
+            })
+        else:
+            LOGGER.info('installing os package: %(name)s, %(latest_version)s, %(version_to_install)s', {
+                'name': name,
+                'latest_version': latest_version,
+                'version_to_install': downloaded_version
+            })
+        shell_execute('apt-get -y install {}={}'.format(name, downloaded_version), capture=True)
+        installed_version = downloaded_version
+
+    if may_update_resource_latest_version and installed_version and installed_version != latest_version:
+        set_resource_latest_version(to_resource_key(name), installed_version)
+        LOGGER.info('updated os package resource latest version: %(name)s, %(latest_version)s, %(new_latest_version)s', {
+            'name': name,
+            'latest_version': latest_version,
+            'new_latest_version': installed_version
+        })
 
 
-def download_os_package(name):
-    LOGGER.info('downloading os package: %(name)s ...', {'name': name})
+def download_os_package(name, version=None):
+    LOGGER.info('downloading os package: %(name)s, %(version)s...', {'name': name, 'version': version})
     update_os_package_catalogue()
-    shell_execute('apt-get -y -d install {}'.format(name), capture=True)
+    shell_execute('apt-get -y -d install {}{}'.format(name, '={}'.format(version) if version else ''), capture=True)
     _, downloaded_version = get_local_os_package_versions(name)
+    assert not version or version == downloaded_version, \
+        'the downloaded version of os package {} is {}, different from the specific version {}'.format(name, downloaded_version, version)
     return downloaded_version
 
 
