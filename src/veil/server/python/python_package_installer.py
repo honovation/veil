@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import re
-from pkg_resources import safe_name, safe_version, parse_version
+from pkg_resources import safe_name, safe_version, parse_version, to_filename
 from veil.env_consts import VEIL_ENV_TYPE
 from veil.utility.shell import *
 from veil_component import *
@@ -15,7 +15,7 @@ LOCAL_ARCHIVE_DIR.makedirs()
 
 
 @atomic_installer
-def python_package_resource(name, version=None, url=None, **ignore):
+def python_package_resource(name, version=None, url=None, **kwargs):
     name = safe_name(name)
     if version:
         version = safe_version(version)
@@ -71,7 +71,7 @@ def python_package_resource(name, version=None, url=None, **ignore):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         if need_download and should_download_while_dry_run():
-            new_downloaded_version = download_python_package(name, (version or latest_version) if UPGRADE_MODE_FAST == upgrade_mode else version, url=url)
+            new_downloaded_version = download_python_package(name, (version or latest_version) if UPGRADE_MODE_FAST == upgrade_mode else version, url=url, **kwargs)
             if new_downloaded_version != downloaded_version:
                 LOGGER.debug('python package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s, %(url)s', {
                     'name': name,
@@ -88,7 +88,7 @@ def python_package_resource(name, version=None, url=None, **ignore):
         return
 
     if need_download:
-        new_downloaded_version = download_python_package(name, (version or latest_version) if UPGRADE_MODE_FAST == upgrade_mode else version, url=url)
+        new_downloaded_version = download_python_package(name, (version or latest_version) if UPGRADE_MODE_FAST == upgrade_mode else version, url=url, **kwargs)
         if new_downloaded_version != downloaded_version:
             LOGGER.debug('python package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s, %(url)s', {
                 'name': name,
@@ -116,7 +116,7 @@ def python_package_resource(name, version=None, url=None, **ignore):
                 'latest_version': latest_version,
                 'new_installed_version': downloaded_version
             })
-        shell_execute('pip install --no-index --find-links {} {}=={}'.format(LOCAL_ARCHIVE_DIR, name, downloaded_version), capture=True)
+        shell_execute('pip install --no-index --find-links {} {}=={}'.format(LOCAL_ARCHIVE_DIR, name, downloaded_version), capture=True, **kwargs)
         installed_version = downloaded_version
 
     if may_update_resource_latest_version and installed_version and installed_version != latest_version:
@@ -133,6 +133,7 @@ def to_resource_key(package_name):
 
 
 installed_package_name2version = None
+
 
 def get_python_package_installed_version(name, from_cache=True):
     global installed_package_name2version
@@ -151,6 +152,7 @@ def get_python_package_installed_version(name, from_cache=True):
 RE_OUTDATED_PACKAGE = re.compile(r'^(.+) \(Current: .+ Latest: (.+)\)$')
 outdated_package_name2latest_version = None
 
+
 def get_installed_package_remote_latest_version(name):
     global outdated_package_name2latest_version
     if outdated_package_name2latest_version is None:
@@ -161,14 +163,14 @@ def get_installed_package_remote_latest_version(name):
     return outdated_package_name2latest_version.get(name)
 
 
-def download_python_package(name, version=None, url=None):
+def download_python_package(name, version=None, url=None, **kwargs):
     retry = 0
     while retry < 5:
         try:
             if url:
-                shell_execute('pip install -d {} {}'.format(LOCAL_ARCHIVE_DIR, url), capture=True)
+                shell_execute('pip install -d {} {}'.format(LOCAL_ARCHIVE_DIR, url), capture=True, **kwargs)
             else:
-                shell_execute('pip install -d {} {}{}'.format(LOCAL_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''), capture=True)
+                shell_execute('pip install -d {} {}{}'.format(LOCAL_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''), capture=True, **kwargs)
         except:
             LOGGER.warn('pip install failed', exc_info=1)
             retry += 1
@@ -182,10 +184,12 @@ def download_python_package(name, version=None, url=None):
 
 RE_ARCHIVE_FILENAME = re.compile(r'^.+\-(.+)\-$')
 
+
 def get_downloaded_python_package_version(name, version=None):
     versions = []
     prefix = '{}-'.format(name)
-    for archive_file in LOCAL_ARCHIVE_DIR.files('{}*'.format(prefix)):
+    prefix1 = '{}-'.format(to_filename(name))
+    for archive_file in LOCAL_ARCHIVE_DIR.files('{}*'.format(prefix)) + LOCAL_ARCHIVE_DIR.files('{}*'.format(prefix1)):
         archive_filename = archive_file.basename()
         pos = archive_filename.find('.tar.')
         if pos == -1:
