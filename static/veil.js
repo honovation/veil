@@ -285,7 +285,7 @@ veil.widget.getResource = function (widget, onSuccess) {
 veil.widget.showErrorMessage = function (widget, defaultErrorMessage) {
     var errorMessage = widget.data('error-message') || defaultErrorMessage;
     widget.prepend(
-        '<span class="error-message label label-warning">' +
+        '<span class="error-message label label-warning summary-error-message">' +
             '<i class="icon-info-sign"></i>' +
             errorMessage + '</span>');
 };

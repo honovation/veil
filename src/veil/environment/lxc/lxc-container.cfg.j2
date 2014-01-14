@@ -12,7 +12,9 @@ lxc.mount  = /var/lib/lxc/{{ name }}/fstab
 lxc.arch = amd64
 lxc.cap.drop = sys_module mac_admin
 lxc.pivotdir = lxc_putold
-
+{% if memory_limit %}
+lxc.cgroup.memory.limit_in_bytes = {{ memory_limit }}
+{% endif %}
 # uncomment the next line to run the container unconfined:
 #lxc.aa_profile = unconfined
 

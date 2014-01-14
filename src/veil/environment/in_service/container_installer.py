@@ -156,7 +156,7 @@ def render_installer_file(veil_env_name, veil_server_name):
     installer_file_content = render_config(
         'container-installer-file.j2', mac_address=mac_address, lan_interface=veil_host.lan_interface,
         ip_address=ip_address, gateway=gateway, iptables_rules=iptables_rules,
-        container_name=container_name, user_name=veil_server_user_name, dns=veil_server.dns)
+        container_name=container_name, user_name=veil_server_user_name, dns=veil_server.dns, memory_limit=veil_server.memory_limit)
     lines = [installer_file_content]
     for resource in veil_host.resources:
         installer_name, installer_args = resource
