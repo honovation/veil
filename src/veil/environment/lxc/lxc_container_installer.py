@@ -3,8 +3,9 @@ from veil.profile.installer import *
 
 LOGGER = logging.getLogger(__name__)
 
+
 @composite_installer
-def lxc_container_resource(container_name, mac_address, lan_interface, memory_limit):
+def lxc_container_resource(container_name, mac_address, lan_interface, memory_limit, cpu_share):
     mirror = os.getenv('VEIL_DEPENDENCY_MIRROR')
     if mirror:
         mirror = '{}:3142/mirrors.163.com/ubuntu'.format(mirror)
@@ -15,7 +16,8 @@ def lxc_container_resource(container_name, mac_address, lan_interface, memory_li
         file_resource(path='/etc/default/lxc', content=render_config('lxc.cfg.j2', mirror=mirror)),
         lxc_container_created_resource(name=container_name),
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name), content=render_config(
-            'lxc-container.cfg.j2', name=container_name, mac_address=mac_address, lan_interface=lan_interface, memory_limit=memory_limit))
+            'lxc-container.cfg.j2', name=container_name, mac_address=mac_address, lan_interface=lan_interface, memory_limit=memory_limit,
+            cpu_share=cpu_share))
     ]
     return resources
 
