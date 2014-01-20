@@ -129,6 +129,9 @@ veil.resource.update = function (options) {
         type:'PUT',
         url:url,
         data:data,
+        xhrFields: {
+            withCredentials: true
+        },
         success:onSuccess,
         error:onError,
         statusCode:{
@@ -149,6 +152,9 @@ veil.resource.del = function (options) {
     var _ = {
         type:'DELETE',
         url:url,
+        xhrFields: {
+            withCredentials: true
+        },
         success:onSuccess,
         statusCode:{
             401: function(){
@@ -171,6 +177,9 @@ veil.resource.patch = function (options) {
         type:'PATCH',
         url:url,
         data:data,
+        xhrFields: {
+            withCredentials: true
+        },
         success:onSuccess,
         error:onError,
         statusCode:{
