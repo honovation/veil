@@ -91,7 +91,7 @@ veil.resource.get = function (options) {
 veil.resource.create = function (options) {
     var url = options.url;
     var data = options.data;
-    var async=options.async;
+    var async = options.async;
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
@@ -101,6 +101,9 @@ veil.resource.create = function (options) {
         url:url,
         data:data,
         async:async,
+        xhrFields: {
+            withCredentials: true
+        },
         dataType:dataType,
         success:onSuccess,
         error:onError,
