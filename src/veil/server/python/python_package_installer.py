@@ -201,9 +201,10 @@ def get_downloaded_python_package_version(name, version=None):
             pos = archive_filename.find('.zip')
         if pos == -1 and archive_file.ext == '.whl':
             pos = archive_filename[len(prefix):].find('-')
+            if pos != -1:
+                pos += len(prefix)
         if pos == -1:
             continue
-        pos += len(prefix)
         archive_version = archive_filename[len(prefix): pos]
         if version:
             if version == archive_version:
