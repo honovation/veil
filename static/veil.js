@@ -67,22 +67,22 @@ veil.resource.get = function (options) {
     var onError = options.onError;
     var onValidationError = options.onValidationError;
     var dataType = options.dataType;
-    var data=options.data;
+    var data = options.data;
     var _ = {
         cache: false,
-        type:'GET',
-        url:url,
-        data:data,
-        dataType:dataType,
-        success:onSuccess,
-        error:onError,
-        statusCode:{
-            400:onValidationError,
+        type: 'GET',
+        url: url,
+        data: data,
+        dataType: dataType,
+        success: onSuccess,
+        error: onError,
+        statusCode: {
+            400: onValidationError,
             401: function(){
                 alert('用户名、密码错误或登录超时');
                 window.location.href='/login';
             },
-            403:function() {alert('权限不足');}
+            403: function() {alert('权限不足');}
         }
     };
     return $.ajax(_);
@@ -91,11 +91,11 @@ veil.resource.get = function (options) {
 veil.resource.create = function (options) {
     var url = options.url;
     var data = options.data;
+    var dataType = options.dataType;
     var async = options.async;
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
-    var dataType = options.dataType;
     var _ = {
         type:'POST',
         url:url,
@@ -116,6 +116,9 @@ veil.resource.create = function (options) {
             403: function() {alert('权限不足');}
         }
     };
+    if(options.requestType === 'json') {
+        _.contentType = 'application/json; charset=utf-8';
+    }
     return $.ajax(_);
 };
 
@@ -126,32 +129,39 @@ veil.resource.update = function (options) {
     var onError = options.onError;
     var onValidationError = options.onValidationError;
     var _ = {
-        type:'PUT',
-        url:url,
-        data:data,
+        type: 'PUT',
+        url: url,
+        data: data,
         xhrFields: {
             withCredentials: true
         },
-        success:onSuccess,
-        error:onError,
-        statusCode:{
-            400:onValidationError,
+        success: onSuccess,
+        error: onError,
+        statusCode: {
+            400: onValidationError,
             401: function(){
                 alert('用户名、密码错误或登录超时');
                 window.location.href='/login';
             },
-            403:function() {alert('权限不足');}
+            403: function() {alert('权限不足');}
         }
     };
+    if(options.requestType === 'json') {
+        _.contentType = 'application/json; charset=utf-8';
+    }
     return $.ajax(_);
 };
 
 veil.resource.del = function (options) {
     var url = options.url;
     var onSuccess = options.onSuccess;
+    var data = options.data;
+    var dataType = options.dataType;
     var _ = {
         type:'DELETE',
         url:url,
+        data: data,
+        dataType: dataType,
         xhrFields: {
             withCredentials: true
         },
@@ -164,33 +174,41 @@ veil.resource.del = function (options) {
             403:function() {alert('权限不足');}
         }
     };
+    if(options.requestType === 'json') {
+        _.contentType = 'application/json; charset=utf-8';
+    }
     return $.ajax(_);
 };
 
 veil.resource.patch = function (options) {
     var url = options.url;
     var data = options.data;
+    var dataType = options.dataType;
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
     var _ = {
-        type:'PATCH',
-        url:url,
-        data:data,
+        type: 'PATCH',
+        url: url,
+        data: data,
+        dataType: dataType,
         xhrFields: {
             withCredentials: true
         },
-        success:onSuccess,
-        error:onError,
-        statusCode:{
-            400:onValidationError,
+        success: onSuccess,
+        error: onError,
+        statusCode: {
+            400: onValidationError,
             401: function(){
                 alert('用户名、密码错误或登录超时');
                 window.location.href='/login';
             },
-            403:function() {alert('权限不足');}
+            403: function() {alert('权限不足');}
         }
     };
+    if(options.requestType === 'json') {
+        _.contentType = 'application/json; charset=utf-8';
+    }
     return $.ajax(_);
 };
 
@@ -207,9 +225,12 @@ veil.widget.handle = function (widget_selector, child_selector, event, handler) 
     });
 };
 
-veil.widget.delResource = function (widget, onSuccess) {
+veil.widget.delResource = function (widget, onSuccess, data, dataType) {
     var _ = {
         url:widget.data('deleteUrl'),
+        data: data && JSON.stringify(data) || widget.serialize(),
+        requestType: data && typeof data === 'object' ? 'json': null,
+        dataType: dataType,
         onSuccess:function () {
             widget.remove();
             onSuccess();
@@ -221,17 +242,18 @@ veil.widget.delResource = function (widget, onSuccess) {
 veil.widget.createResource = function (widget, onSuccess, data, dataType) {
     veil.widget.clearErrorMessages(widget);
     var _ = {
-        url:widget.attr('action'),
-        data:data || widget.serialize(),
-        dataType:dataType,
-        onSuccess:function (s) {
+        url: widget.attr('action'),
+        data: data && JSON.stringify(data) || widget.serialize(),
+        requestType: data && typeof data === 'object' ? 'json': null,
+        dataType: dataType,
+        onSuccess: function (s) {
             widget[0].reset();
             onSuccess(s);
         },
-        onError:function () {
+        onError: function () {
             //veil.widget.showErrorMessage(widget, '操作失败');
         },
-        onValidationError:function (xhr) {
+        onValidationError: function (xhr) {
             veil.widget.processWidget(xhr.responseText, function(html){
                 var newWidget = $(html);
                 widget.replaceWith(newWidget);
@@ -244,11 +266,13 @@ veil.widget.createResource = function (widget, onSuccess, data, dataType) {
     return veil.resource.create(_);
 };
 
-veil.widget.patchResource = function(widget, onSuccess) {
+veil.widget.patchResource = function(widget, onSuccess, data, dataType) {
     veil.widget.clearErrorMessages(widget);
     var _ = {
         url: widget.attr('action'),
-        data: widget.serialize(),
+        data: data && JSON.stringify(data) || widget.serialize(),
+        requestType: data && typeof data === 'object' ? 'json': null,
+        dataType: dataType,
         onSuccess: function (s) {
             widget[0].reset();
             onSuccess(s);
@@ -269,19 +293,21 @@ veil.widget.patchResource = function(widget, onSuccess) {
     return veil.resource.patch(_);
 };
 
-veil.widget.updateResource = function (widget, onSuccess) {
+veil.widget.updateResource = function (widget, onSuccess, data, dataType) {
     veil.widget.clearErrorMessages(widget);
     var _ = {
         url:widget.attr('action'),
-        data:widget.serialize(),
-        onSuccess:function (s) {
+        data: data && JSON.stringify(data) || widget.serialize(),
+        requestType: data && typeof data === 'object' ? 'json': null,
+        dataType: dataType,
+        onSuccess: function (s) {
             widget[0].reset();
             onSuccess(s);
         },
-        onError:function () {
+        onError: function () {
             //veil.widget.showErrorMessage(widget, '操作失败');
         },
-        onValidationError:function (xhr) {
+        onValidationError: function (xhr) {
             veil.widget.processWidget(xhr.responseText, function(html){
                 var newWidget = $(html);
                 widget.replaceWith(newWidget);
