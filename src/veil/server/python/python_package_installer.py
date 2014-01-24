@@ -116,7 +116,8 @@ def python_package_resource(name, version=None, url=None, **kwargs):
                 'latest_version': latest_version,
                 'new_installed_version': downloaded_version
             })
-        shell_execute('pip install --no-index --find-links {} {}=={}'.format(LOCAL_ARCHIVE_DIR, name, downloaded_version), capture=True, **kwargs)
+        shell_execute('pip install --process-dependency-links --no-index --find-links {} {}=={}'.format(LOCAL_ARCHIVE_DIR, name, downloaded_version),
+            capture=True, **kwargs)
         installed_version = downloaded_version
 
     if may_update_resource_latest_version and installed_version and installed_version != latest_version:
@@ -170,9 +171,11 @@ def download_python_package(name, version=None, url=None, **kwargs):
         tries += 1
         try:
             if url:
-                shell_execute('pip install -d {} {}'.format(LOCAL_ARCHIVE_DIR, url), capture=True, **kwargs)
+                shell_execute('pip install --process-dependency-links -d {} {}'.format(LOCAL_ARCHIVE_DIR, url), capture=True, **kwargs)
             else:
-                shell_execute('pip install -d {} {}{}'.format(LOCAL_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''), capture=True, **kwargs)
+                shell_execute(
+                    'pip install --process-dependency-links -d {} {}{}'.format(LOCAL_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''),
+                    capture=True, **kwargs)
         except:
             if tries >= max_tries:
                 raise
@@ -214,5 +217,5 @@ def get_downloaded_python_package_version(name, version=None):
 
 @script('upgrade-pip')
 def upgrade_pip(setuptools_version, pip_version):
-    shell_execute('veil execute pip install --upgrade setuptools=={}'.format(setuptools_version))
-    shell_execute('veil execute pip install --upgrade pip=={}'.format(pip_version))
+    shell_execute('veil execute pip install --upgrade --download-cache {} setuptools=={}'.format(LOCAL_ARCHIVE_DIR, setuptools_version))
+    shell_execute('veil execute pip install --upgrade --download-cache {} pip=={}'.format(LOCAL_ARCHIVE_DIR, pip_version))
