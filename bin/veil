@@ -50,7 +50,7 @@ function veil_init {
         echo "$VEIL_HOME/src" >> env/lib/python2.7/site-packages/veil.pth
         source $VEIL_HOME/env/bin/activate
         sudo veil execute pip install --upgrade "setuptools>=2.1"
-        sudo veil execute pip install --upgrade "pip>=1.5"
+        sudo veil execute pip install --upgrade "pip>=1.5.1"
         sudo veil execute pip install pytz
     fi
     if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then

@@ -5,7 +5,7 @@ from veil_installer import *
 from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
-apt_get_update_executed = False
+
 
 @atomic_installer
 def os_package_resource(name):
@@ -101,12 +101,14 @@ def download_os_package(name, version=None):
     return downloaded_version
 
 
+apt_get_update_executed = False
+
 def update_os_package_catalogue():
     global apt_get_update_executed
     if not apt_get_update_executed:
-        apt_get_update_executed = True
         LOGGER.info('updating os package catalogue...')
         shell_execute('apt-get -q update', capture=True)
+        apt_get_update_executed = True
 
 
 def to_resource_key(pip_package):

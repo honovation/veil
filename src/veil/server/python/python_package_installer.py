@@ -164,16 +164,18 @@ def get_installed_package_remote_latest_version(name):
 
 
 def download_python_package(name, version=None, url=None, **kwargs):
-    retry = 0
-    while retry < 5:
+    tries = 0
+    max_tries = 3
+    while True:
+        tries += 1
         try:
             if url:
                 shell_execute('pip install -d {} {}'.format(LOCAL_ARCHIVE_DIR, url), capture=True, **kwargs)
             else:
                 shell_execute('pip install -d {} {}{}'.format(LOCAL_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''), capture=True, **kwargs)
         except:
-            LOGGER.warn('pip install failed', exc_info=1)
-            retry += 1
+            if tries >= max_tries:
+                raise
         else:
             break
     downloaded_version = get_downloaded_python_package_version(name, version)
