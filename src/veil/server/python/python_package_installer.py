@@ -194,17 +194,16 @@ def get_downloaded_python_package_version(name, version=None):
     versions = []
     prefix = '{}-'.format(name)
     prefix1 = '{}-'.format(to_filename(name))
-    for archive_file in LOCAL_ARCHIVE_DIR.files('{}*'.format(prefix)) + LOCAL_ARCHIVE_DIR.files('{}*'.format(prefix1)):
+    for archive_file in set(LOCAL_ARCHIVE_DIR.files('{}*'.format(prefix)) + LOCAL_ARCHIVE_DIR.files('{}*'.format(prefix1))):
         archive_filename = archive_file.basename()
         pos = archive_filename.find('.tar.')
         if pos == -1:
-            if archive_file.ext != '.whl':
-                continue
+            pos = archive_filename.find('.zip')
+        if pos == -1 and archive_file.ext == '.whl':
             pos = archive_filename[len(prefix):].find('-')
-            if pos == -1:
-                continue
-            else:
-                pos += len(prefix)
+        if pos == -1:
+            continue
+        pos += len(prefix)
         archive_version = archive_filename[len(prefix): pos]
         if version:
             if version == archive_version:
