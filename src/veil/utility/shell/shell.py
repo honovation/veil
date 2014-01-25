@@ -8,6 +8,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def shell_execute(command_line, capture=False, waits=True, shell=True, **kwargs):
+    LOGGER.debug('shell execute: %(command_line)s', {'command_line': command_line})
     if capture:
         kwargs.update(dict(stderr=subprocess.STDOUT, stdout=subprocess.PIPE, stdin=subprocess.PIPE))
     command_args = command_line if shell else shlex.split(command_line)

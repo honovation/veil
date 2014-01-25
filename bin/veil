@@ -51,7 +51,6 @@ function veil_init {
         source $VEIL_HOME/env/bin/activate
         sudo veil execute pip install --upgrade "setuptools>=2.1"
         sudo veil execute pip install --upgrade "pip>=1.5.1"
-        sudo veil execute pip install pytz
     fi
     if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then
         git config core.quotepath false
