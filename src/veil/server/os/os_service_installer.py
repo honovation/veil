@@ -21,7 +21,7 @@ def os_service_resource(name, state):
         LOGGER.info('uninstall os service: %(name)s', {'name': name})
         stop_service(name)
         try_shell_execute('update-rc.d {} disable'.format(name), capture=True)
-        try_shell_execute('sh -c "echo manual > /etc/init/{}.override"'.format(name), capture=False)
+        try_shell_execute('sh -c "echo manual > /etc/init/{}.override"'.format(name))
 
 
 def stop_service(name):

@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
 import subprocess
-import shlex
 import sys
 import os
 
@@ -97,16 +96,15 @@ def patch(veil_framework_home, veil_home, veil_env_name, veil_server_name):
 
 def shell_execute(command_line, **kwargs):
     print(green(command_line))
-    command_args = shlex.split(command_line)
     try:
-        process = subprocess.Popen(command_args, **kwargs)
+        process = subprocess.Popen(command_line, shell=True, **kwargs)
     except:
-        print(red('failed to invoke {} with {}'.format(command_args, kwargs)))
+        print(red('failed to invoke {} with {}'.format(command_line, kwargs)))
         raise
     output = process.communicate()[0]
     if process.returncode:
         print(red('Subprocess return code: {}, command_line: {}, kwargs: {}, output: {}'.format(process.returncode, command_line, kwargs, output)))
-        raise Exception(red('shell_execute return code: {}, command: {}, kwargs: {}'.format(process.returncode, command_args, kwargs)))
+        raise Exception(red('shell_execute return code: {}, command_line: {}, kwargs: {}'.format(process.returncode, command_line, kwargs)))
     return output
 
 

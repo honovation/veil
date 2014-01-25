@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import sys
 import os
-import shlex
 import subprocess
 import datetime
 
@@ -56,8 +55,7 @@ def rollback(src_dir, backup_dir, veil_server):
         raise Exception('{} does not exists, can not rollback'.format(backup_dir))
     if os.path.exists(src_dir):
         bring_down_server(src_dir, veil_server)
-        shell_execute('mv {} {}-to-be-deleted-{}'.format(
-            src_dir, src_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
+        shell_execute('mv {} {}-to-be-deleted-{}'.format(src_dir, src_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
     try:
         shell_execute('killall supervisord')
     except:
@@ -92,16 +90,15 @@ def download_packages(src_dir, veil_server):
 
 def shell_execute(command_line, **kwargs):
     print(green(command_line))
-    command_args = shlex.split(command_line)
     try:
-        process = subprocess.Popen(command_args, **kwargs)
+        process = subprocess.Popen(command_line, shell=True, **kwargs)
     except:
-        print(red('failed to invoke {} with {}'.format(command_args, kwargs)))
+        print(red('failed to invoke {} with {}'.format(command_line, kwargs)))
         raise
     output = process.communicate()[0]
     if process.returncode:
         print(red('Subprocess return code: {}, command_line: {}, kwargs: {}, output: {}'.format(process.returncode, command_line, kwargs, output)))
-        raise Exception(red('shell_execute return code: {}, command: {}, kwargs: {}'.format(process.returncode, command_args, kwargs)))
+        raise Exception(red('shell_execute return code: {}, command_line: {}, kwargs: {}'.format(process.returncode, command_line, kwargs)))
     return output
 
 

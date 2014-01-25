@@ -75,8 +75,8 @@ def python_package_resource(name, version=None, url=None, **kwargs):
             if new_downloaded_version != downloaded_version:
                 LOGGER.debug('python package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s, %(url)s', {
                     'name': name,
-                    'installed_version': downloaded_version,
-                    'latest_version': downloaded_version,
+                    'installed_version': installed_version,
+                    'latest_version': latest_version,
                     'downloaded_version': downloaded_version,
                     'new_downloaded_version': new_downloaded_version,
                     'url': url
@@ -92,8 +92,8 @@ def python_package_resource(name, version=None, url=None, **kwargs):
         if new_downloaded_version != downloaded_version:
             LOGGER.debug('python package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s, %(url)s', {
                 'name': name,
-                'installed_version': downloaded_version,
-                'latest_version': downloaded_version,
+                'installed_version': installed_version,
+                'latest_version': latest_version,
                 'downloaded_version': downloaded_version,
                 'new_downloaded_version': new_downloaded_version,
                 'url': url
@@ -116,9 +116,7 @@ def python_package_resource(name, version=None, url=None, **kwargs):
                 'latest_version': latest_version,
                 'new_installed_version': downloaded_version
             })
-        shell_execute('pip install --process-dependency-links --no-index --find-links {} {}=={}'.format(LOCAL_ARCHIVE_DIR, name, downloaded_version),
-            capture=True, **kwargs)
-        installed_version = downloaded_version
+        installed_version = install_python_package(name, downloaded_version, url=url, **kwargs)
 
     if may_update_resource_latest_version and installed_version and installed_version != latest_version:
         set_resource_latest_version(to_resource_key(name), installed_version)
@@ -134,7 +132,6 @@ def to_resource_key(package_name):
 
 
 installed_package_name2version = None
-
 
 def get_python_package_installed_version(name, from_cache=True):
     global installed_package_name2version
@@ -153,12 +150,11 @@ def get_python_package_installed_version(name, from_cache=True):
 RE_OUTDATED_PACKAGE = re.compile(r'^(.+) \(Current: .+ Latest: (.+)\)$')
 outdated_package_name2latest_version = None
 
-
 def get_installed_package_remote_latest_version(name):
     global outdated_package_name2latest_version
     if outdated_package_name2latest_version is None:
         outdated_package_name2latest_version = {}
-        for line in shell_execute('pip list -l -o | grep Latest:', capture=True, shell=True).splitlines(False):
+        for line in shell_execute('pip list -l -o | grep Latest:', capture=True).splitlines(False):
             match = RE_OUTDATED_PACKAGE.match(line)
             outdated_package_name2latest_version[match.group(1)] = match.group(2)
     return outdated_package_name2latest_version.get(name)
@@ -171,10 +167,9 @@ def download_python_package(name, version=None, url=None, **kwargs):
         tries += 1
         try:
             if url:
-                shell_execute('pip install --process-dependency-links -d {} {}'.format(LOCAL_ARCHIVE_DIR, url), capture=True, **kwargs)
+                shell_execute('pip install --timeout 30 -d {} {}'.format(LOCAL_ARCHIVE_DIR, url), capture=True, **kwargs)
             else:
-                shell_execute(
-                    'pip install --process-dependency-links -d {} {}{}'.format(LOCAL_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''),
+                shell_execute('pip install --timeout 30 -d {} {}{}'.format(LOCAL_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''),
                     capture=True, **kwargs)
         except:
             if tries >= max_tries:
@@ -188,7 +183,6 @@ def download_python_package(name, version=None, url=None, **kwargs):
 
 
 RE_ARCHIVE_FILENAME = re.compile(r'^.+\-(.+)\-$')
-
 
 def get_downloaded_python_package_version(name, version=None):
     versions = []
@@ -215,7 +209,33 @@ def get_downloaded_python_package_version(name, version=None):
     return versions[0] if versions else None
 
 
+def install_python_package_remotely(name, version, url, **kwargs):
+    tries = 0
+    max_tries = 3
+    while True:
+        tries += 1
+        try:
+            if url:
+                shell_execute('pip install --timeout 30 --download-cache {} {}'.format(LOCAL_ARCHIVE_DIR, url), capture=True, **kwargs)
+            else:
+                shell_execute('pip install --timeout 30 --download-cache {} {}=={}'.format(LOCAL_ARCHIVE_DIR, name, version), capture=True, **kwargs)
+        except:
+            if tries >= max_tries:
+                raise
+        else:
+            break
+
+
+def install_python_package(name, version, url=None, **kwargs):
+    try:
+        shell_execute('pip install --no-index --find-links {} {}=={}'.format(LOCAL_ARCHIVE_DIR, name, version), capture=True, **kwargs)
+    except:
+        LOGGER.warn('cannot install from local and try install from remote', exc_info=1)
+        install_python_package_remotely(name, version, url, **kwargs)
+    return version
+
+
 @script('upgrade-pip')
 def upgrade_pip(setuptools_version, pip_version):
-    shell_execute('veil execute pip install --upgrade --download-cache {} setuptools=={}'.format(LOCAL_ARCHIVE_DIR, setuptools_version))
-    shell_execute('veil execute pip install --upgrade --download-cache {} pip=={}'.format(LOCAL_ARCHIVE_DIR, pip_version))
+    shell_execute('veil execute pip install --upgrade --download-cache {} setuptools=={}'.format(LOCAL_ARCHIVE_DIR, setuptools_version), capture=True)
+    shell_execute('veil execute pip install --upgrade --download-cache {} pip=={}'.format(LOCAL_ARCHIVE_DIR, pip_version), capture=True)

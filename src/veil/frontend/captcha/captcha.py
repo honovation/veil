@@ -188,4 +188,4 @@ def remove_expired_captcha_images():
         return
     command_line = 'find {} -type f -cmin +{} -delete'.format(bucket().base_directory, CAPTCHA_ANSWER_ALIVE_MINUTES)
     print('try to remove expired captcha images: {}'.format(command_line))
-    shell_execute(command_line, capture=True, shell=True)
+    shell_execute(command_line, capture=True)
