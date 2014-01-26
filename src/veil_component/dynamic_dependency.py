@@ -1,5 +1,4 @@
 from __future__ import unicode_literals, print_function, division
-import os
 from .environment import VEIL_HOME
 
 # dynamic dependency recorded and manually maintained to reflect
@@ -18,13 +17,13 @@ def start_recording_dynamic_dependencies():
 
 def record_dynamic_dependency_provider(component_name, dynamic_dependency_type, dynamic_dependency_key):
     if should_record(component_name):
-        line = '{}<={}:{}\n'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
+        line = '{}<={}:{}'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
         record_line(line)
 
 
 def record_dynamic_dependency_consumer(component_name, dynamic_dependency_type, dynamic_dependency_key):
     if should_record(component_name):
-        line = '{}=>{}:{}\n'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
+        line = '{}=>{}:{}'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
         record_line(line)
 
 
@@ -47,11 +46,7 @@ def list_consumed_dynamic_dependencies(component_name):
 
 
 def should_record(component_name):
-    if not component_name:
-        return False
-    if not is_recording:
-        return False
-    return True
+    return component_name and is_recording
 
 
 def list_dynamic_dependencies():
@@ -59,40 +54,35 @@ def list_dynamic_dependencies():
     if not dynamic_dependencies:
         providers = {}
         consumers = {}
-        if DEP_DYNAMIC_RECORDED.exists():
-            read_from_file(DEP_DYNAMIC_RECORDED, providers, consumers)
-        if DEP_DYNAMIC_MANUAL.exists():
-            read_from_file(DEP_DYNAMIC_MANUAL, providers, consumers)
+        read_from_file(DEP_DYNAMIC_RECORDED, providers, consumers)
+        read_from_file(DEP_DYNAMIC_MANUAL, providers, consumers)
         dynamic_dependencies = providers, consumers
     return dynamic_dependencies
 
 
-def read_from_file(file, providers, consumers):
-    if not file:
-        return {}, {}
-    if not os.path.exists(file):
-        return {}, {}
-    with open(file, 'r') as f:
-        for line in f.readlines():
-            line = line.decode('UTF-8')
-            line = line.strip()
-            if not line:
-                continue
-            if '=>' in line:
-                consumer, type_and_key = [x.strip() for x in line.split('=>')]
-                consumers.setdefault(consumer, set()).add(tuple([x.strip() for x in type_and_key.split(':')]))
-            elif '<=' in line:
-                provider, type_and_key = [x.strip() for x in line.split('<=')]
-                providers.setdefault(tuple([x.strip() for x in type_and_key.split(':')]), set()).add(provider)
-            else:
-                raise Exception('invalid dynamic dependencies file: {}\n{}'.format(file, line))
+def read_from_file(file_path, providers, consumers):
+    if not file_path.exists():
+        return
+    for line in file_path.lines(encoding='UTF-8'):
+        line = line.strip()
+        if not line:
+            continue
+        if '=>' in line:
+            consumer, type_and_key = [x.strip() for x in line.split('=>')]
+            consumers.setdefault(consumer, set()).add(tuple(x.strip() for x in type_and_key.split(':')))
+        elif '<=' in line:
+            provider, type_and_key = [x.strip() for x in line.split('<=')]
+            providers.setdefault(tuple(x.strip() for x in type_and_key.split(':')), set()).add(provider)
+        else:
+            raise Exception('invalid dynamic dependencies file: {}\n{}'.format(file_path, line))
 
+
+lines = []
 
 def record_line(line):
-    line = line.encode('UTF-8')
-    if DEP_DYNAMIC_RECORDED.exists():
-        with open(DEP_DYNAMIC_RECORDED) as f:
-            if line in f.read():
-                return
-    with open(DEP_DYNAMIC_RECORDED, 'a') as f:
-        f.write(line)
+    global lines
+    if line not in lines:
+        lines = DEP_DYNAMIC_RECORDED.lines(encoding='UTF-8', retain=False) if DEP_DYNAMIC_RECORDED.exists() else []
+        if line not in lines:
+            lines.append(line)
+            DEP_DYNAMIC_RECORDED.write_text('\n'.join(sorted(lines)), encoding='UTF-8')
