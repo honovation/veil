@@ -91,6 +91,7 @@ veil.resource.get = function (options) {
 veil.resource.create = function (options) {
     var url = options.url;
     var data = options.data;
+    var dataFormat = options.dataFormat;
     var dataType = options.dataType;
     var async = options.async;
     var onSuccess = options.onSuccess;
@@ -116,7 +117,8 @@ veil.resource.create = function (options) {
             403: function() {alert('权限不足');}
         }
     };
-    if(options.requestType === 'json') {
+    if(dataFormat === 'json') {
+        _.data = JSON.stringify(_.data || {});
         _.contentType = 'application/json; charset=utf-8';
     }
     return $.ajax(_);
@@ -125,6 +127,8 @@ veil.resource.create = function (options) {
 veil.resource.update = function (options) {
     var url = options.url;
     var data = options.data;
+    var dataFormat = options.dataFormat;
+    var dataType = options.dataType;
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
@@ -132,6 +136,7 @@ veil.resource.update = function (options) {
         type: 'PUT',
         url: url,
         data: data,
+        dataType:dataType,
         xhrFields: {
             withCredentials: true
         },
@@ -146,7 +151,42 @@ veil.resource.update = function (options) {
             403: function() {alert('权限不足');}
         }
     };
-    if(options.requestType === 'json') {
+    if(dataFormat === 'json') {
+        _.data = JSON.stringify(_.data || {});
+        _.contentType = 'application/json; charset=utf-8';
+    }
+    return $.ajax(_);
+};
+
+veil.resource.patch = function (options) {
+    var url = options.url;
+    var data = options.data;
+    var dataFormat = options.dataFormat;
+    var dataType = options.dataType;
+    var onSuccess = options.onSuccess;
+    var onError = options.onError;
+    var onValidationError = options.onValidationError;
+    var _ = {
+        type: 'PATCH',
+        url: url,
+        data: data,
+        dataType: dataType,
+        xhrFields: {
+            withCredentials: true
+        },
+        success: onSuccess,
+        error: onError,
+        statusCode: {
+            400: onValidationError,
+            401: function(){
+                alert('用户名、密码错误或登录超时');
+                window.location.href='/login';
+            },
+            403: function() {alert('权限不足');}
+        }
+    };
+    if(dataFormat === 'json') {
+        _.data = JSON.stringify(_.data || {});
         _.contentType = 'application/json; charset=utf-8';
     }
     return $.ajax(_);
@@ -174,41 +214,6 @@ veil.resource.del = function (options) {
             403:function() {alert('权限不足');}
         }
     };
-    if(options.requestType === 'json') {
-        _.contentType = 'application/json; charset=utf-8';
-    }
-    return $.ajax(_);
-};
-
-veil.resource.patch = function (options) {
-    var url = options.url;
-    var data = options.data;
-    var dataType = options.dataType;
-    var onSuccess = options.onSuccess;
-    var onError = options.onError;
-    var onValidationError = options.onValidationError;
-    var _ = {
-        type: 'PATCH',
-        url: url,
-        data: data,
-        dataType: dataType,
-        xhrFields: {
-            withCredentials: true
-        },
-        success: onSuccess,
-        error: onError,
-        statusCode: {
-            400: onValidationError,
-            401: function(){
-                alert('用户名、密码错误或登录超时');
-                window.location.href='/login';
-            },
-            403: function() {alert('权限不足');}
-        }
-    };
-    if(options.requestType === 'json') {
-        _.contentType = 'application/json; charset=utf-8';
-    }
     return $.ajax(_);
 };
 
@@ -228,8 +233,7 @@ veil.widget.handle = function (widget_selector, child_selector, event, handler) 
 veil.widget.delResource = function (widget, onSuccess, data, dataType) {
     var _ = {
         url:widget.data('deleteUrl'),
-        data: data && JSON.stringify(data) || widget.serialize(),
-        requestType: data && typeof data === 'object' ? 'json': null,
+        data: data || widget.serialize(),
         dataType: dataType,
         onSuccess:function () {
             widget.remove();
@@ -239,12 +243,12 @@ veil.widget.delResource = function (widget, onSuccess, data, dataType) {
     return veil.resource.del(_);
 };
 
-veil.widget.createResource = function (widget, onSuccess, data, dataType) {
+veil.widget.createResource = function (widget, onSuccess, data, dataFormat, dataType) {
     veil.widget.clearErrorMessages(widget);
     var _ = {
         url: widget.attr('action'),
-        data: data && JSON.stringify(data) || widget.serialize(),
-        requestType: data && typeof data === 'object' ? 'json': null,
+        data: data || widget.serialize(),
+        dataFormat: dataFormat,
         dataType: dataType,
         onSuccess: function (s) {
             widget[0].reset();
@@ -266,12 +270,12 @@ veil.widget.createResource = function (widget, onSuccess, data, dataType) {
     return veil.resource.create(_);
 };
 
-veil.widget.patchResource = function(widget, onSuccess, data, dataType) {
+veil.widget.patchResource = function(widget, onSuccess, data, dataFormat, dataType) {
     veil.widget.clearErrorMessages(widget);
     var _ = {
         url: widget.attr('action'),
-        data: data && JSON.stringify(data) || widget.serialize(),
-        requestType: data && typeof data === 'object' ? 'json': null,
+        data: data || widget.serialize(),
+        dataFormat: dataFormat,
         dataType: dataType,
         onSuccess: function (s) {
             widget[0].reset();
@@ -293,12 +297,12 @@ veil.widget.patchResource = function(widget, onSuccess, data, dataType) {
     return veil.resource.patch(_);
 };
 
-veil.widget.updateResource = function (widget, onSuccess, data, dataType) {
+veil.widget.updateResource = function (widget, onSuccess, data, dataFormat, dataType) {
     veil.widget.clearErrorMessages(widget);
     var _ = {
         url:widget.attr('action'),
-        data: data && JSON.stringify(data) || widget.serialize(),
-        requestType: data && typeof data === 'object' ? 'json': null,
+        data: data || widget.serialize(),
+        dataFormat: dataFormat,
         dataType: dataType,
         onSuccess: function (s) {
             widget[0].reset();

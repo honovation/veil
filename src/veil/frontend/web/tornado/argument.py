@@ -6,7 +6,8 @@ import re
 import traceback
 from veil.model.collection import *
 from veil.utility.encoding import *
-from .error import  HTTPError
+from veil.utility.json import *
+from .error import HTTPError
 from .context import get_current_http_request
 
 LOGGER = logging.getLogger(__name__)
@@ -14,27 +15,30 @@ LOGGER = logging.getLogger(__name__)
 @contextlib.contextmanager
 def normalize_arguments():
     request = get_current_http_request()
-    arguments = request.arguments
-    for field in arguments.keys():
-        values = []
-        for v in arguments[field]:
-            v = to_unicode(v, strict=False, additional={
-                    'field': field,
-                    'uri': request.uri,
-                    'referer': request.headers.get('Referer'),
-                    'remote_ip': request.remote_ip,
-                    'user_agent': request.headers.get('User-Agent')
-                })
-            v = re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', v)
-            v = v.strip()
-            if v:
-                values.append(v)
-        if values:
-            arguments[field] = values
-        else:
-            del arguments[field]
-    if request.headers.get('X-Upload-File-Path'):
-        arguments['upload-file-path'] = [to_unicode(request.headers.get('X-Upload-File-Path'), strict=False)]
+    if request.headers.get('Content-Type', '').startswith('application/json'):
+        request.arguments = objectify(from_json(request.body or '{}'))
+    else:
+        arguments = request.arguments
+        for field in arguments.keys():
+            values = []
+            for v in arguments[field]:
+                v = to_unicode(v, strict=False, additional={
+                        'field': field,
+                        'uri': request.uri,
+                        'referer': request.headers.get('Referer'),
+                        'remote_ip': request.remote_ip,
+                        'user_agent': request.headers.get('User-Agent')
+                    })
+                v = re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', v)
+                v = v.strip()
+                if v:
+                    values.append(v)
+            if values:
+                arguments[field] = values
+            else:
+                del arguments[field]
+        if request.headers.get('X-Upload-File-Path'):
+            arguments['upload-file-path'] = [to_unicode(request.headers.get('X-Upload-File-Path'), strict=False)]
     yield
 
 
