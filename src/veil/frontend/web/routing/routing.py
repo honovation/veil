@@ -1,5 +1,4 @@
 from __future__ import unicode_literals, print_function, division
-import veil_component
 import functools
 import re
 import contextlib
@@ -7,6 +6,8 @@ import httplib
 from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
+import veil_component
+from veil.utility.json import *
 from veil.development.test import *
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
@@ -139,15 +140,20 @@ class RoutingHTTPHandler(object):
         response = get_current_http_response()
         request.arguments.update(dict([(k, (v,)) for k, v in path_arguments.items()]))
         data = route.route_handler()
-        try:
+        if 'application/json' in request.headers.get('Accept', ''):
+            response.set_header('Content-Type', 'application/json; charset=UTF-8')
+            data = to_json(data)
+        else:
             if data is not None:
-                data = post_process_page(route.route_handler, data)
-                response.write(data)
-            if 'ASYNC' not in route.tags:
-                response.finish()
-        except:
-            LOGGER.error('failed to post-process route: %(route)s', {'route': route})
-            raise
+                try:
+                    data = post_process_page(route.route_handler, data)
+                except:
+                    LOGGER.error('failed to post-process route: %(route)s', {'route': route})
+                    raise
+        if data is not None:
+            response.write(data)
+        if 'ASYNC' not in route.tags:
+            response.finish()
 
 
 def is_method_matched(route_method, request_method):
