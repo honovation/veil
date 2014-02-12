@@ -16,7 +16,10 @@ LOGGER = logging.getLogger(__name__)
 def normalize_arguments():
     request = get_current_http_request()
     if request.headers.get('Content-Type', '').startswith('application/json'):
-        request.arguments.update(objectify(from_json(request.body or '{}')))
+        json_arguments = objectify(from_json(request.body or '{}'))
+        for name, values in json_arguments.items():
+            if values:
+                request.arguments.setdefault(name, []).extend([values])
     else:
         arguments = request.arguments
         for field in arguments.keys():

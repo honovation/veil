@@ -102,9 +102,6 @@ veil.resource.create = function (options) {
         url:url,
         data:data,
         async:async,
-        xhrFields: {
-            withCredentials: true
-        },
         dataType:dataType,
         success:onSuccess,
         error:onError,
@@ -137,9 +134,6 @@ veil.resource.update = function (options) {
         url: url,
         data: data,
         dataType:dataType,
-        xhrFields: {
-            withCredentials: true
-        },
         success: onSuccess,
         error: onError,
         statusCode: {
@@ -171,9 +165,6 @@ veil.resource.patch = function (options) {
         url: url,
         data: data,
         dataType: dataType,
-        xhrFields: {
-            withCredentials: true
-        },
         success: onSuccess,
         error: onError,
         statusCode: {
@@ -198,9 +189,6 @@ veil.resource.del = function (options) {
     var _ = {
         type:'DELETE',
         url:url,
-        xhrFields: {
-            withCredentials: true
-        },
         success:onSuccess,
         statusCode:{
             401: function(){
@@ -239,9 +227,12 @@ veil.widget.delResource = function (widget, onSuccess) {
 
 veil.widget.createResource = function (widget, onSuccess, data, dataFormat, dataType) {
     veil.widget.clearErrorMessages(widget);
+    if (typeof(data) === 'undefined') {
+        data = dataFormat === 'json' ? widget.serializeJSON() : widget.serialize();
+    }
     var _ = {
         url: widget.attr('action'),
-        data: data || widget.serialize(),
+        data: data,
         dataFormat: dataFormat,
         dataType: dataType,
         onSuccess: function (s) {
@@ -266,6 +257,9 @@ veil.widget.createResource = function (widget, onSuccess, data, dataFormat, data
 
 veil.widget.patchResource = function(widget, onSuccess, data, dataFormat, dataType) {
     veil.widget.clearErrorMessages(widget);
+    if (typeof(data) === 'undefined') {
+        data = dataFormat === 'json' ? widget.serializeJSON() : widget.serialize();
+    }
     var _ = {
         url: widget.attr('action'),
         data: data || widget.serialize(),
@@ -293,6 +287,9 @@ veil.widget.patchResource = function(widget, onSuccess, data, dataFormat, dataTy
 
 veil.widget.updateResource = function (widget, onSuccess, data, dataFormat, dataType) {
     veil.widget.clearErrorMessages(widget);
+    if (typeof(data) === 'undefined') {
+        data = dataFormat === 'json' ? widget.serializeJSON() : widget.serialize();
+    }
     var _ = {
         url:widget.attr('action'),
         data: data || widget.serialize(),
