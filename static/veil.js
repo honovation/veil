@@ -195,13 +195,9 @@ veil.resource.patch = function (options) {
 veil.resource.del = function (options) {
     var url = options.url;
     var onSuccess = options.onSuccess;
-    var data = options.data;
-    var dataType = options.dataType;
     var _ = {
         type:'DELETE',
         url:url,
-        data: data,
-        dataType: dataType,
         xhrFields: {
             withCredentials: true
         },
@@ -230,11 +226,9 @@ veil.widget.handle = function (widget_selector, child_selector, event, handler) 
     });
 };
 
-veil.widget.delResource = function (widget, onSuccess, data, dataType) {
+veil.widget.delResource = function (widget, onSuccess) {
     var _ = {
         url:widget.data('deleteUrl'),
-        data: data || widget.serialize(),
-        dataType: dataType,
         onSuccess:function () {
             widget.remove();
             onSuccess();
