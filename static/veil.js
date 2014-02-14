@@ -3,23 +3,23 @@
  *
  * @requires jQuery v1.8+
  * @requires jQuery Cookie Plugin v1.4+
- * @requires json3.js(https://github.com/bestiejs/json3) for browsers born before ECScript5
+ * @requires json3.js(https://github.com/bestiejs/json3) for browsers without native JSON support
  *
  */
 
 $.ajaxSetup({headers:{'X-XSRF':$.cookie('_xsrf')}});
 
 $.fn.serializeObject = function() {
-    var o = {};
+    var o = {api: false};
     var a = this.serializeArray();
     $.each(a, function() {
-        if (o[this.name] !== undefined) {
-            if (!o[this.name].push) {
-                o[this.name] = [o[this.name]];
+        var value = $.trim(this.value);
+        if (value) {
+            if (o[this.name] === undefined) {
+                o[this.name] = [value];
+            } else {
+                o[this.name].push(value);
             }
-            o[this.name].push(this.value || '');
-        } else {
-            o[this.name] = this.value || '';
         }
     });
     return o;

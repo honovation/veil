@@ -1,3 +1,15 @@
+"""
+Request arguments:
+
+parse arguments from request query, request body and request path
+merge values if the argument exists in request query, request body and request path
+
+strip whitespaces from request query values
+strip whitespaces from non-json request body values
+in terms of json request body values, keep whitespaces if requested from api, otherwise whitespaces are removed by $.serializeObject in veil.js
+
+remove arguments with blank values
+"""
 from __future__ import unicode_literals, print_function, division
 import logging
 import contextlib
@@ -15,33 +27,34 @@ LOGGER = logging.getLogger(__name__)
 @contextlib.contextmanager
 def normalize_arguments():
     request = get_current_http_request()
+    arguments = request.arguments
+    for field in arguments.keys():
+        value = []
+        for v in arguments[field]:
+            v = to_unicode(v, strict=False, additional={
+                    'field': field,
+                    'uri': request.uri,
+                    'referer': request.headers.get('Referer'),
+                    'remote_ip': request.remote_ip,
+                    'user_agent': request.headers.get('User-Agent')
+                })
+            v = re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', v)
+            v = v.strip()
+            if v:
+                value.append(v)
+        if value:
+            arguments[field] = value
+        else:
+            del arguments[field]
+    if request.headers.get('X-Upload-File-Path'):
+        arguments['upload-file-path'] = [to_unicode(request.headers.get('X-Upload-File-Path'), strict=False)]
+
+    # parse request body in ``application/json`` as tornado's parse_body_arguments does not support it
     if request.headers.get('Content-Type', '').startswith('application/json'):
         json_arguments = objectify(from_json(request.body or '{}'))
-        for name, values in json_arguments.items():
-            if values:
-                request.arguments.setdefault(name, []).extend([values])
-    else:
-        arguments = request.arguments
-        for field in arguments.keys():
-            values = []
-            for v in arguments[field]:
-                v = to_unicode(v, strict=False, additional={
-                        'field': field,
-                        'uri': request.uri,
-                        'referer': request.headers.get('Referer'),
-                        'remote_ip': request.remote_ip,
-                        'user_agent': request.headers.get('User-Agent')
-                    })
-                v = re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', v)
-                v = v.strip()
-                if v:
-                    values.append(v)
-            if values:
-                arguments[field] = values
-            else:
-                del arguments[field]
-        if request.headers.get('X-Upload-File-Path'):
-            arguments['upload-file-path'] = [to_unicode(request.headers.get('X-Upload-File-Path'), strict=False)]
+        requested_by_api = json_arguments.pop('api', True)
+        for name, value in json_arguments.items():
+            request.arguments.setdefault(name, []).extend([value] if requested_by_api else value)
     yield
 
 
