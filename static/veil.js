@@ -1,7 +1,9 @@
 /*!
  * veil.js
  *
- * @requires jQuery v1.8+, jQuery Cookie Plugin v1.4+
+ * @requires jQuery v1.8+
+ * @requires jQuery Cookie Plugin v1.4+
+ * @requires json3.js(https://github.com/bestiejs/json3) for browsers born before ECScript5
  *
  */
 
@@ -260,7 +262,7 @@ veil.widget.createResource = function (widget, onSuccess, data, dataFormat, data
         },
         onValidationError: function (xhr) {
             if (xhr.getResponseHeader('Content-Type').indexOf('application/json') != -1) {
-                widget.data('errors', JSON.parse(xhr.responseText));
+                widget.data('errors', $.parseJSON(xhr.responseText));
                 veil.widget.showFieldErrorMessage(widget);
             } else {
                 veil.widget.processWidget(xhr.responseText, function(html){
@@ -295,7 +297,7 @@ veil.widget.patchResource = function(widget, onSuccess, data, dataFormat, dataTy
         },
         onValidationError: function (xhr) {
             if (xhr.getResponseHeader('Content-Type').indexOf('application/json') != -1) {
-                widget.data('errors', JSON.parse(xhr.responseText));
+                widget.data('errors', $.parseJSON(xhr.responseText));
                 veil.widget.showFieldErrorMessage(widget);
             } else {
                 veil.widget.processWidget(xhr.responseText, function(html){
@@ -330,7 +332,7 @@ veil.widget.updateResource = function (widget, onSuccess, data, dataFormat, data
         },
         onValidationError: function (xhr) {
             if (xhr.getResponseHeader('Content-Type').indexOf('application/json') != -1) {
-                widget.data('errors', JSON.parse(xhr.responseText));
+                widget.data('errors', $.parseJSON(xhr.responseText));
                 veil.widget.showFieldErrorMessage(widget);
             } else {
                 veil.widget.processWidget(xhr.responseText, function(html){
@@ -360,7 +362,7 @@ veil.widget.getResource = function (widget, onSuccess) {
         },
         onValidationError:function (xhr) {
             if (xhr.getResponseHeader('Content-Type').indexOf('application/json') != -1) {
-                widget.data('errors', JSON.parse(xhr.responseText));
+                widget.data('errors', $.parseJSON(xhr.responseText));
                 veil.widget.showFieldErrorMessage(widget);
             } else {
                 veil.widget.processWidget(xhr.responseText, function(html){
