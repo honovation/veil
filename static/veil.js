@@ -244,7 +244,7 @@ veil.widget.delResource = function (widget, onSuccess) {
 veil.widget.createResource = function (widget, onSuccess, data, dataFormat, dataType) {
     veil.widget.clearErrorMessages(widget);
     if (typeof(data) === 'undefined') {
-        data = dataFormat === 'json' ? widget.serializeJSON() : widget.serialize();
+        data = dataFormat === 'json' ? widget.serializeObject() : widget.serialize();
     }
     var _ = {
         url: widget.attr('action'),
@@ -279,7 +279,7 @@ veil.widget.createResource = function (widget, onSuccess, data, dataFormat, data
 veil.widget.patchResource = function(widget, onSuccess, data, dataFormat, dataType) {
     veil.widget.clearErrorMessages(widget);
     if (typeof(data) === 'undefined') {
-        data = dataFormat === 'json' ? widget.serializeJSON() : widget.serialize();
+        data = dataFormat === 'json' ? widget.serializeObject() : widget.serialize();
     }
     var _ = {
         url: widget.attr('action'),
@@ -314,7 +314,7 @@ veil.widget.patchResource = function(widget, onSuccess, data, dataFormat, dataTy
 veil.widget.updateResource = function (widget, onSuccess, data, dataFormat, dataType) {
     veil.widget.clearErrorMessages(widget);
     if (typeof(data) === 'undefined') {
-        data = dataFormat === 'json' ? widget.serializeJSON() : widget.serialize();
+        data = dataFormat === 'json' ? widget.serializeObject() : widget.serialize();
     }
     var _ = {
         url:widget.attr('action'),
