@@ -138,7 +138,8 @@ class RoutingHTTPHandler(object):
     def execute_route(self, route, path_arguments):
         request = get_current_http_request()
         response = get_current_http_response()
-        request.arguments.update(dict([(k, (v,)) for k, v in path_arguments.items()]))
+        for name, value in path_arguments.items():
+            request.arguments.setdefault(name, []).extend((value,))
         data = route.route_handler()
         if 'application/json' in request.headers.get('Accept', '') or isinstance(data, dict):
             response.set_header('Content-Type', 'application/json; charset=UTF-8')
