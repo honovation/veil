@@ -79,7 +79,7 @@ def os_package_resource(name):
                 'latest_version': latest_version,
                 'version_to_install': downloaded_version
             })
-        shell_execute('apt-get -y install {}={}'.format(name, downloaded_version), capture=True)
+        shell_execute('apt-get -y install {}={}'.format(name, downloaded_version), capture=True, debug=True)
         installed_version = downloaded_version
 
     if may_update_resource_latest_version and installed_version and installed_version != latest_version:
@@ -94,7 +94,7 @@ def os_package_resource(name):
 def download_os_package(name, version=None):
     LOGGER.info('downloading os package: %(name)s, %(version)s...', {'name': name, 'version': version})
     update_os_package_catalogue()
-    shell_execute('apt-get -y -d install {}{}'.format(name, '={}'.format(version) if version else ''), capture=True)
+    shell_execute('apt-get -y -d install {}{}'.format(name, '={}'.format(version) if version else ''), capture=True, debug=True)
     _, downloaded_version = get_local_os_package_versions(name)
     assert not version or version == downloaded_version, \
         'the downloaded version of os package {} is {}, different from the specific version {}'.format(name, downloaded_version, version)
@@ -107,7 +107,7 @@ def update_os_package_catalogue():
     global apt_get_update_executed
     if not apt_get_update_executed:
         LOGGER.info('updating os package catalogue...')
-        shell_execute('apt-get -q update', capture=True)
+        shell_execute('apt-get -q update', capture=True, debug=True)
         apt_get_update_executed = True
 
 
@@ -118,7 +118,7 @@ def to_resource_key(pip_package):
 def get_local_os_package_versions(name):
     installed_version = None
     downloaded_version = None
-    lines = shell_execute('apt-cache policy {}'.format(name), capture=True).splitlines(False)
+    lines = shell_execute('apt-cache policy {}'.format(name), capture=True, debug=True).splitlines(False)
     if len(lines) >= 3:
         installed_version = lines[1].split('Installed:')[1].strip()
         if '(none)' == installed_version:
