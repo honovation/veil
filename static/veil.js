@@ -261,18 +261,8 @@ veil.widget.createResource = function (widget, onSuccess, data, dataFormat, data
             //veil.widget.showErrorMessage(widget, '操作失败');
         },
         onValidationError: function (xhr) {
-            if (xhr.getResponseHeader('Content-Type').indexOf('application/json') != -1) {
-                widget.data('errors', $.parseJSON(xhr.responseText));
-                veil.widget.showFieldErrorMessage(widget);
-            } else {
-                veil.widget.processWidget(xhr.responseText, function(html){
-                    var newWidget = $(html);
-                    widget.replaceWith(newWidget);
-                    widget = newWidget;
-                    veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
-                    veil.widget.showFieldErrorMessage(widget);
-                });
-            }
+            widget.data('errors', $.parseJSON(xhr.responseText));
+            veil.widget.showFieldErrorMessage(widget);
         }
     };
     return veil.resource.create(_);
@@ -296,18 +286,8 @@ veil.widget.patchResource = function(widget, onSuccess, data, dataFormat, dataTy
             //veil.widget.showErrorMessage(widget, '操作失败');
         },
         onValidationError: function (xhr) {
-            if (xhr.getResponseHeader('Content-Type').indexOf('application/json') != -1) {
-                widget.data('errors', $.parseJSON(xhr.responseText));
-                veil.widget.showFieldErrorMessage(widget);
-            } else {
-                veil.widget.processWidget(xhr.responseText, function(html){
-                    var newWidget = $(html);
-                    widget.replaceWith(newWidget);
-                    widget = newWidget;
-                    veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
-                    veil.widget.showFieldErrorMessage(widget);
-                });
-            }
+            widget.data('errors', $.parseJSON(xhr.responseText));
+            veil.widget.showFieldErrorMessage(widget);
         }
     };
     return veil.resource.patch(_);
@@ -331,18 +311,8 @@ veil.widget.updateResource = function (widget, onSuccess, data, dataFormat, data
             //veil.widget.showErrorMessage(widget, '操作失败');
         },
         onValidationError: function (xhr) {
-            if (xhr.getResponseHeader('Content-Type').indexOf('application/json') != -1) {
-                widget.data('errors', $.parseJSON(xhr.responseText));
-                veil.widget.showFieldErrorMessage(widget);
-            } else {
-                veil.widget.processWidget(xhr.responseText, function(html){
-                    var newWidget = $(html);
-                    widget.replaceWith(newWidget);
-                    widget = newWidget;
-                    veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
-                    veil.widget.showFieldErrorMessage(widget);
-                });
-            }
+            widget.data('errors', $.parseJSON(xhr.responseText));
+            veil.widget.showFieldErrorMessage(widget);
         }
     };
     return veil.resource.update(_);
@@ -361,18 +331,8 @@ veil.widget.getResource = function (widget, onSuccess) {
             //veil.widget.showErrorMessage(widget, '操作失败');
         },
         onValidationError:function (xhr) {
-            if (xhr.getResponseHeader('Content-Type').indexOf('application/json') != -1) {
-                widget.data('errors', $.parseJSON(xhr.responseText));
-                veil.widget.showFieldErrorMessage(widget);
-            } else {
-                veil.widget.processWidget(xhr.responseText, function(html){
-                    var newWidget = $(html);
-                    widget.replaceWith(newWidget);
-                    widget = newWidget;
-                    veil.widget.showErrorMessage(widget, '提交的信息未被服务器接受');
-                    veil.widget.showFieldErrorMessage(widget);
-                });
-            }
+            widget.data('errors', $.parseJSON(xhr.responseText));
+            veil.widget.showFieldErrorMessage(widget);
         }
     };
     return veil.resource.get(_);
