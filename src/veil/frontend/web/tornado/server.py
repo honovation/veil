@@ -169,8 +169,6 @@ class HTTPResponse(object):
         self._write_buffer.append(chunk)
 
     def flush(self):
-        chunk = ''.join(self._write_buffer)
-        self._write_buffer = []
         if not self._headers_written:
             self._headers_written = traceback.format_stack()
             headers = self._generate_headers()
@@ -179,9 +177,12 @@ class HTTPResponse(object):
 
         # Ignore the chunk and only write the headers for HEAD requests
         if self.request.method == 'HEAD':
-            if headers: self.connection.write(headers)
+            if headers:
+                self.connection.write(headers)
             return
 
+        chunk = ''.join(self._write_buffer)
+        self._write_buffer = []
         if headers or chunk:
             self.connection.write(headers + chunk)
 
