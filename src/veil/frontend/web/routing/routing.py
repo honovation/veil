@@ -12,6 +12,7 @@ from veil.development.test import *
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
 from veil.model.event import *
+from veil.model.command import *
 from .page_post_processor import post_process_page
 
 LOGGER = getLogger(__name__)
@@ -140,7 +141,11 @@ class RoutingHTTPHandler(object):
         response = get_current_http_response()
         for name, value in path_arguments.items():
             request.arguments.setdefault(name, []).extend((value,))
-        data = route.route_handler()
+        try:
+            data = route.route_handler()
+        except InvalidCommand as e:
+            set_http_status_code(httplib.BAD_REQUEST)
+            data = e.errors
         if 'application/json' in request.headers.get('Accept', '') or isinstance(data, dict):
             response.set_header('Content-Type', 'application/json; charset=UTF-8')
             data = to_json(data)
