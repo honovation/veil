@@ -42,8 +42,9 @@ def postgresql_server_resource(purpose, config):
         symbolic_link_resource(path=pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_ident.conf', to=pg_config_dir / 'pg_ident.conf'),
         postgresql_user_resource(purpose=purpose, user=config.user, password=config.password,
-            owner=config.owner, owner_password=config.owner_password,
-            host=config.host, port=config.port)
+            owner=config.owner, owner_password=config.owner_password, host=config.host, port=config.port),
+        postgresql_user_resource(purpose=purpose, user='readonly', password='r1adonly',
+            owner=config.owner, owner_password=config.owner_password, host=config.host, port=config.port)
     ])
     return resources
 
@@ -98,7 +99,7 @@ def postgresql_user_resource(purpose, user, password, owner, owner_password, hos
     pg_password = password
     assert pg_password, 'must specify postgresql user password'
     pg_data_dir = get_data_dir(purpose)
-    user_installed_tag_file = pg_data_dir / 'user-installed'
+    user_installed_tag_file = pg_data_dir / 'user-{}-installed'.format(user)
     is_installed = user_installed_tag_file.exists()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
@@ -118,12 +119,13 @@ def postgresql_user_resource(purpose, user, password, owner, owner_password, hos
                 host, port, owner,
                 "CREATE USER {} WITH PASSWORD '{}'".format(pg_user, pg_password)
             ), env=env, capture=True)
-            user_installed_tag_file.touch()
         except ShellExecutionError as e:
             if 'already exists' in e.output:
                 user_installed_tag_file.touch()
             else:
                 raise
+        else:
+            user_installed_tag_file.touch()
 
 
 def delete_file(path):

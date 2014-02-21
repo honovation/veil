@@ -125,6 +125,13 @@ def create_database_if_not_exists(purpose):
             pass # ignore
         else:
             raise
+    else:
+        # grant readonly privileges on the database to readonly user
+        psql(purpose, "-c '{}'".format('''
+            GRANT USAGE ON SCHEMA public to readonly;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO readonly;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO readonly;
+            '''))
 
 
 def create_database_migration_table_if_not_exists(purpose):
