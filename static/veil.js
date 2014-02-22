@@ -73,10 +73,6 @@ veil.event.hasDelegation = function (srcEventName) {
     return veil.event.DELEGATIONS[srcEventName];
 };
 
-veil.showMessage = function (message) {
-    alert(message);
-};
-
 veil.resource = {};
 
 veil.resource.get = function (options) {
@@ -86,6 +82,29 @@ veil.resource.get = function (options) {
     var onValidationError = options.onValidationError;
     var dataType = options.dataType;
     var data = options.data;
+    var widget = options.widget;
+    if (widget){
+        veil.widget.clearErrorMessages(widget);
+        onSuccess = function (html) {
+            widget[0].reset();
+            if (options.onSuccess){
+                veil.widget.processWidget(html, options.onSuccess);
+            }
+        };
+        if (!onError){
+            onError = function (xhr) {
+                if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
+                    veil.widget.showErrorMessage(widget, '操作失败');
+                }
+            };
+        }
+        if (!onValidationError){
+            onValidationError = function (xhr) {
+                widget.data('errors', $.parseJSON(xhr.responseText));
+                veil.widget.showFieldErrorMessage(widget);
+            };
+        }
+    }
     var _ = {
         cache: false,
         type: 'GET',
@@ -115,6 +134,29 @@ veil.resource.create = function (options) {
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
+    var widget = options.widget;
+    if (widget){
+        veil.widget.clearErrorMessages(widget);
+        onSuccess = function (s) {
+            widget[0].reset();
+            if (options.onSuccess){
+                options.onSuccess(s);
+            }
+        };
+        if (!onError){
+            onError = function (xhr) {
+                if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
+                    veil.widget.showErrorMessage(widget, '操作失败');
+                }
+            };
+        }
+        if (!onValidationError){
+            onValidationError = function (xhr) {
+                widget.data('errors', $.parseJSON(xhr.responseText));
+                veil.widget.showFieldErrorMessage(widget);
+            };
+        }
+    }
     var _ = {
         type:'POST',
         url:url,
@@ -147,6 +189,29 @@ veil.resource.update = function (options) {
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
+    var widget = options.widget;
+    if (widget){
+        veil.widget.clearErrorMessages(widget);
+        onSuccess = function (s) {
+            widget[0].reset();
+            if (options.onSuccess){
+                options.onSuccess(s);
+            }
+        };
+        if (!onError){
+            onError = function (xhr) {
+                if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
+                    veil.widget.showErrorMessage(widget, '操作失败');
+                }
+            };
+        }
+        if (!onValidationError){
+            onValidationError = function (xhr) {
+                widget.data('errors', $.parseJSON(xhr.responseText));
+                veil.widget.showFieldErrorMessage(widget);
+            };
+        }
+    }
     var _ = {
         type: 'PUT',
         url: url,
@@ -178,6 +243,29 @@ veil.resource.patch = function (options) {
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
+    var widget = options.widget;
+    if (widget){
+        veil.widget.clearErrorMessages(widget);
+        onSuccess = function (s) {
+            widget[0].reset();
+            if (options.onSuccess){
+                options.onSuccess(s);
+            }
+        };
+        if (!onError){
+            onError = function (xhr) {
+                if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
+                    veil.widget.showErrorMessage(widget, '操作失败');
+                }
+            };
+        }
+        if (!onValidationError){
+            onValidationError = function (xhr) {
+                widget.data('errors', $.parseJSON(xhr.responseText));
+                veil.widget.showFieldErrorMessage(widget);
+            };
+        }
+    }
     var _ = {
         type: 'PATCH',
         url: url,
@@ -204,10 +292,29 @@ veil.resource.patch = function (options) {
 veil.resource.del = function (options) {
     var url = options.url;
     var onSuccess = options.onSuccess;
+    var onError = options.onError;
+    var widget = options.widget;
+    if (widget){
+        veil.widget.clearErrorMessages(widget);
+        onSuccess = function () {
+            widget.remove();
+            if (options.onSuccess){
+                options.onSuccess();
+            }
+        };
+        if (!onError){
+            onError = function (xhr) {
+                if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
+                    veil.widget.showErrorMessage(widget, '操作失败');
+                }
+            };
+        }
+    }
     var _ = {
         type:'DELETE',
         url:url,
         success:onSuccess,
+        error:onError,
         statusCode:{
             401: function(){
                 alert('用户名、密码错误或登录超时');
@@ -232,141 +339,78 @@ veil.widget.handle = function (widget_selector, child_selector, event, handler) 
     });
 };
 
-veil.widget.delResource = function (widget, onSuccess) {
-    var _ = {
-        url:widget.data('deleteUrl'),
-        onSuccess:function () {
-            widget.remove();
-            onSuccess();
-        }
-    };
-    return veil.resource.del(_);
-};
-
 veil.widget.createResource = function (widget, onSuccess, data, dataFormat, dataType) {
-    veil.widget.clearErrorMessages(widget);
     if (typeof(data) === 'undefined') {
         data = dataFormat === 'json' ? widget.serializeObject() : widget.serialize();
     }
     var _ = {
+        widget: widget,
         url: widget.attr('action'),
         data: data,
         dataFormat: dataFormat,
         dataType: dataType,
-        onSuccess: function (s) {
-            widget[0].reset();
-            onSuccess(s);
-        },
-        onError: function () {
-            //veil.widget.showErrorMessage(widget, '操作失败');
-        },
-        onValidationError: function (xhr) {
-            widget.data('errors', $.parseJSON(xhr.responseText));
-            veil.widget.showFieldErrorMessage(widget);
-        }
+        onSuccess: onSuccess
     };
     return veil.resource.create(_);
 };
 
-veil.widget.patchResource = function(widget, onSuccess, data, dataFormat, dataType) {
-    veil.widget.clearErrorMessages(widget);
-    if (typeof(data) === 'undefined') {
-        data = dataFormat === 'json' ? widget.serializeObject() : widget.serialize();
-    }
-    var _ = {
-        url: widget.attr('action'),
-        data: data || widget.serialize(),
-        dataFormat: dataFormat,
-        dataType: dataType,
-        onSuccess: function (s) {
-            widget[0].reset();
-            onSuccess(s);
-        },
-        onError: function () {
-            //veil.widget.showErrorMessage(widget, '操作失败');
-        },
-        onValidationError: function (xhr) {
-            widget.data('errors', $.parseJSON(xhr.responseText));
-            veil.widget.showFieldErrorMessage(widget);
-        }
-    };
-    return veil.resource.patch(_);
-};
-
 veil.widget.updateResource = function (widget, onSuccess, data, dataFormat, dataType) {
-    veil.widget.clearErrorMessages(widget);
     if (typeof(data) === 'undefined') {
         data = dataFormat === 'json' ? widget.serializeObject() : widget.serialize();
     }
     var _ = {
+        widget: widget,
         url:widget.attr('action'),
         data: data || widget.serialize(),
         dataFormat: dataFormat,
         dataType: dataType,
-        onSuccess: function (s) {
-            widget[0].reset();
-            onSuccess(s);
-        },
-        onError: function () {
-            //veil.widget.showErrorMessage(widget, '操作失败');
-        },
-        onValidationError: function (xhr) {
-            widget.data('errors', $.parseJSON(xhr.responseText));
-            veil.widget.showFieldErrorMessage(widget);
-        }
+        onSuccess: onSuccess
     };
     return veil.resource.update(_);
 };
 
-veil.widget.getResource = function (widget, onSuccess) {
-    veil.widget.clearErrorMessages(widget);
+veil.widget.patchResource = function(widget, onSuccess, data, dataFormat, dataType) {
+    if (typeof(data) === 'undefined') {
+        data = dataFormat === 'json' ? widget.serializeObject() : widget.serialize();
+    }
     var _ = {
+        widget: widget,
+        url: widget.attr('action'),
+        data: data || widget.serialize(),
+        dataFormat: dataFormat,
+        dataType: dataType,
+        onSuccess: onSuccess
+    };
+    return veil.resource.patch(_);
+};
+
+veil.widget.getResource = function (widget, onSuccess) {
+    var _ = {
+        widget: widget,
         url:widget.attr('action'),
         data:widget.serialize(),
-        onSuccess:function (html) {
-            widget[0].reset();
-            veil.widget.processWidget(html, onSuccess);
-        },
-        onError:function () {
-            //veil.widget.showErrorMessage(widget, '操作失败');
-        },
-        onValidationError:function (xhr) {
-            widget.data('errors', $.parseJSON(xhr.responseText));
-            veil.widget.showFieldErrorMessage(widget);
-        }
+        onSuccess:onSuccess
     };
     return veil.resource.get(_);
 };
 
-veil.widget.showErrorMessage = function (widget, defaultErrorMessage) {
-    var errorMessage = widget.data('error-message') || defaultErrorMessage;
-    widget.prepend(
-        '<span class="error-message label label-warning summary-error-message">' +
-            '<i class="icon-info-sign"></i>' +
-            errorMessage + '</span>');
+veil.widget.delResource = function (widget, onSuccess) {
+    var _ = {
+        widget: widget,
+        url:widget.data('deleteUrl'),
+        onSuccess:onSuccess
+    };
+    return veil.resource.del(_);
 };
 
-veil.widget.showFieldErrorMessage = function (widget) {
-    var allErrors = widget.data('errors');
-    for (var field in allErrors) {
-        if (allErrors.hasOwnProperty(field)) {
-            var errors = $(allErrors[field]);
-            if(typeof allErrors[field] == 'string') {
-                errors = $([allErrors[field]]);
-            }
-            errors.each(function () {
-                var error = this;
-                var $field = widget.find('[name=' + field + ']');
-                var $error = $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>'
-                    + error + '</span>');
-                $error.insertAfter( $field );
-            });
+veil.widget.get = function (url, onSuccess, data) {
+    return veil.resource.get({
+        url:url,
+        data:data,
+        onSuccess:function (html) {
+            veil.widget.processWidget(html, onSuccess);
         }
-    }
-};
-
-veil.widget.clearErrorMessages = function (widget) {
-    widget.find('.error-message').remove();
+    });
 };
 
 veil.widget.refresh = function (widget, options) {
@@ -398,14 +442,35 @@ veil.widget.refresh = function (widget, options) {
     }
 };
 
-veil.widget.get = function (url, onSuccess, data) {
-    return veil.resource.get({
-        url:url,
-        data:data,
-        onSuccess:function (html) {
-            veil.widget.processWidget(html, onSuccess);
+veil.widget.showErrorMessage = function (widget, defaultErrorMessage) {
+    var errorMessage = widget.data('error-message') || defaultErrorMessage;
+    widget.prepend(
+        '<span class="error-message label label-warning summary-error-message">' +
+            '<i class="icon-info-sign"></i>' +
+            errorMessage + '</span>');
+};
+
+veil.widget.showFieldErrorMessage = function (widget) {
+    var allErrors = widget.data('errors');
+    for (var field in allErrors) {
+        if (allErrors.hasOwnProperty(field)) {
+            var errors = $(allErrors[field]);
+            if(typeof allErrors[field] == 'string') {
+                errors = $([allErrors[field]]);
+            }
+            errors.each(function () {
+                var error = this;
+                var $field = widget.find('[name=' + field + ']');
+                var $error = $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>'
+                    + error + '</span>');
+                $error.insertAfter( $field );
+            });
         }
-    });
+    }
+};
+
+veil.widget.clearErrorMessages = function (widget) {
+    widget.find('.error-message').remove();
 };
 
 veil.widget.loadedJavascripts = [];
