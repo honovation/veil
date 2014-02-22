@@ -94,14 +94,13 @@ veil.resource.get = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, '操作失败');
+                    veil.widget.showErrorMessage(widget, {'@':'操作失败'});
                 }
             };
         }
         if (!onValidationError){
             onValidationError = function (xhr) {
-                widget.data('errors', $.parseJSON(xhr.responseText));
-                veil.widget.showFieldErrorMessage(widget);
+                veil.widget.showErrorMessage(widget, $.parseJSON(xhr.responseText));
             };
         }
     }
@@ -116,8 +115,12 @@ veil.resource.get = function (options) {
         statusCode: {
             400: onValidationError,
             401: function(){
-                alert('用户名、密码错误或登录超时');
-                window.location.href='/login';
+                alert('登录信息不对、或者帐号被禁用');
+                if (window.location.pathname === '/login'){
+                    $('[name=username]').focus().select();
+                } else {
+                    window.location.href = '/login';
+                }
             },
             403: function() {alert('权限不足');}
         }
@@ -146,14 +149,13 @@ veil.resource.create = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, '操作失败');
+                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
                 }
             };
         }
         if (!onValidationError){
             onValidationError = function (xhr) {
-                widget.data('errors', $.parseJSON(xhr.responseText));
-                veil.widget.showFieldErrorMessage(widget);
+                veil.widget.showErrorMessage(widget, $.parseJSON(xhr.responseText));
             };
         }
     }
@@ -168,8 +170,12 @@ veil.resource.create = function (options) {
         statusCode:{
             400: onValidationError,
             401: function(){
-                alert('用户名、密码错误或登录超时');
-                window.location.href='/login';
+                alert('登录信息不对、或者帐号被禁用');
+                if (window.location.pathname === '/login'){
+                    $('[name=username]').focus().select();
+                } else {
+                    window.location.href = '/login';
+                }
             },
             403: function() {alert('权限不足');}
         }
@@ -201,14 +207,13 @@ veil.resource.update = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, '操作失败');
+                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
                 }
             };
         }
         if (!onValidationError){
             onValidationError = function (xhr) {
-                widget.data('errors', $.parseJSON(xhr.responseText));
-                veil.widget.showFieldErrorMessage(widget);
+                veil.widget.showErrorMessage(widget, $.parseJSON(xhr.responseText));
             };
         }
     }
@@ -222,8 +227,12 @@ veil.resource.update = function (options) {
         statusCode: {
             400: onValidationError,
             401: function(){
-                alert('用户名、密码错误或登录超时');
-                window.location.href='/login';
+                alert('登录信息不对、或者帐号被禁用');
+                if (window.location.pathname === '/login'){
+                    $('[name=username]').focus().select();
+                } else {
+                    window.location.href = '/login';
+                }
             },
             403: function() {alert('权限不足');}
         }
@@ -255,14 +264,13 @@ veil.resource.patch = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, '操作失败');
+                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
                 }
             };
         }
         if (!onValidationError){
             onValidationError = function (xhr) {
-                widget.data('errors', $.parseJSON(xhr.responseText));
-                veil.widget.showFieldErrorMessage(widget);
+                veil.widget.showErrorMessage(widget, $.parseJSON(xhr.responseText));
             };
         }
     }
@@ -276,8 +284,12 @@ veil.resource.patch = function (options) {
         statusCode: {
             400: onValidationError,
             401: function(){
-                alert('用户名、密码错误或登录超时');
-                window.location.href='/login';
+                alert('登录信息不对、或者帐号被禁用');
+                if (window.location.pathname === '/login'){
+                    $('[name=username]').focus().select();
+                } else {
+                    window.location.href = '/login';
+                }
             },
             403: function() {alert('权限不足');}
         }
@@ -305,7 +317,7 @@ veil.resource.del = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, '操作失败');
+                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
                 }
             };
         }
@@ -317,8 +329,12 @@ veil.resource.del = function (options) {
         error:onError,
         statusCode:{
             401: function(){
-                alert('用户名、密码错误或登录超时');
-                window.location.href='/login';
+                alert('登录信息不对、或者帐号被禁用');
+                if (window.location.pathname === '/login'){
+                    $('[name=username]').focus().select();
+                } else {
+                    window.location.href = '/login';
+                }
             },
             403:function() {alert('权限不足');}
         }
@@ -329,8 +345,8 @@ veil.resource.del = function (options) {
 veil.widget = {};
 
 veil.widget.handle = function (widget_selector, child_selector, event, handler) {
-    $(document).on(event, widget_selector + ' ' + child_selector, function () {
-        var widget = $(this).parents(widget_selector);
+    $(document).on(event, child_selector ? widget_selector + ' ' + child_selector : widget_selector, function () {
+        var widget = child_selector ? $(this).parents(widget_selector) : $(this);
         var newArgs = [widget];
         for(var i = 0; i < arguments.length; i++) {
             newArgs.push(arguments[i]);
@@ -442,28 +458,20 @@ veil.widget.refresh = function (widget, options) {
     }
 };
 
-veil.widget.showErrorMessage = function (widget, defaultErrorMessage) {
-    var errorMessage = widget.data('error-message') || defaultErrorMessage;
-    widget.prepend(
-        '<span class="error-message label label-warning summary-error-message">' +
-            '<i class="icon-info-sign"></i>' +
-            errorMessage + '</span>');
-};
-
-veil.widget.showFieldErrorMessage = function (widget) {
-    var allErrors = widget.data('errors');
+veil.widget.showErrorMessage = function (widget, allErrors) {
     for (var field in allErrors) {
         if (allErrors.hasOwnProperty(field)) {
-            var errors = $(allErrors[field]);
-            if(typeof allErrors[field] == 'string') {
-                errors = $([allErrors[field]]);
-            }
-            errors.each(function () {
+            var errors = (typeof allErrors[field] === 'string') ? [allErrors[field]] : allErrors[field];
+            errors.reverse();
+            $(errors).each(function () {
                 var error = this;
-                var $field = widget.find('[name=' + field + ']');
-                var $error = $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>'
-                    + error + '</span>');
-                $error.insertAfter( $field );
+                if (field === '@'){
+                    widget.prepend('<span class="error-message label label-warning summary-error-message"><i class="icon-info-sign"></i>' + error + '</span>');
+                } else {
+                    var $field = widget.find('[name=' + field + ']');
+                    var $error = $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>' + error + '</span>');
+                    $error.insertAfter( $field );
+                }
             });
         }
     }
