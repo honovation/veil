@@ -12,8 +12,7 @@ def download_baseline(veil_env_name, pattern):
         BASELINE_DIR.rmtree()
     BASELINE_DIR.mkdir()
     fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, '@guard')
-    dir = fabric.api.run('readlink /backup/latest')
-    fabric.api.get('{}/{}'.format(dir, '*{}*'.format(pattern) if pattern else '*'), VEIL_HOME / 'baseline')
+    fabric.api.get('/backup/latest/{}'.format('*{}*'.format(pattern) if pattern else '*'), VEIL_HOME / 'baseline')
 
 
 @script('restore-from-baseline')
