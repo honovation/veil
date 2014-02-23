@@ -6,7 +6,7 @@ from datetime import timedelta, datetime
 from redis.client import Redis
 from pyres import ResQ
 from veil.env_consts import VEIL_ENV_TYPE
-from veil.utility.encoding import to_unicode
+from veil.utility.encoding import *
 from veil_installer import *
 from veil.utility.clock import *
 from veil.model.event import *
