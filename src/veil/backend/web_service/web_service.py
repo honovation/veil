@@ -9,7 +9,6 @@ from veil.model.collection import *
 from .web_service_client_installer import load_web_service_client_config
 from .web_service_client_installer import web_service_client_resource
 
-WebFault = WebFault
 Object = Object
 
 instances = {} # purpose => instance
