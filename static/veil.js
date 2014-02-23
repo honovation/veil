@@ -86,7 +86,9 @@ veil.resource.get = function (options) {
     if (widget){
         veil.widget.clearErrorMessages(widget);
         onSuccess = function (html) {
-            widget[0].reset();
+            if(widget[0].reset){
+                widget[0].reset();
+            }
             if (options.onSuccess){
                 veil.widget.processWidget(html, options.onSuccess);
             }
@@ -141,7 +143,9 @@ veil.resource.create = function (options) {
     if (widget){
         veil.widget.clearErrorMessages(widget);
         onSuccess = function (s) {
-            widget[0].reset();
+            if(widget[0].reset){
+                widget[0].reset();
+            }
             if (options.onSuccess){
                 options.onSuccess(s);
             }
@@ -199,7 +203,9 @@ veil.resource.update = function (options) {
     if (widget){
         veil.widget.clearErrorMessages(widget);
         onSuccess = function (s) {
-            widget[0].reset();
+            if(widget[0].reset){
+                widget[0].reset();
+            }
             if (options.onSuccess){
                 options.onSuccess(s);
             }
@@ -256,7 +262,9 @@ veil.resource.patch = function (options) {
     if (widget){
         veil.widget.clearErrorMessages(widget);
         onSuccess = function (s) {
-            widget[0].reset();
+            if(widget[0].reset){
+                widget[0].reset();
+            }
             if (options.onSuccess){
                 options.onSuccess(s);
             }
