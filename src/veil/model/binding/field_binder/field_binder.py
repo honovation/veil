@@ -13,11 +13,11 @@ import sys
 from veil.utility.clock import *
 from ..invalid import Invalid
 
-_EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9_=%.+-]+@([a-zA-Z0-9_=%+-]+\.)+[a-zA-Z]{2,6}$')
-_PASSWORD_PATTERN = re.compile(r'[A-Za-z0-9`~!@#$%^&*()=+\[\]\{\};:,\/?.]{8,16}')
+EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9_=%.+-]+@([a-zA-Z0-9_=%+-]+\.)+[a-zA-Z]{2,6}$')
+PASSWORD_PATTERN = re.compile(r'[A-Za-z0-9`~!@#$%^&*()=+\[\]\{\};:,\/?.]{8,16}')
 # reference to http://www.cnfgg.com/article/Asp/Asp_phoneCheck.htm
-_MOBILE_PATTERN = re.compile(r'^1[3458]\d{9}$') # can reference to 支付宝账户支持绑定的手机号段有哪些？(http://help.alipay.com/lab/help_detail.htm?help_id=255119)
-_LANDLIINE_PATTERN = re.compile(r'^(\d{2,4}[-.\s_－—]?)?\d{3,8}([-.\s_－—]?\d{3,8})?([-.\s_－—]?\d{1,7})?$')
+MOBILE_PATTERN = re.compile(r'^1[34578]\d{9}$') # can reference to 支付宝账户支持绑定的手机号段有哪些？(http://help.alipay.com/lab/help_detail.htm?help_id=255119)
+LANDLIINE_PATTERN = re.compile(r'^(\d{2,4}[-.\s_－—]?)?\d{3,8}([-.\s_－—]?\d{3,8})?([-.\s_－—]?\d{1,7})?$')
 
 
 def anything(value):
@@ -60,7 +60,7 @@ def one_of(seq):
 
 
 def is_email(value, return_none_when_invalid=False):
-    if _EMAIL_PATTERN.match(value) is None:
+    if EMAIL_PATTERN.match(value) is None:
         if return_none_when_invalid:
             return None
         else:
@@ -69,7 +69,7 @@ def is_email(value, return_none_when_invalid=False):
 
 
 def is_mobile(value, return_none_when_invalid=False):
-    if _MOBILE_PATTERN.match(value) is None:
+    if MOBILE_PATTERN.match(value) is None:
         if return_none_when_invalid:
             return None
         else:
@@ -77,12 +77,12 @@ def is_mobile(value, return_none_when_invalid=False):
     return value
 
 def valid_password(value):
-    if _PASSWORD_PATTERN.match(value) is None:
+    if PASSWORD_PATTERN.match(value) is None:
         raise Invalid(_('密码不符合规范'))
     return value
 
 def is_landline(value, return_none_when_invalid=False):
-    if _LANDLIINE_PATTERN.match(value) is None:
+    if LANDLIINE_PATTERN.match(value) is None:
         if return_none_when_invalid:
             return None
         else:

@@ -23,6 +23,7 @@ with veil_component.init_component(__name__):
     from .field_binder import to_datetime_with_minute_precision_from_iso8601
     from .field_binder import to_timezone
     from .field_binder import valid_password
+    from .field_binder import MOBILE_PATTERN
 
     __all__ = [
         # from field_binder
@@ -48,4 +49,5 @@ with veil_component.init_component(__name__):
         to_datetime_with_minute_precision_from_iso8601.__name__,
         to_timezone.__name__,
         valid_password.__name__,
+        'MOBILE_PATTERN',
     ]
