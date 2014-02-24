@@ -7,6 +7,7 @@ import urllib
 import logging
 import re
 import sys
+from .emay_sms_client_installer import load_emay_sms_client_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ def get_return_value(xml):
     return int(result[0]) if result else None
 
 
-def send_sms(cdkey, password, receivers, message, sms_code, http_timeout=15):
+def send_sms(receivers, message, sms_code, http_timeout=15):
     if isinstance(receivers, basestring):
         receivers = [receivers]
     receivers = [r.strip() for r in receivers if r.strip()]
@@ -31,7 +32,8 @@ def send_sms(cdkey, password, receivers, message, sms_code, http_timeout=15):
         raise Exception('try to send sms with message size over {}'.format(MAX_SMS_CONTENT_LENGTH))
     receivers = ','.join(receivers)
     message = message.encode(CHARSET_UTF8)
-    data = {'cdkey': cdkey, 'password': password, 'phone': receivers, 'message': message}
+    config = load_emay_sms_client_config()
+    data = {'cdkey': config.cdkey, 'password': config.password, 'phone': receivers, 'message': message}
     exception = None
     tries = 0
     max_tries = 2
