@@ -11,9 +11,7 @@ LOGGER = getLogger(__name__)
 instances = {} # purpose => instance (a.k.a Redis class instance)
 
 def register_redis(purpose):
-    add_application_sub_resource(
-        '{}_redis_client'.format(purpose),
-        lambda config: redis_client_resource(purpose=purpose, **config))
+    add_application_sub_resource('{}_redis_client'.format(purpose), lambda config: redis_client_resource(purpose=purpose, **config))
     return lambda: require_redis(purpose)
 
 

@@ -30,9 +30,7 @@ def register_database(purpose, verify_db=False):
     component_name = get_loading_component_name()
     if not can_use_database(component_name, purpose):
         raise Exception('{} can not use database {}'.format(component_name, purpose))
-    add_application_sub_resource(
-        '{}_database_client'.format(purpose),
-        lambda config: database_client_resource(purpose=purpose, config=config))
+    add_application_sub_resource('{}_database_client'.format(purpose), lambda config: database_client_resource(purpose=purpose, config=config))
     return lambda: require_database(purpose, component_name, verify_db)
 
 

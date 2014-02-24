@@ -13,9 +13,7 @@ LOGGER = getLogger(__name__)
 
 _hash_salt = None
 
-add_application_sub_resource(
-    'hash',
-    lambda config: hash_resource(**config))
+add_application_sub_resource('hash', lambda config: hash_resource(**config))
 
 
 @composite_installer

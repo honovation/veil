@@ -1,0 +1,16 @@
+from __future__ import unicode_literals, print_function, division
+from veil.profile.installer import *
+
+add_application_sub_resource('sendgrid_client', lambda config: sendgrid_client_resource(**config))
+
+@composite_installer
+def sendgrid_client_resource(username, password):
+    resources = list(BASIC_LAYOUT_RESOURCES)
+    resources.append(file_resource(path=VEIL_ETC_DIR / 'sendgrid-client.cfg',
+        content=render_config('sendgrid-client.cfg.j2', username=username, password=password)))
+    return resources
+
+
+def load_sendgrid_client_config():
+    config = load_config_from(VEIL_ETC_DIR / 'sendgrid-client.cfg', 'username', 'password')
+    return config

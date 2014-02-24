@@ -14,9 +14,7 @@ Object = Object
 instances = {} # purpose => instance
 
 def register_web_service(purpose):
-    add_application_sub_resource(
-        '{}_web_service_client'.format(purpose),
-        lambda config: web_service_client_resource(purpose=purpose, **config))
+    add_application_sub_resource('{}_web_service_client'.format(purpose), lambda config: web_service_client_resource(purpose=purpose, **config))
     loading_component_name = get_loading_component_name()
     if ('web-service', purpose) not in list_consumed_dynamic_dependencies(loading_component_name):
         raise Exception('{} can not reference web service {}'.format(loading_component_name, purpose))
@@ -27,8 +25,7 @@ def require_web_service(purpose):
     if purpose not in instances:
         config = load_web_service_client_config(purpose)
         if config.user:
-            instances[purpose] = WebService(config.url, username=config.user, password=config.password,
-                proxy_netloc=config.proxy_netloc)
+            instances[purpose] = WebService(config.url, username=config.user, password=config.password, proxy_netloc=config.proxy_netloc)
         else:
             instances[purpose] = WebService(config.url, proxy_netloc=config.proxy_netloc)
     return instances[purpose]
