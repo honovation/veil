@@ -1,0 +1,226 @@
+# -*- coding: UTF-8 -*-
+from __future__ import unicode_literals, print_function, division
+from decimal import Decimal, DecimalException
+import logging
+import socket
+import urllib
+import urllib2
+import hashlib
+import lxml.objectify
+from veil.model.binding import *
+from veil.model.event import *
+from veil.model.collection import *
+from veil.profile.web import *
+from veil.utility.encoding import *
+from veil.environment import *
+from veil.utility.clock import *
+from consts import CHARSET_UTF8, HTTP_TIMEOUT
+from .tenpay_client_installer import load_tenpay_client_config
+
+LOGGER = logging.getLogger(__name__)
+
+EVENT_TENPAY_TRADE_PAID = define_event('tenpay-trade-paid') # valid notification
+
+NOTIFIED_FROM_RETURN_URL = 'return_url'
+NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
+NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # tenpay require this 7 characters to be returned to them
+
+
+def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, time_start, time_expire, shopper_ip_address, bank_type):
+    bank_type = bank_type or 'DEFAULT'
+    shopper_website_url_prefix = get_website_url_prefix('shopper')
+    notify_url = '{}/payment-channel/tenpay/trade/notify'.format(shopper_website_url_prefix)
+    return_url = '{}/payment-channel/tenpay/trade/return'.format(shopper_website_url_prefix)
+    time_start_beijing_time_str = convert_datetime_to_client_timezone(time_start).strftime('%Y%m%d%H%M%S')
+    time_expire_beijing_time_str = convert_datetime_to_client_timezone(time_expire).strftime('%Y%m%d%H%M%S')
+    params = {
+        'sign_type': 'MD5',
+        'input_charset': CHARSET_UTF8,
+        'bank_type': bank_type,
+        'body': body,
+        'subject': subject,
+        'attach': show_url,
+        'return_url': return_url,
+        'notify_url': notify_url,
+        'partner': load_tenpay_client_config().partner_id,
+        'out_trade_no': out_trade_no,
+        'total_fee': str(int(total_fee * 100)), # unit: cent
+        'fee_type': '1',
+        'spbill_create_ip': shopper_ip_address, # 防钓鱼IP地址检查
+        'time_start': time_start_beijing_time_str, # 交易起始时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+        'time_expire': time_expire_beijing_time_str, # 交易结束时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+        'trade_mode': '1' # 交易模式：即时到账
+    }
+    return make_url('https://gw.tenpay.com/gateway/pay.htm', params)
+
+
+def process_tenpay_payment_notification(out_trade_no, http_arguments, notified_from):
+    request = get_current_http_request()
+    LOGGER.info('[sensitive]received payment notification from tenpay: %(site)s, %(function)s, %(out_trade_no)s, %(http_arguments)s, %(notified_from)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
+        'site': 'shopper',
+        'function': 'payment',
+        'out_trade_no': out_trade_no,
+        'http_arguments': http_arguments,
+        'notified_from': notified_from,
+        'referer': request.headers.get('Referer'),
+        'remote_ip': request.remote_ip,
+        'user_agent': request.headers.get('User-Agent')
+    })
+    trade_no, buyer_id, paid_total, paid_at, show_url, discarded_reasons = validate_notification(http_arguments)
+    if discarded_reasons:
+        LOGGER.warn('tenpay trade notification discarded: %(discarded_reasons)s, %(http_arguments)s', {
+            'discarded_reasons': discarded_reasons,
+            'http_arguments': http_arguments
+        })
+        set_http_status_code(httplib.BAD_REQUEST)
+        return '<br/>'.join(discarded_reasons)
+    publish_event(EVENT_TENPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
+        paid_total=paid_total, paid_at=paid_at, show_url=show_url, notified_from=notified_from)
+    if NOTIFIED_FROM_RETURN_URL == notified_from:
+        redirect_to(show_url or '/')
+    else:
+        return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
+
+
+def validate_notification(http_arguments):
+    discarded_reasons = []
+    if VEIL_ENV_TYPE not in {'development', 'test'}:
+        if is_sign_correct(http_arguments):
+            notify_id = http_arguments.get('notify_id', None)
+            if notify_id:
+                if not is_notification_from_tenpay(notify_id):
+                    discarded_reasons.append('notification not from tenpay')
+            else:
+                discarded_reasons.append('no notify_id')
+        else:
+            discarded_reasons.append('sign is incorrect')
+    if '0' != http_arguments.get('trade_state', None):
+        discarded_reasons.append('trade not succeeded')
+    if not http_arguments.get('out_trade_no', None):
+        discarded_reasons.append('no out_trade_no')
+    trade_no = http_arguments.get('transaction_id', None)
+    if not trade_no:
+        discarded_reasons.append('no transaction_id')
+    if load_tenpay_client_config().partner_id != http_arguments.get('partner', None):
+        discarded_reasons.append('partner ID mismatched')
+    paid_total = http_arguments.get('total_fee', None)
+    if paid_total:
+        try:
+            paid_total = Decimal(paid_total) / 100
+        except DecimalException:
+            LOGGER.warn('invalid total_fee: %(total_fee)s', {'total_fee': paid_total})
+            discarded_reasons.append('invalid total_fee')
+    else:
+        discarded_reasons.append('no total_fee')
+    paid_at = http_arguments.get('time_end', None) # 支付完成时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+    if paid_at:
+        try:
+            paid_at = to_datetime(format='%Y%m%d%H%M%S')(paid_at)
+        except Exception:
+            LOGGER.warn('invalid time_end: %(paid_at)s', {'paid_at': paid_at})
+            discarded_reasons.append('invalid time_end')
+    else:
+        discarded_reasons.append('no time_end')
+    show_url = http_arguments.get('attach', None)
+    if not show_url:
+        discarded_reasons.append('no attach (show_url inside)')
+    return trade_no, http_arguments.get('buyer_alias', None), paid_total, paid_at, show_url, discarded_reasons
+
+
+def is_sign_correct(http_arguments):
+    actual_sign = http_arguments.get('sign', None)
+    verify_params = http_arguments.copy()
+    if 'sign' in verify_params:
+        del verify_params['sign']
+    expected_sign = sign_md5(verify_params)
+    if not actual_sign or actual_sign.upper() != expected_sign:
+        LOGGER.error('wrong sign, maybe a fake tenpay notification: sign=%(actual_sign)s, should be %(expected_sign)s, http_arguments: %(http_arguments)s', {
+            'actual_sign': actual_sign,
+            'expected_sign': expected_sign,
+            'http_arguments': http_arguments
+        })
+        return False
+    return True
+
+
+def sign_md5(params):
+    param_str = '{}&key={}'.format(to_url_params_string(params), load_tenpay_client_config().app_key)
+    return hashlib.md5(param_str.encode(CHARSET_UTF8)).hexdigest().upper()
+
+
+def to_url_params_string(params):
+    keys = params.keys()
+    keys.sort()
+    return '&'.join('{}={}'.format(key, params[key]) for key in keys if params[key])
+
+
+def is_notification_from_tenpay(notify_id):
+    verify_url = make_url('https://gw.tenpay.com/gateway/simpleverifynotifyid.xml', {
+        'sign_type': 'MD5',
+        'input_charset': CHARSET_UTF8,
+        'partner': load_tenpay_client_config().partner_id,
+        'notify_id': notify_id
+    })
+    exception = None
+    tries = 0
+    max_tries = 2
+    while tries < max_tries:
+        tries += 1
+        try:
+            # TODO: urllib2 cannot verify server certificates, use pycurl2 instead
+            response_text = urllib2.urlopen(verify_url, timeout=HTTP_TIMEOUT).read()
+        except Exception as e:
+            exception = e
+            if isinstance(e, urllib2.HTTPError):
+                LOGGER.exception('tenpay notify_verify service cannot fulfill the request: %(verify_url)s', {
+                    'verify_url': verify_url
+                })
+                if 400 <= e.code < 500: # 4xx, client error, no retry
+                    break
+            elif isinstance(e, socket.timeout) or isinstance(e, urllib2.URLError) and isinstance(e.reason, socket.timeout):
+                LOGGER.exception('verify tenpay notify timed out: %(timeout)s, %(verify_url)s', {
+                    'timeout': HTTP_TIMEOUT,
+                    'verify_url': verify_url
+                })
+            elif isinstance(e, urllib2.URLError):
+                LOGGER.exception('cannot reach tenpay notify_verify service: %(verify_url)s', {
+                    'verify_url': verify_url
+                })
+            else:
+                LOGGER.exception('verify tenpay notify failed: %(verify_url)s', {'verify_url': verify_url})
+        else:
+            exception = None
+            break
+    if exception is None and response_text:
+        arguments = parse_notify_verify_response(response_text)
+    if exception is None and response_text and is_sign_correct(arguments) and '0' == arguments.get('retcode', None):
+        LOGGER.debug('tenpay notify verify passed: %(response_text)s, %(verify_url)s', {
+            'response_text': response_text,
+            'verify_url': verify_url
+        })
+        return True
+    else:
+        LOGGER.error('received notification not from tenpay: %(response_text)s, %(verify_url)s', {
+            'response_text': response_text,
+            'verify_url': verify_url
+        })
+        return False
+
+
+def make_url(prefix, params):
+    if 'sign' in params:
+        del params['sign']
+    sign = sign_md5(params)
+    params['sign'] = sign
+    # urllib.urlencode does not handle unicode well
+    params = {to_str(k): to_str(v) for k, v in params.items()}
+    return '{}?{}'.format(prefix, urllib.urlencode(params))
+
+
+def parse_notify_verify_response(response_text):
+    arguments = DictObject()
+    root = lxml.objectify.fromstring(response_text)
+    for e in root.iterchildren():
+        if e.text:
+            arguments[e.tag] = e.text
+    return arguments
