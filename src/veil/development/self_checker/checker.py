@@ -32,7 +32,7 @@ def self_check():
     if 0 == os.getuid():
         raise Exception('self-check can not be executed using root privilege')
     shell_execute('sudo echo self-checking ...')
-    shell_execute('git add .')
+    shell_execute('git add -A .')
     shell_execute('veil pull')
     shell_execute('sudo veil :test down')
     shell_execute('sudo veil install-server --upgrade-mode=fast')
@@ -46,7 +46,7 @@ def quick_check(checker_name=None):
     if checker_name:
         SELF_CHECKERS[checker_name]()
         return
-    shell_execute('git add .')
+    shell_execute('git add -A .')
     shell_execute('veil migrate')
     for checker_name, self_checker in SELF_CHECKERS.items():
         LOGGER.info('[CHECK] checking: %(checker_name)s...', {
