@@ -1,12 +1,8 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
-import socket
-from time import sleep
-import urllib2
-import urllib
 import logging
 import re
-import sys
+from veil.utility.http import *
 from .emay_sms_client_installer import emay_sms_client_config
 
 LOGGER = logging.getLogger(__name__)
@@ -34,48 +30,15 @@ def send_sms(receivers, message, sms_code, http_timeout=15):
     message = message.encode(CHARSET_UTF8)
     config = emay_sms_client_config()
     data = {'cdkey': config.cdkey, 'password': config.password, 'phone': receivers, 'message': message}
-    exception = None
-    tries = 0
-    max_tries = 2
-    while tries < max_tries:
-        tries += 1
-        if tries > 1:
-            sleep(10)
-        try:
-            response = urllib2.urlopen(SEND_SMS_URL, data=urllib.urlencode(data), timeout=http_timeout).read()
-        except Exception as e:
-            exception = e
-            if isinstance(e, urllib2.HTTPError):
-                LOGGER.exception('sms sending service cannot fulfill the request: %(send_sms_url)s', {
-                    'send_sms_url': SEND_SMS_URL
-                })
-                if 400 <= e.code < 500: # 4xx, client error, no retry
-                    break
-            elif isinstance(e, socket.timeout) or isinstance(e, urllib2.URLError) and isinstance(e.reason, socket.timeout):
-                LOGGER.exception('sms sending service timed out: %(timeout)s, %(send_sms_url)s', {
-                    'timeout': http_timeout,
-                    'send_sms_url': SEND_SMS_URL
-                })
-            elif isinstance(e, urllib2.URLError):
-                LOGGER.exception('cannot reach sms sending service: %(send_sms_url)s', {
-                    'send_sms_url': SEND_SMS_URL
-                })
-            else:
-                LOGGER.exception('exception occurred while sending sms: : %(send_sms_url)s', {
-                    'send_sms_url': SEND_SMS_URL
-                })
-        else:
-            exception = None
-            break
-    if exception is None:
+    try:
+        # sleep_before_retry: avoid IP blocking due to too frequent queries
+        response = http_call('EMAY-SMS-SEND-API', SEND_SMS_URL, data, log_data=False, max_tries=2, sleep_before_retry=10, http_timeout=http_timeout)
+    except Exception as e:
+        LOGGER.exception('failed to send sms: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
+        raise
+    else:
         return_value = get_return_value(response)
         if return_value == 0:
-            LOGGER.info('succeeded to send sms: %(sms_code)s, %(receivers)s', {
-                'sms_code': sms_code,
-                'receivers': receivers
-            })
+            LOGGER.info('succeeded to send sms: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
         else:
             raise Exception('failed to send sms with bad value returned: {}, {}, {}'.format(response, sms_code, receivers))
-    else:
-        LOGGER.exception('failed to send sms: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
-        raise exception, None, sys.exc_info()[2]

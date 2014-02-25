@@ -1,13 +1,9 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 import logging
-import socket
-from time import sleep
 import urllib
-import urllib2
-from veil.model.collection import *
 from veil.utility.encoding import *
-from veil.utility.json import *
+from veil.utility.http import *
 from .kuaidi100_client_installer import kuaidi100_client_config
 
 LOGGER = logging.getLogger(__name__)
@@ -33,49 +29,24 @@ def waybill_web_url(shipper_code, shipping_code):
 def get_delivery_status(shipper_code, shipping_code, sleep_at_start=0, http_timeout=15):
     if 'youzhengguonei' == shipper_code: # kuaidi100 API does not support China Post yet
         return {}
-    if sleep_at_start > 0:
-        sleep(sleep_at_start) # avoid IP blocking due to too frequent queries
-    result_json = None
     url = API_URL_TEMPLATE.format(kuaidi100_client_config().api_id, shipper_code, urllib.quote(to_str(shipping_code)))
-    exception = None
-    tries = 0
-    max_tries = 2
-    while tries < max_tries:
-        tries += 1
-        if tries > 1:
-            sleep(10)
-        try:
-            result_json = urllib2.urlopen(url, timeout=http_timeout).read()
-        except Exception as e:
-            exception = e
-            if isinstance(e, urllib2.HTTPError):
-                LOGGER.exception('kuaidi100 query service cannot fulfill the request: %(url)s', {'url': url})
-                if 400 <= e.code < 500: # 4xx, client error, no retry
-                    break
-            elif isinstance(e, socket.timeout) or isinstance(e, urllib2.URLError) and isinstance(e.reason, socket.timeout):
-                LOGGER.exception('kuaidi100 query timed out: %(timeout)s, %(url)s', {
-                    'timeout': http_timeout,
-                    'url': url
-                })
-            elif isinstance(e, urllib2.URLError):
-                LOGGER.exception('cannot reach kuaidi100 query service: %(url)s', {'url': url})
+    try:
+        # sleep_at_start & sleep_before_retry: avoid IP blocking due to too frequent queries
+        response = http_call('KUAIDI100-QUERY-API', url, accept='application/json', max_tries=2, sleep_at_start=sleep_at_start, sleep_before_retry=10,
+            http_timeout=http_timeout)
+    except Exception as e:
+        pass
+    else:
+        if response.status == STATUS_QUERY_SUCCESS:
+            LOGGER.debug('succeeded get response from kuaidi100: %(url)s, %(response)s', {'url': url, 'response': response})
+            return response
+        elif response.status == STATUS_QUERY_ERROR:
+            LOGGER.error('kaudi100 error: %(url)s, %(response)s', {'url': url, 'response': response})
+        elif response.status == STATUS_NO_INFO_YET:
+            if all(keyword in response.message for keyword in ('IP地址', '禁止')):
+                raise IPBlockedException('IP blocked by kuaidi100: {}'.format(response))
             else:
-                LOGGER.exception('kuaidi100 query failed: %(url)s', {'url': url})
-        else:
-            exception = None
-            break
-    if exception is None and result_json:
-        result = objectify(from_json(result_json))
-        if result.status == STATUS_QUERY_SUCCESS:
-            LOGGER.info('succeeded get response from kuaidi100: %(result_json)s', {'result_json': result_json})
-            return result
-        elif result.status == STATUS_QUERY_ERROR:
-            LOGGER.error('kaudi100 error: %(url)s, %(result)s', {'url': url, 'result': result})
-        elif result.status == STATUS_NO_INFO_YET:
-            if all(keyword in result.message for keyword in ('IP地址', '禁止')):
-                raise IPBlockedException('IP blocked by kuaidi100: {}'.format(result))
-            else:
-                LOGGER.info('no result of this delivery number: %(result_json)', {'result_json': result_json})
+                LOGGER.info('kaudi100 has no info yet: %(url)s, %(response)s', {'url': url, 'response': response})
     return {}
 
 

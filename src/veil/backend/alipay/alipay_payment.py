@@ -2,20 +2,22 @@
 from __future__ import unicode_literals, print_function, division
 from decimal import Decimal, DecimalException
 import logging
-import socket
 import urllib
-import urllib2
 import hashlib
+from veil.environment import *
+from veil.utility.encoding import *
+from veil.utility.http import *
 from veil.model.binding import *
 from veil.model.event import *
 from veil.profile.web import *
-from veil.utility.encoding import *
-from veil.environment import *
 from .alipay_client_installer import alipay_client_config
 
 LOGGER = logging.getLogger(__name__)
 
 EVENT_ALIPAY_TRADE_PAID = define_event('alipay-trade-paid') # valid notification
+
+PAYMENT_URL_TEMPLATE = 'https://mapi.alipay.com/gateway.do?{}'
+VERIFY_URL_TEMPLATE = 'https://mapi.alipay.com/gateway.do?service=notify_verify&partner={}&notify_id={}'
 
 CHARSET_UTF8 = 'UTF-8'
 HTTP_TIMEOUT = 15 # unit: seconds
@@ -58,7 +60,7 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
     params['sign_type'] = 'MD5'
     # urllib.urlencode does not handle unicode well
     params = {to_str(k): to_str(v) for k, v in params.items()}
-    return 'https://mapi.alipay.com/gateway.do?{}'.format(urllib.urlencode(params))
+    return PAYMENT_URL_TEMPLATE.format(urllib.urlencode(params))
 
 
 def process_alipay_payment_notification(out_trade_no, http_arguments, notified_from):
@@ -164,46 +166,15 @@ def to_url_params_string(params):
 
 
 def is_notification_from_alipay(notify_id):
-    verify_url = 'https://mapi.alipay.com/gateway.do?service=notify_verify&partner={}&notify_id={}'.format(alipay_client_config().partner_id, notify_id)
-    exception = None
-    tries = 0
-    max_tries = 2
-    while tries < max_tries:
-        tries += 1
-        try:
-            # TODO: urllib2 cannot verify server certificates, use pycurl2 instead
-            response_text = urllib2.urlopen(verify_url, timeout=HTTP_TIMEOUT).read()
-        except Exception as e:
-            exception = e
-            if isinstance(e, urllib2.HTTPError):
-                LOGGER.exception('alipay notify_verify service cannot fulfill the request: %(verify_url)s', {
-                    'verify_url': verify_url
-                })
-                if 400 <= e.code < 500: # 4xx, client error, no retry
-                    break
-            elif isinstance(e, socket.timeout) or isinstance(e, urllib2.URLError) and isinstance(e.reason, socket.timeout):
-                LOGGER.exception('verify alipay notify timed out: %(timeout)s, %(verify_url)s', {
-                    'timeout': HTTP_TIMEOUT,
-                    'verify_url': verify_url
-                })
-            elif isinstance(e, urllib2.URLError):
-                LOGGER.exception('cannot reach alipay notify_verify service: %(verify_url)s', {
-                    'verify_url': verify_url
-                })
-            else:
-                LOGGER.exception('verify alipay notify failed: %(verify_url)s', {'verify_url': verify_url})
-        else:
-            exception = None
-            break
-    if exception is None and 'true' == response_text:
-        LOGGER.debug('alipay notify verify passed: %(response_text)s, %(verify_url)s', {
-            'response_text': response_text,
-            'verify_url': verify_url
-        })
+    verify_url = VERIFY_URL_TEMPLATE.format(alipay_client_config().partner_id, notify_id)
+    try:
+        response = http_call('ALIPAY-NOTIFY-VERIFY-API', verify_url, max_tries=2, http_timeout=HTTP_TIMEOUT)
+    except Exception as e:
+        response = None
+    if 'true' == response:
+        LOGGER.debug('alipay notify verify passed: %(response)s, %(verify_url)s', {'response': response, 'verify_url': verify_url})
         return True
-    else:
-        LOGGER.error('received notification not from alipay: %(response_text)s, %(verify_url)s', {
-            'response_text': response_text,
-            'verify_url': verify_url
-        })
-        return False
+    LOGGER.error('received notification not from alipay: %(response)s, %(verify_url)s', {
+        'response': response, 'verify_url': verify_url
+    })
+    return False
