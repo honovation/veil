@@ -27,16 +27,12 @@ NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # alipay require this 7 characters to be returned to them
 
 
-def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, minutes_to_complete_payment, shopper_ip_address):
-    shopper_website_url_prefix = get_website_url_prefix('shopper')
-    notify_url = '{}/payment-channel/alipay/trade/notify'.format(shopper_website_url_prefix)
-    return_url = '{}/payment-channel/alipay/trade/return'.format(shopper_website_url_prefix)
+def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, minutes_to_complete_payment,
+        shopper_ip_address):
     params = {
         'service': 'create_direct_pay_by_user', #即时到帐
         'partner': alipay_client_config().partner_id,
         '_input_charset': CHARSET_UTF8,
-        'notify_url': notify_url,
-        'return_url': return_url,
         'out_trade_no': out_trade_no,
         'subject': subject,
         'payment_type': '1',
@@ -44,6 +40,8 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
         'total_fee': '%.2f' % total_fee,
         'body': body,
         'show_url': show_url,
+        'return_url': return_url,
+        'notify_url': notify_url,
         # paymethod=directPay
         # paymethod=motoPay
         # paymethod=bankPay, defaultbank=CMB

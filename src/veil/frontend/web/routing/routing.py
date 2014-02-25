@@ -6,13 +6,13 @@ import httplib
 from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
-import veil_component
 from veil.utility.json import *
 from veil.development.test import *
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
 from veil.model.event import *
 from veil.model.command import *
+import veil_component
 from .page_post_processor import post_process_page
 
 LOGGER = getLogger(__name__)

@@ -28,11 +28,9 @@ NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # tenpay require this 7 characters to be returned to them
 
 
-def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, time_start, time_expire, shopper_ip_address, bank_type):
+def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, time_start, time_expire, shopper_ip_address,
+        bank_type):
     bank_type = bank_type or 'DEFAULT'
-    shopper_website_url_prefix = get_website_url_prefix('shopper')
-    notify_url = '{}/payment-channel/tenpay/trade/notify'.format(shopper_website_url_prefix)
-    return_url = '{}/payment-channel/tenpay/trade/return'.format(shopper_website_url_prefix)
     time_start_beijing_time_str = convert_datetime_to_client_timezone(time_start).strftime('%Y%m%d%H%M%S')
     time_expire_beijing_time_str = convert_datetime_to_client_timezone(time_expire).strftime('%Y%m%d%H%M%S')
     params = {
