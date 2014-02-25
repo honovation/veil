@@ -13,8 +13,6 @@ from .sendgrid_client_installer import sendgrid_client_config
 
 LOGGER = logging.getLogger(__name__)
 
-CHARSET_UTF8 = 'UTF-8'
-SMTP_TIMEOUT = 30 # unit: seconds
 smtp = None
 
 
@@ -29,7 +27,7 @@ def close_connection():
 
 def open_connection():
     global smtp
-    smtp = smtplib.SMTP('smtp.sendgrid.net', port=587, timeout=SMTP_TIMEOUT)
+    smtp = smtplib.SMTP('smtp.sendgrid.net', port=587, timeout=30)
     config = sendgrid_client_config()
     smtp.login(config.username, config.password)
 
@@ -53,9 +51,9 @@ def reconnect_if_broken_per_verification():
 @mockable
 def send_email(sender, recipient, subject, text='', html='', category='', email_code=''):
     sender_name, sender_addr = parseaddr(sender)
-    from_addr = formataddr((Header(sender_name, CHARSET_UTF8).encode(), sender_addr))
+    from_addr = formataddr((Header(sender_name, 'UTF-8').encode(), sender_addr))
     recipient_name, recipient_addr = parseaddr(recipient)
-    to_addr = formataddr((Header(recipient_name, CHARSET_UTF8).encode(), recipient_addr))
+    to_addr = formataddr((Header(recipient_name, 'UTF-8').encode(), recipient_addr))
 
     msg = MIMEMultipart('alternative')
     msg['From'] = from_addr
@@ -64,10 +62,10 @@ def send_email(sender, recipient, subject, text='', html='', category='', email_
     if category:
         msg["X-SMTPAPI"] = '{"category" : "%s"}' % category
     if text:
-        text_part = MIMEText(text, 'plain', CHARSET_UTF8)
+        text_part = MIMEText(text, 'plain', 'UTF-8')
         msg.attach(text_part)
     if html:
-        html_part = MIMEText(html, 'html', CHARSET_UTF8)
+        html_part = MIMEText(html, 'html', 'UTF-8')
         msg.attach(html_part)
     try:
         reconnect_if_broken_per_verification()

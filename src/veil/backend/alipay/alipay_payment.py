@@ -19,9 +19,6 @@ EVENT_ALIPAY_TRADE_PAID = define_event('alipay-trade-paid') # valid notification
 PAYMENT_URL_TEMPLATE = 'https://mapi.alipay.com/gateway.do?{}'
 VERIFY_URL_TEMPLATE = 'https://mapi.alipay.com/gateway.do?service=notify_verify&partner={}&notify_id={}'
 
-CHARSET_UTF8 = 'UTF-8'
-HTTP_TIMEOUT = 15 # unit: seconds
-
 NOTIFIED_FROM_RETURN_URL = 'return_url'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # alipay require this 7 characters to be returned to them
@@ -32,7 +29,7 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
     params = {
         'service': 'create_direct_pay_by_user', #即时到帐
         'partner': alipay_client_config().partner_id,
-        '_input_charset': CHARSET_UTF8,
+        '_input_charset': 'UTF-8',
         'out_trade_no': out_trade_no,
         'subject': subject,
         'payment_type': '1',
@@ -143,7 +140,7 @@ def is_sign_correct(http_arguments):
 
 def sign_md5(params):
     param_str = '{}{}'.format(to_url_params_string(params), alipay_client_config().app_key)
-    return hashlib.md5(param_str.encode(CHARSET_UTF8)).hexdigest()
+    return hashlib.md5(param_str.encode('UTF-8')).hexdigest()
 
 
 def to_url_params_string(params):
@@ -155,7 +152,7 @@ def to_url_params_string(params):
 def is_notification_from_alipay(notify_id):
     verify_url = VERIFY_URL_TEMPLATE.format(alipay_client_config().partner_id, notify_id)
     try:
-        response = http_call('ALIPAY-NOTIFY-VERIFY-API', verify_url, max_tries=2, http_timeout=HTTP_TIMEOUT)
+        response = http_call('ALIPAY-NOTIFY-VERIFY-API', verify_url, max_tries=2)
     except Exception as e:
         response = None
     if 'true' == response:

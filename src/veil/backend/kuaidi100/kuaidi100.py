@@ -26,14 +26,13 @@ def waybill_web_url(shipper_code, shipping_code):
     return WEB_URL_TEMPLATE.format(shipper_code, shipping_code)
 
 
-def get_delivery_status(shipper_code, shipping_code, sleep_at_start=0, http_timeout=15):
+def get_delivery_status(shipper_code, shipping_code, sleep_at_start=0):
     if 'youzhengguonei' == shipper_code: # kuaidi100 API does not support China Post yet
         return {}
     url = API_URL_TEMPLATE.format(kuaidi100_client_config().api_id, shipper_code, urllib.quote(to_str(shipping_code)))
     try:
         # sleep_at_start & sleep_before_retry: avoid IP blocking due to too frequent queries
-        response = http_call('KUAIDI100-QUERY-API', url, accept='application/json', max_tries=2, sleep_at_start=sleep_at_start, sleep_before_retry=10,
-            http_timeout=http_timeout)
+        response = http_call('KUAIDI100-QUERY-API', url, accept='application/json', max_tries=2, sleep_at_start=sleep_at_start, sleep_before_retry=10)
     except Exception as e:
         pass
     else:

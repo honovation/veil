@@ -13,7 +13,6 @@ from veil.model.binding import *
 from veil.model.event import *
 from veil.model.collection import *
 from veil.profile.web import *
-from consts import CHARSET_UTF8, HTTP_TIMEOUT
 from .tenpay_client_installer import tenpay_client_config
 
 LOGGER = logging.getLogger(__name__)
@@ -35,7 +34,7 @@ def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
     time_expire_beijing_time_str = convert_datetime_to_client_timezone(time_expire).strftime('%Y%m%d%H%M%S')
     params = {
         'sign_type': 'MD5',
-        'input_charset': CHARSET_UTF8,
+        'input_charset': 'UTF-8',
         'bank_type': bank_type,
         'body': body,
         'subject': subject,
@@ -134,7 +133,7 @@ def is_sign_correct(http_arguments):
 
 def sign_md5(params):
     param_str = '{}&key={}'.format(to_url_params_string(params), tenpay_client_config().app_key)
-    return hashlib.md5(param_str.encode(CHARSET_UTF8)).hexdigest().upper()
+    return hashlib.md5(param_str.encode('UTF-8')).hexdigest().upper()
 
 
 def to_url_params_string(params):
@@ -145,9 +144,9 @@ def to_url_params_string(params):
 
 def is_notification_from_tenpay(notify_id):
     verify_url = VERIFY_URL_TEMPLATE.format(
-        make_query({'sign_type': 'MD5', 'input_charset': CHARSET_UTF8, 'partner': tenpay_client_config().partner_id, 'notify_id': notify_id}))
+        make_query({'sign_type': 'MD5', 'input_charset': 'UTF-8', 'partner': tenpay_client_config().partner_id, 'notify_id': notify_id}))
     try:
-        response = http_call('TENPAY-NOTIFY-VERIFY-API', verify_url, max_tries=2, http_timeout=HTTP_TIMEOUT)
+        response = http_call('TENPAY-NOTIFY-VERIFY-API', verify_url, max_tries=2)
     except Exception as e:
         response = None
     if response:
