@@ -62,17 +62,6 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
 
 
 def process_alipay_payment_notification(out_trade_no, http_arguments, notified_from):
-    request = get_current_http_request()
-    LOGGER.info('[sensitive]received payment notification from alipay: %(site)s, %(function)s, %(out_trade_no)s, %(http_arguments)s, %(notified_from)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
-        'site': 'shopper',
-        'function': 'payment',
-        'out_trade_no': out_trade_no,
-        'http_arguments': http_arguments,
-        'notified_from': notified_from,
-        'referer': request.headers.get('Referer'),
-        'remote_ip': request.remote_ip,
-        'user_agent': request.headers.get('User-Agent')
-    })
     trade_no, buyer_id, paid_total, paid_at, show_url, discarded_reasons = validate_notification(http_arguments)
     if discarded_reasons:
         LOGGER.warn('alipay trade notification discarded: %(discarded_reasons)s, %(http_arguments)s', {
