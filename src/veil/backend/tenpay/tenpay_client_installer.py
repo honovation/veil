@@ -13,5 +13,12 @@ def tenpay_client_resource(partner_id, app_key):
 
 
 def load_tenpay_client_config():
-    config = load_config_from(VEIL_ETC_DIR / 'tenpay-client.cfg', 'partner_id', 'app_key')
+    return load_config_from(VEIL_ETC_DIR / 'tenpay-client.cfg', 'partner_id', 'app_key')
+
+
+config = None
+def tenpay_client_config():
+    global config
+    if config is None:
+        config = load_tenpay_client_config()
     return config

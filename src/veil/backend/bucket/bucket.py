@@ -3,7 +3,7 @@ import logging
 from veil_installer import *
 from veil.utility.misc import *
 from veil_component import *
-from .bucket_installer import load_bucket_config
+from .bucket_installer import bucket_config
 from .bucket_installer import bucket_resource
 
 LOGGER = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ def register_bucket(purpose):
 
 def require_bucket(purpose):
     if purpose not in instances:
-        config = load_bucket_config(purpose)
+        config = bucket_config(purpose)
         bucket_type = config.type
         if 'filesystem' == bucket_type:
             instances[purpose] = FilesystemBucket(config.base_directory, config.base_url)

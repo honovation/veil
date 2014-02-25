@@ -11,5 +11,12 @@ def kuaidi100_client_resource(api_id):
 
 
 def load_kuaidi100_client_config():
-    config = load_config_from(VEIL_ETC_DIR / 'kuaidi100-client.cfg', 'api_id')
+    return load_config_from(VEIL_ETC_DIR / 'kuaidi100-client.cfg', 'api_id')
+
+
+config = None
+def kuaidi100_client_config():
+    global config
+    if config is None:
+        config = load_kuaidi100_client_config()
     return config

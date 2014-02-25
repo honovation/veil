@@ -13,7 +13,7 @@ from .locale import *
 from .routing import *
 from .static_file import *
 from .xsrf import *
-from .website_installer import load_website_config
+from .website_installer import website_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ def execute_bring_up_website(*argv):
 
 
 def start_test_website(purpose, **kwargs):
-    config = load_website_config(purpose)
+    config = website_config(purpose)
     http_handler = create_website_http_handler(purpose, config, **kwargs)
     http_server = start_test_http_server(http_handler, host='localhost', port=config.start_port)
     http_server.purpose = purpose
@@ -47,7 +47,7 @@ def start_test_website(purpose, **kwargs):
 
 @source_code_monitored
 def start_website(purpose, port):
-    config = load_website_config(purpose)
+    config = website_config(purpose)
     http_handler = create_website_http_handler(purpose, config)
     io_loop = IOLoop.instance()
     io_loop.add_callback(lambda: LOGGER.info('started website: %(purpose)s', {'purpose': purpose}))

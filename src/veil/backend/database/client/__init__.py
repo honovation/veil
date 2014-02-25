@@ -6,7 +6,7 @@ with veil_component.init_component(__name__):
     from .database_client import transactional
     from .database_client import register_adapter_class
     from .table_dependency import get_writing_table_name
-    from .database_client_installer import load_database_client_config
+    from .database_client_installer import database_client_config
     from .database_client_installer import database_client_resource
 
     __all__ = [
@@ -18,6 +18,6 @@ with veil_component.init_component(__name__):
         # from table_dependency
         get_writing_table_name.__name__,
         # from database_client_installer
-        load_database_client_config.__name__,
+        database_client_config.__name__,
         database_client_resource.__name__
     ]

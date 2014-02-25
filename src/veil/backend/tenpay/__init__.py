@@ -7,7 +7,7 @@ with veil_component.init_component(__name__):
     from .tenpay_payment import NOTIFIED_FROM_RETURN_URL
     from .tenpay_payment import NOTIFIED_FROM_NOTIFY_URL
     from .tenpay_client_installer import tenpay_client_resource
-    from .tenpay_client_installer import load_tenpay_client_config
+    from .tenpay_client_installer import tenpay_client_config
 
 
     __all__ = [
@@ -19,5 +19,5 @@ with veil_component.init_component(__name__):
         'NOTIFIED_FROM_NOTIFY_URL',
         # from tenpay_client_installer
         tenpay_client_resource.__name__,
-        load_tenpay_client_config.__name__,
+        tenpay_client_config.__name__,
     ]

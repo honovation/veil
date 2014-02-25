@@ -9,7 +9,7 @@ from email.mime.text import MIMEText
 from veil.development.test import *
 from veil.model.event import *
 from veil.server.process import *
-from .sendgrid_client_installer import load_sendgrid_client_config
+from .sendgrid_client_installer import sendgrid_client_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ def close_connection():
 def open_connection():
     global smtp
     smtp = smtplib.SMTP('smtp.sendgrid.net', port=587, timeout=SMTP_TIMEOUT)
-    config = load_sendgrid_client_config()
+    config = sendgrid_client_config()
     smtp.login(config.username, config.password)
 
 

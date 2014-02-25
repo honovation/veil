@@ -12,7 +12,7 @@ from veil.utility.clock import *
 from veil.model.event import *
 from veil.server.process import *
 from .job import InvalidJob
-from .queue_client_installer import load_queue_client_config
+from .queue_client_installer import queue_client_config
 from .queue_client_installer import queue_client_resource
 
 LOGGER = getLogger(__name__)
@@ -27,7 +27,7 @@ def register_queue():
 def require_queue():
     global _current_queue
     if _current_queue is None:
-        config = load_queue_client_config()
+        config = queue_client_config()
         if 'redis' == config.type:
             redis = Redis(host=config.host, port=config.port)
             resq = ResQ(server=redis)

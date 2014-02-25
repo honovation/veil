@@ -144,6 +144,13 @@ def postgresql_server_running(data_directory, owner):
         shell_execute('su {} -c "pg_ctl -D {} stop"'.format(owner, data_directory))
 
 
+maintenance_config = {}
+def postgresql_maintenance_config(purpose):
+    if purpose not in maintenance_config:
+        maintenance_config[purpose] = load_postgresql_maintenance_config(purpose)
+    return maintenance_config[purpose]
+
+
 def load_postgresql_maintenance_config(purpose):
     config_dir = get_config_dir(purpose)
     return load_config_from(config_dir / 'postgresql-maintenance.cfg', 'owner', 'owner_password')

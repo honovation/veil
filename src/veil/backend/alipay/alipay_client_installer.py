@@ -13,5 +13,12 @@ def alipay_client_resource(partner_id, app_key, seller_email):
 
 
 def load_alipay_client_config():
-    config = load_config_from(VEIL_ETC_DIR / 'alipay-client.cfg', 'partner_id', 'app_key', 'seller_email')
+    return load_config_from(VEIL_ETC_DIR / 'alipay-client.cfg', 'partner_id', 'app_key', 'seller_email')
+
+
+config = None
+def alipay_client_config():
+    global config
+    if config is None:
+        config = load_alipay_client_config()
     return config

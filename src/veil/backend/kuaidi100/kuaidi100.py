@@ -8,7 +8,7 @@ import urllib2
 from veil.model.collection import *
 from veil.utility.encoding import *
 from veil.utility.json import *
-from .kuaidi100_client_installer import load_kuaidi100_client_config
+from .kuaidi100_client_installer import kuaidi100_client_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ def get_delivery_status(shipper_code, shipping_code, sleep_at_start=0, http_time
     if sleep_at_start > 0:
         sleep(sleep_at_start) # avoid IP blocking due to too frequent queries
     result_json = None
-    url = API_URL_TEMPLATE.format(load_kuaidi100_client_config().api_id, shipper_code, urllib.quote(to_str(shipping_code)))
+    url = API_URL_TEMPLATE.format(kuaidi100_client_config().api_id, shipper_code, urllib.quote(to_str(shipping_code)))
     exception = None
     tries = 0
     max_tries = 2

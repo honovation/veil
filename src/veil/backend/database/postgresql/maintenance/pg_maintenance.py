@@ -11,7 +11,7 @@ from veil.utility.shell import *
 from veil.frontend.cli import *
 from veil.server.supervisor import *
 from veil.backend.database.client import *
-from ..server.pg_server_installer import load_postgresql_maintenance_config
+from ..server.pg_server_installer import postgresql_maintenance_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,8 +23,8 @@ def drop_database(purpose):
         supervisorctl('restart', '{}_postgresql'.format(purpose))
         wait_for_server_up(purpose)
     try:
-        config = load_database_client_config(purpose)
-        maintenance_config = load_postgresql_maintenance_config(purpose)
+        config = database_client_config(purpose)
+        maintenance_config = postgresql_maintenance_config(purpose)
         env = os.environ.copy()
         env['PGPASSWORD'] = maintenance_config.owner_password
         shell_execute('dropdb -h {host} -p {port} -U {owner} {database}'.format(
@@ -111,8 +111,8 @@ def wait_for_server_up(purpose):
 @script('create-database')
 def create_database_if_not_exists(purpose):
     try:
-        config = load_database_client_config(purpose)
-        maintenance_config = load_postgresql_maintenance_config(purpose)
+        config = database_client_config(purpose)
+        maintenance_config = postgresql_maintenance_config(purpose)
         env = os.environ.copy()
         env['PGPASSWORD'] = maintenance_config.owner_password
         shell_execute('createdb -h {host} -p {port} -U {owner} {database} -E UTF-8'.format(
@@ -165,7 +165,7 @@ def execute_migration_script(purpose, migration_script):
 
 
 def psql(purpose, extra_arg, database=None, **kwargs):
-    config = load_database_client_config(purpose)
+    config = database_client_config(purpose)
     env = os.environ.copy()
     env['PGPASSWORD'] = config.password
     shell_execute('psql -h {host} -p {port} -U {user} {extra_arg} --set ON_ERROR_STOP=1 {database}'.format(

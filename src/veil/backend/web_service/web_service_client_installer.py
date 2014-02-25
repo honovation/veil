@@ -10,5 +10,9 @@ def web_service_client_resource(purpose, url, user, password, proxy_netloc):
 
 
 def load_web_service_client_config(purpose):
-    config = load_config_from(VEIL_ETC_DIR / '{}-web-service.cfg'.format(purpose.replace('_', '-')), 'url', 'user', 'password', 'proxy_netloc')
-    return config
+    return load_config_from(VEIL_ETC_DIR / '{}-web-service.cfg'.format(purpose.replace('_', '-')), 'url', 'user', 'password', 'proxy_netloc')
+
+
+config = {}
+def web_service_client_config(purpose):
+    return config.setdefault(purpose, load_web_service_client_config(purpose))

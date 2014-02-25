@@ -14,7 +14,7 @@ from veil.development.test import *
 from veil.model.event import *
 from veil.server.process import *
 from .table_dependency import check_table_dependencies
-from .database_client_installer import load_database_client_config
+from .database_client_installer import database_client_config
 from .database_client_installer import database_client_resource
 
 LOGGER = getLogger(__name__)
@@ -48,7 +48,7 @@ def require_database(purpose, component_name=None, verify_db=False):
     if verify_db and purpose in instances:
         instances[purpose].reconnect_if_broken_per_verification()
     if purpose not in instances:
-        config = load_database_client_config(purpose)
+        config = database_client_config(purpose)
         __import__(config.pop('driver'))
         instances[purpose] = connect(purpose=purpose, **config)
     db = Database(purpose, component_name, instances[purpose])

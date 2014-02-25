@@ -12,5 +12,12 @@ def sendgrid_client_resource(username, password):
 
 
 def load_sendgrid_client_config():
-    config = load_config_from(VEIL_ETC_DIR / 'sendgrid-client.cfg', 'username', 'password')
+    return load_config_from(VEIL_ETC_DIR / 'sendgrid-client.cfg', 'username', 'password')
+
+
+config = None
+def sendgrid_client_config():
+    global config
+    if config is None:
+        config = load_sendgrid_client_config()
     return config

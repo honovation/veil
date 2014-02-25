@@ -11,20 +11,17 @@ from veil.development.test import get_executing_test
 
 LOGGER = getLogger(__name__)
 
-_hash_salt = None
-
 add_application_sub_resource('hash', lambda config: hash_resource(**config))
 
 
 @composite_installer
 def hash_resource(salt):
     resources = list(BASIC_LAYOUT_RESOURCES)
-    resources.append(
-        file_resource(path=VEIL_ETC_DIR / 'hash.cfg',
-                      content='salt={}'.format(salt)))
+    resources.append(file_resource(path=VEIL_ETC_DIR / 'hash.cfg', content='salt={}'.format(salt)))
     return resources
 
 
+_hash_salt = None
 def get_hash_salt():
     global _hash_salt
 

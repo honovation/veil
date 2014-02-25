@@ -11,7 +11,7 @@ from veil.model.event import *
 from veil.profile.web import *
 from veil.utility.encoding import *
 from veil.environment import *
-from .alipay_client_installer import load_alipay_client_config
+from .alipay_client_installer import alipay_client_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,17 +29,16 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
     shopper_website_url_prefix = get_website_url_prefix('shopper')
     notify_url = '{}/payment-channel/alipay/trade/notify'.format(shopper_website_url_prefix)
     return_url = '{}/payment-channel/alipay/trade/return'.format(shopper_website_url_prefix)
-    config = load_alipay_client_config()
     params = {
         'service': 'create_direct_pay_by_user', #即时到帐
-        'partner': config.partner_id,
+        'partner': alipay_client_config().partner_id,
         '_input_charset': CHARSET_UTF8,
         'notify_url': notify_url,
         'return_url': return_url,
         'out_trade_no': out_trade_no,
         'subject': subject,
         'payment_type': '1',
-        'seller_email': config.seller_email,
+        'seller_email': alipay_client_config().seller_email,
         'total_fee': '%.2f' % total_fee,
         'body': body,
         'show_url': show_url,
@@ -109,7 +108,7 @@ def validate_notification(http_arguments):
     trade_no = http_arguments.get('trade_no', None)
     if not trade_no:
         discarded_reasons.append('no trade_no')
-    if load_alipay_client_config().seller_email != http_arguments.get('seller_email', None):
+    if alipay_client_config().seller_email != http_arguments.get('seller_email', None):
         discarded_reasons.append('seller email mismatched')
     paid_total = http_arguments.get('total_fee', None)
     if paid_total:
@@ -154,7 +153,7 @@ def is_sign_correct(http_arguments):
 
 
 def sign_md5(params):
-    param_str = '{}{}'.format(to_url_params_string(params), load_alipay_client_config().app_key)
+    param_str = '{}{}'.format(to_url_params_string(params), alipay_client_config().app_key)
     return hashlib.md5(param_str.encode(CHARSET_UTF8)).hexdigest()
 
 
@@ -165,7 +164,7 @@ def to_url_params_string(params):
 
 
 def is_notification_from_alipay(notify_id):
-    verify_url = 'https://mapi.alipay.com/gateway.do?service=notify_verify&partner={}&notify_id={}'.format(load_alipay_client_config().partner_id, notify_id)
+    verify_url = 'https://mapi.alipay.com/gateway.do?service=notify_verify&partner={}&notify_id={}'.format(alipay_client_config().partner_id, notify_id)
     exception = None
     tries = 0
     max_tries = 2

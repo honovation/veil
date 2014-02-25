@@ -4,7 +4,7 @@ import pyres
 import base64
 from redis.client import Redis
 from veil.frontend.cli import *
-from .queue_client_installer import load_queue_client_config
+from .queue_client_installer import queue_client_config
 
 @script('count-failed-jobs')
 def count_failed_jobs(queue):
@@ -42,7 +42,7 @@ def delete_pending_jobs(queue):
 
 
 def get_resq():
-    config = load_queue_client_config()
+    config = queue_client_config()
     redis = Redis(host=config.host, port=config.port)
     resq = pyres.ResQ(server=redis)
     return resq

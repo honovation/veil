@@ -4,7 +4,7 @@ from redis.client import StrictRedis
 from veil_installer import *
 from veil.development.test import *
 from .redis_client_installer import redis_client_resource
-from .redis_client_installer import load_redis_client_config
+from .redis_client_installer import redis_client_config
 
 LOGGER = getLogger(__name__)
 
@@ -17,13 +17,11 @@ def register_redis(purpose):
 
 def require_redis(purpose):
     if purpose not in instances:
-        redis_client_config = load_redis_client_config(purpose)
-        instances[purpose] = StrictRedis(**redis_client_config)
+        config = redis_client_config(purpose)
+        instances[purpose] = StrictRedis(**config)
     executing_test = get_executing_test(optional=True)
     if executing_test:
         def flush():
             instances[purpose].flushall()
-
         executing_test.addCleanup(flush)
     return instances[purpose]
-

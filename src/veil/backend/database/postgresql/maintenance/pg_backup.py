@@ -3,14 +3,14 @@ import os
 from veil.frontend.cli import *
 from veil.backend.database.client import *
 from veil.utility.shell import *
-from ..server.pg_server_installer import load_postgresql_maintenance_config
+from ..server.pg_server_installer import postgresql_maintenance_config
 
 #pg_dump --host 10.24.3.10 --port 5432 --username "veil" --no-password  --format tar --blobs --verbose --file "/home/dejavu/dump" "ljmall"
 #pg_restore --host localhost --port 5432 --username "veil" --no-password  --format tar --verbose -c -d ljmall /home/dejavu/dump.tar
 
 @script('create-backup')
 def create_backup(purpose, backup_path):
-    config = load_database_client_config(purpose)
+    config = database_client_config(purpose)
     env = os.environ.copy()
     env['PGPASSWORD'] = config.password
     shell_execute('pg_dump --host {host} --port {port} --username {user} --format tar --blobs --verbose --file "{backup_path}" {database}'.format(
@@ -22,8 +22,8 @@ def create_backup(purpose, backup_path):
 
 @script('restore-backup')
 def restore_backup(backup_path, purpose):
-    config = load_database_client_config(purpose)
-    maintenance_config = load_postgresql_maintenance_config(purpose)
+    config = database_client_config(purpose)
+    maintenance_config = postgresql_maintenance_config(purpose)
     env = os.environ.copy()
     env['PGPASSWORD'] = maintenance_config.owner_password
     shell_execute('pg_restore --host {host} --port {port} --username {user} --format tar --verbose -c -d {database} "{backup_path}"'.format(

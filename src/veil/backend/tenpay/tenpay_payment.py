@@ -15,7 +15,7 @@ from veil.utility.encoding import *
 from veil.environment import *
 from veil.utility.clock import *
 from consts import CHARSET_UTF8, HTTP_TIMEOUT
-from .tenpay_client_installer import load_tenpay_client_config
+from .tenpay_client_installer import tenpay_client_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
         'attach': show_url,
         'return_url': return_url,
         'notify_url': notify_url,
-        'partner': load_tenpay_client_config().partner_id,
+        'partner': tenpay_client_config().partner_id,
         'out_trade_no': out_trade_no,
         'total_fee': str(int(total_fee * 100)), # unit: cent
         'fee_type': '1',
@@ -101,7 +101,7 @@ def validate_notification(http_arguments):
     trade_no = http_arguments.get('transaction_id', None)
     if not trade_no:
         discarded_reasons.append('no transaction_id')
-    if load_tenpay_client_config().partner_id != http_arguments.get('partner', None):
+    if tenpay_client_config().partner_id != http_arguments.get('partner', None):
         discarded_reasons.append('partner ID mismatched')
     paid_total = http_arguments.get('total_fee', None)
     if paid_total:
@@ -144,7 +144,7 @@ def is_sign_correct(http_arguments):
 
 
 def sign_md5(params):
-    param_str = '{}&key={}'.format(to_url_params_string(params), load_tenpay_client_config().app_key)
+    param_str = '{}&key={}'.format(to_url_params_string(params), tenpay_client_config().app_key)
     return hashlib.md5(param_str.encode(CHARSET_UTF8)).hexdigest().upper()
 
 
@@ -158,7 +158,7 @@ def is_notification_from_tenpay(notify_id):
     verify_url = make_url('https://gw.tenpay.com/gateway/simpleverifynotifyid.xml', {
         'sign_type': 'MD5',
         'input_charset': CHARSET_UTF8,
-        'partner': load_tenpay_client_config().partner_id,
+        'partner': tenpay_client_config().partner_id,
         'notify_id': notify_id
     })
     exception = None
