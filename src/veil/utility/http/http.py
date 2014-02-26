@@ -41,7 +41,7 @@ def http_call(service, url, data=None, content_type=None, accept=None, accept_ch
             if isinstance(e, urllib2.HTTPError):
                 reason = 'cannot fulfill the request'
                 if 400 <= e.code < 500: # 4xx, client error, need not retry
-                    LOGGER.exception('[%(service)s]failed to get response: %(reason)s, %(url)s, %(headers)s, %(data)s', {
+                    LOGGER.exception('[HTTP CALL]failed to get response: %(service)s, %(reason)s, %(url)s, %(headers)s, %(data)s', {
                         'service': service, 'reason': reason, 'url': url, 'headers': request.headers, 'data': request.data if log_data else None
                     })
                     raise
@@ -56,13 +56,13 @@ def http_call(service, url, data=None, content_type=None, accept=None, accept_ch
                 if sleep_before_retry > 0:
                     sleep(sleep_before_retry)
             else:
-                LOGGER.exception('[%(service)s]failed to get response: %(reason)s, %(url)s, %(headers)s, %(data)s, %(max_tries)s, %(timeout)s', {
+                LOGGER.exception('[HTTP CALL]failed to get response: %(service)s, %(reason)s, %(url)s, %(headers)s, %(data)s, %(max_tries)s, %(timeout)s', {
                     'service': service, 'reason': reason, 'url': url, 'headers': request.headers, 'data': request.data if log_data else None,
                     'max_tries': max_tries, 'timeout': http_timeout
                 })
                 raise
         else:
-            LOGGER.info('[%(service)s]succeeded to get response: %(url)s, %(headers)s, %(data)s, %(response)s', {
+            LOGGER.info('[HTTP CALL]succeeded to get response: %(service)s, %(url)s, %(headers)s, %(data)s, %(response)s', {
                 'service': service, 'url': url, 'headers': request.headers, 'data': request.data if log_data else None, 'response': response
             })
             if accept == 'application/json':
