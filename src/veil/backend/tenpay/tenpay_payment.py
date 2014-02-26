@@ -170,9 +170,9 @@ def make_query(params):
     return urllib.urlencode(params)
 
 
-def parse_notify_verify_response(response_text):
+def parse_notify_verify_response(response):
     arguments = DictObject()
-    root = lxml.objectify.fromstring(response_text)
+    root = lxml.objectify.fromstring(response)
     for e in root.iterchildren():
         if e.text:
             arguments[e.tag] = e.text

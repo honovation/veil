@@ -11,8 +11,8 @@ from veil.model.collection import *
 LOGGER = logging.getLogger(__name__)
 
 
-def http_call(service, url, data=None, content_type=None, accept=None, accept_charset=None,
-        log_data=True, max_tries=1, sleep_at_start=0, sleep_before_retry=0, http_timeout=15):
+def http_call(service, url, data=None, content_type=None, accept=None, accept_charset=None, log_data=True, max_tries=1, sleep_at_start=0,
+        sleep_before_retry=0, http_timeout=15):
     if data:
         if content_type and content_type.startswith('application/json'):
             encoded_data = json.dumps(data)
