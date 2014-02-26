@@ -57,7 +57,7 @@ def rollback(src_dir, backup_dir, veil_server):
         bring_down_server(src_dir, veil_server)
         shell_execute('mv {} {}-to-be-deleted-{}'.format(src_dir, src_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
     try:
-        shell_execute('killall supervisord')
+        shell_execute('pkill -x supervisord')
     except:
         pass  # do not care if it is there
     shell_execute('cp -r -p {} {}'.format(backup_dir, src_dir))
