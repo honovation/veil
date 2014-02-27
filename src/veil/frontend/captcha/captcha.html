@@ -17,7 +17,7 @@
 </div>
 <script type="text/javascript">
     $(document).ready(function () {
-        $(document).on('click', '#change-captcha', function (e) {
+        $(document).on('click', '#change-captcha', function () {
             $.get('/captcha', {'_': $.now()},function (html) {
                 $('#captcha-wrap').html(html);
             });

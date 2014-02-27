@@ -153,11 +153,9 @@ def render_installer_file(veil_env_name, veil_server_name):
     iptables_rules = [
         'POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(veil_host.lan_range, veil_host.lan_range)
     ]
-    installer_file_content = render_config(
-        'container-installer-file.j2', mac_address=mac_address, lan_interface=veil_host.lan_interface,
-        ip_address=ip_address, gateway=gateway, iptables_rules=iptables_rules,
-        container_name=container_name, user_name=veil_server_user_name, dns=veil_server.dns, memory_limit=veil_server.memory_limit,
-        cpu_share=veil_server.cpu_share)
+    installer_file_content = render_config('container-installer-file.j2', mac_address=mac_address, lan_interface=veil_host.lan_interface,
+        ip_address=ip_address, gateway=gateway, iptables_rules=iptables_rules, container_name=container_name, user_name=veil_server_user_name,
+        dns=veil_server.dns, memory_limit=veil_server.memory_limit, cpu_share=veil_server.cpu_share)
     lines = [installer_file_content]
     for resource in veil_host.resources:
         installer_name, installer_args = resource

@@ -49,5 +49,5 @@ def parse_resource(line):
     if not installer_args:
         return installer_name, {}
     installer_args = [arg if '=' in arg else 'name={}'.format(arg) for arg in installer_args.split('&')]
-    installer_args = dict((arg.split('=', 1)[0].strip(), arg.split('=', 1)[1].strip()) for arg in installer_args)
+    installer_args = {arg.split('=', 1)[0].strip(): arg.split('=', 1)[1].strip() for arg in installer_args}
     return installer_name, installer_args

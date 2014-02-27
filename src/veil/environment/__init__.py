@@ -42,7 +42,7 @@ def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=()
         'backup_mirror': backup_mirror,
         'backup_dirs': backup_dirs,
         'memory_limit': memory_limit,
-        'cpu_share': cpu_share or 100
+        'cpu_share': cpu_share
     })
 
 

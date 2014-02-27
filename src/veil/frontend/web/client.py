@@ -37,7 +37,7 @@ class WebClient(object):
 
     @property
     def cookies(self):
-        return dict((cookie.name, cookie) for cookie in self.cookie_jar)
+        return {cookie.name: cookie for cookie in self.cookie_jar}
 
     def set_cookie(self, key, value):
         cookie = cookielib.Cookie(version=0, name=key, value=value, port=None, port_specified=False,
