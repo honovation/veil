@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import re
+from veil.backend.queue import *
 from veil.utility.http import *
 from .emay_sms_client_installer import emay_sms_client_config
 
@@ -18,6 +19,7 @@ def get_return_value(xml):
 
 
 def send_sms(receivers, message, sms_code):
+    LOGGER.debug('attempt to send sms: %(sms_code)s, %(receivers)s, %(message)s', {'sms_code': sms_code, 'receivers': receivers, 'message': message})
     if isinstance(receivers, basestring):
         receivers = [receivers]
     receivers = [r.strip() for r in receivers if r.strip()]
@@ -41,3 +43,8 @@ def send_sms(receivers, message, sms_code):
             LOGGER.info('succeeded to send sms: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
         else:
             raise Exception('failed to send sms with bad value returned: {}, {}, {}'.format(response, sms_code, receivers))
+
+
+@job('send_transactional_sms', retry_every=10, retry_timeout=90)
+def send_sms_code_job(receiver, message, sms_code):
+    send_sms(receiver, message, sms_code)

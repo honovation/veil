@@ -19,6 +19,7 @@ LOGGER = getLogger(__name__)
 original_routes = {}
 routes = {}
 EVENT_NEW_WEBSITE = define_event('new-website')
+TAG_NO_LOGIN_REQUIRED = 'PUBLIC'
 
 @test_hook
 def remember_original_routes():
@@ -90,12 +91,12 @@ def async_route(*args, **kwargs):
 
 def public_route(*args, **kwargs):
     kwargs['tags'] = set(kwargs.get('tags', ()))
-    kwargs['tags'].add('PUBLIC')
+    kwargs['tags'].add(TAG_NO_LOGIN_REQUIRED)
     return route(*args, **kwargs)
 
 
 def is_public_route(route):
-    return 'PUBLIC' in route.tags
+    return TAG_NO_LOGIN_REQUIRED in route.tags
 
 
 def get_routes(website):

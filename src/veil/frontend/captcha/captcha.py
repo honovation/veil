@@ -29,7 +29,7 @@ def register_captcha(website):
     add_application_sub_resource('captcha_image_bucket', lambda config: bucket_resource(purpose='captcha_image', config=config))
     add_application_sub_resource('persist_store_redis_client', lambda config: redis_client_resource(purpose='persist_store', **config))
     import_widget(captcha_widget)
-    route('GET', '/captcha', website=website, tags=('PUBLIC',))(captcha_widget)
+    route('GET', '/captcha', website=website, tags=(TAG_NO_LOGIN_REQUIRED,))(captcha_widget)
     return captcha_protected
 
 

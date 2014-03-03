@@ -21,6 +21,7 @@ with veil_component.init_component(__name__):
     from .routing import get_routes
     from .routing import register_page_post_processor
     from .routing import TAG_NO_POST_PROCESS
+    from .routing import TAG_NO_LOGIN_REQUIRED
     from .routing import publish_new_website_event
     from .routing import RoutePermissionProtector
     from .routing import TagBasedRoutePermissionProtector
@@ -80,6 +81,7 @@ with veil_component.init_component(__name__):
         get_routes.__name__,
         register_page_post_processor.__name__,
         'TAG_NO_POST_PROCESS',
+        'TAG_NO_LOGIN_REQUIRED',
         publish_new_website_event.__name__,
         RoutePermissionProtector.__name__,
         TagBasedRoutePermissionProtector.__name__,
