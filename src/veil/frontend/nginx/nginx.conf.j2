@@ -37,10 +37,6 @@ http {
         gzip_static off;
     {% endif %}
 
-    perl_set $unix_timestamp 'sub {
-      time();
-    }';
-
     proxy_http_version 1.1;
     proxy_read_timeout 200;
     proxy_buffers 256 8k;
@@ -56,7 +52,7 @@ http {
     real_ip_recursive on;
     {% endif %}
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Request-Code $unix_timestamp-$cookie_vbcode;
+    proxy_set_header X-Request-Code $msec-$cookie_vbcode;
     proxy_redirect off;
     # Only retry if there was a communication error, not a timeout
     # on the Tornado server (to avoid propagating "queries of death"
@@ -71,7 +67,7 @@ http {
                              '"remote_addr": "$remote_addr", '
                              '"request": "$request", '
                              '"request_time": "$request_time", '
-                             '"request_code": "$unix_timestamp-$cookie_vbcode", '
+                             '"request_code": "$msec-$cookie_vbcode", '
                              '"request_method": "$request_method", '
                              '"status": "$status", '
                              '"body_bytes_sent": "$body_bytes_sent", '
