@@ -54,8 +54,8 @@ def handle_exception():
             'remote_ip': request.remote_ip,
             'user_agent': request.headers.get('User-Agent')
         })
+        response.status_code = httplib.INTERNAL_SERVER_ERROR
         try:
-            response.status_code = httplib.INTERNAL_SERVER_ERROR
             response.finish()
         except:
             LOGGER.exception('failed to finish the request')
