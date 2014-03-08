@@ -65,7 +65,7 @@ def verify_hmac(hmac, *parts, **kwargs):
 
 def get_check_code(*parts, **kwargs):
     size = kwargs.pop('size', 6)
-    salt = kwargs.pop('salt')
+    salt = kwargs.pop('salt', get_hash_salt())
     msg = '|'.join(str(part) for part in parts)
     return hex(hash(str(salt) + msg))[-size:]
 
