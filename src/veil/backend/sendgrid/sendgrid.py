@@ -6,6 +6,7 @@ from email.utils import parseaddr, formataddr
 from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from veil.backend.queue import *
 from veil.development.test import *
 from veil.model.event import *
 from veil.server.process import *
@@ -81,3 +82,8 @@ def send_email(sender, recipient, subject, text='', html='', category='', email_
             'email_code': email_code,
             'to_addr': to_addr
         })
+
+
+@job('send_transactional_email', retry_every=3*60, retry_timeout=60*60)
+def send_transactional_email_job(sender, recipient, subject, text='', html='', category='', email_code=''):
+    send_email(sender, recipient, subject, text, html, category, email_code)
