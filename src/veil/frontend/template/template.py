@@ -75,9 +75,12 @@ def require_current_template_directory_being(template_directory):
         current_template_directories.pop()
 
 
-def require_current_template_directory_relative_to(func):
-    return require_current_template_directory_being(
-        os.path.dirname(os.path.abspath(importlib.import_module(func.__module__).__file__)))
+def require_current_template_directory_relative_to(func=None):
+    if func is None:
+        module_name = inspect.getmodule(inspect.stack()[1][0]).__name__
+    else:
+        module_name = func.__module__
+    return require_current_template_directory_being(os.path.dirname(os.path.abspath(importlib.import_module(module_name).__file__)))
 
 
 def get_template(template_path=None, template_source=None):
