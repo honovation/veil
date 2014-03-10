@@ -43,7 +43,7 @@ def website_upstreams(purpose, start_port, processes_count):
     }
 
 
-def website_locations(purpose):
+def website_locations(purpose, valid_referers):
     if VEIL_ENV_TYPE in {'public', 'staging'}:
         # done in bunker
         extra_headers = ''
@@ -76,7 +76,13 @@ def website_locations(purpose):
                         add_header Pragma public;
                         add_header Cache-Control "public, must-revalidate, proxy-revalidate";
                     }
-                    ''',
+                    if ($uri ~* "\.(gif|png|jpe?g|ico|css|js|pdf|txt|csv|xls|doc|ppt|zip|tgz|gz|rar|swf|flv|mp3|mp4|mpeg|mpg|mpeg4|avi|wmv)$") {
+                        valid_referers none blocked server_names {};
+                        if ($invalid_referer) {
+                            return 403;
+                        }
+                    }
+                    '''.format(valid_referers),
                 'alias': VEIL_HOME / 'static' / ''
             }
         }
@@ -106,9 +112,17 @@ def website_locations(purpose):
         # inline static files
         # /static/v-xxxx/a-b.js
         '~ ^/static/v-(.*)-(.*)/': {
-            'alias': VEIL_VAR_DIR / 'inline-static-files' / '$1' / '$2',
-            'access_log': 'off',
-            'expires': 'max'
+            '_': '''
+                access_log off;
+                expires max;
+                if ($uri ~* "\.(gif|png|jpe?g|ico|css|js|pdf|txt|csv|xls|doc|ppt|zip|tgz|gz|rar|swf|flv|mp3|mp4|mpeg|mpg|mpeg4|avi|wmv)$") {
+                    valid_referers none blocked server_names {};
+                    if ($invalid_referer) {
+                        return 403;
+                    }
+                }
+                '''.format(valid_referers),
+            'alias': VEIL_VAR_DIR / 'inline-static-files' / '$1' / '$2'
         }
     }
     locations.update(extra_locations)
