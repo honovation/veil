@@ -46,5 +46,5 @@ def send_sms(receivers, message, sms_code):
 
 
 @job('send_transactional_sms', retry_every=10, retry_timeout=90)
-def send_sms_code_job(receiver, message, sms_code):
+def send_transactional_sms_job(receiver, message, sms_code):
     send_sms(receiver, message, sms_code)
