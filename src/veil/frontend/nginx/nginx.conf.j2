@@ -16,7 +16,7 @@ pid {{ config.pid_file }};
 {% endif %}
 
 events {
-    worker_connections {{ config.get('connections_count_per_worker', 100) }};
+    worker_connections {{ config.get('worker_connections', 100) }};
     multi_accept on;
     use epoll;
 }
@@ -34,7 +34,6 @@ http {
     reset_timedout_connection on;
 
     client_body_buffer_size 128k;
-    client_max_body_size 10m;
 
     include /etc/nginx/mime.types;
     default_type application/octet-stream;

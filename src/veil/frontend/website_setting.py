@@ -43,8 +43,8 @@ def website_upstreams(purpose, start_port, processes_count):
     }
 
 
-def website_locations(purpose):
-    if VEIL_ENV_TYPE in {'public', 'staging'}:
+def website_locations(purpose, has_bunker, max_upload_file_size='1m'):
+    if has_bunker:
         # done in bunker
         extra_headers = ''
         extra_locations = {}
@@ -89,13 +89,21 @@ def website_locations(purpose):
         },
         '^~ /fupload/': {
             '_': '''
+                client_max_body_size %s;
                 client_body_temp_path %s 1;
                 client_body_in_file_only clean;
                 proxy_set_header X-UPLOAD-FILE-PATH $request_body_file;
                 proxy_set_body off;
                 proxy_pass http://%s-tornado;
                 %s
-            ''' % (VEIL_VAR_DIR / 'uploaded-files', purpose, extra_headers)
+            ''' % (max_upload_file_size, VEIL_VAR_DIR / 'uploaded-files', purpose, extra_headers)
+        },
+        '^~ /fupload-/': {
+            '_': '''
+                client_max_body_size %s;
+                proxy_pass http://%s-tornado;
+                %s
+                ''' % (max_upload_file_size, purpose, extra_headers)
         },
         '/': {
             '_': '''
