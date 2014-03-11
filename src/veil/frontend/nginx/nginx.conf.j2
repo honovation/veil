@@ -1,41 +1,69 @@
 user {{ config.owner }} {{ config.owner_group }};
-worker_processes {{ config.get('worker_processes_count', 4) }};
+# uncomment this if you are not running nginx under supervisord
 daemon off;
+worker_processes {{ config.get('worker_processes_count', 'auto') }};
+{% if 'worker_priority' in config %}
+worker_priority config.worker_priority;
+{% endif %}
+{% if 'worker_rlimit_nofile' in config %}
+# Maximum open file descriptors per process; should be > worker_connections.
+worker_rlimit_nofile config.worker_rlimit_nofile;
+{% endif %}
 
 {% if 'pid_file' in config %}
 pid {{ config.pid_file }};
 {% endif %}
 
 events {
-    worker_connections  {{ config.get('connections_count_per_worker', 1024) }};
+    worker_connections {{ config.get('connections_count_per_worker', 100) }};
+    multi_accept on;
     use epoll;
 }
 
 http {
-    keepalive_timeout 120 65;
-    sendfile on;
-    tcp_nodelay on;
-    tcp_nopush on;
     server_tokens off;
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+
+    keepalive_timeout 30;
+    client_header_timeout 20;
+    client_body_timeout 20;
+    send_timeout 20;
+    reset_timedout_connection on;
 
     client_body_buffer_size 128k;
     client_max_body_size 10m;
 
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:ECDHE-RSA-RC4-SHA:ECDHE-ECDSA-RC4-SHA:AES128:AES256:RC4-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+
     {% if config.enable_compression %}
         gzip on;
-        gzip_http_version 1.1;
+        # Enable compression both for HTTP/1.0 and HTTP/1.1 (required for CloudFront).
+        gzip_http_version 1.0;
         gzip_static off;
         gzip_proxied any;
-        gzip_min_length 1400;
-        gzip_comp_level 4;
+        gzip_min_length 256;
+        gzip_comp_level 5;
         gzip_types text/plain text/css text/javascript application/javascript application/x-javascript application/json text/x-json text/xml application/xml application/xml+rss application/atom+xml image/x-icon image/bmp image/x-ms-bmp;
         gzip_vary on;
         gzip_buffers 64 8k;
-        gzip_disable "MSIE [1-6]\.(?!.*SV1)";
+        gzip_disable "msie6";
     {% else %}
         gzip off;
         gzip_static off;
     {% endif %}
+
+    open_file_cache max=65000 inactive=20s;
+    open_file_cache_valid 30s;
+    open_file_cache_min_uses 2;
+    open_file_cache_errors on;
 
     proxy_http_version 1.1;
     proxy_read_timeout 200;
@@ -59,6 +87,7 @@ http {
     # to all frontends)
     proxy_next_upstream error;
 
+    access_log off;
     log_format logstash_json '{ "@timestamp": "$time_iso8601", '
                              '"@type": "nginx", '
                              '"@fields": { '
@@ -89,7 +118,11 @@ http {
     server {
         server_name  {{ server_name }};
         error_log {{ config.log_directory }}/{{ server_name }}-error.log;
+        {% if not config.has_bunker or config.is_bunker %}
         access_log {{ config.log_directory }}/{{ server_name }}-access.log logstash_json;
+        {% else %}
+        access_log off;
+        {% endif %}
         {% for key, value in server_properties.items() %}
             {% if 'locations' == key %}
                 {% for location, location_properties in value.items() %}
@@ -122,79 +155,4 @@ http {
         {% endfor %}
     }
     {% endfor %}
-
-    open_file_cache max=50000 inactive=30s;
-    open_file_cache_valid 60s;
-    open_file_cache_min_uses 2;
-    open_file_cache_errors on;
-
-    default_type application/octet-stream;
-    types {
-        text/html                             html htm shtml;
-        text/css                              css;
-        text/xml                              xml rss;
-        image/gif                             gif;
-        image/jpeg                            jpeg jpg;
-        application/x-javascript              js;
-        application/atom+xml                  atom;
-
-        text/mathml                           mml;
-        text/plain                            txt;
-        text/vnd.sun.j2me.app-descriptor      jad;
-        text/vnd.wap.wml                      wml;
-        text/x-component                      htc;
-
-        image/png                             png;
-        image/tiff                            tif tiff;
-        image/vnd.wap.wbmp                    wbmp;
-        image/x-icon                          ico;
-        image/x-jng                           jng;
-        image/x-ms-bmp                        bmp;
-
-        application/java-archive              jar war ear;
-        application/mac-binhex40              hqx;
-        application/msword                    doc;
-        application/pdf                       pdf;
-        application/postscript                ps eps ai;
-        application/rtf                       rtf;
-        application/vnd.ms-excel              xls;
-        application/vnd.ms-powerpoint         ppt;
-        application/vnd.wap.wmlc              wmlc;
-        application/vnd.wap.xhtml+xml         xhtml;
-        application/x-cocoa                   cco;
-        application/x-java-archive-diff       jardiff;
-        application/x-java-jnlp-file          jnlp;
-        application/x-makeself                run;
-        application/x-perl                    pl pm;
-        application/x-pilot                   prc pdb;
-        application/x-rar-compressed          rar;
-        application/x-redhat-package-manager  rpm;
-        application/x-sea                     sea;
-        application/x-shockwave-flash         swf;
-        application/x-stuffit                 sit;
-        application/x-tcl                     tcl tk;
-        application/x-x509-ca-cert            der pem crt;
-        application/x-xpinstall               xpi;
-        application/zip                       zip;
-
-        application/octet-stream              bin exe dll;
-        application/octet-stream              deb;
-        application/octet-stream              dmg;
-        application/octet-stream              eot;
-        application/octet-stream              iso img;
-        application/octet-stream              msi msp msm;
-
-        audio/midi                            mid midi kar;
-        audio/mpeg                            mp3;
-        audio/x-realaudio                     ra;
-
-        video/3gpp                            3gpp 3gp;
-        video/mpeg                            mpeg mpg;
-        video/quicktime                       mov;
-        video/x-flv                           flv;
-        video/x-mng                           mng;
-        video/x-ms-asf                        asx asf;
-        video/x-ms-wmv                        wmv;
-        video/x-msvideo                       avi;
-    }
 }
