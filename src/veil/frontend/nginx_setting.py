@@ -9,15 +9,15 @@ def nginx_program(servers, enable_compression=False, has_bunker=False, is_bunker
         'nginx': {
             'execute_command': 'nginx -c {}'.format(VEIL_ETC_DIR / 'nginx.conf'),
             'run_as': 'root',
-            'resources': [(
-                'veil.frontend.nginx.nginx_resource', dict({
-                    'servers': servers,
+            'resources': [('veil.frontend.nginx.nginx_resource', {
+                'servers': servers,
+                'config': dict({
                     'enable_compression': enable_compression,
                     'has_bunker': has_bunker,
                     'is_bunker': is_bunker,
                     'bunker_ip': bunker_ip
                 }, **kwargs)
-            )]
+            })]
         }
     })
 

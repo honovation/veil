@@ -1,14 +1,15 @@
 user {{ config.owner }} {{ config.owner_group }};
-# uncomment this if you are not running nginx under supervisord
-daemon off;
 worker_processes {{ config.get('worker_processes_count', 'auto') }};
 {% if 'worker_priority' in config %}
-worker_priority config.worker_priority;
+worker_priority {{ config.worker_priority }};
 {% endif %}
 {% if 'worker_rlimit_nofile' in config %}
 # Maximum open file descriptors per process; should be > worker_connections.
-worker_rlimit_nofile config.worker_rlimit_nofile;
+worker_rlimit_nofile {{ config.worker_rlimit_nofile }};
 {% endif %}
+
+# uncomment this if you are not running nginx under supervisord
+daemon off;
 
 {% if 'pid_file' in config %}
 pid {{ config.pid_file }};
