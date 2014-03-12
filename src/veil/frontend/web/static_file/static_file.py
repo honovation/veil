@@ -99,7 +99,7 @@ def process_javascript(page_handler, html):
     if html:
         html, script_elements, js_texts = process_script_elements(html)
         if js_texts:
-            combined_js_text = '\n'.join(wrap_js_to_ensure_load_once(js_text) for js_text in js_texts)
+            combined_js_text = ';{}'.format('\n'.join(wrap_js_to_ensure_load_once(js_text) for js_text in js_texts))
             url = '/static/{}'.format(write_inline_static_file(page_handler, 'js', combined_js_text))
             script_elements.append('<script type="text/javascript" src="{}"></script>'.format(url))
         if script_elements:
