@@ -51,8 +51,8 @@ class ProcessJavascriptTest(TestCase):
 
         processed_html = unicode(process_javascript(test_page, test_page()).strip())
         doc = lxml.etree.fromstring(processed_html)
-        self.assertEqual('/static/v-47-49495e5842d5f8f6a4f54fb596a9dd/test.js', doc.attrib['src'])
-        self.assertIn('test2', (self.temp_dir / '47' / '49495e5842d5f8f6a4f54fb596a9dd').text())
+        self.assertEqual('/static/v-06-0ab1eb927023ecd106bb46f6aa2539/test.js', doc.attrib['src'])
+        self.assertIn('test2', (self.temp_dir / '06' / '0ab1eb927023ecd106bb46f6aa2539').text())
 
 
 class ProcessStylesheetTest(TestCase):

@@ -1,3 +1,4 @@
+;
 /*!
  * veil.js
  *
@@ -28,8 +29,7 @@ $.fn.serializeObject = function() {
 var veil = veil || {};
 
 veil.log = function(message) {
-    if(typeof console === "undefined"){
-    }else{
+    if ("undefined" !== typeof console) {
         console.log(message);
     }
 };
@@ -37,7 +37,7 @@ veil.log = function(message) {
 executed = [];
 veil.executeOnce = function (hash, func) {
     if ($.inArray(hash, executed) != -1) {
-        return
+        return;
     }
     executed.push(hash);
     func();
@@ -62,7 +62,7 @@ veil.event.publish = function (eventName, args) {
 veil.event.DELEGATIONS = {};
 
 veil.event.delegate = function (srcEventName, destEventName) {
-// TODO: check endless loop of delegation
+/* TODO: check endless loop of delegation */
     if (!veil.event.hasDelegation(srcEventName)) {
         veil.event.DELEGATIONS[srcEventName] = [];
     }
@@ -119,7 +119,7 @@ veil.resource.get = function (options) {
             401: function(){
                 alert('登录信息不对、或者帐号被禁用');
                 if (window.location.pathname === '/login'){
-                    $('[name=username]').focus().select();
+                    $('input[name=username]').focus().select();
                 } else {
                     window.location.href = '/login';
                 }
@@ -176,7 +176,7 @@ veil.resource.create = function (options) {
             401: function(){
                 alert('登录信息不对、或者帐号被禁用');
                 if (window.location.pathname === '/login'){
-                    $('[name=username]').focus().select();
+                    $('input[name=username]').focus().select();
                 } else {
                     window.location.href = '/login';
                 }
@@ -235,7 +235,7 @@ veil.resource.update = function (options) {
             401: function(){
                 alert('登录信息不对、或者帐号被禁用');
                 if (window.location.pathname === '/login'){
-                    $('[name=username]').focus().select();
+                    $('input[name=username]').focus().select();
                 } else {
                     window.location.href = '/login';
                 }
@@ -294,7 +294,7 @@ veil.resource.patch = function (options) {
             401: function(){
                 alert('登录信息不对、或者帐号被禁用');
                 if (window.location.pathname === '/login'){
-                    $('[name=username]').focus().select();
+                    $('input[name=username]').focus().select();
                 } else {
                     window.location.href = '/login';
                 }
@@ -339,7 +339,7 @@ veil.resource.del = function (options) {
             401: function(){
                 alert('登录信息不对、或者帐号被禁用');
                 if (window.location.pathname === '/login'){
-                    $('[name=username]').focus().select();
+                    $('input[name=username]').focus().select();
                 } else {
                     window.location.href = '/login';
                 }
@@ -364,7 +364,7 @@ veil.widget.handle = function (widget_selector, child_selector, event, handler) 
 };
 
 veil.widget.createResource = function (widget, onSuccess, data, dataFormat, dataType) {
-    if (typeof(data) === 'undefined') {
+    if (data === undefined) {
         data = dataFormat === 'json' ? widget.serializeObject() : widget.serialize();
     }
     var _ = {
@@ -379,7 +379,7 @@ veil.widget.createResource = function (widget, onSuccess, data, dataFormat, data
 };
 
 veil.widget.updateResource = function (widget, onSuccess, data, dataFormat, dataType) {
-    if (typeof(data) === 'undefined') {
+    if (data === undefined) {
         data = dataFormat === 'json' ? widget.serializeObject() : widget.serialize();
     }
     var _ = {
@@ -394,7 +394,7 @@ veil.widget.updateResource = function (widget, onSuccess, data, dataFormat, data
 };
 
 veil.widget.patchResource = function(widget, onSuccess, data, dataFormat, dataType) {
-    if (typeof(data) === 'undefined') {
+    if (data === undefined) {
         data = dataFormat === 'json' ? widget.serializeObject() : widget.serialize();
     }
     var _ = {
@@ -444,24 +444,23 @@ veil.widget.refresh = function (widget, options) {
     var onSuccess = options.onSuccess;
     if (refreshUrl) {
         veil.resource.get({
+            widget: widget,
             url:refreshUrl,
             data:data,
             onSuccess:function (html) {
-                veil.widget.processWidget(html, function(html) {
-                    var token = 'refreshed-' + Math.round(Math.random()*1000);
-                    widget.replaceWith($(html).attr('data-refresh-token', token));
-                    var refreshedWidget = $('[data-refresh-token=' + token + ']');
-                    if (!refreshedWidget.length) {
-                        veil.log('widget disappeared after refreshed from: ' + refreshUrl);
-                    } else {
-                        if (onSuccess) {
-                            onSuccess(refreshedWidget)
-                        }
+                var token = 'refreshed-' + Math.round(Math.random()*1000);
+                widget.replaceWith($(html).attr('data-refresh-token', token));
+                var refreshedWidget = $('[data-refresh-token=' + token + ']');
+                if (refreshedWidget.length) {
+                    if (onSuccess) {
+                        onSuccess(refreshedWidget);
                     }
-                });
+                } else {
+                    veil.log('widget disappeared after refreshed from: ' + refreshUrl);
+                }
             }
         });
-    }else{
+    } else {
         veil.log('missing refreshUrl');
     }
 };
@@ -495,33 +494,41 @@ veil.widget.RE_SCRIPT = /<script.*?><\/script>/ig;
 veil.widget.RE_LINK = /<link.*?\/?>(<\/link>)?/ig;
 veil.widget.initializers = [];
 veil.widget.processWidget = function (html, processHtml) {
+    var $body;
+    var bodyHtml;
     function loadJavascript(url) {
-        if ($('body').html().indexOf(url) == -1) {
-            if ($.inArray(url, veil.resource.loadedJavascripts) == -1) {
-                veil.widget.loadedJavascripts.push(url);
+        if ($.inArray(url, veil.widget.loadedJavascripts) == -1) {
+            veil.widget.loadedJavascripts.push(url);
+            if (!$body) {
+                $body = $('body');
+                bodyHtml = $body.html();
+            }
+            if (bodyHtml.indexOf(url) == -1) {
                 var script = document.createElement('script');
                 script.type = 'text/javascript';
                 script.src = url;
-                $('body').append(script);
+                $body.append(script);
             }
         }
     }
-
     function loadStylesheet(url) {
-        if ($('body').html().indexOf(url) == -1) {
-            if ($.inArray(url, veil.resource.loadedStylesheets) == -1) {
-                veil.widget.loadedStylesheets.push(url);
+        if ($.inArray(url, veil.widget.loadedStylesheets) == -1) {
+            veil.widget.loadedStylesheets.push(url);
+            if (!$body) {
+                $body = $('body');
+                bodyHtml = $body.html();
+            }
+            if (bodyHtml.indexOf(url) == -1) {
                 var link;
                 if(document.createStyleSheet) {
                     link = document.createStyleSheet(url);
-                }
-                else {
+                } else {
                     link = document.createElement('link');
                     link.rel = 'stylesheet';
                     link.type = 'text/css';
                     link.href = url;
                 }
-                $('body').append(link);
+                $body.append(link);
             }
         }
     }
@@ -530,6 +537,7 @@ veil.widget.processWidget = function (html, processHtml) {
         javascriptUrls.push($(scriptElement).attr('src'));
         return '';
     });
+    var stylesheetUrls = [];
     html = html.replace(veil.widget.RE_LINK, function (linkElement) {
         var $linkElement = $(linkElement);
         if ('stylesheet' != $linkElement.attr('rel')) {
@@ -537,11 +545,14 @@ veil.widget.processWidget = function (html, processHtml) {
         }
         var url = $linkElement.attr('href');
         if (url) {
-            loadStylesheet(url);
+            stylesheetUrls.push(url);
             return '';
         } else {
             return linkElement;
         }
+    });
+    $(stylesheetUrls).each(function() {
+        loadStylesheet(this);
     });
     processHtml(html);
     $(javascriptUrls).each(function() {
