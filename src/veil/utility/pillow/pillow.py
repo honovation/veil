@@ -9,6 +9,7 @@ LOGGER = logging.getLogger(__name__)
 
 PIL.ImageFile.MAXBLOCK = PIL.ImageFile.SAFEBLOCK
 
+
 def open_image(fp):
     try:
         return PIL.Image.open(fp)

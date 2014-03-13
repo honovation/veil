@@ -1,5 +1,7 @@
+# -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 import logging
+import re
 from veil_installer import *
 from veil.utility.misc import *
 from veil_component import *
@@ -7,6 +9,9 @@ from .bucket_installer import bucket_config
 from .bucket_installer import bucket_resource
 
 LOGGER = logging.getLogger(__name__)
+
+BUCKET_KEY_PATTERN = re.compile(r'^[a-zA-Z0-9/._-]+$')
+
 instances = {}  # purpose => instance
 
 
@@ -79,6 +84,16 @@ class FilesystemBucket(Bucket):
 
     def to_path(self, key):
         assert key is not None
+        validate_key(key)
         path = self.base_directory.joinpath(key)
         assert path.abspath().startswith(self.base_directory.abspath())
         return path
+
+
+def validate_key(key):
+    if BUCKET_KEY_PATTERN.match(key) is None:
+        raise InvalidBucketKey('非法的Bucket key：由英文字母、数字、下划线、减号构成，不能有空格')
+
+
+class InvalidBucketKey(Exception):
+    pass
