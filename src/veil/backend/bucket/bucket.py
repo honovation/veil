@@ -10,8 +10,6 @@ from .bucket_installer import bucket_resource
 
 LOGGER = logging.getLogger(__name__)
 
-BUCKET_KEY_PATTERN = re.compile(r'^[a-zA-Z0-9/._-]+$')
-
 instances = {}  # purpose => instance
 
 
@@ -47,14 +45,21 @@ class Bucket(object):
     def is_existing(self, key):
         raise NotImplementedError()
 
+    @classmethod
+    def validate_key(cls, key):
+        raise NotImplementedError()
+
 
 class FilesystemBucket(Bucket):
+    BUCKET_KEY_PATTERN = re.compile(r'^[a-zA-Z0-9/._-]+$')
+
     def __init__(self, base_directory, base_url):
         super(FilesystemBucket, self).__init__()
         self.base_directory = as_path(base_directory)
         self.base_url = base_url
 
     def store(self, key, file):
+        self.validate_key(key)
         path = self.to_path(key)
         path.parent.makedirs(mode=0770)
         with path.open('wb') as f:
@@ -84,15 +89,14 @@ class FilesystemBucket(Bucket):
 
     def to_path(self, key):
         assert key is not None
-        validate_key(key)
         path = self.base_directory.joinpath(key)
         assert path.abspath().startswith(self.base_directory.abspath())
         return path
 
-
-def validate_key(key):
-    if BUCKET_KEY_PATTERN.match(key) is None:
-        raise InvalidBucketKey('非法的Bucket key：由英文字母、数字、下划线、减号构成，不能有空格')
+    @classmethod
+    def validate_key(cls, key):
+        if cls.BUCKET_KEY_PATTERN.match(key) is None:
+            raise InvalidBucketKey('非法的Bucket key：由英文字母、数字、下划线、减号构成，不能有空格')
 
 
 class InvalidBucketKey(Exception):
