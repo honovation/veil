@@ -86,8 +86,7 @@ def veil_host_directory_resource(veil_env_name, veil_host_name, remote_path, own
 
 
 @atomic_installer
-def veil_host_file_resource(local_path, veil_env_name, veil_host_name, remote_path, owner, owner_group, mode,
-                            set_owner_first=False):
+def veil_host_file_resource(local_path, veil_env_name, veil_host_name, remote_path, owner, owner_group, mode, set_owner_first=False):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_host_file?{}-{}&path={}'.format(veil_env_name, veil_host_name, remote_path)

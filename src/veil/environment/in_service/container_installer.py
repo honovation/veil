@@ -105,8 +105,7 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
 
 
 @atomic_installer
-def veil_server_container_directory_resource(
-        veil_env_name, veil_server_name, remote_path, owner, owner_group, mode):
+def veil_server_container_directory_resource(veil_env_name, veil_server_name, remote_path, owner, owner_group, mode):
     container_rootfs_path = '/var/lib/lxc/{}-{}/rootfs'.format(veil_env_name, veil_server_name)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
@@ -118,8 +117,7 @@ def veil_server_container_directory_resource(
 
 
 @atomic_installer
-def veil_server_container_file_resource(
-        local_path, veil_env_name, veil_server_name, remote_path, owner, owner_group, mode):
+def veil_server_container_file_resource(local_path, veil_env_name, veil_server_name, remote_path, owner, owner_group, mode):
     container_rootfs_path = '/var/lib/lxc/{}-{}/rootfs'.format(veil_env_name, veil_server_name)
     full_remote_path = '{}{}'.format(container_rootfs_path, remote_path)
     dry_run_result = get_dry_run_result()

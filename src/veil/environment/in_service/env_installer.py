@@ -160,6 +160,7 @@ def get_deployed_at():
 
 def remote_do(action, veil_env_name, veil_server_name, *args):
     fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, veil_server_name)
+    fabric.api.env.forward_agent = True
     if fabric.api.env.host_string not in veil_servers_with_payload_uploaded:
         fabric.api.put(PAYLOAD, '/opt/env_installer_payload.py', use_sudo=True, mode=0600)
         veil_servers_with_payload_uploaded.append(fabric.api.env.host_string)
