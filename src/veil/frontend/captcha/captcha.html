@@ -3,17 +3,19 @@
         vertical-align: top;
     }
 </style>
+<div id="captcha-wrap">
 <span id="captcha-input-holder">
     <input name="captcha_challenge_code" value="{{ challenge_code }}" type="hidden"/>
     <input name="captcha_answer" id="captcha_answer"/>
 </span>
-<div class="captcha-image">
-    <p id="captcha-label" class="inline">计算：</p>
-    <img id="change-captcha" style="border: 1px solid #CCC;cursor: pointer" title="看不清？点击更换" src="{{ captcha_image_url }}" alt="验证码"/>
-</div>
-<div class="inline" id="captcha-result">
-    <i class="cus-accept accept" style="display: none"></i>
-    <i class="cus-cross error" style="display: none"></i>
+    <div class="captcha-image">
+        <p id="captcha-label" class="inline">计算：</p>
+        <img id="change-captcha" style="border: 1px solid #CCC;cursor: pointer" title="看不清？点击更换" src="{{ captcha_image_url }}" alt="验证码"/>
+    </div>
+    <div class="inline" id="captcha-result">
+        <i class="cus-accept accept" style="display: none"></i>
+        <i class="cus-cross error" style="display: none"></i>
+    </div>
 </div>
 <script type="text/javascript">
     $(document).ready(function () {
