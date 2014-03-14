@@ -13,7 +13,7 @@ def process_script_elements(html):
             return match.group(0)
         if 'text/x-tmpl' in match.group(1):
             return match.group(0)
-        if 'data-keep="data-keep"' in match.group(0):
+        if 'data-keep="true"' in match.group(0):
             return match.group(0)
         if RE_SRC_ATTRIBUTE.search(match.group(1)):
             if match.group(0) not in script_elements:

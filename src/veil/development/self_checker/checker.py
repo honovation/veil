@@ -35,6 +35,8 @@ def self_check():
     shell_execute('git add -A .')
     shell_execute('git add -A .', cwd=VEIL_FRAMEWORK_HOME)
     shell_execute('veil pull')
+    shell_execute('veil development merge-static-file merge-files')
+    shell_execute('git add -A .')
     shell_execute('sudo veil :test down')
     shell_execute('sudo veil install-server --upgrade-mode=fast')
     shell_execute('sudo veil :test install-server --upgrade-mode=fast')

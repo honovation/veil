@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
+import contextlib
 from datetime import timedelta
 import functools
 import logging
@@ -43,11 +44,11 @@ def generate_captcha():
     challenge_code = uuid.uuid4().get_hex()
     image, answer = generate(size=(150, 30), font_size=25)
     redis().setex(captcha_redis_key(challenge_code), CAPTCHA_ANSWER_ALIVE_TIME, answer)
-    buffer = StringIO()
-    image.save(buffer, 'GIF')
-    buffer.reset()
     bucket_key = captcha_bucket_key(challenge_code)
-    bucket().store(bucket_key, buffer)
+    with contextlib.closing(StringIO()) as buffer_:
+        image.save(buffer_, 'GIF')
+        buffer_.reset()
+        bucket().store(bucket_key, buffer_)
     return challenge_code, bucket().get_url(bucket_key)
 
 
