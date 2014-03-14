@@ -1,9 +1,9 @@
 import veil_component
 
 with veil_component.init_component(__name__):
-    from .consts import HTML_START_TAG_PREFIX
-    from .consts import HEAD_END_TAG
-    from .consts import BODY_END_TAG
+    from .const import HTML_START_TAG_PREFIX
+    from .const import HEAD_END_TAG
+    from .const import BODY_END_TAG
     from .website_launcher import start_website
     from .website_launcher import start_test_website
     from .website_launcher import register_website_context_manager

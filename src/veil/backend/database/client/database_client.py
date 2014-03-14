@@ -7,7 +7,7 @@ from functools import wraps
 from logging import getLogger
 import uuid
 from veil.utility.encoding import to_unicode
-from veil.env_consts import VEIL_ENV_TYPE
+from veil.env_const import VEIL_ENV_TYPE
 from veil_component import *
 from veil_installer import *
 from veil.development.test import *

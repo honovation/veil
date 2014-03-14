@@ -3,7 +3,7 @@ import time
 import os
 import logging
 from redis.client import StrictRedis
-from veil.env_consts import VEIL_ENV_TYPE
+from veil.env_const import VEIL_ENV_TYPE
 from veil.frontend.cli import *
 from veil.model.event import event
 from veil.server.process import EVENT_PROCESS_TEARDOWN

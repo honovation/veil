@@ -9,7 +9,7 @@ from veil.utility.misc import *
 from veil.utility.encoding import *
 from veil.frontend.template import *
 from veil.development.test import *
-from ..consts import *
+from ..const import *
 from .script_element import process_script_elements
 from .link_element import process_link_elements
 from .style_element import process_style_elements

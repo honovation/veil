@@ -7,7 +7,7 @@ from markupsafe import Markup
 from tornado.escape import xhtml_escape
 from veil.frontend.template import template_utility
 from veil.frontend.web.tornado import *
-from ..consts import HTML_START_TAG_PREFIX
+from ..const import HTML_START_TAG_PREFIX
 
 LOGGER = getLogger(__name__)
 TAG_NO_XSRF_CHECK = 'NO-XSRF'

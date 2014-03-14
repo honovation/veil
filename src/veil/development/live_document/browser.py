@@ -5,7 +5,7 @@ import contextlib
 import os
 import jinjatag
 import atexit
-from veil.env_consts import VEIL_ENV_TYPE
+from veil.env_const import VEIL_ENV_TYPE
 from veil.frontend.web import *
 from veil.development.test import *
 from .live_document import require_current_context_being
