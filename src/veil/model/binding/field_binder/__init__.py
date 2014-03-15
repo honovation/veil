@@ -7,6 +7,7 @@ with veil_component.init_component(__name__):
     from .field_binder import clamp
     from .field_binder import not_duplicate
     from .field_binder import anything
+    from .field_binder import remove_chars
     from .field_binder import is_not
     from .field_binder import is_email
     from .field_binder import is_mobile
@@ -33,6 +34,7 @@ with veil_component.init_component(__name__):
         clamp.__name__,
         not_duplicate.__name__,
         anything.__name__,
+        remove_chars.__name__,
         is_not.__name__,
         is_email.__name__,
         is_mobile.__name__,

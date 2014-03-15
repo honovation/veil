@@ -23,6 +23,13 @@ LANDLIINE_PATTERN = re.compile(r'^(\d{2,4}[-.\s_－—]?)?\d{3,8}([-.\s_－—]?
 def anything(value):
     return value
 
+def remove_chars(chars='-'):
+    def bind(value):
+        if value:
+            value = value.translate({ord(c): None for c in bind.chars})
+        return value
+    bind.chars = chars
+    return bind
 
 def is_not(v):
     def bind(value):
