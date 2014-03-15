@@ -43,7 +43,7 @@ def website_upstreams(purpose, start_port, processes_count):
     }
 
 
-def website_locations(purpose, has_bunker, max_upload_file_size='1m'):
+def website_locations(purpose, has_bunker=False, max_upload_file_size='1m'):
     if has_bunker:
         # done in bunker
         extra_headers = ''
