@@ -25,7 +25,7 @@ def main():
     elif 'purge-left-overs' == action:
         purge_left_overs()
     elif 'rollback' == action:
-        rollback(src_dir, backup_dir, veil_server)
+        rollback(src_dir, src_app_dir, backup_dir, veil_server)
     elif 'bring-down-server' == action:
         bring_down_server(src_app_dir, veil_server)
     elif 'bring-up-server' == action:
@@ -42,20 +42,20 @@ def main():
 
 def create_backup(src_dir, src_app_dir, backup_dir, veil_server):
     if not os.path.exists(src_app_dir):
-        print('{}/app does not exists, skipped backup'.format(src_dir))
+        print('{} does not exists, skipped backup'.format(src_app_dir))
         return
     if os.path.exists(backup_dir):
         raise Exception('{} already exists, backup procedure abandoned'.format(backup_dir))
-    bring_down_server(src_dir, veil_server)
+    bring_down_server(src_app_dir, veil_server)
     shell_execute('cp -r -p {} {}'.format(src_dir, backup_dir))
     shell_execute('git reset --hard HEAD', cwd=src_app_dir)
 
 
-def rollback(src_dir, backup_dir, veil_server):
+def rollback(src_dir, src_app_dir, backup_dir, veil_server):
     if not os.path.exists(backup_dir):
         raise Exception('{} does not exists, can not rollback'.format(backup_dir))
     if os.path.exists(src_dir):
-        bring_down_server(src_dir, veil_server)
+        bring_down_server(src_app_dir, veil_server)
         shell_execute('mv {} {}-to-be-deleted-{}'.format(src_dir, src_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
     try:
         shell_execute('pkill -x supervisord')
