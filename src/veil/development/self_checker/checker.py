@@ -35,8 +35,7 @@ def self_check():
     shell_execute('git add -A .')
     shell_execute('git add -A .', cwd=VEIL_FRAMEWORK_HOME)
     shell_execute('veil pull')
-    shell_execute('veil development merge-static-file merge-files')
-    shell_execute('git add -A .')
+    shell_execute('veil development merge-static-file merge')
     shell_execute('sudo veil :test down')
     shell_execute('sudo veil install-server --upgrade-mode=fast')
     shell_execute('sudo veil :test install-server --upgrade-mode=fast')
@@ -49,12 +48,12 @@ def quick_check(checker_name=None):
     if checker_name:
         SELF_CHECKERS[checker_name]()
         return
-    shell_execute('git add -A .')
-    shell_execute('git add -A .', cwd=VEIL_FRAMEWORK_HOME)
     shell_execute('veil migrate')
     for checker_name, self_checker in SELF_CHECKERS.items():
         LOGGER.info('[CHECK] checking: %(checker_name)s...', {
             'checker_name': checker_name
         })
         self_checker()
+    shell_execute('git add -A .')
+    shell_execute('git add -A .', cwd=VEIL_FRAMEWORK_HOME)
     (VEIL_HOME / '.self-check-passed').write_text(discipline_coach.calculate_git_status_hash())

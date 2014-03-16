@@ -18,7 +18,7 @@ def list_static_file_dependencies():
     return context['STATIC_FILE_DEPENDENCIES']
 
 
-@script('merge-files')
+@script('merge')
 def merge():
     static_file_dep = list_static_file_dependencies()
     purposes = static_file_dep.keys()
