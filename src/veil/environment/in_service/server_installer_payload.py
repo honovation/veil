@@ -86,12 +86,14 @@ def pull_veil(framework_version, veil_framework_home):
 
 def deploy(veil_framework_home, veil_home, veil_env_name, veil_server_name):
     env = os.environ.copy()
-    shell_execute('{}/bin/veil :{}/{} deploy'.format(veil_framework_home, veil_env_name, veil_server_name), cwd=veil_home, env=env)
+    shell_execute('{}/bin/veil :{}/{} deploy'.format(veil_framework_home, veil_env_name, veil_server_name),
+        cwd=veil_home, env=env)
 
 
 def patch(veil_framework_home, veil_home, veil_env_name, veil_server_name):
     env = os.environ.copy()
-    shell_execute('{}/bin/veil :{}/{} patch'.format(veil_framework_home, veil_env_name, veil_server_name), cwd=veil_home, env=env)
+    shell_execute('{}/bin/veil :{}/{} patch'.format(veil_framework_home, veil_env_name, veil_server_name),
+        cwd=veil_home, env=env)
 
 
 def shell_execute(command_line, **kwargs):
@@ -103,8 +105,10 @@ def shell_execute(command_line, **kwargs):
         raise
     output = process.communicate()[0]
     if process.returncode:
-        print(red('Subprocess return code: {}, command_line: {}, kwargs: {}, output: {}'.format(process.returncode, command_line, kwargs, output)))
-        raise Exception(red('shell_execute return code: {}, command_line: {}, kwargs: {}'.format(process.returncode, command_line, kwargs)))
+        print(red('Subprocess return code: {}, command_line: {}, kwargs: {}, output: {}'.format(process.returncode,
+            command_line, kwargs, output)))
+        raise Exception(red('shell_execute return code: {}, command_line: {}, kwargs: {}'.format(process.returncode,
+            command_line, kwargs)))
     return output
 
 

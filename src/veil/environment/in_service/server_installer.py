@@ -15,7 +15,8 @@ veil_servers_with_payload_uploaded = []
 def veil_env_servers_resource(veil_env_name, action='PATCH'):
     resources = []
     for veil_server_name in reversed(list_veil_server_names(veil_env_name)):
-        resources.append(veil_server_resource(veil_env_name=veil_env_name, veil_server_name=veil_server_name, action=action))
+        resources.append(veil_server_resource(veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            action=action))
     return resources
 
 
@@ -31,8 +32,7 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
         fabric.api.put(PAYLOAD, '/opt/server_installer_payload.py', use_sudo=True, mode=0600)
         veil_servers_with_payload_uploaded.append(fabric.api.env.host_string)
     fabric.api.sudo('python /opt/server_installer_payload.py {} {} {} {} {}'.format(
-        VEIL_FRAMEWORK_CODEBASE, get_application_codebase(), veil_env_name, veil_server_name, action
-    ))
+        VEIL_FRAMEWORK_CODEBASE, get_application_codebase(), veil_env_name, veil_server_name, action))
     if action == 'DEPLOY':
         remote_install_boot_script(veil_env_name, veil_server_name)
 
@@ -52,5 +52,7 @@ def remote_install_boot_script(veil_env_name, veil_server_name):
 def render_boot_script(script_name, veil_env_name, veil_server_name):
     return render_config('veil_server_boot_script.j2',
         script_name=script_name,
-        do_start_command='cd /opt/{}/app && sudo veil :{}/{} up --daemonize'.format(veil_env_name, veil_env_name, veil_server_name),
-        do_stop_command='cd /opt/{}/app && sudo veil :{}/{} down'.format(veil_env_name, veil_env_name, veil_server_name))
+        do_start_command='cd /opt/{}/app && sudo veil :{}/{} up --daemonize'.format(veil_env_name, veil_env_name,
+            veil_server_name),
+        do_stop_command='cd /opt/{}/app && sudo veil :{}/{} down'.format(veil_env_name, veil_env_name,
+            veil_server_name))

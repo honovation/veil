@@ -36,7 +36,8 @@ def os_package_resource(name):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         if need_download and should_download_while_dry_run():
-            new_downloaded_version = download_os_package(name, version=latest_version if UPGRADE_MODE_FAST == upgrade_mode else None)
+            new_downloaded_version = download_os_package(name,
+                version=latest_version if UPGRADE_MODE_FAST == upgrade_mode else None)
             if new_downloaded_version != downloaded_version:
                 LOGGER.warn('os package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s', {
                     'name': name,
@@ -52,7 +53,8 @@ def os_package_resource(name):
         return
 
     if need_download:
-        new_downloaded_version = download_os_package(name, version=latest_version if UPGRADE_MODE_FAST == upgrade_mode else None)
+        new_downloaded_version = download_os_package(name,
+            version=latest_version if UPGRADE_MODE_FAST == upgrade_mode else None)
         if new_downloaded_version != downloaded_version:
             LOGGER.warn('os package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s', {
                 'name': name,
@@ -94,10 +96,12 @@ def os_package_resource(name):
 def download_os_package(name, version=None):
     LOGGER.info('downloading os package: %(name)s, %(version)s...', {'name': name, 'version': version})
     update_os_package_catalogue()
-    shell_execute('apt-get -y -d install {}{}'.format(name, '={}'.format(version) if version else ''), capture=True, debug=True)
+    shell_execute('apt-get -y -d install {}{}'.format(name, '={}'.format(version) if version else ''), capture=True,
+        debug=True)
     _, downloaded_version = get_local_os_package_versions(name)
     assert not version or version == downloaded_version, \
-        'the downloaded version of os package {} is {}, different from the specific version {}'.format(name, downloaded_version, version)
+        'the downloaded version of os package {} is {}, different from the specific version {}'.format(name,
+            downloaded_version, version)
     return downloaded_version
 
 

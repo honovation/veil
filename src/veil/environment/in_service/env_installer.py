@@ -149,12 +149,14 @@ def print_deployed_at():
 
 def get_deployed_at():
     last_commit = shell_execute('git rev-parse HEAD', capture=True).strip()
-    lines = shell_execute("git show-ref --tags -d | grep ^%s | sed -e 's,.* refs/tags/,,' -e 's/\^{}//'" % last_commit, capture=True)
+    lines = shell_execute("git show-ref --tags -d | grep ^%s | sed -e 's,.* refs/tags/,,' -e 's/\^{}//'" % last_commit,
+        capture=True)
     deployed_ats = []
     for tag in lines.splitlines(False):
         if tag.startswith('{}-'.format(VEIL_ENV)):
             formatted_deployed_at = tag.replace('{}-'.format(VEIL_ENV), '').split('-')[0]
-            deployed_ats.append(convert_datetime_to_client_timezone(datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S')))
+            deployed_ats.append(convert_datetime_to_client_timezone(datetime.strptime(formatted_deployed_at,
+                '%Y%m%d%H%M%S')))
     return max(deployed_ats) if deployed_ats else None
 
 
@@ -164,7 +166,8 @@ def remote_do(action, veil_env_name, veil_server_name, *args):
     if fabric.api.env.host_string not in veil_servers_with_payload_uploaded:
         fabric.api.put(PAYLOAD, '/opt/env_installer_payload.py', use_sudo=True, mode=0600)
         veil_servers_with_payload_uploaded.append(fabric.api.env.host_string)
-    fabric.api.sudo('python /opt/env_installer_payload.py {} {} {} {}'.format(action, veil_env_name, veil_server_name, ' '.join(arg for arg in args)))
+    fabric.api.sudo('python /opt/env_installer_payload.py {} {} {} {}'.format(action, veil_env_name, veil_server_name,
+        ' '.join(arg for arg in args)))
 
 
 def update_branch(veil_env_name):

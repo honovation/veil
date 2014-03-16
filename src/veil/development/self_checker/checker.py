@@ -9,6 +9,7 @@ from veil.development.live_document import check_live_document
 from veil.development.test import check_correctness
 from veil_component import check_static_dependency_integrity
 from veil_component import check_static_dependency_cycle
+from veil_installer import *
 from .encapsulation_checker import check_encapsulation
 from .loc_checker import check_loc
 from .logger_checker import check_logger
@@ -37,8 +38,8 @@ def self_check():
     shell_execute('veil pull')
     shell_execute('veil development merge-static-file merge')
     shell_execute('sudo veil :test down')
-    shell_execute('sudo veil install-server --upgrade-mode=fast')
-    shell_execute('sudo veil :test install-server --upgrade-mode=fast')
+    shell_execute('sudo veil install-server --upgrade-mode={}'.format(UPGRADE_MODE_FAST))
+    shell_execute('sudo veil :test install-server --upgrade-mode={}'.format(UPGRADE_MODE_FAST))
     shell_execute('sudo veil :test up --daemonize')
     shell_execute('veil quick-check')
 

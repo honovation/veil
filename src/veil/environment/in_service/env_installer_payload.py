@@ -56,7 +56,8 @@ def rollback(src_dir, src_app_dir, backup_dir, veil_server):
         raise Exception('{} does not exists, can not rollback'.format(backup_dir))
     if os.path.exists(src_dir):
         bring_down_server(src_app_dir, veil_server)
-        shell_execute('mv {} {}-to-be-deleted-{}'.format(src_dir, src_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
+        shell_execute('mv {} {}-to-be-deleted-{}'.format(src_dir, src_dir,
+            datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
     try:
         shell_execute('pkill -x supervisord')
     except:
@@ -86,7 +87,9 @@ def download_packages(src_app_dir, veil_server):
     if not os.path.exists(src_app_dir):
         print('{} does not exists, skipped download'.format(src_app_dir))
         return
-    shell_execute('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION RESOURCE-LATEST-VERSION-TEST | tar -x', cwd=src_app_dir)
+    shell_execute(
+        'git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION RESOURCE-LATEST-VERSION-TEST | tar -x',
+        cwd=src_app_dir)
     try:
         shell_execute('veil :{} install-server --download-only'.format(veil_server), cwd=src_app_dir)
     finally:
@@ -102,8 +105,10 @@ def shell_execute(command_line, **kwargs):
         raise
     output = process.communicate()[0]
     if process.returncode:
-        print(red('Subprocess return code: {}, command_line: {}, kwargs: {}, output: {}'.format(process.returncode, command_line, kwargs, output)))
-        raise Exception(red('shell_execute return code: {}, command_line: {}, kwargs: {}'.format(process.returncode, command_line, kwargs)))
+        print(red('Subprocess return code: {}, command_line: {}, kwargs: {}, output: {}'.format(process.returncode,
+            command_line, kwargs, output)))
+        raise Exception(red('shell_execute return code: {}, command_line: {}, kwargs: {}'.format(process.returncode,
+            command_line, kwargs)))
     return output
 
 
