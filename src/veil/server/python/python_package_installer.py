@@ -10,6 +10,7 @@ from veil.frontend.cli import *
 
 LOGGER = logging.getLogger(__name__)
 
+PYPI_INDEX_URL = '-i http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
 LOCAL_ARCHIVE_DIR = as_path('/opt/pypi')
 LOCAL_ARCHIVE_DIR.makedirs()
 
@@ -156,7 +157,8 @@ def get_installed_package_remote_latest_version(name):
     global outdated_package_name2latest_version
     if outdated_package_name2latest_version is None:
         outdated_package_name2latest_version = {}
-        for line in shell_execute('pip list -l -o | grep Latest:', capture=True, debug=True).splitlines(False):
+        for line in shell_execute('pip list {} -l -o | grep Latest:'.format(PYPI_INDEX_URL),
+                capture=True, debug=True).splitlines(False):
             match = RE_OUTDATED_PACKAGE.match(line)
             outdated_package_name2latest_version[match.group(1)] = match.group(2)
     return outdated_package_name2latest_version.get(name)
@@ -169,11 +171,11 @@ def download_python_package(name, version=None, url=None, **kwargs):
         tries += 1
         try:
             if url:
-                shell_execute('pip install --timeout 30 -d {} {}'.format(LOCAL_ARCHIVE_DIR, url), capture=True,
-                    debug=True, **kwargs)
+                shell_execute('pip install {} --timeout 30 -d {} {}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, url),
+                    capture=True, debug=True, **kwargs)
             else:
-                shell_execute('pip install --timeout 30 -d {} {}{}'.format(LOCAL_ARCHIVE_DIR, name, '=={}'.format(
-                    version) if version else ''), capture=True, debug=True, **kwargs)
+                shell_execute('pip install {} --timeout 30 -d {} {}{}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, name,
+                    '=={}'.format(version) if version else ''), capture=True, debug=True, **kwargs)
         except:
             if tries >= max_tries:
                 raise
@@ -221,11 +223,11 @@ def install_python_package_remotely(name, version, url, **kwargs):
         tries += 1
         try:
             if url:
-                shell_execute('pip install --timeout 30 --download-cache {} {}'.format(LOCAL_ARCHIVE_DIR, url),
-                    capture=True, debug=True, **kwargs)
+                shell_execute('pip install {} --timeout 30 --download-cache {} {}'.format(PYPI_INDEX_URL,
+                    LOCAL_ARCHIVE_DIR, url), capture=True, debug=True, **kwargs)
             else:
-                shell_execute('pip install --timeout 30 --download-cache {} {}=={}'.format(LOCAL_ARCHIVE_DIR, name,
-                    version), capture=True, debug=True, **kwargs)
+                shell_execute('pip install {} --timeout 30 --download-cache {} {}=={}'.format(PYPI_INDEX_URL,
+                    LOCAL_ARCHIVE_DIR, name, version), capture=True, debug=True, **kwargs)
         except:
             if tries >= max_tries:
                 raise
@@ -244,8 +246,8 @@ def install_python_package(name, version, url=None, **kwargs):
 
 
 @script('upgrade-pip')
-def upgrade_pip(setuptools_version, pip_version):
-    shell_execute('veil execute pip install --upgrade --download-cache {} setuptools=={}'.format(LOCAL_ARCHIVE_DIR,
-        setuptools_version), capture=True, debug=True)
-    shell_execute('veil execute pip install --upgrade --download-cache {} pip=={}'.format(LOCAL_ARCHIVE_DIR,
-        pip_version), capture=True, debug=True)
+def upgrade_pip(pip_version, setuptools_version):
+    shell_execute('veil execute pip install {} --upgrade --download-cache {} pip=={}'.format(PYPI_INDEX_URL,
+        LOCAL_ARCHIVE_DIR, pip_version), capture=True, debug=True)
+    shell_execute('veil execute pip install {} --upgrade --download-cache {} setuptools=={}'.format(PYPI_INDEX_URL,
+        LOCAL_ARCHIVE_DIR, setuptools_version), capture=True, debug=True)
