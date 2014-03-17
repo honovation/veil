@@ -41,12 +41,8 @@ def is_not(v):
 
 
 def not_empty(value):
-    if value is not None:
-        if isinstance(value, basestring):
-            if value.strip():
-                return value.strip()
-        else:
-            return value
+    if value is not None and value != '':
+        return value
     raise Invalid(_('不能为空'))
 
 
