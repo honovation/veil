@@ -49,8 +49,9 @@ function veil_init {
         echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
         echo "$VEIL_HOME/src" >> env/lib/python2.7/site-packages/veil.pth
         source $VEIL_HOME/env/bin/activate
-        sudo pip install --upgrade "pip>=1.5.1"
-        sudo pip install --upgrade "setuptools>=2.1"
+        PYPI_INDEX_URL='-i http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
+        sudo veil execute pip install $PYPI_INDEX_URL --upgrade "pip>=1.5.1"
+        sudo veil execute pip install $PYPI_INDEX_URL --upgrade "setuptools>=2.1"
         touch $VEIL_HOME/env/.initialized
     fi
     if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then
