@@ -247,7 +247,7 @@ def install_python_package(name, version, url=None, **kwargs):
 
 @script('upgrade-pip')
 def upgrade_pip(pip_version, setuptools_version):
-    shell_execute('veil execute pip install {} --upgrade --download-cache {} pip=={}'.format(PYPI_INDEX_URL,
+    shell_execute('pip install {} --upgrade --download-cache {} pip=={}'.format(PYPI_INDEX_URL,
         LOCAL_ARCHIVE_DIR, pip_version), capture=True, debug=True)
-    shell_execute('veil execute pip install {} --upgrade --download-cache {} setuptools=={}'.format(PYPI_INDEX_URL,
+    shell_execute('pip install {} --upgrade --download-cache {} setuptools=={}'.format(PYPI_INDEX_URL,
         LOCAL_ARCHIVE_DIR, setuptools_version), capture=True, debug=True)

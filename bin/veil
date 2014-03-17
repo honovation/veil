@@ -44,13 +44,14 @@ function veil_init {
     if [ ! -f /usr/bin/veil ]; then
         sudo ln -s $VEIL_FRAMEWORK_HOME/bin/veil /usr/bin/veil
     fi
-    if [ ! -d $VEIL_HOME/env ]; then
+    if [ ! -f $VEIL_HOME/env/.initialized ]; then
         virtualenv env
         echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
         echo "$VEIL_HOME/src" >> env/lib/python2.7/site-packages/veil.pth
         source $VEIL_HOME/env/bin/activate
-        sudo veil execute pip install --upgrade "setuptools>=2.1"
-        sudo veil execute pip install --upgrade "pip>=1.5.1"
+        sudo pip install --upgrade "pip>=1.5.1"
+        sudo pip install --upgrade "setuptools>=2.1"
+        touch $VEIL_HOME/env/.initialized
     fi
     if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then
         git config core.quotepath false
