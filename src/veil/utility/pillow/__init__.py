@@ -5,7 +5,7 @@ with veil_component.init_component(__name__):
     from pillow import save_image
     from pillow import crop_image
     from pillow import generate_thumbnail
-    from .pillow_installer import pillow_resource
+    from pillow import generate_captcha_image_and_answer
 
     __all__ = [
         # from pillow
@@ -13,6 +13,5 @@ with veil_component.init_component(__name__):
         save_image.__name__,
         crop_image.__name__,
         generate_thumbnail.__name__,
-        # from pillow_installer
-        pillow_resource.__name__
+        generate_captcha_image_and_answer.__name__,
     ]

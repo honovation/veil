@@ -30,4 +30,4 @@ Veil Sample Application
 
 1.Code Style => General: Right margin 150
 
-2.Code Style => Python => Wrapping and Braces: untick all "Align when multiline"
+2.Code Style => Python => Wrapping and Braces: un-tick all "Align when multiline"

@@ -1,0 +1,3 @@
+veil.server.os.os_package_resource?libjpeg-dev
+veil.server.os.os_package_resource?libfreetype6-dev
+veil.server.python.python_package_resource?Pillow

@@ -5,11 +5,9 @@ import contextlib
 from datetime import timedelta
 import functools
 import logging
-import random
 import uuid
-import os
-from PIL import Image, ImageDraw, ImageFont
 from veil.frontend.cli import *
+from veil.utility.pillow import *
 from veil.utility.shell import *
 from veil_installer import *
 from veil.frontend.template import *
@@ -42,7 +40,7 @@ def captcha_widget():
 
 def generate_captcha():
     challenge_code = uuid.uuid4().get_hex()
-    image, answer = generate(size=(150, 30), font_size=25)
+    image, answer = generate_captcha_image_and_answer(size=(150, 30), font_size=25)
     redis().setex(captcha_redis_key(challenge_code), CAPTCHA_ANSWER_ALIVE_TIME, answer)
     bucket_key = captcha_bucket_key(challenge_code)
     with contextlib.closing(StringIO()) as buffer_:
@@ -91,87 +89,6 @@ def validate_captcha(challenge_code, captcha_answer):
             'user_agent': request.headers.get('User-Agent')
         })
         return {'captcha_answer': ['验证码{}，请重新填入正确的计算结果'.format('错误' if real_answer else '过期')]}
-
-
-def generate(size=(180, 30), img_type="GIF", mode="RGB", bg_color=(255, 255, 255), fg_color=(0, 0, 255), font_size=100,
-        font_type="{}/wqy-microhei.ttc".format(os.path.dirname(__file__)), draw_lines=False, n_line=(1, 2), draw_points=False, point_chance=2):
-    """
-    @todo: 生成验证码图片
-    @param size: 图片的大小，格式（宽，高），默认为(120, 30)
-    @param chars: 允许的字符集合，格式字符串
-    @param img_type: 图片保存的格式，默认为GIF，可选的为GIF，JPEG，TIFF，PNG
-    @param mode: 图片模式，默认为RGB
-    @param bg_color: 背景颜色，默认为白色
-    @param fg_color: 前景色，验证码字符颜色，默认为蓝色#0000FF
-    @param font_size: 验证码字体大小
-    @param font_type: 验证码字体，默认为 ae_AlArabiya.ttf
-    @param length: 验证码字符个数
-    @param draw_lines: 是否划干扰线
-    @param n_lines: 干扰线的条数范围，格式元组，默认为(1, 2)，只有draw_lines为True时有效
-    @param draw_points: 是否画干扰点
-    @param point_chance: 干扰点出现的概率，大小范围[0, 100]
-    @return: [0]: PIL Image实例
-    @return: [1]: 验证码图片中的字符串
-    """
-    width, height = size
-    img = Image.new(mode, size, bg_color)
-    draw = ImageDraw.Draw(img)
-
-    numbers = range(10)
-    operator = ['+', '-', 'x']
-
-    def get_question():
-        first_number = random.choice(numbers)
-        selected_operator = random.choice(operator)
-        if selected_operator == '-':
-            second_number = random.choice(range(first_number + 1))
-        else:
-            second_number = random.choice(numbers)
-        question = '{}{}{}'.format(first_number, selected_operator, second_number)
-        eval_question = question.replace('x', '*')
-        answer = str(eval(eval_question))
-        return '{}= ?'.format(question), answer
-
-    def create_lines():
-        '''绘制干扰线'''
-        line_num = random.randint(*n_line) # 干扰线条数
-
-        for i in range(line_num):
-            # 起始点
-            begin = (random.randint(0, size[0]), random.randint(0, size[1]))
-            #结束点
-            end = (random.randint(0, size[0]), random.randint(0, size[1]))
-            draw.line([begin, end], fill=(0, 0, 0))
-
-    def create_points():
-        '''绘制干扰点'''
-        chance = min(100, max(0, int(point_chance))) # 大小限制在[0, 100]
-
-        for w in xrange(width):
-            for h in xrange(height):
-                tmp = random.randint(0, 100)
-                if tmp > 100 - chance:
-                    draw.point((w, h), fill=(0, 0, 0))
-
-    def create_strs():
-        '''绘制验证码字符'''
-        c_chars, answer = get_question()
-        strs = ' %s ' % ' '.join(c_chars) # 每个字符前后以空格隔开
-
-        font = ImageFont.truetype(font_type, font_size)
-        font_width, font_height = font.getsize(strs)
-        draw.text((0, 0), strs, font=font, fill=fg_color)
-
-        return answer
-
-    if draw_lines:
-        create_lines()
-    if draw_points:
-        create_points()
-    answer = create_strs()
-    #img = img.filter(ImageFilter.EDGE_ENHANCE_MORE) # 滤镜，边界加强（阈值更大）
-
-    return img, answer
 
 
 def captcha_redis_key(challenge_code):

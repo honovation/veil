@@ -25,7 +25,6 @@ def document_statement(statement_name):
         record_dynamic_dependency_provider(get_loading_component_name(), 'document-statement', statement_name)
         register_document_statement(statement_name, func)
         return func
-
     return register
 
 document_statement('创建')(require_fixture)

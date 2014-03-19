@@ -25,6 +25,7 @@ class JobHandlerDecorator(object):
 
     def __call__(self, job_handler):
         queue = self.queue or job_handler.__name__.replace('_job', '')
+        assert queue
         record_dynamic_dependency_provider(get_loading_component_name(), 'job', queue)
         job_handler.queue = queue
         job_handler.retry_every = self.retry_every
