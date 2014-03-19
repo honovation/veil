@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<title>{% block title %}{% endblock %}</title>
+<meta name="keywords" content="{% block keywords %}{% endblock %}"/>
+<meta name="description" content="{% block description %}{% endblock %}"/>
+<link rel="stylesheet" type="text/css" href="{{ static_url('person.css') }}" media="all" data-keep="true"/>
+<script type="text/javascript" src="{{ static_url('person.js') }}" data-keep="true"></script>
+</head>
+<body>
+<div id="container">
+    <div id="main">
+        <div id="main-wrap">
+            {% block main %}{% endblock %}
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -171,8 +171,8 @@ def download_python_package(name, version=None, url=None, **kwargs):
         tries += 1
         try:
             if url:
-                shell_execute('pip install {} --timeout 30 -d {} {}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, url),
-                    capture=True, debug=True, **kwargs)
+                shell_execute('pip install {} --timeout 30 -d {} {}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, url), capture=True, debug=True,
+                    **kwargs)
             else:
                 shell_execute('pip install {} --timeout 30 -d {} {}{}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, name,
                     '=={}'.format(version) if version else ''), capture=True, debug=True, **kwargs)
@@ -183,8 +183,7 @@ def download_python_package(name, version=None, url=None, **kwargs):
             break
     downloaded_version = get_downloaded_python_package_version(name, version)
     assert not version or version == downloaded_version, \
-        'the downloaded version of python package {} is {}, different from the specific version {}'.format(name,
-            downloaded_version, version)
+        'the downloaded version of python package {} is {}, different from the specific version {}'.format(name, downloaded_version, version)
     return downloaded_version
 
 
@@ -223,11 +222,11 @@ def install_python_package_remotely(name, version, url, **kwargs):
         tries += 1
         try:
             if url:
-                shell_execute('pip install {} --timeout 30 --download-cache {} {}'.format(PYPI_INDEX_URL,
-                    LOCAL_ARCHIVE_DIR, url), capture=True, debug=True, **kwargs)
+                shell_execute('pip install {} --timeout 30 --download-cache {} {}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, url), capture=True,
+                    debug=True, **kwargs)
             else:
-                shell_execute('pip install {} --timeout 30 --download-cache {} {}=={}'.format(PYPI_INDEX_URL,
-                    LOCAL_ARCHIVE_DIR, name, version), capture=True, debug=True, **kwargs)
+                shell_execute('pip install {} --timeout 30 --download-cache {} {}=={}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, name, version),
+                    capture=True, debug=True, **kwargs)
         except:
             if tries >= max_tries:
                 raise
@@ -237,8 +236,7 @@ def install_python_package_remotely(name, version, url, **kwargs):
 
 def install_python_package(name, version, url=None, **kwargs):
     try:
-        shell_execute('pip install --no-index --find-links {} {}=={}'.format(LOCAL_ARCHIVE_DIR, name, version),
-            capture=True, debug=True, **kwargs)
+        shell_execute('pip install --no-index --find-links {} {}=={}'.format(LOCAL_ARCHIVE_DIR, name, version), capture=True, debug=True, **kwargs)
     except:
         LOGGER.warn('cannot install from local and try install from remote', exc_info=1)
         install_python_package_remotely(name, version, url, **kwargs)
@@ -247,7 +245,7 @@ def install_python_package(name, version, url=None, **kwargs):
 
 @script('upgrade-pip')
 def upgrade_pip(pip_version, setuptools_version):
-    shell_execute('pip install {} --upgrade --download-cache {} pip=={}'.format(PYPI_INDEX_URL,
-        LOCAL_ARCHIVE_DIR, pip_version), capture=True, debug=True)
-    shell_execute('pip install {} --upgrade --download-cache {} setuptools=={}'.format(PYPI_INDEX_URL,
-        LOCAL_ARCHIVE_DIR, setuptools_version), capture=True, debug=True)
+    shell_execute('pip install {} --upgrade --download-cache {} pip=={}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, pip_version), capture=True,
+        debug=True)
+    shell_execute('pip install {} --upgrade --download-cache {} setuptools=={}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, setuptools_version),
+        capture=True, debug=True)

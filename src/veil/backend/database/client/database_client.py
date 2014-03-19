@@ -48,7 +48,7 @@ def require_database(purpose, component_name=None, verify_db=False):
     if verify_db and purpose in instances:
         instances[purpose].reconnect_if_broken_per_verification()
     if purpose not in instances:
-        config = database_client_config(purpose)
+        config = database_client_config(purpose).copy()
         __import__(config.pop('driver'))
         instances[purpose] = connect(purpose=purpose, **config)
     db = Database(purpose, component_name, instances[purpose])
@@ -68,10 +68,7 @@ def close_databases():
 
 def connect(purpose, type, host, port, database, user, password, schema):
     if type in adapter_classes:
-        adapter = adapter_classes[type](
-            host=host, port=port,
-            database=database, user=user,
-            password=password, schema=schema)
+        adapter = adapter_classes[type](host=host, port=port, database=database, user=user, password=password, schema=schema)
         return adapter
     else:
         raise Exception('unknown database type: {}'.format(type))

@@ -11,8 +11,8 @@ def database_client_resource(purpose, config):
 
 
 def load_database_client_config(purpose):
-    config_ = load_config_from(VEIL_ETC_DIR / '{}-database-client.cfg'.format(purpose.replace('_', '-')), 'driver', 'type', 'host', 'port', 'database',
-        'user', 'password', 'schema')
+    config_ = load_config_from(VEIL_ETC_DIR / '{}-database-client.cfg'.format(purpose.replace('_', '-')), 'driver', 'type', 'host', 'port',
+        'database', 'user', 'password', 'schema')
     config_.port = int(config_.port)
     return config_
 

@@ -44,16 +44,12 @@ class RouteDecorator(object):
         self.tags = tags
         self.delegates_to = delegates_to
         self.path_template_params = path_template_params
+        veil_component.record_dynamic_dependency_provider(veil_component.get_loading_component_name(), 'website', self.website)
         publish_new_website_event(self.website)
 
     def __call__(self, func):
         target = self.delegates_to or func
-        loading_component_name = veil_component.get_loading_component_name()
-        if loading_component_name:
-            veil_component.record_dynamic_dependency_provider(loading_component_name, 'website', self.website)
-            widget_namespace = loading_component_name
-        else:
-            widget_namespace = None
+        widget_namespace = veil_component.get_loading_component_name() or None
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -61,9 +57,7 @@ class RouteDecorator(object):
                 with require_current_widget_namespace_being(widget_namespace):
                     return func(*args, **kwargs)
 
-        new_route = Route(
-            route_handler=wrapper, method=self.method, path_template=self.path_template,
-            tags=self.tags, **self.path_template_params)
+        new_route = Route(route_handler=wrapper, method=self.method, path_template=self.path_template, tags=self.tags, **self.path_template_params)
         routes.setdefault(self.website, []).append(new_route)
         return wrapper
 
@@ -73,10 +67,7 @@ def publish_new_website_event(website):
 
 
 def route(method, path_template, website, tags=(), delegates_to=None, **path_template_params):
-    return RouteDecorator(
-        method=method, path_template=path_template,
-        website=website, tags=tags, delegates_to=delegates_to,
-        **path_template_params)
+    return RouteDecorator(method=method, path_template=path_template, website=website, tags=tags, delegates_to=delegates_to, **path_template_params)
 
 
 def route_for(website, tags=()):

@@ -7,7 +7,7 @@ import os
 LOGGER = logging.getLogger(__name__)
 
 
-def shell_execute(command_line, capture=False, waits=True, shell=True, debug=False, **kwargs):
+def shell_execute(command_line, capture=False, waits=True, shell=True, debug=False, expected_return_codes=(0,), **kwargs):
     if debug:
         LOGGER.debug('shell execute: %(command_line)s', {'command_line': command_line})
     if capture:
@@ -21,7 +21,7 @@ def shell_execute(command_line, capture=False, waits=True, shell=True, debug=Fal
     if not waits:
         return process
     output = process.communicate()[0]
-    if process.returncode:
+    if process.returncode not in expected_return_codes:
         LOGGER.warn('received nonzero return code: %(return_code)s, %(command_line)s, %(kwargs)s, %(output)s', {
             'return_code': process.returncode,
             'command_line': command_line,
