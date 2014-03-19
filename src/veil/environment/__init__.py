@@ -27,8 +27,8 @@ def veil_env(server_hosts, servers, sorted_server_names=None, deployment_memo=No
     })
 
 
-def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None,
-                dns='8.8.8.8', backup_mirror=None, backup_dirs=[], memory_limit=None, cpu_share=None):
+def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, dns='8.8.8.8', backup_mirror=None,
+        backup_dirs=[], memory_limit=None, cpu_share=None):
     from veil.model.collection import objectify
 
     return objectify({
@@ -46,9 +46,8 @@ def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=()
     })
 
 
-def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu',
-              lan_range='10.0.3', lan_interface='lxcbr0', mac_prefix='00:16:3e:73:bb',
-              resources=()):
+def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_range='10.0.3', lan_interface='lxcbr0', mac_prefix='00:16:3e:73:bb',
+        resources=()):
     from veil.model.collection import objectify
 
     return objectify({

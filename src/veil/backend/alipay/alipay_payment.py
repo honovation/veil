@@ -47,8 +47,6 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
         'exter_invoke_ip': shopper_ip_address, # 防钓鱼IP地址检查 (支付宝端设置已取消，这是我们期望的)
         'extra_common_param': show_url,
         'it_b_pay': '{}m'.format(minutes_to_complete_payment), # 未付款交易的超时时间
-        # TODO: default_login 自动登录
-        # TODO: token 快捷登录授权令牌
     }
     sign = sign_md5(params)
     params['sign'] = sign

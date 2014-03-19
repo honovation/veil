@@ -8,8 +8,8 @@ from .component_walker import ComponentInternalVisitor
 from .component_map import scan_component
 from .component_logging import configure_logging
 
-loading_component_names = []
 LOGGER = logging.getLogger(__name__)
+loading_component_names = []
 
 @contextlib.contextmanager
 def init_component(component_name):
@@ -27,8 +27,7 @@ def init_component(component_name):
         loading_component_names.pop()
         after = time.time()
         LOGGER.log(logging.DEBUG - 1, 'loaded component: %(component_name)s, took %(elapsed_seconds)s seconds', {
-            'component_name': component_name,
-            'elapsed_seconds': after - before
+            'component_name': component_name, 'elapsed_seconds': after - before
         })
 
 

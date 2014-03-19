@@ -19,8 +19,7 @@ def scan_component(component_name):
     dependencies = list_dependencies(component_name, component_walker.walk_component, recursive=True)
     component_dependencies.update(dependencies)
     component_names = set(component_walker.walked_component_names)
-    component_map.update({k: filter_dependent_component_names(k, component_names, v)
-                          for k, v in dependencies.items()})
+    component_map.update({k: filter_dependent_component_names(k, component_names, v) for k, v in dependencies.items()})
 
 
 def get_dependent_component_names(component_name, includes_children=False):
@@ -50,8 +49,7 @@ def get_transitive_dependencies(component_name):
 
 def collect_transitive_dependencies(component_name, dependencies):
     direct_dependent_component_names = get_component_map().get(component_name, ())
-    sub_component_names = [c for c in component_map.keys()
-                           if c.startswith('{}.'.format(component_name))]
+    sub_component_names = [c for c in component_map.keys() if c.startswith('{}.'.format(component_name))]
     dependent_component_names = set(direct_dependent_component_names).union(set(sub_component_names))
     for dependent_component_name in dependent_component_names:
         if dependent_component_name not in dependencies:

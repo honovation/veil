@@ -11,8 +11,8 @@ from veil.model.event import *
 from veil.server.process import *
 from veil_component import *
 
-script_handlers = {}
 LOGGER = logging.getLogger(__name__)
+script_handlers = {}
 executing_script_handlers = []
 
 def is_script_defined(*argv):

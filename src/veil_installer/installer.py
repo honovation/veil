@@ -95,9 +95,7 @@ def install_resources(resources):
         stack.append(resource)
         try:
             if len(stack) > 30:
-                LOGGER.error('failed to install sub resources: %(stack)s', {
-                    'stack': stack
-                })
+                LOGGER.error('failed to install sub resources: %(stack)s', {'stack': stack})
                 raise Exception('too many levels')
             install_resources(more_resources)
         finally:
@@ -145,8 +143,7 @@ def to_resource_code(resource):
     installer_name, installer_args = resource
     if not isinstance(installer_args, dict):
         raise Exception('invalid resource: {}, {}'.format(installer_name, installer_args))
-    resource_code = '{}?{}'.format(installer_name,
-        '&'.join(['{}={}'.format(k, installer_args[k]) for k in sorted(installer_args.keys())]))
+    resource_code = '{}?{}'.format(installer_name, '&'.join(['{}={}'.format(k, installer_args[k]) for k in sorted(installer_args.keys())]))
     return resource_code
 
 

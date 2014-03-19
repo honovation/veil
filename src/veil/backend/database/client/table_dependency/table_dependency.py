@@ -35,7 +35,7 @@ RE_JOIN = re.compile(r'\s+JOIN\s(\w+)\s+', re.IGNORECASE)
 
 SUB_QUERY_TOKEN = '__SUB_QUERY__'
 
-writable_tables = None # from __veil__.ARCHITECTURE
+writable_tables = None # per dynamic dependency defined in DEP-DYNAMIC-MANUAL and DEP-DYNAMIC-RECORDED
 readable_tables = None # infer from writable_tables based on component dependencies
 LOGGER = logging.getLogger(__name__)
 
