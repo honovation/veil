@@ -10,6 +10,7 @@ def website_programs(purpose, logging_levels, application_config, start_port, pr
     veil_logging_level_config_path = VEIL_ETC_DIR / '{}-website-log.cfg'.format(purpose)
     resources = [
         veil_logging_level_config_resource(path=veil_logging_level_config_path, logging_levels=logging_levels),
+        component_resource(name='veil.profile.web'),
         application_resource(component_names=list_website_components(purpose), config=application_config)
     ]
     additional_args = []

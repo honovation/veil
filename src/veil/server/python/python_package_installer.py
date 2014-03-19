@@ -171,11 +171,11 @@ def download_python_package(name, version=None, url=None, **kwargs):
         tries += 1
         try:
             if url:
-                shell_execute('pip install {} --timeout 30 -d {} {}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, url), capture=True, debug=True,
-                    **kwargs)
+                shell_execute('pip install {} --timeout 30 --download-cache {} -d {} {}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, LOCAL_ARCHIVE_DIR,
+                    url), capture=True, debug=True, **kwargs)
             else:
-                shell_execute('pip install {} --timeout 30 -d {} {}{}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, name,
-                    '=={}'.format(version) if version else ''), capture=True, debug=True, **kwargs)
+                shell_execute('pip install {} --timeout 30 --download-cache {} -d {} {}{}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR,
+                    LOCAL_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''), capture=True, debug=True, **kwargs)
         except:
             if tries >= max_tries:
                 raise
