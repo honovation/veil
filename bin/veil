@@ -41,6 +41,15 @@ function veil_init {
         sudo apt-get -y remove network-manager
     fi
     sudo apt-get -y install iptables python-dev python-pip python-virtualenv language-pack-en unzip wget
+    if [ ! -f DEP-DYNAMIC-MANUAL ]; then
+        touch DEP-DYNAMIC-MANUAL;
+    fi
+    if [ ! -f DEP-DYNAMIC-RECORDED ]; then
+        touch DEP-DYNAMIC-RECORDED;
+    fi
+    if [ ! -f DEP-STATIC ]; then
+        touch DEP-STATIC;
+    fi
     if [ ! -f /usr/bin/veil ]; then
         sudo ln -s $VEIL_FRAMEWORK_HOME/bin/veil /usr/bin/veil
     fi
@@ -57,6 +66,7 @@ function veil_init {
     if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then
         git config core.quotepath false
         ln -s $VEIL_FRAMEWORK_HOME/src/discipline_coach.py $VEIL_HOME/.git/hooks/pre-commit
+        echo "A git pre-commit script has linked to .git/hooks, if you don't need it, delete it manually."
     fi
 }
 
