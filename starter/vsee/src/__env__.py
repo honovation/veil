@@ -5,7 +5,7 @@ from veil.frontend.nginx_setting import NGINX_PID_PATH
 
 PERSON_WEBSITE_MAX_UPLOAD_FILE_SIZE = '3m'
 
-PERSON_WEBSITE_BUCKETS = ['person_images']
+PERSON_WEBSITE_BUCKETS = ['captcha_image', 'person_images']
 
 REDIS_CLIENTS = ['persist_store', 'memory_cache']
 
