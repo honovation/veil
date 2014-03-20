@@ -47,8 +47,7 @@ ENV_DEVELOPMENT = {
                     __env__.resweb_nginx_server(config),
                     __env__.person_website_nginx_server(config),
                 ))
-            ),
-            resources=[application_resource(component_names=['vsee.website.person'], config=__env__.vsee_config(config))]
+            )
         )
     })
 }

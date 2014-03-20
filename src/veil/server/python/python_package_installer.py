@@ -72,8 +72,8 @@ def python_package_resource(name, version=None, url=None, **kwargs):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         if need_download and should_download_while_dry_run():
-            new_downloaded_version = download_python_package(name,
-                (version or latest_version) if UPGRADE_MODE_FAST == upgrade_mode else version, url=url, **kwargs)
+            new_downloaded_version = download_python_package(name, (version or latest_version) if UPGRADE_MODE_FAST == upgrade_mode else version,
+                url=url, **kwargs)
             if new_downloaded_version != downloaded_version:
                 LOGGER.debug('python package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s, %(url)s', {
                     'name': name,
@@ -90,8 +90,8 @@ def python_package_resource(name, version=None, url=None, **kwargs):
         return
 
     if need_download:
-        new_downloaded_version = download_python_package(name,
-            (version or latest_version) if UPGRADE_MODE_FAST == upgrade_mode else version, url=url, **kwargs)
+        new_downloaded_version = download_python_package(name, (version or latest_version) if UPGRADE_MODE_FAST == upgrade_mode else version, url=url,
+            **kwargs)
         if new_downloaded_version != downloaded_version:
             LOGGER.debug('python package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s, %(url)s', {
                 'name': name,
@@ -157,8 +157,7 @@ def get_installed_package_remote_latest_version(name):
     global outdated_package_name2latest_version
     if outdated_package_name2latest_version is None:
         outdated_package_name2latest_version = {}
-        for line in shell_execute('pip list {} -l -o | grep Latest:'.format(PYPI_INDEX_URL),
-                capture=True, debug=True).splitlines(False):
+        for line in shell_execute('pip list {} -l -o | grep Latest:'.format(PYPI_INDEX_URL), capture=True, debug=True).splitlines(False):
             match = RE_OUTDATED_PACKAGE.match(line)
             outdated_package_name2latest_version[match.group(1)] = match.group(2)
     return outdated_package_name2latest_version.get(name)

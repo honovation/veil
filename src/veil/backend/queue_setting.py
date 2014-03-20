@@ -29,8 +29,7 @@ def resweb_program(resweb_host, resweb_port, queue_host, queue_port):
 def delayed_job_scheduler_program(queue_host, queue_port, logging_level):
     return objectify({
         'delayed_job_scheduler': {
-            'execute_command': 'veil sleep 3 pyres_scheduler --host={} --port={} -l {} -f stderr'.format(
-                queue_host, queue_port, logging_level),
+            'execute_command': 'veil sleep 3 pyres_scheduler --host={} --port={} -l {} -f stderr'.format(queue_host, queue_port, logging_level),
             'resources': [('veil_installer.component_resource', {'name': 'veil.backend.queue'})],
             'startretries': 10
         }
@@ -39,11 +38,10 @@ def delayed_job_scheduler_program(queue_host, queue_port, logging_level):
 
 def periodic_job_scheduler_program(application_logging_levels, application_config):
     veil_logging_level_config_path = VEIL_ETC_DIR / 'periodic-job-scheduler-log.cfg'
-    application_component_names = set(list_dynamic_dependency_providers('periodic-job', '@'))
     resources = [
         veil_logging_level_config_resource(path=veil_logging_level_config_path, logging_levels=application_logging_levels),
         component_resource(name='veil.backend.queue'),
-        application_resource(component_names=application_component_names, config=application_config)
+        application_resource(component_names=list_dynamic_dependency_providers('periodic-job', '@'), config=application_config)
     ]
     return objectify({
         'periodic_job_scheduler': {
@@ -61,10 +59,7 @@ def periodic_job_scheduler_program(application_logging_levels, application_confi
 def job_worker_program(worker_name, pyres_worker_logging_level, application_logging_levels, queue_host, queue_port, queue_names, application_config,
         run_as=None, count=1, timeout=120):
     veil_logging_level_config_path = VEIL_ETC_DIR / '{}-worker-log.cfg'.format(worker_name)
-    application_component_names = set()
-    for queue_name in queue_names:
-        providers = list_dynamic_dependency_providers('job', queue_name)
-        application_component_names = application_component_names.union(set(providers))
+    application_component_names = set(name for queue_name in queue_names for name in list_dynamic_dependency_providers('job', queue_name))
     resources = [
         veil_logging_level_config_resource(path=veil_logging_level_config_path, logging_levels=application_logging_levels),
         component_resource(name='veil.backend.queue'),

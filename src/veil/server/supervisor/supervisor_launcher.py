@@ -52,6 +52,9 @@ def bring_up_supervisor(*argv):
 
 @script('update-dynamic-dependencies')
 def update_dynamic_dependencies():
+    if not is_recording_dynamic_dependencies():
+        LOGGER.warn('cannot update dynamic dependencies because the recording is not started yet')
+        return
     try:
         load_all_components() # import module will execute a lot record_dynamic_dependency_provider
     except:

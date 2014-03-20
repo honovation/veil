@@ -14,6 +14,10 @@ def start_recording_dynamic_dependencies():
     is_recording = True
 
 
+def is_recording_dynamic_dependencies():
+    return is_recording
+
+
 def record_dynamic_dependency_provider(component_name, dynamic_dependency_type, dynamic_dependency_key):
     if should_record(component_name):
         line = '{}<={}:{}'.format(component_name, dynamic_dependency_type, dynamic_dependency_key)
@@ -28,7 +32,7 @@ def record_dynamic_dependency_consumer(component_name, dynamic_dependency_type, 
 
 def load_dynamic_dependency_providers(dynamic_dependency_type, dynamic_dependency_key):
     if (dynamic_dependency_type, dynamic_dependency_key) in loaded_providers:
-        return []
+        return
     loaded_providers.add((dynamic_dependency_type, dynamic_dependency_key))
     for component_name in list_dynamic_dependency_providers(dynamic_dependency_type, dynamic_dependency_key):
         __import__(component_name)
@@ -36,7 +40,7 @@ def load_dynamic_dependency_providers(dynamic_dependency_type, dynamic_dependenc
 
 def list_dynamic_dependency_providers(dynamic_dependency_type, dynamic_dependency_key):
     providers, consumers = list_dynamic_dependencies()
-    return providers.get((dynamic_dependency_type, dynamic_dependency_key)) or []
+    return providers.get((dynamic_dependency_type, dynamic_dependency_key), set())
 
 
 def list_consumed_dynamic_dependencies(component_name):
