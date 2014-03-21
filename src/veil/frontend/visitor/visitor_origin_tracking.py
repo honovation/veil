@@ -48,7 +48,7 @@ def track_visitor_origin(cookie_name, cookie_expires_days, exclude_host_suffixes
                     host = host.strip('.')
                     if all(not host.endswith(host_suffix) for host_suffix in exclude_host_suffixes) \
                             and all(not request.path.startswith(path_prefix) for path_prefix in exclude_pathe_prefixes):
-                        set_visitor_origin_in_cookie(cookie_name, cookie_expires_days, host, referer)
+                        set_visitor_origin_in_cookie(cookie_name, cookie_expires_days, referer)
     except Exception:
         LOGGER.exception('failed to track visitor origin: %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
             'uri': request.uri,
@@ -58,9 +58,9 @@ def track_visitor_origin(cookie_name, cookie_expires_days, exclude_host_suffixes
         })
 
 
-def set_visitor_origin_in_cookie(name=VISITOR_ORIGIN_DEFAULT_COOKIE_NAME, expires_days=VISITOR_ORIGIN_DEFAULT_COOKIE_EXPIRES_DAYS, host=None,
-        referer=None, cps=None, cps_detail=None):
-    value = '|'.join((host or '', referer or '', unicode(cps) if cps else '', cps_detail or ''))
+def set_visitor_origin_in_cookie(name=VISITOR_ORIGIN_DEFAULT_COOKIE_NAME, expires_days=VISITOR_ORIGIN_DEFAULT_COOKIE_EXPIRES_DAYS, referer=None,
+        cps=None, cps_detail=None):
+    value = '|'.join((referer or '', unicode(cps) if cps else '', cps_detail or ''))
     set_secure_cookie(name=name, value=value, path='/', expires_days=expires_days)
 
 
@@ -69,9 +69,12 @@ def get_visitor_origin_from_cookie(name=VISITOR_ORIGIN_DEFAULT_COOKIE_NAME):
     if not cookie:
         return None, None, None, None
     try:
-        host, referer, cps, cps_detail = cookie.split('|', 3)
-        host = host or None
+        referer, cps, cps_detail = cookie.split('|', 2)
         referer = referer or None
+        host = urlparse(referer).hostname
+        if host:
+            host = host.strip('.')
+        host = host or None
         cps = cps or None
         cps_detail = cps_detail or None
     except Exception:
