@@ -28,13 +28,8 @@ def execute_bring_up_website(*argv):
     argument_parser = argparse.ArgumentParser('Website')
     argument_parser.add_argument('purpose', help='which website to bring up')
     argument_parser.add_argument('port', type=int, help='listen on which port')
-    argument_parser.add_argument('--component', type=str, action='append', help='where @route is defined', dest='components') # TODO: remove me
     args = argument_parser.parse_args(argv)
-    if args.components:
-        website_components = args.components
-    else:
-        website_components = list_website_components(args.purpose)
-    start_website(purpose=args.purpose, port=args.port, components=website_components)
+    start_website(purpose=args.purpose, port=args.port, components=list_website_components(args.purpose))
 
 
 def start_test_website(purpose, **kwargs):

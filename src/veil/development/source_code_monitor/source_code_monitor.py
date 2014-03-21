@@ -34,8 +34,7 @@ class SourceCodeMonitor(threading.Thread):
         super(SourceCodeMonitor, self).__init__()
         self.daemon = True
         self.init_app_base_version, self.init_app_changes = discipline_coach.get_git_dir_version(VEIL_HOME)
-        self.init_framework_base_version, self.init_framework_changes = discipline_coach.get_git_dir_version(
-            VEIL_FRAMEWORK_HOME)
+        self.init_framework_base_version, self.init_framework_changes = discipline_coach.get_git_dir_version(VEIL_FRAMEWORK_HOME)
 
     def run(self):
         while True:
