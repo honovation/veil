@@ -64,18 +64,27 @@ def set_visitor_origin_in_cookie(name=VISITOR_ORIGIN_DEFAULT_COOKIE_NAME, expire
     set_secure_cookie(name=name, value=value, path='/', expires_days=expires_days)
 
 
-def get_visitor_origin_from_cookie(name=VISITOR_ORIGIN_DEFAULT_COOKIE_NAME):
+def get_visitor_origin_from_cookie(name=VISITOR_ORIGIN_DEFAULT_COOKIE_NAME, cps_as_int=False):
     cookie = get_secure_cookie(name)
     if not cookie:
         return None, None, None, None
     try:
         referer, cps, cps_detail = cookie.split('|', 2)
-        referer = referer or None
-        host = urlparse(referer).hostname
-        if host:
-            host = host.strip('.')
+        if referer and cps and referer in cps: # backward compatibility: host in cookie
+            host, referer, cps, cps_detail = cookie.split('|', 3)
+        else:
+            host = urlparse(referer).hostname
+            if host:
+                host = host.strip('.')
         host = host or None
-        cps = cps or None
+        referer = referer or None
+        if cps_as_int:
+            try:
+                cps = int(cps)
+            except (TypeError, ValueError):
+                cps = None
+        else:
+            cps = cps or None
         cps_detail = cps_detail or None
     except Exception:
         LOGGER.warn('invalid visitor origin tracking cookie: %(cookie)s', {'cookie': cookie})
