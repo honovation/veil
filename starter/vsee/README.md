@@ -35,6 +35,6 @@ Veil Sample Application
 ###Notes
 1.component中所有的module的外部依赖必须通过INSTALLER安装，这样能确保在import这些module时外部依赖已经安装；
 
-2.__init__.py中不能访问resource的配置（如调用：get_website_parent_domain），因为在安装过程中import module时会执行__init__.py，而这时resource的配置还没有生成；
+2.`__init__.py`中不能访问resource的配置（如调用：get_website_parent_domain），因为在安装过程中import module时会执行`__init__.py`，而这时resource的配置还没有生成；
 
-3.定义veil系统环境的__env__脚本中，不能引用需要安装外部依赖的veil component, 比如veil.utility.clock。因为，安装过程首先需要import __env__脚本，此时__env__脚本引用的veil component因为其外部依赖还没有安装会import失败。
+3.定义veil系统环境的`__env__`脚本中，不能引用需要安装外部依赖的veil component, 比如veil.utility.clock。因为，安装过程首先需要import `__env__`脚本，此时`__env__`脚本引用的veil component因为其外部依赖还没有安装会import失败。
