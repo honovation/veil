@@ -562,3 +562,7 @@ veil.widget.processWidget = function (html, processHtml) {
         this();
     });
 };
+
+veil.widget.reset = function(){
+    veil.widget.initializers = [];
+};
