@@ -46,7 +46,7 @@ veil.executeOnce = function (hash, func) {
 veil.event = {};
 
 veil.event.subscribe = function (eventName, handler) {
-    $(document).bind(eventName, handler);
+    $(document).off(eventName).on(eventName, handler);
 };
 
 veil.event.publish = function (eventName, args) {
@@ -66,7 +66,9 @@ veil.event.delegate = function (srcEventName, destEventName) {
     if (!veil.event.hasDelegation(srcEventName)) {
         veil.event.DELEGATIONS[srcEventName] = [];
     }
-    veil.event.DELEGATIONS[srcEventName].push(destEventName);
+    if ($.inArray(destEventName, veil.event.DELEGATIONS[srcEventName]) == -1) {
+        veil.event.DELEGATIONS[srcEventName].push(destEventName);
+    }
 };
 
 veil.event.hasDelegation = function (srcEventName) {
@@ -353,7 +355,8 @@ veil.resource.del = function (options) {
 veil.widget = {};
 
 veil.widget.handle = function (widget_selector, child_selector, event, handler) {
-    $(document).on(event, child_selector ? widget_selector + ' ' + child_selector : widget_selector, function () {
+    var selector = child_selector ? widget_selector + ' ' + child_selector : widget_selector;
+    $(document).off(event, selector).on(event, selector, function () {
         var widget = child_selector ? $(this).parents(widget_selector) : $(this);
         var newArgs = [widget];
         for(var i = 0; i < arguments.length; i++) {
