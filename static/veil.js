@@ -34,12 +34,12 @@ veil.log = function(message) {
     }
 };
 
-executed = [];
+veil.executed = [];
 veil.executeOnce = function (hash, func) {
-    if ($.inArray(hash, executed) != -1) {
+    if ($.inArray(hash, veil.executed) != -1) {
         return;
     }
-    executed.push(hash);
+    veil.executed.push(hash);
     func();
 };
 
@@ -564,5 +564,6 @@ veil.widget.processWidget = function (html, processHtml) {
 };
 
 veil.widget.reset = function(){
-    veil.widget.initializers = [];
+    veil.executed = [];
+    veil.widget.loadedJavascripts = [];
 };
