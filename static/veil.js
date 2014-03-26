@@ -49,6 +49,10 @@ veil.event.subscribe = function (eventName, handler) {
     $(document).off(eventName).on(eventName, handler);
 };
 
+veil.event.unsubscribe = function (eventName, handler) {
+    $(document).off(eventName, handler);
+};
+
 veil.event.publish = function (eventName, args) {
     $(document).trigger(eventName, args);
 
