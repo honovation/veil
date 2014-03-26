@@ -16,10 +16,10 @@ import veil_component
 from .page_post_processor import post_process_page
 
 LOGGER = getLogger(__name__)
-original_routes = {}
-routes = {}
 EVENT_NEW_WEBSITE = define_event('new-website')
 TAG_NO_LOGIN_REQUIRED = 'PUBLIC'
+original_routes = {}
+routes = {}
 
 @test_hook
 def remember_original_routes():
@@ -56,6 +56,8 @@ class RouteDecorator(object):
             with require_current_template_directory_relative_to(target):
                 with require_current_widget_namespace_being(widget_namespace):
                     return func(*args, **kwargs)
+        if self.delegates_to:
+            wrapper.__name__ = b'{}-{}'.format(func.__name__, self.delegates_to.__name__)
 
         new_route = Route(route_handler=wrapper, method=self.method, path_template=self.path_template, tags=self.tags, **self.path_template_params)
         routes.setdefault(self.website, []).append(new_route)
