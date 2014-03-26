@@ -62,17 +62,36 @@ veil.event.publish = function (eventName, args) {
 veil.event.DELEGATIONS = {};
 
 veil.event.delegate = function (srcEventName, destEventName) {
-/* TODO: check endless loop of delegation */
+    if (veil.event.hasDelegation(srcEventName) && $.inArray(destEventName, veil.event.DELEGATIONS[srcEventName]) != -1) {
+        return;
+    }
+    if (veil.event.hasDelegationLoop(srcEventName, destEventName)) {
+        veil.log('cannot delegate event ' + srcEventName + ' to ' + destEventName+ ': cause endless delegation loop');
+        return;
+    }
     if (!veil.event.hasDelegation(srcEventName)) {
         veil.event.DELEGATIONS[srcEventName] = [];
     }
-    if ($.inArray(destEventName, veil.event.DELEGATIONS[srcEventName]) == -1) {
-        veil.event.DELEGATIONS[srcEventName].push(destEventName);
-    }
+    veil.event.DELEGATIONS[srcEventName].push(destEventName);
 };
 
 veil.event.hasDelegation = function (srcEventName) {
     return veil.event.DELEGATIONS[srcEventName];
+};
+
+veil.event.hasDelegationLoop = function (srcEventName, destEventName) {
+    if (!veil.event.hasDelegation(destEventName)) {
+        return false;
+    }
+    if ($.inArray(srcEventName, veil.event.DELEGATIONS[destEventName]) != -1) {
+        return true;
+    }
+    for (var i = 0, len = veil.event.DELEGATIONS[destEventName].length; i < len; i++) {
+        if (veil.event.hasDelegationLoop(srcEventName, veil.event.DELEGATIONS[destEventName][i])) {
+           return true;
+        }
+    }
+    return false;
 };
 
 veil.resource = {};
