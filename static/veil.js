@@ -421,23 +421,24 @@ veil.widget.reset = function () {
 
 veil.widget.HANDLERS = {};
 
-veil.widget.handle = function (widget_selector, child_selector, event, handler) {
+veil.widget.handle = function (widget_selector, child_selector, event, handler, base_selector) {
     var selector = child_selector ? widget_selector + ' ' + child_selector : widget_selector;
+    var fullSelector = base_selector ? base_selector + ' ' + selector : selector;
     if (veil.widget.HANDLERS[event]) {
-        if (veil.widget.HANDLERS[event][selector]) {
-            if ($.inArray(handler, veil.widget.HANDLERS[event][selector]) != -1) {
+        if (veil.widget.HANDLERS[event][fullSelector]) {
+            if ($.inArray(handler, veil.widget.HANDLERS[event][fullSelector]) != -1) {
                 return;
             }
         } else {
-            veil.widget.HANDLERS[event][selector] = [];
+            veil.widget.HANDLERS[event][fullSelector] = [];
         }
     } else {
         veil.widget.HANDLERS[event] = {};
-        veil.widget.HANDLERS[event][selector] = [];
+        veil.widget.HANDLERS[event][fullSelector] = [];
     }
-    veil.widget.HANDLERS[event][selector].push(handler);
+    veil.widget.HANDLERS[event][fullSelector].push(handler);
 
-    $(document).on(event, selector, function () {
+    $(base_selector || document).on(event, selector, function () {
         var widget = child_selector ? $(this).parents(widget_selector) : $(this);
         var newArgs = [widget];
         for(var i = 0; i < arguments.length; i++) {
