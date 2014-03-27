@@ -45,11 +45,38 @@ veil.executeOnce = function (hash, func) {
 
 veil.event = {};
 
+veil.event.reset = function () {
+    $.each(veil.event.SUBSCRIBERS, function (eventName, handlers) {
+        $.each(handlers, function () {
+            $(document).off(eventName, this);
+        });
+    });
+
+    veil.event.SUBSCRIBERS = {};
+    veil.event.DELEGATIONS = {};
+};
+
+veil.event.SUBSCRIBERS = {};
+
 veil.event.subscribe = function (eventName, handler) {
-    $(document).off(eventName).on(eventName, handler);
+    if (veil.event.SUBSCRIBERS[eventName]) {
+        if ($.inArray(handler, veil.event.SUBSCRIBERS[eventName]) != -1) {
+            return;
+        }
+    } else {
+        veil.event.SUBSCRIBERS[eventName] = [];
+    }
+    veil.event.SUBSCRIBERS[eventName].push(handler);
+    $(document).on(eventName, handler);
 };
 
 veil.event.unsubscribe = function (eventName, handler) {
+    if (veil.event.SUBSCRIBERS[eventName]) {
+        var index = $.inArray(handler, veil.event.SUBSCRIBERS[eventName])
+        if ( index != -1) {
+            veil.event.SUBSCRIBERS[eventName].splice(index, 1);
+        }
+    }
     $(document).off(eventName, handler);
 };
 
@@ -377,9 +404,40 @@ veil.resource.del = function (options) {
 
 veil.widget = {};
 
+veil.widget.reset = function () {
+    $.each(veil.widget.HANDLERS, function (event, selectors) {
+        $.each(selectors, function (selector, handlers) {
+            $.each(handlers, function () {
+                $(document).off(event, selector, this);
+            });
+        });
+    });
+
+    veil.widget.HANDLERS = {};
+    veil.widget.loadedJavascripts = [];
+    veil.widget.loadedStylesheets = [];
+    veil.widget.initializers = [];
+};
+
+veil.widget.HANDLERS = {};
+
 veil.widget.handle = function (widget_selector, child_selector, event, handler) {
     var selector = child_selector ? widget_selector + ' ' + child_selector : widget_selector;
-    $(document).off(event, selector).on(event, selector, function () {
+    if (veil.widget.HANDLERS[event]) {
+        if (veil.widget.HANDLERS[event][selector]) {
+            if ($.inArray(handler, veil.widget.HANDLERS[event][selector]) != -1) {
+                return;
+            }
+        } else {
+            veil.widget.HANDLERS[event][selector] = [];
+        }
+    } else {
+        veil.widget.HANDLERS[event] = {};
+        veil.widget.HANDLERS[event][selector] = [];
+    }
+    veil.widget.HANDLERS[event][selector].push(handler);
+
+    $(document).on(event, selector, function () {
         var widget = child_selector ? $(this).parents(widget_selector) : $(this);
         var newArgs = [widget];
         for(var i = 0; i < arguments.length; i++) {
@@ -589,7 +647,8 @@ veil.widget.processWidget = function (html, processHtml) {
     });
 };
 
-veil.widget.reset = function(){
+veil.reset = function() {
     veil.executed = [];
-    veil.widget.loadedJavascripts = [];
+    veil.event.reset();
+    veil.widget.reset();
 };
