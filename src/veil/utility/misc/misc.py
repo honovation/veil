@@ -3,9 +3,11 @@ from __future__ import unicode_literals, print_function, division
 import hashlib
 import traceback
 from decimal import Decimal, ROUND_HALF_UP, ROUND_FLOOR, ROUND_CEILING
+from datetime import date
 from veil.utility.encoding import to_unicode
 
 TWO_PLACES = Decimal('0.01')
+
 
 def unique(iterable, idfunc=lambda x:x):
     seen = set()
@@ -106,3 +108,9 @@ def list_toggled_bit_offsets(int_val):
 
 def format_exception(exception_info):
     return to_unicode(b''.join(traceback.format_exception(*exception_info)))
+
+
+def extract_info_from_resident_id(resident_id):
+    gender = 1 if int(resident_id[-2]) % 2 else 2
+    birthday = date(int(resident_id[6:10]), int(resident_id[10:12]), int(resident_id[12:14]))
+    return gender, birthday

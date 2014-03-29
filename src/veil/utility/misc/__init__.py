@@ -13,6 +13,7 @@ with veil_component.init_component(__name__):
     from .misc import remove_elements_without_value_from_dict
     from .misc import whitespace2none
     from .misc import format_exception
+    from .misc import extract_info_from_resident_id
     from .misc import TWO_PLACES
 
     __all__ = [
@@ -28,5 +29,6 @@ with veil_component.init_component(__name__):
         remove_elements_without_value_from_dict.__name__,
         whitespace2none.__name__,
         format_exception.__name__,
+        extract_info_from_resident_id.__name__,
         'TWO_PLACES',
     ]
