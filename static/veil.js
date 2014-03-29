@@ -440,6 +440,7 @@ veil.widget.handle = function (widget_selector, child_selector, event, handler, 
 
     $(base_selector || document).on(event, selector, function () {
         var widget = child_selector ? $(this).parents(widget_selector) : $(this);
+        veil.widget.clearErrorMessages(widget);
         var newArgs = [widget];
         for(var i = 0; i < arguments.length; i++) {
             newArgs.push(arguments[i]);
