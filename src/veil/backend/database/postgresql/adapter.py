@@ -55,8 +55,7 @@ class PostgresqlAdapter(object):
             self._reconnect()
 
     def reconnect_if_broken_per_exception(self, e):
-        if isinstance(e, OperationalError):
-            self._reconnect()
+        return self._reconnect() if isinstance(e, OperationalError) else False
 
     def _reconnect(self):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
@@ -68,15 +67,16 @@ class PostgresqlAdapter(object):
             self.conn = self._get_conn()
         except:
             LOGGER.exception('failed to reconnect')
+            return False
+        else:
+            return True
 
     def _reconnect_if_broken_per_lightweight_detection(self):
         """
         lightweight detection is supported by the driver library psycopg2
         """
         if self.conn.closed:
-            LOGGER.warn('Detected database connection had been closed, reconnect now: %(connection)s', {
-                'connection': self
-            })
+            LOGGER.warn('Detected database connection had been closed, reconnect now: %(connection)s', {'connection': self})
             self.conn = self._get_conn()
 
     @property
@@ -106,12 +106,8 @@ class PostgresqlAdapter(object):
             return cursor
 
     def __repr__(self):
-        return 'Postgresql adapter {} with connection parameters {}'.format(
-            self.__class__.__name__, dict(
-                host=self.host,
-                port=self.port,
-                database=self.database,
-                user=self.user))
+        return 'Postgresql adapter {} with connection parameters {}'.format(self.__class__.__name__,
+            dict(host=self.host, port=self.port, database=self.database, user=self.user))
 
 
 class ReturningDictObjectCursor(object):

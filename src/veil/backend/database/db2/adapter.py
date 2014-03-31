@@ -21,9 +21,9 @@ class DB2Adapter(object):
 
     def _get_conn(self):
         conn = None
+        connection_string = 'DRIVER={IBM DB2 ODBC DRIVER};DATABASE=%s;HOSTNAME=%s;PORT=%s; PROTOCOL=TCPIP;UID=%s;PWD=%s;' % (
+            self.database, self.host, self.port, self.user, self.password)
         try:
-            connection_string = 'DRIVER={IBM DB2 ODBC DRIVER};DATABASE=%s;HOSTNAME=%s;PORT=%s; PROTOCOL=TCPIP;UID=%s;PWD=%s;' % (
-                self.database, self.host, self.port, self.user, self.password)
             conn = ibm_db_dbi.connect(connection_string)
             if self.schema:
                 with contextlib.closing(NamedParameterCursor(conn.cursor())) as c:
@@ -50,9 +50,11 @@ class DB2Adapter(object):
             self._reconnect()
 
     def reconnect_if_broken_per_exception(self, e):
-        if isinstance(e, OperationalError) \
-            or isinstance(e, Error) and "SystemError('error return without exception set',)" in str(e): # ibm-db driver bug: should raise OperationalError this case
-            self._reconnect()
+        if isinstance(e, OperationalError) or isinstance(e, Error) and "SystemError('error return without exception set',)" in str(e):
+        # ibm-db driver bug: should raise OperationalError this case
+            return self._reconnect()
+        else:
+            return False
 
     def _reconnect(self):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
@@ -64,6 +66,9 @@ class DB2Adapter(object):
             self.conn = self._get_conn()
         except:
             LOGGER.exception('failed to reconnect')
+            return False
+        else:
+            return True
 
     def _reconnect_if_broken_per_lightweight_detection(self):
         """
@@ -98,12 +103,8 @@ class DB2Adapter(object):
             return cursor
 
     def __repr__(self):
-        return 'DB2 adapter {} with connection parameters {}'.format(
-            self.__class__.__name__, dict(
-                host=self.host,
-                port=self.port,
-                database=self.database,
-                user=self.user))
+        return 'DB2 adapter {} with connection parameters {}'.format(self.__class__.__name__,
+            dict(host=self.host, port=self.port, database=self.database, user=self.user))
 
 
 class NamedParameterCursor(object):

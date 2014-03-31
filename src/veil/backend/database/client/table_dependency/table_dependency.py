@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
 import re
-import veil_component
 import logging
 from veil.environment import *
 from veil.frontend.cli import *
@@ -83,8 +82,7 @@ def list_readable_tables():
         readable_tables[component_name] = set(list_writable_tables().get(component_name, set()))
         transitive_dependencies = veil_component.get_transitive_dependencies(component_name)
         for dependency in transitive_dependencies:
-            readable_tables[component_name] = readable_tables[component_name].union(
-                set(list_writable_tables().get(dependency, set())))
+            readable_tables[component_name] = readable_tables[component_name].union(set(list_writable_tables().get(dependency, set())))
     providers, consumers = list_dynamic_dependencies()
     for component_name, deps in consumers.items():
         for dep in deps:
@@ -123,11 +121,10 @@ def check_table_dependencies(component_name, purpose, sql):
 
 
 def check_writable_table_dependencies(writable_tables, component_name, purpose, sql):
-    sql = strip_sql(sql)
-    writing_table_name = get_writing_table_name(sql)
+    sql_ = strip_sql(sql)
+    writing_table_name = get_writing_table_name(sql_)
     if writing_table_name and (purpose, writing_table_name) not in writable_tables.get(component_name, set()):
-        raise Exception('{} should not write to table {} in database {}'.format(
-            component_name, writing_table_name, purpose))
+        raise Exception('{} should not write to table {} in database {}: {}'.format(component_name, writing_table_name, purpose, sql))
 
 
 def get_writing_table_name(sql):
@@ -159,20 +156,19 @@ def remove_insert_values(sql):
 
 
 def check_readable_table_dependencies(readable_tables, component_name, purpose, sql):
-    sql = strip_sql(sql)
-    sql = remove_parameter_labels(sql)
-    sql = remove_insert_values(sql)
+    sql_ = strip_sql(sql)
+    sql_ = remove_parameter_labels(sql_)
+    sql_ = remove_insert_values(sql_)
     reading_table_names = set()
     sub_queries = []
-    extract_sub_queries(sql, sub_queries)
+    extract_sub_queries(sql_, sub_queries)
     for sub_query in sub_queries:
         reading_table_names = reading_table_names.union(get_reading_table_names(sub_query))
     reading_table_names -= {SUB_QUERY_TOKEN}
     component_tables = readable_tables.get(component_name, set())
     for table in reading_table_names:
         if (purpose, table) not in component_tables:
-            raise Exception('{} should not read from table {} in database {}'.format(
-                component_name, table, purpose))
+            raise Exception('{} should not read from table {} in database {}: {}'.format(component_name, table, purpose, sql))
 
 
 def extract_sub_queries(sql, queries):
