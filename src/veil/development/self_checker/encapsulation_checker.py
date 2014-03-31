@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
-import veil_component
 import importlib
+import veil_component
 
 def check_encapsulation():
     component_dependencies = veil_component.get_component_dependencies()
@@ -28,8 +28,7 @@ def check_component(component_name, dependencies):
             continue # use specific public api
         if '__fixture__' in dependency:
             continue # __fixture__ is also public api
-        raise Exception('{} should not peek inside {} via {}'.format(
-            component_name, should_depend_on, dependency))
+        raise Exception('{} should not peek inside {} via {}'.format(component_name, should_depend_on, dependency))
 
 
 def list_parent_component_names(module_name):

@@ -7,6 +7,7 @@ with veil_component.init_component(__name__):
     from .website_launcher import start_website
     from .website_launcher import start_test_website
     from .website_launcher import register_website_context_manager
+    from .website_launcher import remove_no_longer_used_cookies
     from .website_installer import get_website_url_prefix
     from .website_installer import get_website_domain
     from .website_installer import get_website_parent_domain
@@ -64,6 +65,7 @@ with veil_component.init_component(__name__):
         start_website.__name__,
         start_test_website.__name__,
         register_website_context_manager.__name__,
+        remove_no_longer_used_cookies.__name__,
         # from website_installer
         get_website_url_prefix.__name__,
         get_website_domain.__name__,
@@ -120,13 +122,13 @@ with veil_component.init_component(__name__):
     ]
 
     def init():
-        from veil.frontend.nginx import VEIL_USER_CODE_COOKIE_NAME
-        from veil.frontend.nginx import VEIL_BROWSER_CODE_COOKIE_NAME
         from veil.frontend.nginx import X_REQUEST_CODE_HEADER_NAME
+        from veil.frontend.nginx import VEIL_BROWSER_CODE_COOKIE_NAME
+        from veil.frontend.nginx import VEIL_USER_CODE_COOKIE_NAME
         from veil_component import add_log_context_provider
 
         add_log_context_provider(lambda: {
             'request_code': get_current_http_request().headers.get(X_REQUEST_CODE_HEADER_NAME) if get_current_http_request(optional=True) else '',
-            'user_code': get_cookie(VEIL_USER_CODE_COOKIE_NAME) or '',
-            'browser_code': get_cookie(VEIL_BROWSER_CODE_COOKIE_NAME) or ''
+            'browser_code': get_cookie(VEIL_BROWSER_CODE_COOKIE_NAME) or '',
+            'user_code': get_cookie(VEIL_USER_CODE_COOKIE_NAME) or ''
         })

@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import contextlib
 import logging
 import argparse
 from jinja2.loaders import FileSystemLoader
@@ -13,7 +14,7 @@ from .locale import *
 from .routing import *
 from .static_file import *
 from .xsrf import *
-from .website_installer import website_config
+from .website_installer import website_config, get_website_parent_domain
 
 LOGGER = logging.getLogger(__name__)
 
@@ -69,3 +70,23 @@ def create_website_http_handler(purpose, config):
         website_context_managers.append(clear_template_caches)
     website_context_managers.extend(additional_context_managers.get(purpose, []))
     return RoutingHTTPHandler(get_routes(purpose), website_context_managers)
+
+
+def remove_no_longer_used_cookies(purpose, names):
+    @contextlib.contextmanager
+    def f():
+        request = get_current_http_request()
+        parent_domain = get_website_parent_domain(purpose)
+        try:
+            for name in names:
+                clear_cookie(name, domain=parent_domain)
+        except:
+            LOGGER.exception('failed to clear no-longer-used cookies: %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
+                'uri': request.uri,
+                'referer': request.headers.get('Referer'),
+                'remote_ip': request.remote_ip,
+                'user_agent': request.headers.get('User-Agent')
+            })
+        finally:
+            yield
+    return f

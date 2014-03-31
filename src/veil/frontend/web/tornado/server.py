@@ -29,10 +29,7 @@ def start_http_server(handler, io_loop=None, host='127.0.0.1', port=8080, proces
     http_server = create_http_server(handler, io_loop=io_loop)
     http_server.bind(port, host)
     http_server.start(processes_count)
-    io_loop.add_callback(lambda: LOGGER.info('ioloop started: listening at %(host)s:%(port)s', {
-        'host': host,
-        'port': port
-    }))
+    io_loop.add_callback(lambda: LOGGER.info('ioloop started: listening at %(host)s:%(port)s', {'host': host, 'port': port}))
     io_loop.start()
 
 
@@ -75,7 +72,7 @@ class HTTPResponse(object):
     def __init__(self, request):
         self._headers_written = None
         self._finished = False
-        self._cookies = Cookie.BaseCookie()
+        self._cookies = Cookie.SimpleCookie()
         self.request = request
         self.connection = self.request.connection
         self.clear()
@@ -91,6 +88,10 @@ class HTTPResponse(object):
     @property
     def headers_written(self):
         return self._headers_written
+
+    @property
+    def cookies(self):
+        return self._cookies
 
     @property
     def status_code(self):
@@ -116,9 +117,6 @@ class HTTPResponse(object):
                 self.set_header('Connection', 'Keep-Alive')
         self._write_buffer = []
         self._status_code = 200
-
-    def get_cookies(self):
-        return self._cookies
 
     def set_header(self, name, value):
         if self.headers_written:
@@ -157,9 +155,7 @@ class HTTPResponse(object):
         # http://www.w3.org/Protocols/rfc2616/rfc2616-sec7.html#sec7.1)
         # not explicitly allowed by
         # http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5
-        headers = ["Allow", "Content-Encoding", "Content-Language",
-                   "Content-Length", "Content-MD5", "Content-Range",
-                   "Content-Type", "Last-Modified"]
+        headers = ['Allow', 'Content-Encoding', 'Content-Language', 'Content-Length', 'Content-MD5', 'Content-Range', 'Content-Type', 'Last-Modified']
         for h in headers:
             self.clear_header(h)
 
@@ -197,14 +193,14 @@ class HTTPResponse(object):
                 hasher = hashlib.md5()
                 for part in self._write_buffer:
                     hasher.update(part)
-                etag = '"%s"' % hasher.hexdigest()
+                etag = '"{}"'.format(hasher.hexdigest())
                 self.set_header('Etag', etag)
                 inm = self.request.headers.get('If-None-Match')
                 if inm and inm.find(etag) != -1:
                     self._write_buffer = []
                     self.status_code = 304
             if self._status_code == 304:
-                assert not self._write_buffer, "Cannot send body with 304"
+                assert not self._write_buffer, 'Cannot send body with 304'
                 self._clear_headers_for_304()
             elif 'Content-Length' not in self._headers:
                 content_length = sum(len(part) for part in self._write_buffer)
@@ -217,10 +213,9 @@ class HTTPResponse(object):
         self._finished = True
 
     def _generate_headers(self):
-        lines = [self.request.version + " " + str(self._status_code) + " " +
-                 httplib.responses[self._status_code]]
-        lines.extend(['%s: %s' % (n, v) for n, v in self._headers.iteritems()])
+        lines = [' '.join((self.request.version, str(self._status_code), httplib.responses[self._status_code]))]
+        lines.extend(['{}: {}'.format(n, v) for n, v in self._headers.iteritems()])
         for cookie in self._cookies.values():
-            LOGGER.debug(to_str("Set-Cookie: " + cookie.OutputString(None)))
-            lines.append(to_str("Set-Cookie: " + cookie.OutputString(None)))
+            LOGGER.debug(to_str('Set-Cookie: ' + cookie.OutputString(None)))
+            lines.append(to_str('Set-Cookie: ' + cookie.OutputString(None)))
         return '\r\n'.join(lines) + '\r\n\r\n'

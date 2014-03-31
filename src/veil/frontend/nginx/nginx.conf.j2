@@ -80,7 +80,7 @@ http {
     real_ip_recursive on;
     {% endif %}
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Request-Code $msec-$cookie_vbcode;
+    proxy_set_header X-Request-Code $msec-$cookie_vb;
     proxy_redirect off;
     # Only retry if there was a communication error, not a timeout
     # on the Tornado server (to avoid propagating "queries of death"
@@ -91,12 +91,12 @@ http {
     log_format logstash_json '{ "@timestamp": "$time_iso8601", '
                              '"@type": "nginx", '
                              '"@fields": { '
-                             '"user_code": "$cookie_vucode", '
-                             '"browser_code": "$cookie_vbcode", '
+                             '"user_code": "$cookie_vu", '
+                             '"browser_code": "$cookie_vb", '
                              '"remote_addr": "$remote_addr", '
                              '"request": "$request", '
                              '"request_time": "$request_time", '
-                             '"request_code": "$msec-$cookie_vbcode", '
+                             '"request_code": "$msec-$cookie_vb", '
                              '"request_method": "$request_method", '
                              '"status": "$status", '
                              '"body_bytes_sent": "$body_bytes_sent", '

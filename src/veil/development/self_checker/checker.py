@@ -51,9 +51,7 @@ def quick_check(checker_name=None):
         return
     shell_execute('veil migrate')
     for checker_name, self_checker in SELF_CHECKERS.items():
-        LOGGER.info('[CHECK] checking: %(checker_name)s...', {
-            'checker_name': checker_name
-        })
+        LOGGER.info('[CHECK] checking: %(checker_name)s...', {'checker_name': checker_name})
         self_checker()
     shell_execute('git add -A .')
     shell_execute('git add -A .', cwd=VEIL_FRAMEWORK_HOME)

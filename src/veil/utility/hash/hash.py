@@ -55,8 +55,8 @@ def get_password_hash(password):
 def get_hmac(*parts, **kwargs):
     strong = kwargs.pop('strong', True)
     digestmod = hashlib.sha256 if strong else hashlib.sha1
-    msg = '|'.join(unicode(part) for part in parts)
-    return hmac.new(to_str(get_hash_salt()), to_str(msg), digestmod).hexdigest()
+    msg = b'|'.join(to_str(part) for part in parts)
+    return unicode(hmac.new(to_str(get_hash_salt()), msg, digestmod).hexdigest())
 
 
 def verify_hmac(hmac, *parts, **kwargs):

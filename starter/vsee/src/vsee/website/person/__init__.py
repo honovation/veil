@@ -6,4 +6,4 @@ with veil_component.init_component(__name__):
         from veil.frontend.web import register_website_context_manager
         from veil.frontend.visitor import enable_visitor_origin_tracking
 
-        register_website_context_manager('person', enable_visitor_origin_tracking())
+        register_website_context_manager('person', enable_visitor_origin_tracking('person'))

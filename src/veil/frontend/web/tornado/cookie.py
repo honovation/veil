@@ -1,5 +1,4 @@
 from __future__ import unicode_literals, print_function, division
-import Cookie
 import base64
 import calendar
 import datetime
@@ -7,7 +6,6 @@ import email.utils
 from logging import getLogger
 import re
 import time
-import urllib
 from veil.utility.encoding import *
 from veil.utility.hash import *
 from .context import get_current_http_request
@@ -25,14 +23,22 @@ def get_secure_cookie(name, value=None, default=None, max_age_days=31, request=N
         return default
     signature = get_hmac(name, parts[0], parts[1], strong=False)
     if not _time_independent_equals(parts[2], signature):
-        LOGGER.warning('Invalid cookie signature: %r', value)
+        LOGGER.warning('Invalid cookie signature: %(name)s, %(value)s', {'name': name, 'value': value})
         return default
     timestamp = int(parts[1])
     if timestamp < time.time() - max_age_days * 86400:
-        LOGGER.warning('Expired cookie: %r', value)
+        LOGGER.warning('Expired cookie: %(name)s, %(value)s', {'name': name, 'value': value})
         return default
+    if timestamp > time.time() + 31 * 86400:
+        # _cookie_signature does not hash a delimiter between the
+        # parts of the cookie, so an attacker could transfer trailing
+        # digits from the payload to the timestamp without altering the
+        # signature.  For backwards compatibility, sanity-check timestamp
+        # here instead of modifying _cookie_signature.
+        LOGGER.warning('Cookie timestamp in future; possible tampering %(name)s, %(value)s', {'name': name, 'value': value})
+        return None
     if parts[1].startswith('0'):
-        LOGGER.warning('Tampered cookie: %r', value)
+        LOGGER.warning('Tampered cookie: %(name)s, %(value)s', {'name': name, 'value': value})
         return default
     try:
         return to_unicode(base64.b64decode(parts[0]))
@@ -42,7 +48,7 @@ def get_secure_cookie(name, value=None, default=None, max_age_days=31, request=N
 
 def set_secure_cookie(response=None, name=None, value=None, expires_days=30, **kwargs):
     response = response or get_current_http_response()
-    create_secure_cookie(response.get_cookies(), name, value, expires_days, **kwargs)
+    create_secure_cookie(response.cookies, name, value, expires_days, **kwargs)
 
 
 def create_secure_cookie(cookies, name, value, expires_days, **kwargs):
@@ -55,16 +61,7 @@ def create_secure_cookie(cookies, name, value, expires_days, **kwargs):
 
 def get_cookies(request=None):
     request = request or get_current_http_request(optional=True)
-    if not request:
-        return {}
-    if not hasattr(request, '_cookies'):
-        request._cookies = Cookie.BaseCookie()
-        if 'Cookie' in request.headers:
-            try:
-                request._cookies.load(request.headers['Cookie'])
-            except:
-                clear_cookies(request=request)
-    return request._cookies
+    return request.cookies if request else {}
 
 
 def get_cookie(name, default=None, request=None):
@@ -73,23 +70,25 @@ def get_cookie(name, default=None, request=None):
         return cookie_from_response
     cookies = get_cookies(request=request)
     if name in cookies:
-        return to_unicode(urllib.unquote(cookies[name].value))
+        try:
+            return to_unicode(cookies[name].value)
+        except:
+            return default
     return default
 
 
 def get_cookie_from_response(name):
     current_http_response = get_current_http_response(optional=True)
-    if current_http_response and current_http_response._cookies:
-        for written_cookie in current_http_response._cookies:
-            cookies = Cookie.BaseCookie()
-            cookies.load(to_str(written_cookie))
-            if name in cookies:
-                return cookies[name].value
+    if current_http_response and name in current_http_response.cookies:
+        try:
+            return to_unicode(current_http_response.cookies[name].value)
+        except:
+            return None
     return None
 
 
 def clear_cookies(request=None, response=None):
-    for name in get_cookies(request=request).iterkeys():
+    for name in get_cookies(request=request):
         clear_cookie(name, response=response)
 
 
@@ -100,7 +99,7 @@ def clear_cookie(name, path='/', domain=None, response=None):
 
 def set_cookie(response=None, **kwargs):
     response = response or get_current_http_response()
-    create_cookie(response.get_cookies(), **kwargs)
+    create_cookie(response.cookies, **kwargs)
 
 
 def create_cookie(cookies, name, value, domain=None, expires=None, path='/', expires_days=None, expires_minutes=None, **kwargs):
@@ -108,7 +107,7 @@ def create_cookie(cookies, name, value, domain=None, expires=None, path='/', exp
     value = to_str(value)
     if re.search(br'[\x00-\x20]', name + value):
         # Don't let us accidentally inject bad stuff
-        raise ValueError('Invalid cookie %r: %r' % (name, value))
+        raise ValueError('Invalid cookie {}: {}'.format(name, value))
     cookies[name] = value
     cookie = cookies[name]
     if domain:
