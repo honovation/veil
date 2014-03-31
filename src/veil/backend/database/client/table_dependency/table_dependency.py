@@ -2,9 +2,9 @@ from __future__ import unicode_literals, print_function, division
 import re
 import logging
 from veil.environment import *
+from veil_component import *
 from veil.frontend.cli import *
 from veil.utility.encoding import *
-from veil_component import *
 
 RE_UPDATE = re.compile(r'UPDATE\s+(\w+)\s+', re.IGNORECASE)
 RE_INSERT = re.compile(r'INSERT\s+(\w+)[\s\(]+', re.IGNORECASE)
@@ -78,9 +78,9 @@ def list_readable_tables():
     if readable_tables is not None:
         return readable_tables
     readable_tables = {}
-    for component_name in veil_component.get_component_map().keys():
+    for component_name in get_component_map().keys():
         readable_tables[component_name] = set(list_writable_tables().get(component_name, set()))
-        transitive_dependencies = veil_component.get_transitive_dependencies(component_name)
+        transitive_dependencies = get_transitive_dependencies(component_name)
         for dependency in transitive_dependencies:
             readable_tables[component_name] = readable_tables[component_name].union(set(list_writable_tables().get(dependency, set())))
     providers, consumers = list_dynamic_dependencies()
