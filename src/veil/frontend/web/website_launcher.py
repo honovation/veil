@@ -72,13 +72,16 @@ def create_website_http_handler(purpose, config):
     return RoutingHTTPHandler(get_routes(purpose), website_context_managers)
 
 
-def remove_no_longer_used_cookies(purpose, names):
+def remove_no_longer_used_cookies(purpose, current_domain_names=(), parent_domain_names=()):
+    assert current_domain_names or parent_domain_names
     @contextlib.contextmanager
     def f():
         request = get_current_http_request()
         parent_domain = get_website_parent_domain(purpose)
         try:
-            for name in names:
+            for name in current_domain_names:
+                clear_cookie(name, domain=None)
+            for name in parent_domain_names:
                 clear_cookie(name, domain=parent_domain)
         except:
             LOGGER.exception('failed to clear no-longer-used cookies: %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
