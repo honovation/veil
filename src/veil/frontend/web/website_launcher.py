@@ -33,9 +33,9 @@ def execute_bring_up_website(*argv):
     start_website(purpose=args.purpose, port=args.port, components=list_website_components(args.purpose))
 
 
-def start_test_website(purpose, **kwargs):
+def start_test_website(purpose):
     config = website_config(purpose)
-    http_handler = create_website_http_handler(purpose, config, **kwargs)
+    http_handler = create_website_http_handler(purpose, config)
     http_server = start_test_http_server(http_handler, host='localhost', port=config.start_port)
     http_server.purpose = purpose
     return http_server
@@ -74,6 +74,7 @@ def create_website_http_handler(purpose, config):
 
 def remove_no_longer_used_cookies(purpose, current_domain_names=(), parent_domain_names=()):
     assert current_domain_names or parent_domain_names
+
     @contextlib.contextmanager
     def f():
         request = get_current_http_request()
@@ -92,4 +93,5 @@ def remove_no_longer_used_cookies(purpose, current_domain_names=(), parent_domai
             })
         finally:
             yield
+
     return f

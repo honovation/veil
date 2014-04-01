@@ -1,3 +1,16 @@
+"""
+Track visitor and user session
+
+Cookies:
+    browser code: visitor ID per browser on parent domain, i.e. the base domain for all websites of the VEIL Application
+    user code: latest logged-in user ID on current domain, i.e. every website has its own usr code
+
+Session:
+    save sessions in redis with browser code as part of the key
+    user session starts upon successful login
+    login refer is the url redirected to after successful login, and it is also remembered in redis
+    purpose identify a website and is used to separate user sessions among different websites
+"""
 from __future__ import unicode_literals, print_function, division
 from datetime import timedelta
 import httplib
@@ -59,6 +72,7 @@ def enable_user_tracking(purpose, login_url='/login', session_timeout=DEFAULT_SE
                 'user_agent': request.headers.get('User-Agent')
             })
         yield
+
     return f
 
 

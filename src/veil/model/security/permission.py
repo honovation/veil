@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
+import logging
 import functools
 import contextlib
-import logging
 
 LOGGER = logging.getLogger(__name__)
 granted_permissions = set()
@@ -15,9 +15,7 @@ def permission_protected(*permissions):
         def wrapper(*args, **kwargs):
             missing_permissions = permissions - granted_permissions
             if missing_permissions:
-                LOGGER.warn('permission denied: missing %(missing_permissions)s', {
-                    'missing_permissions': missing_permissions
-                })
+                LOGGER.warn('permission denied: missing %(missing_permissions)s', {'missing_permissions': missing_permissions})
                 raise PermissionDenied('权限不足：{}'.format('，'.join(missing_permissions)))
             return func(*args, **kwargs)
 
@@ -43,4 +41,3 @@ def grant_permissions(*permissions):
 
 class PermissionDenied(Exception):
     pass
-

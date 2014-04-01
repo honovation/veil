@@ -14,8 +14,6 @@ with veil_component.init_component(__name__):
     from .page_post_processor import register_page_post_processor
     from .page_post_processor import TAG_NO_POST_PROCESS
     from .security import RoutePermissionProtector
-    from .security import TagBasedRoutePermissionProtector
-    from .security import RESOURCE_URI_PREFIX
 
     __all__ = [
         # from routing
@@ -34,6 +32,4 @@ with veil_component.init_component(__name__):
         'TAG_NO_POST_PROCESS',
         # from security
         RoutePermissionProtector.__name__,
-        TagBasedRoutePermissionProtector.__name__,
-        'RESOURCE_URI_PREFIX',
     ]

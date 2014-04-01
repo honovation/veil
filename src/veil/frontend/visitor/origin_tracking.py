@@ -49,6 +49,7 @@ def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_pa
             })
         finally:
             yield
+
     return f
 
 
