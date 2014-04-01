@@ -49,6 +49,8 @@ def enable_user_tracking(purpose, login_url='/login', session_timeout=DEFAULT_SE
                     if login_referer:
                         remember_user_login_referer(purpose, login_referer, session_timeout, browser_code=new_browser_code)
                     redirect_to(login_url)
+        except HTTPError:
+            raise
         except:
             LOGGER.exception('failed to track user: %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
                 'uri': request.uri,
@@ -56,8 +58,7 @@ def enable_user_tracking(purpose, login_url='/login', session_timeout=DEFAULT_SE
                 'remote_ip': request.remote_ip,
                 'user_agent': request.headers.get('User-Agent')
             })
-        finally:
-            yield
+        yield
     return f
 
 
