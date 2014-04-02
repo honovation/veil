@@ -28,15 +28,18 @@ def list_granted_permissions():
     return granted_permissions
 
 
-@contextlib.contextmanager
-def grant_permissions(*permissions):
-    global granted_permissions
-    new_permissions = set(permissions) - granted_permissions
-    granted_permissions = granted_permissions.union(new_permissions)
-    try:
-        yield
-    finally:
-        granted_permissions = granted_permissions - new_permissions
+def grant_permissions(list_permissions):
+    @contextlib.contextmanager
+    def f():
+        global granted_permissions
+        new_permissions = list_permissions() - granted_permissions
+        granted_permissions = granted_permissions.union(new_permissions)
+        try:
+            yield
+        finally:
+            granted_permissions = granted_permissions - new_permissions
+
+    return f
 
 
 class PermissionDenied(Exception):

@@ -1,5 +1,7 @@
 """
-Track visitor and user session
+Track visitor and user
+
+User authentication is support by user session
 
 Purpose: identifies a website and is used to separate user sessions among different websites
 
