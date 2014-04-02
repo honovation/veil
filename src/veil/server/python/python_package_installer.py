@@ -248,3 +248,12 @@ def upgrade_pip(pip_version, setuptools_version):
         debug=True)
     shell_execute('pip install {} --upgrade --download-cache {} setuptools=={}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, setuptools_version),
         capture=True, debug=True)
+
+
+@atomic_installer
+def python_sourcecode_package_resource(package_dir, name, version, env=None):
+    installed_version = get_python_package_installed_version(name)
+    if installed_version and installed_version == version:
+        return 
+    shell_execute('python setup.py build install', env=env, cwd=package_dir)
+    set_resource_latest_version('veil.server.python.python_sourcecode_package_resource?{}'.format(name), version)

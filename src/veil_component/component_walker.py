@@ -4,6 +4,7 @@ import os.path
 import pkgutil
 import traceback
 import re
+from zipimport import zipimporter
 
 
 LOGGER = logging.getLogger(__name__)
@@ -56,10 +57,16 @@ class ComponentWalker(object):
             raise InvalidComponentException('{} not found, {}'.format(module_name, traceback.format_exc()))
         if not module_loader:
             raise InvalidComponentException('{} might be system builtin'.format(module_name))
-        path = module_loader.get_filename()
+        if isinstance(module_loader, zipimporter):
+            path = module_loader.get_filename(module_name)
+        else:
+            path = module_loader.get_filename()
         if not path:
             raise InvalidComponentException('{} does not have source code'.format(module_name))
-        source_code = module_loader.get_source() or ''
+        if isinstance(module_loader, zipimporter):
+            source_code = module_loader.get_source(module_name) or ''
+        else:
+            source_code = module_loader.get_source() or ''
         if is_component(source_code):
             if at_top_level:
                 visitor.visit_component_start(module_name, path, source_code)

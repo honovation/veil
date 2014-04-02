@@ -2,12 +2,12 @@ from __future__ import unicode_literals, print_function, division
 from contextlib import closing
 from logging import getLogger
 import psycopg2
-from psycopg2.extensions import  ISOLATION_LEVEL_READ_COMMITTED
-from veil.model.collection import *
+from psycopg2.extensions import ISOLATION_LEVEL_READ_COMMITTED
 from psycopg2.extras import NamedTupleCursor
 from psycopg2.extras import register_uuid
 from psycopg2.extensions import cursor as NormalCursor
 from psycopg2 import OperationalError
+from veil.model.collection import *
 
 LOGGER = getLogger(__name__)
 
