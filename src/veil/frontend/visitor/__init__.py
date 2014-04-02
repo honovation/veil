@@ -4,7 +4,6 @@ with veil_component.init_component(__name__):
     from .user_tracking import enable_user_tracking
     from .user_tracking import get_browser_code
     from .user_tracking import get_latest_user_id
-    from .user_tracking import is_user_logged_in
     from .user_tracking import remember_logged_in_user_id
     from .user_tracking import get_logged_in_user_id
     from .user_tracking import remove_logged_in_user_id
@@ -19,7 +18,6 @@ with veil_component.init_component(__name__):
         enable_user_tracking.__name__,
         get_browser_code.__name__,
         get_latest_user_id.__name__,
-        is_user_logged_in.__name__,
         remember_logged_in_user_id.__name__,
         get_logged_in_user_id.__name__,
         remove_logged_in_user_id.__name__,

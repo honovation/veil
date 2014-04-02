@@ -36,7 +36,7 @@ def get_secure_cookie(name, value=None, default=None, max_age_days=31, request=N
         # signature.  For backwards compatibility, sanity-check timestamp
         # here instead of modifying _cookie_signature.
         LOGGER.warning('Cookie timestamp in future; possible tampering %(name)s, %(value)s', {'name': name, 'value': value})
-        return None
+        return default
     if parts[1].startswith('0'):
         LOGGER.warning('Tampered cookie: %(name)s, %(value)s', {'name': name, 'value': value})
         return default

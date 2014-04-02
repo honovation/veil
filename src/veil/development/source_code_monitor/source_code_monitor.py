@@ -55,8 +55,7 @@ class SourceCodeMonitor(threading.Thread):
         if is_python_source_code_changed(self.init_app_changes, current_app_changes):
             LOGGER.info('application python source code changed: reload now')
             return True
-        current_framework_base_version, current_framework_changes = discipline_coach.get_git_dir_version(
-            VEIL_FRAMEWORK_HOME)
+        current_framework_base_version, current_framework_changes = discipline_coach.get_git_dir_version(VEIL_FRAMEWORK_HOME)
         if current_framework_base_version != self.init_framework_base_version:
             LOGGER.info('framework base version changed: reload now')
             return True
@@ -91,7 +90,5 @@ def load_components(components):
             LOGGER.exception('failed to load component: %(component)s', {'component': component})
             return False
     after = time.time()
-    LOGGER.info('all components loaded: took %(elapsed_seconds)s seconds', {
-        'elapsed_seconds': after - before
-    })
+    LOGGER.info('all components loaded: took %(elapsed_seconds)s seconds', {'elapsed_seconds': after - before})
     return True
