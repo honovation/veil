@@ -29,15 +29,15 @@ def oracle_driver_resource():
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         if should_download_while_dry_run():
-            download_oracle_driver()
             download_cx_oracle()
+            download_oracle_driver()
             install_resource(python_sourcecode_package_resource(package_dir=CX_ORACLE_HOME, name='cx_Oracle', version='5.1.2', env=env))
         dry_run_result['oracle-driver'] = action or '-'
         return
     if not action:
         return
-    download_oracle_driver()
     download_cx_oracle()
+    download_oracle_driver()
     install_resource(python_sourcecode_package_resource(package_dir=CX_ORACLE_HOME, name='cx_Oracle', version='5.1.2', env=env))
     install_resource(file_resource(path='/etc/ld.so.conf.d/oracle_driver.conf', content=ORACLE_HOME))
     shell_execute('ldconfig')
@@ -52,7 +52,7 @@ def download_oracle_driver():
     if mirror:
         mirror = '{}:8080'.format(mirror)
     else:
-        mirror = 'http://198.199.111.90'
+        mirror = 'http://dependency-veil.qiniudn.com'
     shell_execute('wget {}/oracle-instantclient11.2-basic-11.2.0.1.0-1.x86_64.zip -O /tmp/oracle-instantclient11.2-basic-11.2.0.1.0-1.x86_64.zip'.format(mirror))
     shell_execute('unzip /tmp/oracle-instantclient11.2-basic-11.2.0.1.0-1.x86_64.zip -d /opt')
     shell_execute('wget {}/oracle-instantclient11.2-sdk-11.2.0.1.0-1.x86_64.zip -O /tmp/oracle-instantclient11.2-sdk-11.2.0.1.0-1.x86_64.zip'.format(mirror))
@@ -67,6 +67,6 @@ def download_cx_oracle():
     if mirror:
         mirror = '{}:8080'.format(mirror)
     else:
-        mirror = 'http://198.199.111.90'
+        mirror = 'http://dependency-veil.qiniudn.com'
     shell_execute('wget {}/cx_Oracle-5.1.2.tar.gz -O /tmp/cx_Oracle-5.1.2.tar.gz'.format(mirror))
     shell_execute('tar xvf /tmp/cx_Oracle-5.1.2.tar.gz -C /opt')
