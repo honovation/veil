@@ -22,9 +22,8 @@ def get_installed_version():
 @atomic_installer
 def chrome_driver_resource(version=None):
     version = version or DEFAULT_VERSION
-    latest_version = get_resource_latest_version(RESOURCE_KEY)
     installed_version = get_installed_version()
-    is_installed = True if installed_version and installed_version == latest_version == version else False
+    is_installed = installed_version == version
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         dry_run_result['chrome_driver'] = '-' if is_installed else 'INSTALL'
