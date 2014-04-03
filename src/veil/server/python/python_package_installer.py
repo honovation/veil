@@ -256,4 +256,5 @@ def python_sourcecode_package_resource(package_dir, name, version, env=None):
     if installed_version and installed_version == version:
         return 
     shell_execute('python setup.py build install', env=env, cwd=package_dir)
-    set_resource_latest_version('veil.server.python.python_sourcecode_package_resource?{}'.format(name), version)
+    if VEIL_ENV_TYPE in ('development', 'test'):
+        set_resource_latest_version('veil.server.python.python_sourcecode_package_resource?{}'.format(name), version)
