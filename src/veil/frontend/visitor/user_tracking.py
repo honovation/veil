@@ -127,7 +127,7 @@ def set_user_session(purpose, browser_code, user_id):
     session = DictObject(purpose=purpose, browser_code=browser_code, user_id=user_id)
     value = '{}|{}|{}'.format(session.purpose, session.browser_code, session.user_id)
     domain = get_website_parent_domain(purpose) if config[purpose].session_cookie_on_parent_domain else None
-    set_secure_cookie(name=purpose, value=value, domain=domain)
+    set_secure_cookie(name=purpose, value=value, expires_days=None, domain=domain)
     return session
 
 
