@@ -26,7 +26,7 @@ class DB2Adapter(object):
         try:
             conn = ibm_db_dbi.connect(connection_string)
             if self.schema:
-                with contextlib.closing(NamedParameterCursor(conn.cursor())) as c:
+                with contextlib.closing(conn.cursor()) as c:
                     c.execute('SET SCHEMA {}'.format(self.schema))
         except:
             LOGGER.critical('Cannot connect to database: %(connection_string)s', {'connection_string': connection_string}, exc_info=1)
@@ -74,7 +74,9 @@ class DB2Adapter(object):
         """
         lightweight detection is not supported by the driver library ibm_db_dbi
         """
-        pass
+        if self.conn.conn_handler is None:
+            LOGGER.warn('Detected database connection had been closed, reconnect now: %(connection)s', {'connection': self})
+            self.conn = self._get_conn()
 
     @property
     def autocommit(self):

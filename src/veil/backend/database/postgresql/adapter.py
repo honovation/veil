@@ -22,16 +22,17 @@ class PostgresqlAdapter(object):
         self.database = database
         self.user = user
         self.password = password
+        self.schema = schema
         self.conn = self._get_conn()
-        if schema:
-            with closing(self.cursor()) as c:
-                c.execute('SET search_path TO {}'.format(schema))
 
     def _get_conn(self):
         conn = None
         try:
             conn = psycopg2.connect(host=self.host, port=self.port, database=self.database, user=self.user, password=self.password)
             conn.set_session(isolation_level=ISOLATION_LEVEL_READ_COMMITTED, autocommit=True)
+            if self.schema:
+                with closing(conn.cursor(cursor_factory=NormalCursor)) as c:
+                    c.execute('SET search_path TO {}'.format(self.schema))
         except:
             LOGGER.critical('Cannot connect to database: %(adapter_with_connection_parameters)s', {'adapter_with_connection_parameters': repr(self)},
                 exc_info=1)

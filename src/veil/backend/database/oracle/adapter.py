@@ -5,7 +5,7 @@ import logging
 import re
 import os
 import cx_Oracle
-from cx_Oracle import OperationalError, Error
+from cx_Oracle import OperationalError
 from veil.model.collection import *
 
 LOGGER = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ class OracleAdapter(object):
         else:
             return conn
 
-    def reconnect_if_broken_per_verification(self, sql='SELECT 1 FROM dual'):
+    def reconnect_if_broken_per_verification(self, sql='SELECT 1 FROM DUAL'):
         try:
             with contextlib.closing(self.conn.cursor()) as cur:
                 cur.execute(sql)
@@ -51,10 +51,7 @@ class OracleAdapter(object):
             self._reconnect()
 
     def reconnect_if_broken_per_exception(self, e):
-        if isinstance(e, OperationalError) or isinstance(e, Error) and "SystemError('error return without exception set',)" in str(e):
-            return self._reconnect()
-        else:
-            return False
+        return self._reconnect() if isinstance(e, OperationalError) else False
 
     def _reconnect(self):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
@@ -74,7 +71,7 @@ class OracleAdapter(object):
         try:
             self.conn.ping()
         except:
-            LOGGER.warn('Oracle connection ping test failed, reconnecting')
+            LOGGER.warn('Oracle connection ping test failed, reconnect now: %(connection)s', {'connection': self})
             self._get_conn()
 
     @property
