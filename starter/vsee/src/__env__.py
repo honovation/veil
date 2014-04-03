@@ -1,7 +1,9 @@
 from __future__ import unicode_literals, print_function, division
+import os
 from veil.model.collection import *
 from veil.profile.setting import *
 from veil.frontend.nginx_setting import NGINX_PID_PATH
+from veil_component import as_path
 
 PERSON_WEBSITE_MAX_UPLOAD_FILE_SIZE = '3m'
 
@@ -13,7 +15,7 @@ POSTGRESQL_CLIENTS = ['vsee']
 
 WEBSITES = ['person']
 
-SECURITY_CONFIG_FILE = VEIL_HOME / '.vsee.cfg'
+SECURITY_CONFIG_FILE = VEIL_HOME / '.vsee.cfg' if VEIL_ENV_TYPE in ('development', 'test') else as_path(os.getenv('HOME')) / '.vsee.cfg'
 
 SECURITY_CONFIG = load_config_from(
     SECURITY_CONFIG_FILE,
