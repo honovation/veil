@@ -57,7 +57,7 @@ def download_oracle_driver():
     shell_execute('unzip /tmp/oracle-instantclient11.2-basic-11.2.0.1.0-1.x86_64.zip -d /opt')
     shell_execute('wget {}/oracle-instantclient11.2-sdk-11.2.0.1.0-1.x86_64.zip -O /tmp/oracle-instantclient11.2-sdk-11.2.0.1.0-1.x86_64.zip'.format(mirror))
     shell_execute('unzip /tmp/oracle-instantclient11.2-sdk-11.2.0.1.0-1.x86_64.zip -d /opt')
-    shell_execute('ln -s libclntsh.so.11.1 libclntsh.so', cwd=CX_ORACLE_HOME)
+    shell_execute('ln -s libclntsh.so.11.1 libclntsh.so', cwd=ORACLE_HOME)
 
 
 def download_cx_oracle():
