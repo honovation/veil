@@ -1,6 +1,10 @@
 from __future__ import unicode_literals, print_function, division
 from os import getenv
 
+VEIL_APT_URL = 'http://mirrors.163.com/ubuntu'
+VEIL_DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
+PYPI_INDEX_URL = '-i http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
+
 def split_veil_server_code(code):
     env = code[:code.find('/')]
     server_name = code[code.find('/') + 1:]

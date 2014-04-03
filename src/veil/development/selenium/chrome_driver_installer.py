@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import os
+from veil.env_const import VEIL_DEPENDENCY_URL
 from veil_installer import *
 from veil.utility.shell import *
 
@@ -16,13 +17,8 @@ def chrome_driver_resource():
         return
     if is_installed:
         return
-    mirror = os.getenv('VEIL_DEPENDENCY_MIRROR')
-    if mirror:
-        mirror = '{}:8080'.format(mirror)
-    else:
-        mirror = 'http://chromedriver.storage.googleapis.com'
     version = '2.6'
-    url = '{}/{}/chromedriver_linux64.zip'.format(mirror, version)
+    url = '{}/chromedriver/{}/chromedriver_linux64.zip'.format(VEIL_DEPENDENCY_URL, version)
     local_path = '/tmp/chromedriver_linux64_{}.zip'.format(version)
     LOGGER.info('installing selenium webdriver for chrome: from %(url)s...', {'url': url})
     shell_execute('wget {} -O {}'.format(url, local_path))

@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import re
 from pkg_resources import safe_name, safe_version, parse_version, to_filename
-from veil.env_const import VEIL_ENV_TYPE
+from veil.env_const import VEIL_ENV_TYPE, PYPI_INDEX_URL
 from veil.utility.shell import *
 from veil_component import *
 from veil_installer import *
@@ -10,7 +10,6 @@ from veil.frontend.cli import *
 
 LOGGER = logging.getLogger(__name__)
 
-PYPI_INDEX_URL = '-i http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
 LOCAL_ARCHIVE_DIR = as_path('/opt/pypi')
 LOCAL_ARCHIVE_DIR.makedirs()
 

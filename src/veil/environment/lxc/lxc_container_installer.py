@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+from veil.env_const import VEIL_APT_URL
 from veil.profile.installer import *
 
 LOGGER = logging.getLogger(__name__)
@@ -6,14 +7,9 @@ LOGGER = logging.getLogger(__name__)
 
 @composite_installer
 def lxc_container_resource(container_name, mac_address, lan_interface, memory_limit=None, cpu_share=None):
-    mirror = os.getenv('VEIL_DEPENDENCY_MIRROR')
-    if mirror:
-        mirror = '{}:3142/mirrors.163.com/ubuntu'.format(mirror)
-    else:
-        mirror = 'http://mirrors.163.com/ubuntu'
     resources = [
         os_package_resource(name='lxc'),
-        file_resource(path='/etc/default/lxc', content=render_config('lxc.cfg.j2', mirror=mirror)),
+        file_resource(path='/etc/default/lxc', content=render_config('lxc.cfg.j2', mirror=VEIL_APT_URL)),
         lxc_container_created_resource(name=container_name),
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name),
             content=render_config('lxc-container.cfg.j2', name=container_name, mac_address=mac_address, lan_interface=lan_interface,

@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+from veil.env_const import VEIL_DEPENDENCY_URL
 from veil.profile.installer import *
 
 @atomic_installer
@@ -37,10 +38,5 @@ def db2_driver_resource():
 def download_db2_driver():
     if os.path.exists('/opt/db2-clidriver'):
         return
-    mirror = os.getenv('VEIL_DEPENDENCY_MIRROR')
-    if mirror:
-        mirror = '{}:8080'.format(mirror)
-    else:
-        mirror = 'http://dependency-veil.googlecode.com/svn/trunk'
-    shell_execute('wget {}/db2-clidriver.tar.gz -O /tmp/db2-clidriver.tar.gz'.format(mirror))
+    shell_execute('wget {}/db2-clidriver.tar.gz -O /tmp/db2-clidriver.tar.gz'.format(VEIL_DEPENDENCY_URL))
     shell_execute('tar xzf /tmp/db2-clidriver.tar.gz -C /opt')
