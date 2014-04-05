@@ -54,7 +54,7 @@ def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
 
 
 def process_tenpay_payment_notification(out_trade_no, http_arguments, notified_from):
-    trade_no, buyer_id, paid_total, paid_at, show_url, discarded_reasons = validate_notification(http_arguments)
+    trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_notification(http_arguments)
     if discarded_reasons:
         LOGGER.warn('tenpay trade notification discarded: %(discarded_reasons)s, %(http_arguments)s', {
             'discarded_reasons': discarded_reasons,
@@ -63,7 +63,8 @@ def process_tenpay_payment_notification(out_trade_no, http_arguments, notified_f
         set_http_status_code(httplib.BAD_REQUEST)
         return '<br/>'.join(discarded_reasons)
     publish_event(EVENT_TENPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
-        paid_total=paid_total, paid_at=paid_at, show_url=show_url, notified_from=notified_from)
+        paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
+        notified_from=notified_from)
     if NOTIFIED_FROM_RETURN_URL == notified_from:
         redirect_to(show_url or '/')
     else:
@@ -112,7 +113,10 @@ def validate_notification(http_arguments):
     show_url = http_arguments.get('attach', None)
     if not show_url:
         discarded_reasons.append('no attach (show_url inside)')
-    return trade_no, http_arguments.get('buyer_alias', None), paid_total, paid_at, show_url, discarded_reasons
+    buyer_alias = http_arguments.get('buyer_alias', None)
+    bank_code = http_arguments.get('bank_type', None)
+    bank_billno = http_arguments.get('bank_billno', None)
+    return trade_no, buyer_alias, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons
 
 
 def is_sign_correct(http_arguments):
