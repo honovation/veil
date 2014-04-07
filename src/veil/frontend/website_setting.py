@@ -45,15 +45,14 @@ def website_upstreams(purpose, start_port, processes_count):
 
 
 def website_locations(purpose, has_bunker=False, max_upload_file_size='1m'):
+    extra_headers = '''
+        add_header X-Frame-Options SAMEORIGIN;
+        add_header X-UA-Compatible "IE=Edge,chrome=1";
+        '''
     if has_bunker:
         # done in bunker
-        extra_headers = ''
         extra_locations = {}
     else:
-        extra_headers = '''
-            add_header X-Frame-Options SAMEORIGIN;
-            add_header X-UA-Compatible "IE=Edge,chrome=1";
-            '''
         extra_locations = {
             '= /favicon.ico': {
                 '_': '''
