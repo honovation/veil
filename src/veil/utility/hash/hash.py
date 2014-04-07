@@ -48,8 +48,12 @@ def decode_token(token, *part_types):
     return [t(parts[i]) for i, t in enumerate(part_types)]
 
 
-def get_password_hash(password):
-    return get_hmac(password, strong=True)
+def get_password_hash(password, dynamic_salt=None):
+    """
+    @param dynamic_salt: is recommended for better security,
+        it is something like user ID or created_at which is fixed for the secured entity but different from others
+    """
+    return get_hmac(password, strong=True) if dynamic_salt is None else get_hmac(password, dynamic_salt, strong=True)
 
 
 def get_hmac(*parts, **kwargs):
