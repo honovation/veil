@@ -148,7 +148,7 @@ class Database(object):
             LOGGER.exception('Cannot close database connection')
 
     def has_rows(self, sql, **kwargs):
-        return self.get_scalar('SELECT EXISTS ({})'.format(sql), **kwargs)
+        return len(self._query(sql, returns_dict_object=False, **kwargs)) > 0
 
     def execute(self, sql, **kwargs):
         return self._execute(sql, **kwargs)
