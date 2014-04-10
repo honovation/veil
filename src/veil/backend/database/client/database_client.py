@@ -76,9 +76,7 @@ def connect(type, host, port, database, user, password, schema):
 
 @contextmanager
 def require_transaction_context(db):
-    if db.autocommit is False:
-        yield
-    else:
+    if db.autocommit:
         db.disable_autocommit()
         try:
             yield
@@ -91,6 +89,8 @@ def require_transaction_context(db):
             db.commit_transaction()
         finally:
             db.enable_autocommit()
+    else:
+        yield
 
 
 def transactional(database_provider):
@@ -121,11 +121,11 @@ class Database(object):
         self.conn.autocommit = on_off
 
     def disable_autocommit(self):
-        if self.autocommit is not False:
+        if self.autocommit:
             self.autocommit = False
 
     def enable_autocommit(self):
-        if self.autocommit is not True:
+        if not self.autocommit:
             self.autocommit = True
 
     def rollback_transaction(self):
@@ -283,7 +283,7 @@ class Database(object):
         check_table_dependencies(self.component_name, self.purpose, sql)
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             reconnected = False
-            within_transaction_context = self.autocommit is False
+            within_transaction_context = not self.autocommit
             while True:
                 try:
                     cursor.execute(sql, kwargs)
@@ -309,7 +309,7 @@ class Database(object):
         check_table_dependencies(self.component_name, self.purpose, sql)
         with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
             reconnected = False
-            within_transaction_context = self.autocommit is False
+            within_transaction_context = not self.autocommit
             while True:
                 try:
                     cursor.executemany(sql, seq_of_parameters)
@@ -335,7 +335,7 @@ class Database(object):
         check_table_dependencies(self.component_name, self.purpose, sql)
         with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
             reconnected = False
-            within_transaction_context = self.autocommit is False
+            within_transaction_context = not self.autocommit
             while True:
                 try:
                     cursor.execute(sql, kwargs)
@@ -363,7 +363,7 @@ class Database(object):
         """
         check_table_dependencies(self.component_name, self.purpose, sql)
         reconnected = False
-        within_transaction_context = self.autocommit is False
+        within_transaction_context = not self.autocommit
         while True:
             try:
                 # psycopg2 named cursor is implemented as 'DECLARE name CURSOR WITHOUT HOLD FOR query'

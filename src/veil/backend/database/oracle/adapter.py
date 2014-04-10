@@ -27,6 +27,7 @@ class OracleAdapter(object):
         connection_string = '{}/{}@{}:{}/{}'.format(self.user, self.password, self.host, self.port, self.database)
         try:
             conn = cx_Oracle.connect(connection_string)
+            conn.autocommit = True
             if self.schema:
                 conn.current_schema = str(self.schema)
         except:
