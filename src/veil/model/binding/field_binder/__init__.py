@@ -2,6 +2,7 @@ import veil_component
 
 with veil_component.init_component(__name__):
     from .field_binder import not_empty
+    from .field_binder import match
     from .field_binder import one_of
     from .field_binder import clamp_length
     from .field_binder import clamp
@@ -29,6 +30,7 @@ with veil_component.init_component(__name__):
     __all__ = [
         # from field_binder
         not_empty.__name__,
+        match.__name__,
         one_of.__name__,
         clamp_length.__name__,
         clamp.__name__,

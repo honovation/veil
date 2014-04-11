@@ -46,6 +46,14 @@ def not_empty(value):
     raise Invalid(_('不能为空'))
 
 
+def match(pattern):
+    def bind(value):
+        r = re.compile(pattern)
+        if r.match(value) is None:
+            raise Invalid(_('格式不正确'))
+        return value
+    return bind
+
 def is_list(value):
     if isinstance(value, (list, tuple)):
         return value
