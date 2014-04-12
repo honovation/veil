@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import os
 from veil.env_const import VEIL_DEPENDENCY_URL, VEIL_ENV_TYPE
+from veil_component import as_path
 from veil_installer import *
 from veil.utility.shell import *
 
@@ -9,14 +10,16 @@ LOGGER = logging.getLogger(__name__)
 
 DEFAULT_VERSION = '2.9'
 RESOURCE_KEY = 'veil.development.selenium.chrome_driver_resource'
-CHROMEDRIVER_PATH = '/usr/bin/chromedriver'
+CHROMEDRIVER_PATH = as_path('/usr/bin/chromedriver')
 
 
 def get_installed_version():
-    if not os.path.exists(CHROMEDRIVER_PATH):
+    if not CHROMEDRIVER_PATH.exists():
+        return None
+    if not CHROMEDRIVER_PATH.islink():
+        CHROMEDRIVER_PATH.rename('{}.bak'.format(CHROMEDRIVER_PATH))
         return None
     return shell_execute('readlink {}'.format(CHROMEDRIVER_PATH), capture=True).rsplit('-', 1)[1].strip()
-
 
 
 @atomic_installer
