@@ -72,7 +72,7 @@ veil.event.subscribe = function (eventName, handler) {
 
 veil.event.unsubscribe = function (eventName, handler) {
     if (veil.event.SUBSCRIBERS[eventName]) {
-        var index = $.inArray(handler, veil.event.SUBSCRIBERS[eventName])
+        var index = $.inArray(handler, veil.event.SUBSCRIBERS[eventName]);
         if ( index != -1) {
             veil.event.SUBSCRIBERS[eventName].splice(index, 1);
         }
@@ -406,10 +406,8 @@ veil.widget = {};
 
 veil.widget.reset = function () {
     $.each(veil.widget.HANDLERS, function (event, selectors) {
-        $.each(selectors, function (selector, handlers) {
-            $.each(handlers, function () {
-                $(document).off(event, selector, this);
-            });
+        $.each(selectors, function (index, selector) {
+            $(document).off(event, selector);
         });
     });
 
@@ -425,24 +423,19 @@ veil.widget.handle = function (widget_selector, child_selector, event, handler, 
     var selector = child_selector ? widget_selector + ' ' + child_selector : widget_selector;
     var fullSelector = base_selector ? base_selector + ' ' + selector : selector;
     if (veil.widget.HANDLERS[event]) {
-        if (veil.widget.HANDLERS[event][fullSelector]) {
-            if ($.inArray(handler, veil.widget.HANDLERS[event][fullSelector]) != -1) {
-                return;
-            }
-        } else {
-            veil.widget.HANDLERS[event][fullSelector] = [];
+        if ($.inArray(fullSelector, veil.widget.HANDLERS[event]) != -1) {
+            return;
         }
     } else {
-        veil.widget.HANDLERS[event] = {};
-        veil.widget.HANDLERS[event][fullSelector] = [];
+        veil.widget.HANDLERS[event] = [];
     }
-    veil.widget.HANDLERS[event][fullSelector].push(handler);
+    veil.widget.HANDLERS[event].push(fullSelector);
 
     $(base_selector || document).on(event, selector, function () {
         var widget = child_selector ? $(this).parents(widget_selector) : $(this);
         veil.widget.clearErrorMessages(widget);
         var newArgs = [widget];
-        for(var i = 0; i < arguments.length; i++) {
+        for (var i = 0; i < arguments.length; i++) {
             newArgs.push(arguments[i]);
         }
         return handler.apply(this, newArgs);
