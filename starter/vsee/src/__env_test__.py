@@ -3,6 +3,7 @@ from veil_component import *
 from veil.profile.setting import *
 import __env__
 
+TEST_SUPERVISOR_HTTP_PORT = 9091
 TEST_REDIS_HOST = '127.0.0.1'
 TEST_REDIS_PORT = 7380
 
@@ -30,6 +31,7 @@ ENV_TEST = {
         '@': veil_server(
             hosted_on='',
             sequence_no=20,
+            supervisor_http_port=TEST_SUPERVISOR_HTTP_PORT,
             programs=merge_multiple_settings(
                 redis_program('test', TEST_REDIS_HOST, TEST_REDIS_PORT),
                 __env__.vsee_postgresql_program(config),

@@ -1,8 +1,8 @@
 from __future__ import unicode_literals, print_function, division
-from veil_component import *
 from veil.profile.setting import *
 import __env__
 
+DEVELOPMENT_SUPERVISOR_HTTP_PORT = 9090
 DEVELOPMENT_REDIS_HOST = '127.0.0.1'
 DEVELOPMENT_REDIS_PORT = 7379
 
@@ -30,6 +30,7 @@ ENV_DEVELOPMENT = {
         '@': veil_server(
             hosted_on='',
             sequence_no=10,
+            supervisor_http_port=DEVELOPMENT_SUPERVISOR_HTTP_PORT,
             programs=merge_multiple_settings(
                 redis_program('development', DEVELOPMENT_REDIS_HOST, DEVELOPMENT_REDIS_PORT),
                 __env__.vsee_postgresql_program(config),
