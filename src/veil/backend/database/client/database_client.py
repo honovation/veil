@@ -51,6 +51,7 @@ def require_database(purpose, component_name=None, verify_db=False):
         config = database_client_config(purpose).copy()
         __import__(config.pop('driver'))
         instances[purpose] = connect(**config)
+        assert instances[purpose].autocommit, 'autocommit should no be disabled'
     db = Database(purpose, component_name, instances[purpose])
     executing_test = get_executing_test(optional=True)
     if executing_test:

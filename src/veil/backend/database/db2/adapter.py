@@ -25,9 +25,9 @@ class DB2Adapter(object):
             self.database, self.host, self.port, self.user, self.password)
         try:
             conn = ibm_db_dbi.connect(connection_string)
+            conn.set_autocommit(True)
             if self.schema:
-                with contextlib.closing(conn.cursor()) as c:
-                    c.execute('SET SCHEMA {}'.format(self.schema))
+                conn.set_current_schema(self.schema)
         except:
             LOGGER.critical('Cannot connect to database: %(connection_string)s', {'connection_string': connection_string}, exc_info=1)
             try:
