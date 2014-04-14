@@ -3,6 +3,7 @@ import contextlib
 from datetime import datetime
 from datetime import timedelta
 import calendar
+from dateutil.relativedelta import relativedelta
 import pytz
 
 LOCAL_TIMEZONE = pytz.timezone('Asia/Shanghai')
@@ -93,3 +94,7 @@ def is_naive_datetime(dt):
 
 def is_utc_datetime(dt):
     return dt.tzinfo is pytz.utc or dt.tzinfo.utcoffset(dt) in (0, timedelta(0))
+
+
+def get_relative_delta(dt1, dt2):
+    return relativedelta(dt1, dt2)
