@@ -115,26 +115,36 @@ class NamedParameterCursor(object):
     def execute(self, sql, kwargs=None):
         if not kwargs:
             return self.cursor.execute(sql)
-        sql, args = self.translate_parameters(sql, kwargs)
-        return self.cursor.execute(sql, args)
+        sql, kwargs_ = self.translate_parameters(sql, kwargs)
+        return self.cursor.execute(sql, kwargs_)
 
     def executemany(self, sql, kwargs=None):
         if not kwargs:
             return self.cursor.executemany(sql)
-        sql, args = self.translate_parameters(sql, kwargs)
-        return self.cursor.executemany(sql, args)
+        sql, kwargs_ = self.translate_parameters(sql, kwargs)
+        return self.cursor.executemany(sql, kwargs_)
 
     def translate_parameters(self, sql, kwargs):
         param_names = []
 
         def replace_placeholder(match):
             param_name = match.group(1).strip()
-            param_names.append(param_name)
-            return ':{}'.format(param_name)
+            value = kwargs[param_name]
+            if param_name not in param_names:
+                param_names.append(param_name)
+            if isinstance(value, tuple):
+                return '({})'.format(', '.join(':{}{}'.format(param_name, i) for i in xrange(len(value))))
+            else:
+                return ':{}'.format(param_name)
 
         sql = self.PARAMETER_REGEX.sub(replace_placeholder, sql)
-        args = tuple(kwargs[param_name] for param_name in param_names)
-        return sql, args
+        param_list = [(name, value) for name, value in kwargs.items() if name in param_names and not isinstance(value, tuple)]
+        param_list.extend(
+            ('{}{}'.format(name, i), value)
+            for name, values in kwargs.items() if name in param_names and isinstance(values, tuple)
+            for i, value in enumerate(values)
+        )
+        return sql, dict(param_list)
 
     def __getattr__(self, attr):
         if attr in self.__dict__:
