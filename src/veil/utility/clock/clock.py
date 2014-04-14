@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, date, timedelta
 import calendar
 from dateutil.relativedelta import relativedelta
 import pytz
@@ -96,5 +95,10 @@ def is_utc_datetime(dt):
     return dt.tzinfo is pytz.utc or dt.tzinfo.utcoffset(dt) in (0, timedelta(0))
 
 
-def get_relative_delta(dt1, dt2):
-    return relativedelta(dt1, dt2)
+def get_relative_delta(dt1, dt2=None, always_positive=True):
+    dt2 = dt2 or ( get_current_date_in_client_timezone() if isinstance(dt1, date) else get_current_time_in_client_timezone() )
+    if always_positive and dt1 < dt2:
+        delta = relativedelta(dt2, dt1)
+    else:
+        delta = relativedelta(dt1, dt2)
+    return delta
