@@ -59,13 +59,13 @@ def website_locations(purpose, has_bunker=False, max_upload_file_size='1m'):
                     access_log off; log_not_found off;
                     expires 60d;
                     ''',
-                'alias': VEIL_HOME / 'static' / 'favicon.ico'
+                'alias': VEIL_HOME / 'static' / purpose / 'favicon.ico'
             },
             '= /robots.txt': {
                 '_': '''
                     access_log off; log_not_found off;
                     ''',
-                'alias': VEIL_HOME / 'static' / '{}-robots.txt'.format(purpose)
+                'alias': VEIL_HOME / 'static' / purpose / 'robots.txt'
             },
             '/static/': {
                 '_': '''
