@@ -1,1 +1,0 @@
-../../../veil/static/veil-doc.js

@@ -123,7 +123,7 @@ def person_website_nginx_server(config, extra_locations=None):
         locations = merge_multiple_settings(locations, extra_locations, website_bucket_location(purpose))
     return nginx_server(config.person_website_domain, config.person_website_domain_port, locations=locations,
         upstreams=website_upstreams('person', config.person_website_start_port, config.person_website_processes_count),
-        error_page={'404': '404.html', '500': '500.html'}, error_page_dir='{}/static/error-page'.format(VEIL_HOME))
+        error_page={'404': '404.html', '500': '500.html'}, error_page_dir='{}/static/person/error-page'.format(VEIL_HOME))
 
 
 def nginx_log_rotater_program():
