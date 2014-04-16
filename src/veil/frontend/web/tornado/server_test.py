@@ -11,7 +11,7 @@ class ServerTest(TestCase):
             get_current_http_response().write('hello')
             get_current_http_response().finish()
 
-        self.http_server = start_test_http_server(handler=handler)
+        self.http_server = start_test_http_server(handler=handler, port=18080)
         with require_io_loop_executor():
             response = urllib2.urlopen('http://localhost:{}'.format(self.http_server.port))
             response.data = response.read()
