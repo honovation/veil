@@ -12,6 +12,8 @@ SUPPORT_STATIC_FILE_TYPES = ('js', 'css')
 
 def list_static_file_dependencies():
     file = VEIL_HOME / 'DEP-STATIC-FILE'
+    if not file.exists():
+        return {}
     code = compile(file.text(), file, 'exec')
     context = {}
     exec code in context
