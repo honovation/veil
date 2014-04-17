@@ -5,13 +5,13 @@ import __env__
 
 TEST_SUPERVISOR_HTTP_PORT = 9091
 TEST_REDIS_HOST = '127.0.0.1'
-TEST_REDIS_PORT = 7380
+TEST_REDIS_PORT = 6380
 
 config = __env__.env_config(
-    person_website_start_port=9100,
+    person_website_start_port=2050,
     person_website_processes_count=1,
     person_website_domain='person.dev.dmright.com',
-    person_website_domain_port=8170,
+    person_website_domain_port=81,
     persist_store_redis_host=TEST_REDIS_HOST,
     persist_store_redis_port=TEST_REDIS_PORT,
     memory_cache_redis_host=TEST_REDIS_HOST,

@@ -99,10 +99,6 @@ def vsee_postgresql_program(config, more_config=None):
         log_min_duration_statement=LOGGING_LEVEL_CONFIG.vsee_postgresql.log_min_duration_statement, **more_config)
 
 
-def person_redis_program(config):
-    return redis_program('person', config.person_redis_host, config.person_redis_port, persisted_by_aof=True)
-
-
 def persist_store_redis_program(config):
     return redis_program('persist_store', config.persist_store_redis_host, config.persist_store_redis_port, persisted_by_aof=True)
 

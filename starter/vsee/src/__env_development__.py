@@ -4,13 +4,13 @@ import __env__
 
 DEVELOPMENT_SUPERVISOR_HTTP_PORT = 9090
 DEVELOPMENT_REDIS_HOST = '127.0.0.1'
-DEVELOPMENT_REDIS_PORT = 7379
+DEVELOPMENT_REDIS_PORT = 6379
 
 config = __env__.env_config(
-    person_website_start_port=9000,
+    person_website_start_port=2000,
     person_website_processes_count=1,
     person_website_domain='person.dev.dmright.com',
-    person_website_domain_port=8070,
+    person_website_domain_port=80,
     persist_store_redis_host=DEVELOPMENT_REDIS_HOST,
     persist_store_redis_port=DEVELOPMENT_REDIS_PORT,
     memory_cache_redis_host=DEVELOPMENT_REDIS_HOST,
@@ -21,9 +21,9 @@ config = __env__.env_config(
     queue_host=DEVELOPMENT_REDIS_HOST,
     queue_port=DEVELOPMENT_REDIS_PORT,
     resweb_domain='queue.dev.dmright.com',
-    resweb_domain_port=8070,
+    resweb_domain_port=80,
     resweb_host='127.0.0.1',
-    resweb_port=9070)
+    resweb_port=7070)
 
 ENV_DEVELOPMENT = {
     'development': veil_env(server_hosts={}, servers={
