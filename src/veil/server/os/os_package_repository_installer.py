@@ -19,7 +19,6 @@ def os_package_repository_resource(name):
         return
     LOGGER.info('installing os package repository: %(name)s ...', {'name': name})
     # install command add-apt-repository
-    install_resource(os_package_resource(name='software-properties-common'))
     install_resource(os_package_resource(name='python-software-properties'))
     shell_execute('add-apt-repository ppa:{} -y'.format(name), capture=True)
     shell_execute('apt-get -q update', capture=True)
