@@ -44,11 +44,12 @@ def website_upstreams(purpose, start_port, processes_count):
     }
 
 
-def website_locations(purpose, has_bunker=False, max_upload_file_size='1m'):
+def website_locations(purpose, has_bunker=False, max_upload_file_size='1m', extra_headers=None):
     extra_headers = '''
         add_header X-Frame-Options SAMEORIGIN;
         add_header X-UA-Compatible "IE=Edge,chrome=1";
-        '''
+        %s
+        ''' % extra_headers or ''
     if has_bunker:
         # done in bunker
         extra_locations = {}
