@@ -1,1 +1,2 @@
+veil.server.os.os_package_resource?python-software-properties
 veil.server.python.python_package_resource?redis
