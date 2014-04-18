@@ -14,6 +14,7 @@ def os_package_resource(name):
         raise Exception('please upgrade latest under development or test environment')
 
     installed_version, downloaded_version = get_local_os_package_versions(name)
+    LOGGER.debug('UPGRADE MODE: %(upgrade_mode)s', {'upgrade_mode': upgrade_mode})
     latest_version = get_resource_latest_version(to_resource_key(name))
     if UPGRADE_MODE_LATEST == upgrade_mode:
         may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
