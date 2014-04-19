@@ -412,26 +412,25 @@ veil.widget.reset = function () {
     });
 
     veil.widget.HANDLERS = {};
+
     if (veil.widget.loadedJavascripts.length) {
-        var $bodyScripts = $('script');
-        var loadedScriptUrls = veil.widget.loadedJavascripts;
-        $bodyScripts.each(function(){
-            if (loadedScriptUrls.indexOf($(this).attr('src')) !== -1) {
+        $('script').each(function(){
+            if (veil.widget.loadedJavascripts.indexOf($(this).attr('src')) !== -1) {
                 $(this).remove();
             }
         });
         veil.widget.loadedJavascripts = [];
     }
+
     if (veil.widget.loadedStylesheets.length) {
-        var $bodyStyles = $('link[rel=stylesheet]');
-        var loadedStyleUrls = veil.widget.loadedStylesheets;
-        $bodyStyles.each(function(){
-            if (loadedStyleUrls.indexOf($(this).attr('href')) !== -1) {
+        $('link[rel=stylesheet]').each(function(){
+            if (veil.widget.loadedStylesheets.indexOf($(this).attr('href')) !== -1) {
                 $(this).remove();
             }
         });
         veil.widget.loadedStylesheets = [];
     }
+
     veil.widget.initializers = [];
 };
 
