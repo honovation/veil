@@ -448,7 +448,7 @@ veil.widget.createResource = function (widget, onSuccess, data, dataFormat, data
     }
     var _ = {
         widget: widget,
-        url: widget.attr('action'),
+        url: widget.attr('action') || widget.data('action'),
         data: data,
         dataFormat: dataFormat,
         dataType: dataType,
@@ -463,7 +463,7 @@ veil.widget.updateResource = function (widget, onSuccess, data, dataFormat, data
     }
     var _ = {
         widget: widget,
-        url:widget.attr('action'),
+        url: widget.attr('action') || widget.data('action'),
         data: data || widget.serialize(),
         dataFormat: dataFormat,
         dataType: dataType,
@@ -478,7 +478,7 @@ veil.widget.patchResource = function(widget, onSuccess, data, dataFormat, dataTy
     }
     var _ = {
         widget: widget,
-        url: widget.attr('action'),
+        url: widget.attr('action') || widget.data('action'),
         data: data || widget.serialize(),
         dataFormat: dataFormat,
         dataType: dataType,
@@ -490,9 +490,9 @@ veil.widget.patchResource = function(widget, onSuccess, data, dataFormat, dataTy
 veil.widget.getResource = function (widget, onSuccess) {
     var _ = {
         widget: widget,
-        url:widget.attr('action'),
-        data:widget.serialize(),
-        onSuccess:onSuccess
+        url: widget.attr('action') || widget.data('action'),
+        data: widget.serialize(),
+        onSuccess: onSuccess
     };
     return veil.resource.get(_);
 };
@@ -500,17 +500,17 @@ veil.widget.getResource = function (widget, onSuccess) {
 veil.widget.delResource = function (widget, onSuccess) {
     var _ = {
         widget: widget,
-        url:widget.data('deleteUrl'),
-        onSuccess:onSuccess
+        url: widget.data('deleteUrl'),
+        onSuccess: onSuccess
     };
     return veil.resource.del(_);
 };
 
 veil.widget.get = function (url, onSuccess, data) {
     return veil.resource.get({
-        url:url,
-        data:data,
-        onSuccess:function (html) {
+        url: url,
+        data: data,
+        onSuccess: function (html) {
             veil.widget.processWidget(html, onSuccess);
         }
     });
@@ -524,9 +524,9 @@ veil.widget.refresh = function (widget, options) {
     if (refreshUrl) {
         veil.resource.get({
             widget: widget,
-            url:refreshUrl,
-            data:data,
-            onSuccess:function (html) {
+            url: refreshUrl,
+            data: data,
+            onSuccess: function (html) {
                 var token = 'refreshed-' + Math.round(Math.random()*1000);
                 widget.replaceWith($(html).attr('data-refresh-token', token));
                 var refreshedWidget = $('[data-refresh-token=' + token + ']');
