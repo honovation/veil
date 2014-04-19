@@ -48,8 +48,8 @@ def website_locations(purpose, has_bunker=False, max_upload_file_size='1m', extr
     extra_headers = '''
         add_header X-Frame-Options SAMEORIGIN;
         add_header X-UA-Compatible "IE=Edge,chrome=1";
-        %s
-        ''' % extra_headers or ''
+        {}
+        '''.format(extra_headers or '')
     if has_bunker:
         # done in bunker
         extra_locations = {}

@@ -412,8 +412,26 @@ veil.widget.reset = function () {
     });
 
     veil.widget.HANDLERS = {};
-    veil.widget.loadedJavascripts = [];
-    veil.widget.loadedStylesheets = [];
+    if (veil.widget.loadedJavascripts.length) {
+        var $bodyScripts = $('script');
+        var loadedScriptUrls = veil.widget.loadedJavascripts;
+        $bodyScripts.each(function(){
+            if (loadedScriptUrls.indexOf($(this).attr('src')) !== -1) {
+                $(this).remove();
+            }
+        });
+        veil.widget.loadedJavascripts = [];
+    }
+    if (veil.widget.loadedStylesheets.length) {
+        var $bodyStyles = $('link[rel=stylesheet]');
+        var loadedStyleUrls = veil.widget.loadedStylesheets;
+        $bodyStyles.each(function(){
+            if (loadedStyleUrls.indexOf($(this).attr('href')) !== -1) {
+                $(this).remove();
+            }
+        });
+        veil.widget.loadedStylesheets = [];
+    }
     veil.widget.initializers = [];
 };
 
@@ -631,11 +649,11 @@ veil.widget.processWidget = function (html, processHtml) {
         }
     });
     $(stylesheetUrls).each(function() {
-        loadStylesheet(this);
+        loadStylesheet(String(this));
     });
     processHtml(html);
     $(javascriptUrls).each(function() {
-        loadJavascript(this);
+        loadJavascript(String(this));
     });
     $(veil.widget.initializers).each(function() {
         this();
