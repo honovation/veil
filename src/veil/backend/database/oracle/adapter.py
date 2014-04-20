@@ -133,7 +133,7 @@ class NamedParameterCursor(object):
             if param_name not in param_names:
                 param_names.append(param_name)
             if isinstance(value, tuple):
-                return '({})'.format(', '.join(':{}{}'.format(param_name, i) for i in xrange(len(value))))
+                return '({})'.format(', '.join(':{}{}'.format(param_name, i) for i in range(len(value))))
             else:
                 return ':{}'.format(param_name)
 

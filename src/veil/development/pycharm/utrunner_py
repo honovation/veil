@@ -64,7 +64,7 @@ def to_module_name(file_name):
 
 def is_valid_module_name(path, module_name):
     package_names = module_name.split('.')[:-1]
-    for i in xrange(0, len(package_names)):
+    for i in range(len(package_names)):
         path_sections = [path]
         path_sections.extend(package_names[:i+1])
         path_sections.append('__init__.py')

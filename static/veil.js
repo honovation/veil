@@ -3,7 +3,7 @@
  * veil.js
  *
  * @requires jQuery v1.8+
- * @requires jQuery Cookie Plugin v1.4+
+ * @requires jQuery Cookie Plugin (https://github.com/carhartl/jquery-cookie) v1.4+
  * @requires json3.js(https://github.com/bestiejs/json3) for browsers without native JSON support
  *
  */

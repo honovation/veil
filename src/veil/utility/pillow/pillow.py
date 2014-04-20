@@ -113,8 +113,8 @@ def generate_captcha_image_and_answer(size=(180, 30), img_type="GIF", mode="RGB"
         """绘制干扰点"""
         chance = min(100, max(0, int(point_chance))) # 大小限制在[0, 100]
 
-        for w in xrange(width):
-            for h in xrange(height):
+        for w in range(width):
+            for h in range(height):
                 tmp = random.randint(0, 100)
                 if tmp > 100 - chance:
                     draw.point((w, h), fill=(0, 0, 0))

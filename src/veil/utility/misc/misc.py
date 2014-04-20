@@ -25,9 +25,9 @@ def chunks(seq, size, padding=False, padding_element=None):
                 assert isinstance(padding_element, basestring) and len(padding_element) == 1
                 seq = '{}{}'.format(seq, padding_element * (size - remain))
             else:
-                for i in xrange(0, size - remain):
+                for i in range(size - remain):
                     seq.append(padding_element)
-    for i in xrange(0, len(seq), size):
+    for i in range(len(seq), size):
         yield seq[i: i + size]
 
 
