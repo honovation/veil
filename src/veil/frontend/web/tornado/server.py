@@ -109,7 +109,7 @@ class HTTPResponse(object):
 
     def clear(self):
         self._headers = {
-            'Server': 'TornadoServer/%s' % tornado.version,
+            'Server': 'TornadoServer/{}'.format(tornado.version),
             'Content-Type': 'text/html; charset=UTF-8',
         }
         if not self.request.supports_http_1_1():
@@ -214,7 +214,7 @@ class HTTPResponse(object):
 
     def _generate_headers(self):
         lines = [' '.join((self.request.version, str(self._status_code), httplib.responses[self._status_code]))]
-        lines.extend(['{}: {}'.format(n, v) for n, v in self._headers.iteritems()])
+        lines.extend(['{}: {}'.format(n, v) for n, v in self._headers.items()])
         for cookie in self._cookies.values():
             LOGGER.debug(to_str('Set-Cookie: ' + cookie.OutputString(None)))
             lines.append(to_str('Set-Cookie: ' + cookie.OutputString(None)))

@@ -119,7 +119,7 @@ def create_cookie(cookies, name, value, domain=None, expires=None, path='/', exp
         cookie['expires'] = email.utils.formatdate(timestamp, localtime=False, usegmt=True)
     if path:
         cookie['path'] = path
-    for k, v in kwargs.iteritems():
+    for k, v in kwargs.items():
         if 'max_age' == k:
             k = 'max-age'
         cookie[k] = v

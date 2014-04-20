@@ -90,8 +90,9 @@ def wrap_console_text_with_color(code):
     def inner(text, bold=False):
         c = code
         if bold:
-            c = "1;%s" % c
-        return "\033[%sm%s\033[0m" % (c, text)
+            c = '1;{}'.format(c)
+        return '\033[{}m{}\033[0m'.format(c, text)
+
     return inner
 
 COLOR_WRAPPERS = {

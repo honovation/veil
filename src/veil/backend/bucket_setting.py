@@ -3,7 +3,7 @@ from veil_component import *
 
 def bucket_location(base_directory):
     return {
-        '_': """
+        '_': '''
             access_log off;
             expires max;
             if ($query_string !~* "v=(.+)") {
@@ -11,6 +11,6 @@ def bucket_location(base_directory):
                 add_header Pragma public;
                 add_header Cache-Control "public, must-revalidate, proxy-revalidate";
             }
-            """,
+            ''',
         'alias': as_path(base_directory) / ''
     }

@@ -149,8 +149,7 @@ def print_deployed_at():
 
 def get_deployed_at():
     last_commit = shell_execute('git rev-parse HEAD', capture=True).strip()
-    lines = shell_execute("git show-ref --tags -d | grep ^%s | sed -e 's,.* refs/tags/,,' -e 's/\^{}//'" % last_commit,
-        capture=True)
+    lines = shell_execute("git show-ref --tags -d | grep ^{} | sed -e 's,.* refs/tags/,,' -e 's/\^{{}}//'".format(last_commit), capture=True)
     deployed_ats = []
     for tag in lines.splitlines(False):
         if tag.startswith('{}-'.format(VEIL_ENV)):
@@ -198,8 +197,8 @@ def _wrap_with(code):
     def inner(text, bold=False):
         c = code
         if bold:
-            c = "1;%s" % c
-        return "\033[%sm%s\033[0m" % (c, text)
+            c = '1;{}'.format(c)
+        return '\033[{}m{}\033[0m'.format(c, text)
 
     return inner
 

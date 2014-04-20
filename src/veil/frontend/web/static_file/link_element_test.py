@@ -20,15 +20,12 @@ class LinkElementTest(TestCase):
         self.assertEqual(['<link rel="stylesheet" href="/test.css"></link>'], css_elements)
 
     def test_tail_head_kept(self):
-        html, css_elements = process_link_elements(
-            """
+        html, css_elements = process_link_elements('''
             a
             <link rel="stylesheet" href="/test1.css"></link>
             b
             <link rel="stylesheet" href="/test2.css"></link>
             c
-            """)
+            ''')
         self.assertEqual('abc', html.replace('\n', '').replace(' ', ''))
-        self.assertEqual([
-            '<link rel="stylesheet" href="/test1.css"></link>',
-            '<link rel="stylesheet" href="/test2.css"></link>'], css_elements)
+        self.assertEqual(['<link rel="stylesheet" href="/test1.css"></link>', '<link rel="stylesheet" href="/test2.css"></link>'], css_elements)

@@ -112,8 +112,8 @@ def process_javascript(page_handler, html):
 
 
 def wrap_js_to_ensure_load_once(js):
-    hash = hashlib.md5(to_str(js)).hexdigest()
-    return "veil.executeOnce('%s', function(){\r\n%s\r\n});" % (hash, js)
+    hash_ = hashlib.md5(to_str(js)).hexdigest()
+    return "veil.executeOnce('{}', function(){{\r\n{}\r\n}});".format(hash_, js)
 
 
 def write_inline_static_file(page_handler, suffix, content):

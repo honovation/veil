@@ -69,14 +69,12 @@ else:
         def __call__(self, statement_name, args):
             try:
                 assert_current_page(self.page_name)
-                return_value = require_webdriver().execute_script(
-                    """
-                    if (!veil.doc.currentPage['%s']) {
+                return_value = require_webdriver().execute_script('''
+                    if (!veil.doc.currentPage['{}']) {{
                         return 'NO_STATEMENT';
-                    }
-                    return veil.doc.currentPage['%s'].apply(this, arguments);
-                    """ % (statement_name, statement_name),
-                    *filter_non_serializable(args))
+                    }}
+                    return veil.doc.currentPage['{}'].apply(this, arguments);
+                    '''.format(statement_name, statement_name), *filter_non_serializable(args))
                 if 'NO_STATEMENT' == return_value:
                     report_error('statement {} not defined'.format(statement_name))
                 else:
@@ -92,14 +90,13 @@ else:
                 raise
 
     def assert_current_page(page_name):
-        current_page_name = require_webdriver().execute_script(
-            """
+        current_page_name = require_webdriver().execute_script('''
             if (window.veil && veil.doc && veil.doc.currentPage) {
                 return veil.doc.currentPage.pageName;
             } else {
                 return null;
             }
-            """)
+            ''')
         if page_name != current_page_name:
             assert_no_js_errors()
             message = 'we are on the wrong page, expected: {}, actual: {}, url: {}'.format(
@@ -107,14 +104,13 @@ else:
             report_error(message)
 
     def assert_no_js_errors():
-        js_errors = require_webdriver().execute_script(
-            """
+        js_errors = require_webdriver().execute_script('''
             if (window.veil && veil.doc) {
                 return veil.doc.jsErrors
             } else {
                 return null;
             }
-            """)
+            ''')
         if js_errors:
             report_error('java script errors: {}'.format(js_errors))
 

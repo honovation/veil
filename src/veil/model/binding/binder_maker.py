@@ -3,6 +3,7 @@ binder maker takes binder as input and makes binder as result
 """
 from __future__ import unicode_literals, print_function, division
 
+
 def compose(*binders):
     """
     Applies each of a series of validators in turn, passing the return

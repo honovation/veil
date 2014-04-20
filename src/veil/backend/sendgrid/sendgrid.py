@@ -61,7 +61,7 @@ def send_email(sender, recipient, subject, text='', html='', category='', email_
     msg['To'] = to_addr
     msg['Subject'] = subject
     if category:
-        msg["X-SMTPAPI"] = '{"category" : "%s"}' % category
+        msg["X-SMTPAPI"] = '{{"category" : "{}"}}'.format(category)
     if text:
         text_part = MIMEText(text, 'plain', 'UTF-8')
         msg.attach(text_part)

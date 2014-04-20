@@ -84,33 +84,33 @@ def website_locations(purpose, has_bunker=False, max_upload_file_size='1m', extr
     locations = {
         '= /': {
             '_': '''
-                proxy_pass http://%s-tornado;
-                %s
-                ''' % (purpose, extra_headers)
+                proxy_pass http://{}-tornado;
+                {}
+                '''.format(purpose, extra_headers)
         },
         '^~ /fupload/': {
             '_': '''
-                client_max_body_size %s;
-                client_body_temp_path %s 1;
+                client_max_body_size {};
+                client_body_temp_path {} 1;
                 client_body_in_file_only clean;
                 proxy_set_header X-UPLOAD-FILE-PATH $request_body_file;
                 proxy_set_body off;
-                proxy_pass http://%s-tornado;
-                %s
-            ''' % (max_upload_file_size, VEIL_VAR_DIR / 'uploaded-files', purpose, extra_headers)
+                proxy_pass http://{}-tornado;
+                {}
+            '''.format(max_upload_file_size, VEIL_VAR_DIR / 'uploaded-files', purpose, extra_headers)
         },
         '^~ /fupload-/': {
             '_': '''
-                client_max_body_size %s;
-                proxy_pass http://%s-tornado;
-                %s
-                ''' % (max_upload_file_size, purpose, extra_headers)
+                client_max_body_size {};
+                proxy_pass http://{}-tornado;
+                {}
+                '''.format(max_upload_file_size, purpose, extra_headers)
         },
         '/': {
             '_': '''
-                proxy_pass http://%s-tornado;
-                %s
-                ''' % (purpose, extra_headers)
+                proxy_pass http://{}-tornado;
+                {}
+                '''.format(purpose, extra_headers)
         },
         # inline static files
         # /static/v-xxxx/a-b.js

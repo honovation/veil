@@ -23,15 +23,14 @@ class ProcessJavascriptTest(TestCase):
             unicode(process_javascript(None, '<p>a<span class="test">b</span>c</p>')))
 
     def test_script_element_relocated_before_body_end(self):
-        processed_html = process_javascript(None,
-            """
+        processed_html = process_javascript(None, '''
             <html>
             <body>
             <script src="abc"></script>
             <p/>
             </body>
             </html>
-            """).strip()
+            ''').strip()
         doc = lxml.etree.fromstring(processed_html)
         script_element = doc[0][1]
         self.assertEqual('abc', script_element.attrib['src'])
@@ -43,11 +42,11 @@ class ProcessJavascriptTest(TestCase):
 
     def test_inline_javascript(self):
         def test_page():
-            return """
+            return '''
             <script>test</script>
             <script>test</script>
             <script>test2</script>
-            """
+            '''
 
         processed_html = unicode(process_javascript(test_page, test_page()).strip())
         doc = lxml.etree.fromstring(processed_html)
@@ -62,16 +61,14 @@ class ProcessStylesheetTest(TestCase):
         set_inline_static_files_directory(self.temp_dir)
 
     def test_link_element_relocated_before_head_end(self):
-        processed_html = process_stylesheet(None,
-            """
+        processed_html = process_stylesheet(None, '''
             <html>
             <head>
             <title>hello</title>
             </head>
             <link rel="stylesheet" type="text/css" media="screen" href="a.css"/>
             </html>
-            """
-        ).strip()
+            ''').strip()
         doc = lxml.html.document_fromstring(processed_html)
         link_element = doc[0][1]
         self.assertEqual('a.css', link_element.attrib['href'])
@@ -84,23 +81,13 @@ class ProcessStylesheetTest(TestCase):
 
     def test_inline_stylesheet(self):
         def test_page():
-            return """
+            return '''
             <style>test</style>
             <style>test2</style>
             <style>test2</style>
-            """
+            '''
 
         processed_html = unicode(process_stylesheet(test_page, test_page()).strip())
         doc = lxml.etree.fromstring(processed_html)
         self.assertEqual('/static/v-d4-d47e28f5e98547ee210c3efe99cc2e/test.css', doc.attrib['href'])
         self.assertEqual('test\ntest2', (self.temp_dir / 'd4' / 'd47e28f5e98547ee210c3efe99cc2e').text())
-
-
-
-
-
-
-
-
-
-

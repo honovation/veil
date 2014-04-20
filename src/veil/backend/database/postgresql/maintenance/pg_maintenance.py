@@ -48,13 +48,12 @@ def migrate(purpose):
     @transactional(db)
     def execute_migration_scripts():
         create_database_migration_table_if_not_exists(purpose)
-        current_version = db().get_scalar(
-            """
+        current_version = db().get_scalar('''
             SELECT to_version
             FROM database_migration_event
             ORDER BY id DESC
             LIMIT 1
-            """) or 0
+            ''') or 0
         from_version = current_version
         max_version = max(versions.keys()) if versions else None
         if from_version > max_version:
@@ -135,15 +134,14 @@ def create_database_if_not_exists(purpose):
 
 def create_database_migration_table_if_not_exists(purpose):
     db = lambda: require_database(purpose)
-    db().execute(
-        """
+    db().execute('''
         CREATE TABLE IF NOT EXISTS database_migration_event (
             id SERIAL PRIMARY KEY,
             from_version INT NOT NULL,
             to_version INT NOT NULL,
             migrated_at TIMESTAMP WITH TIME ZONE NOT NULL
         )
-        """)
+        ''')
 
 
 def load_versions(purpose):

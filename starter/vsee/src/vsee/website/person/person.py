@@ -7,5 +7,5 @@ person_route = route_for('person')
 
 
 @person_route('GET', '/')
-def operator_list_page():
-    return get_template('person-list-page.html').render(persons=list_persons())
+def list_persons_page():
+    return get_template('list-persons.html').render(persons=list_persons())

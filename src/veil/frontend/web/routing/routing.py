@@ -221,7 +221,7 @@ class PathTemplate(object):
         match = regex.match(path)
         if match is None:
             return None
-        kwargs = {k: None if v is None else unquote(v) for k, v in match.groupdict().iteritems()}
+        kwargs = {k: None if v is None else unquote(v) for k, v in match.groupdict().items()}
         return kwargs
 
     def __repr__(self):

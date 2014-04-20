@@ -36,7 +36,7 @@ def nginx_server(server_name, listen, locations, upstreams=None, error_page=None
 
 def nginx_reverse_proxy_location(upstream_host, upstream_port):
     return {
-        '_': """
-            proxy_pass http://%s:%s;
-            """ % (upstream_host, upstream_port)
+        '_': '''
+            proxy_pass http://{}:{};
+            '''.format(upstream_host, upstream_port)
     }

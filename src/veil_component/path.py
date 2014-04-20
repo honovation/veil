@@ -58,7 +58,7 @@ class Path(_base):
     # --- Special Python methods.
 
     def __repr__(self):
-        return 'path(%s)' % _base.__repr__(self)
+        return 'path({})'.format(_base.__repr__(self))
 
     # Adding a path and a string yields a path.
     def __add__(self, more):
@@ -140,37 +140,31 @@ class Path(_base):
         drive, r = os.path.splitdrive(self)
         return as_path(drive)
 
-    parent = property(
-        dirname, None, None,
-        """ This path's parent directory, as a new path object.
+    parent = property(dirname, None, None,
+        ''' This path's parent directory, as a new path object.
 
         For example, path('/usr/local/lib/libpython.so').parent == path('/usr/local/lib')
-        """)
+        ''')
 
-    name = property(
-        basename, None, None,
-        """ The name of this file or directory without the full path.
+    name = property(basename, None, None,
+        ''' The name of this file or directory without the full path.
 
         For example, path('/usr/local/lib/libpython.so').name == 'libpython.so'
-        """)
+        ''')
 
-    namebase = property(
-        _get_namebase, None, None,
-        """ The same as path.name, but with one file extension stripped off.
+    namebase = property(_get_namebase, None, None,
+        ''' The same as path.name, but with one file extension stripped off.
 
         For example, path('/home/guido/python.tar.gz').name     == 'python.tar.gz',
         but          path('/home/guido/python.tar.gz').namebase == 'python.tar'
-        """)
+        ''')
 
-    ext = property(
-        _get_ext, None, None,
-        """ The file extension, for example '.py'. """)
+    ext = property(_get_ext, None, None, ''' The file extension, for example '.py'. ''')
 
-    drive = property(
-        _get_drive, None, None,
-        """ The drive specifier, for example 'C:'.
+    drive = property(_get_drive, None, None,
+        ''' The drive specifier, for example 'C:'.
         This is always empty on systems that don't use drive specifiers.
-        """)
+        ''')
 
     def splitpath(self):
         """ p.splitpath() -> Return (p.parent, p.name). """
@@ -217,10 +211,9 @@ class Path(_base):
             unc, r = os.path.splitunc(self)
             return as_path(unc)
 
-        uncshare = property(
-            _get_uncshare, None, None,
-            """ The UNC mount point for this path.
-            This is empty for paths on local drives. """)
+        uncshare = property(_get_uncshare, None, None,
+            ''' The UNC mount point for this path.
+            This is empty for paths on local drives. ''')
 
     def joinpath(self, *args):
         """ Join two or more path components, adding a separator
@@ -365,10 +358,7 @@ class Path(_base):
             if errors == 'ignore':
                 return
             elif errors == 'warn':
-                warnings.warn(
-                    "Unable to list directory '%s': %s"
-                    % (self, sys.exc_info()[1]),
-                    TreeWalkWarning)
+                warnings.warn("Unable to list directory '{}': {}".format(self, sys.exc_info()[1]), TreeWalkWarning)
                 return
             else:
                 raise
@@ -382,10 +372,7 @@ class Path(_base):
                 if errors == 'ignore':
                     isdir = False
                 elif errors == 'warn':
-                    warnings.warn(
-                        "Unable to access '%s': %s"
-                        % (child, sys.exc_info()[1]),
-                        TreeWalkWarning)
+                    warnings.warn("Unable to access '{}': {}".format(child, sys.exc_info()[1]), TreeWalkWarning)
                     isdir = False
                 else:
                     raise
@@ -416,10 +403,7 @@ class Path(_base):
             if errors == 'ignore':
                 return
             elif errors == 'warn':
-                warnings.warn(
-                    "Unable to list directory '%s': %s"
-                    % (self, sys.exc_info()[1]),
-                    TreeWalkWarning)
+                warnings.warn("Unable to list directory '{}': {}".format(self, sys.exc_info()[1]), TreeWalkWarning)
                 return
             else:
                 raise
@@ -447,10 +431,7 @@ class Path(_base):
             if errors == 'ignore':
                 return
             elif errors == 'warn':
-                warnings.warn(
-                    "Unable to list directory '%s': %s"
-                    % (self, sys.exc_info()[1]),
-                    TreeWalkWarning)
+                warnings.warn("Unable to list directory '{}': {}".format(self, sys.exc_info()[1]), TreeWalkWarning)
                 return
             else:
                 raise
@@ -463,10 +444,7 @@ class Path(_base):
                 if errors == 'ignore':
                     continue
                 elif errors == 'warn':
-                    warnings.warn(
-                        "Unable to access '%s': %s"
-                        % (self, sys.exc_info()[1]),
-                        TreeWalkWarning)
+                    warnings.warn("Unable to access '{}': {}".format(self, sys.exc_info()[1]), TreeWalkWarning)
                     continue
                 else:
                     raise
@@ -774,25 +752,17 @@ class Path(_base):
         samefile = os.path.samefile
 
     getatime = os.path.getatime
-    atime = property(
-        getatime, None, None,
-        """ Last access time of the file. """)
+    atime = property(getatime, None, None, ''' Last access time of the file. ''')
 
     getmtime = os.path.getmtime
-    mtime = property(
-        getmtime, None, None,
-        """ Last-modified time of the file. """)
+    mtime = property(getmtime, None, None, ''' Last-modified time of the file. ''')
 
     if hasattr(os.path, 'getctime'):
         getctime = os.path.getctime
-        ctime = property(
-            getctime, None, None,
-            """ Creation time of the file. """)
+        ctime = property(getctime, None, None, ''' Creation time of the file. ''')
 
     getsize = os.path.getsize
-    size = property(
-        getsize, None, None,
-        """ Size of the file, in bytes. """)
+    size = property(getsize, None, None, ''' Size of the file, in bytes. ''')
 
     if hasattr(os, 'access'):
         def access(self, mode):

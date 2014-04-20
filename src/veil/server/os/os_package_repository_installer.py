@@ -12,7 +12,6 @@ def os_package_repository_resource(name):
     is_installed = is_os_package_repository_installed(name)
     action = None if is_installed else 'INSTALL'
     dry_run_result = get_dry_run_result()
-    LOGGER.info('os package repository action: %(name)s, %(action)s', {'name': name, 'action': action})
     if dry_run_result is not None:
         dry_run_result['os_package_repository?{}'.format(name)] = action or '-'
         return

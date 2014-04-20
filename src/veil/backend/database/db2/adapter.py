@@ -21,7 +21,7 @@ class DB2Adapter(object):
 
     def _get_conn(self):
         conn = None
-        connection_string = 'DRIVER={IBM DB2 ODBC DRIVER};DATABASE=%s;HOSTNAME=%s;PORT=%s; PROTOCOL=TCPIP;UID=%s;PWD=%s;' % (
+        connection_string = 'DRIVER={IBM DB2 ODBC DRIVER};DATABASE={};HOSTNAME={};PORT={}; PROTOCOL=TCPIP;UID={};PWD={};'.format(
             self.database, self.host, self.port, self.user, self.password)
         try:
             conn = ibm_db_dbi.connect(connection_string)

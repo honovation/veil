@@ -73,12 +73,12 @@ class CheckReadableTableDependencyTest(TestCase):
     def test_unexpected_multiple_left_join(self):
         with self.assertRaises(Exception):
             check_read({'a': ['xxx', 'yyy']}, 'a',
-                """
+                '''
                 SELECT * FROM xxx
                 LEFT JOIN yyy ON x=y
                 LEFT JOIN zzz ON x=z
                 WHERE ...
-                """)
+                ''')
 
     def test_right_join(self):
         check_read({'a': ['xxx', 'yyy']}, 'a',
@@ -90,12 +90,12 @@ class CheckReadableTableDependencyTest(TestCase):
 
     def test_inner_join_then_left_join(self):
         check_read({'a': ['xxx', 'yyy', 'zzz']}, 'a',
-            """
+            '''
             SELECT * FROM xxx
             INNER JOIN yyy ON x=y
             LEFT JOIN zzz ON x=z
             WHERE ...
-            """)
+            ''')
 
     def test_group_by(self):
         check_read({'a': ['xxx']}, 'a', 'SELECT * FROM xxx GROUP BY ...')

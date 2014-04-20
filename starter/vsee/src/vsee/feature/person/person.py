@@ -8,6 +8,7 @@ from const import GENDER
 LOGGER = logging.getLogger(__name__)
 db = register_database('vsee')
 
+
 def list_persons():
     return db().list('SELECT * FROM person ORDER BY id')
 

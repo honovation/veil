@@ -193,7 +193,7 @@ def to_datetime_with_minute_precision_from_iso8601(value):
     try:
         m = ISO8601_REGEX.match(value)
         if not m:
-            raise Exception('Unable to parse date string %r' % value)
+            raise Exception('Unable to parse date string {!r}'.format(value))
         groups = m.groupdict()
         hours, minutes = int(groups['hours']), int(groups['minutes'])
         if groups['prefix'] == '-':

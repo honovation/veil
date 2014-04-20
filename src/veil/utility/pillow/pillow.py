@@ -122,7 +122,7 @@ def generate_captcha_image_and_answer(size=(180, 30), img_type="GIF", mode="RGB"
     def create_strs():
         """绘制验证码字符"""
         c_chars, answer = get_question()
-        strs = ' %s ' % ' '.join(c_chars) # 每个字符前后以空格隔开
+        strs = ' {} '.format(' '.join(c_chars))  # 每个字符前后以空格隔开
 
         font = PIL.ImageFont.truetype(font_type, font_size)
         font_width, font_height = font.getsize(strs)
