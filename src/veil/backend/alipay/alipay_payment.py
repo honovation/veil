@@ -107,7 +107,7 @@ def validate_notification(http_arguments):
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y-%m-%d %H:%M:%S')(paid_at)
-        except Exception:
+        except:
             LOGGER.warn('invalid gmt_payment or notify_time: %(paid_at)s', {'paid_at': paid_at})
             discarded_reasons.append('invalid gmt_payment or notify_time')
     else:
@@ -151,7 +151,7 @@ def is_notification_from_alipay(notify_id):
     verify_url = VERIFY_URL_TEMPLATE.format(alipay_client_config().partner_id, notify_id)
     try:
         response = http_call('ALIPAY-NOTIFY-VERIFY-API', verify_url, max_tries=2)
-    except Exception as e:
+    except:
         response = None
     if 'true' == response:
         LOGGER.debug('alipay notify verify passed: %(response)s, %(verify_url)s', {'response': response, 'verify_url': verify_url})

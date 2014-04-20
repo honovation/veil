@@ -18,7 +18,7 @@ PIL.ImageFile.MAXBLOCK = PIL.ImageFile.SAFEBLOCK
 def open_image(fp):
     try:
         return PIL.Image.open(fp)
-    except Exception:
+    except:
         LOGGER.warn('无法读取上传的图片: %(fp)s', {'fp': fp}, exc_info=1)
         raise
 

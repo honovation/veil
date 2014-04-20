@@ -33,7 +33,7 @@ def get_delivery_status(shipper_code, shipping_code, sleep_at_start=0):
     try:
         # sleep_at_start & sleep_before_retry: avoid IP blocking due to too frequent queries
         response = http_call('KUAIDI100-QUERY-API', url, accept='application/json', max_tries=2, sleep_at_start=sleep_at_start, sleep_before_retry=10)
-    except Exception as e:
+    except:
         pass
     else:
         if response.status == STATUS_QUERY_SUCCESS:
