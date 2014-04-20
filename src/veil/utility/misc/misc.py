@@ -27,7 +27,7 @@ def chunks(seq, size, padding=False, padding_element=None):
             else:
                 for i in range(size - remain):
                     seq.append(padding_element)
-    for i in range(len(seq), size):
+    for i in range(0, len(seq), size):
         yield seq[i: i + size]
 
 
