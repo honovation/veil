@@ -16,7 +16,7 @@ def list_static_file_dependencies():
         return {}
     code = compile(file.text(), file, 'exec')
     context = {}
-    exec code in context
+    exec(code, context)
     return context['STATIC_FILE_DEPENDENCIES']
 
 

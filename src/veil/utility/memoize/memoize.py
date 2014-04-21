@@ -6,7 +6,7 @@ import weakref
 
 
 def memoize(max_size=None):
-    if callable(max_size):
+    if hasattr(max_size, '__call__'):
         func = max_size
         decorator = _memoize()
         return decorator(func)

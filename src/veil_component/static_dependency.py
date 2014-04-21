@@ -13,7 +13,7 @@ def list_expected_static_dependencies():
     file = VEIL_HOME / 'DEP-STATIC'
     code = compile(file.text(), file, 'exec')
     context = {}
-    exec code in context
+    exec(code, context)
     return context['STATIC_DEPENDENCIES']
 
 
