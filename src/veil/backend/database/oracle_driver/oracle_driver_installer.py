@@ -6,19 +6,19 @@ from veil.profile.installer import *
 
 ORACLE_HOME = '/opt/instantclient_11_2'
 CX_ORACLE_HOME = '/opt/cx_Oracle-5.1.2'
+RESOURCE_KEY = 'veil.backend.database.oracle_driver.oracle_driver_resource'
+RESOURCE_VERSION = '11.2.0.1'
 
 
 @atomic_installer
 def oracle_driver_resource():
-    is_installed = is_oracle_instantclient_installed() and is_cx_oracle_installed()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         if should_download_while_dry_run():
             download_oracle_instantclient()
             download_cx_oracle()
-        dry_run_result['oracle-driver'] = '-' if is_installed else 'INSTALL'
-        return
-    if is_installed:
+        dry_run_result['oracle-driver'] = '-' if is_oracle_instantclient_installed() else 'INSTALL'
+        dry_run_result['python_sourcecode_package?cx_Oracle'] = '-' if is_cx_oracle_installed() else 'INSTALL'
         return
     env = os.environ.copy()
     install_oracle_instantclient(env)
@@ -40,6 +40,8 @@ def is_oracle_instantclient_installed():
 
 def install_oracle_instantclient(env):
     if is_oracle_instantclient_installed():
+        if VEIL_ENV_TYPE in ('development', 'test') and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
+            set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return
     download_oracle_instantclient()
     shell_execute('ln -s libclntsh.so.11.1 libclntsh.so', cwd=ORACLE_HOME)
@@ -47,7 +49,7 @@ def install_oracle_instantclient(env):
     env['LD_LIBRARY_PATH'] = '{}:{}'.format(env.get('LD_LIBRARY_PATH', ''), ORACLE_HOME)
     shell_execute('ldconfig')
     if VEIL_ENV_TYPE in ('development', 'test'):
-        set_resource_latest_version('veil.backend.database.oracle_driver.oracle_driver_resource', '11.2.0.1')
+        set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
 
 
 def download_cx_oracle():
@@ -62,8 +64,6 @@ def is_cx_oracle_installed():
 
 
 def install_cx_oracle(env):
-    if is_cx_oracle_installed():
-        return
     download_cx_oracle()
     env['ORACLE_HOME'] = ORACLE_HOME
     install_resource(python_sourcecode_package_resource(package_dir=CX_ORACLE_HOME, name='cx_Oracle', version='5.1.2', env=env))

@@ -6,26 +6,25 @@ from veil_component import *
 from .os_package_installer import os_package_resource
 
 LOGGER = logging.getLogger(__name__)
+ETC_APT = as_path('/etc/apt')
+
 
 @atomic_installer
 def os_package_repository_resource(name):
     is_installed = is_os_package_repository_installed(name)
-    action = None if is_installed else 'INSTALL'
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['os_package_repository?{}'.format(name)] = action or '-'
+        install_resource(os_package_resource(name='python-software-properties'))  # add-apt-repository is in the package python-software-properties
+        dry_run_result['os_package_repository?{}'.format(name)] = '-' if is_installed else 'INSTALL'
         return
-    if not action:
+    install_resource(os_package_resource(name='python-software-properties'))  # add-apt-repository is in the package python-software-properties
+    if is_installed:
         return
     LOGGER.info('installing os package repository: %(name)s ...', {'name': name})
-    # install command add-apt-repository
-    install_resource(os_package_resource(name='python-software-properties'))
     shell_execute('add-apt-repository ppa:{} -y'.format(name), capture=True)
-    shell_execute('apt-get -q update', capture=True)
 
 
 def is_os_package_repository_installed(name):
-    ETC_APT = as_path('/etc/apt')
     if name in (ETC_APT / 'sources.list').text():
         return True
     for path in (ETC_APT / 'sources.list.d').files():

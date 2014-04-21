@@ -20,6 +20,7 @@ UPGRADE_MODE_LATEST = 'latest'
 upgrade_mode = None
 download_while_dry_run = False
 
+
 def atomic_installer(func):
     assert inspect.isfunction(func)
 
@@ -158,7 +159,6 @@ def get_dry_run_result():
 @contextlib.contextmanager
 def dry_run():
     global dry_run_result
-
     dry_run_result = {}
     try:
         yield
@@ -176,7 +176,11 @@ def set_upgrade_mode(value):
 
 
 def get_upgrade_mode():
-    return upgrade_mode or UPGRADE_MODE_NO
+    mode = upgrade_mode or UPGRADE_MODE_NO
+    assert mode in (UPGRADE_MODE_LATEST, UPGRADE_MODE_FAST, UPGRADE_MODE_NO), 'invalid upgrade mode: {}'.format(mode)
+    if mode == UPGRADE_MODE_LATEST and VEIL_ENV_TYPE not in ('development', 'test'):
+        raise Exception('please upgrade latest under development or test environment')
+    return mode
 
 
 def set_download_while_dry_run(value):

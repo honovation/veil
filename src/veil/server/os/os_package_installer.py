@@ -10,9 +10,6 @@ LOGGER = logging.getLogger(__name__)
 @atomic_installer
 def os_package_resource(name):
     upgrade_mode = get_upgrade_mode()
-    if upgrade_mode == UPGRADE_MODE_LATEST and VEIL_ENV_TYPE not in ('development', 'test'):
-        raise Exception('please upgrade latest under development or test environment')
-
     installed_version, downloaded_version = get_local_os_package_versions(name)
     latest_version = get_resource_latest_version(to_resource_key(name))
     if UPGRADE_MODE_LATEST == upgrade_mode:
@@ -29,7 +26,6 @@ def os_package_resource(name):
         else:
             action = None
     else:
-        assert upgrade_mode == UPGRADE_MODE_NO
         may_update_resource_latest_version = need_install = need_download = False
         action = None
 

@@ -29,9 +29,6 @@ def python_package_resource(name, version=None, url=None, **kwargs):
             })
 
     upgrade_mode = get_upgrade_mode()
-    if upgrade_mode == UPGRADE_MODE_LATEST and VEIL_ENV_TYPE not in ('development', 'test'):
-        raise Exception('please upgrade latest under development or test environment')
-
     installed_version = get_python_package_installed_version(name)
     downloaded_version = get_downloaded_python_package_version(name, version)
     latest_version = get_resource_latest_version(to_resource_key(name))
@@ -56,7 +53,7 @@ def python_package_resource(name, version=None, url=None, **kwargs):
             need_download = True
             action = 'INSTALL'
     elif UPGRADE_MODE_FAST == upgrade_mode:
-        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and not latest_version
+        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and (not latest_version or version and version != latest_version)
         need_install = (version or latest_version) and (version or latest_version) != installed_version
         need_download = need_install and (version or latest_version) != downloaded_version
         if need_install:
@@ -64,7 +61,6 @@ def python_package_resource(name, version=None, url=None, **kwargs):
         else:
             action = None
     else:
-        assert upgrade_mode == UPGRADE_MODE_NO
         may_update_resource_latest_version = need_install = need_download = False
         action = None
 
@@ -106,17 +102,17 @@ def python_package_resource(name, version=None, url=None, **kwargs):
 
     if need_install:
         if installed_version:
-            LOGGER.info('upgrading python package: %(name)s, %(latest_version)s, %(installed_version)s, %(new_installed_version)s', {
+            LOGGER.info('upgrading python package: %(name)s, %(latest_version)s, %(installed_version)s, %(version_to_install)s', {
                 'name': name,
                 'latest_version': latest_version,
                 'installed_version': installed_version,
-                'new_installed_version': downloaded_version
+                'version_to_install': downloaded_version
             })
         else:
-            LOGGER.info('installing python package: %(name)s, %(latest_version)s, %(new_installed_version)s', {
+            LOGGER.info('installing python package: %(name)s, %(latest_version)s, %(version_to_install)s', {
                 'name': name,
                 'latest_version': latest_version,
-                'new_installed_version': downloaded_version
+                'version_to_install': downloaded_version
             })
         installed_version = install_python_package(name, downloaded_version, url=url, **kwargs)
 
@@ -251,9 +247,57 @@ def upgrade_pip(pip_version, setuptools_version):
 
 @atomic_installer
 def python_sourcecode_package_resource(package_dir, name, version, env=None):
+    assert version is not None
+    upgrade_mode = get_upgrade_mode()
     installed_version = get_python_package_installed_version(name)
-    if installed_version and installed_version == version:
-        return 
-    shell_execute('python setup.py build install', env=env, cwd=package_dir)
-    if VEIL_ENV_TYPE in ('development', 'test'):
+    latest_version = get_resource_latest_version(to_resource_key(name))
+    need_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and version != latest_version
+    if UPGRADE_MODE_LATEST == upgrade_mode:
+        if installed_version:
+            if version == installed_version:
+                need_install = False
+                action = None
+            else:
+                need_install = True
+                action = 'UPGRADE'
+        else:
+            need_install = True
+            action = 'INSTALL'
+    elif UPGRADE_MODE_FAST == upgrade_mode:
+        need_install = version != installed_version
+        if need_install:
+            action = 'UPGRADE' if installed_version else 'INSTALL'
+        else:
+            action = None
+    else:
+        need_update_resource_latest_version = need_install = False
+        action = None
+
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        dry_run_result['python_sourcecode_package?{}'.format(name)] = action or '-'
+        return
+
+    if need_install:
+        if installed_version:
+            LOGGER.info('upgrading python source package: %(name)s, %(latest_version)s, %(installed_version)s, %(version_to_install)s', {
+                'name': name,
+                'latest_version': latest_version,
+                'installed_version': installed_version,
+                'version_to_install': version
+            })
+        else:
+            LOGGER.info('installing python source package: %(name)s, %(latest_version)s, %(version_to_install)s', {
+                'name': name,
+                'latest_version': latest_version,
+                'version_to_install': version
+            })
+        shell_execute('python setup.py build install', env=env, cwd=package_dir)
+
+    if need_update_resource_latest_version:
         set_resource_latest_version('veil.server.python.python_sourcecode_package_resource?{}'.format(name), version)
+        LOGGER.info('updated python source package resource latest version: %(name)s, %(latest_version)s, %(new_latest_version)s', {
+            'name': name,
+            'latest_version': latest_version,
+            'new_latest_version': version
+        })
