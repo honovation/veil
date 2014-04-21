@@ -1,6 +1,7 @@
+#! env/bin/python
 # -*- coding: UTF-8 -*-
 """
-will be linked to $VEIL_HOME/.git/hooks/pre-commit by $VEIL_FRAMEWORK_HOME/bin/veil-init
+will be linked to $VEIL_HOME/.git/hooks/pre-commit
 """
 
 from __future__ import unicode_literals, print_function, division
