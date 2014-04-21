@@ -22,7 +22,7 @@ def close_connection():
     if smtp is not None:
         try:
             smtp.quit()
-        except:
+        except Exception:
             LOGGER.exception('failed to quit smtp')
 
 
@@ -38,7 +38,7 @@ def is_connected():
         return False
     try:
         status = smtp.noop()[0]
-    except:  # smtplib.SMTPServerDisconnected
+    except Exception:  # smtplib.SMTPServerDisconnected
         status = -1
     return status == 250
 
@@ -71,7 +71,7 @@ def send_email(sender, recipient, subject, text='', html='', category='', email_
     try:
         reconnect_if_broken_per_verification()
         smtp.sendmail(from_addr, to_addr, msg.as_string())
-    except:
+    except Exception:
         LOGGER.exception('failed to send email: %(email_code)s, %(to_addr)s', {
             'email_code': email_code,
             'to_addr': to_addr

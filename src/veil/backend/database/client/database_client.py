@@ -85,7 +85,10 @@ def require_transaction_context(db):
             try:
                 raise
             finally:
-                db.rollback_transaction()
+                try:
+                    db.rollback_transaction()
+                except:
+                    pass
         else:
             db.commit_transaction()
         finally:
@@ -134,6 +137,7 @@ class Database(object):
             self.conn.rollback_transaction()
         except:
             LOGGER.exception('Cannot rollback database transaction')
+            raise
 
     def commit_transaction(self):
         try:

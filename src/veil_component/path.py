@@ -354,7 +354,7 @@ class Path(_base):
 
         try:
             childList = self.listdir()
-        except:
+        except Exception:
             if errors == 'ignore':
                 return
             elif errors == 'warn':
@@ -368,7 +368,7 @@ class Path(_base):
                 yield child
             try:
                 isdir = child.isdir()
-            except:
+            except Exception:
                 if errors == 'ignore':
                     isdir = False
                 elif errors == 'warn':
@@ -399,7 +399,7 @@ class Path(_base):
 
         try:
             dirs = self.dirs()
-        except:
+        except Exception:
             if errors == 'ignore':
                 return
             elif errors == 'warn':
@@ -427,7 +427,7 @@ class Path(_base):
 
         try:
             childList = self.listdir()
-        except:
+        except Exception:
             if errors == 'ignore':
                 return
             elif errors == 'warn':

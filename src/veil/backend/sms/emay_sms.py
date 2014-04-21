@@ -34,7 +34,7 @@ def send_sms(receivers, message, sms_code):
     try:
         # sleep_before_retry: avoid IP blocking due to too frequent queries
         response = http_call('EMAY-SMS-SEND-API', SEND_SMS_URL, data, log_data=False, max_tries=2, sleep_before_retry=10)
-    except:
+    except Exception:
         LOGGER.exception('failed to send sms: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
         raise
     else:
