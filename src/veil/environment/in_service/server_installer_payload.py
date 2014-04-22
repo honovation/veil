@@ -92,8 +92,7 @@ def deploy(veil_framework_home, veil_home, veil_env_name, veil_server_name):
 
 def patch(veil_framework_home, veil_home, veil_env_name, veil_server_name):
     env = os.environ.copy()
-    shell_execute('{}/bin/veil :{}/{} patch'.format(veil_framework_home, veil_env_name, veil_server_name),
-        cwd=veil_home, env=env)
+    shell_execute('{}/bin/veil :{}/{} patch'.format(veil_framework_home, veil_env_name, veil_server_name), cwd=veil_home, env=env)
 
 
 def shell_execute(command_line, **kwargs):

@@ -1,13 +1,13 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-import threading
-import functools
 from veil.frontend.cli import *
+from veil.server.supervisor import *
 from veil.utility.shell import *
 from veil.environment import *
 from veil_installer import *
 
 LOGGER = logging.getLogger(__name__)
+
 
 @script('deploy')
 def deploy():
@@ -31,14 +31,10 @@ def assert_no_local_change(dir_):
 @script('patch')
 def patch():
     shell_execute('veil migrate')
-    threads = []
     for program_name, program in get_current_veil_server().programs.items():
         if program.get('patchable'):
             program_name = '{}:{}'.format(program['group'], program_name) if program.get('group') else program_name
-            thread = threading.Thread(target=functools.partial(shell_execute,
-                'veil server supervisor restart-program {}'.format(program_name)))
-            threads.append(thread)
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
+            try:
+                restart_program(program_name)
+            except:
+                LOGGER.exception('failed to restart program: %(program)s', {'program': program_name})
