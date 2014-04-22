@@ -3,12 +3,13 @@ import fabric.api
 import os
 from datetime import datetime
 import sys
+from veil.development.git import *
 from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
 from veil.utility.clock import *
 from veil.utility.shell import *
-from veil.backend.database.postgresql import *
+from veil.backend.database.migration import *
 from .host_installer import veil_env_hosts_resource
 from .container_installer import veil_env_containers_resource
 from .server_installer import veil_env_servers_resource
@@ -70,9 +71,11 @@ def patch_env(veil_env_name):
 
 
 def do_local_preparation(veil_env_name):
-    display_deployment_memo(veil_env_name)
+    check_no_local_changes()
+    check_all_local_commits_pushed()
     check_all_locked_migration_scripts()
     check_if_locked_migration_scripts_being_changed()
+    display_deployment_memo(veil_env_name)
     update_branch(veil_env_name)
 
 
@@ -154,8 +157,7 @@ def get_deployed_at():
     for tag in lines.splitlines(False):
         if tag.startswith('{}-'.format(VEIL_ENV)):
             formatted_deployed_at = tag.replace('{}-'.format(VEIL_ENV), '').split('-')[0]
-            deployed_ats.append(convert_datetime_to_client_timezone(datetime.strptime(formatted_deployed_at,
-                '%Y%m%d%H%M%S')))
+            deployed_ats.append(convert_datetime_to_client_timezone(datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S')))
     return max(deployed_ats) if deployed_ats else None
 
 
@@ -165,8 +167,7 @@ def remote_do(action, veil_env_name, veil_server_name, *args):
     if fabric.api.env.host_string not in veil_servers_with_payload_uploaded:
         fabric.api.put(PAYLOAD, '/opt/env_installer_payload.py', use_sudo=True, mode=0600)
         veil_servers_with_payload_uploaded.append(fabric.api.env.host_string)
-    fabric.api.sudo('python /opt/env_installer_payload.py {} {} {} {}'.format(action, veil_env_name, veil_server_name,
-        ' '.join(arg for arg in args)))
+    fabric.api.sudo('python /opt/env_installer_payload.py {} {} {} {}'.format(action, veil_env_name, veil_server_name, ' '.join(arg for arg in args)))
 
 
 def update_branch(veil_env_name):
