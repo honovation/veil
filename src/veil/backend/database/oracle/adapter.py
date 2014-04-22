@@ -6,6 +6,7 @@ import re
 import os
 import cx_Oracle
 from cx_Oracle import OperationalError
+from veil.utility.encoding import *
 from veil.model.collection import *
 
 LOGGER = logging.getLogger(__name__)
@@ -140,11 +141,11 @@ class NamedParameterCursor(object):
         sql = self.PARAMETER_REGEX.sub(replace_placeholder, sql)
         param_list = [(name, value) for name, value in kwargs.items() if name in param_names and not isinstance(value, tuple)]
         param_list.extend(
-            ('{}{}'.format(name, i), value)
+            (to_str('{}{}'.format(name, i)), to_str(value))
             for name, values in kwargs.items() if name in param_names and isinstance(values, tuple)
             for i, value in enumerate(values)
         )
-        return sql, dict(param_list)
+        return to_str(sql), dict(param_list)
 
     def __getattr__(self, attr):
         if attr in self.__dict__:
