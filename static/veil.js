@@ -34,6 +34,8 @@ veil.log = function(message) {
     }
 };
 
+veil.alert = window.custom_alert || window.alert;
+
 veil.executed = [];
 veil.executeOnce = function (hash, func) {
     if ($.inArray(hash, veil.executed) != -1) {
@@ -169,14 +171,14 @@ veil.resource.get = function (options) {
         statusCode: {
             400: onValidationError,
             401: function(){
-                alert('登录信息不对、或者帐号被禁用');
+                veil.alert('登录信息不对、或者帐号被禁用');
                 if (window.location.pathname === '/login'){
                     $('input[name=username]').focus().select();
                 } else {
                     window.location.href = '/login';
                 }
             },
-            403: function() {alert('权限不足');}
+            403: function() {veil.alert('权限不足');}
         }
     };
     return $.ajax(_);
@@ -226,14 +228,14 @@ veil.resource.create = function (options) {
         statusCode:{
             400: onValidationError,
             401: function(){
-                alert('登录信息不对、或者帐号被禁用');
+                veil.alert('登录信息不对、或者帐号被禁用');
                 if (window.location.pathname === '/login'){
                     $('input[name=username]').focus().select();
                 } else {
                     window.location.href = '/login';
                 }
             },
-            403: function() {alert('权限不足');}
+            403: function() {veil.alert('权限不足');}
         }
     };
     if(dataFormat === 'json') {
@@ -285,14 +287,14 @@ veil.resource.update = function (options) {
         statusCode: {
             400: onValidationError,
             401: function(){
-                alert('登录信息不对、或者帐号被禁用');
+                veil.alert('登录信息不对、或者帐号被禁用');
                 if (window.location.pathname === '/login'){
                     $('input[name=username]').focus().select();
                 } else {
                     window.location.href = '/login';
                 }
             },
-            403: function() {alert('权限不足');}
+            403: function() {veil.alert('权限不足');}
         }
     };
     if(dataFormat === 'json') {
@@ -344,14 +346,14 @@ veil.resource.patch = function (options) {
         statusCode: {
             400: onValidationError,
             401: function(){
-                alert('登录信息不对、或者帐号被禁用');
+                veil.alert('登录信息不对、或者帐号被禁用');
                 if (window.location.pathname === '/login'){
                     $('input[name=username]').focus().select();
                 } else {
                     window.location.href = '/login';
                 }
             },
-            403: function() {alert('权限不足');}
+            403: function() {veil.alert('权限不足');}
         }
     };
     if(dataFormat === 'json') {
@@ -389,14 +391,14 @@ veil.resource.del = function (options) {
         error:onError,
         statusCode:{
             401: function(){
-                alert('登录信息不对、或者帐号被禁用');
+                veil.alert('登录信息不对、或者帐号被禁用');
                 if (window.location.pathname === '/login'){
                     $('input[name=username]').focus().select();
                 } else {
                     window.location.href = '/login';
                 }
             },
-            403:function() {alert('权限不足');}
+            403:function() {veil.alert('权限不足');}
         }
     };
     return $.ajax(_);
