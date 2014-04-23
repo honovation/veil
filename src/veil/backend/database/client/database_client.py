@@ -19,7 +19,7 @@ from .database_client_installer import database_client_resource
 
 LOGGER = getLogger(__name__)
 
-instances = {} # purpose => instance
+instances = {} # purpose => adapter instance
 adapter_classes = {} # database type => adapter class
 
 def register_adapter_class(type, adapter_class):
@@ -443,4 +443,7 @@ def close_all_connections():
     for purpose, instance in instances.items():
         if 'test' != VEIL_ENV_TYPE:
             LOGGER.debug('close connection at exit: %(purpose)s', {'purpose': purpose})
-        instance.close()
+        try:
+            instance.close()
+        except:
+            LOGGER.exception('Cannot close database connection')
