@@ -41,8 +41,5 @@ def lxc_container_dns_resource(container_name, dns):
         return
     if is_installed:
         return
-    LOGGER.info('set container dns: in %(container_name)s to %(dns)s', {
-        'container_name': container_name,
-        'dns': dns
-    })
+    LOGGER.info('set container dns: in %(container_name)s to %(dns)s', {'container_name': container_name, 'dns': dns})
     RESOLVE_CONF_PATH.write_text(config_content)

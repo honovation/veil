@@ -49,9 +49,6 @@ def remote_install_boot_script(veil_env_name, veil_server_name):
 
 
 def render_boot_script(script_name, veil_env_name, veil_server_name):
-    return render_config('veil_server_boot_script.j2',
-        script_name=script_name,
-        do_start_command='cd /opt/{}/app && sudo veil :{}/{} up --daemonize'.format(veil_env_name, veil_env_name,
-            veil_server_name),
-        do_stop_command='cd /opt/{}/app && sudo veil :{}/{} down'.format(veil_env_name, veil_env_name,
-            veil_server_name))
+    return render_config('veil-server-boot-script.j2', script_name=script_name,
+        do_start_command='cd /opt/{}/app && sudo veil :{}/{} up --daemonize'.format(veil_env_name, veil_env_name, veil_server_name),
+        do_stop_command='cd /opt/{}/app && sudo veil :{}/{} down'.format(veil_env_name, veil_env_name, veil_server_name))
