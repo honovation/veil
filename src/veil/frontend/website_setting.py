@@ -44,7 +44,15 @@ def website_upstreams(purpose, start_port, processes_count):
     }
 
 
-def website_locations(purpose, has_bunker=False, max_upload_file_size='1m', extra_headers=None):
+def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_file_size='1m', extra_headers=None):
+    if is_api_only:
+        return {'/': {
+            '_': '''
+                proxy_pass http://{}-tornado;
+                {}
+                '''.format(purpose, extra_headers or '')
+        }}
+
     extra_headers = '''
         add_header X-Frame-Options SAMEORIGIN;
         add_header X-UA-Compatible "IE=Edge,chrome=1";
