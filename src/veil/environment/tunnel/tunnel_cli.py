@@ -1,11 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import os
-import signal
 from veil.frontend.cli import *
 from veil.environment import *
-from veil.model.collection import DictObject
+from veil.model.collection import *
+from veil.model.event import *
 from veil.utility.shell import *
+from veil.server.process import *
 
 LOGGER = logging.getLogger(__name__)
 host_lan_ranges = set()
@@ -47,7 +48,6 @@ def bring_up_tunnel(target_env, gateway_host_name=None, gateway_host_ssh_port=No
     hosts = list_veil_hosts(target_env)
     set_host_lan_ranges(hosts)
     add_iptables_rules()
-    register_signal_handlers()
     shell_execute('supervisord -c {}/tunnel-supervisord.cfg'.format(os.path.dirname(__file__)), env=env)
 
 
@@ -61,18 +61,10 @@ def add_iptables_rules():
         shell_execute('sudo iptables -t nat -I OUTPUT -p tcp -d {}.0/24 -j REDIRECT --to-ports 12345'.format(lan_range))
 
 
+@event(EVENT_PROCESS_TEARDOWN)
 def remove_iptables_rules():
     for lan_range in host_lan_ranges:
-        shell_execute('sudo iptables -t nat -D OUTPUT -p tcp -d {}.0/24 -j REDIRECT --to-ports 12345'.format(lan_range))
-
-
-def register_signal_handlers():
-    signal.signal(signal.SIGTERM, handle_exit_signals)
-    signal.signal(signal.SIGINT, handle_exit_signals)
-    signal.signal(signal.SIGQUIT, handle_exit_signals)
-
-
-def handle_exit_signals(signum, frame):
-    remove_iptables_rules()
-    signal.signal(signum, signal.SIG_DFL)
-    os.kill(os.getpid(), signum) # Rethrow signal
+        try:
+            shell_execute('sudo iptables -t nat -D OUTPUT -p tcp -d {}.0/24 -j REDIRECT --to-ports 12345'.format(lan_range))
+        except:
+            LOGGER.exception('Cannot remove iptables rules for lan range: %(lan_range)s', {'lan_range': lan_range})
