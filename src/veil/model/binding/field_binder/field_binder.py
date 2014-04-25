@@ -41,7 +41,7 @@ def is_not(v):
 
 
 def not_empty(value):
-    if value is not None and value != '':
+    if value not in (None, '', [], (), {}, set()):
         return value
     raise Invalid(_('不能为空'))
 
