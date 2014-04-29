@@ -27,15 +27,34 @@ def require_redis(purpose):
     return instances[purpose]
 
 
-def delete_per_pattern(self, pattern, batch_size=1000):
-    count = 0
+# TODO: remove after redis-py supports scan_iter
+def scan_iter(self, match=None, count=None):
+        """
+        Make an iterator using the SCAN command so that the client doesn't
+        need to remember the cursor position.
+
+        ``match`` allows for filtering the keys by pattern
+
+        ``count`` allows for hint the minimum number of returns
+        """
+        cursor = 0
+        while cursor != '0':
+            cursor, data = self.scan(cursor=cursor, match=match, count=count)
+            for item in data:
+                yield item
+
+if not hasattr(StrictRedis, 'scan_iter'):
+    StrictRedis.scan_iter = scan_iter
+
+
+def delete_per_pattern(self, match, count=1000):
+    deleted_count = 0
     cursor = '0'
     while True:
-        cursor, keys = self.scan(cursor, pattern, batch_size)
+        cursor, keys = self.scan(cursor, match, count)
         if not keys:
             break
-        count += self.delete(*keys)
-    return count
-
+        deleted_count += self.delete(*keys)
+    return deleted_count
 
 StrictRedis.delete_per_pattern = delete_per_pattern
