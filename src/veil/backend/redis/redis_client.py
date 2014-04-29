@@ -25,3 +25,17 @@ def require_redis(purpose):
             instances[purpose].flushall()
         executing_test.addCleanup(flush)
     return instances[purpose]
+
+
+def delete_per_pattern(self, pattern, batch_size=1000):
+    count = 0
+    cursor = '0'
+    while True:
+        cursor, keys = self.scan(cursor, pattern, batch_size)
+        if not keys:
+            break
+        count += self.delete(*keys)
+    return count
+
+
+StrictRedis.delete_per_pattern = delete_per_pattern
