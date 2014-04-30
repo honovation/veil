@@ -146,15 +146,12 @@ class RoutingHTTPHandler(object):
             if not_head_request:
                 data = to_json(data)
         else:
-            if not_head_request:
-                if data is None:
-                    data = ''
-                else:
-                    try:
-                        data = post_process_page(route.route_handler, data)
-                    except:
-                        LOGGER.error('failed to post-process route: %(route)s', {'route': route})
-                        raise
+            if not_head_request and data is not None:
+                try:
+                    data = post_process_page(route.route_handler, data)
+                except:
+                    LOGGER.error('failed to post-process route: %(route)s', {'route': route})
+                    raise
         if not_head_request and data is not None:
             response.write(data)
         if 'ASYNC' not in route.tags:
