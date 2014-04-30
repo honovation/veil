@@ -6,7 +6,7 @@ from decimal import Decimal
 from dateutil.parser import parse
 from veil.utility.encoding import *
 
-SUPPORTED_TYPES = {datetime, date, time, Decimal, UUID}
+SUPPORTED_TYPES = {datetime, date, time, Decimal, UUID, set}
 assert len(SUPPORTED_TYPES) == len({c.__name__ for c in SUPPORTED_TYPES})
 SUPPORTED_TYPES_NAME2CLASS = {c.__name__: c for c in SUPPORTED_TYPES}
 
@@ -20,6 +20,8 @@ class CustomJSONEncoder(json.JSONEncoder):
                 return {'__type__': type_.__name__, '__value__': obj.as_tuple()}
             if issubclass(type_, UUID):
                 return {'__type__': type_.__name__, '__value__': obj.hex}
+            if issubclass(type_, set):
+                return list(obj)
         return json.JSONEncoder.default(self, obj)
 
 
