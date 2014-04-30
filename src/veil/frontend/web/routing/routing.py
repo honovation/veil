@@ -141,17 +141,20 @@ class RoutingHTTPHandler(object):
             set_http_status_code(httplib.BAD_REQUEST)
             data = e.errors
         not_head_request = request.method.upper() != 'HEAD'
-        if not isinstance(data, basestring) or 'application/json' in request.headers.get('Accept', ''):
+        if data is not None and not isinstance(data, basestring) or 'application/json' in request.headers.get('Accept', ''):
             response.set_header('Content-Type', 'application/json; charset=UTF-8')
             if not_head_request:
                 data = to_json(data)
         else:
-            if not_head_request and data is not None:
-                try:
-                    data = post_process_page(route.route_handler, data)
-                except:
-                    LOGGER.error('failed to post-process route: %(route)s', {'route': route})
-                    raise
+            if not_head_request:
+                if data is None:
+                    data = ''
+                else:
+                    try:
+                        data = post_process_page(route.route_handler, data)
+                    except:
+                        LOGGER.error('failed to post-process route: %(route)s', {'route': route})
+                        raise
         if not_head_request and data is not None:
             response.write(data)
         if 'ASYNC' not in route.tags:
