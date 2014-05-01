@@ -365,8 +365,10 @@ veil.resource.patch = function (options) {
 
 veil.resource.del = function (options) {
     var url = options.url;
+    var dataType = options.dataType;
     var onSuccess = options.onSuccess;
     var onError = options.onError;
+    var onValidationError = options.onValidationError;
     var widget = options.widget;
     if (widget){
         veil.widget.clearErrorMessages(widget);
@@ -383,13 +385,20 @@ veil.resource.del = function (options) {
                 }
             };
         }
+        if (!onValidationError){
+            onValidationError = function (xhr) {
+                veil.widget.showErrorMessage(widget, $.parseJSON(xhr.responseText));
+            };
+        }
     }
     var _ = {
         type:'DELETE',
         url:url,
+        dataType: dataType,
         success:onSuccess,
         error:onError,
         statusCode:{
+            400: onValidationError,
             401: function(){
                 veil.alert('登录信息不对、或者帐号被禁用');
                 if (window.location.pathname === '/login'){
