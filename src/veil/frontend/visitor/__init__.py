@@ -7,6 +7,7 @@ with veil_component.init_component(__name__):
     from .user_tracking import remember_logged_in_user_id
     from .user_tracking import get_logged_in_user_id
     from .user_tracking import remove_logged_in_user_id
+    from .user_tracking import remove_logged_in_user_ids
     from .user_tracking import get_user_login_referer
     from .user_tracking import remember_user_login_referer
     from .user_tracking import remove_user_login_referer
@@ -21,6 +22,7 @@ with veil_component.init_component(__name__):
         remember_logged_in_user_id.__name__,
         get_logged_in_user_id.__name__,
         remove_logged_in_user_id.__name__,
+        remove_logged_in_user_ids.__name__,
         get_user_login_referer.__name__,
         remember_user_login_referer.__name__,
         remove_user_login_referer.__name__,

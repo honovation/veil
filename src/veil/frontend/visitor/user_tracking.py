@@ -34,11 +34,11 @@ redis = register_redis('persist_store')
 VEIL_SECURED_USER_CODE_COOKIE_NAME = '{}S'.format(VEIL_USER_CODE_COOKIE_NAME)
 DEFAULT_COOKIE_EXPIRES_DAYS = 360
 DEFAULT_SESSION_TTL = timedelta(minutes=30)
-DEFAULT_IS_SESSION_TTL_ENABLED = lambda: True
+SESSION_TTL_ENABLED = lambda: True
 
 config = {} # one process services at most one website, i.e. a specific purpose
 
-def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSION_TTL, is_session_ttl_enabled=DEFAULT_IS_SESSION_TTL_ENABLED,
+def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSION_TTL, is_session_ttl_enabled=SESSION_TTL_ENABLED,
         session_cookie_on_parent_domain=False, cookie_expires_days=DEFAULT_COOKIE_EXPIRES_DAYS):
     config[purpose] = DictObject(login_url=login_url, session_ttl=session_ttl, is_session_ttl_enabled=is_session_ttl_enabled,
         session_cookie_on_parent_domain=session_cookie_on_parent_domain, cookie_expires_days=cookie_expires_days)
@@ -175,6 +175,12 @@ def remove_logged_in_user_id(purpose, session=None, browser_code=None):
         if session:
             redis().delete(logged_in_user_id_key(session))
     clear_user_session(purpose)
+
+
+def remove_logged_in_user_ids(purpose):
+    count = redis().delete_per_pattern('lu:{}:*'.format(purpose), 2000)
+    LOGGER.info('kicked logged-in users out: %(purpose)s, %(count)s', {'purpose': purpose, 'count': count})
+    return count
 
 
 def remember_user_login_referer(purpose, login_referer, browser_code=None):
