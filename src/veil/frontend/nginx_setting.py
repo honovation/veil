@@ -25,7 +25,7 @@ def nginx_program(servers, enable_compression=False, has_bunker=False, is_bunker
 def nginx_server(server_name, listen, locations, upstreams=None, error_page=None, error_page_dir=None, ssl=False, default_server=False, **kwargs):
     return {
         server_name: dict({
-            'listen': '{}{}{}'.format(listen, ' ssl' if ssl else '', ' default_server' if default_server else ''),
+            'listen': '{}{}{} ipv6only=off'.format(listen, ' ssl' if ssl else '', ' default_server' if default_server else ''),
             'locations': locations,
             'upstreams': upstreams,
             'error_page': error_page,

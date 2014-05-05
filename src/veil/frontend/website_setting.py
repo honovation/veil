@@ -34,14 +34,10 @@ def list_website_components(website):
 
 
 def website_upstreams(purpose, start_port, processes_count):
-    return {
-        '{}-tornado'.format(purpose): [
-            {
-                 'host': '127.0.0.1',  # nginx and tornado has to live side by side, as they share upload/static files
-                 'port': start_port + i
-            } for i in range(processes_count)
-        ]
-    }
+    return {'{}-tornado'.format(purpose): [{
+        'host': '127.0.0.1',  # nginx and tornado has to live side by side, as they share upload/static files
+        'port': start_port + i
+    } for i in range(processes_count)]}
 
 
 def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_file_size='1m', extra_headers=None):
@@ -66,27 +62,26 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
             '= /favicon.ico': {
                 '_': '''
                     access_log off; log_not_found off;
-                    expires 60d;
+                    expires 1M;
                     ''',
                 'alias': VEIL_HOME / 'static' / purpose / 'favicon.ico'
             },
             '= /robots.txt': {
                 '_': '''
                     access_log off; log_not_found off;
+                    expires 1h;
                     ''',
                 'alias': VEIL_HOME / 'static' / purpose / 'robots.txt'
             },
             '/static/': {
                 '_': '''
+                    alias {}/static/;
                     access_log off;
                     expires max;
-                    if ($query_string !~* "v=(.+)") {
-                        expires 7d;
-                        add_header Pragma public;
-                        add_header Cache-Control "public, must-revalidate, proxy-revalidate";
-                    }
-                    ''',
-                'alias': VEIL_HOME / 'static' / ''
+                    if ($query_string !~ "v=.+") {{
+                        expires 4h;
+                    }}
+                    '''.format(VEIL_HOME)
             }
         }
     locations = {
@@ -123,9 +118,11 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
         # inline static files
         # /static/v-xxxx/a-b.js
         '~ ^/static/v-(.*)-(.*)/': {
-            'alias': VEIL_VAR_DIR / 'inline-static-files' / '$1' / '$2',
-            'access_log': 'off',
-            'expires': 'max'
+            '_': '''
+                alias {}/inline-static-files/$1/$2;
+                access_log off;
+                expires max;
+                '''.format(VEIL_VAR_DIR)
         }
     }
     locations.update(extra_locations)

@@ -188,8 +188,7 @@ class HTTPResponse(object):
         # Automatically support ETags and add the Content-Length header if
         # we have not flushed any content yet.
         if not self._headers_written:
-            if (self._status_code == 200 and self.request.method == 'GET' and
-                'Etag' not in self._headers):
+            if (self._status_code == 200 and self.request.method in ('GET', 'HEAD') and 'Etag' not in self._headers):
                 hasher = hashlib.md5()
                 for part in self._write_buffer:
                     hasher.update(part)
