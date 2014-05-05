@@ -8,7 +8,7 @@
  *
  */
 
-$.ajaxSetup({headers:{'X-XSRF':$.cookie('_xsrf')}});
+$.ajaxSetup({headers: {'X-XSRF': $.cookie('_xsrf')}});
 
 $.fn.serializeObject = function() {
     var o = {api: false};
@@ -161,7 +161,6 @@ veil.resource.get = function (options) {
         }
     }
     var _ = {
-        cache: false,
         type: 'GET',
         url: url,
         data: data,
