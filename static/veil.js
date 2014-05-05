@@ -8,7 +8,7 @@
  *
  */
 
-$.ajaxSetup({headers: {'X-XSRF': $.cookie('_xsrf')}});
+$.ajaxSetup({cache: true, headers: {'X-XSRF': $.cookie('_xsrf')}});
 
 $.fn.serializeObject = function() {
     var o = {api: false};
