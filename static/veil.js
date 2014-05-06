@@ -170,7 +170,7 @@ veil.resource.get = function (options) {
         statusCode: {
             400: onValidationError,
             401: function(){
-                veil.alert('登录信息不对、或者帐号被禁用');
+                veil.alert('登录信息不对、或者帐号不可用');
                 if (window.location.pathname === '/login'){
                     $('input[name=username]').focus().select();
                 } else {
@@ -227,7 +227,7 @@ veil.resource.create = function (options) {
         statusCode:{
             400: onValidationError,
             401: function(){
-                veil.alert('登录信息不对、或者帐号被禁用');
+                veil.alert('登录信息不对、或者帐号不可用');
                 if (window.location.pathname === '/login'){
                     $('input[name=username]').focus().select();
                 } else {
@@ -286,7 +286,7 @@ veil.resource.update = function (options) {
         statusCode: {
             400: onValidationError,
             401: function(){
-                veil.alert('登录信息不对、或者帐号被禁用');
+                veil.alert('登录信息不对、或者帐号不可用');
                 if (window.location.pathname === '/login'){
                     $('input[name=username]').focus().select();
                 } else {
@@ -345,7 +345,7 @@ veil.resource.patch = function (options) {
         statusCode: {
             400: onValidationError,
             401: function(){
-                veil.alert('登录信息不对、或者帐号被禁用');
+                veil.alert('登录信息不对、或者帐号不可用');
                 if (window.location.pathname === '/login'){
                     $('input[name=username]').focus().select();
                 } else {
@@ -399,7 +399,7 @@ veil.resource.del = function (options) {
         statusCode:{
             400: onValidationError,
             401: function(){
-                veil.alert('登录信息不对、或者帐号被禁用');
+                veil.alert('登录信息不对、或者帐号不可用');
                 if (window.location.pathname === '/login'){
                     $('input[name=username]').focus().select();
                 } else {
