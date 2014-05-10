@@ -3,7 +3,7 @@ from veil.profile.installer import *
 from veil.model.event import *
 from .routing import *
 
-overriden_website_configs = {}
+overridden_website_configs = {}
 
 @event(EVENT_NEW_WEBSITE)
 def on_new_website(website):
@@ -37,13 +37,13 @@ def load_website_config(purpose):
         else:
             raise
     if 'test' == VEIL_SERVER:
-        config_.update(overriden_website_configs.get(purpose, {}))
+        config_.update(overridden_website_configs.get(purpose, {}))
     return config_
 
 
 def override_website_config(purpose, **overrides):
-    get_executing_test().addCleanup(overriden_website_configs.clear)
-    overriden_website_configs.setdefault(purpose, {}).update(overrides)
+    get_executing_test().addCleanup(overridden_website_configs.clear)
+    overridden_website_configs.setdefault(purpose, {}).update(overrides)
 
 
 def get_website_url_prefix(purpose, ssl=False, with_scheme=True):
