@@ -140,9 +140,6 @@ veil.resource.get = function (options) {
     if (widget){
         veil.widget.clearErrorMessages(widget);
         onSuccess = function (html) {
-            if(widget[0].reset){
-                widget[0].reset();
-            }
             if (options.onSuccess){
                 veil.widget.processWidget(html, options.onSuccess);
             }
@@ -195,14 +192,6 @@ veil.resource.create = function (options) {
     var widget = options.widget;
     if (widget){
         veil.widget.clearErrorMessages(widget);
-        onSuccess = function (s) {
-            if(widget[0].reset){
-                widget[0].reset();
-            }
-            if (options.onSuccess){
-                options.onSuccess(s);
-            }
-        };
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
@@ -255,14 +244,6 @@ veil.resource.update = function (options) {
     var widget = options.widget;
     if (widget){
         veil.widget.clearErrorMessages(widget);
-        onSuccess = function (s) {
-            if(widget[0].reset){
-                widget[0].reset();
-            }
-            if (options.onSuccess){
-                options.onSuccess(s);
-            }
-        };
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
@@ -314,14 +295,6 @@ veil.resource.patch = function (options) {
     var widget = options.widget;
     if (widget){
         veil.widget.clearErrorMessages(widget);
-        onSuccess = function (s) {
-            if(widget[0].reset){
-                widget[0].reset();
-            }
-            if (options.onSuccess){
-                options.onSuccess(s);
-            }
-        };
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
