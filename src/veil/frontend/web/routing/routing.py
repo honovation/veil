@@ -144,7 +144,7 @@ class RoutingHTTPHandler(object):
         if data is not None and not isinstance(data, basestring) or 'application/json' in request.headers.get('Accept', ''):
             response.set_header('Content-Type', 'application/json; charset=UTF-8')
             if not_head_request:
-                data = to_json(data)
+                data = to_readable_json(data)
         else:
             if not_head_request and data is not None:
                 try:

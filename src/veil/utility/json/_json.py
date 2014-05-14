@@ -57,3 +57,26 @@ def from_json(s, **kwargs):
 
 def parse_datetime(dtstr):
     return parse(dtstr, yearfirst=True)
+
+
+class CustomReadableJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        type_ = type(obj)
+        if type_ in SUPPORTED_TYPES:
+            if issubclass(type_, datetime):
+                return obj.strftime('%Y-%m-%d %H:%M:%S')
+            if issubclass(type_, date):
+                return obj.strftime('%Y-%m-%d')
+            if issubclass(type_, time):
+                return obj.strftime('%H:%M:%S')
+            if issubclass(type_, Decimal):
+                return '{:f}'.format(obj)
+            if issubclass(type_, UUID):
+                return obj.hex
+            if issubclass(type_, set):
+                return list(obj)
+        return json.JSONEncoder.default(self, obj)
+
+
+def to_readable_json(obj, **kwargs):
+    return to_unicode(json.dumps(obj, cls=CustomReadableJSONEncoder, **kwargs))
