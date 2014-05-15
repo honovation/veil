@@ -3,11 +3,11 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import re
 from datetime import date
+from pyquery import PyQuery as pq
 from veil.backend.database.client import *
 from veil.model.collection import *
 from veil.frontend.cli import *
 from veil.model.binding import *
-from pyquery import PyQuery as pq
 
 
 LOGGER = logging.getLogger(__name__)
@@ -79,17 +79,17 @@ def check_region_update(purpose):
         added_keys, deleted_keys, modified_keys = diff(db_latest_region, gov_latest_region, is_db_source=True)
 
         for key in added_keys:
-            LOGGER.info(green('+ {}: {}'.format(key, gov_latest_region[key])))
+            print(green('+ {}: {}'.format(key, gov_latest_region[key])))
 
         for key in deleted_keys:
-            LOGGER.info(red('- {}: {}'.format(key, db_latest_region[key].name)))
+            print(red('- {}: {}'.format(key, db_latest_region[key].name)))
 
         for key in modified_keys:
-            LOGGER.info(yellow('{}{}: {} -> {}'.format('[恢复]' if db_latest_region[key].is_deleted else '', key, db_latest_region[key].name, gov_latest_region[key])))
+            print(yellow('{}{}: {} -> {}'.format('[恢复]' if db_latest_region[key].is_deleted else '', key, db_latest_region[key].name, gov_latest_region[key])))
 
-        LOGGER.info(blue('{} added keys'.format(len(added_keys))))
-        LOGGER.info(blue('{} deleted keys'.format(len(deleted_keys))))
-        LOGGER.info(blue('{} modified keys'.format(len(modified_keys))))
+        print(blue('{} added keys'.format(len(added_keys))))
+        print(blue('{} deleted keys'.format(len(deleted_keys))))
+        print(blue('{} modified keys'.format(len(modified_keys))))
 
         return added_keys, deleted_keys, modified_keys, gov_latest_region, gov_region_info
 
@@ -155,12 +155,12 @@ def rollback_update(purpose):
             '''.format(REGION_TABLE=REGION_TABLE, REGION_BACKUP_TABLE=REGION_BACKUP_TABLE))
         try:
             deleted_count = db().execute('DELETE FROM {REGION_TABLE} WHERE code NOT IN (SELECT code FROM {REGION_BACKUP_TABLE})'.format(REGION_TABLE=REGION_TABLE, REGION_BACKUP_TABLE=REGION_BACKUP_TABLE))
-        except Exception as e:
+        except Exception:
             LOGGER.info('can not delete rows in %(REGION_TABLE)s but not in backup table', {'REGION_TABLE': REGION_TABLE})
             raise
         else:
             if deleted_count > 0:
-                LOGGER.info('deleted %(count)s regions', {'count': deleted_count})
+                LOGGER.info('number of deleted regions: %(count)s', {'count': deleted_count})
         db().execute('DELETE FROM {REGION_BACKUP_TABLE}'.format(REGION_BACKUP_TABLE))
         db().execute('DELETE FROM {REGION_VERSION_TABLE} WHERE id=(SELECT MAX(id) FROM {REGION_VERSION_TABLE})'.format(REGION_VERSION_TABLE=REGION_VERSION_TABLE))
         LOGGER.info('rollback update finished')
@@ -234,7 +234,7 @@ def add_regions(db, regions):
                 level = 3
                 parent_code = '{}00'.format(code[:4])
             new_regions.append(DictObject(code=code, name=regions[code], level=level, parent_code=parent_code))
-        LOGGER.info('%(region_count)s region records will be inserted', {'region_count': len(new_regions)})
+        LOGGER.info('number of to-be-inserted regions: %(region_count)s', {'region_count': len(new_regions)})
         db().insert(REGION_TABLE, new_regions, code=lambda r: r.code, name=lambda r: r.name, level=lambda r: r.level, has_child=False,
             parent_code=lambda r: r.parent_code)
         db().execute('''
