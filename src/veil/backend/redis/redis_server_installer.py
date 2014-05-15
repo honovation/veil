@@ -7,7 +7,7 @@ def redis_server_resource(purpose, host, port, persisted_by_aof=False):
     resources = list(BASIC_LAYOUT_RESOURCES)
     data_directory = VEIL_VAR_DIR / '{}-redis'.format(purpose.replace('_', '-'))
     resources.extend([
-        os_package_repository_resource(name='rwky/redis'), # for latest redis-server
+        os_ppa_repository_resource(name='rwky/redis'), # for latest redis-server
         os_package_resource(name='redis-server'),
         os_service_resource(state='not_installed', name='redis-server'),
         directory_resource(path=data_directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770),
