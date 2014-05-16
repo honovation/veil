@@ -14,6 +14,7 @@ from ..server.pg_server_installer import postgresql_maintenance_config
 
 LOGGER = logging.getLogger(__name__)
 
+
 @script('drop-database')
 def drop_database(purpose):
     if VEIL_SERVER not in {'development', 'test'}:
@@ -21,21 +22,18 @@ def drop_database(purpose):
     if 'development' == VEIL_SERVER:
         supervisorctl('restart', '{}_postgresql'.format(purpose))
         wait_for_server_up(purpose)
-    try:
-        config = database_client_config(purpose)
-        maintenance_config = postgresql_maintenance_config(purpose)
-        env = os.environ.copy()
-        env['PGPASSWORD'] = maintenance_config.owner_password
-        shell_execute('dropdb -h {host} -p {port} -U {owner} {database}'.format(
-            host=config.host,
-            port=config.port,
-            owner=maintenance_config.owner,
-            database=config.database), env=env, capture=True)
-    except ShellExecutionError as e:
-        if 'not exist' in e.output:
-            pass # ignore
-        else:
-            raise
+    config = database_client_config(purpose)
+    maintenance_config = postgresql_maintenance_config(purpose)
+    env = os.environ.copy()
+    env['PGPASSWORD'] = maintenance_config.owner_password
+    if not database_existed(config.host, config.port, maintenance_config.owner, config.database, env):
+        return
+    shell_execute('dropdb -h {host} -p {port} -U {owner} {database}'.format(
+        host=config.host,
+        port=config.port,
+        owner=maintenance_config.owner,
+        database=config.database), env=env, capture=True)
+
 
 @script('migrate')
 def migrate(purpose):
@@ -106,29 +104,29 @@ def wait_for_server_up(purpose):
             time.sleep(3)
 
 
+def database_existed(host, port, owner, database, env):
+    return '1' == shell_execute('psql -h {} -p {} -U {} -lqt | cut -d \| -f 1 | grep -w {} | wc -l'.format(host, port, owner, database), env=env,
+        capture=True).strip()
+
+
 @script('create-database')
 def create_database_if_not_exists(purpose):
-    try:
-        config = database_client_config(purpose)
-        maintenance_config = postgresql_maintenance_config(purpose)
-        env = os.environ.copy()
-        env['PGPASSWORD'] = maintenance_config.owner_password
-        shell_execute('createdb -h {host} -p {port} -U {owner} {database} -E UTF-8'.format(
-            host=config.host,
-            port=config.port,
-            owner=maintenance_config.owner,
-            database=config.database), env=env, capture=True)
-    except ShellExecutionError as e:
-        if 'already exists' in e.output:
-            pass # ignore
-        else:
-            raise
-    else:
-        # grant readonly privileges on the database to readonly user
-        psql(purpose, "-c '{}'".format('''
-            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO readonly;
-            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO readonly;
-            '''), capture=True)
+    config = database_client_config(purpose)
+    maintenance_config = postgresql_maintenance_config(purpose)
+    env = os.environ.copy()
+    env['PGPASSWORD'] = maintenance_config.owner_password
+    if database_existed(config.host, config.port, maintenance_config.owner, config.database, env):
+        return
+    shell_execute('createdb -h {host} -p {port} -U {owner} {database} -E UTF-8'.format(
+        host=config.host,
+        port=config.port,
+        owner=maintenance_config.owner,
+        database=config.database), env=env, capture=True)
+    # grant readonly privileges on the database to readonly user
+    psql(purpose, "-c '{}'".format('''
+        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO readonly;
+        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO readonly;
+        '''), capture=True)
 
 
 def create_database_migration_table_if_not_exists(purpose):
