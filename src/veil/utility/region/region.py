@@ -39,13 +39,12 @@ def init_region(purpose):
                 );
         '''.format(REGION_TABLE=REGION_TABLE, REGION_BACKUP_TABLE=REGION_BACKUP_TABLE, REGION_VERSION_TABLE=REGION_VERSION_TABLE))
 
-        contents = pq(url=CONTENTS_URL)('ul.center_list_contlist')
-        latest_region = get_latest_region(contents)
-        LOGGER.info('latest region: %(latest_region)s', {'latest_region': latest_region})
+        latest_gov_region_version = extract_gov_latest_region_version(pq(url=CONTENTS_URL)('ul.center_list_contlist'))
+        LOGGER.info('latest gov region version: %(latest_gov_region_version)s', {'latest_gov_region_version': latest_gov_region_version})
 
-        add_regions(db, get_gov_latest_region(latest_region))
+        add_regions(db, get_gov_latest_region(latest_gov_region_version))
 
-        db().insert(REGION_VERSION_TABLE, due_date=latest_region.due_date, published_at=latest_region.published_at)
+        db().insert(REGION_VERSION_TABLE, due_date=latest_gov_region_version.due_date, published_at=latest_gov_region_version.published_at)
 
     init()
 
@@ -56,42 +55,44 @@ def check_region_update(purpose):
 
     @transactional(db)
     def check_update():
-        latest_region_in_db = db().get('SELECT * FROM {REGION_VERSION_TABLE} ORDER BY id DESC FETCH FIRST ROW ONLY'.format(REGION_VERSION_TABLE=REGION_VERSION_TABLE))
-        if not latest_region_in_db:
+        latest_db_region_version = db().get('SELECT * FROM {REGION_VERSION_TABLE} ORDER BY id DESC FETCH FIRST ROW ONLY'.format(REGION_VERSION_TABLE=REGION_VERSION_TABLE))
+        if not latest_db_region_version:
             LOGGER.info('can not check update: can not find region version in db')
             return
-        contents = pq(url=CONTENTS_URL)('ul.center_list_contlist')
-        gov_region_info = get_latest_region(contents)
-        if gov_region_info.due_date <= latest_region_in_db.due_date and gov_region_info.published_at <= latest_region_in_db.published_at:
+        gov_latest_region_version = extract_gov_latest_region_version(pq(url=CONTENTS_URL)('ul.center_list_contlist'))
+        if gov_latest_region_version.due_date <= latest_db_region_version.due_date or gov_latest_region_version.published_at <= latest_db_region_version.published_at:
             LOGGER.info('no updates')
             return
         LOGGER.info('region version in db: due date: %(due_date)s, published date: %(published_at)s', {
-            'due_date': latest_region_in_db.due_date,
-            'published_at': latest_region_in_db.published_at
+            'due_date': latest_db_region_version.due_date,
+            'published_at': latest_db_region_version.published_at
         })
         LOGGER.info('region version in stats.gov.cn: due date: %(due_date)s, published date: %(published_at)s', {
-            'due_date': gov_region_info.due_date,
-            'published_at': gov_region_info.published_at
+            'due_date': gov_latest_region_version.due_date,
+            'published_at': gov_latest_region_version.published_at
         })
-        gov_latest_region = get_gov_latest_region(gov_region_info)
-        db_latest_region = get_db_latest_region(db)
+        gov_latest_region = get_gov_latest_region(gov_latest_region_version)
+        db_latest_region = get_db_latest_region(purpose)
 
-        added_keys, deleted_keys, modified_keys = diff(db_latest_region, gov_latest_region, is_db_source=True)
+        added_codes, deleted_codes, modified_codes = diff(db_latest_region, gov_latest_region)
 
-        for key in added_keys:
-            print(green('+ {}: {}'.format(key, gov_latest_region[key])))
+        for code in added_codes:
+            print(green('+ {}: {}'.format(code, gov_latest_region[code])))
 
-        for key in deleted_keys:
-            print(red('- {}: {}'.format(key, db_latest_region[key].name)))
+        for code in deleted_codes:
+            print(red('- {}: {}'.format(code, db_latest_region[code].name)))
 
-        for key in modified_keys:
-            print(yellow('{}{}: {} -> {}'.format('[恢复]' if db_latest_region[key].is_deleted else '', key, db_latest_region[key].name, gov_latest_region[key])))
+        for code in modified_codes:
+            if db_latest_region[code].is_deleted:
+                print(yellow('[恢复]{}: {} -> {}'.format(code, db_latest_region[code].name, gov_latest_region[code])))
+            else:
+                print(yellow('{}: {} -> {}'.format(code, db_latest_region[code].name, gov_latest_region[code])))
 
-        print(blue('{} added keys'.format(len(added_keys))))
-        print(blue('{} deleted keys'.format(len(deleted_keys))))
-        print(blue('{} modified keys'.format(len(modified_keys))))
+        print(blue('{} added keys'.format(len(added_codes))))
+        print(blue('{} deleted keys'.format(len(deleted_codes))))
+        print(blue('{} modified keys'.format(len(modified_codes))))
 
-        return added_keys, deleted_keys, modified_keys, gov_latest_region, gov_region_info
+        return added_codes, deleted_codes, modified_codes, gov_latest_region, gov_latest_region_version
 
     return check_update()
 
@@ -102,15 +103,14 @@ def update_region(purpose):
 
     @transactional(db)
     def update():
-        added_codes, deleted_codes, modified_codes, gov_latest_region, gov_region_info = check_region_update(purpose)
+        added_codes, deleted_codes, modified_codes, gov_latest_region, gov_latest_region_version = check_region_update(purpose)
         if any(e for e in (added_codes, deleted_codes, modified_codes)):
-            LOGGER.info('updating region table')
             LOGGER.info('backup old region table')
             db().execute('DROP TABLE IF EXISTS region_backup')
             db().execute('CREATE TABLE region_backup AS TABLE region')
 
+            LOGGER.info('updating region table')
             add_regions(db, {ac: gov_latest_region[ac] for ac in added_codes})
-
             db().executemany(
                 "UPDATE {REGION_TABLE} SET is_deleted=TRUE WHERE NOT is_deleted AND code=%(code)s".format(REGION_TABLE=REGION_TABLE),
                 [DictObject(code=code) for code in deleted_codes]
@@ -119,7 +119,8 @@ def update_region(purpose):
                 'UPDATE {REGION_TABLE} SET name=%(name)s, is_deleted=FALSE WHERE code=%(code)s'.format(REGION_TABLE=REGION_TABLE),
                 [DictObject(code=code, name=gov_latest_region[code]) for code in modified_codes]
             )
-            db().insert(REGION_VERSION_TABLE, due_date=gov_region_info.due_date, published_at=gov_region_info.published_at)
+
+            db().insert(REGION_VERSION_TABLE, due_date=gov_latest_region_version.due_date, published_at=gov_latest_region_version.published_at)
             LOGGER.info('update finished')
         else:
             LOGGER.info('no updates')
@@ -133,19 +134,19 @@ def rollback_update(purpose):
 
     @transactional(db)
     def rollback():
-        region_versions = db().list('SELECT * FROM {REGION_VERSION_TABLE} ORDER BY id DESC FETCH FIRST 2 ROWS ONLY'.format(REGION_VERSION_TABLE=REGION_VERSION_TABLE))
-        if not region_versions:
+        db_region_versions = db().list('SELECT * FROM {REGION_VERSION_TABLE} ORDER BY id DESC FETCH FIRST 2 ROWS ONLY'.format(REGION_VERSION_TABLE=REGION_VERSION_TABLE))
+        if not db_region_versions:
             LOGGER.info('can not rollback: can not find region version')
             return
         if db().get_scalar('SELECT COUNT(*) FROM {REGION_BACKUP_TABLE}'.format(REGION_BACKUP_TABLE=REGION_BACKUP_TABLE)) == 0:
             LOGGER.info('can not rollback: no data in backup table')
             return
         LOGGER.info('current region version: published at %(published_at)s, applied_at: %(applied_at)s', {
-            'published_at': region_versions[0].published_at, 'applied_at': region_versions[0].applied_at
+            'published_at': db_region_versions[0].published_at, 'applied_at': db_region_versions[0].applied_at
         })
-        if len(region_versions) >= 2:
+        if len(db_region_versions) >= 2:
             LOGGER.info('will rollback to region version: published at %(published_at)s, applied_at: %(applied_at)s', {
-                'published_at': region_versions[1].published_at, 'applied_at': region_versions[1].applied_at
+                'published_at': db_region_versions[1].published_at, 'applied_at': db_region_versions[1].applied_at
             })
         db().execute('''
             UPDATE {REGION_TABLE} r
@@ -161,7 +162,7 @@ def rollback_update(purpose):
         else:
             if deleted_count > 0:
                 LOGGER.info('number of deleted regions: %(count)s', {'count': deleted_count})
-        db().execute('DELETE FROM {REGION_BACKUP_TABLE}'.format(REGION_BACKUP_TABLE))
+        db().execute('DELETE FROM {REGION_BACKUP_TABLE}'.format(REGION_BACKUP_TABLE=REGION_BACKUP_TABLE))
         db().execute('DELETE FROM {REGION_VERSION_TABLE} WHERE id=(SELECT MAX(id) FROM {REGION_VERSION_TABLE})'.format(REGION_VERSION_TABLE=REGION_VERSION_TABLE))
         LOGGER.info('rollback update finished')
 
@@ -171,7 +172,7 @@ def rollback_update(purpose):
         LOGGER.info('rollback failed')
 
 
-def get_latest_region(contents):
+def extract_gov_latest_region_version(contents):
     contents.find('li.cont_line').remove()
     latest_region = pq(contents.children()[0])
     return DictObject(
@@ -181,29 +182,26 @@ def get_latest_region(contents):
     )
 
 
-def get_gov_latest_region(latest_region):
-    region_content = pq(url='{}{}'.format(CONTENTS_URL if 'gov.cn' not in latest_region.url else '', latest_region.url))('.xilan_con').text()
+def get_gov_latest_region(latest_region_version):
+    region_content = pq(url='{}{}'.format(CONTENTS_URL if 'gov.cn' not in latest_region_version.url else '', latest_region_version.url))('.xilan_con').text()
     region_content = region_content[region_content.index('110000'):].split()
     region_content = dict(tuple(region_content[i: i + 2]) for i in range(0, len(region_content), 2))
     return region_content
 
 
-def get_db_latest_region(db):
+def get_db_latest_region(purpose):
+    db = lambda: require_database(purpose)
     return {r.code: r for r in db().list('SELECT * FROM {REGION_TABLE}'.format(REGION_TABLE=REGION_TABLE))}
 
 
-def diff(old_data_dict, new_data_dict, is_db_source=False):
-    old_codes = set(old_data_dict.keys())
-    new_codes = set(new_data_dict.keys())
-    added_keys = new_codes - old_codes
-    if is_db_source:
-        deleted_keys = set(key for key in old_codes - new_codes if not old_data_dict[key].is_deleted)
-        modified_keys = set(key for key in old_codes & new_codes if (old_data_dict[key].name, old_data_dict[key].is_deleted) != (new_data_dict[key], False))
-    else:
-        deleted_keys = old_codes - new_codes
-        modified_keys = set(key for key in old_codes & new_codes if old_data_dict[key] != new_data_dict[key])
+def diff(db_source, site_source):
+    db_codes = set(db_source.keys())
+    site_codes = set(site_source.keys())
+    added_codes = site_codes - db_codes
+    deleted_codes = set(code for code in db_codes - site_codes if not db_source[code].is_deleted)
+    modified_codes = set(code for code in db_codes & site_codes if (db_source[code].name, db_source[code].is_deleted) != (site_source[code], False))
 
-    return added_keys, deleted_keys, modified_keys
+    return added_codes, deleted_codes, modified_codes
 
 
 def _wrap_with(code):
