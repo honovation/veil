@@ -3,12 +3,16 @@ from veil.profile.installer import *
 
 LOGGER = logging.getLogger(__name__)
 
+POSTGRESQL_APT_REPOSITORY_NAME = 'pgdg'
+
+
 @composite_installer
 def postgresql_server_resource(purpose, config):
     pg_data_dir = get_data_dir(purpose)
     pg_config_dir = get_config_dir(purpose)
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
+        postgresql_apt_repository_resource(),
         os_package_resource(name='postgresql-9.1'),
         os_service_resource(state='not_installed', name='postgresql'),
         postgresql_global_bin_resource(),
@@ -47,6 +51,20 @@ def postgresql_server_resource(purpose, config):
             owner=config.owner, owner_password=config.owner_password, host=config.host, port=config.port)
     ])
     return resources
+
+
+@atomic_installer
+def postgresql_apt_repository_resource():
+    is_installed = is_os_package_repository_installed(POSTGRESQL_APT_REPOSITORY_NAME)
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        dry_run_result['postgresql_apt_repository?{}'.format(POSTGRESQL_APT_REPOSITORY_NAME)] = '-' if is_installed else 'INSTALL'
+        return
+    if is_installed:
+        return
+    LOGGER.info('installing postgresql apt repository: %(name)s ...', {'name': POSTGRESQL_APT_REPOSITORY_NAME})
+    shell_execute('echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-{name} main" > /etc/apt/sources.list.d/{name}.list'.format(name=POSTGRESQL_APT_REPOSITORY_NAME), capture=True)
+    shell_execute('wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -', capture=True)
 
 
 @composite_installer
