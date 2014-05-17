@@ -72,7 +72,12 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
                         login_referer = request.headers.get('Referer')
                     if login_referer:
                         remember_user_login_referer(purpose, login_referer, new_browser_code)
-                    redirect_to(login_url)
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        set_http_status_code(httplib.UNAUTHORIZED)
+                        get_current_http_response().set_header('WWW-Authenticate', login_url)
+                        end_http_request_processing()
+                    else:
+                        redirect_to(login_url)
         except HTTPError:
             raise
         except:

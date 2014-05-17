@@ -34,7 +34,7 @@ veil.log = function(message) {
     }
 };
 
-veil.alert = window.custom_alert || window.alert;
+veil.alert = function(message){(window.custom_alert || window.alert)(message);};
 
 veil.executed = [];
 veil.executeOnce = function (hash, func) {
@@ -166,12 +166,12 @@ veil.resource.get = function (options) {
         error: onError,
         statusCode: {
             400: onValidationError,
-            401: function(){
-                veil.alert('登录信息不对、或者帐号不可用');
-                if (window.location.pathname === '/login'){
+            401: function(jqXHR){
+                var loginUrl = jqXHR.getResponseHeader('WWW-Authenticate');
+                if (window.location.pathname === loginUrl){
                     $('input[name=username]').focus().select();
                 } else {
-                    window.location.href = '/login';
+                    window.location.href = loginUrl + window.location.hash;
                 }
             },
             403: function() {veil.alert('权限不足');}
@@ -215,12 +215,12 @@ veil.resource.create = function (options) {
         error:onError,
         statusCode:{
             400: onValidationError,
-            401: function(){
-                veil.alert('登录信息不对、或者帐号不可用');
-                if (window.location.pathname === '/login'){
+            401: function(jqXHR){
+                var loginUrl = jqXHR.getResponseHeader('WWW-Authenticate');
+                if (window.location.pathname === loginUrl){
                     $('input[name=username]').focus().select();
                 } else {
-                    window.location.href = '/login';
+                    window.location.href = loginUrl + window.location.hash;
                 }
             },
             403: function() {veil.alert('权限不足');}
@@ -266,12 +266,12 @@ veil.resource.update = function (options) {
         error: onError,
         statusCode: {
             400: onValidationError,
-            401: function(){
-                veil.alert('登录信息不对、或者帐号不可用');
-                if (window.location.pathname === '/login'){
+            401: function(jqXHR){
+                var loginUrl = jqXHR.getResponseHeader('WWW-Authenticate');
+                if (window.location.pathname === loginUrl){
                     $('input[name=username]').focus().select();
                 } else {
-                    window.location.href = '/login';
+                    window.location.href = loginUrl + window.location.hash;
                 }
             },
             403: function() {veil.alert('权限不足');}
@@ -317,12 +317,12 @@ veil.resource.patch = function (options) {
         error: onError,
         statusCode: {
             400: onValidationError,
-            401: function(){
-                veil.alert('登录信息不对、或者帐号不可用');
-                if (window.location.pathname === '/login'){
+            401: function(jqXHR){
+                var loginUrl = jqXHR.getResponseHeader('WWW-Authenticate');
+                if (window.location.pathname === loginUrl){
                     $('input[name=username]').focus().select();
                 } else {
-                    window.location.href = '/login';
+                    window.location.href = loginUrl + window.location.hash;
                 }
             },
             403: function() {veil.alert('权限不足');}
@@ -371,12 +371,12 @@ veil.resource.del = function (options) {
         error:onError,
         statusCode:{
             400: onValidationError,
-            401: function(){
-                veil.alert('登录信息不对、或者帐号不可用');
-                if (window.location.pathname === '/login'){
+            401: function(jqXHR){
+                var loginUrl = jqXHR.getResponseHeader('WWW-Authenticate');
+                if (window.location.pathname === loginUrl){
                     $('input[name=username]').focus().select();
                 } else {
-                    window.location.href = '/login';
+                    window.location.href = loginUrl + window.location.hash;
                 }
             },
             403:function() {veil.alert('权限不足');}
