@@ -25,7 +25,7 @@ def restore_from_baseline(veil_env_name=None, pattern=''):
     shell_execute('veil down')
     VEIL_VAR_DIR.rmtree()
     VEIL_VAR_DIR.mkdir()
-    for backup_path in BASELINE_DIR.listdir('*.tar.gz'):
+    for backup_path in BASELINE_DIR.files('*.tar.gz'):
         project_name, env_name, server, time = backup_path.basename().split('-')
         dir_name = '{}-{}'.format(project_name, env_name)
         #TODO: backup dir structure changed, there should be changed

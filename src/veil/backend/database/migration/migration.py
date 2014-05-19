@@ -9,7 +9,7 @@ from veil.frontend.cli import *
 def load_versions(purpose):
     migration_script_dir = VEIL_HOME / 'db' / purpose
     versions = {}
-    for migration_script in migration_script_dir.listdir('*.sql'):
+    for migration_script in migration_script_dir.files('*.sql'):
         _, file_name = migration_script.splitpath()
         if '-' not in file_name:
             raise Exception('invalid migration script name: {}'.format(file_name))
@@ -23,7 +23,7 @@ def load_versions(purpose):
 @script('lock-migration-scripts')
 def lock_migration_scripts(purpose):
     migration_script_dir = VEIL_HOME / 'db' / purpose
-    for sql_path in migration_script_dir.listdir('*.sql'):
+    for sql_path in migration_script_dir.files('*.sql'):
         with open(sql_path) as sql_file:
             md5 = calculate_file_md5_hash(sql_file)
         lock_path = as_path(sql_path.replace('.sql', '.locked'))
@@ -50,10 +50,10 @@ def check_all_locked_migration_scripts():
     if not os.path.exists(VEIL_HOME / 'db'):
         return
     migration_script_dir = VEIL_HOME / 'db'
-    purposes = migration_script_dir.listdir()
+    purposes = migration_script_dir.dirs()
     for purpose in purposes:
-        locked_file_count = len(purpose.listdir('*.locked'))
-        script_file_count = len(purpose.listdir('*.sql'))
+        locked_file_count = len(purpose.files('*.locked'))
+        script_file_count = len(purpose.files('*.sql'))
         if locked_file_count < script_file_count:
             print('You must lock scripts in {} using: veil backend database migration lock-migration-scripts {}'.format(purpose, purpose))
             exit(-1)

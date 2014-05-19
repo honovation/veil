@@ -56,8 +56,7 @@ def rollback(src_dir, src_app_dir, backup_dir, veil_server):
         raise Exception('{} does not exists, can not rollback'.format(backup_dir))
     if os.path.exists(src_dir):
         bring_down_server(src_app_dir, veil_server)
-        shell_execute('mv {} {}-to-be-deleted-{}'.format(src_dir, src_dir,
-            datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
+        shell_execute('mv {} {}-to-be-deleted-{}'.format(src_dir, src_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
     try:
         shell_execute('pkill -x supervisord')
     except:

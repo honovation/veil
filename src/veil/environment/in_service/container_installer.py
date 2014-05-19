@@ -16,9 +16,8 @@ def veil_env_containers_resource(veil_env_name, config_dir):
     for veil_server_name in list_veil_server_names(veil_env_name):
         server_config_dir = as_path('{}/env/{}/{}'.format(config_dir, veil_env_name, veil_server_name))
         resources.append(veil_server_container_resource(veil_env_name=veil_env_name, veil_server_name=veil_server_name))
-        resources.append(veil_server_container_config_resource(
-            veil_env_name=veil_env_name, veil_server_name=veil_server_name, server_config_dir=server_config_dir
-        ))
+        resources.append(veil_server_container_config_resource(veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            server_config_dir=server_config_dir))
     return resources
 
 
@@ -59,8 +58,9 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
             remote_path='/etc/network/if-post-down.d/iptablessave',
             owner='root', owner_group='root', mode=0755),
         veil_server_container_file_resource(
-            local_path=server_config_dir / 'sudoers', veil_env_name=veil_env_name, veil_server_name=veil_server_name,
-            remote_path='/etc/sudoers',
+            local_path=server_config_dir / 'sudoers.d.ssh-auth-sock',
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path='/etc/sudoers.d/ssh-auth-sock',
             owner='root', owner_group='root', mode=0440),
         veil_server_container_directory_resource(
             veil_env_name=veil_env_name, veil_server_name=veil_server_name,
@@ -86,7 +86,7 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
             remote_path='/root/.ssh/known_hosts',
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644)]
     if (server_config_dir / 'config').exists():
-        for local_path in (server_config_dir / 'config').listdir():
+        for local_path in (server_config_dir / 'config').files():
             remote_path = '/home/{}/{}'.format(veil_server_user_name, local_path.name)
             resources.append(veil_server_container_file_resource(
                 local_path=local_path, veil_env_name=veil_env_name,
