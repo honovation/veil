@@ -52,9 +52,9 @@ def normalize_arguments():
     # parse request body in ``application/json`` as tornado's parse_body_arguments does not support it
     if request.headers.get('Content-Type', '').startswith('application/json'):
         json_arguments = objectify(from_json(request.body or '{}'))
-        requested_by_api = json_arguments.pop('api', True)
+        value_contained_in_array = json_arguments.pop('value_contained_in_array', False)
         for name, value in json_arguments.items():
-            request.arguments.setdefault(name, []).extend([value] if requested_by_api else value)
+            request.arguments.setdefault(name, []).extend(value if value_contained_in_array else [value])
     yield
 
 

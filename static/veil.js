@@ -11,7 +11,7 @@
 $.ajaxSetup({cache: true, headers: {'X-XSRF': $.cookie('_xsrf')}});
 
 $.fn.serializeObject = function() {
-    var o = {api: false};
+    var o = {value_contained_in_array: True};
     var a = this.serializeArray();
     $.each(a, function() {
         var value = $.trim(this.value);
