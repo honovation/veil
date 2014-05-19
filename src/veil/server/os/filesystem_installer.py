@@ -59,32 +59,33 @@ def file_resource(path, content, owner='root', group='root', mode=0644):
 
 def install_file(is_dry_run, path, content, owner='root', group='root', mode=0644):
     write = False
+    origin_backup_path = '{}.origin'.format(path)
+    origin_content_to_backup = None
     actions = []
-    if not os.path.exists(path):
+    if os.path.exists(path):
+        with open(path, "rb") as fp:
+            old_content = fp.read()
+        if content != old_content:
+            write = True
+            if not os.path.exists(origin_backup_path):
+                origin_content_to_backup = old_content
+            actions.append('UPDATE')
+            reason = "contents don't match"
+    else:
         write = True
         actions.append('CREATE')
         reason = "it doesn't exist"
-    else:
-        if content is not None:
-            with open(path, "rb") as fp:
-                old_content = fp.read()
-            if content != old_content:
-                write = True
-                actions.append('UPDATE')
-                reason = "contents don't match"
-
     if write:
-        if not is_dry_run and content:
+        if not is_dry_run and content is not None:
+            if origin_content_to_backup:
+                with open(origin_backup_path, 'wb') as fp:
+                    LOGGER.info('backup origin file: %(path)s => %(origin_backup_path)s', {'path': path, 'origin_backup_path': origin_backup_path})
+                    fp.write(origin_content_to_backup)
             with open(path, 'wb') as fp:
-                LOGGER.info('Writing file: %(path)s because %(reason)s', {
-                    'path': path,
-                    'reason': reason
-                })
+                LOGGER.info('Writing file: %(path)s because %(reason)s', {'path': path, 'reason': reason})
                 fp.write(content)
-
     if os.path.exists(path):
         actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
-
     return actions
 
 
@@ -131,7 +132,6 @@ def install_symbolic_link(is_dry_run, path, to):
 def ensure_metadata(is_dry_run, path, user, group, mode=None):
     actions = []
     stat = os.stat(path)
-
     if mode:
         existing_mode = stat.st_mode & 07777
         if existing_mode != mode:
@@ -143,7 +143,6 @@ def ensure_metadata(is_dry_run, path, user, group, mode=None):
                     'mode': mode
                 })
                 os.chmod(path, mode)
-
     if user:
         uid = coerce_uid(user)
         if stat.st_uid != uid:
@@ -155,7 +154,6 @@ def ensure_metadata(is_dry_run, path, user, group, mode=None):
                     'user': user
                 })
                 os.chown(path, uid, -1)
-
     if group:
         gid = coerce_gid(group)
         if stat.st_gid != gid:
