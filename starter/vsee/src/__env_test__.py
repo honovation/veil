@@ -16,6 +16,7 @@ config = __env__.env_config(
     persist_store_redis_port=TEST_REDIS_PORT,
     memory_cache_redis_host=TEST_REDIS_HOST,
     memory_cache_redis_port=TEST_REDIS_PORT,
+    vsee_postgresql_version='9.3',
     vsee_postgresql_host='127.0.0.1',
     vsee_postgresql_port=5433,
     queue_type='immediate',

@@ -42,8 +42,8 @@ LOGGING_LEVEL_CONFIG = objectify({
 
 
 def env_config(person_website_start_port, person_website_processes_count, person_website_domain, person_website_domain_port, persist_store_redis_host,
-        persist_store_redis_port, memory_cache_redis_host, memory_cache_redis_port, vsee_postgresql_host, vsee_postgresql_port, queue_type,
-        queue_host, queue_port, resweb_domain, resweb_domain_port, resweb_host, resweb_port):
+        persist_store_redis_port, memory_cache_redis_host, memory_cache_redis_port, vsee_postgresql_version, vsee_postgresql_host,
+        vsee_postgresql_port, queue_type, queue_host, queue_port, resweb_domain, resweb_domain_port, resweb_host, resweb_port):
     return objectify(locals())
 
 
@@ -103,8 +103,9 @@ def log_rotated_postgresql_program(purpose, *args, **kwargs):
 
 def vsee_postgresql_program(config, more_config=None):
     more_config = more_config or {}
-    return log_rotated_postgresql_program('vsee', config.vsee_postgresql_host, config.vsee_postgresql_port, owner=SECURITY_CONFIG.db_owner,
-        owner_password=SECURITY_CONFIG.db_owner_password, user=SECURITY_CONFIG.db_user, password=SECURITY_CONFIG.db_password,
+    return log_rotated_postgresql_program('vsee', config.vsee_postgresql_version, config.vsee_postgresql_host, config.vsee_postgresql_port,
+        owner=SECURITY_CONFIG.db_owner, owner_password=SECURITY_CONFIG.db_owner_password,
+        user=SECURITY_CONFIG.db_user, password=SECURITY_CONFIG.db_password,
         log_min_duration_statement=LOGGING_LEVEL_CONFIG.vsee_postgresql.log_min_duration_statement, **more_config)
 
 

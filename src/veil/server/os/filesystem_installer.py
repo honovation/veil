@@ -108,23 +108,15 @@ def install_symbolic_link(is_dry_run, path, to):
         if old_path == to:
             return
         if not os.path.islink(path):
-            raise Exception(
-                '%{} trying to create a symlink with the same name as an existing file or directory'.format(path))
+            raise Exception('trying to create a symlink with the same name as an existing file or directory: {}'.format(path))
         action = 'UPDATE'
         if not is_dry_run:
-            LOGGER.info("replacing old symlink: %(path)s from %(old_path)s to %(to)s", {
-                'path': path,
-                'old_path': old_path,
-                'to': to
-            })
+            LOGGER.info("replacing old symlink: %(path)s from %(old_path)s to %(to)s", {'path': path, 'old_path': old_path, 'to': to})
             os.unlink(path)
     if not action:
         action = 'CREATE'
     if not is_dry_run:
-        LOGGER.info('Creating symbolic: %(path)s to %(to)s', {
-            'path': path,
-            'to': to
-        })
+        LOGGER.info('Creating symbolic: %(path)s to %(to)s', {'path': path, 'to': to})
         os.symlink(to, path)
     return action
 

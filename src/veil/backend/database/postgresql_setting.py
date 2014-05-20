@@ -2,11 +2,9 @@ from __future__ import unicode_literals, print_function, division
 from veil.model.collection import *
 from veil.environment import *
 
-def postgresql_program(
-        purpose, host, port, owner, owner_password, user, password,
-        log_min_duration_statement, log_filename=None,
-        shared_buffers='24MB', work_mem='1MB', maintenance_work_mem='16MB', effective_io_concurrency=1,
-        wal_buffers='64kB', checkpoint_segments=3, checkpoint_completion_target=0.5, effective_cache_size='128MB'):
+def postgresql_program(purpose, version, host, port, owner, owner_password, user, password, log_min_duration_statement, log_filename=None,
+        shared_buffers='24MB', work_mem='1MB', maintenance_work_mem='16MB', effective_io_concurrency=1, wal_buffers='64kB', checkpoint_segments=3,
+        checkpoint_completion_target=0.5, effective_cache_size='128MB'):
     data_dir = VEIL_VAR_DIR / '{}-postgresql'.format(purpose.replace('_', '-'))
     return objectify({
         '{}_postgresql'.format(purpose): {
@@ -14,6 +12,7 @@ def postgresql_program(
             'migrate_command': 'veil backend database postgresql migrate {}'.format(purpose),
             'resources': [('veil.backend.database.postgresql.postgresql_server_resource', {
                 'purpose': purpose,
+                'version': version,
                 'config': {
                     'host': host,
                     'port': port,
