@@ -1,10 +1,6 @@
 from __future__ import unicode_literals, print_function, division
-from veil_installer import *
-from veil.model.collection import *
-from veil.environment import *
-from veil.backend.redis_setting import redis_program
-from veil.server.python import *
-from veil_component import list_dynamic_dependency_providers
+from veil.profile.installer import *
+from .redis_setting import redis_program
 
 
 def queue_program(host, port):
@@ -69,7 +65,7 @@ def job_worker_program(worker_name, pyres_worker_logging_level, application_logg
     programs = {}
     for i in range(count):
         programs.update({
-            '{}_worker{}'.format(worker_name, i+1): {
+            '{}_worker{}'.format(worker_name, i + 1): {
                 'execute_command': 'veil sleep 10 pyres_worker --host={} --port={} -t {} -l {} -f {} {}'.format(
                     queue_host, queue_port, timeout, pyres_worker_logging_level, pyrse_log_path, ','.join(queue_names)
                 ), # log instruction for the main process, a.k.a pyres_worker

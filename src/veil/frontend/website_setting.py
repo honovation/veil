@@ -1,9 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil_installer import *
-from veil.utility.setting import *
-from veil.environment import *
-from veil.server.python import *
-from veil_component import *
+from veil.profile.installer import *
 
 
 def website_programs(purpose, logging_levels, application_config, start_port, processes_count=1):

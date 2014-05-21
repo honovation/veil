@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.model.collection import *
-from veil.environment import *
+from veil.profile.installer import *
 
 def redis_program(purpose, host, port, persisted_by_aof=False):
     return objectify({

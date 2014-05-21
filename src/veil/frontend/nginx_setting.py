@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.model.collection import *
-from veil.environment import *
+from veil.profile.installer import *
 
 NGINX_PID_PATH = VEIL_VAR_DIR / 'nginx.pid'
 

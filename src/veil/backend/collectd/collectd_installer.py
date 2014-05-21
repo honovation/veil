@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
-from veil.backend.collectd_setting import COLLECTD_CONF_PATH
+from ..collectd_setting import COLLECTD_CONF_PATH
 
 
 @composite_installer

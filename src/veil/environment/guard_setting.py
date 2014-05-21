@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.model.collection import *
+from veil.profile.installer import *
 
 def guard_program(crontab_expression):
     return objectify({
