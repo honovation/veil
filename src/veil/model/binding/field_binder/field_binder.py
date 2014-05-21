@@ -8,7 +8,7 @@ import re
 from datetime import datetime, date, time
 import pytz
 from dateutil.parser import parse
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import sys
 from veil.utility.clock import *
 from ..invalid import Invalid
@@ -121,7 +121,7 @@ def to_float(value):
 def to_decimal(value):
     try:
         return Decimal(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, InvalidOperation):
         raise Invalid(_('数据不合法'))
 
 
