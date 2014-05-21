@@ -14,9 +14,9 @@ def load_kuaidi100_client_config():
     return load_config_from(VEIL_ETC_DIR / 'kuaidi100-client.cfg', 'api_id')
 
 
-config = None
+_config = None
 def kuaidi100_client_config():
-    global config
-    if config is None:
-        config = load_kuaidi100_client_config()
-    return config
+    global _config
+    if _config is None:
+        _config = load_kuaidi100_client_config()
+    return _config

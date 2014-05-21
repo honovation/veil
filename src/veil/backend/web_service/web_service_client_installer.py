@@ -13,6 +13,6 @@ def load_web_service_client_config(purpose):
     return load_config_from(VEIL_ETC_DIR / '{}-web-service.cfg'.format(purpose.replace('_', '-')), 'url', 'user', 'password', 'proxy_netloc')
 
 
-config = {}
+_config = {}
 def web_service_client_config(purpose):
-    return config.setdefault(purpose, load_web_service_client_config(purpose))
+    return _config.setdefault(purpose, load_web_service_client_config(purpose))

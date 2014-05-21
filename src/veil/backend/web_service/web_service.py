@@ -63,7 +63,7 @@ class WebService(object):
 
 
 def log_web_fault(exception_info, logger):
-    type, value, tb = exception_info
+    _, value, _ = exception_info
     if isinstance(value, WebFault):
         logger.error('web fault: %(faultstring)s', {'faultstring': value.fault.faultstring})
     return exception_info

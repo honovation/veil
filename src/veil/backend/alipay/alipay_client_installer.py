@@ -16,9 +16,9 @@ def load_alipay_client_config():
     return load_config_from(VEIL_ETC_DIR / 'alipay-client.cfg', 'partner_id', 'app_key', 'seller_email')
 
 
-config = None
+_config = None
 def alipay_client_config():
-    global config
-    if config is None:
-        config = load_alipay_client_config()
-    return config
+    global _config
+    if _config is None:
+        _config = load_alipay_client_config()
+    return _config

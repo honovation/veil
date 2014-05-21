@@ -18,17 +18,17 @@ def override_bucket_config(purpose, **overrides):
 
 def load_bucket_config(purpose):
     try:
-        config_ = load_config_from(VEIL_ETC_DIR / '{}-bucket.cfg'.format(purpose.replace('_', '-')), 'type', 'base_directory', 'base_url')
+        config = load_config_from(VEIL_ETC_DIR / '{}-bucket.cfg'.format(purpose.replace('_', '-')), 'type', 'base_directory', 'base_url')
     except IOError:
         if 'test' == VEIL_SERVER:
-            config_ = DictObject()
+            config = DictObject()
         else:
             raise
     if 'test' == VEIL_SERVER:
-        config_.update(overridden_bucket_configs.get(purpose, {}))
-    return config_
+        config.update(overridden_bucket_configs.get(purpose, {}))
+    return config
 
 
-config = {}
+_config = {}
 def bucket_config(purpose):
-    return config.setdefault(purpose, load_bucket_config(purpose))
+    return _config.setdefault(purpose, load_bucket_config(purpose))

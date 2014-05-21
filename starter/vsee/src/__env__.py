@@ -173,7 +173,8 @@ def vsee_config(config):
             'host': config['{}_redis_host'.format(purpose)],
             'port': config['{}_redis_port'.format(purpose)]
         }
-    person_website_authority = config.person_website_domain if 80 == config.person_website_domain_port else '{}:{}'.format(config.person_website_domain, config.person_website_domain_port)
+    person_website_authority = config.person_website_domain if 80 == config.person_website_domain_port else '{}:{}'.format(
+        config.person_website_domain, config.person_website_domain_port)
     for purpose in PERSON_WEBSITE_BUCKETS:
         vsee_config_['{}_bucket'.format(purpose)] = {
             'type': 'filesystem',

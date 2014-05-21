@@ -10,14 +10,14 @@ def queue_client_resource(type, host, port):
 
 
 def load_queue_client_config():
-    config_ = load_config_from(VEIL_ETC_DIR / 'queue-client.cfg', 'type', 'host', 'port')
-    config_.port = int(config_.port)
-    return config_
-
-
-config = None
-def queue_client_config():
-    global config
-    if config is None:
-        config = load_queue_client_config()
+    config = load_config_from(VEIL_ETC_DIR / 'queue-client.cfg', 'type', 'host', 'port')
+    config.port = int(config.port)
     return config
+
+
+_config = None
+def queue_client_config():
+    global _config
+    if _config is None:
+        _config = load_queue_client_config()
+    return _config

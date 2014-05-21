@@ -16,9 +16,9 @@ def load_tenpay_client_config():
     return load_config_from(VEIL_ETC_DIR / 'tenpay-client.cfg', 'partner_id', 'app_key')
 
 
-config = None
+_config = None
 def tenpay_client_config():
-    global config
-    if config is None:
-        config = load_tenpay_client_config()
-    return config
+    global _config
+    if _config is None:
+        _config = load_tenpay_client_config()
+    return _config

@@ -15,9 +15,9 @@ def load_emay_sms_client_config():
     return load_config_from(VEIL_ETC_DIR / 'emay-sms-client.cfg', 'cdkey', 'password')
 
 
-config = None
+_config = None
 def emay_sms_client_config():
-    global config
-    if config is None:
-        config = load_emay_sms_client_config()
-    return config
+    global _config
+    if _config is None:
+        _config = load_emay_sms_client_config()
+    return _config

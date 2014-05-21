@@ -11,12 +11,12 @@ def database_client_resource(purpose, config):
 
 
 def load_database_client_config(purpose):
-    config_ = load_config_from(VEIL_ETC_DIR / '{}-database-client.cfg'.format(purpose.replace('_', '-')), 'driver', 'type', 'host', 'port',
+    config = load_config_from(VEIL_ETC_DIR / '{}-database-client.cfg'.format(purpose.replace('_', '-')), 'driver', 'type', 'host', 'port',
         'database', 'user', 'password', 'schema')
-    config_.port = int(config_.port)
-    return config_
+    config.port = int(config.port)
+    return config
 
 
-config = {}
+_config = {}
 def database_client_config(purpose):
-    return config.setdefault(purpose, load_database_client_config(purpose))
+    return _config.setdefault(purpose, load_database_client_config(purpose))
