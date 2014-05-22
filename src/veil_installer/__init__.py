@@ -5,6 +5,7 @@ with veil_component.init_component(__name__):
     from .installer import composite_installer
     from .installer import get_dry_run_result
     from .installer import install_resource
+    from .installer import install_resources
     from .installer import application_resource
     from .installer import add_application_sub_resource
     from .installer import get_executing_installer
@@ -25,6 +26,7 @@ with veil_component.init_component(__name__):
         composite_installer.__name__,
         get_dry_run_result.__name__,
         install_resource.__name__,
+        install_resources.__name__,
         application_resource.__name__,
         add_application_sub_resource.__name__,
         get_executing_installer.__name__,
