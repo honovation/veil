@@ -7,6 +7,17 @@ LOGGER = logging.getLogger(__name__)
 
 @composite_installer
 def postgresql_server_resource(purpose, config):
+    upgrading = False
+    maintenance_config = postgresql_maintenance_config(purpose, must_exist=False)
+    if maintenance_config and maintenance_config.version != config.version:
+        assert maintenance_config.version < config.version, 'cannot downgrade postgresql server from {} to {}'.format(maintenance_config.version,
+            config.version)
+        upgrading = True
+        LOGGER.warn('Start to install new-version postgresql server: %(old_version)s => %(new_version)s', {
+            'old_version': maintenance_config.version,
+            'new_version': config.version
+        })
+
     pg_data_dir = get_pg_data_dir(purpose, config.version)
     pg_config_dir = get_pg_config_dir(purpose, config.version)
     resources = list(BASIC_LAYOUT_RESOURCES)
@@ -40,15 +51,19 @@ def postgresql_server_resource(purpose, config):
         file_resource(path=pg_config_dir / 'pg_ident.conf', content=render_config('pg_ident.conf.j2')),
         file_resource(path=pg_config_dir / 'postgresql-maintenance.cfg', content=render_config(
             'postgresql-maintenance.cfg.j2', version=config.version, owner=config.owner, owner_password=config.owner_password)),
-        symbolic_link_resource(path=get_pg_config_dir(purpose), to=pg_config_dir),
         symbolic_link_resource(path=pg_data_dir / 'postgresql.conf', to=pg_config_dir / 'postgresql.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_ident.conf', to=pg_config_dir / 'pg_ident.conf'),
-        postgresql_user_resource(purpose=purpose, version=config.version, user=config.user, password=config.password,
-            owner=config.owner, owner_password=config.owner_password, host=config.host, port=config.port),
-        postgresql_user_resource(purpose=purpose, version=config.version, user='readonly', password='r1adonly',
-            owner=config.owner, owner_password=config.owner_password, host=config.host, port=config.port)
     ])
+
+    if not upgrading:
+        resources.extend([
+            symbolic_link_resource(path=get_pg_config_dir(purpose), to=pg_config_dir),
+            postgresql_user_resource(purpose=purpose, version=config.version, user=config.user, password=config.password,
+                owner=config.owner, owner_password=config.owner_password, host=config.host, port=config.port),
+            postgresql_user_resource(purpose=purpose, version=config.version, user='readonly', password='r1adonly',
+                owner=config.owner, owner_password=config.owner_password, host=config.host, port=config.port)
+        ])
     return resources
 
 
@@ -63,7 +78,7 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
     if is_installed:
         return
     LOGGER.info('install postgresql cluster: for %(purpose)s, %(version)s', {'purpose': purpose, 'version': version})
-    old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.parent), capture=True).strip()
+    old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.parent), capture=True)
     shell_execute('chmod 777 {}'.format(pg_data_dir.parent), capture=True)
     install_resource(file_resource(path='/tmp/pg-{}-owner-password'.format(purpose), content=owner_password))
     try:
@@ -109,7 +124,7 @@ def postgresql_user_resource(purpose, version, user, password, owner, owner_pass
 def postgresql_user_existed(version, host, port, owner, username, env):
     return '1' == shell_execute('''
         {}/psql -h {} -p {} -U {} -d postgres -tAc "SELECT 1 FROM pg_user WHERE usename='{}'"
-        '''.format(get_pg_bin_dir(version), host, port, owner, username), env=env, capture=True).strip()
+        '''.format(get_pg_bin_dir(version), host, port, owner, username), env=env, capture=True)
 
 
 def delete_file(path):
@@ -129,13 +144,15 @@ def postgresql_server_running(version, data_directory, owner):
         shell_execute('su {} -c "{}/pg_ctl -D {} stop"'.format(pg_bin_dir, owner, data_directory))
 
 
-maintenance_config = {}
-def postgresql_maintenance_config(purpose):
-    if purpose not in maintenance_config:
-        maintenance_config[purpose] = load_postgresql_maintenance_config(purpose)
-    return maintenance_config[purpose]
+_maintenance_config = {}
+def postgresql_maintenance_config(purpose, must_exist=True):
+    if purpose not in _maintenance_config:
+        _maintenance_config[purpose] = load_postgresql_maintenance_config(purpose, must_exist)
+    return _maintenance_config[purpose]
 
 
-def load_postgresql_maintenance_config(purpose):
-    config_dir = get_pg_config_dir(purpose)
-    return load_config_from(config_dir / 'postgresql-maintenance.cfg', 'version', 'owner', 'owner_password')
+def load_postgresql_maintenance_config(purpose, must_exist):
+    maintenance_config_path = get_pg_config_dir(purpose) / 'postgresql-maintenance.cfg'
+    if not must_exist and not maintenance_config_path.exists():
+        return DictObject()
+    return load_config_from(maintenance_config_path, 'version', 'owner', 'owner_password')

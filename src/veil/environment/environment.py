@@ -30,9 +30,8 @@ def get_application_version():
         return 'test'
     global _application_version
     from veil.utility.shell import shell_execute
-
     if not _application_version:
-        app_commit_hash = shell_execute('git rev-parse HEAD', cwd=VEIL_HOME, capture=True).strip()
+        app_commit_hash = shell_execute('git rev-parse HEAD', cwd=VEIL_HOME, capture=True)
         framework_commit_hash = get_veil_framework_version()
         _application_version = '{}-{}'.format(app_commit_hash, framework_commit_hash)
     return _application_version
@@ -40,5 +39,4 @@ def get_application_version():
 
 def get_veil_framework_version():
     from veil.utility.shell import shell_execute
-
-    return shell_execute('git rev-parse HEAD', cwd=VEIL_FRAMEWORK_HOME, capture=True).strip()
+    return shell_execute('git rev-parse HEAD', cwd=VEIL_FRAMEWORK_HOME, capture=True)

@@ -12,13 +12,13 @@ POSTGRESQL_APT_REPOSITORY_NAME = 'pgdg'
 
 @atomic_installer
 def os_ppa_repository_resource(name):
+    install_resource(os_package_resource(name='python-software-properties'))  # add-apt-repository is in the package python-software-properties
+
     is_installed = is_os_package_repository_installed(name)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        install_resource(os_package_resource(name='python-software-properties'))  # add-apt-repository is in the package python-software-properties
         dry_run_result['os_ppa_repository?{}'.format(name)] = '-' if is_installed else 'INSTALL'
         return
-    install_resource(os_package_resource(name='python-software-properties'))  # add-apt-repository is in the package python-software-properties
     if is_installed:
         return
     LOGGER.info('installing os package repository: %(name)s ...', {'name': name})

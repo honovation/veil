@@ -21,6 +21,8 @@ def shell_execute(command_line, capture=False, waits=True, shell=True, debug=Fal
     if not waits:
         return process
     output = process.communicate()[0]
+    if capture and output:
+        output = output.strip()
     if process.returncode not in expected_return_codes:
         LOGGER.warn('received nonzero return code: %(return_code)s, %(command_line)s, %(kwargs)s, %(output)s', {
             'return_code': process.returncode,

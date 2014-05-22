@@ -151,7 +151,7 @@ def print_deployed_at():
 
 
 def get_deployed_at():
-    last_commit = shell_execute('git rev-parse HEAD', capture=True).strip()
+    last_commit = shell_execute('git rev-parse HEAD', capture=True)
     lines = shell_execute("git show-ref --tags -d | grep ^{} | sed -e 's,.* refs/tags/,,' -e 's/\^{{}}//'".format(last_commit), capture=True)
     deployed_ats = []
     for tag in lines.splitlines(False):

@@ -110,7 +110,7 @@ def wait_for_server_up(purpose):
 def database_existed(version, host, port, owner, database, env):
     return '1' == shell_execute(
         '{}/psql -h {} -p {} -U {} -lqt | cut -d \| -f 1 | grep -w {} | wc -l'.format(get_pg_bin_dir(version), host, port, owner, database), env=env,
-        capture=True).strip()
+        capture=True)
 
 
 @script('create-database')

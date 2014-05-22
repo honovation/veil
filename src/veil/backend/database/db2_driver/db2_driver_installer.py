@@ -17,9 +17,9 @@ def db2_driver_resource():
         if should_download_while_dry_run():
             download_db2_clidriver()
         dry_run_result['db2-driver'] = '-' if is_db2_clidriver_installed() else 'INSTALL'
-        install_resource(python_package_resource(name='ibm-db', env=env))
-        return
-    install_db2_clidriver()
+    else:
+        install_db2_clidriver()
+
     install_resource(python_package_resource(name='ibm-db', env=env))
 
 
