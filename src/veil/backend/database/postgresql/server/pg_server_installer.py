@@ -57,18 +57,19 @@ def postgresql_server_resource(purpose, config):
         symbolic_link_resource(path=pg_data_dir / 'postgresql.conf', to=pg_config_dir / 'postgresql.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_ident.conf', to=pg_config_dir / 'pg_ident.conf'),
-        postgresql_user_resource(purpose=purpose, version=config.version, user=config.user, password=config.password,
-            owner=config.owner, owner_password=config.owner_password, host=config.host, port=config.port),
-        postgresql_user_resource(purpose=purpose, version=config.version, user='readonly', password='r1adonly',
-            owner=config.owner, owner_password=config.owner_password, host=config.host, port=config.port)
     ])
-
     if upgrading:
         resources.extend([
             os_package_resource(name='postgresql-server-dev-{}'.format(config.version)),
             postgresql_server_upgrading_resource(purpose=purpose, owner=config.owner, old_version=maintenance_config.version,
                 new_version=config.version)
         ])
+    resources.extend([
+        postgresql_user_resource(purpose=purpose, version=config.version, user=config.user, password=config.password,
+            owner=config.owner, owner_password=config.owner_password, host=config.host, port=config.port),
+        postgresql_user_resource(purpose=purpose, version=config.version, user='readonly', password='r1adonly',
+            owner=config.owner, owner_password=config.owner_password, host=config.host, port=config.port)
+    ])
 
     return resources
 
