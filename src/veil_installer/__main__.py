@@ -8,7 +8,7 @@ if '__main__' == __name__:
     import pprint
     from .installer import install_resources
     from .installer import set_upgrade_mode
-    from .installer import set_installing_container
+    from .installer import set_installing_when_not_installed
     from .installer import set_download_while_dry_run
     from .installer import dry_run
     from .installer import get_dry_run_result
@@ -26,7 +26,7 @@ if '__main__' == __name__:
         fast will check local and upgrade from remote only if necessary
         ''', choices=[UPGRADE_MODE_FAST, UPGRADE_MODE_LATEST, UPGRADE_MODE_NO])
     argument_parser.add_argument('--download-only', help='download necessary files from remote, but do not install them', action='store_true')
-    argument_parser.add_argument('--install-container', help='install container', action='store_true')
+    argument_parser.add_argument('--install-when-not-installed', help='install a package only when it is not installed', action='store_true')
     args = argument_parser.parse_args(sys.argv[1:])
 
     if VEIL_ENV_TYPE in {'development', 'test'}:
@@ -34,7 +34,7 @@ if '__main__' == __name__:
 
     resource = parse_resource(args.resource)
     set_upgrade_mode(args.upgrade_mode)
-    set_installing_container(args.install_container)
+    set_installing_when_not_installed(args.install_when_not_installed)
     if args.dry_run:
         with dry_run():
             install_resources([resource])

@@ -9,7 +9,7 @@ with veil_component.init_component(__name__):
     from .installer import add_application_sub_resource
     from .installer import get_executing_installer
     from .installer import get_upgrade_mode
-    from .installer import is_installing_container
+    from .installer import is_installing_when_not_installed
     from .installer import UPGRADE_MODE_NO
     from .installer import UPGRADE_MODE_FAST
     from .installer import UPGRADE_MODE_LATEST
@@ -29,7 +29,7 @@ with veil_component.init_component(__name__):
         add_application_sub_resource.__name__,
         get_executing_installer.__name__,
         get_upgrade_mode.__name__,
-        is_installing_container.__name__,
+        is_installing_when_not_installed.__name__,
         'UPGRADE_MODE_NO',
         'UPGRADE_MODE_FAST',
         'UPGRADE_MODE_LATEST',

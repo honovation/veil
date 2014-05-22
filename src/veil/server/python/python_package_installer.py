@@ -28,11 +28,11 @@ def python_package_resource(name, version=None, url=None, **kwargs):
                 'url': url
             })
 
-    installing_container = is_installing_container()
+    installing_when_not_installed = is_installing_when_not_installed()
     upgrade_mode = get_upgrade_mode()
     installed_version = get_python_package_installed_version(name)
     downloaded_version = get_downloaded_python_package_version(name, version)
-    if installing_container:
+    if installing_when_not_installed:
         latest_version = None
         if installed_version:
             may_update_resource_latest_version = need_install = need_download = False

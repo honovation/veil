@@ -9,10 +9,10 @@ LOGGER = logging.getLogger(__name__)
 
 @atomic_installer
 def os_package_resource(name):
-    installing_container = is_installing_container()
+    installing_when_not_installed = is_installing_when_not_installed()
     upgrade_mode = get_upgrade_mode()
     installed_version, downloaded_version = get_local_os_package_versions(name)
-    if installing_container:
+    if installing_when_not_installed:
         latest_version = None
         if installed_version:
             may_update_resource_latest_version = need_install = need_download = False
