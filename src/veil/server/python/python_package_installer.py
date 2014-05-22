@@ -32,6 +32,7 @@ def python_package_resource(name, version=None, url=None, **kwargs):
     installed_version = get_python_package_installed_version(name)
     downloaded_version = get_downloaded_python_package_version(name, version)
     latest_version = get_resource_latest_version(to_resource_key(name))
+    LOGGER.info('python package: %(name)s, upgrade_mode: %(um)s', {'name': name, 'um': upgrade_mode})
     if UPGRADE_MODE_LATEST == upgrade_mode:
         may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
         if installed_version:
