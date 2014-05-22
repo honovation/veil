@@ -9,25 +9,37 @@ LOGGER = logging.getLogger(__name__)
 
 @atomic_installer
 def os_package_resource(name):
+    installing_container = is_installing_container()
     upgrade_mode = get_upgrade_mode()
     installed_version, downloaded_version = get_local_os_package_versions(name)
-    latest_version = get_resource_latest_version(to_resource_key(name))
-    if UPGRADE_MODE_LATEST == upgrade_mode:
-        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
-        need_install = None if installed_version else True
-        need_download = True
-        action = 'UPGRADE' if installed_version else 'INSTALL'
-    elif UPGRADE_MODE_FAST == upgrade_mode:
-        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and not latest_version
-        need_install = latest_version and latest_version != installed_version
-        need_download = need_install and latest_version != downloaded_version
-        if need_install:
-            action = 'UPGRADE' if installed_version else 'INSTALL'
-        else:
+    if installing_container:
+        if installed_version:
+            may_update_resource_latest_version = need_install = need_download = False
             action = None
+        else:
+            may_update_resource_latest_version = False
+            need_install = True
+            need_download = not downloaded_version
+            action = 'INSTALL'
+
     else:
-        may_update_resource_latest_version = need_install = need_download = False
-        action = None
+        latest_version = get_resource_latest_version(to_resource_key(name))
+        if UPGRADE_MODE_LATEST == upgrade_mode:
+            may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
+            need_install = None if installed_version else True
+            need_download = True
+            action = 'UPGRADE' if installed_version else 'INSTALL'
+        elif UPGRADE_MODE_FAST == upgrade_mode:
+            may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and not latest_version
+            need_install = latest_version and latest_version != installed_version
+            need_download = need_install and latest_version != downloaded_version
+            if need_install:
+                action = 'UPGRADE' if installed_version else 'INSTALL'
+            else:
+                action = None
+        else:
+            may_update_resource_latest_version = need_install = need_download = False
+            action = None
 
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:

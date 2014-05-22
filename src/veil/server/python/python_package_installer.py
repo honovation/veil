@@ -28,42 +28,53 @@ def python_package_resource(name, version=None, url=None, **kwargs):
                 'url': url
             })
 
+    installing_container = is_installing_container()
     upgrade_mode = get_upgrade_mode()
     installed_version = get_python_package_installed_version(name)
     downloaded_version = get_downloaded_python_package_version(name, version)
-    latest_version = get_resource_latest_version(to_resource_key(name))
-    LOGGER.info('python package: %(name)s, upgrade_mode: %(um)s', {'name': name, 'um': upgrade_mode})
-    if UPGRADE_MODE_LATEST == upgrade_mode:
-        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
+    if installing_container:
         if installed_version:
-            if version:
-                if version == installed_version:
-                    need_install = False
-                    need_download = False
-                    action = None
+            may_update_resource_latest_version = need_install = need_download = False
+            action = None
+        else:
+            may_update_resource_latest_version = False
+            need_install = True
+            need_download = not downloaded_version
+            action = 'INSTALL'
+
+    else:
+        latest_version = get_resource_latest_version(to_resource_key(name))
+        if UPGRADE_MODE_LATEST == upgrade_mode:
+            may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
+            if installed_version:
+                if version:
+                    if version == installed_version:
+                        need_install = False
+                        need_download = False
+                        action = None
+                    else:
+                        need_install = True
+                        need_download = downloaded_version != version
+                        action = 'UPGRADE'
                 else:
-                    need_install = True
-                    need_download = downloaded_version != version
+                    need_install = None
+                    need_download = True
                     action = 'UPGRADE'
             else:
-                need_install = None
+                need_install = True
                 need_download = True
-                action = 'UPGRADE'
+                action = 'INSTALL'
+        elif UPGRADE_MODE_FAST == upgrade_mode:
+            may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and (not latest_version or version and version != latest_version)
+            need_install = (version or latest_version) and (version or latest_version) != installed_version
+            need_download = need_install and (version or latest_version) != downloaded_version
+            if need_install:
+                action = 'UPGRADE' if installed_version else 'INSTALL'
+            else:
+                action = None
         else:
-            need_install = True
-            need_download = True
-            action = 'INSTALL'
-    elif UPGRADE_MODE_FAST == upgrade_mode:
-        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and (not latest_version or version and version != latest_version)
-        need_install = (version or latest_version) and (version or latest_version) != installed_version
-        need_download = need_install and (version or latest_version) != downloaded_version
-        if need_install:
-            action = 'UPGRADE' if installed_version else 'INSTALL'
-        else:
+            may_update_resource_latest_version = need_install = need_download = False
             action = None
-    else:
-        may_update_resource_latest_version = need_install = need_download = False
-        action = None
 
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:

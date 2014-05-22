@@ -18,6 +18,7 @@ UPGRADE_MODE_NO = 'no'
 UPGRADE_MODE_FAST = 'fast'
 UPGRADE_MODE_LATEST = 'latest'
 upgrade_mode = None
+installing_container = False
 download_while_dry_run = False
 
 
@@ -169,6 +170,15 @@ def dry_run():
 
 def is_installing():
     return installing
+
+
+def set_installing_container(value):
+    global installing_container
+    installing_container = value
+
+
+def is_installing_container():
+    return installing_container
 
 
 def set_upgrade_mode(value):
