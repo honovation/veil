@@ -13,7 +13,7 @@ def lxc_container_resource(container_name, mac_address, lan_interface, memory_li
         lxc_container_created_resource(name=container_name),
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name),
             content=render_config('lxc-container.cfg.j2', name=container_name, mac_address=mac_address, lan_interface=lan_interface,
-                memory_limit=memory_limit, cpu_share=cpu_share))
+                memory_limit=memory_limit, cpu_share=cpu_share, is_trusty='14.04' in shell_execute('lsb_release -r', capture=True)))
     ]
     return resources
 
@@ -29,7 +29,8 @@ def lxc_container_created_resource(name):
         return
     LOGGER.info('create lxc container: %(name)s ...', {'name': name})
     shell_execute('lxc-create -t ubuntu -n {}'.format(name))
-    shell_execute('ln -s /var/lib/lxc/{}/config /etc/lxc/auto/{}.conf'.format(name, name))
+    if '14.04' not in shell_execute('lsb_release -r', capture=True):
+        shell_execute('ln -s /var/lib/lxc/{}/config /etc/lxc/auto/{}.conf'.format(name, name))
 
 
 @atomic_installer
