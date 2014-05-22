@@ -13,6 +13,7 @@ def os_package_resource(name):
     upgrade_mode = get_upgrade_mode()
     installed_version, downloaded_version = get_local_os_package_versions(name)
     if installing_container:
+        latest_version = None
         if installed_version:
             may_update_resource_latest_version = need_install = need_download = False
             action = None

@@ -33,6 +33,7 @@ def python_package_resource(name, version=None, url=None, **kwargs):
     installed_version = get_python_package_installed_version(name)
     downloaded_version = get_downloaded_python_package_version(name, version)
     if installing_container:
+        latest_version = None
         if installed_version:
             may_update_resource_latest_version = need_install = need_download = False
             action = None

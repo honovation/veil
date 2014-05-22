@@ -95,7 +95,6 @@ def install_resource(resource):
 def install_resources(resources):
     global installing
     installing = True
-    LOGGER.info(resources)
     resources = list(skip_installed_resources(resources))
     for resource in resources:
         more_resources = do_install(resource)
