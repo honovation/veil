@@ -121,7 +121,7 @@ def create_database_if_not_exists(purpose):
     env['PGPASSWORD'] = maintenance_config.owner_password
     if database_existed(maintenance_config.version, config.host, config.port, maintenance_config.owner, config.database, env):
         return
-    shell_execute('{pg_bin_dir}/createdb -h {host} -p {port} -U {owner} {database} -E UTF-8'.format(
+    shell_execute('{pg_bin_dir}/createdb -h {host} -p {port} -U {owner} {database} -E UTF-8 --lc-ctype=zh_CN.UTF-8 --lc-collate=POSIX'.format(
         pg_bin_dir=get_pg_bin_dir(maintenance_config.version),
         host=config.host,
         port=config.port,
