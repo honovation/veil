@@ -15,7 +15,7 @@ lxc.tty = 4
 lxc.pts = 1024
 lxc.devttydir=lxc
 lxc.rootfs=/var/lib/lxc/{{ name }}/rootfs
-lxc.rootfs.mount=/var/lib/lxc/{{ name }}/fstab
+lxc.mount=/var/lib/lxc/{{ name }}/fstab
 lxc.cap.drop = sys_module mac_admin
 lxc.pivotdir = lxc_putold
 
