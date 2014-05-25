@@ -27,12 +27,14 @@ def postgresql_server_resource(purpose, config):
         os_package_resource(name='postgresql-{}'.format(config.version)),
         file_resource(path='/etc/sysctl.d/30-postgresql-shm.conf', content=render_config('30-postgresql-shm.conf.j2',
             config={'kernel_shmmax': config.kernel_shmmax, 'kernel_shmall': config.kernel_shmall})),
+        directory_resource(path='/var/run/postgresql', owner='postgres', group='postgres', mode=02775),
         os_service_resource(state='not_installed', name='postgresql'),
         postgresql_cluster_resource(purpose=purpose, version=config.version, owner=config.owner, owner_password=config.owner_password),
         directory_resource(path=pg_config_dir),
         file_resource(
             path=pg_config_dir / 'postgresql.conf',
             content=render_config('postgresql.conf.j2', config={
+                'purpose': purpose,
                 'version': config.version,
                 'data_directory': pg_data_dir,
                 'host': config.host,
@@ -44,7 +46,6 @@ def postgresql_server_resource(purpose, config):
                 'work_mem': config.work_mem,
                 'maintenance_work_mem': config.maintenance_work_mem,
                 'effective_io_concurrency': config.effective_io_concurrency,
-                'wal_buffers': config.wal_buffers,
                 'checkpoint_segments': config.checkpoint_segments,
                 'checkpoint_completion_target': config.checkpoint_completion_target,
                 'effective_cache_size': config.effective_cache_size,
@@ -152,6 +153,7 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
     shell_execute('chmod 777 {}'.format(pg_data_dir.parent), capture=True)
     install_resource(file_resource(path='/tmp/pg-{}-owner-password'.format(purpose), content=owner_password))
     try:
+        shell_execute('usermod -a -G postgres {}'.format(owner))
         shell_execute(
             'su {pg_data_owner} -c "{pg_bin_dir}/initdb -E UTF-8 --locale=zh_CN.UTF-8 --lc-collate=POSIX -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-{purpose}-owner-password {pg_data_dir}"'.format(
                 pg_data_owner=owner, pg_bin_dir=get_pg_bin_dir(version), pg_data_dir=pg_data_dir, purpose=purpose

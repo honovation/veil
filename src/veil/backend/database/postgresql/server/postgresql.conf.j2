@@ -46,7 +46,7 @@ ident_file = '{{ config.data_directory }}/pg_ident.conf'	# ident configuration f
 					# (change requires restart)
 
 # If external_pid_file is not explicitly set, no extra PID file is written.
-#external_pid_file = '(none)'		# write an extra PID file
+#external_pid_file = '/var/run/postgresql/{{ config.purpose }}-{{ config.version }}.pid'			# write an extra PID file
 					# (change requires restart)
 
 
@@ -58,7 +58,7 @@ ident_file = '{{ config.data_directory }}/pg_ident.conf'	# ident configuration f
 
 listen_addresses = '{{ config.host }}'		# what IP address(es) to listen on;
 					# comma-separated list of addresses;
-					# defaults to 'localhost', '*' = all
+					# defaults to 'localhost'; use '*' for all
 					# (change requires restart)
 port = {{ config.port }}				# (change requires restart)
 max_connections = 100			# (change requires restart)
@@ -66,7 +66,8 @@ max_connections = 100			# (change requires restart)
 # connection slot, plus lock space (see max_locks_per_transaction).
 #superuser_reserved_connections = 3	# (change requires restart)
 {% if config.version >= '9.3' %}
-unix_socket_directories = '/tmp'		# (change requires restart)
+unix_socket_directories = '/var/run/postgresql'	# comma-separated list of directories
+					# (change requires restart)
 {% else %}
 unix_socket_directory = '/tmp'		# (change requires restart)
 {% endif %}
@@ -82,9 +83,13 @@ unix_socket_directory = '/tmp'		# (change requires restart)
 
 #authentication_timeout = 1min		# 1s-600s
 #ssl = off				# (change requires restart)
-#ssl_ciphers = 'ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH'	# allowed SSL ciphers
+#ssl_ciphers = 'DEFAULT:!LOW:!EXP:!MD5:@STRENGTH'	# allowed SSL ciphers
 					# (change requires restart)
 #ssl_renegotiation_limit = 512MB	# amount of data between renegotiations
+#ssl_cert_file = 'server.crt'		# (change requires restart)
+#ssl_key_file = 'server.key'		# (change requires restart)
+#ssl_ca_file = ''			# (change requires restart)
+#ssl_crl_file = ''			# (change requires restart)
 #password_encryption = on
 #db_user_namespace = off
 
@@ -110,7 +115,8 @@ unix_socket_directory = '/tmp'		# (change requires restart)
 
 # - Memory -
 
-shared_buffers = {{ config.get('shared_buffers', '24MB') }} # min 128kB (change requires restart)
+shared_buffers = {{ config.get('shared_buffers', '128MB') }}			# min 128kB
+					# (change requires restart)
 #temp_buffers = 8MB			# min 800kB
 #max_prepared_transactions = 0		# zero disables the feature
 					# (change requires restart)
@@ -118,9 +124,14 @@ shared_buffers = {{ config.get('shared_buffers', '24MB') }} # min 128kB (change 
 # per transaction slot, plus lock space (see max_locks_per_transaction).
 # It is not advisable to set max_prepared_transactions nonzero unless you
 # actively intend to use prepared transactions.
-work_mem = {{ config.get('work_mem', '1MB') }} # min 64kB
-maintenance_work_mem = {{ config.get('maintenance_work_mem', '16MB') }} # min 1MB
+work_mem = {{ config.get('work_mem', '1MB') }}				# min 64kB
+maintenance_work_mem = {{ config.get('maintenance_work_mem', '16MB') }}		# min 1MB
 #max_stack_depth = 2MB			# min 100kB
+
+# - Disk -
+
+#temp_file_limit = -1			# limits per-session temp file space
+					# in kB, or -1 for no limit
 
 # - Kernel Resource Usage -
 
@@ -130,7 +141,7 @@ maintenance_work_mem = {{ config.get('maintenance_work_mem', '16MB') }} # min 1M
 
 # - Cost-Based Vacuum Delay -
 
-#vacuum_cost_delay = 0ms		# 0-100 milliseconds
+#vacuum_cost_delay = 0			# 0-100 milliseconds
 #vacuum_cost_page_hit = 1		# 0-10000 credits
 #vacuum_cost_page_miss = 10		# 0-10000 credits
 #vacuum_cost_page_dirty = 20		# 0-10000 credits
@@ -144,7 +155,7 @@ maintenance_work_mem = {{ config.get('maintenance_work_mem', '16MB') }} # min 1M
 
 # - Asynchronous Behavior -
 
-effective_io_concurrency = {{ config.get('effective_io_concurrency', 1) }} # 1-1000. 0 disables prefetching
+effective_io_concurrency = {{ config.get('effective_io_concurrency', 1) }}		# 1-1000; 0 disables prefetching
 
 
 #------------------------------------------------------------------------------
@@ -156,7 +167,8 @@ effective_io_concurrency = {{ config.get('effective_io_concurrency', 1) }} # 1-1
 #wal_level = minimal			# minimal, archive, or hot_standby
 					# (change requires restart)
 #fsync = on				# turns forced synchronization on or off
-#synchronous_commit = on		# immediate fsync at commit
+#synchronous_commit = on		# synchronization level;
+					# off, local, remote_write, or on
 #wal_sync_method = fsync		# the default is the first option
 					# supported by the operating system:
 					#   open_datasync
@@ -165,7 +177,8 @@ effective_io_concurrency = {{ config.get('effective_io_concurrency', 1) }} # 1-1
 					#   fsync_writethrough
 					#   open_sync
 #full_page_writes = on			# recover from partial page writes
-wal_buffers = {{ config.get('wal_buffers', '64kB') }} # min 32kB (change requires restart)
+wal_buffers = -1			# min 32kB, -1 sets based on shared_buffers
+					# (change requires restart)
 #wal_writer_delay = 200ms		# 1-10000 milliseconds
 
 #commit_delay = 0			# range 0-100000, in microseconds
@@ -173,9 +186,9 @@ wal_buffers = {{ config.get('wal_buffers', '64kB') }} # min 32kB (change require
 
 # - Checkpoints -
 
-checkpoint_segments = {{ config.get('checkpoint_segments', 3) }} # in logfile segments, min 1, 16MB each
+checkpoint_segments = {{ config.get('checkpoint_segments', 3) }}		# in logfile segments, min 1, 16MB each
 #checkpoint_timeout = 5min		# range 30s-1h
-checkpoint_completion_target = {{ config.get('checkpoint_completion_target', 0.5) }} # checkpoint target duration, 0.0 - 1.0
+checkpoint_completion_target = {{ config.get('checkpoint_completion_target', 0.5) }}	# checkpoint target duration, 0.0 - 1.0
 #checkpoint_warning = 30s		# 0 disables
 
 # - Archiving -
@@ -183,18 +196,38 @@ checkpoint_completion_target = {{ config.get('checkpoint_completion_target', 0.5
 #archive_mode = off		# allows archiving to be done
 				# (change requires restart)
 #archive_command = ''		# command to use to archive a logfile segment
+				# placeholders: %p = path of file to archive
+				#               %f = file name only
+				# e.g. 'test ! -f /mnt/server/archivedir/%f && cp %p /mnt/server/archivedir/%f'
 #archive_timeout = 0		# force a logfile segment switch after this
 				# number of seconds; 0 disables
 
-# - Streaming Replication -
+
+#------------------------------------------------------------------------------
+# REPLICATION
+#------------------------------------------------------------------------------
+
+# - Sending Server(s) -
+
+# Set these on the master and on any standby that will send replication data.
 
 #max_wal_senders = 0		# max number of walsender processes
 				# (change requires restart)
-#wal_sender_delay = 200ms	# walsender cycle time, 1-10000 milliseconds
 #wal_keep_segments = 0		# in logfile segments, 16MB each; 0 disables
+#wal_sender_timeout = 60s	# in milliseconds; 0 disables
+
+# - Master Server -
+
+# These settings are ignored on a standby server.
+
+#synchronous_standby_names = ''	# standby servers that provide sync rep
+				# comma-separated list of application_name
+				# from standby(s); '*' = all
 #vacuum_defer_cleanup_age = 0	# number of xacts by which cleanup is delayed
 
 # - Standby Servers -
+
+# These settings are ignored on a master server.
 
 #hot_standby = off			# "on" allows queries during recovery
 					# (change requires restart)
@@ -204,6 +237,13 @@ checkpoint_completion_target = {{ config.get('checkpoint_completion_target', 0.5
 #max_standby_streaming_delay = 30s	# max delay before canceling queries
 					# when reading streaming WAL;
 					# -1 allows indefinite delay
+#wal_receiver_status_interval = 10s	# send replies at least this often
+					# 0 disables
+#hot_standby_feedback = off		# send info from standby to prevent
+					# query conflicts
+#wal_receiver_timeout = 60s		# time that receiver waits for
+					# communication from master
+					# in milliseconds; 0 disables
 
 
 #------------------------------------------------------------------------------
@@ -216,6 +256,7 @@ checkpoint_completion_target = {{ config.get('checkpoint_completion_target', 0.5
 #enable_hashagg = on
 #enable_hashjoin = on
 #enable_indexscan = on
+#enable_indexonlyscan = on
 #enable_material = on
 #enable_mergejoin = on
 #enable_nestloop = on
@@ -274,7 +315,9 @@ log_directory = '{{ config.get('log_directory', 'pg_log') }}'		# directory where
 					# can be absolute or relative to PGDATA
 log_filename = '{{ config.get('log_filename') or 'postgresql-%Y-%m-%d_%H%M%S.log' }}'	# log file name pattern,
 					# can include strftime() escapes
-#log_truncate_on_rotation = off		# If on, an existing log file of the
+#log_file_mode = 0600			# creation mode for log files,
+					# begin with 0 to use octal notation
+#log_truncate_on_rotation = off		# If on, an existing log file with the
 					# same name as the new log file will be
 					# truncated rather than appended to.
 					# But such truncation only occurs on
@@ -292,11 +335,8 @@ log_filename = '{{ config.get('log_filename') or 'postgresql-%Y-%m-%d_%H%M%S.log
 #syslog_facility = 'LOCAL0'
 #syslog_ident = 'postgres'
 
-#silent_mode = off			# Run server silently.
-					# DO NOT USE without syslog or
-					# logging_collector
-					# (change requires restart)
-
+# This is only relevant when logging to eventlog (win32):
+#event_source = 'PostgreSQL'
 
 # - When to Log -
 
@@ -326,12 +366,12 @@ log_filename = '{{ config.get('log_filename') or 'postgresql-%Y-%m-%d_%H%M%S.log
 					#   panic
 
 #log_min_error_statement = error	# values in order of decreasing detail:
-				 	#   debug5
+					#   debug5
 					#   debug4
 					#   debug3
 					#   debug2
 					#   debug1
-				 	#   info
+					#   info
 					#   notice
 					#   warning
 					#   error
@@ -382,8 +422,7 @@ log_statement = '{{ config.get('log_statement', 'none') }}'			# none, ddl, mod, 
 #log_temp_files = -1			# log temporary files equal or larger
 					# than the specified size in kilobytes;
 					# -1 disables, 0 logs all temp files
-#log_timezone = unknown			# actually, defaults to TZ environment
-					# setting
+log_timezone = 'PRC'
 
 
 #------------------------------------------------------------------------------
@@ -394,8 +433,9 @@ log_statement = '{{ config.get('log_statement', 'none') }}'			# none, ddl, mod, 
 
 #track_activities = on
 #track_counts = on
+#track_io_timing = off
 #track_functions = none			# none, pl, all
-#track_activity_query_size = 1024 	# (change requires restart)
+#track_activity_query_size = 1024	# (change requires restart)
 #update_process_title = on
 #stats_temp_directory = 'pg_stat_tmp'
 
@@ -429,6 +469,9 @@ log_statement = '{{ config.get('log_statement', 'none') }}'			# none, ddl, mod, 
 #autovacuum_analyze_scale_factor = 0.1	# fraction of table size before analyze
 #autovacuum_freeze_max_age = 200000000	# maximum XID age before forced vacuum
 					# (change requires restart)
+#autovacuum_multixact_freeze_max_age = 400000000	# maximum Multixact age
+					# before forced vacuum
+					# (change requires restart)
 #autovacuum_vacuum_cost_delay = 20ms	# default vacuum cost delay for
 					# autovacuum, in milliseconds;
 					# -1 means use vacuum_cost_delay
@@ -450,20 +493,23 @@ log_statement = '{{ config.get('log_statement', 'none') }}'			# none, ddl, mod, 
 #check_function_bodies = on
 #default_transaction_isolation = 'read committed'
 #default_transaction_read_only = off
+#default_transaction_deferrable = off
 #session_replication_role = 'origin'
 #statement_timeout = 0			# in milliseconds, 0 is disabled
+#lock_timeout = 0			# in milliseconds, 0 is disabled
 #vacuum_freeze_min_age = 50000000
 #vacuum_freeze_table_age = 150000000
+#vacuum_multixact_freeze_min_age = 5000000
+#vacuum_multixact_freeze_table_age = 150000000
 #bytea_output = 'hex'			# hex, escape
 #xmlbinary = 'base64'
 #xmloption = 'content'
 
 # - Locale and Formatting -
 
-datestyle = 'iso, mdy'
+datestyle = 'iso, ymd'
 #intervalstyle = 'postgres'
-#timezone = unknown			# actually, defaults to TZ environment
-					# setting
+timezone = 'PRC'
 #timezone_abbreviations = 'Default'     # Select the set of available time zone
 					# abbreviations.  Currently, there are
 					#   Default
@@ -483,7 +529,7 @@ lc_numeric = 'zh_CN.UTF-8'			# locale for number formatting
 lc_time = 'zh_CN.UTF-8'				# locale for time formatting
 
 # default configuration for text search
-default_text_search_config = 'pg_catalog.english'
+default_text_search_config = 'pg_catalog.simple'
 
 # - Other Defaults -
 
@@ -501,6 +547,8 @@ default_text_search_config = 'pg_catalog.english'
 # Note:  Each lock table slot uses ~270 bytes of shared memory, and there are
 # max_locks_per_transaction * (max_connections + max_prepared_transactions)
 # lock table slots.
+#max_pred_locks_per_transaction = 64	# min 10
+					# (change requires restart)
 
 
 #------------------------------------------------------------------------------
@@ -514,8 +562,9 @@ default_text_search_config = 'pg_catalog.english'
 #default_with_oids = off
 #escape_string_warning = on
 #lo_compat_privileges = off
+#quote_all_identifiers = off
 #sql_inheritance = on
-#standard_conforming_strings = off
+#standard_conforming_strings = on
 #synchronize_seqscans = on
 
 # - Other Platforms and Clients -
@@ -524,7 +573,28 @@ default_text_search_config = 'pg_catalog.english'
 
 
 #------------------------------------------------------------------------------
+# ERROR HANDLING
+#------------------------------------------------------------------------------
+
+#exit_on_error = off			# terminate session on any error?
+#restart_after_crash = on		# reinitialize after backend crash?
+
+
+#------------------------------------------------------------------------------
+# CONFIG FILE INCLUDES
+#------------------------------------------------------------------------------
+
+# These options allow settings to be loaded from files other than the
+# default postgresql.conf.
+
+#include_dir = 'conf.d'			# include files ending in '.conf' from
+					# directory 'conf.d'
+#include_if_exists = 'exists.conf'	# include file only if it exists
+#include = 'special.conf'		# include file
+
+
+#------------------------------------------------------------------------------
 # CUSTOMIZED OPTIONS
 #------------------------------------------------------------------------------
 
-#custom_variable_classes = ''		# list of custom variable class names
+# Add settings for extensions here

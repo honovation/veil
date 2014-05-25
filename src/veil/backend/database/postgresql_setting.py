@@ -3,7 +3,7 @@ from veil.profile.installer import *
 
 
 def postgresql_program(purpose, version, host, port, owner, owner_password, user, password, log_min_duration_statement, log_filename=None,
-        shared_buffers='24MB', work_mem='1MB', maintenance_work_mem='16MB', effective_io_concurrency=1, wal_buffers='64kB', checkpoint_segments=3,
+        shared_buffers='24MB', work_mem='1MB', maintenance_work_mem='16MB', effective_io_concurrency=1, checkpoint_segments=3,
         checkpoint_completion_target=0.5, effective_cache_size='128MB', kernel_shmmax=None, kernel_shmall=None):
     return objectify({
         '{}_postgresql'.format(purpose): {
@@ -23,7 +23,6 @@ def postgresql_program(purpose, version, host, port, owner, owner_password, user
                     'work_mem': work_mem,
                     'maintenance_work_mem': maintenance_work_mem,
                     'effective_io_concurrency': effective_io_concurrency,
-                    'wal_buffers': wal_buffers,
                     'checkpoint_segments': checkpoint_segments,
                     'checkpoint_completion_target': checkpoint_completion_target,
                     'effective_cache_size': effective_cache_size,

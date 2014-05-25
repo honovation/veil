@@ -45,8 +45,7 @@ def lxc_container_user_group_resource(container_name, user_name, group_name):
     is_installed = group_name in unsafe_call('chroot {} groups {}'.format(rootfs_path, user_name))
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'lxc_container_user_group?container_name={}&user_name={}&group_name={}'.format(
-            container_name, user_name, group_name)
+        key = 'lxc_container_user_group?container_name={}&user_name={}&group_name={}'.format(container_name, user_name, group_name)
         dry_run_result[key] = '-' if is_installed else 'INSTALL'
         return
     if is_installed:

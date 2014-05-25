@@ -29,12 +29,12 @@ def install_directory(is_dry_run, path, owner='root', group='root', mode=0755, r
             actions.append('RECURSIVELY-CREATE')
             if not is_dry_run:
                 LOGGER.info('creating directory recursively: %(path)s', {'path': path})
-                os.makedirs(path, mode or 0755)
+                os.makedirs(path, mode)
         else:
             actions.append('CREATE')
             if not is_dry_run:
                 LOGGER.info('creating directory: %(path)s', {'path': path})
-                os.mkdir(path, mode or 0755)
+                os.mkdir(path, mode)
     if os.path.exists(path):
         actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
     return actions
