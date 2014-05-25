@@ -65,6 +65,10 @@ def install_file(is_dry_run, path, content, owner='root', group='root', mode=064
     if os.path.exists(path):
         with open(path, "rb") as fp:
             old_content = fp.read()
+        if old_content:
+            old_content = old_content.strip()
+        if content:
+            content = content.strip()
         if content != old_content:
             write = True
             if not os.path.exists(origin_backup_path):

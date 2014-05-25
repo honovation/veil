@@ -1,0 +1,17 @@
+# Shared memory settings for PostgreSQL on Linux
+
+# The settings here are upper limits; performance is not affected if the
+# settings are larger than necessary. If other programs use shared memory as
+# well, you will have to coordinate the size settings between them.
+
+# Maximum size of a single shared memory segment in bytes
+#kernel.shmmax = 33554432
+{% if config.kernel_shmmax %}
+kernel.shmmax = {{ config.kernel_shmmax }}
+{% endif %}
+
+# Maximum total size of all shared memory segments in pages (normally 4096 bytes)
+#kernel.shmall = 2097152
+{% if config.kernel_shmall %}
+kernel.shmall = {{ config.kernel_shmall }}
+{% endif %}

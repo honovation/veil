@@ -60,9 +60,7 @@ class RedisQueue(object):
             if isinstance(value, datetime):
                 assert pytz.utc == value.tzinfo, 'must provide datetime in pytz.utc timezone'
         to_queue = to_queue or job_handler.queue
-        self.resq.enqueue_from_string(
-            '{}.{}'.format(job_handler.__module__, job_handler.__name__),
-            to_queue, payload)
+        self.resq.enqueue_from_string('{}.{}'.format(job_handler.__module__, job_handler.__name__), to_queue, payload)
 
     def enqueue_at(self, job_handler, scheduled_at, to_queue=None, **payload):
         """
@@ -76,8 +74,7 @@ class RedisQueue(object):
             if isinstance(value, datetime):
                 assert pytz.utc == value.tzinfo, 'must provide datetime in pytz.utc timezone'
         to_queue = to_queue or job_handler.queue
-        self.resq.enqueue_at_from_string(
-            convert_datetime_to_naive_local(scheduled_at), '{}.{}'.format(job_handler.__module__, job_handler.__name__),
+        self.resq.enqueue_at_from_string(convert_datetime_to_naive_local(scheduled_at), '{}.{}'.format(job_handler.__module__, job_handler.__name__),
             to_queue, payload)
 
     def enqueue_after(self, job_handler, seconds_to_delay=5, **payload):
@@ -150,10 +147,7 @@ class ImmediateQueue(object):
         try:
             return job_handler(**payload)
         except InvalidJob:
-            LOGGER.warn('Invalid job: %(job_handler_name)s, %(payload)s', {
-                'job_handler_name': job_handler.__name__,
-                'payload': payload
-            }, exc_info=1)
+            LOGGER.warn('Invalid job: %(job_handler_name)s, %(payload)s', {'job_handler_name': job_handler.__name__, 'payload': payload}, exc_info=1)
             return
 
     def __repr__(self):
