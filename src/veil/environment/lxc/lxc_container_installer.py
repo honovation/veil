@@ -14,6 +14,14 @@ def lxc_container_resource(container_name, mac_address, lan_interface, memory_li
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name),
             content=render_config('lxc-container.cfg.j2', name=container_name, mac_address=mac_address, lan_interface=lan_interface,
                 memory_limit=memory_limit, cpu_share=cpu_share, is_trusty='14.04' in shell_execute('lsb_release -r', capture=True)))
+    ] if '14.04' not in shell_execute('lsb_release -r', capture=True) else [
+        os_package_resource(name='lxc'),
+        file_resource(path='/etc/default/lxc-net', content=render_config('lxc-net.j2')),
+        file_resource(path='/etc/lxc/default.conf', content=render_config('default.conf.j2', lan_interface=lan_interface)),
+        lxc_container_created_resource(name=container_name),
+        file_resource(path='/var/lib/lxc/{}/config'.format(container_name),
+            content=render_config('lxc-container.cfg.j2', name=container_name, mac_address=mac_address, lan_interface=lan_interface,
+                memory_limit=memory_limit, cpu_share=cpu_share, is_trusty='14.04' in shell_execute('lsb_release -r', capture=True)))
     ]
     return resources
 

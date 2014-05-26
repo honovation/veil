@@ -1,21 +1,21 @@
 {% if is_trusty %}
 lxc.arch = amd64
 
-lxc.utsname={{ name }}
+lxc.utsname = {{ name }}
 
 lxc.start.auto = 1
 lxc.start.delay = 5
 
-lxc.network.type=veth
-lxc.network.link={{ lan_interface }}
-lxc.network.flags=up
-lxc.network.hwaddr={{ mac_address }}
+lxc.network.type = veth
+lxc.network.link = {{ lan_interface }}
+lxc.network.flags = up
+lxc.network.hwaddr = {{ mac_address }}
 
 lxc.tty = 4
 lxc.pts = 1024
-lxc.devttydir=lxc
-lxc.rootfs=/var/lib/lxc/{{ name }}/rootfs
-lxc.mount=/var/lib/lxc/{{ name }}/fstab
+lxc.devttydir = lxc
+lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
+lxc.mount = /var/lib/lxc/{{ name }}/fstab
 lxc.cap.drop = sys_module mac_admin
 lxc.pivotdir = lxc_putold
 
