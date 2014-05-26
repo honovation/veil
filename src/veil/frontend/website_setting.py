@@ -36,7 +36,7 @@ def website_upstreams(purpose, start_port, processes_count):
     } for i in range(processes_count)]}
 
 
-def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_file_size='1m', extra_headers=None):
+def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_file_size='1m', extra_headers=None, extra_locations=None):
     if is_api_only:
         return {'/': {
             '_': '''
@@ -50,11 +50,9 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
         add_header X-UA-Compatible "IE=Edge,chrome=1";
         {}
         '''.format(extra_headers or '')
-    if has_bunker:
-        # done in bunker
-        extra_locations = {}
-    else:
-        extra_locations = {
+    extra_locations = extra_locations or {}
+    if not has_bunker:
+        extra_locations.update({
             '= /favicon.ico': {
                 '_': '''
                     access_log off; log_not_found off;
@@ -79,7 +77,7 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
                     }}
                     '''.format(VEIL_HOME)
             }
-        }
+        })
     locations = {
         '= /': {
             '_': '''
