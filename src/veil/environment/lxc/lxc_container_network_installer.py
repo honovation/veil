@@ -28,17 +28,18 @@ def lxc_container_network_resource(container_name, ip_address, gateway):
 
 
 @atomic_installer
-def lxc_container_dns_resource(container_name, dns):
+def lxc_container_nameservers_resource(container_name, nameservers):
     container_rootfs_path = as_path('/var/lib/lxc/') / container_name / 'rootfs'
     resolve_conf_path = container_rootfs_path / 'etc' / 'resolvconf' / 'resolv.conf.d' / 'tail'
-    config_content = 'nameserver {}'.format(dns)
+    nameservers = nameservers.split(',')
+    config_content = '\n'.join(['nameserver {}'.format(nameserver) for nameserver in nameservers])
     is_installed = config_content == resolve_conf_path.text()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'lxc_container_dns_resource?container_name={}&dns={}'.find(container_name, dns)
+        key = 'lxc_container_nameservers_resource?container_name={}&nameservers={}'.find(container_name, ','.join(nameservers))
         dry_run_result[key] = '-' if is_installed else 'INSTALL'
         return
     if is_installed:
         return
-    LOGGER.info('set container dns: in %(container_name)s to %(dns)s', {'container_name': container_name, 'dns': dns})
+    LOGGER.info('set container nameservers: in %(container_name)s to %(nameservers)s', {'container_name': container_name, 'nameservers': nameservers})
     resolve_conf_path.write_text(config_content)

@@ -27,10 +27,11 @@ def veil_env(server_hosts, servers, sorted_server_names=None, deployment_memo=No
     })
 
 
-def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, dns='8.8.8.8', backup_mirror=None,
+def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, nameservers=None, backup_mirror=None,
         backup_dirs=[], memory_limit=None, cpu_share=None):
     from veil.model.collection import objectify
-
+    if not nameservers:
+        nameservers = ['114.114.114.114', '114.114.115.115']
     return objectify({
         'hosted_on': hosted_on,
         'sequence_no': sequence_no,
@@ -38,7 +39,7 @@ def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=()
         'deploys_via': deploys_via,
         'resources': resources,
         'supervisor_http_port': supervisor_http_port,
-        'dns': dns,
+        'nameservers': nameservers,
         'backup_mirror': backup_mirror,
         'backup_dirs': backup_dirs,
         'memory_limit': memory_limit,
