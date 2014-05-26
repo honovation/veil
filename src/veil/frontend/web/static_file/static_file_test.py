@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import tempfile
 import lxml.html
 import lxml.etree
-from veil_component import *
+from veil_component import as_path
 from veil.development.test import *
 from .static_file import set_inline_static_files_directory
 from .static_file import process_javascript

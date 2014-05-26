@@ -1,5 +1,4 @@
 from __future__ import unicode_literals, print_function, division
-from veil.env_const import VEIL_APT_URL, VEIL_OS
 from veil.profile.installer import *
 
 LOGGER = logging.getLogger(__name__)

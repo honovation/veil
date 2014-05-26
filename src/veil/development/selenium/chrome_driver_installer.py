@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import os
-from veil.env_const import VEIL_DEPENDENCY_URL, VEIL_ENV_TYPE
+from veil.environment import VEIL_DEPENDENCY_URL, VEIL_ENV_TYPE
 from veil_component import as_path
 from veil_installer import *
 from veil.utility.shell import *

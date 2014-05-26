@@ -2,9 +2,9 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
 from cStringIO import StringIO
+from veil.environment import VEIL_HOME
 from veil.frontend.cli import *
 from veil.utility.misc import *
-from veil_component import *
 
 STATIC_FILE_DIR = VEIL_HOME / 'static'
 SUPPORT_STATIC_FILE_TYPES = ('js', 'css')

@@ -3,11 +3,11 @@ import fabric.api
 import datetime
 import os
 import logging
+from veil_component import as_path
+from veil.environment import *
 from veil_installer import *
 from veil.frontend.cli import *
-from veil.environment import *
 from veil.utility.shell import *
-from veil_component import *
 
 LOGGER = logging.getLogger(__name__)
 

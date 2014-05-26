@@ -6,10 +6,10 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
-from veil.utility.encoding import to_unicode
-from veil.env_const import VEIL_ENV_TYPE
+from veil.environment import VEIL_ENV_TYPE
 from veil_component import *
 from veil_installer import *
+from veil.utility.encoding import *
 from veil.development.test import *
 from veil.model.event import *
 from veil.server.process import *

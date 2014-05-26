@@ -1,7 +1,7 @@
 import veil_component
 
 with veil_component.init_component(__name__):
-    from veil.env_const import VEIL_ENV_TYPE
+    from veil.environment import VEIL_ENV_TYPE
     if 'test' == VEIL_ENV_TYPE:
         from .chrome_driver_installer import chrome_driver_resource
         from .selenium_installer import selenium_python_package_resource

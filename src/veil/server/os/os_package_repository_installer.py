@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 from veil.env_const import VEIL_OS
+from veil_component import as_path
 from veil_installer import *
 from veil.utility.shell import *
-from veil_component import *
 from .os_package_installer import os_package_resource
 
 LOGGER = logging.getLogger(__name__)

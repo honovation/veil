@@ -5,7 +5,7 @@ from logging import getLogger
 from datetime import timedelta, datetime
 from redis.client import Redis
 from pyres import ResQ
-from veil.env_const import VEIL_ENV_TYPE
+from veil.environment import VEIL_ENV_TYPE
 from veil.utility.encoding import *
 from veil_installer import *
 from veil.utility.clock import *

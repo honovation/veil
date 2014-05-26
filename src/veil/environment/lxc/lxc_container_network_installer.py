@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
+from veil_component import as_path
 from veil_installer import *
-from veil_component import *
 from veil.server.config import *
 
 LOGGER = logging.getLogger(__name__)
@@ -28,18 +28,17 @@ def lxc_container_network_resource(container_name, ip_address, gateway):
 
 
 @atomic_installer
-def lxc_container_nameservers_resource(container_name, nameservers):
+def lxc_container_name_servers_resource(container_name, name_servers):
     container_rootfs_path = as_path('/var/lib/lxc/') / container_name / 'rootfs'
     resolve_conf_path = container_rootfs_path / 'etc' / 'resolvconf' / 'resolv.conf.d' / 'tail'
-    nameservers = nameservers.split(',')
-    config_content = '\n'.join(['nameserver {}'.format(nameserver) for nameserver in nameservers])
+    config_content = '\n'.join('nameserver {}'.format(name_server) for name_server in name_servers.split(','))
     is_installed = config_content == resolve_conf_path.text()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'lxc_container_nameservers_resource?container_name={}&nameservers={}'.find(container_name, ','.join(nameservers))
+        key = 'lxc_container_name servers_resource?container_name={}&name_servers={}'.find(container_name, name_servers)
         dry_run_result[key] = '-' if is_installed else 'INSTALL'
         return
     if is_installed:
         return
-    LOGGER.info('set container nameservers: in %(container_name)s to %(nameservers)s', {'container_name': container_name, 'nameservers': nameservers})
+    LOGGER.info('set container name servers: in %(container_name)s to %(name_servers)s', {'container_name': container_name, 'name_servers': name_servers})
     resolve_conf_path.write_text(config_content)

@@ -3,7 +3,7 @@ import logging
 import sys
 import time
 import os
-from veil.environment import *
+from veil.environment import VEIL_SERVER
 from veil.utility.clock import *
 from veil.utility.shell import *
 from veil.frontend.cli import *

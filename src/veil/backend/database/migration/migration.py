@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import os
-from veil_component import *
+from veil.environment import VEIL_HOME
+from veil_component import as_path
 from veil.utility.misc import *
 from veil.frontend.cli import *
 

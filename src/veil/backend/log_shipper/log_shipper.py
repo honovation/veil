@@ -2,8 +2,8 @@ from __future__ import unicode_literals, print_function, division
 import time
 import os
 import logging
+from veil.environment import VEIL_ENV_TYPE
 from redis.client import StrictRedis
-from veil.env_const import VEIL_ENV_TYPE
 from veil.frontend.cli import *
 from veil.model.event import event
 from veil.server.process import EVENT_PROCESS_TEARDOWN

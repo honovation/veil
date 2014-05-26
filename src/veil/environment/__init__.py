@@ -8,6 +8,10 @@ from .environment import VEIL_VAR_DIR
 from .environment import VEIL_SERVER
 from .environment import VEIL_ENV
 from .environment import VEIL_ENV_TYPE
+from .environment import VEIL_DEPENDENCY_URL
+from .environment import VEIL_APT_URL
+from .environment import PYPI_INDEX_URL
+from .environment import VEIL_OS
 from .environment import VEIL_SERVER_NAME
 from .environment import CURRENT_USER
 from .environment import CURRENT_USER_GROUP
@@ -27,11 +31,10 @@ def veil_env(server_hosts, servers, sorted_server_names=None, deployment_memo=No
     })
 
 
-def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, nameservers=None, backup_mirror=None,
-        backup_dirs=[], memory_limit=None, cpu_share=None):
+def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None,
+        backup_dirs=None, memory_limit=None, cpu_share=None):
     from veil.model.collection import objectify
-    if not nameservers:
-        nameservers = ['114.114.114.114', '114.114.115.115']
+    name_servers = name_servers or ['114.114.114.114', '114.114.115.115', '8.8.8.8']
     return objectify({
         'hosted_on': hosted_on,
         'sequence_no': sequence_no,
@@ -39,9 +42,9 @@ def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=()
         'deploys_via': deploys_via,
         'resources': resources,
         'supervisor_http_port': supervisor_http_port,
-        'nameservers': nameservers,
+        'name_servers': name_servers,
         'backup_mirror': backup_mirror,
-        'backup_dirs': backup_dirs,
+        'backup_dirs': backup_dirs or [],
         'memory_limit': memory_limit,
         'cpu_share': cpu_share
     })
@@ -63,39 +66,39 @@ def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_rang
     })
 
 
-def list_veil_server_names(veil_env):
-    env = get_application().ENVIRONMENTS[veil_env]
+def list_veil_server_names(veil_env_name):
+    env = get_application().ENVIRONMENTS[veil_env_name]
     return env.sorted_server_names or sorted(env.servers.keys())
 
 
-def list_veil_servers(veil_env):
-    return get_application().ENVIRONMENTS[veil_env].servers
+def list_veil_servers(veil_env_name):
+    return get_application().ENVIRONMENTS[veil_env_name].servers
 
 
-def list_veil_hosts(veil_env):
-    return get_application().ENVIRONMENTS[veil_env].server_hosts
+def list_veil_hosts(veil_env_name):
+    return get_application().ENVIRONMENTS[veil_env_name].server_hosts
 
 
-def get_veil_env_deployment_memo(veil_env):
-    return get_application().ENVIRONMENTS[veil_env].deployment_memo
+def get_veil_env_deployment_memo(veil_env_name):
+    return get_application().ENVIRONMENTS[veil_env_name].deployment_memo
 
 
-def get_veil_host(veil_env, veil_host_name):
-    return list_veil_hosts(veil_env)[veil_host_name]
+def get_veil_host(veil_env_name, veil_host_name):
+    return list_veil_hosts(veil_env_name)[veil_host_name]
 
 
-def get_veil_server(veil_env, veil_server_name):
-    return list_veil_servers(veil_env)[veil_server_name]
+def get_veil_server(veil_env_name, veil_server_name):
+    return list_veil_servers(veil_env_name)[veil_server_name]
 
 
 def get_current_veil_server():
     return get_veil_server(VEIL_ENV, VEIL_SERVER_NAME)
 
 
-def get_veil_server_deploys_via(veil_env, veil_server_name):
-    veil_server = get_veil_server(veil_env, veil_server_name)
+def get_veil_server_deploys_via(veil_env_name, veil_server_name):
+    veil_server = get_veil_server(veil_env_name, veil_server_name)
     veil_host_name = veil_server.hosted_on
-    veil_host = get_veil_host(veil_env, veil_host_name)
+    veil_host = get_veil_host(veil_env_name, veil_host_name)
     return veil_server.deploys_via or '{}@{}:{}'.format(
         veil_host.ssh_user,
         veil_host.internal_ip,
@@ -110,4 +113,3 @@ def get_application():
     import __veil__
 
     return __veil__
-

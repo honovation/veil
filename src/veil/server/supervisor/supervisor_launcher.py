@@ -3,10 +3,10 @@ import logging
 import argparse
 import time
 import sys
-from veil.utility.shell import *
+from veil_component import is_recording_dynamic_dependencies, load_all_components
 from veil.environment import *
+from veil.utility.shell import *
 from veil.frontend.cli import script
-from veil_component import *
 from .supervisorctl import are_all_supervisord_programs_running
 from .supervisorctl import supervisorctl
 from .supervisorctl import is_supervisord_running

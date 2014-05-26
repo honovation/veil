@@ -2,14 +2,14 @@ from __future__ import unicode_literals, print_function, division
 import discipline_coach
 import logging
 import os
-from veil.frontend.cli import *
-from veil.environment import *
-from veil.utility.shell import *
-from veil.development.live_document import check_live_document
-from veil.development.test import check_correctness
+from veil.environment import VEIL_HOME, VEIL_FRAMEWORK_HOME
 from veil_component import check_static_dependency_integrity
 from veil_component import check_static_dependency_cycle
 from veil_installer import *
+from veil.frontend.cli import *
+from veil.utility.shell import *
+from veil.development.live_document import check_live_document
+from veil.development.test import check_correctness
 from .encapsulation_checker import check_encapsulation
 from .loc_checker import check_loc
 from .logger_checker import check_logger

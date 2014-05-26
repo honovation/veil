@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 import logging
+from veil.environment import VEIL_HOME
 from veil.utility.encoding import *
-from veil.environment import *
 from veil.development.test import *
 
 # imports required in mock functions

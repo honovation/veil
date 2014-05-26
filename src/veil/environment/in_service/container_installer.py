@@ -2,8 +2,8 @@ from __future__ import unicode_literals, print_function, division
 import os
 import fabric.api
 import tempfile
+from veil_component import as_path
 from veil_installer import *
-from veil_component import *
 from veil.environment import *
 from veil.server.config import *
 
@@ -158,7 +158,7 @@ def render_installer_file(veil_env_name, veil_server_name):
     ]
     installer_file_content = render_config('container-installer-file.j2', mac_address=mac_address, lan_interface=veil_host.lan_interface,
         ip_address=ip_address, gateway=gateway, iptables_rules=iptables_rules, container_name=container_name, user_name=veil_server_user_name,
-        nameservers=','.join(veil_server.nameservers), memory_limit=veil_server.memory_limit, cpu_share=veil_server.cpu_share)
+        name_servers=','.join(veil_server.name_servers), memory_limit=veil_server.memory_limit, cpu_share=veil_server.cpu_share)
     lines = [installer_file_content]
     for resource in veil_host.resources:
         installer_name, installer_args = resource

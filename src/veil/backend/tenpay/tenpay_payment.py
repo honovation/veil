@@ -5,7 +5,7 @@ import logging
 import urllib
 import hashlib
 import lxml.objectify
-from veil.environment import *
+from veil.environment import VEIL_ENV_TYPE
 from veil.utility.encoding import *
 from veil.utility.clock import *
 from veil.utility.http import *

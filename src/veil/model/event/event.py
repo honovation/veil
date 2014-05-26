@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from logging import getLogger
-from veil.model.collection import *
 from veil_component import *
+from veil.model.collection import *
 
 LOGGER = getLogger(__name__)
 subscribers = {}

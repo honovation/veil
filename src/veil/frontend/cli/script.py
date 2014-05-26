@@ -4,12 +4,12 @@ import logging
 import sys
 import inspect
 import traceback
-from veil.environment import *
+from veil.environment import VEIL_ENV_TYPE
+from veil_component import *
 from veil.utility.tracing import *
 from veil.utility.encoding import *
 from veil.model.event import *
 from veil.server.process import *
-from veil_component import *
 
 LOGGER = logging.getLogger(__name__)
 script_handlers = {}
@@ -37,7 +37,7 @@ def execute_script(*argv):
     except SystemExit:
         raise
     except:
-        type, value, tb = sys.exc_info()
+        _, value, tb = sys.exc_info()
         LOGGER.error(traceback.format_exc())
         LOGGER.error(value.message)
         sys.exit(1)

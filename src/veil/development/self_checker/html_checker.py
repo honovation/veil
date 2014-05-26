@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
+from veil.environment import VEIL_HOME
 from veil.utility.shell import *
-from veil.environment import *
 from veil.frontend.web import *
 
 def check_html():

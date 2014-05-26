@@ -5,9 +5,9 @@ from logging import getLogger
 from babel.core import Locale
 from babel.support import Translations
 import sys
+from veil.environment import VEIL_HOME
 from veil.development.test import *
 from veil.frontend.template import *
-from veil.environment import *
 from veil.model.event import *
 from veil.server.process import *
 

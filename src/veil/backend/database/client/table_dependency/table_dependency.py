@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import re
 import logging
-from veil.environment import *
+from veil.environment import VEIL_SERVER
 from veil_component import *
 from veil.frontend.cli import *
 from veil.utility.encoding import *

@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
 import tempfile
-from veil.environment import *
+from veil.environment import VEIL_ENV_TYPE
+from veil_component import as_path
 from veil.development.test import *
-from veil_component import *
 from .bucket import register_bucket
 from .bucket_installer import override_bucket_config
 

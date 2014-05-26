@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 import uuid
 import fabric.api
-from veil_installer import *
-from veil_component import *
+from veil_component import as_path
 from veil.environment import *
+from veil_installer import *
 
 
 @composite_installer

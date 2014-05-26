@@ -2,8 +2,8 @@ from __future__ import unicode_literals, print_function, division
 from datetime import datetime
 from inspect import isfunction
 from logging import getLogger
-from veil.utility.clock import *
 from veil_component import *
+from veil.utility.clock import *
 from veil.model.event import *
 from veil.server.process import *
 

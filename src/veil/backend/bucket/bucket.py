@@ -2,9 +2,9 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import re
+from veil_component import as_path
 from veil_installer import *
 from veil.utility.misc import *
-from veil_component import *
 from .bucket_installer import bucket_config
 from .bucket_installer import bucket_resource
 

@@ -2,9 +2,9 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import re
 from pkg_resources import safe_name, safe_version, parse_version, to_filename
-from veil.env_const import VEIL_ENV_TYPE, PYPI_INDEX_URL
+from veil.environment import VEIL_ENV_TYPE, PYPI_INDEX_URL
+from veil_component import as_path
 from veil.utility.shell import *
-from veil_component import *
 from veil_installer import *
 from veil.frontend.cli import *
 

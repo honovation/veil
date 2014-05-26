@@ -30,7 +30,7 @@ def display_deployment_memo(veil_env_name):
                 break
 
 
-def is_all_veil_env_servers_installed(veil_env_name):
+def is_veil_env_deployed(veil_env_name):
     veil_server_deployed_file_path = '/opt/deployed'
     for veil_server_name in list_veil_server_names(veil_env_name):
         fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, veil_server_name)
@@ -52,13 +52,14 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     install_resource(veil_env_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     veil_server_names = list_veil_server_names(veil_env_name)
-    if is_all_veil_env_servers_installed(veil_env_name):
+    is_deployed = is_veil_env_deployed(veil_env_name)
+    if is_deployed:
         if 'TRUE' == should_download_packages:
             download_packages(veil_env_name)
         for deploying_server_name in veil_server_names:
             remote_do('create-backup', veil_env_name, deploying_server_name)
     install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, action='DEPLOY'))
-    if is_all_veil_env_servers_installed(veil_env_name):
+    if is_deployed:
         for deploying_server_name in veil_server_names:
             remote_do('delete-backup', veil_env_name, deploying_server_name)
 

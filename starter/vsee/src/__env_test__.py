@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil_component import *
+from veil_component import list_all_components
 from veil.profile.setting import *
 import __env__
 

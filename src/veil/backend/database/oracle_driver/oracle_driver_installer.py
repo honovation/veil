@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
-from veil.env_const import VEIL_DEPENDENCY_URL
 from veil.profile.installer import *
 
 
