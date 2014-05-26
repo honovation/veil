@@ -52,7 +52,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     install_resource(veil_env_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     veil_server_names = list_veil_server_names(veil_env_name)
-    if is_all_veil_env_servers_installed(veil_server_names):
+    if is_all_veil_env_servers_installed(veil_env_name):
         if 'TRUE' == should_download_packages:
             download_packages(veil_env_name)
         for deploying_server_name in veil_server_names:
