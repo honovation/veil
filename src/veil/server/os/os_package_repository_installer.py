@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import logging
+from veil.env_const import VEIL_OS
 from veil_installer import *
 from veil.utility.shell import *
 from veil_component import *
@@ -36,8 +37,8 @@ def postgresql_apt_repository_resource():
     if is_installed:
         return
     LOGGER.info('installing postgresql apt repository: %(name)s ...', {'name': POSTGRESQL_APT_REPOSITORY_NAME})
-    shell_execute('echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-{name} main" > /etc/apt/sources.list.d/{name}.list'.format(
-        name=POSTGRESQL_APT_REPOSITORY_NAME), capture=True)
+    shell_execute('echo "deb http://apt.postgresql.org/pub/repos/apt/ {os_codename}-{name} main" > /etc/apt/sources.list.d/{name}.list'.format(
+        os_codename=VEIL_OS.codename, name=POSTGRESQL_APT_REPOSITORY_NAME), capture=True)
     shell_execute('wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -', capture=True)
     shell_execute('apt-get -q update', capture=True)
 

@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-from veil.env_const import VEIL_APT_URL
+from veil.env_const import VEIL_APT_URL, VEIL_OS
 from veil.profile.installer import *
 
 LOGGER = logging.getLogger(__name__)
@@ -9,19 +9,12 @@ LOGGER = logging.getLogger(__name__)
 def lxc_container_resource(container_name, mac_address, lan_interface, memory_limit=None, cpu_share=None):
     resources = [
         os_package_resource(name='lxc'),
-        file_resource(path='/etc/default/lxc', content=render_config('lxc.cfg.j2', mirror=VEIL_APT_URL)),
+        file_resource(path='/etc/default/lxc-net', content=render_config('lxc-net.j2')) if VEIL_OS.codename == 'trusty' else file_resource(
+            path='/etc/default/lxc', content=render_config('lxc.cfg.j2', mirror=VEIL_APT_URL)),
         lxc_container_created_resource(name=container_name),
-        file_resource(path='/var/lib/lxc/{}/config'.format(container_name),
-            content=render_config('lxc-container.cfg.j2', name=container_name, mac_address=mac_address, lan_interface=lan_interface,
-                memory_limit=memory_limit, cpu_share=cpu_share, is_trusty='14.04' in shell_execute('lsb_release -r', capture=True)))
-    ] if '14.04' not in shell_execute('lsb_release -r', capture=True) else [
-        os_package_resource(name='lxc'),
-        file_resource(path='/etc/default/lxc-net', content=render_config('lxc-net.j2')),
-        file_resource(path='/etc/lxc/default.conf', content=render_config('default.conf.j2', lan_interface=lan_interface)),
-        lxc_container_created_resource(name=container_name),
-        file_resource(path='/var/lib/lxc/{}/config'.format(container_name),
-            content=render_config('lxc-container.cfg.j2', name=container_name, mac_address=mac_address, lan_interface=lan_interface,
-                memory_limit=memory_limit, cpu_share=cpu_share, is_trusty='14.04' in shell_execute('lsb_release -r', capture=True)))
+        file_resource(path='/var/lib/lxc/{}/config'.format(container_name), content=render_config('lxc-container.cfg.j2', name=container_name,
+            mac_address=mac_address, lan_interface=lan_interface, memory_limit=memory_limit, cpu_share=cpu_share,
+            is_trusty=VEIL_OS.codename == 'trusty'))
     ]
     return resources
 
@@ -37,7 +30,7 @@ def lxc_container_created_resource(name):
         return
     LOGGER.info('create lxc container: %(name)s ...', {'name': name})
     shell_execute('lxc-create -t ubuntu -n {}'.format(name))
-    if '14.04' not in shell_execute('lsb_release -r', capture=True):
+    if VEIL_OS.codename == 'precise':
         shell_execute('ln -s /var/lib/lxc/{}/config /etc/lxc/auto/{}.conf'.format(name, name))
 
 
