@@ -28,6 +28,8 @@ def lxc_container_created_resource(name):
         return
     if is_installed:
         return
+    LOGGER.info('enable ip forward')
+    shell_execute('echo 1 > /proc/sys/net/ipv4/ip_forward')
     LOGGER.info('create lxc container: %(name)s ...', {'name': name})
     shell_execute('lxc-create -t ubuntu -n {}'.format(name))
     if VEIL_OS.codename == 'precise':
