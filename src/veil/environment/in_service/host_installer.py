@@ -20,6 +20,7 @@ def veil_env_hosts_resource(veil_env_name, config_dir):
 def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
     veil_host = get_veil_host(veil_env_name, veil_host_name)
     fabric.api.env.host_string = '{}@{}:{}'.format(veil_host.ssh_user, veil_host.internal_ip, veil_host.ssh_port)
+    fabric.api.env.forward_agent = True
     veil_server_user_name = veil_host.ssh_user
     resources = [
         veil_host_file_resource(
