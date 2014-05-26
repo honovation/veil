@@ -51,7 +51,7 @@ def install(installer_path):
 
 
 def mark_installed(installer_path):
-    shell_execute('mv {} {}.installed'.format(installer_path, installer_path))
+    shell_execute('mv -f {} {}.installed'.format(installer_path, installer_path))
 
 
 def shell_execute(command_line, **kwargs):

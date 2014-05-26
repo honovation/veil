@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import fabric.api
+import fabric.contrib.files
 import os
 from datetime import datetime
 import sys
@@ -29,6 +30,15 @@ def display_deployment_memo(veil_env_name):
                 break
 
 
+def is_all_veil_env_servers_installed(veil_env_name):
+    veil_server_deployed_file_path = '/opt/deployed'
+    for veil_server_name in list_veil_server_names(veil_env_name):
+        fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, veil_server_name)
+        if not fabric.contrib.files.exists(veil_server_deployed_file_path, use_sudo=True):
+            return False
+    return True
+
+
 @script('deploy-env')
 def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     """
@@ -41,14 +51,16 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     tag_deploy(veil_env_name)
     install_resource(veil_env_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
-    if 'TRUE' == should_download_packages:
-        download_packages(veil_env_name)
     veil_server_names = list_veil_server_names(veil_env_name)
-    for deploying_server_name in veil_server_names:
-        remote_do('create-backup', veil_env_name, deploying_server_name)
+    if is_all_veil_env_servers_installed(veil_server_names):
+        if 'TRUE' == should_download_packages:
+            download_packages(veil_env_name)
+        for deploying_server_name in veil_server_names:
+            remote_do('create-backup', veil_env_name, deploying_server_name)
     install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, action='DEPLOY'))
-    for deploying_server_name in veil_server_names:
-        remote_do('delete-backup', veil_env_name, deploying_server_name)
+    if is_all_veil_env_servers_installed(veil_env_name):
+        for deploying_server_name in veil_server_names:
+            remote_do('delete-backup', veil_env_name, deploying_server_name)
 
 
 @script('download-packages')
