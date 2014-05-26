@@ -4,6 +4,7 @@ import logging
 import grp
 import pwd
 from veil_installer import *
+from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,11 +42,13 @@ def install_directory(is_dry_run, path, owner='root', group='root', mode=0755, r
 
 
 @atomic_installer
-def file_resource(path, content, owner='root', group='root', mode=0644):
+def file_resource(path, content, owner='root', group='root', mode=0644, cmd_run_after_installed=None):
     args = dict(path=path, content=content, owner=owner, group=group, mode=mode)
     dry_run_result = get_dry_run_result()
     if dry_run_result is None:
         install_file(is_dry_run=False, **args)
+        if cmd_run_after_installed:
+            shell_execute(cmd_run_after_installed, capture=True, debug=True)
     else:
         actions = install_file(is_dry_run=True, **args)
         resource_name = 'file?{}'.format(path)

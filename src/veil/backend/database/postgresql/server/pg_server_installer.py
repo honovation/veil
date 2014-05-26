@@ -25,8 +25,9 @@ def postgresql_server_resource(purpose, config):
     resources.extend([
         postgresql_apt_repository_resource(),
         os_package_resource(name='postgresql-{}'.format(config.version)),
-        file_resource(path='/etc/sysctl.d/30-postgresql-shm.conf', content=render_config('30-postgresql-shm.conf.j2',
-            config={'kernel_shmmax': config.kernel_shmmax, 'kernel_shmall': config.kernel_shmall})),
+        file_resource(path='/etc/sysctl.d/30-postgresql-shm.conf',
+            content=render_config('30-postgresql-shm.conf.j2', config={'kernel_shmmax': config.kernel_shmmax, 'kernel_shmall': config.kernel_shmall}),
+            cmd_run_after_installed='sysctl -p /etc/sysctl.d/30-postgresql-shm.conf'),
         directory_resource(path='/var/run/postgresql', owner='postgres', group='postgres', mode=02775),
         os_service_resource(state='not_installed', name='postgresql'),
         postgresql_cluster_resource(purpose=purpose, version=config.version, owner=config.owner, owner_password=config.owner_password),
