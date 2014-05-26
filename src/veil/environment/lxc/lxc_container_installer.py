@@ -10,6 +10,8 @@ def lxc_container_resource(container_name, mac_address, lan_interface, memory_li
         os_package_resource(name='lxc'),
         file_resource(path='/etc/default/lxc-net', content=render_config('lxc-net.j2')) if VEIL_OS.codename == 'trusty' else file_resource(
             path='/etc/default/lxc', content=render_config('lxc.cfg.j2', mirror=VEIL_APT_URL)),
+        file_resource(path='/etc/sysctl.d/60-lxc-ipv4-ip-forward.conf', content='net.ipv4.ip_forward=1',
+            cmd_run_after_installed='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
         lxc_container_created_resource(name=container_name),
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name), content=render_config('lxc-container.cfg.j2', name=container_name,
             mac_address=mac_address, lan_interface=lan_interface, memory_limit=memory_limit, cpu_share=cpu_share,
@@ -27,8 +29,6 @@ def lxc_container_created_resource(name):
         return
     if is_installed:
         return
-    LOGGER.info('enable ip forward')
-    shell_execute('echo 1 > /proc/sys/net/ipv4/ip_forward')
     LOGGER.info('create lxc container: %(name)s ...', {'name': name})
     shell_execute('lxc-create -t ubuntu -n {}'.format(name))
     if VEIL_OS.codename == 'precise':
