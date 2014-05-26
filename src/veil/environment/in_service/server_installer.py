@@ -30,7 +30,7 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
     if fabric.api.env.host_string not in veil_servers_with_payload_uploaded:
         fabric.api.put(PAYLOAD, '/opt/server_installer_payload.py', use_sudo=True, mode=0600)
         veil_servers_with_payload_uploaded.append(fabric.api.env.host_string)
-    fabric.api.sudo('apt-get -y python')
+    fabric.api.sudo('apt-get -y install python')
     fabric.api.sudo('python /opt/server_installer_payload.py {} {} {} {} {}'.format(VEIL_FRAMEWORK_CODEBASE, get_application_codebase(),
         veil_env_name, veil_server_name, action))
     if action == 'DEPLOY':
