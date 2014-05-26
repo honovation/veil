@@ -10,12 +10,12 @@ LOGGER = logging.getLogger(__name__)
 @atomic_installer
 def directory_resource(path, owner='root', group='root', mode=0755, recursive=False):
     args = dict(path=path, owner=owner, group=group, mode=mode, recursive=recursive)
-    resource_name = 'directory?{}'.format(path)
     dry_run_result = get_dry_run_result()
     if dry_run_result is None:
         install_directory(is_dry_run=False, **args)
     else:
         actions = install_directory(is_dry_run=True, **args)
+        resource_name = 'directory?{}'.format(path)
         if actions:
             dry_run_result[resource_name] = ', '.join(actions)
         else:
@@ -42,15 +42,13 @@ def install_directory(is_dry_run, path, owner='root', group='root', mode=0755, r
 
 @atomic_installer
 def file_resource(path, content, owner='root', group='root', mode=0644):
-    if isinstance(mode, basestring):
-        mode = int(mode)
-    resource_name = 'file?{}'.format(path)
     args = dict(path=path, content=content, owner=owner, group=group, mode=mode)
     dry_run_result = get_dry_run_result()
     if dry_run_result is None:
         install_file(is_dry_run=False, **args)
     else:
         actions = install_file(is_dry_run=True, **args)
+        resource_name = 'file?{}'.format(path)
         if actions:
             dry_run_result[resource_name] = ', '.join(actions)
         else:
@@ -59,6 +57,7 @@ def file_resource(path, content, owner='root', group='root', mode=0644):
 
 def install_file(is_dry_run, path, content, owner='root', group='root', mode=0644):
     write = False
+    reason = None
     origin_backup_path = '{}.origin'.format(path)
     origin_content_to_backup = None
     actions = []
@@ -135,8 +134,8 @@ def ensure_metadata(is_dry_run, path, user, group, mode=None):
             if not is_dry_run:
                 LOGGER.info('changing permission: for %(path)s from %(existing_mode)s to %(mode)s', {
                     'path': path,
-                    'existing_mode': existing_mode,
-                    'mode': mode
+                    'existing_mode': oct(existing_mode),
+                    'mode': oct(mode)
                 })
                 os.chmod(path, mode)
     if user:

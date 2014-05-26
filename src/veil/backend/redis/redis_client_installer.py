@@ -6,8 +6,7 @@ def redis_client_resource(purpose, host, port):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.append(
         file_resource(path=VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')),
-            content=render_config(
-                'redis-client.cfg.j2', host=host, port=port)))
+            content=render_config('redis-client.cfg.j2', host=host, port=port)))
     return resources
 
 
