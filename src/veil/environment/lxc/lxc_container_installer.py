@@ -13,7 +13,8 @@ def lxc_container_resource(container_name, mac_address, lan_interface, memory_li
         file_resource(path='/etc/sysctl.d/60-lxc-ipv4-ip-forward.conf', content='net.ipv4.ip_forward=1',
             cmd_run_after_installed='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
         lxc_container_created_resource(name=container_name),
-        file_resource(path='/etc/apt/sources.list', content=render_config('sources.list', is_trusty=VEIL_OS.codename == 'trusty')),
+        file_resource(path='/var/lib/lxc/{}/rootfs/etc/apt/sources.list'.format(container_name),
+            content=render_config('sources.list.j2', codename=VEIL_OS.codename, mirror=VEIL_APT_URL)),
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name), content=render_config('lxc-container.cfg.j2', name=container_name,
             mac_address=mac_address, lan_interface=lan_interface, memory_limit=memory_limit, cpu_share=cpu_share,
             is_trusty=VEIL_OS.codename == 'trusty'))
