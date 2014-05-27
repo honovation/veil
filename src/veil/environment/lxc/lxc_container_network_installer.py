@@ -43,4 +43,9 @@ def lxc_container_name_servers_resource(container_name, name_servers):
         return
     LOGGER.info('set container name servers: in %(container_name)s to %(name_servers)s', {'container_name': container_name, 'name_servers': name_servers})
     resolve_conf_path.write_text(config_content)
-    shell_execute('resolvconf -u')
+    if is_lxc_container_running(container_name):
+        shell_execute('lxc-attach -n {} -- resolvconf -u'.format(container_name), capture=True)
+
+
+def is_lxc_container_running(container_name):
+    return 'RUNNING' in shell_execute('lxc-info -n {} -s'.format(container_name), capture=True)
