@@ -33,7 +33,7 @@ def lxc_container_created_resource(name):
         return
     LOGGER.info('create lxc container: %(name)s ...', {'name': name})
     shell_execute('lxc-create -t ubuntu -n {}'.format(name))
-    install_file(False, '/var/lib/lxc/{}/rootfs/etc/network/if-up.d/veil-server-init', content=render_config('veil-server-init.j2'), mode=0755)
+    install_file(False, '/var/lib/lxc/{}/rootfs/etc/network/if-up.d/veil-server-init'.format(name), content=render_config('veil-server-init.j2'), mode=0755)
     if VEIL_OS.codename == 'precise':
         shell_execute('ln -s /var/lib/lxc/{}/config /etc/lxc/auto/{}.conf'.format(name, name))
 
