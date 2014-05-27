@@ -14,7 +14,7 @@ def lxc_container_resource(container_name, mac_address, lan_interface, memory_li
             cmd_run_after_updated='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
         lxc_container_created_resource(name=container_name),
         file_resource(path='/var/lib/lxc/{}/rootfs/etc/apt/sources.list'.format(container_name),
-            content=render_config('sources.list.j2', codename=VEIL_OS.codename, mirror=VEIL_APT_URL), cmd_run_after_updated='apt-get -q update'),
+            content=render_config('sources.list.j2', codename=VEIL_OS.codename, mirror=VEIL_APT_URL)),
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name), content=render_config('lxc-container.cfg.j2', name=container_name,
             mac_address=mac_address, lan_interface=lan_interface, memory_limit=memory_limit, cpu_share=cpu_share,
             is_trusty=VEIL_OS.codename == 'trusty'))

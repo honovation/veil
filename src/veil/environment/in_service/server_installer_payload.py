@@ -43,7 +43,7 @@ def mark_patched():
 
 def disable_time_sync():
     """disable time sync on lxc guests"""
-    shell_execute('apt-get -y remove ntpdate ntp')
+    shell_execute('apt-get -m -y remove ntpdate ntp')
 
 
 def install_git():
