@@ -5,7 +5,7 @@ import time
 import threading
 import discipline_coach
 import os
-from veil.environment import VEIL_ENV_TYPE
+from veil.environment import *
 from veil.frontend.website_setting import list_website_components
 
 LOGGER = logging.getLogger(__name__)
