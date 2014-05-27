@@ -3,7 +3,7 @@ from os import getenv
 import platform
 from veil.model.collection import DictObject
 
-VEIL_APT_URL = 'http://mirrors.163.com/ubuntu'
+VEIL_APT_URL = 'http://mirrors.163.com/ubuntu/'
 VEIL_DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
 PYPI_INDEX_URL = '-i http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
 

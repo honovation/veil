@@ -42,13 +42,11 @@ def install_directory(is_dry_run, path, owner='root', group='root', mode=0755, r
 
 
 @atomic_installer
-def file_resource(path, content, owner='root', group='root', mode=0644, cmd_run_after_installed=None):
-    args = dict(path=path, content=content, owner=owner, group=group, mode=mode)
+def file_resource(path, content, owner='root', group='root', mode=0644, cmd_run_after_updated=None):
+    args = dict(path=path, content=content, owner=owner, group=group, mode=mode, cmd_run_after_updated=cmd_run_after_updated)
     dry_run_result = get_dry_run_result()
     if dry_run_result is None:
         install_file(is_dry_run=False, **args)
-        if cmd_run_after_installed:
-            shell_execute(cmd_run_after_installed, capture=True, debug=True)
     else:
         actions = install_file(is_dry_run=True, **args)
         resource_name = 'file?{}'.format(path)
@@ -58,7 +56,7 @@ def file_resource(path, content, owner='root', group='root', mode=0644, cmd_run_
             dry_run_result[resource_name] = '-'
 
 
-def install_file(is_dry_run, path, content, owner='root', group='root', mode=0644):
+def install_file(is_dry_run, path, content, owner='root', group='root', mode=0644, cmd_run_after_updated=None):
     write = False
     reason = None
     origin_backup_path = '{}.origin'.format(path)
@@ -90,6 +88,8 @@ def install_file(is_dry_run, path, content, owner='root', group='root', mode=064
             with open(path, 'wb') as fp:
                 LOGGER.info('Writing file: %(path)s because %(reason)s', {'path': path, 'reason': reason})
                 fp.write(content)
+            if cmd_run_after_updated:
+                shell_execute(cmd_run_after_updated, capture=True, debug=True)
     if os.path.exists(path):
         actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
     return actions
