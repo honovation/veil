@@ -71,7 +71,7 @@ def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
         )
     ]
     if veil_host.override_sources_list:
-        veil_host_os_codename = fabric.api.execute('lsb_release -cs')
+        veil_host_os_codename = fabric.api.run('lsb_release -cs')
         with open('/tmp/veil_host_sources_list', mode='wb+') as f:
             f.write(render_config('sources.list.j2', mirror=VEIL_APT_URL, codename=veil_host_os_codename))
         resources.append(veil_host_file_resource(
