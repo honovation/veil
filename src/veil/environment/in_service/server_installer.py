@@ -1,7 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 import os
 import tempfile
+import time
 import fabric.api
+import fabric.contrib.files
 from veil_component import as_path
 from veil_installer import *
 from veil.environment import *
@@ -30,6 +32,9 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
     if fabric.api.env.host_string not in veil_servers_with_payload_uploaded:
         fabric.api.put(PAYLOAD, '/opt/server_installer_payload.py', use_sudo=True, mode=0600)
         veil_servers_with_payload_uploaded.append(fabric.api.env.host_string)
+    while fabric.contrib.files.exists('/etc/network/if-up.d/veil-server-init'):
+        print('waiting for veil server initialization: {}'.format(veil_server_name))
+        time.sleep(2)
     fabric.api.sudo('python /opt/server_installer_payload.py {} {} {} {} {}'.format(VEIL_FRAMEWORK_CODEBASE, get_application_codebase(),
         veil_env_name, veil_server_name, action))
     if action == 'DEPLOY':
