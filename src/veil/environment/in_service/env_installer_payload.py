@@ -86,13 +86,11 @@ def download_packages(src_app_dir, veil_server):
     if not os.path.exists(src_app_dir):
         print('{} does not exists, skipped download'.format(src_app_dir))
         return
-    shell_execute(
-        'git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION RESOURCE-LATEST-VERSION-TEST | tar -x',
-        cwd=src_app_dir)
+    shell_execute('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x', cwd=src_app_dir)
     try:
         shell_execute('veil :{} install-server --download-only'.format(veil_server), cwd=src_app_dir)
     finally:
-        shell_execute('git checkout -- RESOURCE-LATEST-VERSION RESOURCE-LATEST-VERSION-TEST', cwd=src_app_dir)
+        shell_execute('git checkout -- RESOURCE-LATEST-VERSION-*', cwd=src_app_dir)
 
 
 def shell_execute(command_line, **kwargs):

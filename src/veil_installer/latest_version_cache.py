@@ -2,11 +2,11 @@
 serves as cache to speed up upgrade decision
 """
 from __future__ import unicode_literals, print_function, division
-from veil.env_const import VEIL_ENV_TYPE
+from veil.env_const import VEIL_ENV_TYPE, VEIL_OS
 from veil_component import VEIL_HOME
 
-RESOURCE_LATEST_VERSION = VEIL_HOME / 'RESOURCE-LATEST-VERSION'
-RESOURCE_LATEST_VERSION_TEST = VEIL_HOME / 'RESOURCE-LATEST-VERSION-TEST'
+RESOURCE_LATEST_VERSION = VEIL_HOME / 'RESOURCE-LATEST-VERSION-{}'.format(VEIL_OS.codename)
+RESOURCE_LATEST_VERSION_TEST = VEIL_HOME / 'RESOURCE-LATEST-VERSION-TEST-{}'.format(VEIL_OS.codename)
 
 version_cache = {'development': None, 'test': None}
 
