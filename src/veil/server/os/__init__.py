@@ -3,6 +3,7 @@ import veil_component
 with veil_component.init_component(__name__):
     from .filesystem_installer import directory_resource
     from .filesystem_installer import file_resource
+    from .filesystem_installer import install_file
     from .filesystem_installer import symbolic_link_resource
     from .os_package_repository_installer import os_ppa_repository_resource
     from .os_package_repository_installer import postgresql_apt_repository_resource
@@ -15,6 +16,7 @@ with veil_component.init_component(__name__):
         # from filesystem_installer
         directory_resource.__name__,
         file_resource.__name__,
+        install_file.__name__,
         symbolic_link_resource.__name__,
         # from os_package_repository_installer
         os_ppa_repository_resource.__name__,

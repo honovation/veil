@@ -33,6 +33,7 @@ def lxc_container_created_resource(name):
         return
     LOGGER.info('create lxc container: %(name)s ...', {'name': name})
     shell_execute('lxc-create -t ubuntu -n {}'.format(name))
+    install_file('/var/lib/lxc/{}/rootfs/etc/network/if-up.d/veil-server-init', content=render_config('veil-server-init.j2'), mode=0755)
     if VEIL_OS.codename == 'precise':
         shell_execute('ln -s /var/lib/lxc/{}/config /etc/lxc/auto/{}.conf'.format(name, name))
 
@@ -48,6 +49,3 @@ def lxc_container_in_service_resource(name):
         return
     LOGGER.info('start lxc container: %(name)s ...', {'name': name})
     shell_execute('lxc-start -n {} -d'.format(name), capture=True)
-    shell_execute('lxc-wait -n {} -s RUNNING'.format(name), capture=True)
-    shell_execute('lxc-attach -n {} -- sh -c "resolvconf -u && apt-get -q update && apt-get -y install python git-core && apt-get -y purge ntpdate ntp"'.format(name),
-        capture=True)
