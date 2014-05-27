@@ -4,7 +4,7 @@ from veil.env_const import VEIL_OS
 from veil_component import as_path
 from veil_installer import *
 from veil.utility.shell import *
-from .os_package_installer import os_package_resource
+from .os_package_installer import os_package_resource, set_apt_get_update_executed
 
 LOGGER = logging.getLogger(__name__)
 ETC_APT = as_path('/etc/apt')
@@ -25,7 +25,7 @@ def os_ppa_repository_resource(name):
         return
     LOGGER.info('installing os package repository: %(name)s ...', {'name': name})
     shell_execute('add-apt-repository ppa:{} -y'.format(name), capture=True)
-    shell_execute('apt-get -q update', capture=True, debug=True)
+    set_apt_get_update_executed(False)
 
 
 @atomic_installer
@@ -41,7 +41,7 @@ def postgresql_apt_repository_resource():
     shell_execute('echo "deb http://apt.postgresql.org/pub/repos/apt/ {os_codename}-{name} main" > /etc/apt/sources.list.d/{name}.list'.format(
         os_codename=VEIL_OS.codename, name=POSTGRESQL_APT_REPOSITORY_NAME), capture=True)
     shell_execute('wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -', capture=True)
-    shell_execute('apt-get -q update', capture=True, debug=True)
+    set_apt_get_update_executed(False)
 
 
 def is_os_package_repository_installed(name):
