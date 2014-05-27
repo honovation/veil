@@ -48,3 +48,6 @@ def lxc_container_in_service_resource(name):
         return
     LOGGER.info('start lxc container: %(name)s ...', {'name': name})
     shell_execute('lxc-start -n {} -d'.format(name), capture=True)
+    shell_execute('lxc-wait -n {} -s RUNNING'.format(name), capture=True)
+    shell_execute('lxc-attach -n {} -- apt-get -q update && apt-get -y install python git-core && apt-get -y purge ntpdate ntp'.format(name),
+        capture=True)

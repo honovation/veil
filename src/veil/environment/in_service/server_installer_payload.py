@@ -17,8 +17,6 @@ def main():
     if action not in ('DEPLOY', 'PATCH'):
         raise Exception('unknown action: {}'.format(action))
 
-    disable_time_sync()
-    install_git()
     clone_application(application_codebase, veil_home)
     pull_application(application_branch, veil_home)
     framework_version = read_framework_version(veil_home)
@@ -39,16 +37,6 @@ def mark_deployed():
 
 def mark_patched():
     shell_execute('date > /opt/patched')
-
-
-def disable_time_sync():
-    """disable time sync on lxc guests"""
-    shell_execute('apt-get -m -y remove ntpdate ntp')
-
-
-def install_git():
-    shell_execute('service resolvconf restart')
-    shell_execute('apt-get -y install git-core')
 
 
 def clone_application(application_codebase, veil_home):

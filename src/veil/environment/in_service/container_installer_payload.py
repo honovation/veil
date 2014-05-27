@@ -8,9 +8,10 @@ def main():
     veil_framework_codebase = sys.argv[1]
     installer_path = sys.argv[2]
 
-    enable_time_sync()
-    install_git()
-    clone_veil(veil_framework_codebase)
+    if not is_installed(installer_path):
+        enable_time_sync()
+        install_git()
+        clone_veil(veil_framework_codebase)
     pull_veil()
     install(installer_path)
     mark_installed(installer_path)
@@ -52,6 +53,10 @@ def install(installer_path):
 
 def mark_installed(installer_path):
     shell_execute('mv -f {} {}.installed'.format(installer_path, installer_path))
+
+
+def is_installed(installer_path):
+    return os.path.exists('{}.installed'.format(installer_path))
 
 
 def shell_execute(command_line, **kwargs):
