@@ -34,7 +34,7 @@ def veil_env(server_hosts, servers, sorted_server_names=None, deployment_memo=No
 def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None,
         backup_dirs=None, memory_limit=None, cpu_share=None):
     from veil.model.collection import objectify
-    name_servers = name_servers or ['114.114.114.114', '114.114.115.115', '8.8.8.8']
+    name_servers = name_servers or ['114.114.114.114', '114.114.115.115', '8.8.8.8', '8.8.4.4']
     return objectify({
         'hosted_on': hosted_on,
         'sequence_no': sequence_no,

@@ -43,4 +43,4 @@ def lxc_container_name_servers_resource(container_name, name_servers):
         return
     LOGGER.info('set container name servers: in %(container_name)s to %(name_servers)s', {'container_name': container_name, 'name_servers': name_servers})
     resolve_conf_path.write_text(config_content)
-    shell_execute('service resolvconf restart')
+    shell_execute('resolvconf -u')
