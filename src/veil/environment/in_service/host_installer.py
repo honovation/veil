@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import uuid
 import fabric.api
+from veil.server.config import *
 from veil_component import as_path
 from veil.environment import *
 from veil_installer import *
@@ -69,6 +70,16 @@ def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644
         )
     ]
+    if veil_host.override_sources_list:
+        veil_host_os_codename = fabric.api.execute('lsb_release -cs')
+        with open('/tmp/veil_host_sources_list', mode='wb+') as f:
+            f.write(render_config('sources.list.j2', mirror=VEIL_APT_URL, codename=veil_host_os_codename))
+        resources.append(veil_host_file_resource(
+            local_path='/tmp/veil_host_sources_list',
+            veil_env_name=veil_env_name, veil_host_name=veil_env_name,
+            remote_path='/etc/apt/sources.list',
+            owner='root', owner_group='root', mode=0664
+        ))
     return resources
 
 
