@@ -7,16 +7,11 @@ VEIL_APT_URL = 'http://mirrors.163.com/ubuntu/'
 VEIL_DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
 PYPI_INDEX_URL = '-i http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
 
-def split_veil_server_code(code):
-    env = code[:code.find('/')]
-    server_name = code[code.find('/') + 1:]
-    return env, server_name
-
 VEIL_SERVER = getenv('VEIL_SERVER') or 'development'
 VEIL_ENV = None
 VEIL_SERVER_NAME = None
 if '/' in VEIL_SERVER:
-    VEIL_ENV, VEIL_SERVER_NAME = split_veil_server_code(VEIL_SERVER)
+    VEIL_ENV, VEIL_SERVER_NAME = VEIL_SERVER.split('/', 1)
 else:
     VEIL_ENV = VEIL_SERVER
     VEIL_SERVER_NAME = '@'

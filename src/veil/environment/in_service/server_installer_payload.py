@@ -84,8 +84,7 @@ def pull_veil(framework_version, veil_framework_home):
 
 def deploy(veil_framework_home, veil_home, veil_env_name, veil_server_name):
     env = os.environ.copy()
-    shell_execute('{}/bin/veil :{}/{} deploy'.format(veil_framework_home, veil_env_name, veil_server_name),
-        cwd=veil_home, env=env)
+    shell_execute('{}/bin/veil :{}/{} deploy'.format(veil_framework_home, veil_env_name, veil_server_name), cwd=veil_home, env=env)
 
 
 def patch(veil_framework_home, veil_home, veil_env_name, veil_server_name):
