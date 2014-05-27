@@ -35,6 +35,8 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
     while fabric.contrib.files.exists('/etc/network/if-up.d/veil-server-init'):
         print('waiting for veil server initialization: {}'.format(veil_server_name))
         time.sleep(2)
+    if not fabric.contrib.files.exists('/etc/network/if-up.d/veil-server-init'):
+        print('veil server initialization has finished')
     fabric.api.sudo('python /opt/server_installer_payload.py {} {} {} {} {}'.format(VEIL_FRAMEWORK_CODEBASE, get_application_codebase(),
         veil_env_name, veil_server_name, action))
     if action == 'DEPLOY':
