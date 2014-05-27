@@ -37,7 +37,8 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
         time.sleep(2)
     if not fabric.contrib.files.exists('/etc/network/if-up.d/veil-server-init'):
         print('veil server initialization has finished')
-    fabric.api.sudo('python /opt/server_installer_payload.py {} {} {} {} {}'.format(VEIL_FRAMEWORK_CODEBASE, get_application_codebase(),
+    fabric.api.output.debug = True
+    fabric.api.sudo('/usr/bin/python /opt/server_installer_payload.py {} {} {} {} {}'.format(VEIL_FRAMEWORK_CODEBASE, get_application_codebase(),
         veil_env_name, veil_server_name, action))
     if action == 'DEPLOY':
         remote_install_boot_script(veil_env_name, veil_server_name)
