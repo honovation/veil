@@ -61,7 +61,6 @@ function veil_init {
     if [[ "$VEIL_SERVER" != "development" && "$VEIL_SERVER" != "test" ]] ; then
         sudo apt-get -y remove network-manager
     fi
-    sudo apt-get -y install iptables python-dev python-pip python-virtualenv language-pack-en unzip wget
     if [ ! -f /usr/bin/veil ]; then
         sudo ln -sf $VEIL_FRAMEWORK_HOME/bin/veil /usr/bin/veil
     fi

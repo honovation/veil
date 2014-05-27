@@ -34,10 +34,10 @@ def veil_server_resource(veil_env_name, veil_server_name, action='PATCH'):
         veil_servers_with_payload_uploaded.append(fabric.api.env.host_string)
     while True:
         try:
-            fabric.api.sudo('python -V')
+            fabric.api.sudo('pip --version && virtualenv --version')
         except:
             print('waiting for veil server initialization: {}'.format(veil_server_name))
-            time.sleep(2)
+            time.sleep(5)
         else:
             break
     fabric.api.sudo('python /opt/server_installer_payload.py {} {} {} {} {}'.format(VEIL_FRAMEWORK_CODEBASE, get_application_codebase(),
