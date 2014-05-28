@@ -44,7 +44,7 @@ def veil_env(hosts, servers, sorted_server_names=None, deployment_memo=None):
             host.server_list.append(server)
         host.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))
 
-    if env.hosts or VEIL_ENV_TYPE not in ('development', 'test'):
+    if env.hosts:
         assert all(host.server_list for host in env.hosts.values()), 'ENV {}: found host without server(s)'.format(VEIL_ENV)
         assert all(server.host for server in env.servers.values()), 'ENV {}: found server without host'.format(VEIL_ENV)
         assert all(len(host.server_list) == len(set(server.sequence_no for server in host.server_list)) for host in env.hosts.values()), \
