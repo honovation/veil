@@ -51,7 +51,7 @@ def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=()
 
 
 def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_range='10.0.3', lan_interface='lxcbr0', mac_prefix='00:16:3e:73:bb',
-        override_sources_list=False, resources=()):
+        override_sources_list=False, enable_unattended_upgrade=False, resources=()):
     from veil.model.collection import objectify
 
     return objectify({
@@ -63,6 +63,7 @@ def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_rang
         'lan_interface': lan_interface,
         'mac_prefix': mac_prefix,
         'override_sources_list': override_sources_list,
+        'enable_unattended_upgrade': enable_unattended_upgrade,
         'resources': resources
     })
 
