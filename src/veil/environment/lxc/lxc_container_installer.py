@@ -18,7 +18,7 @@ def lxc_container_resource(container_name, mac_address, lan_interface, memory_li
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name), content=render_config('lxc-container.cfg.j2', name=container_name,
             mac_address=mac_address, lan_interface=lan_interface, memory_limit=memory_limit, cpu_share=cpu_share,
             is_trusty=VEIL_OS.codename == 'trusty')),
-        os_package_resource('unattended-upgrades'),
+        os_package_resource(name='unattended-upgrades'),
         file_resource(path='/var/lib/lxc/{}/rootfs/etc/apt/apt.conf.d/50unattended-upgrades'.format(container_name),
             content=render_config('50unattended-upgrades')),
         file_resource(path='/var/lib/lxc/{}/rootfs/etc/apt/apt.conf.d/99-update-and-download-daily'.format(container_name),
