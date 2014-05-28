@@ -19,14 +19,14 @@ def main():
 
 def enable_time_sync():
     """enable time sync on lxc hosts, and which is shared among lxc guests"""
-    shell_execute('apt-get -y install ntpdate')
+    shell_execute('apt-get -q -y install ntpdate')
     if os.path.exists('/etc/cron.hourly/ntpdate'):
         return
     unsafe_call('''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
 
 
 def install_git():
-    shell_execute('apt-get -y install git-core')
+    shell_execute('apt-get -q -y install git-core')
 
 
 def clone_veil(veil_framework_codebase):

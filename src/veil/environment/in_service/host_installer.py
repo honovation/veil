@@ -2,10 +2,10 @@ from __future__ import unicode_literals, print_function, division
 import os
 import uuid
 import fabric.api
-from veil.server.config import *
 from veil_component import as_path
 from veil.environment import *
 from veil_installer import *
+from veil.server.config import *
 
 
 @composite_installer
@@ -79,10 +79,10 @@ def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
             local_path='/tmp/veil_host_sources_list',
             veil_env_name=veil_env_name, veil_host_name=veil_env_name,
             remote_path='/etc/apt/sources.list',
-            owner='root', owner_group='root', mode=0664
+            owner='root', owner_group='root', mode=0644
         ))
     if veil_host.enable_unattended_upgrade:
-        fabric.api.sudo('apt-get -y install unattended-upgrades')
+        fabric.api.sudo('apt-get -q -y install unattended-upgrades')
         fabric.api.put(os.path.join(os.path.dirname(__file__), '50unattended-upgrades'), '/etc/apt/apt.conf.d/50unattended-upgrades', use_sudo=True,
             mode=0644)
         fabric.api.put(os.path.join(os.path.dirname(__file__), '99-update-and-download-daily'), '/etc/apt/apt.conf.d/99-update-and-download-daily',

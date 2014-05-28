@@ -88,7 +88,7 @@ def os_package_resource(name):
                 'latest_version': latest_version,
                 'version_to_install': downloaded_version
             })
-        shell_execute('apt-get -y install {}={}'.format(name, downloaded_version), capture=True, debug=True)
+        shell_execute('apt-get -q -y install {}={}'.format(name, downloaded_version), capture=True, debug=True)
         installed_version = downloaded_version
 
     if may_update_resource_latest_version and installed_version and installed_version != latest_version:
@@ -103,7 +103,7 @@ def os_package_resource(name):
 def download_os_package(name, version=None):
     LOGGER.info('downloading os package: %(name)s, %(version)s...', {'name': name, 'version': version})
     update_os_package_catalogue()
-    shell_execute('apt-get -y -d install {}{}'.format(name, '={}'.format(version) if version else ''), capture=True, debug=True)
+    shell_execute('apt-get -q -y -d install {}{}'.format(name, '={}'.format(version) if version else ''), capture=True, debug=True)
     _, downloaded_version = get_local_os_package_versions(name)
     assert not version or version == downloaded_version, \
         'the downloaded version of os package {} is {}, different from the specific version {}'.format(name, downloaded_version, version)

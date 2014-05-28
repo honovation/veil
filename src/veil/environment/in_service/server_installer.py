@@ -3,10 +3,9 @@ import os
 import tempfile
 import time
 import fabric.api
-import fabric.contrib.files
 from veil_component import as_path
-from veil_installer import *
 from veil.environment import *
+from veil_installer import *
 from veil.server.config import *
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'server_installer_payload.py')
