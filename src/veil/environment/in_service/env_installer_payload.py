@@ -13,9 +13,9 @@ def main():
     src_dir = '/opt/{}'.format(veil_env)
     src_app_dir = '{}/app'.format(src_dir)
     backup_dir = '{}-backup'.format(src_dir)
-    veil_server = '{}/{}'.format(veil_env, veil_server_name)
+    server = '{}/{}'.format(veil_env, veil_server_name)
     if 'create-backup' == action:
-        create_backup(src_dir, src_app_dir, backup_dir, veil_server)
+        create_backup(src_dir, src_app_dir, backup_dir, server)
     elif 'check-backup' == action:
         if not os.path.exists(backup_dir):
             raise Exception('backup {} does not exists'.format(backup_dir))
@@ -25,17 +25,17 @@ def main():
     elif 'purge-left-overs' == action:
         purge_left_overs()
     elif 'rollback' == action:
-        rollback(src_dir, src_app_dir, backup_dir, veil_server)
+        rollback(src_dir, src_app_dir, backup_dir, server)
     elif 'bring-down-server' == action:
-        bring_down_server(src_app_dir, veil_server)
+        bring_down_server(src_app_dir, server)
     elif 'bring-up-server' == action:
-        bring_up_server(src_app_dir, veil_server)
+        bring_up_server(src_app_dir, server)
     elif 'download-packages' == action:
-        download_packages(src_app_dir, veil_server)
+        download_packages(src_app_dir, server)
     elif 'upgrade-pip' == action:
         setuptools_version = sys.argv[4]
         pip_version = sys.argv[5]
-        upgrade_pip(src_app_dir, veil_server, pip_version, setuptools_version)
+        upgrade_pip(src_app_dir, server, pip_version, setuptools_version)
     else:
         raise Exception('unknown action: {}'.format(action))
 

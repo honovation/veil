@@ -20,29 +20,54 @@ from .environment import BASIC_LAYOUT_RESOURCES
 from .environment import get_application_version
 from .environment import get_veil_framework_version
 
-def veil_env(server_hosts, servers, sorted_server_names=None, deployment_memo=None):
+
+def veil_env(hosts, servers, sorted_server_names=None, deployment_memo=None):
+    server_names = servers.keys()
+    if sorted_server_names:
+        assert set(sorted_server_names) == set(server_names), 'ENV {}: inconsistency between sorted_server_names {} and server_names {}'.format(
+            VEIL_ENV, sorted_server_names, server_names)
+    else:
+        sorted_server_names = sorted(server_names)
+
     from veil.model.collection import objectify
+    env = objectify({'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names, 'deployment_memo': deployment_memo})
+    for server_name, server in env.servers.items():
+        server.name = server_name
+        server.host = None
+    for host_name, host in env.hosts.items():
+        host.name = host_name
+        host.server_list = []
+        for server_name, server in env.servers.items():
+            if host.name != server.host_name:
+                continue
+            server.host = host
+            host.server_list.append(server)
+        host.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))
 
-    return objectify({
-        'server_hosts': server_hosts,
-        'servers': servers,
-        'sorted_server_names': sorted_server_names,
-        'deployment_memo': deployment_memo
-    })
+    if env.hosts or VEIL_ENV_TYPE not in ('development', 'test'):
+        assert all(host.server_list for host in env.hosts.values()), 'ENV {}: found host without server(s)'.format(VEIL_ENV)
+        assert all(server.host for server in env.servers.values()), 'ENV {}: found server without host'.format(VEIL_ENV)
+        assert all(len(host.server_list) == len(set(server.sequence_no for server in host.server_list)) for host in env.hosts.values()), \
+            'ENV {}: found sequence no conflict among servers on one host'.format(VEIL_ENV)
+
+    # break cyclic reference between host and server to get freeze_dict_object out of complain
+    for server in env.servers.values():
+        del server.host
+
+    return env
 
 
-def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None,
+def veil_server(host_name, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None,
         backup_dirs=None, memory_limit=None, cpu_share=None):
     from veil.model.collection import objectify
-    name_servers = name_servers or ['114.114.114.114', '114.114.115.115', '8.8.8.8', '8.8.4.4']
     return objectify({
-        'hosted_on': hosted_on,
+        'host_name': host_name,
         'sequence_no': sequence_no,
         'programs': programs,
         'deploys_via': deploys_via,
         'resources': resources,
         'supervisor_http_port': supervisor_http_port,
-        'name_servers': name_servers,
+        'name_servers': name_servers or ['114.114.114.114', '114.114.115.115', '8.8.8.8', '8.8.4.4'],
         'backup_mirror': backup_mirror,
         'backup_dirs': backup_dirs or [],
         'memory_limit': memory_limit,
@@ -53,7 +78,6 @@ def veil_server(hosted_on, sequence_no, programs, deploys_via=None, resources=()
 def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_range='10.0.3', lan_interface='lxcbr0', mac_prefix='00:16:3e:73:bb',
         override_sources_list=False, enable_unattended_upgrade=False, resources=()):
     from veil.model.collection import objectify
-
     return objectify({
         'internal_ip': internal_ip,
         'external_ip': external_ip,
@@ -69,24 +93,11 @@ def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_rang
 
 
 def list_veil_server_names(veil_env_name):
-    env = get_application().ENVIRONMENTS[veil_env_name]
-    return env.sorted_server_names or sorted(env.servers.keys())
+    return get_application().ENVIRONMENTS[veil_env_name].sorted_server_names
 
 
 def list_veil_servers(veil_env_name):
     return get_application().ENVIRONMENTS[veil_env_name].servers
-
-
-def list_veil_hosts(veil_env_name):
-    return get_application().ENVIRONMENTS[veil_env_name].server_hosts
-
-
-def get_veil_env_deployment_memo(veil_env_name):
-    return get_application().ENVIRONMENTS[veil_env_name].deployment_memo
-
-
-def get_veil_host(veil_env_name, veil_host_name):
-    return list_veil_hosts(veil_env_name)[veil_host_name]
 
 
 def get_veil_server(veil_env_name, veil_server_name):
@@ -97,14 +108,24 @@ def get_current_veil_server():
     return get_veil_server(VEIL_ENV, VEIL_SERVER_NAME)
 
 
+def list_veil_hosts(veil_env_name):
+    return get_application().ENVIRONMENTS[veil_env_name].hosts
+
+
+def get_veil_host(veil_env_name, veil_host_name):
+    return list_veil_hosts(veil_env_name)[veil_host_name]
+
+
+def get_veil_env_deployment_memo(veil_env_name):
+    return get_application().ENVIRONMENTS[veil_env_name].deployment_memo
+
+
 def get_veil_server_deploys_via(veil_env_name, veil_server_name):
-    veil_server = get_veil_server(veil_env_name, veil_server_name)
-    veil_host_name = veil_server.hosted_on
-    veil_host = get_veil_host(veil_env_name, veil_host_name)
-    return veil_server.deploys_via or '{}@{}:{}'.format(
-        veil_host.ssh_user,
-        veil_host.internal_ip,
-        '{}22'.format(veil_server.sequence_no))
+    server = get_veil_server(veil_env_name, veil_server_name)
+    if server.deploys_via:
+        return server.deploys_via
+    host = get_veil_host(veil_env_name, server.host_name)
+    return '{}@{}:{}'.format(host.ssh_user, host.internal_ip, '{}22'.format(server.sequence_no))
 
 
 def get_application_codebase():

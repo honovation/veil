@@ -69,7 +69,9 @@ def entitify(o, primary_keys=None):
 
 
 def freeze_dict_object(o):
-    if isinstance(o, dict):
+    if isinstance(o, FrozenDictObject):
+        return o
+    elif isinstance(o, dict):
         return FrozenDictObject({k: freeze_dict_object(v) for k, v in o.items()})
     elif isinstance(o, (tuple, set, list)):
         return [freeze_dict_object(e) for e in o]

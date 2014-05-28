@@ -11,25 +11,26 @@ def merge_multiple_settings(*multiple_settings):
 def merge_settings(base, updates, overrides=False):
     if base is None:
         return freeze_dict_object(updates)
-    if isinstance(base, dict) and isinstance(updates, dict):
-        updated = DictObject()
-        for k, v in base.items():
-            try:
-                updated[k] = merge_settings(v, updates.get(k), overrides=overrides)
-            except:
-                raise Exception('can not merge: {}\r\n{}'.format(k, sys.exc_info()[1]))
-        for k, v in updates.items():
-            if k not in updated:
-                updated[k] = v
-        return freeze_dict_object(updated)
-    if base == updates:
+    if updates is None or base == updates:
         return freeze_dict_object(base)
-    if updates is not None:
-        if overrides:
-            return updates
-        else:
-            raise Exception('can not merge {} with {}'.format(base, updates))
-    return freeze_dict_object(base)
+    if isinstance(base, dict) and isinstance(updates, dict):
+        merged = DictObject()
+        for k in base:
+            if k in updates:
+                try:
+                    merged[k] = merge_settings(base[k], updates[k], overrides=overrides)
+                except:
+                    raise Exception('can not merge: {}\r\n{}'.format(k, sys.exc_info()[1]))
+            else:
+                merged[k] = base[k]
+        for k in updates:
+            if k not in merged:
+                merged[k] = updates[k]
+        return freeze_dict_object(merged)
+    if overrides:
+        return freeze_dict_object(updates)
+    else:
+        raise Exception('can not merge {} with {}'.format(base, updates))
 
 
 def load_config_from(path, *required_keys):

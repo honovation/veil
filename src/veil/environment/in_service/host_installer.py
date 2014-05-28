@@ -20,9 +20,9 @@ def veil_env_hosts_resource(veil_env_name, config_dir):
 
 @composite_installer
 def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
-    veil_host = get_veil_host(veil_env_name, veil_host_name)
-    fabric.api.env.host_string = '{}@{}:{}'.format(veil_host.ssh_user, veil_host.internal_ip, veil_host.ssh_port)
-    veil_server_user_name = veil_host.ssh_user
+    host = get_veil_host(veil_env_name, veil_host_name)
+    fabric.api.env.host_string = '{}@{}:{}'.format(host.ssh_user, host.internal_ip, host.ssh_port)
+    veil_server_user_name = host.ssh_user
     resources = [
         veil_host_file_resource(
             local_path=host_config_dir / 'iptables' / 'iptablesload',
@@ -71,7 +71,7 @@ def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644
         )
     ]
-    if veil_host.override_sources_list:
+    if host.override_sources_list:
         veil_host_os_codename = fabric.api.run('lsb_release -cs')
         with open('/tmp/veil_host_sources_list', mode='wb+') as f:
             f.write(render_config('sources.list.j2', mirror=VEIL_APT_URL, codename=veil_host_os_codename))
@@ -81,7 +81,7 @@ def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
             remote_path='/etc/apt/sources.list',
             owner='root', owner_group='root', mode=0644
         ))
-    if veil_host.enable_unattended_upgrade:
+    if host.enable_unattended_upgrade:
         fabric.api.sudo('apt-get -q -y install unattended-upgrades')
         fabric.api.put(os.path.join(os.path.dirname(__file__), '50unattended-upgrades'), '/etc/apt/apt.conf.d/50unattended-upgrades', use_sudo=True,
             mode=0644)

@@ -23,9 +23,9 @@ def veil_env_containers_resource(veil_env_name, config_dir):
 
 @atomic_installer
 def veil_server_container_resource(veil_env_name, veil_server_name):
-    veil_server = get_veil_server(veil_env_name, veil_server_name)
-    veil_host = get_veil_host(veil_env_name, veil_server.hosted_on)
-    fabric.api.env.host_string = '{}@{}:{}'.format(veil_host.ssh_user, veil_host.internal_ip, veil_host.ssh_port)
+    server = get_veil_server(veil_env_name, veil_server_name)
+    host = get_veil_host(veil_env_name, server.host_name)
+    fabric.api.env.host_string = '{}@{}:{}'.format(host.ssh_user, host.internal_ip, host.ssh_port)
     fabric.api.env.forward_agent = True
     installer_file_content = render_installer_file(veil_env_name, veil_server_name)
     installer_file_path = '/opt/INSTALLER-{}-{}'.format(veil_env_name, veil_server_name)
@@ -43,9 +43,9 @@ def veil_server_container_resource(veil_env_name, veil_server_name):
 
 @composite_installer
 def veil_server_container_config_resource(veil_env_name, veil_server_name, server_config_dir):
-    veil_server = get_veil_server(veil_env_name, veil_server_name)
-    veil_host = get_veil_host(veil_env_name, veil_server.hosted_on)
-    veil_server_user_name = veil_host.ssh_user
+    server = get_veil_server(veil_env_name, veil_server_name)
+    host = get_veil_host(veil_env_name, server.host_name)
+    veil_server_user_name = host.ssh_user
     resources = [
         veil_server_container_file_resource(
             local_path=server_config_dir / 'iptables' / 'iptablesload',
@@ -145,22 +145,24 @@ def remote_put_content(remote_path, content, **kwargs):
 
 
 def render_installer_file(veil_env_name, veil_server_name):
-    veil_server = get_veil_server(veil_env_name, veil_server_name)
-    veil_host = get_veil_host(veil_env_name, veil_server.hosted_on)
-    veil_server_user_name = veil_host.ssh_user
+    server = get_veil_server(veil_env_name, veil_server_name)
+    host = get_veil_host(veil_env_name, server.host_name)
+    veil_server_user_name = host.ssh_user
     container_name = '{}-{}'.format(veil_env_name, veil_server_name)
-    mac_address = '{}:{}'.format(veil_host.mac_prefix, veil_server.sequence_no)
-    ip_address = '{}.{}'.format(veil_host.lan_range, veil_server.sequence_no)
-    gateway = '{}.1'.format(veil_host.lan_range)
+    mac_address = '{}:{}'.format(host.mac_prefix, server.sequence_no)
+    ip_address = '{}.{}'.format(host.lan_range, server.sequence_no)
+    gateway = '{}.1'.format(host.lan_range)
 
     iptables_rules = [
-        'POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(veil_host.lan_range, veil_host.lan_range)
+        'PREROUTING -d {}/32 -p tcp -m tcp --dport {}22 -j DNAT --to-destination {}:22'.format(host.internal_ip, server.sequence_no,
+            ip_address),
+        'POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(host.lan_range, host.lan_range)
     ]
-    installer_file_content = render_config('container-installer-file.j2', mac_address=mac_address, lan_interface=veil_host.lan_interface,
+    installer_file_content = render_config('container-installer-file.j2', mac_address=mac_address, lan_interface=host.lan_interface,
         ip_address=ip_address, gateway=gateway, iptables_rules=iptables_rules, container_name=container_name, user_name=veil_server_user_name,
-        name_servers=','.join(veil_server.name_servers), memory_limit=veil_server.memory_limit, cpu_share=veil_server.cpu_share)
+        name_servers=','.join(server.name_servers), memory_limit=server.memory_limit, cpu_share=server.cpu_share)
     lines = [installer_file_content]
-    for resource in veil_host.resources:
+    for resource in host.resources:
         installer_name, installer_args = resource
         line = '{}?{}'.format(installer_name, '&'.join('{}={}'.format(k, v) for k, v in installer_args.items()))
         lines.append(line)
