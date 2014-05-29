@@ -36,6 +36,7 @@ def veil_env(hosts, servers, sorted_server_names=None, deployment_memo=None):
         server.host = None
     for host_name, host in env.hosts.items():
         host.name = host_name
+        host.base_name = host_name.split('/', 1)[0]  # e.g. ljhost-005/3 => ljhost-005
         host.server_list = []
         for server_name, server in env.servers.items():
             if host.name != server.host_name:

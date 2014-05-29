@@ -15,7 +15,7 @@ POSTGRESQL_CLIENTS = ['vsee']
 
 WEBSITES = ['person']
 
-SECURITY_CONFIG_FILE = VEIL_HOME / '.vsee.cfg' if VEIL_ENV_TYPE in ('development', 'test') else as_path(os.getenv('HOME')) / '.vsee.cfg'
+SECURITY_CONFIG_FILE = VEIL_HOME / '.config' if VEIL_ENV_TYPE in ('development', 'test') else as_path(os.getenv('HOME')) / '.config'
 
 SECURITY_CONFIG = load_config_from(
     SECURITY_CONFIG_FILE,

@@ -2,7 +2,6 @@ from __future__ import unicode_literals, print_function, division
 import os
 import uuid
 import fabric.api
-from veil_component import as_path
 from veil.environment import *
 from veil_installer import *
 from veil.server.config import *
@@ -12,32 +11,31 @@ from veil.server.config import *
 def veil_env_hosts_resource(veil_env_name, config_dir):
     resources = []
     for veil_host_name in list_veil_hosts(veil_env_name):
-        veil_host_base_name = veil_host_name.split('/')[0]  # e.g. ljhost-005/3 => ljhost-005
-        host_config_dir = as_path('{}/host/{}'.format(config_dir, veil_host_base_name))
-        resources.append(veil_host_config_resource(veil_env_name=veil_env_name, veil_host_name=veil_host_name, host_config_dir=host_config_dir))
+        resources.append(veil_host_config_resource(veil_env_name=veil_env_name, veil_host_name=veil_host_name, config_dir=config_dir))
     return resources
 
 
 @composite_installer
-def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
+def veil_host_config_resource(veil_env_name, veil_host_name, config_dir):
     host = get_veil_host(veil_env_name, veil_host_name)
     fabric.api.env.host_string = '{}@{}:{}'.format(host.ssh_user, host.internal_ip, host.ssh_port)
     veil_server_user_name = host.ssh_user
+    env_config_dir = config_dir / '{}'.format(veil_env_name)
     resources = [
         veil_host_file_resource(
-            local_path=host_config_dir / 'iptables' / 'iptablesload',
+            local_path=config_dir / 'share' / 'iptablesload',
             veil_env_name=veil_env_name, veil_host_name=veil_host_name,
             remote_path='/etc/network/if-pre-up.d/iptablesload',
             owner='root', owner_group='root', mode=0755
         ),
         veil_host_file_resource(
-            local_path=host_config_dir / 'iptables' / 'iptablessave',
+            local_path=config_dir / 'share' / 'iptablessave',
             veil_env_name=veil_env_name, veil_host_name=veil_host_name,
             remote_path='/etc/network/if-post-down.d/iptablessave',
             owner='root', owner_group='root', mode=0755
         ),
         veil_host_file_resource(
-            local_path=host_config_dir / 'sudoers.d.ssh-auth-sock',
+            local_path=config_dir / 'share' / 'sudoers.d.ssh-auth-sock',
             veil_env_name=veil_env_name, veil_host_name=veil_host_name,
             remote_path='/etc/sudoers.d/ssh-auth-sock',
             owner='root', owner_group='root', mode=0440
@@ -48,13 +46,13 @@ def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0755
         ),
         veil_host_file_resource(
-            local_path=host_config_dir / 'authorized_keys',
+            local_path=env_config_dir / '.ssh' / 'authorized_keys',
             veil_env_name=veil_env_name, veil_host_name=veil_host_name,
             remote_path='/home/{}/.ssh/authorized_keys'.format(veil_server_user_name),
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644
         ),
         veil_host_file_resource(
-            local_path=host_config_dir / 'known_hosts',
+            local_path=env_config_dir / '.ssh' / 'known_hosts',
             veil_env_name=veil_env_name, veil_host_name=veil_host_name,
             remote_path='/home/{}/.ssh/known_hosts'.format(veil_server_user_name),
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644
@@ -65,7 +63,7 @@ def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
             owner='root', owner_group='root', mode=0755
         ),
         veil_host_file_resource(
-            local_path=host_config_dir / 'known_hosts',
+            local_path=env_config_dir / '.ssh' / 'known_hosts',
             veil_env_name=veil_env_name, veil_host_name=veil_host_name,
             remote_path='/root/.ssh/known_hosts',
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644

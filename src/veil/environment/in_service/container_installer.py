@@ -14,10 +14,8 @@ veil_hosts_with_payload_uploaded = []
 def veil_env_containers_resource(veil_env_name, config_dir):
     resources = []
     for veil_server_name in list_veil_server_names(veil_env_name):
-        server_config_dir = as_path('{}/env/{}/{}'.format(config_dir, veil_env_name, veil_server_name))
         resources.append(veil_server_container_resource(veil_env_name=veil_env_name, veil_server_name=veil_server_name))
-        resources.append(veil_server_container_config_resource(veil_env_name=veil_env_name, veil_server_name=veil_server_name,
-            server_config_dir=server_config_dir))
+        resources.append(veil_server_container_config_resource(veil_env_name=veil_env_name, veil_server_name=veil_server_name, config_dir=config_dir))
     return resources
 
 
@@ -42,28 +40,30 @@ def veil_server_container_resource(veil_env_name, veil_server_name):
 
 
 @composite_installer
-def veil_server_container_config_resource(veil_env_name, veil_server_name, server_config_dir):
+def veil_server_container_config_resource(veil_env_name, veil_server_name, config_dir):
     server = get_veil_server(veil_env_name, veil_server_name)
     host = get_veil_host(veil_env_name, server.host_name)
     veil_server_user_name = host.ssh_user
+    env_config_dir = config_dir / '{}'.format(veil_env_name)
+    server_config_dir = env_config_dir / 'servers/{}'.format(veil_server_name)
     resources = [
         veil_server_container_file_resource(
-            local_path=server_config_dir / 'iptables' / 'iptablesload',
+            local_path=config_dir / 'share' / 'iptablesload',
             veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/etc/network/if-pre-up.d/iptablesload',
             owner='root', owner_group='root', mode=0755),
         veil_server_container_file_resource(
-            local_path=server_config_dir / 'iptables' / 'iptablessave',
+            local_path=config_dir / 'share' / 'iptablessave',
             veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/etc/network/if-post-down.d/iptablessave',
             owner='root', owner_group='root', mode=0755),
         veil_server_container_file_resource(
-            local_path=server_config_dir / 'sudoers.d.ssh-auth-sock',
+            local_path=config_dir / 'share' / 'sudoers.d.ssh-auth-sock',
             veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/etc/sudoers.d/ssh-auth-sock',
             owner='root', owner_group='root', mode=0440),
         veil_server_container_file_resource(
-            local_path=server_config_dir / 'sudoers.d.no-password',
+            local_path=config_dir / 'share' / 'sudoers.d.no-password',
             veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/etc/sudoers.d/no-password',
             owner='root', owner_group='root', mode=0440),
@@ -72,13 +72,13 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
             remote_path='/home/{}/.ssh'.format(veil_server_user_name),
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0755),
         veil_server_container_file_resource(
-            local_path=server_config_dir / 'authorized_keys',
+            local_path=env_config_dir / '.ssh' / 'authorized_keys',
             veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/home/{}/.ssh/authorized_keys'.format(veil_server_user_name),
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644),
         veil_server_container_file_resource(
-            local_path=server_config_dir / 'known_hosts', veil_env_name=veil_env_name,
-            veil_server_name=veil_server_name,
+            local_path=env_config_dir / '.ssh' / 'known_hosts',
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/home/{}/.ssh/known_hosts'.format(veil_server_user_name),
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644),
         veil_server_container_directory_resource(
@@ -86,25 +86,32 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, serve
             remote_path='/root/.ssh',
             owner='root', owner_group='root', mode=0755),
         veil_server_container_file_resource(
-            local_path=server_config_dir / 'known_hosts', veil_env_name=veil_env_name,
-            veil_server_name=veil_server_name,
+            local_path=env_config_dir / '.ssh' / 'known_hosts',
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
             remote_path='/root/.ssh/known_hosts',
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644)]
-    if (server_config_dir / 'config').exists():
-        for local_path in (server_config_dir / 'config').files():
-            remote_path = '/home/{}/{}'.format(veil_server_user_name, local_path.name)
-            resources.append(veil_server_container_file_resource(
-                local_path=local_path, veil_env_name=veil_env_name,
-                veil_server_name=veil_server_name, remote_path=remote_path,
-                owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
-    if (server_config_dir / 'id_rsa').exists():
+    if (env_config_dir / '.config').exists():
         resources.append(veil_server_container_file_resource(
-            local_path=server_config_dir / 'id_rsa', veil_env_name=veil_env_name,
-            veil_server_name=veil_server_name, remote_path='/home/{}/.ssh/id_rsa'.format(veil_server_user_name),
+            local_path=env_config_dir / '.config',
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path=('/home/{}/.config'.format(veil_server_user_name)),
+            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
+    for local_path in server_config_dir.files():
+        resources.append(veil_server_container_file_resource(
+            local_path=local_path,
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path=('/home/{}/{}'.format(veil_server_user_name, local_path.name)),
+            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
+    if (server_config_dir / '.ssh' / 'id_rsa').exists():
+        resources.append(veil_server_container_file_resource(
+            local_path=server_config_dir / '.ssh' / 'id_rsa',
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path='/home/{}/.ssh/id_rsa'.format(veil_server_user_name),
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
         resources.append(veil_server_container_file_resource(
-            local_path=server_config_dir / 'id_rsa', veil_env_name=veil_env_name,
-            veil_server_name=veil_server_name, remote_path='/root/.ssh/id_rsa',
+            local_path=server_config_dir / '.ssh' / 'id_rsa',
+            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+            remote_path='/root/.ssh/id_rsa',
             owner='root', owner_group='root', mode=0600))
     return resources
 

@@ -10,7 +10,7 @@ Veil Sample Application
 
 3.`cd vsee`
 
-4.`update .vsee.cfg and src.__veil__.CODEBASE with your own`
+4.`update .config and src.__veil__.CODEBASE with your own`
 
 5.`git remote add origin git@github.com:honovation/vsee.git && git push -u origin master`
 
