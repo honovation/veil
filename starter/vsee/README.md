@@ -16,9 +16,9 @@ Veil Sample Application
 
 6.`../veil/bin/veil init`
 
-7.`sudo veil :test install-server --upgrade-mode=latest`
+7.`sudo veil :test install-server --upgrade`
 
-8.`sudo veil install-server --upgrade-mode=fast`
+8.`sudo veil install-server`
 
 9.`sudo veil up`
 

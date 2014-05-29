@@ -14,12 +14,8 @@ dry_run_result = None
 application_sub_resources = None
 installing = False
 stack = []
-UPGRADE_MODE_NO = 'no'
-UPGRADE_MODE_FAST = 'fast'
-UPGRADE_MODE_LATEST = 'latest'
-upgrade_mode = None
-installing_when_not_installed = False
-download_while_dry_run = False
+upgrading = False
+downloading_while_dry_run = False
 
 
 def atomic_installer(func):
@@ -171,32 +167,19 @@ def is_installing():
     return installing
 
 
-def set_installing_when_not_installed(value):
-    global installing_when_not_installed
-    installing_when_not_installed = value
+def set_upgrading(value):
+    global upgrading
+    upgrading = value
 
 
-def is_installing_when_not_installed():
-    return installing_when_not_installed
+def is_upgrading():
+    return upgrading
 
 
-def set_upgrade_mode(value):
-    global upgrade_mode
-    upgrade_mode = value
+def set_downloading_while_dry_run(value):
+    global downloading_while_dry_run
+    downloading_while_dry_run = value
 
 
-def get_upgrade_mode():
-    mode = upgrade_mode or UPGRADE_MODE_NO
-    assert mode in (UPGRADE_MODE_LATEST, UPGRADE_MODE_FAST, UPGRADE_MODE_NO), 'invalid upgrade mode: {}'.format(mode)
-    if mode == UPGRADE_MODE_LATEST and VEIL_ENV_TYPE not in ('development', 'test'):
-        raise Exception('please upgrade latest under development or test environment')
-    return mode
-
-
-def set_download_while_dry_run(value):
-    global download_while_dry_run
-    download_while_dry_run = value
-
-
-def should_download_while_dry_run():
-    return download_while_dry_run
+def is_downloading_while_dry_run():
+    return downloading_while_dry_run

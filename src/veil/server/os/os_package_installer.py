@@ -9,43 +9,27 @@ LOGGER = logging.getLogger(__name__)
 
 @atomic_installer
 def os_package_resource(name):
-    installing_when_not_installed = is_installing_when_not_installed()
-    upgrade_mode = get_upgrade_mode()
+    upgrading = is_upgrading()
     installed_version, downloaded_version = get_local_os_package_versions(name)
-    if installing_when_not_installed:
-        latest_version = None
-        if installed_version:
-            may_update_resource_latest_version = need_install = need_download = False
-            action = None
-        else:
-            may_update_resource_latest_version = False
-            need_install = True
-            need_download = not downloaded_version
-            action = 'INSTALL'
-
+    latest_version = get_resource_latest_version(to_resource_key(name))
+    if upgrading:
+        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
+        need_install = None if installed_version else True
+        need_download = True
+        action = 'UPGRADE' if installed_version else 'INSTALL'
     else:
-        latest_version = get_resource_latest_version(to_resource_key(name))
-        if UPGRADE_MODE_LATEST == upgrade_mode:
-            may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
-            need_install = None if installed_version else True
-            need_download = True
+        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and (not latest_version or latest_version < installed_version)
+        need_install = not installed_version or latest_version and latest_version != installed_version
+        need_download = need_install and (not downloaded_version or latest_version and latest_version != downloaded_version)
+        if need_install:
             action = 'UPGRADE' if installed_version else 'INSTALL'
-        elif UPGRADE_MODE_FAST == upgrade_mode:
-            may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and not latest_version
-            need_install = latest_version and latest_version != installed_version
-            need_download = need_install and latest_version != downloaded_version
-            if need_install:
-                action = 'UPGRADE' if installed_version else 'INSTALL'
-            else:
-                action = None
         else:
-            may_update_resource_latest_version = need_install = need_download = False
             action = None
 
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        if need_download and should_download_while_dry_run():
-            new_downloaded_version = download_os_package(name, version=latest_version if UPGRADE_MODE_FAST == upgrade_mode else None)
+        if need_download and is_downloading_while_dry_run():
+            new_downloaded_version = download_os_package(name, version=None if upgrading else latest_version)
             if new_downloaded_version != downloaded_version:
                 LOGGER.warn('os package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s', {
                     'name': name,
@@ -55,13 +39,13 @@ def os_package_resource(name):
                     'new_downloaded_version': new_downloaded_version
                 })
                 downloaded_version = new_downloaded_version
-            if UPGRADE_MODE_LATEST == upgrade_mode and action == 'UPGRADE' and installed_version == downloaded_version:
+            if upgrading and action == 'UPGRADE' and installed_version == downloaded_version:
                 action = None
         dry_run_result['os_package?{}'.format(name)] = action or '-'
         return
 
     if need_download:
-        new_downloaded_version = download_os_package(name, version=latest_version if UPGRADE_MODE_FAST == upgrade_mode else None)
+        new_downloaded_version = download_os_package(name, version=None if upgrading else latest_version)
         if new_downloaded_version != downloaded_version:
             LOGGER.warn('os package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s', {
                 'name': name,
@@ -71,7 +55,7 @@ def os_package_resource(name):
                 'new_downloaded_version': new_downloaded_version
             })
             downloaded_version = new_downloaded_version
-        if UPGRADE_MODE_LATEST == upgrade_mode and need_install is None:
+        if upgrading and need_install is None:
             need_install = installed_version != downloaded_version
 
     if need_install:

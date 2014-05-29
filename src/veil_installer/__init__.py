@@ -9,12 +9,8 @@ with veil_component.init_component(__name__):
     from .installer import application_resource
     from .installer import add_application_sub_resource
     from .installer import get_executing_installer
-    from .installer import get_upgrade_mode
-    from .installer import is_installing_when_not_installed
-    from .installer import UPGRADE_MODE_NO
-    from .installer import UPGRADE_MODE_FAST
-    from .installer import UPGRADE_MODE_LATEST
-    from .installer import should_download_while_dry_run
+    from .installer import is_upgrading
+    from .installer import is_downloading_while_dry_run
     from .component_installer import component_resource
     from .component_installer import installer_resource
     from .latest_version_cache import set_resource_latest_version
@@ -30,12 +26,8 @@ with veil_component.init_component(__name__):
         application_resource.__name__,
         add_application_sub_resource.__name__,
         get_executing_installer.__name__,
-        get_upgrade_mode.__name__,
-        is_installing_when_not_installed.__name__,
-        'UPGRADE_MODE_NO',
-        'UPGRADE_MODE_FAST',
-        'UPGRADE_MODE_LATEST',
-        should_download_while_dry_run.__name__,
+        is_upgrading.__name__,
+        is_downloading_while_dry_run.__name__,
         # from component_installer
         component_resource.__name__,
         installer_resource.__name__,

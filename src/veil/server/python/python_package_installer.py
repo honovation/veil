@@ -28,60 +28,43 @@ def python_package_resource(name, version=None, url=None, **kwargs):
                 'url': url
             })
 
-    installing_when_not_installed = is_installing_when_not_installed()
-    upgrade_mode = get_upgrade_mode()
+    upgrading = is_upgrading()
     installed_version = get_python_package_installed_version(name)
     downloaded_version = get_downloaded_python_package_version(name, version)
-    if installing_when_not_installed:
-        latest_version = None
+    latest_version = get_resource_latest_version(to_resource_key(name))
+    if upgrading:
+        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
         if installed_version:
-            may_update_resource_latest_version = need_install = need_download = False
-            action = None
-        else:
-            may_update_resource_latest_version = False
-            need_install = True
-            need_download = not downloaded_version
-            action = 'INSTALL'
-
-    else:
-        latest_version = get_resource_latest_version(to_resource_key(name))
-        if UPGRADE_MODE_LATEST == upgrade_mode:
-            may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
-            if installed_version:
-                if version:
-                    if version == installed_version:
-                        need_install = False
-                        need_download = False
-                        action = None
-                    else:
-                        need_install = True
-                        need_download = downloaded_version != version
-                        action = 'UPGRADE'
+            if version:
+                if version == installed_version:
+                    need_install = False
+                    need_download = False
+                    action = None
                 else:
-                    need_install = None
-                    need_download = True
+                    need_install = True
+                    need_download = downloaded_version != version
                     action = 'UPGRADE'
             else:
-                need_install = True
+                need_install = None
                 need_download = True
-                action = 'INSTALL'
-        elif UPGRADE_MODE_FAST == upgrade_mode:
-            may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and (not latest_version or version and version != latest_version)
-            need_install = (version or latest_version) and (version or latest_version) != installed_version
-            need_download = need_install and (version or latest_version) != downloaded_version
-            if need_install:
-                action = 'UPGRADE' if installed_version else 'INSTALL'
-            else:
-                action = None
+                action = 'UPGRADE'
         else:
-            may_update_resource_latest_version = need_install = need_download = False
+            need_install = True
+            need_download = True
+            action = 'INSTALL'
+    else:
+        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and (not latest_version or version and version != latest_version or not version and latest_version < installed_version)
+        need_install = not installed_version or (version or latest_version) and (version or latest_version) != installed_version
+        need_download = need_install and (not downloaded_version or (version or latest_version) and (version or latest_version) != downloaded_version)
+        if need_install:
+            action = 'UPGRADE' if installed_version else 'INSTALL'
+        else:
             action = None
 
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        if need_download and should_download_while_dry_run():
-            new_downloaded_version = download_python_package(name, (version or latest_version) if UPGRADE_MODE_FAST == upgrade_mode else version,
-                url=url, **kwargs)
+        if need_download and is_downloading_while_dry_run():
+            new_downloaded_version = download_python_package(name, version or (None if upgrading else latest_version), url=url, **kwargs)
             if new_downloaded_version != downloaded_version:
                 LOGGER.debug('python package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s, %(url)s', {
                     'name': name,
@@ -92,14 +75,13 @@ def python_package_resource(name, version=None, url=None, **kwargs):
                     'url': url
                 })
                 downloaded_version = new_downloaded_version
-            if UPGRADE_MODE_LATEST == upgrade_mode and action == 'UPGRADE' and installed_version == downloaded_version:
+            if upgrading and action == 'UPGRADE' and installed_version == downloaded_version:
                 action = None
         dry_run_result['python_package?{}'.format(name)] = action or '-'
         return
 
     if need_download:
-        new_downloaded_version = download_python_package(name, (version or latest_version) if UPGRADE_MODE_FAST == upgrade_mode else version, url=url,
-            **kwargs)
+        new_downloaded_version = download_python_package(name, version or (None if upgrading else latest_version), url=url, **kwargs)
         if new_downloaded_version != downloaded_version:
             LOGGER.debug('python package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s, %(url)s', {
                 'name': name,
@@ -110,7 +92,7 @@ def python_package_resource(name, version=None, url=None, **kwargs):
                 'url': url
             })
             downloaded_version = new_downloaded_version
-        if UPGRADE_MODE_LATEST == upgrade_mode and need_install is None:
+        if upgrading and need_install is None:
             need_install = installed_version != downloaded_version
 
     if need_install:
@@ -261,11 +243,11 @@ def upgrade_pip(pip_version, setuptools_version):
 @atomic_installer
 def python_sourcecode_package_resource(package_dir, name, version, env=None):
     assert version is not None
-    upgrade_mode = get_upgrade_mode()
+    upgrading = is_upgrading()
     installed_version = get_python_package_installed_version(name)
     latest_version = get_resource_latest_version(to_resource_key(name))
     need_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and version != latest_version
-    if UPGRADE_MODE_LATEST == upgrade_mode:
+    if upgrading:
         if installed_version:
             if version == installed_version:
                 need_install = False
@@ -276,15 +258,12 @@ def python_sourcecode_package_resource(package_dir, name, version, env=None):
         else:
             need_install = True
             action = 'INSTALL'
-    elif UPGRADE_MODE_FAST == upgrade_mode:
+    else:
         need_install = version != installed_version
         if need_install:
             action = 'UPGRADE' if installed_version else 'INSTALL'
         else:
             action = None
-    else:
-        need_update_resource_latest_version = need_install = False
-        action = None
 
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:

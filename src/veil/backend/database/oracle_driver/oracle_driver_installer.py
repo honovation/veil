@@ -13,7 +13,7 @@ RESOURCE_VERSION = '11.2.0.1'
 def oracle_driver_resource():
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        if should_download_while_dry_run():
+        if is_downloading_while_dry_run():
             download_oracle_instantclient()
             download_cx_oracle()
         dry_run_result['oracle-driver'] = '-' if is_oracle_instantclient_installed() else 'INSTALL'

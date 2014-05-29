@@ -48,7 +48,7 @@ def pull_veil():
 def install(installer_path):
     shell_execute('/opt/veil/bin/veil init', cwd='/opt/veil')
     env = os.environ.copy()
-    shell_execute('veil install veil_installer.installer_resource?{} --install-when-not-installed'.format(installer_path), cwd='/opt/veil', env=env)
+    shell_execute('veil install veil_installer.installer_resource?{}'.format(installer_path), cwd='/opt/veil', env=env)
 
 
 def mark_installed(installer_path):

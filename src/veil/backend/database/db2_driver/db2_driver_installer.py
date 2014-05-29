@@ -14,7 +14,7 @@ def db2_driver_resource():
     env['IBM_DB_HOME'] = IBM_DB_HOME
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        if should_download_while_dry_run():
+        if is_downloading_while_dry_run():
             download_db2_clidriver()
         dry_run_result['db2-driver'] = '-' if is_db2_clidriver_installed() else 'INSTALL'
     else:
