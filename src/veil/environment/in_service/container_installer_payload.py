@@ -20,9 +20,9 @@ def main():
 def enable_time_sync():
     """enable time sync on lxc hosts, and which is shared among lxc guests"""
     shell_execute('apt-get -q -y install ntpdate')
-    if os.path.exists('/etc/cron.hourly/ntpdate'):
-        return
-    unsafe_call('''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
+    shell_execute(
+        '''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''',
+        capture=True)
 
 
 def install_git():
@@ -59,25 +59,22 @@ def is_installed(installer_path):
     return os.path.exists('{}.installed'.format(installer_path))
 
 
-def shell_execute(command_line, **kwargs):
+def shell_execute(command_line, capture=False, **kwargs):
     print(green(command_line))
+    if capture:
+        kwargs.update(dict(stderr=subprocess.STDOUT, stdout=subprocess.PIPE, stdin=subprocess.PIPE))
     try:
         process = subprocess.Popen(command_line, shell=True, **kwargs)
     except:
         print(red('failed to invoke {} with {}'.format(command_line, kwargs)))
         raise
     output = process.communicate()[0]
+    if capture and output:
+        output = output.strip()
     if process.returncode:
         print(red('Subprocess return code: {}, command_line: {}, kwargs: {}, output: {}'.format(process.returncode, command_line, kwargs, output)))
-        raise Exception(red('shell_execute return code: {}, command_line: {}, kwargs: {}'.format(process.returncode, command_line, kwargs)))
-    return output
-
-
-def unsafe_call(command):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-    output = process.communicate()[0]
-    if process.returncode:
-        raise Exception('failed to execute: {}'.format(command))
+        raise Exception(red('shell_execute return code: {}, command_line: {}, kwargs: {}, output: {}'.format(process.returncode, command_line, kwargs,
+            output)))
     return output
 
 

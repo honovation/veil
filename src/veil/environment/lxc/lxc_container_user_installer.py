@@ -1,16 +1,16 @@
 from __future__ import unicode_literals, print_function, division
-import subprocess
 import logging
 from veil_installer import *
 from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
 
+
 @atomic_installer
 def lxc_container_user_resource(container_name, user_name, state='created'):
     rootfs_path = '/var/lib/lxc/{}/rootfs'.format(container_name)
     try:
-        is_user_existing = unsafe_call('chroot {} getent passwd {}'.format(rootfs_path, user_name))
+        is_user_existing = shell_execute('chroot {} getent passwd {}'.format(rootfs_path, user_name), capture=True)
     except:
         is_user_existing = False
     if 'created' == state:
@@ -42,7 +42,7 @@ def lxc_container_user_resource(container_name, user_name, state='created'):
 @atomic_installer
 def lxc_container_user_group_resource(container_name, user_name, group_name):
     rootfs_path = '/var/lib/lxc/{}/rootfs'.format(container_name)
-    is_installed = group_name in unsafe_call('chroot {} groups {}'.format(rootfs_path, user_name))
+    is_installed = group_name in shell_execute('chroot {} groups {}'.format(rootfs_path, user_name), capture=True)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'lxc_container_user_group?container_name={}&user_name={}&group_name={}'.format(container_name, user_name, group_name)
@@ -50,16 +50,4 @@ def lxc_container_user_group_resource(container_name, user_name, group_name):
         return
     if is_installed:
         return
-    unsafe_call('chroot {} usermod -a -G {} {}'.format(rootfs_path, group_name, user_name))
-
-
-def unsafe_call(command):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-    output = process.communicate()[0]
-    if process.returncode:
-        raise Exception('failed to execute: {}'.format(command))
-    return output
-
-
-def lxc_container_sudoers_resource():
-    pass
+    shell_execute('chroot {} usermod -a -G {} {}'.format(rootfs_path, group_name, user_name), capture=True)

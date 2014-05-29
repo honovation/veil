@@ -2,9 +2,10 @@ from __future__ import unicode_literals, print_function, division
 import logging
 from veil_component import as_path
 from veil_installer import *
-from .lxc_container_user_installer import unsafe_call
+from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
+
 
 @atomic_installer
 def lxc_container_timezone_resource(container_name, timezone):
@@ -23,4 +24,4 @@ def lxc_container_timezone_resource(container_name, timezone):
         'timezone': timezone
     })
     ETC_TIMEZONE_PATH.write_text(timezone)
-    unsafe_call('chroot {} dpkg-reconfigure --frontend noninteractive tzdata'.format(CONTAINER_ROOTFS_PATH))
+    shell_execute('chroot {} dpkg-reconfigure --frontend noninteractive tzdata'.format(CONTAINER_ROOTFS_PATH), capture=True)
