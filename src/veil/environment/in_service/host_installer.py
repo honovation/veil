@@ -83,8 +83,6 @@ def veil_host_config_resource(veil_env_name, veil_host_name, host_config_dir):
         ))
     if host.enable_unattended_upgrade:
         fabric.api.sudo('apt-get -q -y install unattended-upgrades')
-        fabric.api.put(os.path.join(os.path.dirname(__file__), '50unattended-upgrades'), '/etc/apt/apt.conf.d/50unattended-upgrades', use_sudo=True,
-            mode=0644)
         fabric.api.put(os.path.join(os.path.dirname(__file__), '99-update-and-download-daily'), '/etc/apt/apt.conf.d/99-update-and-download-daily',
             use_sudo=True, mode=0644)
         fabric.api.sudo('chown -R root:root /etc/apt/apt.conf.d/')
