@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 import sys
 from veil.development.git import *
+from veil_component import as_path
 from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
@@ -49,6 +50,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     """
     do_local_preparation(veil_env_name)
     tag_deploy(veil_env_name)
+    config_dir = as_path(config_dir)
     install_resource(veil_env_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     veil_server_names = list_veil_server_names(veil_env_name)
