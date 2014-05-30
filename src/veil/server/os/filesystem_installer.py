@@ -57,41 +57,34 @@ def file_resource(path, content, owner='root', group='root', mode=0644, cmd_run_
 
 
 def install_file(is_dry_run, path, content, owner='root', group='root', mode=0644, cmd_run_after_updated=None):
+    assert content is not None
+    actions = []
     write = False
     reason = None
-    origin_backup_path = '{}.origin'.format(path)
-    origin_content_to_backup = None
-    actions = []
-    if os.path.exists(path):
+    path_exists = os.path.exists(path)
+    if path_exists:
         with open(path, "rb") as fp:
             old_content = fp.read()
         if old_content:
             old_content = old_content.strip()
-        if content:
-            content = content.strip()
-        if content != old_content:
-            write = True
-            if not os.path.exists(origin_backup_path):
-                origin_content_to_backup = old_content
+        if content.strip() != old_content:
             actions.append('UPDATE')
+            write = not is_dry_run
             reason = "contents don't match"
     else:
-        write = True
         actions.append('CREATE')
+        write = not is_dry_run
         reason = "it doesn't exist"
     if write:
-        if not is_dry_run and content is not None:
-            if origin_content_to_backup:
-                with open(origin_backup_path, 'wb') as fp:
-                    LOGGER.info('backup origin file: %(path)s => %(origin_backup_path)s', {'path': path, 'origin_backup_path': origin_backup_path})
-                    fp.write(origin_content_to_backup)
-            with open(path, 'wb') as fp:
-                LOGGER.info('Writing file: %(path)s because %(reason)s', {'path': path, 'reason': reason})
-                fp.write(content)
-            if cmd_run_after_updated:
-                shell_execute(cmd_run_after_updated, capture=True, debug=True)
-    if os.path.exists(path):
+        if path_exists:
+            shell_execute('cp -pn {path} {path}.origin'.format(path=path), capture=True)
+        with open(path, 'wb') as fp:
+            LOGGER.info('Writing file: %(path)s because %(reason)s', {'path': path, 'reason': reason})
+            fp.write(content)
+    if path_exists:
         actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
+    if write and cmd_run_after_updated:
+        shell_execute(cmd_run_after_updated, capture=True, debug=True)
     return actions
 
 
