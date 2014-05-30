@@ -10,6 +10,28 @@ from .yto_client_installer import yto_client_config
 
 LOGGER = logging.getLogger(__name__)
 
+YTO_SIGNED_STATUS = 'SIGNED'
+YTO_REJECTED_STATUS = 'FAILED'
+YTO_STATUS = {
+    'GOT': '揽收成功',
+    'NOT_SEND': '揽收失败',
+    'SENT_SCAN': '派件扫描',
+    YTO_SIGNED_STATUS: '签收成功',
+    YTO_REJECTED_STATUS: '签收失败'
+}
+
+
+def verify_request(data, sign):
+    config = yto_client_config()
+    return sign == base64.b64encode(md5(to_str('{}{}'.format(data, config.partner_id))).digest())
+
+
+def get_status_text(status_obj):
+    if status_obj.infoContent.text == 'SENT_SCAN':
+        return '{}：{}'.format(YTO_STATUS['SENT_SCAN'], status_obj.remark.text)
+    else:
+        return YTO_STATUS.get(status_obj.infoContent.text)
+
 
 def subscribe(purchase_id, purchase_xml_data):
     config = yto_client_config()
