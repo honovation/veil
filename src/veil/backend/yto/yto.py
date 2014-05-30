@@ -29,6 +29,13 @@ def verify_request(data, sign):
 def get_status_text(status_obj):
     if status_obj.infoContent.text == 'SENT_SCAN':
         return '{}：{}'.format(YTO_STATUS['SENT_SCAN'], status_obj.remark.text)
+    elif status_obj.infoContent.text == YTO_REJECTED_STATUS:
+        return '{} 原因：{}'.format(YTO_STATUS[YTO_REJECTED_STATUS], status_obj.remark.text)
+    elif status_obj.infoContent.text == YTO_SIGNED_STATUS:
+        result = '{} 签收人：{}'.format(YTO_STATUS[YTO_SIGNED_STATUS], status_obj.name.text)
+        if status_obj.remark.text:
+            return '{} ({})'.format(result, status_obj.remark.text)
+        return result
     else:
         return YTO_STATUS.get(status_obj.infoContent.text)
 
