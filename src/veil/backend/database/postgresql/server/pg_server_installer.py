@@ -24,10 +24,15 @@ def postgresql_server_resource(purpose, config):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
         postgresql_apt_repository_resource(),
-        os_package_resource(name='postgresql-{}'.format(config.version)),
-        file_resource(path='/etc/sysctl.d/30-postgresql-shm.conf',
+        os_package_resource(name='postgresql-{}'.format(config.version), cmd_run_before_install='rm -f /etc/sysctl.d/30-postgresql-shm.conf')
+    ])
+    if config.kernel_shmmax or config.kernel_shmall:
+        resources.append(file_resource(
+            path='/etc/sysctl.d/30-postgresql-shm.conf',
             content=render_config('30-postgresql-shm.conf.j2', config={'kernel_shmmax': config.kernel_shmmax, 'kernel_shmall': config.kernel_shmall}),
-            cmd_run_after_updated='sysctl -p /etc/sysctl.d/30-postgresql-shm.conf'),
+            cmd_run_after_updated='sysctl -p /etc/sysctl.d/30-postgresql-shm.conf'
+        ))
+    resources.extend([
         directory_resource(path='/var/run/postgresql', owner='postgres', group='postgres', mode=02775),
         os_service_resource(state='not_installed', name='postgresql'),
         postgresql_cluster_resource(purpose=purpose, version=config.version, owner=config.owner, owner_password=config.owner_password),
@@ -142,12 +147,12 @@ def display_postgresql_cluster_post_upgrade_instructions():
 @atomic_installer
 def postgresql_cluster_resource(purpose, version, owner, owner_password):
     pg_data_dir = get_pg_data_dir(purpose, version)
-    is_installed = pg_data_dir.exists()
+    installed = pg_data_dir.exists()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['postgresql_initdb?{}'.format(purpose)] = '-' if is_installed else 'INSTALL'
+        dry_run_result['postgresql_initdb?{}'.format(purpose)] = '-' if installed else 'INSTALL'
         return
-    if is_installed:
+    if installed:
         return
     LOGGER.info('install postgresql cluster: for %(purpose)s, %(version)s', {'purpose': purpose, 'version': version})
     old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.parent), capture=True)
@@ -173,12 +178,12 @@ def postgresql_user_resource(purpose, version, host, port, owner, owner_password
     assert password, 'must specify postgresql user password'
     pg_data_dir = get_pg_data_dir(purpose, version)
     user_installed_tag_file = pg_data_dir / 'user-{}-installed'.format(user)
-    is_installed = user_installed_tag_file.exists()
+    installed = user_installed_tag_file.exists()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['postgresql_user?{}'.format(purpose)] = '-' if is_installed else 'INSTALL'
+        dry_run_result['postgresql_user?{}'.format(purpose)] = '-' if installed else 'INSTALL'
         return
-    if is_installed:
+    if installed:
         return
     LOGGER.info('install postgresql user: %(user)s in %(purpose)s', {'user': user, 'purpose': purpose})
     pg_bin_dir = get_pg_bin_dir(version)

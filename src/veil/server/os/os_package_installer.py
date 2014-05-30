@@ -8,7 +8,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 @atomic_installer
-def os_package_resource(name):
+def os_package_resource(name, cmd_run_before_install=None):
     upgrading = is_upgrading()
     installed_version, downloaded_version = get_local_os_package_versions(name)
     latest_version = get_resource_latest_version(to_resource_key(name))
@@ -72,6 +72,8 @@ def os_package_resource(name):
                 'latest_version': latest_version,
                 'version_to_install': downloaded_version
             })
+        if cmd_run_before_install:
+            shell_execute(cmd_run_before_install, capture=True)
         shell_execute('apt-get -q -y install {}={}'.format(name, downloaded_version), capture=True, debug=True)
         installed_version = downloaded_version
 
