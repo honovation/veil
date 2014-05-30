@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, print_function, division
+import logging
+import base64
+import re
+from hashlib import md5
+from veil.utility.http import *
+from veil.utility.encoding import *
+from .yto_client_installer import yto_client_config
+
+LOGGER = logging.getLogger(__name__)
+
+
+def subscribe(purchase_id, purchase_xml_data):
+    config = yto_client_config()
+    purchase_data_digest = base64.b64encode(md5(to_str('{}{}'.format(purchase_xml_data, config.partner_id))).hexdigest())
+    data = {
+        'logistics_interface': to_str(purchase_xml_data),
+        'data_digest': purchase_data_digest,
+        'type': config.type,
+        'clientId': config.client_id
+    }
+    response = to_unicode(http_call('Subscribe-purchases-logistics-status', config.api_url, data=data,
+        content_type='application/x-www-form-urlencoded; charset=UTF-8'))
+    if '<success>false</success>' in response:
+        reason = re.findall('<reason>(.*)</reason>', response)[0]
+        LOGGER.info('Failed subscribe purchases logistics status: %(purchase_id)s, %(reason)s', {'purchase_id': purchase_id, 'reason': reason})
+        raise SubscribeLogisticsStatusException('Failed subscribe purchases logistics status: {} {}'.format(purchase_id, reason))
+    elif '<success>true</success>' in response:
+        LOGGER.info('Subscribe purchases logistics status successfully: %(purchase_id)s', {'purchase_id': purchase_id})
+        return True
+    else:
+        LOGGER.info('Get error response from yto: %(response)s', {'response': response})
+    return False
+
+
+class SubscribeLogisticsStatusException(Exception):
+    pass
