@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 def subscribe(purchase_id, purchase_xml_data):
     config = yto_client_config()
-    purchase_data_digest = base64.b64encode(md5(to_str('{}{}'.format(purchase_xml_data, config.partner_id))).hexdigest())
+    purchase_data_digest = base64.b64encode(md5(to_str('{}{}'.format(purchase_xml_data, config.partner_id))).digest())
     data = {
         'logistics_interface': to_str(purchase_xml_data),
         'data_digest': purchase_data_digest,
