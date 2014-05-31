@@ -2,18 +2,40 @@ from __future__ import unicode_literals, print_function, division
 from contextlib import closing
 from logging import getLogger
 import psycopg2
+from psycopg2._psycopg import QuotedString, ISQLQuote
 from psycopg2.extensions import ISOLATION_LEVEL_READ_COMMITTED
 from psycopg2.extras import NamedTupleCursor
 from psycopg2.extras import register_uuid
 from psycopg2.extensions import cursor as NormalCursor
 from psycopg2 import OperationalError
 from veil.model.collection import *
+from veil.utility.json import *
 
 LOGGER = getLogger(__name__)
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 psycopg2.extensions.register_type(register_uuid())
+
+
+class DictObject2Json(object):
+    def __init__(self, adapted):
+        self.adapted = adapted
+        self.dumps = to_readable_json
+
+    def __conform__(self, proto):
+        if proto is ISQLQuote:
+            return self
+
+    def dumps(self, obj):
+        return self.dumps(obj)
+
+    def getquoted(self):
+        s = self.dumps(self.adapted)
+        return QuotedString(s).getquoted()
+psycopg2.extensions.register_adapter(DictObject, DictObject2Json)
+psycopg2.extras.register_default_json(globally=True, loads=from_json)
+
 
 class PostgresqlAdapter(object):
     def __init__(self, host, port, database, user, password, schema):
