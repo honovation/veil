@@ -33,7 +33,6 @@ def postgresql_server_resource(purpose, config):
             cmd_run_after_updated='sysctl -p /etc/sysctl.d/30-postgresql-shm.conf'
         ))
     resources.extend([
-        directory_resource(path='/var/run/postgresql', owner='postgres', group='postgres', mode=02775),
         os_service_resource(state='not_installed', name='postgresql'),
         postgresql_cluster_resource(purpose=purpose, version=config.version, owner=config.owner, owner_password=config.owner_password),
         directory_resource(path=pg_config_dir),
