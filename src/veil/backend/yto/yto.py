@@ -26,7 +26,7 @@ def verify_request(data, sign):
     return sign == base64.b64encode(md5(to_str('{}{}'.format(data, config.partner_id))).digest())
 
 
-def get_status_text(status_obj):
+def get_brief(status_obj):
     if status_obj.infoContent.text == 'SENT_SCAN':
         return '{}：{}'.format(YTO_STATUS['SENT_SCAN'], status_obj.remark.text)
     elif status_obj.infoContent.text == YTO_REJECTED_STATUS:
