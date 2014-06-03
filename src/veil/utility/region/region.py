@@ -83,7 +83,7 @@ def check_region_update(purpose):
             print(red('- {}: {}'.format(code, db_latest_region[code].name)))
 
         for code in modified_codes:
-            if db_latest_region[code].is_deleted:
+            if db_latest_region[code].deleted:
                 print(yellow('[恢复]{}: {} -> {}'.format(code, db_latest_region[code].name, gov_latest_region[code])))
             else:
                 print(yellow('{}: {} -> {}'.format(code, db_latest_region[code].name, gov_latest_region[code])))
@@ -112,11 +112,11 @@ def update_region(purpose):
             LOGGER.info('updating region table')
             add_regions(db, {ac: gov_latest_region[ac] for ac in added_codes})
             db().executemany(
-                "UPDATE {REGION_TABLE} SET is_deleted=TRUE WHERE NOT is_deleted AND code=%(code)s".format(REGION_TABLE=REGION_TABLE),
+                "UPDATE {REGION_TABLE} SET deleted=TRUE WHERE NOT deleted AND code=%(code)s".format(REGION_TABLE=REGION_TABLE),
                 [DictObject(code=code) for code in deleted_codes]
             )
             db().executemany(
-                'UPDATE {REGION_TABLE} SET name=%(name)s, is_deleted=FALSE WHERE code=%(code)s'.format(REGION_TABLE=REGION_TABLE),
+                'UPDATE {REGION_TABLE} SET name=%(name)s, deleted=FALSE WHERE code=%(code)s'.format(REGION_TABLE=REGION_TABLE),
                 [DictObject(code=code, name=gov_latest_region[code]) for code in modified_codes]
             )
 
@@ -150,7 +150,7 @@ def rollback_update(purpose):
             })
         db().execute('''
             UPDATE {REGION_TABLE} r
-            SET name=rb.name, level=rb.level, has_child=rb.has_child, parent_code=rb.parent_code, is_deleted=rb.is_deleted
+            SET name=rb.name, level=rb.level, has_child=rb.has_child, parent_code=rb.parent_code, deleted=rb.deleted
             FROM {REGION_BACKUP_TABLE} rb
             WHERE r.code=rb.code
             '''.format(REGION_TABLE=REGION_TABLE, REGION_BACKUP_TABLE=REGION_BACKUP_TABLE))
@@ -198,8 +198,8 @@ def diff(db_source, site_source):
     db_codes = set(db_source.keys())
     site_codes = set(site_source.keys())
     added_codes = site_codes - db_codes
-    deleted_codes = set(code for code in db_codes - site_codes if not db_source[code].is_deleted)
-    modified_codes = set(code for code in db_codes & site_codes if (db_source[code].name, db_source[code].is_deleted) != (site_source[code], False))
+    deleted_codes = set(code for code in db_codes - site_codes if not db_source[code].deleted)
+    modified_codes = set(code for code in db_codes & site_codes if (db_source[code].name, db_source[code].deleted) != (site_source[code], False))
 
     return added_codes, deleted_codes, modified_codes
 
@@ -238,10 +238,10 @@ def add_regions(db, regions):
         db().execute('''
             UPDATE {REGION_TABLE} r
             SET has_child=TRUE
-            WHERE level=1 AND EXISTS(SELECT 1 FROM {REGION_TABLE} WHERE level=2 AND NOT is_deleted AND parent_code=r.code)
+            WHERE level=1 AND EXISTS(SELECT 1 FROM {REGION_TABLE} WHERE level=2 AND NOT deleted AND parent_code=r.code)
             '''.format(REGION_TABLE=REGION_TABLE))
         db().execute('''
             UPDATE {REGION_TABLE} r
             SET has_child=TRUE
-            WHERE level=2 AND EXISTS(SELECT 1 FROM {REGION_TABLE} WHERE level=3 AND NOT is_deleted AND parent_code=r.code)
+            WHERE level=2 AND EXISTS(SELECT 1 FROM {REGION_TABLE} WHERE level=3 AND NOT deleted AND parent_code=r.code)
             '''.format(REGION_TABLE=REGION_TABLE))
