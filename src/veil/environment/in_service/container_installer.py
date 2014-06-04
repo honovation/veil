@@ -97,11 +97,12 @@ def veil_server_container_config_resource(veil_env_name, veil_server_name, confi
             remote_path=('/home/{}/.config'.format(veil_server_user_name)),
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
     for local_path in server_config_dir.files():
-        resources.append(veil_server_container_file_resource(
-            local_path=local_path,
-            veil_env_name=veil_env_name, veil_server_name=veil_server_name,
-            remote_path=('/home/{}/{}'.format(veil_server_user_name, local_path.name)),
-            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
+        if local_path.name != 'README':
+            resources.append(veil_server_container_file_resource(
+                local_path=local_path,
+                veil_env_name=veil_env_name, veil_server_name=veil_server_name,
+                remote_path=('/home/{}/{}'.format(veil_server_user_name, local_path.name)),
+                owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
     if (server_config_dir / '.ssh' / 'id_rsa').exists():
         resources.append(veil_server_container_file_resource(
             local_path=server_config_dir / '.ssh' / 'id_rsa',
