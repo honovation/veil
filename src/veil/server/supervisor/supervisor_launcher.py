@@ -15,8 +15,6 @@ LOGGER = logging.getLogger(__name__)
 
 @script('up')
 def bring_up_programs(*argv):
-    # create socket directory for postgresql if not exists
-    shell_execute('install -d -m 2775 -o postgres -g postgres /var/run/postgresql')
     if 1 == len(argv) and not argv[0].startswith('--'):
         bring_up_program(argv[0])
     else:
