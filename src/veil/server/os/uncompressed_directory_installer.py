@@ -5,12 +5,12 @@ from veil.utility.shell import *
 
 @atomic_installer
 def uncompressed_directory_resource(compressed_file, path):
-    is_installed = os.path.exists(path)
+    installed = os.path.exists(path)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['uncompressed_directory?{}'.format(path)] = '-' if is_installed else 'INSTALL'
+        dry_run_result['uncompressed_directory?{}'.format(path)] = '-' if installed else 'INSTALL'
         return
-    if is_installed:
+    if installed:
         return
     if compressed_file.endswith('.zip') or compressed_file.endswith('.jar'):
         shell_execute('unzip {} -d {}'.format(compressed_file, path), capture=True)

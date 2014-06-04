@@ -15,12 +15,12 @@ def subversion_repository_resource(url, path):
 
 @atomic_installer
 def subversion_repository_checked_out_resource(url, path):
-    is_installed = os.path.exists('{}/.svn'.format(path))
+    installed = os.path.exists('{}/.svn'.format(path))
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['subversion_repository_checked_out?{}'.format(path)] = '-' if is_installed else 'CHECKOUT'
+        dry_run_result['subversion_repository_checked_out?{}'.format(path)] = '-' if installed else 'CHECKOUT'
         return
-    if is_installed:
+    if installed:
         return
     shell_execute('svn co {} {}'.format(url, path))
 

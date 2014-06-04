@@ -1,5 +1,6 @@
 {% if is_trusty %}
 
+
 lxc.include = /usr/share/lxc/config/ubuntu.common.conf
 
 lxc.arch = amd64
@@ -22,6 +23,7 @@ lxc.cgroup.memory.limit_in_bytes = {{ memory_limit }}
 # default to 1024
 lxc.cgroup.cpu.shares = {{ cpu_share }}
 {% endif %}
+
 
 {% else %}
 
@@ -77,4 +79,6 @@ lxc.cgroup.devices.allow = c 1:7 rwm
 lxc.cgroup.devices.allow = c 10:228 rwm
 #kvm
 lxc.cgroup.devices.allow = c 10:232 rwm
+
+
 {% endif %}

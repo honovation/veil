@@ -24,12 +24,12 @@ def get_installed_version():
 @atomic_installer
 def chrome_driver_resource():
     installed_version = get_installed_version()
-    is_installed = installed_version == RESOURCE_VERSION
+    installed = installed_version == RESOURCE_VERSION
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['chrome_driver'] = '-' if is_installed else 'INSTALL'
+        dry_run_result['chrome_driver'] = '-' if installed else 'INSTALL'
         return
-    if is_installed:
+    if installed:
         if VEIL_ENV_TYPE in ('development', 'test') and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
             set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return

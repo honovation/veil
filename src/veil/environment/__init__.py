@@ -11,6 +11,7 @@ from .environment import VEIL_ENV_TYPE
 from .environment import VEIL_DEPENDENCY_URL
 from .environment import VEIL_APT_URL
 from .environment import PYPI_INDEX_URL
+from .environment import PYPI_ARCHIVE_DIR
 from .environment import VEIL_OS
 from .environment import VEIL_SERVER_NAME
 from .environment import CURRENT_USER
@@ -32,10 +33,14 @@ def veil_env(hosts, servers, sorted_server_names=None, deployment_memo=None):
     from veil.model.collection import objectify
     env = objectify({'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names, 'deployment_memo': deployment_memo})
     for server_name, server in env.servers.items():
+        server.env_name = VEIL_ENV
         server.name = server_name
+        server.container_name = '{}-{}'.format(server.env_name, server.name)
         server.host = None
     for host_name, host in env.hosts.items():
+        host.env_name = VEIL_ENV
         host.name = host_name
+        # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.env_name, host.base_name))
         host.base_name = host_name.split('/', 1)[0]  # e.g. ljhost-005/3 => ljhost-005
         host.server_list = []
         for server_name, server in env.servers.items():
@@ -77,7 +82,7 @@ def veil_server(host_name, sequence_no, programs, deploys_via=None, resources=()
 
 
 def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_range='10.0.3', lan_interface='lxcbr0', mac_prefix='00:16:3e:73:bb',
-        override_sources_list=False, enable_unattended_upgrade=False, resources=()):
+        resources=()):
     from veil.model.collection import objectify
     return objectify({
         'internal_ip': internal_ip,
@@ -87,8 +92,6 @@ def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_rang
         'lan_range': lan_range,
         'lan_interface': lan_interface,
         'mac_prefix': mac_prefix,
-        'override_sources_list': override_sources_list,
-        'enable_unattended_upgrade': enable_unattended_upgrade,
         'resources': resources
     })
 

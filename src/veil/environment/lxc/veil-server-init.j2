@@ -1,7 +1,0 @@
-#! /bin/sh
-
-apt-get -q update
-apt-get -q -y purge ntpdate ntp
-apt-get -q -y install iptables git-core language-pack-en unzip wget python-virtualenv python-pip
-rm /etc/network/if-up.d/veil-server-init
-exit 0

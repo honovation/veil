@@ -2,10 +2,14 @@ from __future__ import unicode_literals, print_function, division
 from os import getenv
 import platform
 from veil.model.collection import DictObject
+from veil_component import as_path
 
 VEIL_APT_URL = 'http://mirrors.163.com/ubuntu/'
 VEIL_DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
-PYPI_INDEX_URL = '-i http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
+
+PYPI_INDEX_URL = 'http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
+PYPI_ARCHIVE_DIR = as_path('/opt/pypi')
+PYPI_ARCHIVE_DIR.makedirs()
 
 VEIL_SERVER = getenv('VEIL_SERVER') or 'development'
 VEIL_ENV = None

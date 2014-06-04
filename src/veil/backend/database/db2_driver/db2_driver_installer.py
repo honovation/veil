@@ -40,7 +40,7 @@ def install_db2_clidriver():
             set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return
     download_db2_clidriver()
-    install_resource(file_resource(path='/etc/ld.so.conf.d/db2-clidriver.conf', content='/opt/db2-clidriver/lib'))
+    install_resource(file_resource(path='/etc/ld.so.conf.d/db2-clidriver.conf', content='{}/lib'.format(IBM_DB_HOME)))
     shell_execute('ldconfig')
     if VEIL_ENV_TYPE in ('development', 'test'):
         set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)

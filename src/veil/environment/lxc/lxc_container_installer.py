@@ -7,48 +7,52 @@ LOGGER = logging.getLogger(__name__)
 @composite_installer
 def lxc_container_resource(container_name, mac_address, lan_interface, memory_limit=None, cpu_share=None):
     resources = [
-        os_package_resource(name='lxc'),
-        file_resource(path='/etc/default/lxc-net', content=render_config('lxc-net.j2')) if VEIL_OS.codename == 'trusty' else file_resource(
-            path='/etc/default/lxc', content=render_config('lxc.cfg.j2', mirror=VEIL_APT_URL)),
-        file_resource(path='/etc/sysctl.d/60-lxc-ipv4-ip-forward.conf', content='net.ipv4.ip_forward=1',
-            cmd_run_after_updated='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
         lxc_container_created_resource(name=container_name),
-        file_resource(path='/var/lib/lxc/{}/rootfs/etc/apt/sources.list'.format(container_name),
-            content=render_config('sources.list.j2', codename=VEIL_OS.codename, mirror=VEIL_APT_URL)),
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name), content=render_config('lxc-container.cfg.j2', name=container_name,
             mac_address=mac_address, lan_interface=lan_interface, memory_limit=memory_limit, cpu_share=cpu_share,
-            is_trusty=VEIL_OS.codename == 'trusty')),
-        os_package_resource(name='unattended-upgrades'),
-        file_resource(path='/var/lib/lxc/{}/rootfs/etc/apt/apt.conf.d/99-update-and-download-daily'.format(container_name),
-            content=render_config('99-update-and-download-daily')),
+            is_trusty=VEIL_OS.codename == 'trusty'))
     ]
     return resources
 
 
 @atomic_installer
 def lxc_container_created_resource(name):
-    is_installed = os.path.exists('/var/lib/lxc/{}'.format(name))
+    installed = os.path.exists('/var/lib/lxc/{}'.format(name))
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['lxc_container?{}'.format(name)] = '-' if is_installed else 'INSTALL'
+        dry_run_result['lxc_container?{}'.format(name)] = '-' if installed else 'INSTALL'
         return
-    if is_installed:
+    if installed:
         return
     LOGGER.info('create lxc container: %(name)s ...', {'name': name})
     shell_execute('lxc-create -t ubuntu -n {}'.format(name))
-    install_file(False, '/var/lib/lxc/{}/rootfs/etc/network/if-up.d/veil-server-init'.format(name), content=render_config('veil-server-init.j2'), mode=0755)
     if VEIL_OS.codename == 'precise':
         shell_execute('ln -s /var/lib/lxc/{}/config /etc/lxc/auto/{}.conf'.format(name, name))
 
 
-@atomic_installer
-def lxc_container_in_service_resource(name):
-    is_running = False if 'STOPPED' in shell_execute('lxc-info -n {}'.format(name), capture=True) else True
+@composite_installer
+def lxc_container_in_service_resource(container_name, restart_if_running=False):
+    running = is_lxc_container_running(container_name)
+    if running:
+        action = 'RESTART' if restart_if_running else None
+    else:
+        action = 'START'
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['lxc_container_in_service?{}'.format(name)] = '-' if is_running else 'START'
+        dry_run_result['lxc_container_in_service?{}'.format(container_name)] = action or '-'
         return
-    if is_running:
+    if not action:
         return
-    LOGGER.info('start lxc container: %(name)s ...', {'name': name})
-    shell_execute('lxc-start -n {} -d'.format(name), capture=True)
+    if running:
+        LOGGER.info('reboot lxc container: %(name)s ...', {'name': container_name})
+        if VEIL_OS.codename == 'precise':
+            shell_execute('lxc-shutdown -n {} -r'.format(container_name), capture=True)
+        else:
+            shell_execute('lxc-stop -n {} -r'.format(container_name), capture=True)
+    else:
+        LOGGER.info('start lxc container: %(name)s ...', {'name': container_name})
+        shell_execute('lxc-start -n {} -d'.format(container_name), capture=True)
+
+
+def is_lxc_container_running(container_name):
+    return 'RUNNING' in shell_execute('lxc-info -n {} -s'.format(container_name), capture=True)

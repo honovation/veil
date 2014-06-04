@@ -10,12 +10,13 @@ def main():
     veil_env_name = sys.argv[3]
     veil_server_name = sys.argv[4]
     action = sys.argv[5]
-    veil_home = '/opt/{}/app'.format(veil_env_name)
-    veil_framework_home = '/opt/{}/veil'.format(veil_env_name)
-    application_branch = 'env-{}'.format(veil_env_name)
 
     if action not in ('DEPLOY', 'PATCH'):
         raise Exception('unknown action: {}'.format(action))
+
+    veil_home = '/opt/{}/app'.format(veil_env_name)
+    veil_framework_home = '/opt/{}/veil'.format(veil_env_name)
+    application_branch = 'env-{}'.format(veil_env_name)
 
     clone_application(application_codebase, veil_home)
     pull_application(application_branch, veil_home)
@@ -32,11 +33,11 @@ def main():
 
 
 def mark_deployed():
-    shell_execute('date > /opt/deployed')
+    shell_execute('touch /opt/deployed')
 
 
 def mark_patched():
-    shell_execute('date > /opt/patched')
+    shell_execute('touch /opt/patched')
 
 
 def clone_application(application_codebase, veil_home):

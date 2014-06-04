@@ -7,12 +7,12 @@ LOGGER = logging.getLogger(__name__)
 
 @atomic_installer
 def iptables_rule_resource(table, rule):
-    is_installed = rule in shell_execute('iptables-save -t {}'.format(table), capture=True)
+    installed = rule in shell_execute('iptables-save -t {}'.format(table), capture=True)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['iptables?-t {} -A {}'.format(table, rule)] = '-' if is_installed else 'EXECUTE'
+        dry_run_result['iptables?-t {} -A {}'.format(table, rule)] = '-' if installed else 'EXECUTE'
         return
-    if is_installed:
+    if installed:
         return
     LOGGER.info('install iptables rule: %(rule)s to table %(table)s...', {'rule': rule, 'table': table})
     shell_execute('iptables -t {} -A {}'.format(table, rule))
@@ -25,26 +25,25 @@ def iptables_rule_resource(table, rule):
 
 @atomic_installer
 def iptables_rule_removed_resource(table, rule):
-    is_installed = rule in shell_execute('iptables-save -t {}'.format(table), capture=True)
+    installed = rule in shell_execute('iptables-save -t {}'.format(table), capture=True)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['iptables?-t {} -D {}'.format(table, rule)] = 'EXECUTE' if is_installed else ''
+        dry_run_result['iptables?-t {} -D {}'.format(table, rule)] = 'EXECUTE' if installed else ''
         return
-    if is_installed:
+    if installed:
         LOGGER.info('remove iptables rule: %(rule)s from table %(table)s...', {'rule': rule, 'table': table})
         shell_execute('iptables -t {} -D {}'.format(table, rule))
 
 
 @atomic_installer
 def iptables_policy_resource(table, chain, policy):
-    is_installed = '{} {}'.format(chain, policy) in shell_execute('iptables-save -t {}'.format(table), capture=True)
+    installed = '{} {}'.format(chain, policy) in shell_execute('iptables-save -t {}'.format(table), capture=True)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['iptables?-t {} -P {} {}'.format(table, chain, policy)] = '-' if is_installed else 'EXECUTE'
+        dry_run_result['iptables?-t {} -P {} {}'.format(table, chain, policy)] = '-' if installed else 'EXECUTE'
         return
-    if is_installed:
+    if installed:
         return
     LOGGER.info('install iptables policy: %(chain)s %(policy)s to table %(table)s...', {
         'chain': chain, 'policy': policy, 'table': table})
     shell_execute('iptables -t {} -P {} {}'.format(table, chain, policy))
-

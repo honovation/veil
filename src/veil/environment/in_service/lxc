@@ -1,7 +1,7 @@
 # MIRROR to be used by ubuntu template at container creation:
 # Leaving it undefined is fine
-MIRROR="{{ mirror }}"
-SECURITY_MIRROR="{{ mirror }}"
+MIRROR="http://mirrors.163.com/ubuntu/"
+SECURITY_MIRROR="http://mirrors.163.com/ubuntu/"
 # or
 #MIRROR="http://<host-ip-addr>:3142/archive.ubuntu.com/ubuntu"
 
@@ -12,7 +12,7 @@ LXC_AUTO="true"
 # Leave USE_LXC_BRIDGE as "true" if you want to use lxcbr0 for your
 # containers.  Set to "false" if you'll use virbr0 or another existing
 # bridge, or mavlan to your host's NIC.
-USE_LXC_BRIDGE="true"
+USE_LXC_BRIDGE="false"
 
 # If you change the LXC_BRIDGE to something other than lxcbr0, then
 # you will also need to update your /etc/lxc/lxc.conf as well as the

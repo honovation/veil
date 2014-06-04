@@ -10,10 +10,15 @@ def main():
     veil_env = sys.argv[2]
     veil_server_name = sys.argv[3]
 
+    if action not in ('create-backup', 'check-backup', 'delete-backup', 'purge-left-overs', 'rollback', 'bring-down-server', 'bring-up-server',
+            'download-packages', 'upgrade-pip'):
+        raise Exception('unknown action: {}'.format(action))
+
     src_dir = '/opt/{}'.format(veil_env)
     src_app_dir = '{}/app'.format(src_dir)
     backup_dir = '{}-backup'.format(src_dir)
     server = '{}/{}'.format(veil_env, veil_server_name)
+
     if 'create-backup' == action:
         create_backup(src_dir, src_app_dir, backup_dir, server)
     elif 'check-backup' == action:
@@ -32,12 +37,10 @@ def main():
         bring_up_server(src_app_dir, server)
     elif 'download-packages' == action:
         download_packages(src_app_dir, server)
-    elif 'upgrade-pip' == action:
+    else:  # upgrade-pip
         setuptools_version = sys.argv[4]
         pip_version = sys.argv[5]
         upgrade_pip(src_app_dir, server, pip_version, setuptools_version)
-    else:
-        raise Exception('unknown action: {}'.format(action))
 
 
 def create_backup(src_dir, src_app_dir, backup_dir, veil_server):

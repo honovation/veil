@@ -38,16 +38,15 @@ def lxc_container_user_resource(container_name, user_name, state='created'):
         shell_execute('chroot {} userdel -r {}'.format(rootfs_path, user_name), capture=True)
 
 
-
 @atomic_installer
 def lxc_container_user_group_resource(container_name, user_name, group_name):
     rootfs_path = '/var/lib/lxc/{}/rootfs'.format(container_name)
-    is_installed = group_name in shell_execute('chroot {} groups {}'.format(rootfs_path, user_name), capture=True)
+    installed = group_name in shell_execute('chroot {} groups {}'.format(rootfs_path, user_name), capture=True)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'lxc_container_user_group?container_name={}&user_name={}&group_name={}'.format(container_name, user_name, group_name)
-        dry_run_result[key] = '-' if is_installed else 'INSTALL'
+        dry_run_result[key] = '-' if installed else 'INSTALL'
         return
-    if is_installed:
+    if installed:
         return
     shell_execute('chroot {} usermod -a -G {} {}'.format(rootfs_path, group_name, user_name), capture=True)

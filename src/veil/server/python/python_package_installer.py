@@ -2,16 +2,12 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import re
 from pkg_resources import safe_name, safe_version, parse_version, to_filename
-from veil.environment import VEIL_ENV_TYPE, PYPI_INDEX_URL
-from veil_component import as_path
+from veil.environment import VEIL_ENV_TYPE, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR
 from veil.utility.shell import *
 from veil_installer import *
 from veil.frontend.cli import *
 
 LOGGER = logging.getLogger(__name__)
-
-LOCAL_ARCHIVE_DIR = as_path('/opt/pypi')
-LOCAL_ARCHIVE_DIR.makedirs()
 
 
 @atomic_installer
@@ -147,7 +143,7 @@ def get_installed_package_remote_latest_version(name):
     global outdated_package_name2latest_version
     if outdated_package_name2latest_version is None:
         outdated_package_name2latest_version = {}
-        for line in shell_execute('pip list {} -l -o | grep Latest:'.format(PYPI_INDEX_URL), capture=True, debug=True).splitlines(False):
+        for line in shell_execute('pip list -i {} -l -o | grep Latest:'.format(PYPI_INDEX_URL), capture=True, debug=True).splitlines(False):
             match = RE_OUTDATED_PACKAGE.match(line)
             outdated_package_name2latest_version[match.group(1)] = match.group(2)
     return outdated_package_name2latest_version.get(name)
@@ -160,11 +156,11 @@ def download_python_package(name, version=None, url=None, **kwargs):
         tries += 1
         try:
             if url:
-                shell_execute('pip install {} --timeout 30 --download-cache {} -d {} {}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, LOCAL_ARCHIVE_DIR,
+                shell_execute('pip install -i {} --timeout 30 --download-cache {} -d {} {}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, PYPI_ARCHIVE_DIR,
                     url), capture=True, debug=True, **kwargs)
             else:
-                shell_execute('pip install {} --timeout 30 --download-cache {} -d {} {}{}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR,
-                    LOCAL_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''), capture=True, debug=True, **kwargs)
+                shell_execute('pip install -i {} --timeout 30 --download-cache {} -d {} {}{}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR,
+                    PYPI_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''), capture=True, debug=True, **kwargs)
         except:
             if tries >= max_tries:
                 raise
@@ -182,8 +178,7 @@ def get_downloaded_python_package_version(name, version=None):
     versions = []
     prefix = '{}-'.format(name)
     prefix1 = '{}-'.format(to_filename(name))
-    for archive_file in set(LOCAL_ARCHIVE_DIR.files('{}*'.format(prefix)) +
-            LOCAL_ARCHIVE_DIR.files('{}*'.format(prefix1))):
+    for archive_file in set(PYPI_ARCHIVE_DIR.files('{}*'.format(prefix)) + PYPI_ARCHIVE_DIR.files('{}*'.format(prefix1))):
         archive_filename = archive_file.basename()
         pos = archive_filename.find('.tar.')
         if pos == -1:
@@ -211,10 +206,10 @@ def install_python_package_remotely(name, version, url, **kwargs):
         tries += 1
         try:
             if url:
-                shell_execute('pip install {} --timeout 30 --download-cache {} {}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, url), capture=True,
+                shell_execute('pip install -i {} --timeout 30 --download-cache {} {}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, url), capture=True,
                     debug=True, **kwargs)
             else:
-                shell_execute('pip install {} --timeout 30 --download-cache {} {}=={}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, name, version),
+                shell_execute('pip install -i {} --timeout 30 --download-cache {} {}=={}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, name, version),
                     capture=True, debug=True, **kwargs)
         except:
             if tries >= max_tries:
@@ -225,7 +220,7 @@ def install_python_package_remotely(name, version, url, **kwargs):
 
 def install_python_package(name, version, url=None, **kwargs):
     try:
-        shell_execute('pip install --no-index --find-links {} {}=={}'.format(LOCAL_ARCHIVE_DIR, name, version), capture=True, debug=True, **kwargs)
+        shell_execute('pip install --no-index --find-links {} {}=={}'.format(PYPI_ARCHIVE_DIR, name, version), capture=True, debug=True, **kwargs)
     except:
         LOGGER.warn('cannot install from local and try install from remote', exc_info=1)
         install_python_package_remotely(name, version, url, **kwargs)
@@ -234,10 +229,10 @@ def install_python_package(name, version, url=None, **kwargs):
 
 @script('upgrade-pip')
 def upgrade_pip(pip_version, setuptools_version):
-    shell_execute('pip install {} --upgrade --download-cache {} pip=={}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, pip_version), capture=True,
-        debug=True)
-    shell_execute('pip install {} --upgrade --download-cache {} setuptools=={}'.format(PYPI_INDEX_URL, LOCAL_ARCHIVE_DIR, setuptools_version),
+    shell_execute('pip install -i {} --download-cache {} --upgrade setuptools=={}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, setuptools_version),
         capture=True, debug=True)
+    shell_execute('pip install -i {} --download-cache {} --upgrade pip=={}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, pip_version), capture=True,
+        debug=True)
 
 
 @atomic_installer

@@ -62,17 +62,13 @@ function veil_init {
         sudo ln -sf $VEIL_FRAMEWORK_HOME/bin/veil /usr/bin/veil
     fi
     if [ ! -f $VEIL_HOME/env/.initialized ]; then
+        if [[ "$VEIL_SERVER" == "development" || "$VEIL_SERVER" == "test" ]] ; then
+            sudo apt-get -q -y install unzip wget python python-pip python-virtualenv
+        fi
         virtualenv env
         echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
         echo "$VEIL_HOME/src" >> env/lib/python2.7/site-packages/veil.pth
         source $VEIL_HOME/env/bin/activate
-        PYPI_LOCAL_ARCHIVE_DIR=/opt/pypi
-        if [ ! -d $PYPI_LOCAL_ARCHIVE_DIR ]; then
-            sudo mkdir $PYPI_LOCAL_ARCHIVE_DIR
-        fi
-        PYPI_INDEX_URL='-i http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
-        sudo veil execute pip install $PYPI_INDEX_URL --download-cache $PYPI_LOCAL_ARCHIVE_DIR --upgrade "pip>=1.5.1"
-        sudo veil execute pip install $PYPI_INDEX_URL --download-cache $PYPI_LOCAL_ARCHIVE_DIR --upgrade "setuptools>=2.1"
         touch $VEIL_HOME/env/.initialized
     fi
     if [ ! -f $VEIL_HOME/.git/hooks/pre-commit ]; then

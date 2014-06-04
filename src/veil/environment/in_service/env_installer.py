@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function, division
-import fabric.api
-import fabric.contrib.files
 import os
 from datetime import datetime
 import sys
+import fabric.api
+import fabric.contrib.files
 from veil.development.git import *
 from veil_component import as_path
 from veil_installer import *
@@ -12,9 +12,8 @@ from veil.environment import *
 from veil.utility.clock import *
 from veil.utility.shell import *
 from veil.backend.database.migration import *
-from .host_installer import veil_env_hosts_resource
-from .container_installer import veil_env_containers_resource
-from .server_installer import veil_env_servers_resource
+from .host_installer import veil_hosts_resource
+from .server_installer import veil_servers_resource
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'env_installer_payload.py')
 veil_servers_with_payload_uploaded = []
@@ -44,15 +43,14 @@ def is_veil_env_deployed(veil_env_name):
 def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     """
     Bring down veil servers in sorted server names order (in create-backup)
-    Bring up veil servers in reversed sorted server names order (in veil_env_servers_resource and local_deployer:deploy)
+    Bring up veil servers in reversed sorted server names order (in veil_servers_resource and local_deployer:deploy)
 
     should_download_packages: set to FALSE when download-packages before deploy-env
     """
     do_local_preparation(veil_env_name)
     tag_deploy(veil_env_name)
     config_dir = as_path(config_dir)
-    install_resource(veil_env_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
-    install_resource(veil_env_containers_resource(veil_env_name=veil_env_name, config_dir=config_dir))
+    install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     veil_server_names = list_veil_server_names(veil_env_name)
     is_deployed = is_veil_env_deployed(veil_env_name)
     if is_deployed:
@@ -60,7 +58,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
             download_packages(veil_env_name)
         for deploying_server_name in veil_server_names:
             remote_do('create-backup', veil_env_name, deploying_server_name)
-    install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, action='DEPLOY'))
+    install_resource(veil_servers_resource(veil_env_name=veil_env_name, action='DEPLOY'))
     if is_deployed:
         for deploying_server_name in veil_server_names:
             remote_do('delete-backup', veil_env_name, deploying_server_name)
@@ -77,12 +75,12 @@ def download_packages(veil_env_name):
 @script('patch-env')
 def patch_env(veil_env_name):
     """
-    Iterate veil server in reversed sorted server names order (in veil_env_servers_resource and local_deployer:patch)
+    Iterate veil server in reversed sorted server names order (in veil_servers_resource and local_deployer:patch)
         and patch programs
     """
     do_local_preparation(veil_env_name)
     tag_patch(veil_env_name)
-    install_resource(veil_env_servers_resource(veil_env_name=veil_env_name, action='PATCH'))
+    install_resource(veil_servers_resource(veil_env_name=veil_env_name, action='PATCH'))
 
 
 def do_local_preparation(veil_env_name):

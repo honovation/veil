@@ -5,6 +5,7 @@ from veil_component import as_path
 from veil.utility.shell import *
 from veil_installer import *
 from veil.server.config import *
+from .lxc_container_installer import is_lxc_container_running
 
 LOGGER = logging.getLogger(__name__)
 
@@ -13,13 +14,13 @@ def lxc_container_network_resource(container_name, ip_address, gateway):
     container_rootfs_path = as_path('/var/lib/lxc/') / container_name / 'rootfs'
     network_interfaces_path = container_rootfs_path / 'etc' / 'network' / 'interfaces'
     config_content = render_config('interfaces.j2', ip_address=ip_address, gateway=gateway)
-    is_installed = config_content == network_interfaces_path.text()
+    installed = config_content == network_interfaces_path.text()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'lxc_container_network?container_name={}&ip_address={}'.find(container_name, ip_address)
-        dry_run_result[key] = '-' if is_installed else 'INSTALL'
+        dry_run_result[key] = '-' if installed else 'INSTALL'
         return
-    if is_installed:
+    if installed:
         return
     LOGGER.info('set container network: in %(container_name)s to %(ip_address)s via %(gateway)s', {
         'container_name': container_name,
@@ -27,6 +28,8 @@ def lxc_container_network_resource(container_name, ip_address, gateway):
         'gateway': gateway
     })
     network_interfaces_path.write_text(config_content)
+    if is_lxc_container_running(container_name) and VEIL_OS.codename != 'precise': # precise has issue with lxc-attach
+        shell_execute('lxc-attach -n {} -- sh -c "ifdown --exclude=lo -a && ifup --exclude=lo -a"'.format(container_name), capture=True)
 
 
 @atomic_installer
@@ -34,19 +37,15 @@ def lxc_container_name_servers_resource(container_name, name_servers):
     container_rootfs_path = as_path('/var/lib/lxc/') / container_name / 'rootfs'
     resolve_conf_path = container_rootfs_path / 'etc' / 'resolvconf' / 'resolv.conf.d' / 'tail'
     config_content = '\n'.join('nameserver {}'.format(name_server) for name_server in name_servers.split(','))
-    is_installed = config_content == resolve_conf_path.text()
+    installed = config_content == resolve_conf_path.text()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'lxc_container_name servers_resource?container_name={}&name_servers={}'.find(container_name, name_servers)
-        dry_run_result[key] = '-' if is_installed else 'INSTALL'
+        dry_run_result[key] = '-' if installed else 'INSTALL'
         return
-    if is_installed:
+    if installed:
         return
     LOGGER.info('set container name servers: in %(container_name)s to %(name_servers)s', {'container_name': container_name, 'name_servers': name_servers})
     resolve_conf_path.write_text(config_content)
     if is_lxc_container_running(container_name) and VEIL_OS.codename != 'precise': # precise has issue with lxc-attach
         shell_execute('lxc-attach -n {} -- resolvconf -u'.format(container_name), capture=True)
-
-
-def is_lxc_container_running(container_name):
-    return 'RUNNING' in shell_execute('lxc-info -n {} -s'.format(container_name), capture=True)
