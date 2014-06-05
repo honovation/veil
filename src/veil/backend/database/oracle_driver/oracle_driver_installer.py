@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
-import sys
-import imp
 from veil.profile.installer import *
 
 
@@ -23,8 +21,7 @@ def oracle_driver_resource():
     else:
         install_oracle_instantclient(env)
 
-    install_resource(python_package_resource(name='cx_Oracle', env=env))
-
+    install_resource(python_package_resource(name='cx_Oracle', reload_after_install=True, env=env))
 
 
 def download_oracle_instantclient():

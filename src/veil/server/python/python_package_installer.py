@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import re
+import imp
 from pkg_resources import safe_name, safe_version, parse_version, to_filename
 from veil.environment import VEIL_ENV_TYPE, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR
 from veil.utility.shell import *
@@ -11,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 @atomic_installer
-def python_package_resource(name, version=None, url=None, **kwargs):
+def python_package_resource(name, version=None, url=None, reload_after_install=False, **kwargs):
     name = safe_name(name)
     if version:
         version = safe_version(version)
@@ -106,6 +107,8 @@ def python_package_resource(name, version=None, url=None, **kwargs):
                 'version_to_install': downloaded_version
             })
         installed_version = install_python_package(name, downloaded_version, url=url, **kwargs)
+        if reload_after_install:
+            reload_python_package(name)
 
     if may_update_resource_latest_version and installed_version and installed_version != latest_version:
         set_resource_latest_version(to_resource_key(name), installed_version)
@@ -288,3 +291,16 @@ def python_sourcecode_package_resource(package_dir, name, version, env=None):
             'latest_version': latest_version,
             'new_latest_version': version
         })
+
+
+def reload_python_package(name):
+    try:
+        __import__(name)
+    except IOError:
+        fp, pathname, description = imp.find_module(name)
+        try:
+            imp.load_module(name, fp, pathname, description)
+        finally:
+            # Since we may exit via an exception, close fp explicitly.
+            if fp:
+                fp.close()
