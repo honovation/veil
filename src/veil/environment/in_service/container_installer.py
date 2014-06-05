@@ -117,11 +117,12 @@ def veil_container_config_resource(host, server, config_dir):
     if (env_config_dir / '.config').exists():
         resources.append(veil_container_file_resource(local_path=env_config_dir / '.config', server=server,
             remote_path='/home/{}/.config'.format(veil_server_user_name), owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
-    for local_path in server_config_dir.files():
-        if local_path.name != 'README':
-            resources.append(veil_container_file_resource(local_path=local_path, server=server,
-                remote_path='/home/{}/{}'.format(veil_server_user_name, local_path.name), owner=veil_server_user_name,
-                owner_group=veil_server_user_name, mode=0600))
+    for local_path in server_config_dir.files('*.crt'):
+        resources.append(veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/certs/{}'.format(local_path.name),
+            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644))
+    for local_path in server_config_dir.files('*.key'):
+        resources.append(veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/private/{}'.format(local_path.name),
+            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0640))
     if (server_config_dir / '.ssh' / 'id_rsa').exists():
         resources.append(veil_container_file_resource(local_path=server_config_dir / '.ssh' / 'id_rsa', server=server,
             remote_path='/home/{}/.ssh/id_rsa'.format(veil_server_user_name), owner=veil_server_user_name, owner_group=veil_server_user_name,
