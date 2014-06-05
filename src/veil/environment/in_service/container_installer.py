@@ -96,8 +96,8 @@ def veil_container_init_resource(server):
 @composite_installer
 def veil_container_config_resource(host, server, config_dir):
     veil_server_user_name = host.ssh_user
-    env_config_dir = config_dir / '{}'.format(server.env_name)
-    server_config_dir = env_config_dir / 'servers/{}'.format(server)
+    env_config_dir = config_dir / server.env_name
+    server_config_dir = env_config_dir / 'servers' / server.name
     resources = [
         veil_server_boot_script_resource(server=server),
         veil_container_directory_resource(server=server, remote_path='/home/{}/.ssh'.format(veil_server_user_name),

@@ -61,7 +61,7 @@ def veil_host_onetime_config_resource(host):
 @composite_installer
 def veil_host_config_resource(host, config_dir):
     veil_server_user_name = host.ssh_user
-    env_config_dir = config_dir / '{}'.format(host.env_name)
+    env_config_dir = config_dir / host.env_name
     resources = [
         veil_host_directory_resource(host=host, remote_path='/home/{}/.ssh'.format(veil_server_user_name), owner=veil_server_user_name,
             owner_group=veil_server_user_name, mode=0755),
