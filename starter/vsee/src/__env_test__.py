@@ -28,7 +28,7 @@ config = __env__.env_config(
     resweb_port=0)
 
 ENV_TEST = {
-    'test': veil_env(hosts={}, servers={
+    'test': veil_env(name='test', servers={
         '@': veil_server(
             host_name='',
             sequence_no=20,

@@ -27,7 +27,7 @@ config = __env__.env_config(
     resweb_port=7070)
 
 ENV_DEVELOPMENT = {
-    'development': veil_env(hosts={}, servers={
+    'development': veil_env(name='development', hosts={}, servers={
         '@': veil_server(
             host_name='',
             sequence_no=10,

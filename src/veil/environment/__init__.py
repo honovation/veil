@@ -22,7 +22,7 @@ from .environment import get_application_version
 from .environment import get_veil_framework_version
 
 
-def veil_env(hosts, servers, sorted_server_names=None, deployment_memo=None):
+def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=None):
     server_names = servers.keys()
     if sorted_server_names:
         assert set(sorted_server_names) == set(server_names), 'ENV {}: inconsistency between sorted_server_names {} and server_names {}'.format(
@@ -33,12 +33,12 @@ def veil_env(hosts, servers, sorted_server_names=None, deployment_memo=None):
     from veil.model.collection import objectify
     env = objectify({'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names, 'deployment_memo': deployment_memo})
     for server_name, server in env.servers.items():
-        server.env_name = VEIL_ENV
+        server.env_name = name
         server.name = server_name
         server.container_name = '{}-{}'.format(server.env_name, server.name)
         server.host = None
     for host_name, host in env.hosts.items():
-        host.env_name = VEIL_ENV
+        host.env_name = name
         host.name = host_name
         # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.env_name, host.base_name))
         host.base_name = host_name.split('/', 1)[0]  # e.g. ljhost-005/3 => ljhost-005
