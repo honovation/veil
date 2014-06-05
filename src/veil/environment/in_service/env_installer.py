@@ -155,7 +155,7 @@ def upgrade_env_pip(veil_env_name, setuptools_version, pip_version):
     Upgrade pip and setuptools on veil servers
     """
     for veil_server_name in list_veil_server_names(veil_env_name):
-        remote_do('upgrade-pip', veil_env_name, veil_server_name, pip_version, setuptools_version)
+        remote_do('upgrade-pip', veil_env_name, veil_server_name, setuptools_version, pip_version)
 
 
 @script('print-deployed-at')

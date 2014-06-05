@@ -228,7 +228,7 @@ def install_python_package(name, version, url=None, **kwargs):
 
 
 @script('upgrade-pip')
-def upgrade_pip(pip_version, setuptools_version):
+def upgrade_pip(setuptools_version, pip_version):
     shell_execute('pip install -i {} --download-cache {} --upgrade setuptools=={}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, setuptools_version),
         capture=True, debug=True)
     shell_execute('pip install -i {} --download-cache {} --upgrade pip=={}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, pip_version), capture=True,

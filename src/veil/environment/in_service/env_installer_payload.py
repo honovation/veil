@@ -40,7 +40,7 @@ def main():
     else:  # upgrade-pip
         setuptools_version = sys.argv[4]
         pip_version = sys.argv[5]
-        upgrade_pip(src_app_dir, server, pip_version, setuptools_version)
+        upgrade_pip(src_app_dir, server, setuptools_version, pip_version)
 
 
 def create_backup(src_dir, src_app_dir, backup_dir, veil_server):
@@ -75,8 +75,8 @@ def bring_up_server(src_app_dir, veil_server):
     shell_execute('veil :{} up --daemonize'.format(veil_server), cwd=src_app_dir)
 
 
-def upgrade_pip(src_app_dir, veil_server, pip_version, setuptools_version):
-    shell_execute('veil :{} upgrade-pip {} {}'.format(veil_server, pip_version, setuptools_version), cwd=src_app_dir)
+def upgrade_pip(src_app_dir, veil_server, setuptools_version, pip_version):
+    shell_execute('veil :{} upgrade-pip {} {}'.format(veil_server, setuptools_version, pip_version), cwd=src_app_dir)
 
 
 def purge_left_overs():
