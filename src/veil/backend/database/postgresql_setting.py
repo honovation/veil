@@ -7,9 +7,7 @@ def postgresql_program(purpose, version, host, port, owner, owner_password, user
         checkpoint_completion_target=0.5, effective_cache_size='128MB', kernel_shmmax=None, kernel_shmall=None):
     return objectify({
         '{}_postgresql'.format(purpose): {
-            'run_as': 'root',
-            'execute_command': '''sh -c "install -d -m 2775 -o postgres -g postgres /var/run/postgresql && su {} -c '{}/postgres -D {} -c config_file={}/postgresql.conf'"'''.format(
-                owner, get_pg_bin_dir(version), get_pg_data_dir(purpose, version), get_pg_config_dir(purpose, version)),
+            'execute_command': '{}/postgres -D {}'.format(get_pg_bin_dir(version), get_pg_data_dir(purpose, version)),
             'migrate_command': 'veil backend database postgresql migrate {}'.format(purpose),
             'resources': [('veil.backend.database.postgresql.postgresql_server_resource', {
                 'purpose': purpose,
