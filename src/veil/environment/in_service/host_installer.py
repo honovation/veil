@@ -36,6 +36,7 @@ def veil_host_onetime_config_resource(host):
     installed = fabric.contrib.files.exists('/opt/veil-host-{}.initialized'.format(host.env_name))
     if installed:
         return []
+    host_os_codename = fabric.api.run('lsb_release -cs')
     resources = [
         veil_host_file_resource(local_path=CURRENT_DIR / 'iptablesload', host=host, remote_path='/etc/network/if-pre-up.d/iptablesload',
             owner='root', owner_group='root', mode=0755),
@@ -46,15 +47,15 @@ def veil_host_onetime_config_resource(host):
         veil_host_file_resource(local_path=CURRENT_DIR / 'sudoers.d.ssh-auth-sock', host=host, remote_path='/etc/sudoers.d/ssh-auth-sock',
             owner='root', owner_group='root', mode=0440),
         veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0755),
-        veil_host_sources_list_resource(host=host)
+        veil_host_sources_list_resource(host=host, host_os_codename=host_os_codename),
+        veil_host_init_resource(host=host)
     ]
-    if VEIL_OS.codename == 'trusty':
+    if host_os_codename == 'trusty':
         resources.append(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc-net', host=host, remote_path='/etc/default/lxc-net',
             owner='root', owner_group='root', mode=0644))
     else:
         resources.append(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc', host=host, remote_path='/etc/default/lxc',
             owner='root', owner_group='root', mode=0644))
-    resources.append(veil_host_init_resource(host=host))
     return resources
 
 
@@ -133,7 +134,7 @@ def veil_host_init_resource(host):
 hosts_installed_sources_list = []
 
 @atomic_installer
-def veil_host_sources_list_resource(host):
+def veil_host_sources_list_resource(host, host_os_codename):
     if host.name in hosts_installed_sources_list:
         return
     dry_run_result = get_dry_run_result()
@@ -143,7 +144,7 @@ def veil_host_sources_list_resource(host):
         return
     sources_list_path = '/etc/apt/sources.list'
     fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=sources_list_path))
-    context = dict(mirror=VEIL_APT_URL, codename=fabric.api.run('lsb_release -cs'))
+    context = dict(mirror=VEIL_APT_URL, codename=host_os_codename)
     fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
     hosts_installed_sources_list.append(host.name)
