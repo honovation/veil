@@ -144,7 +144,7 @@ def veil_host_sources_list_resource(host):
     sources_list_path = '/etc/apt/sources.list'
     fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=sources_list_path))
     context = dict(mirror=VEIL_APT_URL, codename=fabric.api.run('lsb_release -cs'))
-    fabric.contrib.files.upload_template('/etc/apt/sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
+    fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
     hosts_installed_sources_list.append(host.name)
 

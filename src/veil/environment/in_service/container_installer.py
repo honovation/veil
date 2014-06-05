@@ -146,8 +146,8 @@ def veil_container_sources_list_resource(server):
     full_sources_list_path = '{}{}'.format(container_rootfs_path, sources_list_path)
     fabric.api.sudo('chroot {} cp -pn {path} {path}.origin'.format(container_rootfs_path, path=sources_list_path))
     context = dict(mirror=VEIL_APT_URL, codename=fabric.api.run('lsb_release -cs')) # Assumption: lxc container has same os version as host
-    fabric.contrib.files.upload_template('/etc/apt/sources.list.j2', full_sources_list_path, context=context, use_jinja=True,
-        template_dir=CURRENT_DIR, use_sudo=True, backup=False, mode=0644)
+    fabric.contrib.files.upload_template('sources.list.j2', full_sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
+        use_sudo=True, backup=False, mode=0644)
     servers_installed_sources_list.append(server.container_name)
 
 
