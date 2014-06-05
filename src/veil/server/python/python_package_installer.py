@@ -295,12 +295,15 @@ def python_sourcecode_package_resource(package_dir, name, version, env=None):
 
 def reload_python_package(name):
     try:
-        __import__(name)
-    except IOError:
-        fp, pathname, description = imp.find_module(name)
         try:
-            imp.load_module(name, fp, pathname, description)
-        finally:
-            # Since we may exit via an exception, close fp explicitly.
-            if fp:
-                fp.close()
+            __import__(name)
+        except (ImportError, IOError):
+            fp, pathname, description = imp.find_module(name)
+            try:
+                imp.load_module(name, fp, pathname, description)
+            finally:
+                # Since we may exit via an exception, close fp explicitly.
+                if fp:
+                    fp.close()
+    except:
+        LOGGER.warn('cannot reload python package: %(name)s', {'name': name}, exc_info=1)

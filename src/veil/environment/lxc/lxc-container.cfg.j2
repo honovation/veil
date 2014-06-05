@@ -28,16 +28,16 @@ lxc.cgroup.cpu.shares = {{ cpu_share }}
 {% else %}
 
 
-lxc.utsname={{ name }}
-lxc.network.type=veth
-lxc.network.link={{ lan_interface }}
-lxc.network.flags=up
+lxc.utsname = {{ name }}
+lxc.network.type = veth
+lxc.network.link = {{ lan_interface }}
+lxc.network.flags = up
 lxc.network.hwaddr = {{ mac_address }}
 lxc.devttydir = lxc
 lxc.tty = 4
 lxc.pts = 1024
 lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
-lxc.mount  = /var/lib/lxc/{{ name }}/fstab
+lxc.mount = /var/lib/lxc/{{ name }}/fstab
 lxc.arch = amd64
 lxc.cap.drop = sys_module mac_admin
 lxc.pivotdir = lxc_putold
