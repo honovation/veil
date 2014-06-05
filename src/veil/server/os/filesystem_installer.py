@@ -42,8 +42,8 @@ def install_directory(is_dry_run, path, owner='root', group='root', mode=0755, r
 
 
 @atomic_installer
-def file_resource(path, content, owner='root', group='root', mode=0644, cmd_run_after_updated=None):
-    args = dict(path=path, content=content, owner=owner, group=group, mode=mode, cmd_run_after_updated=cmd_run_after_updated)
+def file_resource(path, content, owner='root', group='root', mode=0644, keep_origin=False, cmd_run_after_updated=None):
+    args = dict(path=path, content=content, owner=owner, group=group, mode=mode, keep_origin=keep_origin, cmd_run_after_updated=cmd_run_after_updated)
     dry_run_result = get_dry_run_result()
     if dry_run_result is None:
         install_file(is_dry_run=False, **args)
@@ -56,7 +56,7 @@ def file_resource(path, content, owner='root', group='root', mode=0644, cmd_run_
             dry_run_result[resource_name] = '-'
 
 
-def install_file(is_dry_run, path, content, owner='root', group='root', mode=0644, cmd_run_after_updated=None):
+def install_file(is_dry_run, path, content, owner='root', group='root', mode=0644, keep_origin=False, cmd_run_after_updated=None):
     assert content is not None
     actions = []
     write = False
@@ -76,7 +76,7 @@ def install_file(is_dry_run, path, content, owner='root', group='root', mode=064
         write = not is_dry_run
         reason = "it doesn't exist"
     if write:
-        if path_exists:
+        if path_exists and keep_origin:
             shell_execute('cp -pn {path} {path}.origin'.format(path=path), capture=True)
         with open(path, 'wb') as fp:
             LOGGER.info('Writing file: %(path)s because %(reason)s', {'path': path, 'reason': reason})

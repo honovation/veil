@@ -52,10 +52,10 @@ def veil_host_onetime_config_resource(host):
     ]
     if host_os_codename == 'trusty':
         resources.append(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc-net', host=host, remote_path='/etc/default/lxc-net',
-            owner='root', owner_group='root', mode=0644))
+            owner='root', owner_group='root', mode=0644, keep_origin=True))
     else:
         resources.append(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc', host=host, remote_path='/etc/default/lxc',
-            owner='root', owner_group='root', mode=0644))
+            owner='root', owner_group='root', mode=0644, keep_origin=True))
     return resources
 
 
@@ -124,6 +124,7 @@ def veil_host_init_resource(host):
     # enable time sync on lxc hosts, and which is shared among lxc guests
     fabric.api.sudo(
         '''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
+    fabric.api.sudo('mkdir -p /opt/tmp')
     fabric.api.sudo('mkdir -p {}'.format(PYPI_ARCHIVE_DIR))
     fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "setuptools>=3.6"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "pip>=1.5.6"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
@@ -162,13 +163,14 @@ def veil_host_directory_resource(host, remote_path, owner, owner_group, mode):
 
 
 @atomic_installer
-def veil_host_file_resource(local_path, host, remote_path, owner, owner_group, mode, set_owner_first=False, cmd=None):
+def veil_host_file_resource(local_path, host, remote_path, owner, owner_group, mode, keep_origin=False, set_owner_first=False, cmd=None):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_host_file?{}&path={}'.format(host.env_name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
-    fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=remote_path))
+    if keep_origin:
+        fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=remote_path))
     if set_owner_first:
         temp_file = '/tmp/{}'.format(uuid.uuid4().get_hex())
         fabric.api.put(local_path, temp_file, use_sudo=True, mode=mode)

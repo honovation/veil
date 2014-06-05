@@ -85,6 +85,7 @@ def veil_container_init_resource(server):
     fabric.api.sudo('chroot {} apt-get -q update'.format(container_rootfs_path))
     fabric.api.sudo('chroot {} apt-get -q -y purge ntpdate ntp whoopsie network-manager'.format(container_rootfs_path))
     fabric.api.sudo('chroot {} apt-get -q -y install unattended-upgrades iptables git-core language-pack-en unzip wget python python-pip python-virtualenv'.format(container_rootfs_path))
+    fabric.api.sudo('chroot {} mkdir -p /opt/tmp'.format(container_rootfs_path))
     fabric.api.sudo('chroot {} mkdir -p {}'.format(container_rootfs_path, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "setuptools>=3.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "pip>=1.5.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
@@ -164,15 +165,16 @@ def veil_container_directory_resource(server, remote_path, owner, owner_group, m
 
 
 @atomic_installer
-def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode):
+def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_container_file?{}&path={}'.format(server.container_name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
     container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
-    full_remote_path = '{}{}'.format(container_rootfs_path, remote_path)
-    fabric.api.put(local_path, full_remote_path, use_sudo=True, mode=mode)
+    if keep_origin:
+        fabric.api.sudo('chroot {} cp -pn {path} {path}.origin'.format(container_rootfs_path, path=remote_path))
+    fabric.api.put(local_path, '{}{}'.format(container_rootfs_path, remote_path), use_sudo=True, mode=mode)
     fabric.api.sudo('chroot {} chown {}:{} {}'.format(container_rootfs_path, owner, owner_group, remote_path))
 
 
