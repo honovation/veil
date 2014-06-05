@@ -25,9 +25,9 @@ def postgresql_server_resource(purpose, config):
     resources.extend([
         postgresql_apt_repository_resource(),
         os_package_resource(name='postgresql-{}'.format(config.version),
-            cmd_run_before_install='[ ! -f /etc/sysctl.d/30-postgresql-shm.conf ] || mv -f /etc/sysctl.d/30-postgresql-shm.conf /opt/tmp/',
-            cmd_run_if_install_fail='[ ! -f /opt/tmp/30-postgresql-shm.conf ] || mv -f /opt/tmp/30-postgresql-shm.conf /etc/sysctl.d/',
-            cmd_run_after_install='rm -f /opt/tmp/30-postgresql-shm.conf')])
+            cmd_run_before_install='[ ! -f /etc/sysctl.d/30-postgresql-shm.conf ] || mv -f /etc/sysctl.d/30-postgresql-shm.conf /tmp/',
+            cmd_run_if_install_fail='[ ! -f /tmp/30-postgresql-shm.conf ] || mv -f /tmp/30-postgresql-shm.conf /etc/sysctl.d/',
+            cmd_run_after_install='rm -f /tmp/30-postgresql-shm.conf')])
     if config.kernel_shmmax or config.kernel_shmall:
         resources.append(file_resource(
             path='/etc/sysctl.d/30-postgresql-shm.conf',

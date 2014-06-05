@@ -1,10 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-import logging
-import os
-from veil.environment import VEIL_DEPENDENCY_URL, VEIL_ENV_TYPE
-from veil_component import as_path
-from veil_installer import *
-from veil.utility.shell import *
+from veil.profile.installer import *
 
 LOGGER = logging.getLogger(__name__)
 CHROMEDRIVER_PATH = as_path('/usr/bin/chromedriver')
@@ -35,7 +30,7 @@ def chrome_driver_resource():
         return
     url = '{}/chromedriver/{}/chromedriver_linux64.zip'.format(VEIL_DEPENDENCY_URL, RESOURCE_VERSION)
     LOGGER.info('installing selenium webdriver for chrome: from %(url)s...', {'url': url})
-    local_path = '/tmp/chromedriver_linux64_{}.zip'.format(RESOURCE_VERSION)
+    local_path = '{}/chromedriver_linux64_{}.zip'.format(VEIL_TMP_DIR, RESOURCE_VERSION)
     shell_execute('wget {} -O {}'.format(url, local_path))
     shell_execute('unzip {} -d /usr/bin'.format(local_path))
     shell_execute('mv {} {}-{}'.format(CHROMEDRIVER_PATH, CHROMEDRIVER_PATH, RESOURCE_VERSION))

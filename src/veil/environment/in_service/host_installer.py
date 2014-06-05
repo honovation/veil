@@ -123,7 +123,7 @@ def veil_host_init_resource(host):
     # enable time sync on lxc hosts, and which is shared among lxc guests
     fabric.api.sudo(
         '''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
-    fabric.api.sudo('mkdir -p /opt/tmp')
+    fabric.api.sudo('mkdir -p {}'.format(VEIL_TMP_DIR))
     fabric.api.sudo('mkdir -p {}'.format(PYPI_ARCHIVE_DIR))
     fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "setuptools>=3.6"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "pip>=1.5.6"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))

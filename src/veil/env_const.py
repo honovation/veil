@@ -11,6 +11,9 @@ PYPI_INDEX_URL = 'http://pypi.douban.com/simple/' # the official url "https://py
 PYPI_ARCHIVE_DIR = as_path('/opt/pypi')
 PYPI_ARCHIVE_DIR.makedirs()
 
+VEIL_TMP_DIR = as_path('/opt/tmp')
+VEIL_TMP_DIR.makedirs()
+
 VEIL_SERVER = getenv('VEIL_SERVER') or 'development'
 VEIL_ENV = None
 VEIL_SERVER_NAME = None
