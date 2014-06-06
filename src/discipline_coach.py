@@ -8,6 +8,7 @@ from __future__ import unicode_literals, print_function, division
 import sys
 import os
 import re
+from veil_component import red
 from veil.utility.encoding import *
 from veil.utility.misc import *
 from veil.utility.shell import *
@@ -60,25 +61,14 @@ def get_git_dir_version(git_dir='.'):
         if match:
             deleted_files.append(to_unicode(match.group('name')))
     changes = {}
-    for file in modified_files:
-        if os.path.isfile(file):
-            with open(os.path.join(git_dir, file)) as f:
-                changes[file] = calculate_file_md5_hash(f)
-    for file in deleted_files:
-        changes[file] = 'DELETED'
+    for path in modified_files:
+        if os.path.isfile(path):
+            with open(os.path.join(git_dir, path)) as f:
+                changes[path] = calculate_file_md5_hash(f)
+    for path in deleted_files:
+        changes[path] = 'DELETED'
     return base_version, changes
 
-
-def _wrap_with(code):
-    def inner(text, bold=False):
-        c = code
-        if bold:
-            c = '1;{}'.format(c)
-        return '\033[{}m{}\033[0m'.format(c, text)
-
-    return inner
-
-red = _wrap_with('31')
 
 if __name__ == '__main__':
     check_if_commit_in_forbidden_branch()

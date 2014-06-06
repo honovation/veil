@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from .environment import VEIL_HOME
+from .colors import red
 from .component_map import get_dependent_component_names
 from .component_map import list_child_component_names
 from .component_map import scan_all_components
@@ -10,8 +11,8 @@ from .import_collector import list_imports
 # static dependency is declared manually assert architecture assertion
 
 def list_expected_static_dependencies():
-    file = VEIL_HOME / 'DEP-STATIC'
-    code = compile(file.text(), file, 'exec')
+    path = VEIL_HOME / 'DEP-STATIC'
+    code = compile(path.text(), path, 'exec')
     context = {}
     exec(code, context)
     return context['STATIC_DEPENDENCIES']
@@ -20,9 +21,9 @@ def list_expected_static_dependencies():
 def check_static_dependency_integrity():
     scan_all_components()
     check_integrity([], list_expected_static_dependencies())
-    for file in (VEIL_HOME / 'src').walk('*.py'):
-        module_name = get_module_name(file)
-        absolute_imports, relative_imports = list_imports(file.text(), file)
+    for path in (VEIL_HOME / 'src').walk('*.py'):
+        module_name = get_module_name(path)
+        absolute_imports, relative_imports = list_imports(path.text(), path)
         for relative_import in relative_imports:
             check_relative_import(module_name, relative_import)
         for absolute_import in absolute_imports:
@@ -79,23 +80,12 @@ def check_absolute_import(this_mod, absolute_import):
     print(red('WARNING: {} should not peek inside other component {}'.format(this_mod, absolute_import)))
 
 
-def _wrap_with(code):
-    def inner(text, bold=False):
-        c = code
-        if bold:
-            c = '1;{}'.format(c)
-        return '\033[{}m{}\033[0m'.format(c, text)
-
-    return inner
-
-red = _wrap_with('31')
-
-def get_module_name(file):
-    relpath = (VEIL_HOME / 'src').relpathto(file)
-    relpath = relpath.replace('/__init__.py', '')
-    relpath = relpath.replace('.py', '')
-    relpath = relpath.replace('/', '.')
-    return relpath
+def get_module_name(path):
+    rel_path = (VEIL_HOME / 'src').relpathto(path)
+    rel_path = rel_path.replace('/__init__.py', '')
+    rel_path = rel_path.replace('.py', '')
+    rel_path = rel_path.replace('/', '.')
+    return rel_path
 
 
 def check_static_dependency_cycle():

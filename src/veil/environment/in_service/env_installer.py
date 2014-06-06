@@ -205,16 +205,3 @@ def tag_patch(veil_env_name):
         veil_env_name, get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
     shell_execute('git tag {}'.format(tag_name))
     shell_execute('git push origin tag {}'.format(tag_name))
-
-
-def _wrap_with(code):
-    def inner(text, bold=False):
-        c = code
-        if bold:
-            c = '1;{}'.format(c)
-        return '\033[{}m{}\033[0m'.format(c, text)
-
-    return inner
-
-red = _wrap_with('31')
-green = _wrap_with('32')

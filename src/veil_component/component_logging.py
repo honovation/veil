@@ -7,6 +7,7 @@ import json
 import time
 import socket
 import traceback
+from .colors import red, green
 from .component_map import get_root_component
 
 VEIL_LOGGING_LEVEL_CONFIG = 'VEIL_LOGGING_LEVEL_CONFIG'
@@ -52,8 +53,8 @@ def configure_root_component_logger(root_component_name):
         return
     configured_root_loggers.add(root_component_name)
     logger = logging.getLogger(root_component_name)
-    #TODO: still have dup logs and donot know why, maybe the dup is relevant to supervisord;
-    #After fix this, remove the config excluding logs with tag _jsonparsefailure in ljinsight elasticsearch
+    # TODO: still have dup logs and donot know why, maybe the dup is relevant to supervisord;
+    # After fix this, remove the config excluding logs with tag _jsonparsefailure in ljinsight elasticsearch
     clear_logger_handlers(logger)
     human_handler = logging.StreamHandler(os.fdopen(sys.stdout.fileno(), 'w', 0))
     human_handler.setFormatter(ColoredFormatter(fmt='%(asctime)s [%(name)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
@@ -86,18 +87,9 @@ class ColoredFormatter(logging.Formatter):
             wrap = None
         return wrap(s) if wrap else s
 
-def wrap_console_text_with_color(code):
-    def inner(text, bold=False):
-        c = code
-        if bold:
-            c = '1;{}'.format(c)
-        return '\033[{}m{}\033[0m'.format(c, text)
-
-    return inner
-
 COLOR_WRAPPERS = {
-    'RED': wrap_console_text_with_color('31'),
-    'GREEN': wrap_console_text_with_color('32')
+    'RED': red,
+    'GREEN': green
 }
 
 

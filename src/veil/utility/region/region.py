@@ -4,10 +4,11 @@ import logging
 import re
 from datetime import date
 from pyquery import PyQuery as pq
-from veil.backend.database.client import *
-from veil.model.collection import *
+from veil_component import red, green, yellow, blue
 from veil.frontend.cli import *
+from veil.model.collection import *
 from veil.model.binding import *
+from veil.backend.database.client import *
 
 
 LOGGER = logging.getLogger(__name__)
@@ -202,21 +203,6 @@ def diff(db_source, site_source):
     modified_codes = set(code for code in db_codes & site_codes if (db_source[code].name, db_source[code].deleted) != (site_source[code], False))
 
     return added_codes, deleted_codes, modified_codes
-
-
-def _wrap_with(code):
-    def inner(text, bold=False):
-        c = code
-        if bold:
-            c = '1;{}'.format(c)
-        return '\033[{}m{}\033[0m'.format(c, text)
-
-    return inner
-
-red = _wrap_with('31')
-green = _wrap_with('32')
-yellow = _wrap_with('33')
-blue = _wrap_with('34')
 
 
 def add_regions(db, regions):

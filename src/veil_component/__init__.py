@@ -32,3 +32,10 @@ from .path import as_path
 from .environment import VEIL_FRAMEWORK_CODEBASE
 from .environment import VEIL_FRAMEWORK_HOME
 from .environment import VEIL_HOME
+from .colors import red
+from .colors import green
+from .colors import yellow
+from .colors import blue
+from .colors import magenta
+from .colors import cyan
+from .colors import white
