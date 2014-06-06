@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from veil.env_const import VEIL_ENV_TYPE
+from veil_component import VEIL_ENV_TYPE
 from veil_installer import *
 from veil.utility.shell import *
 

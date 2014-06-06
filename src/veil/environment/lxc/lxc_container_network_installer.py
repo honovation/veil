@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from veil.env_const import VEIL_OS
-from veil_component import as_path
+from veil_component import as_path, CURRENT_OS
 from veil.utility.shell import *
 from veil_installer import *
 from veil.server.config import *
@@ -28,7 +27,7 @@ def lxc_container_network_resource(container_name, ip_address, gateway):
         'gateway': gateway
     })
     network_interfaces_path.write_text(config_content)
-    if is_lxc_container_running(container_name) and VEIL_OS.codename != 'precise': # precise has issue with lxc-attach
+    if is_lxc_container_running(container_name) and CURRENT_OS.codename != 'precise': # precise has issue with lxc-attach
         shell_execute('lxc-attach -n {} -- sh -c "ifdown --exclude=lo -a && ifup --exclude=lo -a"'.format(container_name), capture=True)
 
 
@@ -47,5 +46,5 @@ def lxc_container_name_servers_resource(container_name, name_servers):
         return
     LOGGER.info('set container name servers: in %(container_name)s to %(name_servers)s', {'container_name': container_name, 'name_servers': name_servers})
     resolve_conf_path.write_text(config_content)
-    if is_lxc_container_running(container_name) and VEIL_OS.codename != 'precise': # precise has issue with lxc-attach
+    if is_lxc_container_running(container_name) and CURRENT_OS.codename != 'precise': # precise has issue with lxc-attach
         shell_execute('lxc-attach -n {} -- resolvconf -u'.format(container_name), capture=True)

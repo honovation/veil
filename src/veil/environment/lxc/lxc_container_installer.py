@@ -10,7 +10,7 @@ def lxc_container_resource(container_name, mac_address, lan_interface, memory_li
         lxc_container_created_resource(name=container_name),
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name), content=render_config('lxc-container.cfg.j2', name=container_name,
             mac_address=mac_address, lan_interface=lan_interface, memory_limit=memory_limit, cpu_share=cpu_share,
-            is_trusty=VEIL_OS.codename == 'trusty'), keep_origin=True)
+            is_trusty=CURRENT_OS.codename == 'trusty'), keep_origin=True)
     ]
     return resources
 
@@ -26,7 +26,7 @@ def lxc_container_created_resource(name):
         return
     LOGGER.info('create lxc container: %(name)s ...', {'name': name})
     shell_execute('lxc-create -t ubuntu -n {}'.format(name))
-    if VEIL_OS.codename == 'precise':
+    if CURRENT_OS.codename == 'precise':
         shell_execute('ln -s /var/lib/lxc/{}/config /etc/lxc/auto/{}.conf'.format(name, name))
 
 
@@ -45,7 +45,7 @@ def lxc_container_in_service_resource(container_name, restart_if_running=False):
         return
     if running:
         LOGGER.info('reboot lxc container: %(name)s ...', {'name': container_name})
-        if VEIL_OS.codename == 'precise':
+        if CURRENT_OS.codename == 'precise':
             shell_execute('lxc-shutdown -n {} -r'.format(container_name), capture=True)
         else:
             shell_execute('lxc-stop -n {} -r'.format(container_name), capture=True)

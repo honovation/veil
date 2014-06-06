@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from veil.env_const import VEIL_OS
-from veil_component import as_path
+from veil_component import as_path, CURRENT_OS
 from veil_installer import *
 from veil.utility.shell import *
 from .os_package_installer import os_package_resource, set_apt_get_update_executed
@@ -14,7 +13,7 @@ POSTGRESQL_APT_REPOSITORY_NAME = 'pgdg'
 @atomic_installer
 def os_ppa_repository_resource(name):
     # add-apt-repository is in the package python-software-properties
-    install_resource(os_package_resource(name='software-properties-common' if VEIL_OS.codename == 'trusty' else 'python-software-properties'))
+    install_resource(os_package_resource(name='software-properties-common' if CURRENT_OS.codename == 'trusty' else 'python-software-properties'))
 
     installed = is_os_package_repository_installed(name)
     dry_run_result = get_dry_run_result()
@@ -39,7 +38,7 @@ def postgresql_apt_repository_resource():
         return
     LOGGER.info('installing postgresql apt repository: %(name)s ...', {'name': POSTGRESQL_APT_REPOSITORY_NAME})
     shell_execute('echo "deb http://apt.postgresql.org/pub/repos/apt/ {os_codename}-{name} main" > /etc/apt/sources.list.d/{name}.list'.format(
-        os_codename=VEIL_OS.codename, name=POSTGRESQL_APT_REPOSITORY_NAME), capture=True)
+        os_codename=CURRENT_OS.codename, name=POSTGRESQL_APT_REPOSITORY_NAME), capture=True)
     shell_execute('wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -', capture=True)
     set_apt_get_update_executed(False)
 

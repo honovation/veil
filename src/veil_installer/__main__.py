@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
 import veil_component
-from veil.env_const import VEIL_ENV_TYPE
 
 if '__main__' == __name__:
     import sys
@@ -21,7 +20,7 @@ if '__main__' == __name__:
         action='store_true')
     args = argument_parser.parse_args(sys.argv[1:])
 
-    if VEIL_ENV_TYPE in {'development', 'test'}:
+    if veil_component.VEIL_ENV_TYPE in {'development', 'test'}:
         veil_component.start_recording_dynamic_dependencies()
 
     resource = parse_resource(args.resource)

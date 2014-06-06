@@ -4,8 +4,8 @@ import logging
 import inspect
 import importlib
 import contextlib
-from veil.env_const import VEIL_ENV_TYPE
 import veil_component
+from veil_component import VEIL_ENV_TYPE
 
 LOGGER = logging.getLogger(__name__)
 installed_resource_codes = set()

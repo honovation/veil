@@ -13,7 +13,7 @@ from .environment import VEIL_APT_URL
 from .environment import PYPI_INDEX_URL
 from .environment import PYPI_ARCHIVE_DIR
 from .environment import VEIL_TMP_DIR
-from .environment import VEIL_OS
+from .environment import CURRENT_OS
 from .environment import VEIL_SERVER_NAME
 from .environment import CURRENT_USER
 from .environment import CURRENT_USER_GROUP
