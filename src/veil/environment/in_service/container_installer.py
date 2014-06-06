@@ -9,13 +9,14 @@ from veil.environment import *
 from veil.server.config import *
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
+containers_initialized_before = []
 
 
 @composite_installer
 def veil_container_resource(host, server, config_dir):
     resources = [
         veil_container_lxc_resource(host=host, server=server),
-        veil_container_onetime_config_resource(server=server),
+        veil_container_onetime_config_resource(host=host, server=server, config_dir=config_dir),
         veil_container_config_resource(host=host, server=server, config_dir=config_dir)
     ]
     return resources
@@ -54,10 +55,12 @@ def veil_container_lxc_resource(host, server):
 
 
 @composite_installer
-def veil_container_onetime_config_resource(server):
-    installed = fabric.contrib.files.exists('/opt/veil-container-{}.initialized'.format(server.container_name))
-    if installed:
+def veil_container_onetime_config_resource(host, server, config_dir):
+    initialized = fabric.contrib.files.exists('/opt/veil-container-{}.initialized'.format(server.container_name))
+    if initialized:
+        containers_initialized_before.append(server.name)
         return []
+
     resources = [
         veil_container_file_resource(local_path=CURRENT_DIR / 'iptablesload', server=server, remote_path='/etc/network/if-pre-up.d/iptablesload',
             owner='root', owner_group='root', mode=0755),
@@ -68,33 +71,17 @@ def veil_container_onetime_config_resource(server):
         veil_container_file_resource(local_path=CURRENT_DIR / 'sudoers.d.no-password', server=server, remote_path='/etc/sudoers.d/no-password',
             owner='root', owner_group='root', mode=0440),
         veil_container_directory_resource(server=server, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0755),
-        veil_container_sources_list_resource(server=server),
+        veil_container_config_resource(host=host, server=server, config_dir=config_dir),
         veil_container_init_resource(server=server)
     ]
     return resources
 
 
-@atomic_installer
-def veil_container_init_resource(server):
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        key = 'veil_container_init?{}'.format(server.container_name)
-        dry_run_result[key] = 'INSTALL'
-        return
-    container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
-    fabric.api.sudo('chroot {} apt-get -q update'.format(container_rootfs_path))
-    fabric.api.sudo('chroot {} apt-get -q -y purge ntpdate ntp whoopsie network-manager'.format(container_rootfs_path))
-    fabric.api.sudo('chroot {} apt-get -q -y install unattended-upgrades iptables git-core language-pack-en unzip wget python python-pip python-virtualenv'.format(container_rootfs_path))
-    fabric.api.sudo('chroot {} mkdir -p {}'.format(container_rootfs_path, VEIL_TMP_DIR))
-    fabric.api.sudo('chroot {} mkdir -p {}'.format(container_rootfs_path, PYPI_ARCHIVE_DIR))
-    fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "setuptools>=3.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
-    fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "pip>=1.5.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
-    fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "virtualenv>=1.11.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
-    fabric.api.sudo('touch /opt/veil-container-{}.initialized'.format(server.container_name))
-
-
 @composite_installer
 def veil_container_config_resource(host, server, config_dir):
+    if server.name in containers_initialized_before:
+        return []
+
     veil_server_user_name = host.ssh_user
     env_config_dir = config_dir / server.env_name
     server_config_dir = env_config_dir / 'servers' / server.name
@@ -132,12 +119,33 @@ def veil_container_config_resource(host, server, config_dir):
     return resources
 
 
-servers_installed_sources_list = []
+@atomic_installer
+def veil_container_init_resource(server):
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        key = 'veil_container_init?{}'.format(server.container_name)
+        dry_run_result[key] = 'INSTALL'
+        return
+
+    container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
+
+    fabric.contrib.files.append('{}/etc/ssh/sshd_config'.format(container_rootfs_path),
+        ['PasswordAuthentication no', 'GatewayPorts clientspecified', 'MaxSessions 128'], use_sudo=True)
+    fabric.api.sudo('chroot {} service ssh reload'.format(container_rootfs_path))
+
+    fabric.api.sudo('chroot {} apt-get -q update'.format(container_rootfs_path))
+    fabric.api.sudo('chroot {} apt-get -q -y purge ntpdate ntp whoopsie network-manager'.format(container_rootfs_path))
+    fabric.api.sudo('chroot {} apt-get -q -y install unattended-upgrades iptables git-core language-pack-en unzip wget python python-pip python-virtualenv'.format(container_rootfs_path))
+    fabric.api.sudo('chroot {} mkdir -p {}'.format(container_rootfs_path, VEIL_TMP_DIR))
+    fabric.api.sudo('chroot {} mkdir -p {}'.format(container_rootfs_path, PYPI_ARCHIVE_DIR))
+    fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "setuptools>=3.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
+    fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "pip>=1.5.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
+    fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "virtualenv>=1.11.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
+    fabric.api.sudo('touch /opt/veil-container-{}.initialized'.format(server.container_name))
+
 
 @atomic_installer
 def veil_container_sources_list_resource(server):
-    if server.container_name in servers_installed_sources_list:
-        return
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_container_sources_list?{}'.format(server.container_name)
@@ -150,7 +158,6 @@ def veil_container_sources_list_resource(server):
     context = dict(mirror=VEIL_APT_URL, codename=fabric.api.run('lsb_release -cs')) # Assumption: lxc container has same os version as host
     fabric.contrib.files.upload_template('sources.list.j2', full_sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
-    servers_installed_sources_list.append(server.container_name)
 
 
 @atomic_installer

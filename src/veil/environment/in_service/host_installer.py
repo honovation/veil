@@ -11,31 +11,35 @@ from .container_installer import veil_container_resource
 
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
-hosts_installed = []
+hosts_to_install = []
+hosts_initialized_before = []
 
 @composite_installer
 def veil_hosts_resource(veil_env_name, config_dir):
     resources = []
     for host in list_veil_hosts(veil_env_name).values():
-        if host.base_name not in hosts_installed:
+        if host.base_name not in hosts_to_install:
             resources.extend([
-                veil_host_onetime_config_resource(host=host),
+                veil_host_onetime_config_resource(host=host, config_dir=config_dir),
                 veil_host_config_resource(host=host, config_dir=config_dir),
                 veil_host_framework_codebase_resource(host=host)
             ])
-            hosts_installed.append(host.base_name)
+            hosts_to_install.append(host.base_name)
         for server in host.server_list:
             resources.append(veil_container_resource(host=host, server=server, config_dir=config_dir))
     return resources
 
 
 @composite_installer
-def veil_host_onetime_config_resource(host):
+def veil_host_onetime_config_resource(host, config_dir):
     fabric.api.env.host_string = '{}@{}:{}'.format(host.ssh_user, host.internal_ip, host.ssh_port)
     fabric.api.env.forward_agent = True
-    installed = fabric.contrib.files.exists('/opt/veil-host-{}.initialized'.format(host.env_name))
-    if installed:
+
+    initialized = fabric.contrib.files.exists('/opt/veil-host-{}.initialized'.format(host.env_name))
+    if initialized:
+        hosts_initialized_before.append(host.base_name)
         return []
+
     resources = [
         veil_host_file_resource(local_path=CURRENT_DIR / 'iptablesload', host=host, remote_path='/etc/network/if-pre-up.d/iptablesload',
             owner='root', owner_group='root', mode=0755),
@@ -46,7 +50,7 @@ def veil_host_onetime_config_resource(host):
         veil_host_file_resource(local_path=CURRENT_DIR / 'sudoers.d.ssh-auth-sock', host=host, remote_path='/etc/sudoers.d/ssh-auth-sock',
             owner='root', owner_group='root', mode=0440),
         veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0755),
-        veil_host_sources_list_resource(host=host),
+        veil_host_config_resource(host=host, config_dir=config_dir),
         veil_host_init_resource(host=host)
     ]
     if fabric.api.run('lsb_release -cs') == 'trusty':
@@ -60,6 +64,9 @@ def veil_host_onetime_config_resource(host):
 
 @composite_installer
 def veil_host_config_resource(host, config_dir):
+    if host.base_name in hosts_initialized_before:
+        return []
+
     veil_server_user_name = host.ssh_user
     env_config_dir = config_dir / host.env_name
     resources = [
@@ -117,6 +124,10 @@ def veil_host_init_resource(host):
         key = 'veil_host_init?{}'.format(host.env_name)
         dry_run_result[key] = 'INSTALL'
         return
+
+    fabric.contrib.files.append('/etc/ssh/sshd_config', 'PasswordAuthentication no', use_sudo=True)
+    fabric.api.sudo('service ssh reload')
+
     fabric.api.sudo('apt-get -q update')
     fabric.api.sudo('apt-get -q -y purge ntp whoopsie network-manager')
     fabric.api.sudo('apt-get -q -y install ntpdate unattended-upgrades iptables git-core language-pack-en unzip wget python python-pip python-virtualenv lxc')
@@ -131,12 +142,8 @@ def veil_host_init_resource(host):
     fabric.api.sudo('touch /opt/veil-host-{}.initialized'.format(host.env_name))
 
 
-hosts_installed_sources_list = []
-
 @atomic_installer
 def veil_host_sources_list_resource(host):
-    if host.name in hosts_installed_sources_list:
-        return
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_host_sources_list?{}'.format(host.env_name)
@@ -147,7 +154,6 @@ def veil_host_sources_list_resource(host):
     context = dict(mirror=VEIL_APT_URL, codename=fabric.api.run('lsb_release -cs'))
     fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
-    hosts_installed_sources_list.append(host.name)
 
 
 @atomic_installer
