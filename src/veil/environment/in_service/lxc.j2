@@ -1,7 +1,10 @@
+{% if is_precise %}
+
+
 # MIRROR to be used by ubuntu template at container creation:
 # Leaving it undefined is fine
-MIRROR="http://mirrors.163.com/ubuntu/"
-SECURITY_MIRROR="http://mirrors.163.com/ubuntu/"
+MIRROR="{{ mirror }}"
+SECURITY_MIRROR="{{ mirror }}"
 # or
 #MIRROR="http://<host-ip-addr>:3142/archive.ubuntu.com/ubuntu"
 
@@ -29,3 +32,25 @@ LXC_DHCP_RANGE="10.0.3.2,10.0.3.254"
 LXC_DHCP_MAX="253"
 
 LXC_SHUTDOWN_TIMEOUT=120
+
+
+{% else %}
+
+
+# MIRROR to be used by ubuntu template at container creation:
+# Leaving it undefined is fine
+MIRROR="{{ mirror }}"
+# or
+#MIRROR="http://<host-ip-addr>:3142/archive.ubuntu.com/ubuntu"
+
+# LXC_AUTO - whether or not to start containers symlinked under
+# /etc/lxc/auto
+LXC_AUTO="true"
+
+USE_LXC_BRIDGE="false"  # overridden in lxc-net
+[ -f /etc/default/lxc-net ] && . /etc/default/lxc-net
+
+LXC_SHUTDOWN_TIMEOUT=120
+
+
+{% endif %}

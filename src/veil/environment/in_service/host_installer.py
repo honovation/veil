@@ -51,14 +51,9 @@ def veil_host_onetime_config_resource(host, config_dir):
             owner='root', owner_group='root', mode=0440),
         veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0755),
         veil_host_config_resource(host=host, config_dir=config_dir),
-        veil_host_init_resource(host=host)
+        veil_host_init_resource(host=host),
+        veil_lxc_config_resource(host=host)
     ]
-    if fabric.api.run('lsb_release -cs') == 'precise':
-        resources.append(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc', host=host, remote_path='/etc/default/lxc',
-            owner='root', owner_group='root', mode=0644, keep_origin=True))
-    else:
-        resources.append(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc-net', host=host, remote_path='/etc/default/lxc-net',
-            owner='root', owner_group='root', mode=0644, keep_origin=True))
     return resources
 
 
@@ -154,6 +149,25 @@ def veil_host_sources_list_resource(host):
     context = dict(mirror=VEIL_APT_URL, codename=fabric.api.run('lsb_release -cs'))
     fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
+
+
+@atomic_installer
+def veil_lxc_config_resource(host):
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        key = 'veil_lxc_config?{}'.format(host.env_name)
+        dry_run_result[key] = 'INSTALL'
+        return
+
+    is_precise = fabric.api.run('lsb_release -cs') == 'precise'
+    lxc_config_path = '/etc/default/lxc'
+    fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=lxc_config_path))
+    context = dict(is_precise=is_precise, mirror=VEIL_APT_URL)
+    fabric.contrib.files.upload_template('lxc.j2', lxc_config_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
+        use_sudo=True, backup=False, mode=0644)
+    if not is_precise:
+        installer_resource(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc-net', host=host, remote_path='/etc/default/lxc-net',
+            owner='root', owner_group='root', mode=0644, keep_origin=True))
 
 
 @atomic_installer
