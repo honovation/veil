@@ -1,31 +1,4 @@
-{% if is_trusty %}
-
-
-lxc.include = /usr/share/lxc/config/ubuntu.common.conf
-
-lxc.arch = amd64
-lxc.utsname = {{ name }}
-lxc.start.auto = 1
-lxc.start.delay = 5
-lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
-lxc.mount = /var/lib/lxc/{{ name }}/fstab
-
-lxc.network.type = veth
-lxc.network.link = {{ lan_interface }}
-lxc.network.flags = up
-lxc.network.hwaddr = {{ mac_address }}
-
-{% if memory_limit %}
-lxc.cgroup.memory.limit_in_bytes = {{ memory_limit }}
-{% endif %}
-
-{% if cpu_share %}
-# default to 1024
-lxc.cgroup.cpu.shares = {{ cpu_share }}
-{% endif %}
-
-
-{% else %}
+{% if is_precise %}
 
 
 lxc.utsname = {{ name }}
@@ -79,6 +52,33 @@ lxc.cgroup.devices.allow = c 1:7 rwm
 lxc.cgroup.devices.allow = c 10:228 rwm
 #kvm
 lxc.cgroup.devices.allow = c 10:232 rwm
+
+
+{% else %}
+
+
+lxc.include = /usr/share/lxc/config/ubuntu.common.conf
+
+lxc.arch = amd64
+lxc.utsname = {{ name }}
+lxc.start.auto = 1
+lxc.start.delay = 5
+lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
+lxc.mount = /var/lib/lxc/{{ name }}/fstab
+
+lxc.network.type = veth
+lxc.network.link = {{ lan_interface }}
+lxc.network.flags = up
+lxc.network.hwaddr = {{ mac_address }}
+
+{% if memory_limit %}
+lxc.cgroup.memory.limit_in_bytes = {{ memory_limit }}
+{% endif %}
+
+{% if cpu_share %}
+# default to 1024
+lxc.cgroup.cpu.shares = {{ cpu_share }}
+{% endif %}
 
 
 {% endif %}

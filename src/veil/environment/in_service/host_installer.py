@@ -53,11 +53,11 @@ def veil_host_onetime_config_resource(host, config_dir):
         veil_host_config_resource(host=host, config_dir=config_dir),
         veil_host_init_resource(host=host)
     ]
-    if fabric.api.run('lsb_release -cs') == 'trusty':
-        resources.append(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc-net', host=host, remote_path='/etc/default/lxc-net',
+    if fabric.api.run('lsb_release -cs') == 'precise':
+        resources.append(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc', host=host, remote_path='/etc/default/lxc',
             owner='root', owner_group='root', mode=0644, keep_origin=True))
     else:
-        resources.append(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc', host=host, remote_path='/etc/default/lxc',
+        resources.append(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc-net', host=host, remote_path='/etc/default/lxc-net',
             owner='root', owner_group='root', mode=0644, keep_origin=True))
     return resources
 
