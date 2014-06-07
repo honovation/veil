@@ -17,7 +17,7 @@ LOGGER = logging.getLogger(__name__)
 def bring_up_programs(*argv):
     # create socket directory for postgresql if not exists
     try:
-        shell_execute('getent passwd postgres && postgres -V')
+        shell_execute('getent passwd postgres')
     except:
         pass
     else:
