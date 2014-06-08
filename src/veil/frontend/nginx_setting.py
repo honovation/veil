@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 
-NGINX_PID_PATH = VEIL_VAR_DIR / 'nginx.pid'
+NGINX_PID_PATH = '/tmp/nginx.pid'
 
 def nginx_program(servers, enable_compression=False, has_bunker=False, is_bunker=False, bunker_ip=None, **kwargs):
     return objectify({

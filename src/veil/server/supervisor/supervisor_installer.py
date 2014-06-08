@@ -26,7 +26,7 @@ def supervisor_resource(programs, inet_http_server_port=None, program_groups=Non
                 {
                     'programs': programs,
                     'program_groups': program_groups or {},
-                    'pid_file': VEIL_VAR_DIR / 'supervisor.pid'
+                    'pid_file': '/tmp/supervisor.pid'
                 })
         )),
         directory_resource(path=VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
