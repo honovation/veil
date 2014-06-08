@@ -22,9 +22,10 @@ def supervisor_resource(programs, inet_http_server_port=None, program_groups=Non
         file_resource(path=VEIL_ETC_DIR / 'supervisor.cfg', content=render_config('supervisord.cfg.j2',
             config=merge_multiple_settings(
                 inet_http_server_config,
-                logging_config, {
+                logging_config,
+                {
                     'programs': programs,
-                    'program_groups': program_groups,
+                    'program_groups': program_groups or {},
                     'pid_file': VEIL_VAR_DIR / 'supervisor.pid'
                 })
         )),

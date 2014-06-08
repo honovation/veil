@@ -9,6 +9,9 @@ def postgresql_program(purpose, version, host, port, owner, owner_password, user
         '{}_postgresql'.format(purpose): {
             'execute_command': '{}/postgres -D {}'.format(get_pg_bin_dir(version), get_pg_data_dir(purpose, version)),
             'migrate_command': 'veil backend database postgresql migrate {}'.format(purpose),
+            'priority': 100,
+            'stop_signal': 'INT', # use the "fast" shutdown signal SIGINT
+            'stopwaitsecs': 20,
             'resources': [('veil.backend.database.postgresql.postgresql_server_resource', {
                 'purpose': purpose,
                 'config': {

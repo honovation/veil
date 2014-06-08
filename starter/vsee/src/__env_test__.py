@@ -9,7 +9,7 @@ TEST_REDIS_PORT = 6380
 
 config = __env__.env_config(
     person_website_start_port=2050,
-    person_website_processes_count=1,
+    person_website_process_count=1,
     person_website_domain='person.dev.dmright.com',
     person_website_domain_port=81,
     persist_store_redis_host=TEST_REDIS_HOST,

@@ -22,25 +22,23 @@ def to_supervisor_programs(veil_server_programs):
     for program_name, veil_server_program in veil_server_programs.items():
         supervisor_program = {
             'execute_command': veil_server_program.execute_command,
-            'run_as': CURRENT_USER
+            'run_as': veil_server_program.get('run_as', CURRENT_USER),
+            'redirect_stderr': veil_server_program.get('redirect_stderr', True)
         }
-        if 'run_as' in veil_server_program:
-            supervisor_program['run_as'] = veil_server_program.run_as
         if 'run_in_directory' in veil_server_program:
             supervisor_program['run_in_directory'] = veil_server_program.run_in_directory
-        if 'environment_variables' in veil_server_program:
-            supervisor_program['environment_variables'] = format_environment_variables(
-                veil_server_program.environment_variables)
-        if 'startretries' in veil_server_program:
-            supervisor_program['startretries'] = veil_server_program.startretries
-        if 'startsecs' in veil_server_program:
-            supervisor_program['startsecs'] = veil_server_program.startsecs
-        if 'redirect_stderr' in veil_server_program:
-            supervisor_program['redirect_stderr'] = veil_server_program.redirect_stderr
-        else:
-            supervisor_program['redirect_stderr'] = True
         if 'priority' in veil_server_program:
             supervisor_program['priority'] = veil_server_program.priority
+        if 'environment_variables' in veil_server_program:
+            supervisor_program['environment_variables'] = format_environment_variables(veil_server_program.environment_variables)
+        if 'startsecs' in veil_server_program:
+            supervisor_program['startsecs'] = veil_server_program.startsecs
+        if 'startretries' in veil_server_program:
+            supervisor_program['startretries'] = veil_server_program.startretries
+        if 'stopwaitsecs' in veil_server_program:
+            supervisor_program['stopwaitsecs'] = veil_server_program.stopwaitsecs
+        if 'stop_signal' in veil_server_program:
+            supervisor_program['stop_signal'] = veil_server_program.stop_signal
         supervisor_programs[program_name] = supervisor_program
     return supervisor_programs
 

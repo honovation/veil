@@ -41,7 +41,7 @@ LOGGING_LEVEL_CONFIG = objectify({
 })
 
 
-def env_config(person_website_start_port, person_website_processes_count, person_website_domain, person_website_domain_port, persist_store_redis_host,
+def env_config(person_website_start_port, person_website_process_count, person_website_domain, person_website_domain_port, persist_store_redis_host,
         persist_store_redis_port, memory_cache_redis_host, memory_cache_redis_port, vsee_postgresql_version, vsee_postgresql_host,
         vsee_postgresql_port, queue_type, queue_host, queue_port, resweb_domain, resweb_domain_port, resweb_host, resweb_port):
     return objectify(locals())
@@ -119,7 +119,7 @@ def memory_cache_redis_program(config):
 
 def person_website_programs(config):
     return website_programs('person', LOGGING_LEVEL_CONFIG.vsee, application_config=vsee_config(config), start_port=config.person_website_start_port,
-        processes_count=config.person_website_processes_count)
+        process_count=config.person_website_process_count)
 
 
 def person_website_nginx_server(config, extra_locations=None):
@@ -128,7 +128,7 @@ def person_website_nginx_server(config, extra_locations=None):
     for purpose in PERSON_WEBSITE_BUCKETS:
         locations = merge_multiple_settings(locations, extra_locations, website_bucket_location(purpose))
     return nginx_server(config.person_website_domain, config.person_website_domain_port, locations=locations,
-        upstreams=website_upstreams('person', config.person_website_start_port, config.person_website_processes_count),
+        upstreams=website_upstreams('person', config.person_website_start_port, config.person_website_process_count),
         error_page={'404': '404.html', '500': '500.html'}, error_page_dir='{}/static/person/error-page'.format(VEIL_HOME))
 
 

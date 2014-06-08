@@ -21,7 +21,7 @@ logfile={{ config.logging.directory }}/supervisor.log
 logfile_maxbytes={{ config.logging.get('max_size', '50MB') }}
 logfile_backups={{ config.logging.get('backups_count', 10) }}
 pidfile={{ config.pid_file }}
-nodaemon=False
+nodaemon=false
 
 ; the below section must remain in the config file for RPC
 ; (supervisorctl/web interface) to work, additional interfaces may be
@@ -45,27 +45,30 @@ serverurl=http://{{ config.inet_http_server.host }}:{{ config.inet_http_server.p
 
 {% for program_name, program in config.programs.items() %}
 [program:{{ program_name }}]
-{% if 'run_as' in program %}
-user={{ program.run_as }}
-{% endif %}
-{% if 'environment_variables' in program %}
-environment={{ program.environment_variables }}
-{% endif %}
 command={{ program.execute_command }}
+user={{ program.run_as }}
 {% if 'run_in_directory' in program %}
 directory={{ program.run_in_directory }}
+{% endif %}
+priority={{ program.get('priority', 999) }}
+{% if 'environment_variables' in program %}
+environment={{ program.environment_variables }}
 {% endif %}
 {% if 'process_name' in program %}
 process_name={{ program.process_name }}
 {% else %}
-{% if 'processes_count' in program %}
+{% if 'process_count' in program %}
 process_name=%(program_name)s-%(process_num)s
 {% else %}
 process_name=%(program_name)s
 {% endif %}
 {% endif %}
-numprocs={{ program.get('processes_count', 1) }}
-stopwaitsecs=10
+numprocs={{ program.get('process_count', 1) }}
+startsecs={{ program.get('startsecs', 3) }}
+startretries={{ program.get('startretries', 3) }}
+stopwaitsecs={{ program.get('stopwaitsecs', 10) }}
+stopsignal={{ program.get('stop_signal', 'TERM') }}
+exitcodes={{ ','.join(program.get('expected_exit_codes', '02')) }}
 redirect_stderr={{ program.redirect_stderr }}
 {% if program.redirect_stderr %}
 stdout_logfile={{ config.logging.directory }}/{{ program_name }}.log
@@ -77,15 +80,6 @@ stdout_logfile_maxbytes={{ program.get('stdout_logfile_maxbytes', '50MB') }}
 stdout_logfile_backups={{ program.get('stdout_logfile_backups', 10) }}
 stderr_logfile_maxbytes={{ program.get('stderr_logfile_maxbytes', '50MB') }}
 stderr_logfile_backups={{ program.get('stderr_logfile_backups', 10) }}
-{% if 'expected_exit_codes' in program %}
-exitcodes={{ ','.join(program.expected_exit_codes) }}
-{% else %}
-exitcodes=0,2
-{% endif %}
-stopsignal={{ program.get('stop_signal', 'INT') }}
-startsecs={{ program.get('startsecs', 3) }}
-startretries={{ program.get('startretries', 3) }}
-priority={{ program.get('priority', 999) }}
 {% endfor %}
 
 ; The below sample eventlistener section shows all possible
@@ -126,7 +120,7 @@ priority={{ program.get('priority', 999) }}
 ; create one or more 'real' group: sections to create "heterogeneous"
 ; process groups.
 
-{% for program_group_name, programs in (config.get('program_groups') or {}).items() %}
+{% for program_group_name, programs in config.program_groups.items() %}
 [group:{{ program_group_name }}]
 programs= {{ programs | join(',') }}
 {% endfor %}

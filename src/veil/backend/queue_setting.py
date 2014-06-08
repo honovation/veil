@@ -26,6 +26,7 @@ def delayed_job_scheduler_program(queue_host, queue_port, logging_level):
     return objectify({
         'delayed_job_scheduler': {
             'execute_command': 'veil sleep 3 pyres_scheduler --host={} --port={} -l {} -f stderr'.format(queue_host, queue_port, logging_level),
+            'priority': 210,
             'resources': [('veil_installer.component_resource', {'name': 'veil.backend.queue'})],
             'startretries': 10
         }
@@ -42,6 +43,7 @@ def periodic_job_scheduler_program(application_logging_levels, application_confi
     return objectify({
         'periodic_job_scheduler': {
             'execute_command': 'veil backend queue periodic-job-scheduler-up',
+            'priority': 220,
             'environment_variables': {
                 'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path,
                 'VEIL_LOGGING_EVENT': 'True'
@@ -75,9 +77,10 @@ def job_worker_program(worker_name, pyres_worker_logging_level, application_logg
                 }, # log instruction for the sub-process forked from pyres_worker, a.k.a our code
                 'group': 'workers',
                 'run_as': run_as or CURRENT_USER,
+                'priority': 200,
                 'resources': resources,
                 'startretries': 10,
-                'startsecs': 10,
+                'startsecs': 5,
                 'redirect_stderr': False,
                 'patchable': True
             }

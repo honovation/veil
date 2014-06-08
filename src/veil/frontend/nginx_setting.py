@@ -8,6 +8,7 @@ def nginx_program(servers, enable_compression=False, has_bunker=False, is_bunker
         'nginx': {
             'execute_command': 'nginx -c {}'.format(VEIL_ETC_DIR / 'nginx.conf'),
             'run_as': 'root',
+            'priority': 400,
             'resources': [('veil.frontend.nginx.nginx_resource', {
                 'servers': servers,
                 'config': dict({

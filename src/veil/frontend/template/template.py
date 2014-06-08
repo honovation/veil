@@ -100,8 +100,7 @@ def get_template_from_file(template_path):
         else:
             handler = get_executing_script_handler()
             if handler:
-                current_template_directory = os.path.dirname(
-                    os.path.abspath(importlib.import_module(handler.__module__).__file__))
+                current_template_directory = os.path.dirname(os.path.abspath(importlib.import_module(handler.__module__).__file__))
             else:
                 raise Exception('unable to get {} from unknown template directory'.format(template_path))
         template_path = os.path.join(current_template_directory, template_path)

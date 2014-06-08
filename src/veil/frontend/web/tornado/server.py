@@ -24,11 +24,11 @@ from .error import handle_exception
 
 LOGGER = getLogger(__name__)
 
-def start_http_server(handler, io_loop=None, host='127.0.0.1', port=8080, processes_count=1):
+def start_http_server(handler, io_loop=None, host='127.0.0.1', port=8080, process_count=1):
     io_loop = io_loop or IOLoop.instance()
     http_server = create_http_server(handler, io_loop=io_loop)
     http_server.bind(port, host)
-    http_server.start(processes_count)
+    http_server.start(process_count)
     io_loop.add_callback(lambda: LOGGER.info('ioloop started: listening at %(host)s:%(port)s', {'host': host, 'port': port}))
     io_loop.start()
 

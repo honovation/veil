@@ -1,5 +1,5 @@
 user {{ config.owner }} {{ config.owner_group }};
-worker_processes {{ config.get('worker_processes_count', 'auto') }};
+worker_processes {{ config.get('worker_process_count', 'auto') }};
 {% if 'worker_priority' in config %}
 worker_priority {{ config.worker_priority }};
 {% endif %}
