@@ -11,7 +11,7 @@ lxc.tty = 4
 lxc.pts = 1024
 lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
 lxc.mount = /var/lib/lxc/{{ name }}/fstab
-lxc.arch = amd64
+lxc.arch = x86_64
 lxc.cap.drop = sys_module mac_admin
 lxc.pivotdir = lxc_putold
 {% if memory_limit %}
@@ -68,7 +68,7 @@ lxc.include = /usr/share/lxc/config/ubuntu.common.conf
 lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
 lxc.mount = /var/lib/lxc/{{ name }}/fstab
 lxc.utsname = {{ name }}
-lxc.arch = amd64
+lxc.arch = x86_64
 
 # Network configuration
 lxc.network.type = veth
