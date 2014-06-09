@@ -57,19 +57,28 @@ lxc.cgroup.devices.allow = c 10:232 rwm
 {% else %}
 
 
+# Template used to create this container: /usr/share/lxc/templates/lxc-ubuntu
+# Parameters passed to the template:
+# For additional config options, please look at lxc.conf(5)
+
+# Common configuration
 lxc.include = /usr/share/lxc/config/ubuntu.common.conf
 
-lxc.arch = amd64
-lxc.utsname = {{ name }}
-lxc.start.auto = 1
-lxc.start.delay = 5
+# Container specific configuration
 lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
 lxc.mount = /var/lib/lxc/{{ name }}/fstab
+lxc.utsname = {{ name }}
+lxc.arch = amd64
 
+# Network configuration
 lxc.network.type = veth
-lxc.network.link = {{ lan_interface }}
 lxc.network.flags = up
+lxc.network.link = {{ lan_interface }}
 lxc.network.hwaddr = {{ mac_address }}
+
+lxc.start.auto = 1
+lxc.start.delay = 5
+lxc.start.order = {{ start_order }} # higher value means starts earlier
 
 {% if memory_limit %}
 lxc.cgroup.memory.limit_in_bytes = {{ memory_limit }}

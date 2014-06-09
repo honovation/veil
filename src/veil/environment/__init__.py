@@ -37,6 +37,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         server.env_name = name
         server.name = server_name
         server.container_name = '{}-{}'.format(server.env_name, server.name)
+        server.start_order = 1000 + 10 * sorted_server_names.index(server_name) if sorted_server_names else 0
         server.host = None
     for host_name, host in env.hosts.items():
         host.env_name = name
