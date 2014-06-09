@@ -232,7 +232,7 @@ def render_installer_file(host, server):
     ]
     installer_file_content = render_config('container-installer-file.j2', mac_address=mac_address, lan_interface=host.lan_interface,
         ip_address=ip_address, gateway=gateway, iptables_rules=iptables_rules, container_name=server.container_name, user_name=veil_server_user_name,
-        name_servers=','.join(server.name_servers), memory_limit=server.memory_limit, cpu_share=server.cpu_share, start_order=server.start_order)
+        name_servers=','.join(server.name_servers), start_order=server.start_order, memory_limit=server.memory_limit, cpu_share=server.cpu_share)
     lines = [installer_file_content]
     for resource in host.resources:
         installer_name, installer_args = resource

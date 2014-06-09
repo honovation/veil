@@ -5,11 +5,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 @composite_installer
-def lxc_container_resource(container_name, mac_address, lan_interface, memory_limit=None, cpu_share=None):
+def lxc_container_resource(container_name, mac_address, lan_interface, start_order, memory_limit=None, cpu_share=None):
     resources = [
         lxc_container_created_resource(name=container_name),
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name), content=render_config('lxc-container.cfg.j2', name=container_name,
-            mac_address=mac_address, lan_interface=lan_interface, memory_limit=memory_limit, cpu_share=cpu_share,
+            mac_address=mac_address, lan_interface=lan_interface, start_order=start_order, memory_limit=memory_limit, cpu_share=cpu_share,
             is_precise=CURRENT_OS.codename == 'precise'), keep_origin=True)
     ]
     return resources
