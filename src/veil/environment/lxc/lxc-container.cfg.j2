@@ -77,7 +77,7 @@ lxc.network.link = {{ lan_interface }}
 lxc.network.hwaddr = {{ mac_address }}
 
 lxc.start.auto = 1
-lxc.start.delay = 5
+lxc.start.delay = 3
 lxc.start.order = {{ start_order }} # higher value means starts earlier
 
 {% if memory_limit %}
