@@ -51,8 +51,7 @@ def veil_host_onetime_config_resource(host, config_dir):
             owner='root', owner_group='root', mode=0440),
         veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0755),
         veil_host_config_resource(host=host, config_dir=config_dir),
-        veil_host_init_resource(host=host),
-        veil_lxc_config_resource(host=host)
+        veil_host_init_resource(host=host)
     ]
     return resources
 
@@ -134,6 +133,9 @@ def veil_host_init_resource(host):
     fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "setuptools>=3.6"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "pip>=1.5.6"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "virtualenv>=1.11.6"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
+
+    install_resource(veil_lxc_config_resource(host=host))
+
     fabric.api.sudo('touch /opt/veil-host-{}.initialized'.format(host.env_name))
 
 
