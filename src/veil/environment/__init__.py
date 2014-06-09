@@ -8,8 +8,8 @@ from .environment import VEIL_VAR_DIR
 from .environment import VEIL_SERVER
 from .environment import VEIL_ENV
 from .environment import VEIL_ENV_TYPE
-from .environment import VEIL_DEPENDENCY_URL
-from .environment import VEIL_APT_URL
+from .environment import DEPENDENCY_URL
+from .environment import APT_URL
 from .environment import PYPI_INDEX_URL
 from .environment import PYPI_ARCHIVE_DIR
 from .environment import VEIL_TMP_DIR

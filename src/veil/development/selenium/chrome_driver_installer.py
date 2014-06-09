@@ -28,7 +28,7 @@ def chrome_driver_resource():
         if VEIL_ENV_TYPE in ('development', 'test') and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
             set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return
-    url = '{}/chromedriver/{}/chromedriver_linux64.zip'.format(VEIL_DEPENDENCY_URL, RESOURCE_VERSION)
+    url = '{}/chromedriver/{}/chromedriver_linux64.zip'.format(DEPENDENCY_URL, RESOURCE_VERSION)
     LOGGER.info('installing selenium webdriver for chrome: from %(url)s...', {'url': url})
     local_path = '{}/chromedriver_linux64_{}.zip'.format(VEIL_TMP_DIR, RESOURCE_VERSION)
     shell_execute('wget {} -O {}'.format(url, local_path))

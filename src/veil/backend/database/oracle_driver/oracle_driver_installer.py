@@ -27,9 +27,9 @@ def oracle_driver_resource():
 def download_oracle_instantclient():
     if os.path.exists(ORACLE_HOME):
         return
-    shell_execute('wget {}/instantclient-basic-linux.x64-12.1.0.1.0.zip -O {}/instantclient-basic-linux.x64-12.1.0.1.0.zip'.format(VEIL_DEPENDENCY_URL, VEIL_TMP_DIR))
+    shell_execute('wget {}/instantclient-basic-linux.x64-12.1.0.1.0.zip -O {}/instantclient-basic-linux.x64-12.1.0.1.0.zip'.format(DEPENDENCY_URL, VEIL_TMP_DIR))
     shell_execute('unzip {}/instantclient-basic-linux.x64-12.1.0.1.0.zip -d /opt'.format(VEIL_TMP_DIR))
-    shell_execute('wget {}/instantclient-sdk-linux.x64-12.1.0.1.0.zip -O {}/instantclient-sdk-linux.x64-12.1.0.1.0.zip'.format(VEIL_DEPENDENCY_URL, VEIL_TMP_DIR))
+    shell_execute('wget {}/instantclient-sdk-linux.x64-12.1.0.1.0.zip -O {}/instantclient-sdk-linux.x64-12.1.0.1.0.zip'.format(DEPENDENCY_URL, VEIL_TMP_DIR))
     shell_execute('unzip {}/instantclient-sdk-linux.x64-12.1.0.1.0.zip -d /opt'.format(VEIL_TMP_DIR))
 
 

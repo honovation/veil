@@ -148,7 +148,7 @@ def veil_host_sources_list_resource(host):
         return
     sources_list_path = '/etc/apt/sources.list'
     fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=sources_list_path))
-    context = dict(mirror=VEIL_APT_URL, codename=fabric.api.run('lsb_release -cs'))
+    context = dict(mirror=APT_URL, codename=fabric.api.run('lsb_release -cs'))
     fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
 
@@ -164,7 +164,7 @@ def veil_lxc_config_resource(host):
     is_precise = fabric.api.run('lsb_release -cs') == 'precise'
     lxc_config_path = '/etc/default/lxc'
     fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=lxc_config_path))
-    context = dict(is_precise=is_precise, mirror=VEIL_APT_URL)
+    context = dict(is_precise=is_precise, mirror=APT_URL)
     fabric.contrib.files.upload_template('lxc.j2', lxc_config_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
     if not is_precise:

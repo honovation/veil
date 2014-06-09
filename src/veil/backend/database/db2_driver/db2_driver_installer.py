@@ -25,7 +25,7 @@ def db2_driver_resource():
 def download_db2_clidriver():
     if os.path.exists(IBM_DB_HOME):
         return
-    shell_execute('wget {}/db2-clidriver.tar.gz -O {}/db2-clidriver.tar.gz'.format(VEIL_DEPENDENCY_URL, VEIL_TMP_DIR))
+    shell_execute('wget {}/db2-clidriver.tar.gz -O {}/db2-clidriver.tar.gz'.format(DEPENDENCY_URL, VEIL_TMP_DIR))
     shell_execute('tar xzf {}/db2-clidriver.tar.gz -C /opt'.format(VEIL_TMP_DIR))
 
 

@@ -5,8 +5,8 @@ from veil_component import *
 from veil.server.os import *
 
 
-VEIL_APT_URL = 'http://mirrors.163.com/ubuntu/'
-VEIL_DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
+APT_URL = 'http://mirrors.163.com/ubuntu/'
+DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
 
 PYPI_INDEX_URL = 'http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
 PYPI_ARCHIVE_DIR = as_path('/opt/pypi')
