@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import re
 import logging
-from veil.environment import VEIL_SERVER
 from veil_component import *
 from veil.frontend.cli import *
 from veil.utility.encoding import *
@@ -111,7 +110,7 @@ def list_writable_tables():
 
 
 def check_table_dependencies(component_name, purpose, sql):
-    if VEIL_SERVER not in {'development', 'test'}:
+    if VEIL_ENV_TYPE not in {'development', 'test'}:
         return
     if not component_name:
         return
@@ -184,8 +183,8 @@ def extract_sub_queries(sql, queries):
         return
     inner_left = sql.find('(', left + 1, right)
     if inner_left == -1:
-        queries.append(sql[left+1:right])
-        extract_sub_queries('{} {} {}'.format(sql[:left], SUB_QUERY_TOKEN, sql[right+1:]), queries)
+        queries.append(sql[left + 1:right])
+        extract_sub_queries('{} {} {}'.format(sql[:left], SUB_QUERY_TOKEN, sql[right + 1:]), queries)
         return
     pos = left
     count = 1
@@ -197,8 +196,8 @@ def extract_sub_queries(sql, queries):
             count -= 1
         else:
             pass
-    extract_sub_queries(sql[left+1:pos], queries)
-    extract_sub_queries('{} {} {}'.format(sql[:left], SUB_QUERY_TOKEN, sql[pos+1:]), queries)
+    extract_sub_queries(sql[left + 1:pos], queries)
+    extract_sub_queries('{} {} {}'.format(sql[:left], SUB_QUERY_TOKEN, sql[pos + 1:]), queries)
     return
 
 

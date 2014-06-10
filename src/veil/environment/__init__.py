@@ -1,21 +1,20 @@
 from __future__ import unicode_literals, print_function, division
+from .environment import APT_URL
+from .environment import DEPENDENCY_URL
+from .environment import DEPENDENCY_DIR
+from .environment import DEPENDENCY_INSTALL_DIR
+from .environment import PYPI_INDEX_URL
+from .environment import PYPI_ARCHIVE_DIR
 from .environment import VEIL_HOME
 from .environment import VEIL_FRAMEWORK_HOME
 from .environment import VEIL_FRAMEWORK_CODEBASE
 from .environment import VEIL_LOG_DIR
 from .environment import VEIL_ETC_DIR
 from .environment import VEIL_VAR_DIR
-from .environment import VEIL_SERVER
-from .environment import VEIL_ENV
 from .environment import VEIL_ENV_TYPE
-from .environment import DEPENDENCY_URL
-from .environment import APT_URL
-from .environment import DEPENDENCY_DIR
-from .environment import DEPENDENCY_INSTALL_DIR
-from .environment import PYPI_INDEX_URL
-from .environment import PYPI_ARCHIVE_DIR
+from .environment import VEIL_ENV
+from .environment import VEIL_SERVER
 from .environment import CURRENT_OS
-from .environment import VEIL_SERVER_NAME
 from .environment import CURRENT_USER
 from .environment import CURRENT_USER_GROUP
 from .environment import CURRENT_USER_HOME
@@ -112,7 +111,7 @@ def get_veil_server(veil_env_name, veil_server_name):
 
 
 def get_current_veil_server():
-    return get_veil_server(VEIL_ENV, VEIL_SERVER_NAME)
+    return get_veil_server(VEIL_ENV, VEIL_SERVER)
 
 
 def list_veil_hosts(veil_env_name):

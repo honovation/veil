@@ -32,11 +32,11 @@ def load_website_config(purpose):
         config.recalculates_static_file_hash = unicode(True) == config.recalculates_static_file_hash
         config.clears_template_cache = unicode(True) == config.clears_template_cache
     except IOError:
-        if 'test' == VEIL_SERVER:
+        if 'test' == VEIL_ENV_TYPE:
             config = DictObject()
         else:
             raise
-    if 'test' == VEIL_SERVER:
+    if 'test' == VEIL_ENV_TYPE:
         config.update(overridden_website_configs.get(purpose, {}))
     return config
 

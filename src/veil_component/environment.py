@@ -15,13 +15,10 @@ assert VEIL_HOME, 'must specify $VEIL_HOME'
 VEIL_HOME = as_path(VEIL_HOME)
 
 VEIL_SERVER = getenv('VEIL_SERVER') or 'development'
-VEIL_ENV = None
-VEIL_SERVER_NAME = None
 if '/' in VEIL_SERVER:
-    VEIL_ENV, VEIL_SERVER_NAME = VEIL_SERVER.split('/', 1)
+    VEIL_ENV, VEIL_SERVER = VEIL_SERVER.split('/', 1)
 else:
-    VEIL_ENV = VEIL_SERVER
-    VEIL_SERVER_NAME = '@'
+    VEIL_ENV, VEIL_SERVER = VEIL_SERVER, '@'
 VEIL_ENV_TYPE = VEIL_ENV.rsplit('-', 1)[-1]  # development, test, staging, public (i.e. production)
 
 CURRENT_OS = namedtuple('VeilOS', 'distname, version, codename')(*platform.linux_distribution())

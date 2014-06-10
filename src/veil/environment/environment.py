@@ -38,10 +38,8 @@ VEIL_FRAMEWORK_CODEBASE = 'git@ljhost-003.dmright.com:/opt/git/veil.git'
 
 _application_version = None
 def get_application_version():
-    if 'development' == VEIL_SERVER:
-        return 'development'
-    if 'test' == VEIL_SERVER:
-        return 'test'
+    if VEIL_ENV_TYPE in {'development', 'test'}:
+        return  VEIL_ENV_TYPE
     global _application_version
     from veil.utility.shell import shell_execute
     if not _application_version:

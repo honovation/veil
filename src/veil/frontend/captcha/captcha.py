@@ -66,8 +66,8 @@ def captcha_protected(func):
 def validate_captcha(challenge_code, captcha_answer):
     request = get_current_http_request()
     real_answer = redis().get(captcha_redis_key(challenge_code))
-    if 'test' == VEIL_SERVER or (captcha_answer and real_answer == captcha_answer):
-        if 'test' != VEIL_SERVER:
+    if 'test' == VEIL_ENV_TYPE or (captcha_answer and real_answer == captcha_answer):
+        if 'test' != VEIL_ENV_TYPE:
             LOGGER.info('[sensitive]validate captcha succeeded: %(site)s, %(function)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
                 'site': request.host,
                 'function': 'captcha',
