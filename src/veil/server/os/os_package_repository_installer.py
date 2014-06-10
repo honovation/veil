@@ -39,7 +39,7 @@ def postgresql_apt_repository_resource():
     LOGGER.info('installing postgresql apt repository: %(name)s ...', {'name': POSTGRESQL_APT_REPOSITORY_NAME})
     shell_execute('echo "deb http://apt.postgresql.org/pub/repos/apt/ {os_codename}-{name} main" > /etc/apt/sources.list.d/{name}.list'.format(
         os_codename=CURRENT_OS.codename, name=POSTGRESQL_APT_REPOSITORY_NAME), capture=True)
-    shell_execute('wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -', capture=True)
+    shell_execute('wget -q -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -', capture=True)
     set_apt_get_update_executed(False)
 
 

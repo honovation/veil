@@ -3,7 +3,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 
 
-ORACLE_HOME = '/opt/instantclient_12_1'
+ORACLE_HOME = DEPENDENCY_DIR / 'instantclient_12_1'
 ORACLE_DRIVER_CONF_PATH = '/etc/ld.so.conf.d/oracle_driver.conf'
 RESOURCE_KEY = 'veil.backend.database.oracle_driver.oracle_driver_resource'
 RESOURCE_VERSION = '12.1.0.1.0'
@@ -27,10 +27,12 @@ def oracle_driver_resource():
 def download_oracle_instantclient():
     if os.path.exists(ORACLE_HOME):
         return
-    shell_execute('wget {}/instantclient-basic-linux.x64-12.1.0.1.0.zip -O {}/instantclient-basic-linux.x64-12.1.0.1.0.zip'.format(DEPENDENCY_URL, VEIL_TMP_DIR))
-    shell_execute('unzip {}/instantclient-basic-linux.x64-12.1.0.1.0.zip -d /opt'.format(VEIL_TMP_DIR))
-    shell_execute('wget {}/instantclient-sdk-linux.x64-12.1.0.1.0.zip -O {}/instantclient-sdk-linux.x64-12.1.0.1.0.zip'.format(DEPENDENCY_URL, VEIL_TMP_DIR))
-    shell_execute('unzip {}/instantclient-sdk-linux.x64-12.1.0.1.0.zip -d /opt'.format(VEIL_TMP_DIR))
+    basic_local_path = DEPENDENCY_DIR / 'instantclient-basic-linux.x64-12.1.0.1.0.zip'
+    shell_execute('wget -c {}/instantclient-basic-linux.x64-12.1.0.1.0.zip -O {}'.format(DEPENDENCY_URL, basic_local_path))
+    shell_execute('unzip {} -d {}'.format(basic_local_path, DEPENDENCY_DIR))
+    sdk_local_path = DEPENDENCY_DIR / 'instantclient-sdk-linux.x64-12.1.0.1.0.zip'
+    shell_execute('wget -c {}/instantclient-sdk-linux.x64-12.1.0.1.0.zip -O {}'.format(DEPENDENCY_URL, sdk_local_path))
+    shell_execute('unzip {} -d {}'.format(sdk_local_path, DEPENDENCY_DIR))
 
 
 def is_oracle_instantclient_installed():

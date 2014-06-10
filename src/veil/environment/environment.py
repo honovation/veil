@@ -6,14 +6,15 @@ from veil.server.os import *
 
 
 APT_URL = 'http://mirrors.163.com/ubuntu/'
+
 DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
+DEPENDENCY_DIR = as_path('/opt/dependency')
+DEPENDENCY_DIR.makedirs()
 
 PYPI_INDEX_URL = 'http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
 PYPI_ARCHIVE_DIR = as_path('/opt/pypi')
 PYPI_ARCHIVE_DIR.makedirs()
 
-VEIL_TMP_DIR = as_path('/opt/tmp')
-VEIL_TMP_DIR.makedirs()
 
 VEIL_LOG_DIR = VEIL_HOME / 'log' / VEIL_ENV
 VEIL_ETC_DIR = VEIL_HOME / 'etc' / VEIL_ENV
