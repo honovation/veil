@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 
 
-IBM_DB_HOME = DEPENDENCY_DIR / 'db2-clidriver'
+IBM_DB_HOME = DEPENDENCY_INSTALL_DIR / 'db2-clidriver'
 RESOURCE_KEY = 'veil.backend.database.db_driver.db2_driver_resource'
 RESOURCE_VERSION = '9.7'
 
@@ -26,8 +26,9 @@ def download_db2_clidriver():
     if os.path.exists(IBM_DB_HOME):
         return
     local_path = DEPENDENCY_DIR / 'db2-clidriver.tar.gz'
-    shell_execute('wget -c {}/db2-clidriver.tar.gz -O {}'.format(DEPENDENCY_URL, local_path))
-    shell_execute('tar xzf {} -C {}'.format(local_path, DEPENDENCY_DIR))
+    if not os.path.exists(local_path):
+        shell_execute('wget -c {}/db2-clidriver.tar.gz -O {}'.format(DEPENDENCY_URL, local_path))
+    shell_execute('tar xzf {} -C {}'.format(local_path, DEPENDENCY_INSTALL_DIR))
 
 
 def is_db2_clidriver_installed():

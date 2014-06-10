@@ -10,6 +10,8 @@ APT_URL = 'http://mirrors.163.com/ubuntu/'
 DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
 DEPENDENCY_DIR = as_path('/opt/dependency')
 DEPENDENCY_DIR.makedirs()
+DEPENDENCY_INSTALL_DIR = as_path('/opt/dependency-install')
+DEPENDENCY_INSTALL_DIR.makedirs()
 
 PYPI_INDEX_URL = 'http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
 PYPI_ARCHIVE_DIR = as_path('/opt/pypi')

@@ -31,7 +31,8 @@ def chrome_driver_resource():
     url = '{}/chromedriver/{}/chromedriver_linux64.zip'.format(DEPENDENCY_URL, RESOURCE_VERSION)
     LOGGER.info('installing selenium webdriver for chrome: from %(url)s...', {'url': url})
     local_path = DEPENDENCY_DIR / 'chromedriver_linux64_{}.zip'.format(RESOURCE_VERSION)
-    shell_execute('wget -c {} -O {}'.format(url, local_path))
+    if not os.path.exists(local_path):
+        shell_execute('wget -c {} -O {}'.format(url, local_path))
     shell_execute('unzip {} -d /usr/bin'.format(local_path))
     shell_execute('mv {} {}-{}'.format(CHROMEDRIVER_PATH, CHROMEDRIVER_PATH, RESOURCE_VERSION))
     shell_execute('chown {}:{} {}-{}'.format(os.environ.get('SUDO_UID'), os.environ.get('SUDO_GID'), CHROMEDRIVER_PATH, RESOURCE_VERSION))

@@ -11,6 +11,7 @@ from .environment import VEIL_ENV_TYPE
 from .environment import DEPENDENCY_URL
 from .environment import APT_URL
 from .environment import DEPENDENCY_DIR
+from .environment import DEPENDENCY_INSTALL_DIR
 from .environment import PYPI_INDEX_URL
 from .environment import PYPI_ARCHIVE_DIR
 from .environment import CURRENT_OS
