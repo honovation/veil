@@ -3,6 +3,8 @@ from veil.profile.installer import *
 
 
 IBM_DB_HOME = DEPENDENCY_INSTALL_DIR / 'db2-clidriver'
+DB2_DRIVER_CONF_PATH = '/etc/ld.so.conf.d/db2-clidriver.conf'
+DB2_DRIVER_CONF_CONTENT = '{}/lib'.format(IBM_DB_HOME)
 RESOURCE_KEY = 'veil.backend.database.db_driver.db2_driver_resource'
 RESOURCE_VERSION = '9.7'
 
@@ -32,7 +34,10 @@ def download_db2_clidriver():
 
 
 def is_db2_clidriver_installed():
-    return os.path.exists('/etc/ld.so.conf.d/db2-clidriver.conf')
+    if not os.path.exists(DB2_DRIVER_CONF_PATH):
+        return False
+    with open(DB2_DRIVER_CONF_PATH, 'rb') as f:
+        return DB2_DRIVER_CONF_CONTENT == f.read()
 
 
 def install_db2_clidriver():
@@ -41,7 +46,7 @@ def install_db2_clidriver():
             set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return
     download_db2_clidriver()
-    install_resource(file_resource(path='/etc/ld.so.conf.d/db2-clidriver.conf', content='{}/lib'.format(IBM_DB_HOME)))
+    install_resource(file_resource(path=DB2_DRIVER_CONF_PATH, content=DB2_DRIVER_CONF_CONTENT))
     shell_execute('ldconfig')
     if VEIL_ENV_TYPE in ('development', 'test'):
         set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
