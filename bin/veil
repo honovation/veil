@@ -43,6 +43,18 @@ function veil_init {
     if [ ! -f $VEIL_HOME/env/.initialized ]; then
         if [[ "$VEIL_SERVER" == "development" || "$VEIL_SERVER" == "test" ]] ; then
             sudo apt-get -q -y install unzip wget python python-pip python-virtualenv
+            DEPENDENCY_DIR=/opt/dependency
+            if [ ! -d $DEPENDENCY_DIR ]; then
+                sudo mkdir -p $DEPENDENCY_DIR
+            fi
+            DEPENDENCY_INSTALL_DIR=/opt/dependency-install
+            if [ ! -d $DEPENDENCY_INSTALL_DIR ]; then
+                sudo mkdir -p $DEPENDENCY_INSTALL_DIR
+            fi
+            PYPI_ARCHIVE_DIR=/opt/pypi
+            if [ ! -d $PYPI_ARCHIVE_DIR ]; then
+                sudo mkdir -p $PYPI_ARCHIVE_DIR
+            fi
         fi
         virtualenv env
         echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
