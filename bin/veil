@@ -34,27 +34,6 @@ if [ -f $VEIL_HOME/env/bin/activate ] ; then
     source $VEIL_HOME/env/bin/activate
 fi
 
-function veil_scaffold {
-    if [[ "$(pwd)" == "$VEIL_FRAMEWORK_HOME" ]] ; then
-        echo "please do not run veil scaffold under $VEIL_FRAMEWORK_HOME"
-        exit 1
-    fi
-    if [[ "$VEIL_SERVER" != "development" ]] ; then
-        echo "veil scaffold is only supported under development environment"
-        exit 1
-    fi
-    STARTER_PROJECT=vsee
-    if [ -d $STARTER_PROJECT ] ; then
-        echo "$STARTER_PROJECT already exists under the current path"
-        exit 1
-    fi
-    cp -rd $VEIL_FRAMEWORK_HOME/starter/vsee .
-    cd $STARTER_PROJECT
-    git init
-    git add -A .
-    git commit -m 'starter'
-    echo "Note: created $STARTER_PROJECT, please follow instructions in README.md to develop your veil application"
-}
 function veil_init {
     find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
     find $VEIL_HOME -type f -name "*.pyc" -delete
@@ -76,6 +55,28 @@ function veil_init {
         ln -sf $VEIL_FRAMEWORK_HOME/src/discipline_coach.py $VEIL_HOME/.git/hooks/pre-commit
         echo "Note: a git pre-commit script has linked to .git/hooks, if you don't need it, delete it manually"
     fi
+}
+
+function veil_scaffold {
+    if [[ "$(pwd)" == "$VEIL_FRAMEWORK_HOME" ]] ; then
+        echo "please do not run veil scaffold under $VEIL_FRAMEWORK_HOME"
+        exit 1
+    fi
+    if [[ "$VEIL_SERVER" != "development" ]] ; then
+        echo "veil scaffold is only supported under development environment"
+        exit 1
+    fi
+    STARTER_PROJECT=vsee
+    if [ -d $STARTER_PROJECT ] ; then
+        echo "$STARTER_PROJECT already exists under the current path"
+        exit 1
+    fi
+    cp -rd $VEIL_FRAMEWORK_HOME/starter/vsee .
+    cd $STARTER_PROJECT
+    git init
+    git add -A .
+    git commit -m 'starter'
+    echo "Note: created $STARTER_PROJECT, please follow instructions in README.md to develop your veil application"
 }
 
 case "$1" in

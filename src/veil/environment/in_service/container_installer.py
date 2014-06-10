@@ -50,7 +50,7 @@ def veil_container_lxc_resource(host, server):
         return
     fabric.api.put(StringIO(installer_file_content), installer_file_path, use_sudo=True, mode=0600)
     with fabric.api.cd('/opt/veil'):
-        fabric.api.sudo('veil install veil_installer.installer_resource?{}'.format(installer_file_path))
+        fabric.api.sudo('veil :{} install veil_installer.installer_resource?{}'.format(host.env_name, installer_file_path))
     fabric.api.sudo('mv -f {} {}'.format(installer_file_path, installed_installer_file_path))
 
 

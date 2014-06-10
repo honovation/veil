@@ -91,7 +91,7 @@ def veil_host_framework_codebase_resource(host):
     clone_veil()
     with fabric.api.cd('/opt/veil'):
         pull_veil()
-        fabric.api.sudo('./bin/veil init')
+        fabric.api.sudo('./bin/veil :{} init'.format(host.env_name))
 
 
 def clone_veil():
