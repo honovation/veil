@@ -1,16 +1,16 @@
 #!/bin/bash
 
 if [[ $1 == :* ]] ; then
-    COLON_VEIL_SERVER=$1
+    COLON_VEIL_SERVER_NAME=$1
     shift
-    export VEIL_SERVER=${COLON_VEIL_SERVER:1}
+    export VEIL_SERVER_NAME=${COLON_VEIL_SERVER_NAME:1}
 else
-    if [ -z "$VEIL_SERVER" ] ; then
-        export VEIL_SERVER=development
+    if [ -z "$VEIL_SERVER_NAME" ] ; then
+        export VEIL_SERVER_NAME=development
     fi
 fi
 
-if [[ "$VEIL_SERVER" == "development" || "$VEIL_SERVER" == "test" ]] ; then
+if [[ "$VEIL_SERVER_NAME" == "development" || "$VEIL_SERVER_NAME" == "test" ]] ; then
     export PYTHONDONTWRITEBYTECODE=True
 fi
 
@@ -41,7 +41,7 @@ function veil_init {
         sudo ln -sf $VEIL_FRAMEWORK_HOME/bin/veil /usr/bin/veil
     fi
     if [ ! -f $VEIL_HOME/env/.initialized ]; then
-        if [[ "$VEIL_SERVER" == "development" || "$VEIL_SERVER" == "test" ]] ; then
+        if [[ "$VEIL_SERVER_NAME" == "development" || "$VEIL_SERVER_NAME" == "test" ]] ; then
             sudo apt-get -q -y install unzip wget python python-pip python-virtualenv
             DEPENDENCY_DIR=/opt/share/dependency
             if [ ! -d $DEPENDENCY_DIR ]; then
@@ -74,7 +74,7 @@ function veil_scaffold {
         echo "please do not run veil scaffold under $VEIL_FRAMEWORK_HOME"
         exit 1
     fi
-    if [[ "$VEIL_SERVER" != "development" ]] ; then
+    if [[ "$VEIL_SERVER_NAME" != "development" ]] ; then
         echo "veil scaffold is only supported under development environment"
         exit 1
     fi

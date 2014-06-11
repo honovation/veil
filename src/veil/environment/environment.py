@@ -9,14 +9,15 @@ APT_URL = 'http://mirrors.163.com/ubuntu/'
 DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
 PYPI_INDEX_URL = 'http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
 
-HOST_SHARE_DIR = as_path('/opt/share')
+OPT_DIR = as_path('/opt')
+HOST_SHARE_DIR = OPT_DIR / 'share'
 DEPENDENCY_DIR = HOST_SHARE_DIR / 'dependency'
 DEPENDENCY_INSTALL_DIR = HOST_SHARE_DIR / 'dependency-install'
 PYPI_ARCHIVE_DIR = HOST_SHARE_DIR / 'pypi'
 
-VEIL_LOG_DIR = VEIL_HOME / 'log' / VEIL_ENV
-VEIL_ETC_DIR = VEIL_HOME / 'etc' / VEIL_ENV
-VEIL_VAR_DIR = VEIL_HOME / 'var' / VEIL_ENV
+VEIL_LOG_DIR = VEIL_HOME / 'log' / VEIL_ENV_NAME
+VEIL_ETC_DIR = VEIL_HOME / 'etc' / VEIL_ENV_NAME
+VEIL_VAR_DIR = VEIL_HOME / 'var' / VEIL_ENV_NAME
 
 CURRENT_USER = os.getenv('SUDO_USER') or getpass.getuser()
 CURRENT_USER_GROUP = CURRENT_USER

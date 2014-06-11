@@ -11,10 +11,10 @@ hosts_with_payload_uploaded = []
 
 
 @composite_installer
-def veil_servers_resource(veil_env_name, action):
+def veil_servers_resource(servers, action):
     resources = []
-    for veil_server_name in reversed(list_veil_server_names(veil_env_name)):
-        resources.append(veil_server_resource(server=get_veil_server(veil_env_name, veil_server_name), action=action))
+    for server in servers:
+        resources.append(veil_server_resource(server=server, action=action))
     return resources
 
 

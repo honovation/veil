@@ -17,7 +17,7 @@ hosts_configured = []
 @composite_installer
 def veil_hosts_resource(veil_env_name, config_dir):
     resources = []
-    for host in list_veil_hosts(veil_env_name).values():
+    for host in list_veil_hosts(veil_env_name):
         if host.base_name not in hosts_to_install:
             resources.extend([
                 veil_host_onetime_config_resource(host=host, config_dir=config_dir),

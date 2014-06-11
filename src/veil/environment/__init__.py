@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from .environment import APT_URL
 from .environment import DEPENDENCY_URL
 from .environment import PYPI_INDEX_URL
+from .environment import OPT_DIR
 from .environment import HOST_SHARE_DIR
 from .environment import DEPENDENCY_DIR
 from .environment import DEPENDENCY_INSTALL_DIR
@@ -13,8 +14,8 @@ from .environment import VEIL_LOG_DIR
 from .environment import VEIL_ETC_DIR
 from .environment import VEIL_VAR_DIR
 from .environment import VEIL_ENV_TYPE
-from .environment import VEIL_ENV
-from .environment import VEIL_SERVER
+from .environment import VEIL_ENV_NAME
+from .environment import VEIL_SERVER_NAME
 from .environment import CURRENT_OS
 from .environment import CURRENT_USER
 from .environment import CURRENT_USER_GROUP
@@ -28,28 +29,39 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
     server_names = servers.keys()
     if sorted_server_names:
         assert set(sorted_server_names) == set(server_names), 'ENV {}: inconsistency between sorted_server_names {} and server_names {}'.format(
-            VEIL_ENV, sorted_server_names, server_names)
+            VEIL_ENV_NAME, sorted_server_names, server_names)
     else:
         sorted_server_names = sorted(server_names)
 
     from veil.model.collection import objectify
     env = objectify({'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names, 'deployment_memo': deployment_memo})
+    env_code_path = veil_env_code_path(name)
+    env.veil_home = env_code_path / 'app'
+    env.veil_framework_home = env_code_path / 'veil'
+    env.server_list = []
     for server_name, server in env.servers.items():
         server.env_name = name
         server.name = server_name
+        server.fullname = '{}/{}'.format(server.env_name, server.name)
+        server.start_order = 1000 + 10 * sorted_server_names.index(server_name) if sorted_server_names else 0
+        server.veil_home = env.veil_home
+        server.veil_framework_home = env.veil_framework_home
         server.container_name = '{}-{}'.format(server.env_name, server.name)
         server.container_installer_path = HOST_SHARE_DIR / 'veil-container-INSTALLER-{}'.format(server.container_name)
         server.installed_container_installer_path = '{}.installed'.format(server.container_installer_path)
         server.container_initialized_tag_path = HOST_SHARE_DIR / 'veil-container-{}.initialized'.format(server.container_name)
         server.deployed_tag_path = HOST_SHARE_DIR / 'veil-server-{}.deployed'.format(server.container_name)
         server.patched_tag_path = HOST_SHARE_DIR / 'veil-server-{}.patched'.format(server.container_name)
-        server.start_order = 1000 + 10 * sorted_server_names.index(server_name) if sorted_server_names else 0
         server.host = None
+        env.server_list.append(server)
+    env.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))
     for host_name, host in env.hosts.items():
         host.env_name = name
         host.name = host_name
         # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.env_name, host.base_name))
         host.base_name = host_name.split('/', 1)[0]  # e.g. ljhost-005/3 => ljhost-005
+        host.veil_home = env.veil_home
+        host.veil_framework_home = env.veil_framework_home
         host.initialized_tag_path = HOST_SHARE_DIR / 'veil-host-{}.initialized'.format(host.env_name)
         host.server_list = []
         for server_name, server in env.servers.items():
@@ -62,16 +74,20 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         host.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))
 
     if env.hosts:
-        assert all(host.server_list for host in env.hosts.values()), 'ENV {}: found host without server(s)'.format(VEIL_ENV)
-        assert all(server.host for server in env.servers.values()), 'ENV {}: found server without host'.format(VEIL_ENV)
+        assert all(host.server_list for host in env.hosts.values()), 'ENV {}: found host without server(s)'.format(VEIL_ENV_NAME)
+        assert all(server.host for server in env.servers.values()), 'ENV {}: found server without host'.format(VEIL_ENV_NAME)
         assert all(len(host.server_list) == len(set(server.sequence_no for server in host.server_list)) for host in env.hosts.values()), \
-            'ENV {}: found sequence no conflict among servers on one host'.format(VEIL_ENV)
+            'ENV {}: found sequence no conflict among servers on one host'.format(VEIL_ENV_NAME)
 
     # break cyclic reference between host and server to get freeze_dict_object out of complain
     for server in env.servers.values():
         del server.host
 
     return env
+
+
+def veil_env_code_path(veil_env_name):
+    return VEIL_HOME.parent if veil_env_name in {'development', 'test'} else OPT_DIR / veil_env_name / 'code'
 
 
 def veil_server(host_name, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None,
@@ -111,28 +127,20 @@ def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_rang
     })
 
 
-def list_veil_server_names(veil_env_name):
-    return get_application().ENVIRONMENTS[veil_env_name].sorted_server_names
-
-
 def list_veil_servers(veil_env_name):
-    return get_application().ENVIRONMENTS[veil_env_name].servers
+    return get_application().ENVIRONMENTS[veil_env_name].server_list
 
 
 def get_veil_server(veil_env_name, veil_server_name):
-    return list_veil_servers(veil_env_name)[veil_server_name]
+    return get_application().ENVIRONMENTS[veil_env_name].servers[veil_server_name]
 
 
 def get_current_veil_server():
-    return get_veil_server(VEIL_ENV, VEIL_SERVER)
+    return get_veil_server(VEIL_ENV_NAME, VEIL_SERVER_NAME)
 
 
 def list_veil_hosts(veil_env_name):
-    return get_application().ENVIRONMENTS[veil_env_name].hosts
-
-
-def get_veil_host(veil_env_name, veil_host_name):
-    return list_veil_hosts(veil_env_name)[veil_host_name]
+    return get_application().ENVIRONMENTS[veil_env_name].hosts.values().sort(key=lambda h: h.name)
 
 
 def get_veil_env_deployment_memo(veil_env_name):

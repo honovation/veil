@@ -32,8 +32,8 @@ from .path import as_path
 from .environment import VEIL_FRAMEWORK_HOME
 from .environment import VEIL_HOME
 from .environment import VEIL_ENV_TYPE
-from .environment import VEIL_ENV
-from .environment import VEIL_SERVER
+from .environment import VEIL_ENV_NAME
+from .environment import VEIL_SERVER_NAME
 from .environment import CURRENT_OS
 from .colors import red
 from .colors import green
