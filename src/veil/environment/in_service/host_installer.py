@@ -32,10 +32,10 @@ def veil_hosts_resource(veil_env_name, config_dir):
 
 @composite_installer
 def veil_host_onetime_config_resource(host, config_dir):
-    fabric.api.env.host_string = '{}@{}:{}'.format(host.ssh_user, host.internal_ip, host.ssh_port)
+    fabric.api.env.host_string = host.deploys_via
     fabric.api.env.forward_agent = True
 
-    initialized = fabric.contrib.files.exists('/opt/veil-host-{}.initialized'.format(host.env_name))
+    initialized = fabric.contrib.files.exists(host.initialized_tag_path)
     if initialized:
         return []
 
@@ -139,7 +139,7 @@ def veil_host_init_resource(host):
 
     install_resource(veil_lxc_config_resource(host=host))
 
-    fabric.api.sudo('touch /opt/veil-host-{}.initialized'.format(host.env_name))
+    fabric.api.sudo('touch {}'.format(host.initialized_tag_path))
 
 
 @atomic_installer

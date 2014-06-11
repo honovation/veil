@@ -33,9 +33,7 @@ def get_remote_file_content(remote_path):
 
 @atomic_installer
 def veil_container_lxc_resource(host, server):
-    installer_file_path = '/opt/veil-container-INSTALLER-{}'.format(server.container_name)
-    installed_installer_file_path = '{}.installed'.format(installer_file_path)
-    remote_installer_file_content = get_remote_file_content(installed_installer_file_path)
+    remote_installer_file_content = get_remote_file_content(server.installed_container_installer_path)
     installer_file_content = render_installer_file(host, server)
     if remote_installer_file_content:
         action = None if installer_file_content == remote_installer_file_content else 'UPDATE'
@@ -48,15 +46,15 @@ def veil_container_lxc_resource(host, server):
         return
     if not action:
         return
-    fabric.api.put(StringIO(installer_file_content), installer_file_path, use_sudo=True, mode=0600)
+    fabric.api.put(StringIO(installer_file_content), server.container_installer_path, use_sudo=True, mode=0600)
     with fabric.api.cd('/opt/veil'):
-        fabric.api.sudo('veil :{} install veil_installer.installer_resource?{}'.format(host.env_name, installer_file_path))
-    fabric.api.sudo('mv -f {} {}'.format(installer_file_path, installed_installer_file_path))
+        fabric.api.sudo('veil :{} install veil_installer.installer_resource?{}'.format(host.env_name, server.container_installer_path))
+    fabric.api.sudo('mv -f {} {}'.format(server.container_installer_path, server.installed_container_installer_path))
 
 
 @composite_installer
 def veil_container_onetime_config_resource(host, server, config_dir):
-    initialized = fabric.contrib.files.exists('/opt/veil-container-{}.initialized'.format(server.container_name))
+    initialized = fabric.contrib.files.exists(server.container_initialized_tag_path)
     if initialized:
         return []
 
@@ -132,7 +130,7 @@ def veil_container_init_resource(server):
     fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "setuptools>=3.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "pip>=1.5.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "virtualenv>=1.11.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
-    fabric.api.sudo('touch /opt/veil-container-{}.initialized'.format(server.container_name))
+    fabric.api.sudo('touch {}'.format(server.container_initialized_tag_path))
 
 
 @atomic_installer

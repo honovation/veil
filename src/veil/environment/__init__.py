@@ -38,6 +38,11 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         server.env_name = name
         server.name = server_name
         server.container_name = '{}-{}'.format(server.env_name, server.name)
+        server.container_installer_path = HOST_SHARE_DIR / 'veil-container-INSTALLER-{}'.format(server.container_name)
+        server.installed_container_installer_path = '{}.installed'.format(server.container_installer_path)
+        server.container_initialized_tag_path = HOST_SHARE_DIR / 'veil-container-{}.initialized'.format(server.container_name)
+        server.deployed_tag_path = HOST_SHARE_DIR / 'veil-server-{}.deployed'.format(server.container_name)
+        server.patched_tag_path = HOST_SHARE_DIR / 'veil-server-{}.patched'.format(server.container_name)
         server.start_order = 1000 + 10 * sorted_server_names.index(server_name) if sorted_server_names else 0
         server.host = None
     for host_name, host in env.hosts.items():
@@ -45,11 +50,13 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         host.name = host_name
         # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.env_name, host.base_name))
         host.base_name = host_name.split('/', 1)[0]  # e.g. ljhost-005/3 => ljhost-005
+        host.initialized_tag_path = HOST_SHARE_DIR / 'veil-host-{}.initialized'.format(host.env_name)
         host.server_list = []
         for server_name, server in env.servers.items():
             if host.name != server.host_name:
                 continue
             server.host_base_name = host.base_name
+            server.deploys_via = server.deploys_via or '{}@{}:{}'.format(host.ssh_user, host.internal_ip, '{}22'.format(server.sequence_no))
             server.host = host
             host.server_list.append(server)
         host.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))
@@ -70,18 +77,20 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
 def veil_server(host_name, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None,
         backup_dirs=None, memory_limit=None, cpu_share=None):
     from veil.model.collection import objectify
+    if backup_mirror:
+        backup_mirror.deploys_via = '{}@{}:{}'.format(backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror.ssh_port)
     return objectify({
         'host_name': host_name,
         'sequence_no': sequence_no,
         'programs': programs,
-        'deploys_via': deploys_via,
         'resources': resources,
         'supervisor_http_port': supervisor_http_port,
         'name_servers': name_servers or ['114.114.114.114', '114.114.115.115', '8.8.8.8', '8.8.4.4'],
         'backup_mirror': backup_mirror,
         'backup_dirs': backup_dirs or [],
         'memory_limit': memory_limit,
-        'cpu_share': cpu_share
+        'cpu_share': cpu_share,
+        'deploys_via': deploys_via
     })
 
 
@@ -96,7 +105,8 @@ def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_rang
         'lan_range': lan_range,
         'lan_interface': lan_interface,
         'mac_prefix': mac_prefix,
-        'resources': resources
+        'resources': resources,
+        'deploys_via': '{}@{}:{}'.format(ssh_user, internal_ip, ssh_port)
     })
 
 
@@ -126,14 +136,6 @@ def get_veil_host(veil_env_name, veil_host_name):
 
 def get_veil_env_deployment_memo(veil_env_name):
     return get_application().ENVIRONMENTS[veil_env_name].deployment_memo
-
-
-def get_veil_server_deploys_via(veil_env_name, veil_server_name):
-    server = get_veil_server(veil_env_name, veil_server_name)
-    if server.deploys_via:
-        return server.deploys_via
-    host = get_veil_host(veil_env_name, server.host_name)
-    return '{}@{}:{}'.format(host.ssh_user, host.internal_ip, '{}22'.format(server.sequence_no))
 
 
 def get_application_codebase():

@@ -60,19 +60,19 @@ def delete_old_backups():
 
 
 def bring_down_server(backing_up_env, veil_server_name):
-    fabric.api.env.host_string = get_veil_server_deploys_via(backing_up_env, veil_server_name)
+    fabric.api.env.host_string = get_veil_server(backing_up_env, veil_server_name).deploys_via
     with fabric.api.cd('/opt/{}/app'.format(backing_up_env)):
         fabric.api.sudo('veil :{}/{} down'.format(backing_up_env, veil_server_name))
 
 
 def bring_up_server(backing_up_env, veil_server_name):
-    fabric.api.env.host_string = get_veil_server_deploys_via(backing_up_env, veil_server_name)
+    fabric.api.env.host_string = get_veil_server(backing_up_env, veil_server_name).deploys_via
     with fabric.api.cd('/opt/{}/app'.format(backing_up_env)):
         fabric.api.sudo('veil :{}/{} up --daemonize'.format(backing_up_env, veil_server_name))
 
 
 def backup_server(backing_up_env, veil_server_name, timestamp):
-    fabric.api.env.host_string = get_veil_server_deploys_via(backing_up_env, veil_server_name)
+    fabric.api.env.host_string = get_veil_server(backing_up_env, veil_server_name).deploys_via
     backup_path = '/backup/{}/{}-{}-{}.tar.gz'.format(timestamp, backing_up_env, veil_server_name, timestamp)
     with fabric.api.cd('/opt/{}/app'.format(backing_up_env)):
         fabric.api.sudo('veil :{}/{} backup {}'.format(backing_up_env, veil_server_name, backup_path))
@@ -88,7 +88,7 @@ def rsync_to_backup_mirror():
     backup_mirror = get_current_veil_server().backup_mirror
     if not backup_mirror:
         return
-    fabric.api.env.host_string = '{}@{}:{}'.format(backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror.ssh_port)
+    fabric.api.env.host_string = backup_mirror.deploys_via
     backup_mirror_path = '~/backup_mirror/{}/'.format(VEIL_ENV)
     fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
     shell_execute(

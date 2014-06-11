@@ -26,18 +26,8 @@ def main():
 
     if 'DEPLOY' == action:
         deploy(veil_framework_home, veil_home, veil_env_name, veil_server_name)
-        mark_deployed()
     else:  # PATCH
         patch(veil_framework_home, veil_home, veil_env_name, veil_server_name)
-        mark_patched()
-
-
-def mark_deployed():
-    shell_execute('touch /opt/deployed')
-
-
-def mark_patched():
-    shell_execute('touch /opt/patched')
 
 
 def clone_application(application_codebase, veil_home):

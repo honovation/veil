@@ -31,11 +31,10 @@ def display_deployment_memo(veil_env_name):
                 break
 
 
-def is_veil_env_deployed(veil_env_name):
-    veil_server_deployed_file_path = '/opt/deployed'
-    for veil_server_name in list_veil_server_names(veil_env_name):
-        fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, veil_server_name)
-        if not fabric.contrib.files.exists(veil_server_deployed_file_path, use_sudo=True):
+def is_ever_deployed(veil_env_name):
+    for server in list_veil_servers(veil_env_name).values():
+        fabric.api.env.host_string = server.deploys_via
+        if not fabric.contrib.files.exists(server.deployed_tag_path, use_sudo=True):
             return False
     return True
 
@@ -53,14 +52,14 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     config_dir = as_path(config_dir)
     install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     veil_server_names = list_veil_server_names(veil_env_name)
-    is_deployed = is_veil_env_deployed(veil_env_name)
-    if is_deployed:
+    ever_deployed = is_ever_deployed(veil_env_name)
+    if ever_deployed:
         if 'TRUE' == should_download_packages:
             download_packages(veil_env_name)
         for deploying_server_name in veil_server_names:
             remote_do('create-backup', veil_env_name, deploying_server_name)
     install_resource(veil_servers_resource(veil_env_name=veil_env_name, action='DEPLOY'))
-    if is_deployed:
+    if ever_deployed:
         for deploying_server_name in veil_server_names:
             remote_do('delete-backup', veil_env_name, deploying_server_name)
 
@@ -111,7 +110,7 @@ def rollback_env(veil_env_name):
 
 @script('backup-env')
 def backup_env(veil_env_name, should_bring_up_servers='TRUE', veil_guard_name='@guard'):
-    fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, veil_guard_name)
+    fabric.api.env.host_string = get_veil_server(veil_env_name, veil_guard_name).deploys_via
     with fabric.api.cd('/opt/{}/app'.format(veil_env_name)):
         fabric.api.sudo('veil :{}/{} backup-env {}'.format(veil_env_name, veil_guard_name, should_bring_up_servers))
 
@@ -177,7 +176,7 @@ def get_deployed_at():
 
 def remote_do(action, veil_env_name, veil_server_name, *args):
     server = get_veil_server(veil_env_name, veil_server_name)
-    fabric.api.env.host_string = get_veil_server_deploys_via(server.env_name, server.name)
+    fabric.api.env.host_string = get_veil_server(server.env_name, server.name).deploys_via
     fabric.api.env.forward_agent = True
     if server.host_base_name not in hosts_with_payload_uploaded:
         fabric.api.put(PAYLOAD, REMOTE_PAYLOAD_PATH, use_sudo=True, mode=0600)
