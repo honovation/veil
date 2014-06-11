@@ -49,6 +49,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         for server_name, server in env.servers.items():
             if host.name != server.host_name:
                 continue
+            server.host_base_name = host.base_name
             server.host = host
             host.server_list.append(server)
         host.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))

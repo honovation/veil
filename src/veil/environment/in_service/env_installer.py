@@ -16,7 +16,8 @@ from .host_installer import veil_hosts_resource
 from .server_installer import veil_servers_resource
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'env_installer_payload.py')
-veil_servers_with_payload_uploaded = []
+REMOTE_PAYLOAD_PATH = HOST_SHARE_DIR / 'env_installer_payload.py'
+hosts_with_payload_uploaded = []
 
 
 def display_deployment_memo(veil_env_name):
@@ -175,12 +176,13 @@ def get_deployed_at():
 
 
 def remote_do(action, veil_env_name, veil_server_name, *args):
-    fabric.api.env.host_string = get_veil_server_deploys_via(veil_env_name, veil_server_name)
+    server = get_veil_server(veil_env_name, veil_server_name)
+    fabric.api.env.host_string = get_veil_server_deploys_via(server.env_name, server.name)
     fabric.api.env.forward_agent = True
-    if fabric.api.env.host_string not in veil_servers_with_payload_uploaded:
-        fabric.api.put(PAYLOAD, '/opt/env_installer_payload.py', use_sudo=True, mode=0600)
-        veil_servers_with_payload_uploaded.append(fabric.api.env.host_string)
-    fabric.api.sudo('python /opt/env_installer_payload.py {} {} {} {}'.format(action, veil_env_name, veil_server_name, ' '.join(arg for arg in args)))
+    if server.host_base_name not in hosts_with_payload_uploaded:
+        fabric.api.put(PAYLOAD, REMOTE_PAYLOAD_PATH, use_sudo=True, mode=0600)
+        hosts_with_payload_uploaded.append(server.host_base_name)
+    fabric.api.sudo('python {} {} {} {} {}'.format(REMOTE_PAYLOAD_PATH, action, veil_env_name, veil_server_name, ' '.join(arg for arg in args)))
 
 
 def update_branch(veil_env_name):
