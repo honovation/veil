@@ -1,7 +1,4 @@
-veil.environment.lxc.lxc_container_resource?container_name={{ container_name }}&mac_address={{ mac_address }}&lan_interface={{ lan_interface }}&start_order={{ start_order }}&memory_limit={{ memory_limit or '' }}&cpu_share={{ cpu_share or '' }}
-veil.environment.lxc.lxc_container_user_resource?container_name={{ container_name }}&user_name={{ user_name }}
-veil.environment.lxc.lxc_container_user_group_resource?container_name={{ container_name }}&user_name={{ user_name }}&group_name=sudo
-veil.environment.lxc.lxc_container_user_resource?container_name={{ container_name }}&user_name=ubuntu&state=deleted
+veil.environment.lxc.lxc_container_resource?container_name={{ container_name }}&user_name={{ user_name }}&mac_address={{ mac_address }}&lan_interface={{ lan_interface }}&start_order={{ start_order }}&memory_limit={{ memory_limit or '' }}&cpu_share={{ cpu_share or '' }}
 veil.environment.lxc.lxc_container_timezone_resource?container_name={{ container_name }}&timezone=Asia/Shanghai
 veil.environment.lxc.lxc_container_network_resource?container_name={{ container_name }}&ip_address={{ ip_address }}&gateway={{ gateway }}
 veil.environment.lxc.lxc_container_name_servers_resource?container_name={{ container_name }}&name_servers={{ name_servers }}

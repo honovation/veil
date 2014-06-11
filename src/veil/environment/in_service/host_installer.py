@@ -12,7 +12,7 @@ from .container_installer import veil_container_resource
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
 hosts_to_install = []
-hosts_initialized_before = []
+hosts_configured = []
 
 @composite_installer
 def veil_hosts_resource(veil_env_name, config_dir):
@@ -37,7 +37,6 @@ def veil_host_onetime_config_resource(host, config_dir):
 
     initialized = fabric.contrib.files.exists('/opt/veil-host-{}.initialized'.format(host.env_name))
     if initialized:
-        hosts_initialized_before.append(host.base_name)
         return []
 
     resources = [
@@ -58,7 +57,7 @@ def veil_host_onetime_config_resource(host, config_dir):
 
 @composite_installer
 def veil_host_config_resource(host, config_dir):
-    if host.base_name in hosts_initialized_before:
+    if host.base_name in hosts_configured:
         return []
 
     veil_server_user_name = host.ssh_user
@@ -78,6 +77,11 @@ def veil_host_config_resource(host, config_dir):
             owner='root', owner_group='root', mode=0644),
         veil_host_sources_list_resource(host=host)
     ]
+    if (env_config_dir / '.config').exists():
+        resources.append(veil_host_file_resource(local_path=env_config_dir / '.config', host=host,
+            remote_path='/home/{}/.config'.format(veil_server_user_name), owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
+
+    hosts_configured.append(host.base_name)
     return resources
 
 

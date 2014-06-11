@@ -9,7 +9,7 @@ from veil.environment import *
 from veil.server.config import *
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
-containers_initialized_before = []
+containers_configured = []
 
 
 @composite_installer
@@ -58,7 +58,6 @@ def veil_container_lxc_resource(host, server):
 def veil_container_onetime_config_resource(host, server, config_dir):
     initialized = fabric.contrib.files.exists('/opt/veil-container-{}.initialized'.format(server.container_name))
     if initialized:
-        containers_initialized_before.append(server.name)
         return []
 
     resources = [
@@ -79,7 +78,7 @@ def veil_container_onetime_config_resource(host, server, config_dir):
 
 @composite_installer
 def veil_container_config_resource(host, server, config_dir):
-    if server.name in containers_initialized_before:
+    if server.name in containers_configured:
         return []
 
     veil_server_user_name = host.ssh_user
@@ -87,23 +86,12 @@ def veil_container_config_resource(host, server, config_dir):
     server_config_dir = env_config_dir / 'servers' / server.name
     resources = [
         veil_server_boot_script_resource(server=server),
-        veil_container_directory_resource(server=server, remote_path='/home/{}/.ssh'.format(veil_server_user_name),
-            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0755),
-        veil_container_file_resource(local_path=env_config_dir / '.ssh' / 'authorized_keys', server=server,
-            remote_path='/home/{}/.ssh/authorized_keys'.format(veil_server_user_name), owner=veil_server_user_name, owner_group=veil_server_user_name,
-            mode=0644),
-        veil_container_file_resource(local_path=env_config_dir / '.ssh' / 'known_hosts', server=server,
-            remote_path='/home/{}/.ssh/known_hosts'.format(veil_server_user_name), owner=veil_server_user_name, owner_group=veil_server_user_name,
-            mode=0644),
         veil_container_file_resource(local_path=env_config_dir / '.ssh' / 'known_hosts', server=server, remote_path='/root/.ssh/known_hosts',
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644),
         veil_container_file_resource(local_path=CURRENT_DIR / 'apt-config', server=server, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config',
             owner='root', owner_group='root', mode=0644),
         veil_container_sources_list_resource(server=server)
     ]
-    if (env_config_dir / '.config').exists():
-        resources.append(veil_container_file_resource(local_path=env_config_dir / '.config', server=server,
-            remote_path='/home/{}/.config'.format(veil_server_user_name), owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
     for local_path in server_config_dir.files('*.crt'):
         resources.append(veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/certs/{}'.format(local_path.name),
             owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644))
@@ -116,6 +104,8 @@ def veil_container_config_resource(host, server, config_dir):
             mode=0600))
         resources.append(veil_container_file_resource(local_path=server_config_dir / '.ssh' / 'id_rsa', server=server,
             remote_path='/root/.ssh/id_rsa', owner='root', owner_group='root', mode=0600))
+
+    containers_configured.append(server.name)
     return resources
 
 
