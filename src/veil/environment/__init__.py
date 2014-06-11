@@ -78,6 +78,7 @@ def veil_server(host_name, sequence_no, programs, deploys_via=None, resources=()
         backup_dirs=None, memory_limit=None, cpu_share=None):
     from veil.model.collection import objectify
     if backup_mirror:
+        backup_mirror = objectify(backup_mirror)
         backup_mirror.deploys_via = '{}@{}:{}'.format(backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror.ssh_port)
     return objectify({
         'host_name': host_name,
