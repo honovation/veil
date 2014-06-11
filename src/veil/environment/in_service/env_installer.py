@@ -1,11 +1,10 @@
 from __future__ import unicode_literals, print_function, division
-import os
 from datetime import datetime
 import sys
 import fabric.api
 import fabric.contrib.files
 from veil.development.git import *
-from veil_component import as_path
+from veil_component import *
 from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
@@ -14,10 +13,6 @@ from veil.utility.shell import *
 from veil.backend.database.migration import *
 from .host_installer import veil_hosts_resource
 from .server_installer import veil_servers_resource
-
-PAYLOAD = os.path.join(os.path.dirname(__file__), 'env_installer_payload.py')
-REMOTE_PAYLOAD_PATH = HOST_SHARE_DIR / 'env_installer_payload.py'
-hosts_with_payload_uploaded = []
 
 
 def display_deployment_memo(veil_env_name):
@@ -29,14 +24,6 @@ def display_deployment_memo(veil_env_name):
         while True:
             if 'iwilldoit' == sys.stdin.readline().strip():
                 break
-
-
-def is_all_servers_ever_deployed(veil_servers):
-    for server in veil_servers:
-        fabric.api.env.host_string = server.deploys_via
-        if not fabric.contrib.files.exists(server.deployed_tag_path, use_sudo=True):
-            return False
-    return True
 
 
 @script('deploy-env')
@@ -52,16 +39,34 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     config_dir = as_path(config_dir)
     install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     servers = list_veil_servers(veil_env_name)
-    ever_deployed = is_all_servers_ever_deployed(servers)
-    if ever_deployed:
-        if 'TRUE' == should_download_packages:
-            download_packages(veil_env_name)
-        for server in servers:
-            remote_do('create-backup', server)
+    if 'TRUE' == should_download_packages:
+        download_packages(veil_env_name)
+    create_backup(servers)
     install_resource(veil_servers_resource(servers=reversed(servers), action='DEPLOY'))
-    if ever_deployed:
-        for server in servers:
-            remote_do('delete-backup', server)
+    delete_backup(servers)
+
+
+def create_backup(servers):
+    for server in servers:
+        fabric.api.env.host_string = server.deploys_via
+        if not fabric.contrib.files.exists(server.deployed_tag_path):
+            print(yellow('{}: not deployed yet, skipped backup'.format(server.fullname)))
+            return
+        source_dir = server.veil_home.parent.parent
+        backup_dir = '{}-backup'.format(source_dir)
+        if fabric.contrib.files.exists(backup_dir):
+            raise Exception('{}: backup already exists'.format(server.fullname))
+        with fabric.api.cd(server.veil_home):
+            fabric.api.sudo('veil :{} down'.format(server.fullname))
+            fabric.api.sudo('cp -r -p {} {}'.format(source_dir, backup_dir))
+            # fabric.api.sudo('git reset --hard HEAD') # TODO: remove this if no problems with deployment
+
+
+def delete_backup(servers):
+    for server in servers:
+        fabric.api.env.host_string = server.deploys_via
+        backup_dir = '{}-backup'.format(server.veil_home.parent.parent)
+        fabric.api.sudo('rm -rf {}'.format(backup_dir))
 
 
 @script('download-packages')
@@ -69,7 +74,17 @@ def download_packages(veil_env_name):
     # this command should not interrupt normal website operation
     # designed to run when website is still running, to prepare for a full deployment
     for server in list_veil_servers(veil_env_name):
-        remote_do('download-packages', server)
+        fabric.api.env.host_string = server.deploys_via
+        fabric.api.env.forward_agent = True
+        if not fabric.contrib.files.exists(server.deployed_tag_path):
+            print(yellow('not deployed yet, skipped downloading'))
+            return
+        with fabric.api.cd(server.veil_home):
+            fabric.api.sudo('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x')
+            try:
+                fabric.api.sudo('veil :{} install-server --download-only'.format(server.fullname))
+            finally:
+                fabric.api.sudo('git checkout -- RESOURCE-LATEST-VERSION-*')
 
 
 @script('patch-env')
@@ -99,26 +114,50 @@ def rollback_env(veil_env_name):
     Bring up veil servers in reversed sorted server names order
     """
     servers = list_veil_servers(veil_env_name)
-    for server in servers:
-        remote_do('check-backup', server)
-    for server in servers:
-        remote_do('rollback', server)
+    check_backup(servers)
+    rollback(servers)
     start_env(veil_env_name)
+    delete_backup(servers)
+
+
+def check_backup(servers):
     for server in servers:
-        remote_do('delete-backup', server)
+        fabric.api.env.host_string = server.deploys_via
+        backup_dir = '{}-backup'.format(server.veil_home.parent.parent)
+        if not fabric.contrib.files.exists(backup_dir):
+            raise Exception('{}: backup does not exist'.format(server.fullname))
+
+
+def rollback(servers):
+    for server in servers:
+        fabric.api.env.host_string = server.deploys_via
+        source_dir = server.veil_home.parent.parent
+        backup_dir = '{}-backup'.format(source_dir)
+        if fabric.contrib.files.exists(source_dir):
+            with fabric.api.cd(server.veil_home):
+                fabric.api.sudo('veil :{} down'.format(server.fullname))
+            fabric.api.sudo('mv {source_dir} {source_dir}-to-be-deleted-{}'.format(datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
+                source_dir=source_dir))
+        try:
+            fabric.api.sudo('pkill -x supervisord')
+        except:
+            pass  # do not care if it is there
+        fabric.api.sudo('cp -r -p {} {}'.format(backup_dir, source_dir))
 
 
 @script('backup-env')
 def backup_env(veil_env_name, should_bring_up_servers='TRUE', veil_guard_name='@guard'):
-    fabric.api.env.host_string = get_veil_server(veil_env_name, veil_guard_name).deploys_via
-    with fabric.api.cd('/opt/{}/app'.format(veil_env_name)):
-        fabric.api.sudo('veil :{}/{} backup-env {}'.format(veil_env_name, veil_guard_name, should_bring_up_servers))
+    server_guard = get_veil_server(veil_env_name, veil_guard_name)
+    fabric.api.env.host_string = server_guard.deploys_via
+    with fabric.api.cd(server_guard.veil_home):
+        fabric.api.sudo('veil :{} backup-env {}'.format(server_guard.fullname, should_bring_up_servers))
 
 
 @script('purge-left-overs')
 def purge_left_overs(veil_env_name):
     for server in list_veil_servers(veil_env_name):
-        remote_do('purge-left-overs', server)
+        fabric.api.env.host_string = server.deploys_via
+        fabric.api.sudo('rm -rf {source_dir}-backup {source_dir}-to-be-deleted-*'.format(source_dir=server.veil_home.parent.parent))
 
 
 @script('restart-env')
@@ -137,7 +176,9 @@ def stop_env(veil_env_name):
     Bring down veil servers in sorted server names order
     """
     for server in list_veil_servers(veil_env_name):
-        remote_do('bring-down-server', server)
+        fabric.api.env.host_string = server.deploys_via
+        with fabric.api.cd(server.veil_home):
+            fabric.api.sudo('veil :{} down'.format(server.fullname))
 
 
 @script('start-env')
@@ -146,7 +187,9 @@ def start_env(veil_env_name):
     Bring up veil servers in reversed sorted server names order
     """
     for server in reversed(list_veil_servers(veil_env_name)):
-        remote_do('bring-up-server', server)
+        fabric.api.env.host_string = server.deploys_via
+        with fabric.api.cd(server.veil_home):
+            fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))
 
 
 @script('upgrade-env-pip')
@@ -155,7 +198,9 @@ def upgrade_env_pip(veil_env_name, setuptools_version, pip_version):
     Upgrade pip and setuptools on veil servers
     """
     for server in list_veil_servers(veil_env_name):
-        remote_do('upgrade-pip', server, setuptools_version, pip_version)
+        fabric.api.env.host_string = server.deploys_via
+        with fabric.api.cd(server.veil_home):
+            fabric.api.sudo('veil :{} upgrade-pip {} {}'.format(server.fullname, setuptools_version, pip_version))
 
 
 @script('print-deployed-at')
@@ -172,15 +217,6 @@ def get_deployed_at():
             formatted_deployed_at = tag.replace('{}-'.format(VEIL_ENV_NAME), '').split('-')[0]
             deployed_ats.append(convert_datetime_to_client_timezone(datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S')))
     return max(deployed_ats) if deployed_ats else None
-
-
-def remote_do(action, server, *args):
-    fabric.api.env.host_string = server.deploys_via
-    fabric.api.env.forward_agent = True
-    if server.host_base_name not in hosts_with_payload_uploaded:
-        fabric.api.put(PAYLOAD, REMOTE_PAYLOAD_PATH, use_sudo=True, mode=0600)
-        hosts_with_payload_uploaded.append(server.host_base_name)
-    fabric.api.sudo('python {} {} {} {} {}'.format(REMOTE_PAYLOAD_PATH, action, server.env_name, server.name, ' '.join(arg for arg in args)))
 
 
 def update_branch(veil_env_name):

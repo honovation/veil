@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
+import contextlib
 import os
 import fabric.api
 import fabric.contrib.files
@@ -25,9 +26,9 @@ def veil_container_resource(host, server, config_dir):
 def get_remote_file_content(remote_path):
     content = None
     if fabric.contrib.files.exists(remote_path):
-        f = StringIO()
-        fabric.api.get(remote_path, f)
-        content = f.getvalue()
+        with contextlib.closing(StringIO()) as f:
+            fabric.api.get(remote_path, f)
+            content = f.getvalue()
     return content
 
 
@@ -46,8 +47,9 @@ def veil_container_lxc_resource(host, server):
         return
     if not action:
         return
-    fabric.api.put(StringIO(installer_file_content), server.container_installer_path, use_sudo=True, mode=0600)
-    with fabric.api.cd('/opt/veil'):
+    with contextlib.closing(StringIO(installer_file_content)) as f:
+        fabric.api.put(f, server.container_installer_path, use_sudo=True, mode=0600)
+    with fabric.api.cd(host.veil_home):
         fabric.api.sudo('veil :{} install veil_installer.installer_resource?{}'.format(host.env_name, server.container_installer_path))
     fabric.api.sudo('mv -f {} {}'.format(server.container_installer_path, server.installed_container_installer_path))
 
@@ -127,7 +129,7 @@ def veil_container_init_resource(server):
     fabric.api.sudo('chroot {} apt-get -q update'.format(container_rootfs_path))
     fabric.api.sudo('chroot {} apt-get -q -y purge ntpdate ntp whoopsie network-manager'.format(container_rootfs_path))
     fabric.api.sudo('chroot {} apt-get -q -y install unattended-upgrades iptables git-core language-pack-en unzip wget python python-pip python-virtualenv'.format(container_rootfs_path))
-    fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "setuptools>=3.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
+    fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "setuptools>=4.0.1"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "pip>=1.5.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('chroot {} pip install -i {} --download-cache {} --upgrade "virtualenv>=1.11.6"'.format(container_rootfs_path, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('touch {}'.format(server.container_initialized_tag_path))
@@ -195,15 +197,16 @@ def veil_server_boot_script_resource(server):
         return
     print('{} boot script: {} ...'.format(action, server.container_name))
     fabric.api.sudo('chroot {} update-rc.d -f {} remove'.format(container_rootfs_path, server.container_name))
-    fabric.api.put(StringIO(boot_script_content), full_boot_script_path, use_sudo=True, mode=0755)
+    with contextlib.closing(StringIO(boot_script_content)) as f:
+        fabric.api.put(f, full_boot_script_path, use_sudo=True, mode=0755)
     fabric.api.sudo('chroot {} chown root:root {}'.format(container_rootfs_path, boot_script_path))
     fabric.api.sudo('chroot {} update-rc.d {} defaults 90 10'.format(container_rootfs_path, server.container_name))
 
 
 def render_veil_server_boot_script(server):
     return render_config('veil-server-boot-script.j2', script_name=server.container_name,
-        do_start_command='cd /opt/{env_name}/app && sudo veil :{env_name}/{} up --daemonize'.format(server.name, env_name=server.env_name),
-        do_stop_command='cd /opt/{env_name}/app && sudo veil :{env_name}/{} down'.format(server.name, env_name=server.env_name))
+        do_start_command='cd {} && sudo veil :{} up --daemonize'.format(server.veil_home, server.fullname),
+        do_stop_command='cd {} && sudo veil :{} down'.format(server.veil_home, server.fullname))
 
 
 def render_installer_file(host, server):

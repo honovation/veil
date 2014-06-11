@@ -7,7 +7,7 @@ import fabric.contrib.files
 from veil.environment import *
 from veil_component import as_path
 from veil_installer import *
-from .container_installer import veil_container_resource
+from .container_installer import veil_container_resource, get_remote_file_content
 
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
@@ -22,7 +22,7 @@ def veil_hosts_resource(veil_env_name, config_dir):
             resources.extend([
                 veil_host_onetime_config_resource(host=host, config_dir=config_dir),
                 veil_host_config_resource(host=host, config_dir=config_dir),
-                veil_host_framework_codebase_resource(host=host)
+                veil_host_application_codebase_resource(host=host)
             ])
             hosts_to_install.append(host.base_name)
         for server in host.server_list:
@@ -86,33 +86,64 @@ def veil_host_config_resource(host, config_dir):
 
 
 @atomic_installer
-def veil_host_framework_codebase_resource(host):
+def veil_host_application_codebase_resource(host):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'veil_host_framework_codebase?{}'.format(host.env_name)
+        key = 'veil_host_application_codebase?{}'.format(host.env_name)
         dry_run_result[key] = 'INSTALL'
         return
-    clone_veil()
-    with fabric.api.cd('/opt/veil'):
-        pull_veil()
-        fabric.api.sudo('./bin/veil :{} init'.format(host.env_name))
+    clone_application(host)
+    pull_application(host)
+    clone_framework(host)
+    pull_framework(host)
+    init_application(host)
 
 
-def clone_veil():
-    if fabric.contrib.files.exists('/opt/veil'):
+def clone_application(host):
+    if fabric.contrib.files.exists(host.veil_home):
         return
-    fabric.api.sudo('git clone {} /opt/veil'.format(VEIL_FRAMEWORK_CODEBASE))
+    fabric.api.sudo('git clone {} {}'.format(get_application_codebase(), host.veil_home))
 
 
-def pull_veil():
-    while True:
-        try:
-            fabric.api.sudo('git pull --rebase')
-        except:
-            sleep(2)
-            continue
-        else:
-            break
+def clone_framework(host):
+    if fabric.contrib.files.exists(host.veil_framework_home):
+        return
+    fabric.api.sudo('git clone {} {}'.format(VEIL_FRAMEWORK_CODEBASE, host.veil_framework_home))
+
+
+def pull_application(host):
+    with fabric.api.cd(host.veil_home):
+        fabric.api.sudo('git checkout {}'.format(host.veil_application_branch))
+        while True:
+            try:
+                fabric.api.sudo('git pull --rebase')
+            except:
+                sleep(1)
+                continue
+            else:
+                break
+
+
+def pull_framework(host):
+    with fabric.api.cd(host.veil_framework_home):
+        fabric.api.sudo('git checkout {}'.format(read_veil_framework_version(host)))
+        while True:
+            try:
+                fabric.api.sudo('git pull --rebase')
+            except:
+                sleep(1)
+                continue
+            else:
+                break
+
+
+def init_application(host):
+    with fabric.api.cd(host.veil_home):
+        fabric.api.sudo('{}/bin/veil :{} init'.format(host.veil_framework_home, host.env_name))
+
+
+def read_veil_framework_version(host):
+    return get_remote_file_content(host.veil_home / 'VEIL-VERSION') or 'master'
 
 
 @atomic_installer
@@ -132,8 +163,8 @@ def veil_host_init_resource(host):
     # enable time sync on lxc hosts, and which is shared among lxc guests
     fabric.api.sudo(
         '''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
-    fabric.api.sudo('mkdir -p {} {} {}'.format(DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR))
-    fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "setuptools>=3.6"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
+    fabric.api.sudo('mkdir -p {} {} {} {}'.format(DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.veil_home.parent))
+    fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "setuptools>=4.0.1"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "pip>=1.5.6"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "virtualenv>=1.11.6"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
 

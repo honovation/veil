@@ -38,6 +38,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
     env_code_path = veil_env_code_path(name)
     env.veil_home = env_code_path / 'app'
     env.veil_framework_home = env_code_path / 'veil'
+    env.veil_application_branch = 'env-{}'.format(name)
     env.server_list = []
     for server_name, server in env.servers.items():
         server.env_name = name
@@ -45,6 +46,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         server.fullname = '{}/{}'.format(server.env_name, server.name)
         server.start_order = 1000 + 10 * sorted_server_names.index(server_name) if sorted_server_names else 0
         server.veil_home = env.veil_home
+        server.veil_application_branch = env.veil_application_branch
         server.veil_framework_home = env.veil_framework_home
         server.container_name = '{}-{}'.format(server.env_name, server.name)
         server.container_installer_path = HOST_SHARE_DIR / 'veil-container-INSTALLER-{}'.format(server.container_name)
@@ -61,6 +63,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.env_name, host.base_name))
         host.base_name = host_name.split('/', 1)[0]  # e.g. ljhost-005/3 => ljhost-005
         host.veil_home = env.veil_home
+        host.veil_application_branch = env.veil_application_branch
         host.veil_framework_home = env.veil_framework_home
         host.initialized_tag_path = HOST_SHARE_DIR / 'veil-host-{}.initialized'.format(host.env_name)
         host.server_list = []
@@ -140,7 +143,7 @@ def get_current_veil_server():
 
 
 def list_veil_hosts(veil_env_name):
-    return get_application().ENVIRONMENTS[veil_env_name].hosts.values().sort(key=lambda h: h.name)
+    return sorted(get_application().ENVIRONMENTS[veil_env_name].hosts.values(), key=lambda h: h.name)
 
 
 def get_veil_env_deployment_memo(veil_env_name):

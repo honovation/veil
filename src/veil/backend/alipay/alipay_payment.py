@@ -142,9 +142,7 @@ def sign_md5(params):
 
 
 def to_url_params_string(params):
-    keys = params.keys()
-    keys.sort()
-    return '&'.join('{}={}'.format(key, params[key]) for key in keys if params[key])
+    return '&'.join('{}={}'.format(key, params[key]) for key in sorted(params.keys()) if params[key])
 
 
 def is_notification_from_alipay(notify_id):

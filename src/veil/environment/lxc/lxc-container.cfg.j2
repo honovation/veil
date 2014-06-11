@@ -2,6 +2,11 @@
 
 
 lxc.utsname = {{ name }}
+lxc.arch = x86_64
+lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
+lxc.mount = /var/lib/lxc/{{ name }}/fstab
+lxc.mount.entry = {{ HOST_SHARE_DIR }} {{ HOST_SHARE_DIR[1:] }} none bind,create=dir 0 0
+lxc.mount.entry = {{ HOST_CODE_DIR }} {{ HOST_CODE_DIR[1:] }} none bind,create=dir 0 0
 lxc.network.type = veth
 lxc.network.link = {{ lan_interface }}
 lxc.network.flags = up
@@ -9,9 +14,6 @@ lxc.network.hwaddr = {{ mac_address }}
 lxc.devttydir = lxc
 lxc.tty = 4
 lxc.pts = 1024
-lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
-lxc.mount = /var/lib/lxc/{{ name }}/fstab
-lxc.arch = x86_64
 lxc.cap.drop = sys_module mac_admin
 lxc.pivotdir = lxc_putold
 {% if memory_limit %}
@@ -65,10 +67,13 @@ lxc.cgroup.devices.allow = c 10:232 rwm
 lxc.include = /usr/share/lxc/config/ubuntu.common.conf
 
 # Container specific configuration
-lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
-lxc.mount = /var/lib/lxc/{{ name }}/fstab
 lxc.utsname = {{ name }}
 lxc.arch = x86_64
+lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
+lxc.mount = /var/lib/lxc/{{ name }}/fstab
+
+lxc.mount.entry = {{ HOST_SHARE_DIR }} {{ HOST_SHARE_DIR[1:] }} none bind,create=dir 0 0
+lxc.mount.entry = {{ HOST_CODE_DIR }} {{ HOST_CODE_DIR[1:] }} none bind,create=dir 0 0
 
 # Network configuration
 lxc.network.type = veth
@@ -79,8 +84,6 @@ lxc.network.hwaddr = {{ mac_address }}
 lxc.start.auto = 1
 lxc.start.delay = 3
 lxc.start.order = {{ start_order }} # higher value means starts earlier
-
-lxc.mount.entry = {{ HOST_SHARE_DIR }} {{ HOST_SHARE_DIR[1:] }} none bind,create=dir 0 0
 
 {% if memory_limit %}
 lxc.cgroup.memory.limit_in_bytes = {{ memory_limit }}
