@@ -81,6 +81,7 @@ lxc.start.delay = 3
 lxc.start.order = {{ start_order }} # higher value means starts earlier
 
 lxc.mount.entry = {{ DEPENDENCY_DIR }} {{ DEPENDENCY_DIR[1:] }} none bind,create=dir 0 0
+lxc.mount.entry = {{ DEPENDENCY_INSTALL_DIR }} {{ DEPENDENCY_INSTALL_DIR[1:] }} none bind,create=dir 0 0
 lxc.mount.entry = {{ PYPI_ARCHIVE_DIR }} {{ PYPI_ARCHIVE_DIR[1:] }} none noexec,bind,create=dir 0 0
 
 {% if memory_limit %}

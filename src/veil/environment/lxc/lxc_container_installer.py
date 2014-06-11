@@ -10,7 +10,8 @@ def lxc_container_resource(container_name, user_name, mac_address, lan_interface
         lxc_container_created_resource(container_name=container_name, user_name=user_name),
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name), content=render_config('lxc-container.cfg.j2', name=container_name,
             mac_address=mac_address, lan_interface=lan_interface, start_order=start_order, memory_limit=memory_limit, cpu_share=cpu_share,
-            DEPENDENCY_DIR=DEPENDENCY_DIR, PYPI_ARCHIVE_DIR=PYPI_ARCHIVE_DIR, is_precise=CURRENT_OS.codename == 'precise'), keep_origin=True)
+            DEPENDENCY_DIR=DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR=DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR=PYPI_ARCHIVE_DIR,
+            is_precise=CURRENT_OS.codename == 'precise'), keep_origin=True)
     ]
     return resources
 
