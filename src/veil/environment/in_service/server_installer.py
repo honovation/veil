@@ -4,7 +4,6 @@ import fabric.api
 import fabric.contrib.files
 from veil.environment import *
 from veil_installer import *
-from veil.utility.shell import *
 
 PAYLOAD = os.path.join(os.path.dirname(__file__), 'server_installer_payload.py')
 REMOTE_PAYLOAD_PATH = HOST_SHARE_DIR / 'server_installer_payload.py'
@@ -33,6 +32,6 @@ def veil_server_resource(server, action='PATCH'):
     fabric.api.sudo('python {} {} {} {} {} {}'.format(REMOTE_PAYLOAD_PATH, VEIL_FRAMEWORK_CODEBASE, get_application_codebase(),
         server.env_name, server.name, action))
     if 'DEPLOY' == action:
-        shell_execute('touch {}'.format(server.deployed_tag_path), capture=True, debug=True)
+        fabric.api.sudo('touch {}'.format(server.deployed_tag_path))
     else:  # PATCH
-        shell_execute('touch {}'.format(server.patched_tag_path), capture=True, debug=True)
+        fabric.api.sudo('touch {}'.format(server.patched_tag_path))
