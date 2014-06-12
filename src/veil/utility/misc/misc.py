@@ -9,9 +9,9 @@ from veil.utility.encoding import to_unicode
 TWO_PLACES = Decimal('0.01')
 
 
-def unique(iterable, idfunc=lambda x:x):
+def unique(iterable, id_func=lambda x: x):
     seen = set()
-    return [x for x in iterable if idfunc(x) not in seen and not seen.add(idfunc(x))]
+    return [x for x in iterable if id_func(x) not in seen and not seen.add(id_func(x))]
 
 
 def chunks(seq, size, padding=False, padding_element=None):

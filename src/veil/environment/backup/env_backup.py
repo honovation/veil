@@ -1,12 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 import fabric.api
 import datetime
-import os
 import logging
 from veil_component import as_path
 from veil.environment import *
 from veil_installer import *
 from veil.frontend.cli import *
+from veil.utility.misc import *
 from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 KEEP_BACKUP_FOR_DAYS = 3 if VEIL_ENV_TYPE == 'staging' else 15
 
 
-@script('create')
+@script('create-env-backup')
 def create_env_backup(should_bring_up_servers='TRUE'):
     """
     Bring down veil servers in sorted server names order
@@ -24,14 +24,15 @@ def create_env_backup(should_bring_up_servers='TRUE'):
     if dry_run_result is not None:
         dry_run_result['env_backup'] = 'BACKUP'
         return
-    servers = [s for s in list_veil_servers(VEIL_ENV_NAME) if s.name != '@guard']
+    servers = [server for server in list_veil_servers(VEIL_ENV_NAME) if server.name not in {'@guard', '@monitor'}]
+    hosts = [get_veil_host(server.env_name, server.host_name) for server in unique(servers, id_func=lambda s: s.host_base_name)]
     try:
         for server in servers:
             bring_down_server(server)
         now = datetime.datetime.now()
         timestamp = now.strftime('%Y%m%d%H%M%S')
-        for server in servers:
-            backup_server(server, timestamp)
+        for host in hosts:
+            backup_host(host, timestamp)
         shell_execute('ln -snf {} latest'.format(timestamp), cwd='/backup')
     finally:
         if should_bring_up_servers == 'TRUE':
@@ -49,7 +50,6 @@ def delete_old_backups():
             continue
         try:
             backup_time = datetime.datetime.strptime(path.basename(), '%Y%m%d%H%M%S')
-            print(now - backup_time)
             if now - backup_time > datetime.timedelta(days=KEEP_BACKUP_FOR_DAYS):
                 LOGGER.info('delete old back: %(path)s', {'path': path})
                 path.rmtree()
@@ -69,17 +69,15 @@ def bring_up_server(server):
         fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))
 
 
-def backup_server(server, timestamp):
-    fabric.api.env.host_string = server.deploys_via
-    backup_path = '/backup/{}/{}-{}.tar.gz'.format(timestamp, server.container_name, timestamp)
-    with fabric.api.cd(server.veil_home):
-        fabric.api.sudo('veil :{} backup {}'.format(server.fullname, backup_path))
-    if not os.path.exists('/backup'):
-        os.mkdir('/backup', 0755)
-    if not os.path.exists('/backup/{}'.format(timestamp)):
-        os.mkdir('/backup/{}'.format(timestamp), 0755)
+def backup_host(host, timestamp):
+    fabric.api.env.host_string = host.deploys_via
+    fabric.api.env.forward_agent = True
+    backup_path = '/backup/{timestamp}/{}-{}-{timestamp}.tar.gz'.format(host.env_name, host.base_name, timestamp=timestamp)
+    with fabric.api.cd(host.veil_home):
+        fabric.api.sudo('veil :{} backup {}'.format(host.env_name, backup_path))
+    as_path('/backup/{}'.format(timestamp)).makedirs(0755)
     fabric.api.get(backup_path, backup_path)
-    fabric.api.sudo('rm -rf /backup')  # backup is centrally stored in @guard lxc container
+    fabric.api.sudo('rm -rf /backup')  # backup is centrally stored in @guard container
 
 
 def rsync_to_backup_mirror():

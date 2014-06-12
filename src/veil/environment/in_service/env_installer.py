@@ -4,6 +4,7 @@ import sys
 import fabric.api
 import fabric.contrib.files
 from veil.development.git import *
+from veil.utility.misc import *
 from veil_component import *
 from veil_installer import *
 from veil.frontend.cli import *
@@ -26,6 +27,14 @@ def display_deployment_memo(veil_env_name):
                 break
 
 
+def is_all_servers_ever_deployed(servers):
+    for server in servers:
+        fabric.api.env.host_string = server.deploys_via
+        if not fabric.contrib.files.exists(server.deployed_tag_path):
+            return False
+    return True
+
+
 @script('deploy-env')
 def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     """
@@ -39,34 +48,16 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     config_dir = as_path(config_dir)
     install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     servers = list_veil_servers(veil_env_name)
-    if 'TRUE' == should_download_packages:
-        download_packages(veil_env_name)
-    create_backup(servers)
+    ever_deployed = is_all_servers_ever_deployed(servers)
+    hosts = unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name)
+    if ever_deployed:
+        if 'TRUE' == should_download_packages:
+            download_packages(veil_env_name)
+        stop_env(veil_env_name)
+        create_backup_for_rollback(hosts)
     install_resource(veil_servers_resource(servers=reversed(servers), action='DEPLOY'))
-    delete_backup(servers)
-
-
-def create_backup(servers):
-    for server in servers:
-        fabric.api.env.host_string = server.deploys_via
-        if not fabric.contrib.files.exists(server.deployed_tag_path):
-            print(yellow('{}: not deployed yet, skipped backup'.format(server.fullname)))
-            return
-        source_dir = server.veil_home.parent.parent
-        backup_dir = '{}-backup'.format(source_dir)
-        if fabric.contrib.files.exists(backup_dir):
-            raise Exception('{}: backup already exists'.format(server.fullname))
-        with fabric.api.cd(server.veil_home):
-            fabric.api.sudo('veil :{} down'.format(server.fullname))
-            fabric.api.sudo('cp -r -p {} {}'.format(source_dir, backup_dir))
-            # fabric.api.sudo('git reset --hard HEAD') # TODO: remove this if no problems with deployment
-
-
-def delete_backup(servers):
-    for server in servers:
-        fabric.api.env.host_string = server.deploys_via
-        backup_dir = '{}-backup'.format(server.veil_home.parent.parent)
-        fabric.api.sudo('rm -rf {}'.format(backup_dir))
+    if ever_deployed:
+        delete_backup_for_rollback(hosts)
 
 
 @script('download-packages')
@@ -76,9 +67,6 @@ def download_packages(veil_env_name):
     for server in list_veil_servers(veil_env_name):
         fabric.api.env.host_string = server.deploys_via
         fabric.api.env.forward_agent = True
-        if not fabric.contrib.files.exists(server.deployed_tag_path):
-            print(yellow('not deployed yet, skipped downloading'))
-            return
         with fabric.api.cd(server.veil_home):
             fabric.api.sudo('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x')
             try:
@@ -113,36 +101,58 @@ def rollback_env(veil_env_name):
     Bring down veil servers in sorted server names order (in rollback)
     Bring up veil servers in reversed sorted server names order
     """
-    servers = list_veil_servers(veil_env_name)
-    check_backup(servers)
-    rollback(servers)
+    hosts = unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name)
+    check_backup(hosts)
+    stop_env(veil_env_name)
+    rollback(hosts)
     start_env(veil_env_name)
-    delete_backup(servers)
+    delete_backup_for_rollback(hosts)
 
 
-def check_backup(servers):
-    for server in servers:
-        fabric.api.env.host_string = server.deploys_via
-        backup_dir = '{}-backup'.format(server.veil_home.parent.parent)
+def check_backup(hosts):
+    for host in hosts:
+        fabric.api.env.host_string = host.deploys_via
+        backup_dir = '{}-backup'.format(host.veil_env_path)
         if not fabric.contrib.files.exists(backup_dir):
-            raise Exception('{}: backup does not exist'.format(server.fullname))
+            raise Exception('{}: backup does not exist'.format(host.base_name))
 
 
-def rollback(servers):
-    for server in servers:
-        fabric.api.env.host_string = server.deploys_via
-        source_dir = server.veil_home.parent.parent
+def create_backup_for_rollback(hosts):
+    for host in hosts:
+        fabric.api.env.host_string = host.deploys_via
+        source_dir = host.veil_env_path
+        backup_dir = '{}-backup'.format(source_dir)
+        if fabric.contrib.files.exists(backup_dir):
+            raise Exception('{}: backup already exists'.format(host.base_name))
+        with fabric.api.cd(host.veil_home):
+            fabric.api.sudo('cp -r -p {} {}'.format(source_dir, backup_dir))
+            # fabric.api.sudo('git reset --hard HEAD') # TODO: remove this if no problems with deployment
+
+
+def rollback(hosts):
+    ensure_servers_down(hosts)
+    for host in hosts:
+        fabric.api.env.host_string = host.deploys_via
+        source_dir = host.veil_env_path
         backup_dir = '{}-backup'.format(source_dir)
         if fabric.contrib.files.exists(source_dir):
-            with fabric.api.cd(server.veil_home):
-                fabric.api.sudo('veil :{} down'.format(server.fullname))
             fabric.api.sudo('mv {source_dir} {source_dir}-to-be-deleted-{}'.format(datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
                 source_dir=source_dir))
-        try:
-            fabric.api.sudo('pkill -x supervisord')
-        except:
-            pass  # do not care if it is there
         fabric.api.sudo('cp -r -p {} {}'.format(backup_dir, source_dir))
+
+
+def delete_backup_for_rollback(hosts):
+    for host in hosts:
+        fabric.api.env.host_string = host.deploys_via
+        backup_dir = '{}-backup'.format(host.veil_env_path)
+        fabric.api.sudo('rm -rf {}'.format(backup_dir))
+
+
+def ensure_servers_down(hosts):
+    for host in hosts:
+        fabric.api.env.host_string = host.deploys_via
+        if fabric.api.sudo('lxc-ps --lxc -ef | grep supervisord', capture=True):
+            raise Exception('{}: can not rollback while not all veil servers are down'.format(host.base_name))
 
 
 @script('backup-env')
@@ -155,9 +165,10 @@ def backup_env(veil_env_name, should_bring_up_servers='TRUE', veil_guard_name='@
 
 @script('purge-left-overs')
 def purge_left_overs(veil_env_name):
-    for server in list_veil_servers(veil_env_name):
-        fabric.api.env.host_string = server.deploys_via
-        fabric.api.sudo('rm -rf {source_dir}-backup {source_dir}-to-be-deleted-*'.format(source_dir=server.veil_home.parent.parent))
+    hosts = unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name)
+    for host in hosts:
+        fabric.api.env.host_string = host.deploys_via
+        fabric.api.sudo('rm -rf {source_dir}-backup {source_dir}-to-be-deleted-*'.format(source_dir=host.veil_env_path))
 
 
 @script('restart-env')

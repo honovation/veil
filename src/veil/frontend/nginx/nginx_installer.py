@@ -18,7 +18,7 @@ def nginx_resource(servers, config):
             'servers': servers
         }, **config)))
     ])
-    uploaded_files_directory = VEIL_VAR_DIR / 'uploaded-files'
+    uploaded_files_directory = VEIL_BUCKETS_DIR / 'uploaded-files'
     resources.append(directory_resource(path=uploaded_files_directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770))
     for i in range(10):
         resources.append(directory_resource(path=uploaded_files_directory / str(i), owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770))

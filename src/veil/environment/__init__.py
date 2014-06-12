@@ -103,7 +103,7 @@ def veil_home(veil_env_name):
 
 
 def veil_server(host_name, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None,
-        backup_dirs=None, memory_limit=None, cpu_share=None):
+        memory_limit=None, cpu_share=None):
     from veil.model.collection import objectify
     if backup_mirror:
         backup_mirror = objectify(backup_mirror)
@@ -116,7 +116,6 @@ def veil_server(host_name, sequence_no, programs, deploys_via=None, resources=()
         'supervisor_http_port': supervisor_http_port,
         'name_servers': name_servers or ['114.114.114.114', '114.114.115.115', '8.8.8.8', '8.8.4.4'],
         'backup_mirror': backup_mirror,
-        'backup_dirs': backup_dirs or [],
         'memory_limit': memory_limit,
         'cpu_share': cpu_share,
         'deploys_via': deploys_via

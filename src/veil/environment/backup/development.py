@@ -19,17 +19,15 @@ def download_baseline(veil_env_name, pattern):
 def restore_from_baseline(veil_env_name=None, pattern=''):
     if veil_env_name:
         download_baseline(veil_env_name, pattern)
-    else:
-        if not BASELINE_DIR.exists():
-            raise Exception('baseline not downloaded yet, pass env name to restore-from-baseline to download')
+    if not BASELINE_DIR.exists():
+        raise Exception('baseline not downloaded yet, pass env name to restore-from-baseline to download')
     shell_execute('veil down')
     VEIL_VAR_DIR.rmtree()
     VEIL_VAR_DIR.mkdir()
     for backup_path in BASELINE_DIR.files('*.tar.gz'):
-        project_name, env_name, server, time = backup_path.basename().split('-')
-        dir_name = '{}-{}'.format(project_name, env_name)
+        env_name, host_base_name, time = backup_path.basename().rsplit('-', 2)
         #TODO: backup dir structure changed, there should be changed
-        shell_execute('tar xzf {} --strip=5 --wildcards opt/{}/app/var/{}/*'.format(backup_path, dir_name, dir_name), cwd=VEIL_VAR_DIR)
+        shell_execute('tar xzf {} --strip=5 --wildcards opt/{}/var/*'.format(backup_path, env_name), cwd=VEIL_VAR_DIR)
     shell_execute('veil install-server')
     shell_execute('veil up --daemonize')
     shell_execute('veil migrate')

@@ -95,7 +95,7 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
                 proxy_set_body off;
                 proxy_pass http://{}-tornado;
                 {}
-            '''.format(max_upload_file_size, VEIL_VAR_DIR / 'uploaded-files', purpose, extra_headers)
+            '''.format(max_upload_file_size, VEIL_BUCKETS_DIR / 'uploaded-files', purpose, extra_headers)
         },
         '^~ /fupload-/': {
             '_': '''
@@ -117,7 +117,7 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
                 alias {}/inline-static-files/$1/$2;
                 access_log off;
                 expires max;
-                '''.format(VEIL_VAR_DIR)
+                '''.format(VEIL_BUCKETS_DIR)
         }
     }
     locations.update(extra_locations)

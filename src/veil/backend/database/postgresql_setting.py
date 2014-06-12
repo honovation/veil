@@ -44,7 +44,7 @@ def get_pg_config_dir(purpose, version=None):
 
 
 def get_pg_data_dir(purpose, version):
-    return VEIL_VAR_DIR / '{}-postgresql-{}'.format(purpose.replace('_', '-'), version)
+    return VEIL_DATA_DIR / '{}-postgresql-{}'.format(purpose.replace('_', '-'), version)
 
 
 def get_pg_bin_dir(version):

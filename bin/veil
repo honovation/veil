@@ -181,11 +181,11 @@ case "$1" in
         ;;
     backup-env)
         shift
-        exec veil environment backup create $@
+        exec veil environment backup create-env-backup $@
         ;;
     backup)
         shift
-        exec veil server backup create $@
+        exec veil environment backup create-host-backup $@
         ;;
     restore-from-baseline)
         shift

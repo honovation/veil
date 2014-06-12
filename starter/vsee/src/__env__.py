@@ -178,7 +178,7 @@ def vsee_config(config):
     for purpose in PERSON_WEBSITE_BUCKETS:
         vsee_config_['{}_bucket'.format(purpose)] = {
             'type': 'filesystem',
-            'base_directory': VEIL_VAR_DIR / purpose.replace('_', '-'),
+            'base_directory': VEIL_BUCKETS_DIR / purpose.replace('_', '-'),
             'base_url': 'http://{}/{}'.format(person_website_authority, purpose.replace('_', '-')),
         }
     for purpose in POSTGRESQL_CLIENTS:
@@ -207,5 +207,5 @@ def vsee_config(config):
 
 
 def website_bucket_location(purpose):
-    bucket_base_directory = VEIL_VAR_DIR / purpose.replace('_', '-')
+    bucket_base_directory = VEIL_BUCKETS_DIR / purpose.replace('_', '-')
     return {'^~ /{}/'.format(purpose.replace('_', '-')): bucket_location(bucket_base_directory)}
