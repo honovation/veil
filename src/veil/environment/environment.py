@@ -37,8 +37,12 @@ BASIC_LAYOUT_RESOURCES = [
     directory_resource(path=VEIL_HOME / 'etc'),
     directory_resource(path=VEIL_ETC_DIR),
     directory_resource(path=VEIL_HOME / 'var'),
-    directory_resource(path=VEIL_VAR_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP)
+    directory_resource(path=VEIL_VAR_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+    directory_resource(path=VEIL_DATA_DIR),
+    directory_resource(path=VEIL_BUCKETS_DIR)
 ]
+if VEIL_ENV_TYPE in {'public', 'staging'}:
+    BASIC_LAYOUT_RESOURCES.append(directory_resource(path=VEIL_EDITORIAL_DIR))
 
 VEIL_FRAMEWORK_CODEBASE = 'git@ljhost-003.dmright.com:/opt/git/veil.git'
 
