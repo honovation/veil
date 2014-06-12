@@ -13,6 +13,9 @@ from .environment import VEIL_FRAMEWORK_CODEBASE
 from .environment import VEIL_LOG_DIR
 from .environment import VEIL_ETC_DIR
 from .environment import VEIL_VAR_DIR
+from .environment import VEIL_EDITORIAL_DIR
+from .environment import VEIL_BUCKETS_DIR
+from .environment import VEIL_DATA_DIR
 from .environment import VEIL_ENV_TYPE
 from .environment import VEIL_ENV_NAME
 from .environment import VEIL_SERVER_NAME
@@ -35,16 +38,17 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
 
     from veil.model.collection import objectify
     env = objectify({'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names, 'deployment_memo': deployment_memo})
-    env_code_path = veil_env_code_path(name)
-    env.veil_home = env_code_path / 'app'
-    env.veil_framework_home = env_code_path / 'veil'
+    env.veil_env_path = veil_env_path(name)
+    env.veil_home = veil_home(name)
     env.veil_application_branch = 'env-{}'.format(name)
+    env.veil_framework_home = env.veil_home.parent / 'veil'
     env.server_list = []
     for server_name, server in env.servers.items():
         server.env_name = name
         server.name = server_name
         server.fullname = '{}/{}'.format(server.env_name, server.name)
         server.start_order = 1000 + 10 * sorted_server_names.index(server_name) if sorted_server_names else 0
+        server.veil_env_path = env.veil_env_path
         server.veil_home = env.veil_home
         server.veil_application_branch = env.veil_application_branch
         server.veil_framework_home = env.veil_framework_home
@@ -62,6 +66,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         host.name = host_name
         # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.env_name, host.base_name))
         host.base_name = host_name.split('/', 1)[0]  # e.g. ljhost-005/3 => ljhost-005
+        host.veil_env_path = env.veil_env_path
         host.veil_home = env.veil_home
         host.veil_application_branch = env.veil_application_branch
         host.veil_framework_home = env.veil_framework_home
@@ -89,8 +94,12 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
     return env
 
 
-def veil_env_code_path(veil_env_name):
-    return VEIL_HOME.parent if veil_env_name in {'development', 'test'} else OPT_DIR / veil_env_name / 'code'
+def veil_env_path(veil_env_name):
+    return VEIL_HOME if veil_env_name in {'development', 'test'} else OPT_DIR / veil_env_name
+
+
+def veil_home(veil_env_name):
+    return VEIL_HOME if veil_env_name in {'development', 'test'} else OPT_DIR / veil_env_name / 'code' / 'app'
 
 
 def veil_server(host_name, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None,
@@ -144,6 +153,10 @@ def get_current_veil_server():
 
 def list_veil_hosts(veil_env_name):
     return sorted(get_application().ENVIRONMENTS[veil_env_name].hosts.values(), key=lambda h: h.name)
+
+
+def get_veil_host(veil_env_name, veil_host_name):
+    return get_application().ENVIRONMENTS[veil_env_name].hosts[veil_host_name]
 
 
 def get_veil_env_deployment_memo(veil_env_name):
