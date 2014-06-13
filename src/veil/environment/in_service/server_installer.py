@@ -6,10 +6,7 @@ from veil_installer import *
 
 @composite_installer
 def veil_servers_resource(servers, action):
-    resources = []
-    for server in servers:
-        resources.append(veil_server_resource(server=server, action=action))
-    return resources
+    return [veil_server_resource(server=server, action=action) for server in servers]
 
 
 @atomic_installer
