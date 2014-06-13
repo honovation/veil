@@ -58,6 +58,8 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         server.fullname = '{}/{}'.format(server.env_name, server.name)
         server.start_order = 1000 + 10 * sorted_server_names.index(server.name) if sorted_server_names else 0
         server.veil_home = env.veil_home
+        server.code_dir = server.veil_home.parent
+        server.veil_framework_home = server.code_dir / 'veil'
         server.container_name = '{}-{}'.format(server.env_name, server.name)
         server.container_installer_path = SHARE_DIR / 'veil-container-INSTALLER-{}'.format(server.container_name)
         server.installed_container_installer_path = '{}.installed'.format(server.container_installer_path)
