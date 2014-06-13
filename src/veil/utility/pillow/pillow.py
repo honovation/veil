@@ -115,8 +115,8 @@ def generate_captcha_image_and_answer(size=(180, 30), img_type="GIF", mode="RGB"
 
         for w in range(width):
             for h in range(height):
-                tmp = random.randint(0, 100)
-                if tmp > 100 - chance:
+                rand = random.randint(0, 100)
+                if rand > 100 - chance:
                     draw.point((w, h), fill=(0, 0, 0))
 
     def create_strs():

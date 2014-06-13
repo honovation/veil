@@ -112,7 +112,7 @@ def rollback_env(veil_env_name):
 def check_backup(hosts):
     for host in hosts:
         fabric.api.env.host_string = host.deploys_via
-        backup_dir = '{}-backup'.format(host.veil_env_path)
+        backup_dir = '{}-backup'.format(host.env_dir)
         if not fabric.contrib.files.exists(backup_dir):
             raise Exception('{}: backup does not exist'.format(host.base_name))
 
@@ -120,7 +120,7 @@ def check_backup(hosts):
 def create_backup_for_rollback(hosts):
     for host in hosts:
         fabric.api.env.host_string = host.deploys_via
-        source_dir = host.veil_env_path
+        source_dir = host.env_dir
         backup_dir = '{}-backup'.format(source_dir)
         if fabric.contrib.files.exists(backup_dir):
             raise Exception('{}: backup already exists'.format(host.base_name))
@@ -133,7 +133,7 @@ def rollback(hosts):
     ensure_servers_down(hosts)
     for host in hosts:
         fabric.api.env.host_string = host.deploys_via
-        source_dir = host.veil_env_path
+        source_dir = host.env_dir
         backup_dir = '{}-backup'.format(source_dir)
         if fabric.contrib.files.exists(source_dir):
             fabric.api.sudo('mv {source_dir} {source_dir}-to-be-deleted-{}'.format(datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
@@ -144,7 +144,7 @@ def rollback(hosts):
 def delete_backup_for_rollback(hosts):
     for host in hosts:
         fabric.api.env.host_string = host.deploys_via
-        backup_dir = '{}-backup'.format(host.veil_env_path)
+        backup_dir = '{}-backup'.format(host.env_dir)
         fabric.api.sudo('rm -rf {}'.format(backup_dir))
 
 
@@ -168,7 +168,7 @@ def purge_left_overs(veil_env_name):
     hosts = unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name)
     for host in hosts:
         fabric.api.env.host_string = host.deploys_via
-        fabric.api.sudo('rm -rf {source_dir}-backup {source_dir}-to-be-deleted-*'.format(source_dir=host.veil_env_path))
+        fabric.api.sudo('rm -rf {source_dir}-backup {source_dir}-to-be-deleted-*'.format(source_dir=host.env_dir))
 
 
 @script('restart-env')

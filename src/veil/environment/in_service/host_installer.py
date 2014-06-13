@@ -26,7 +26,12 @@ def veil_hosts_resource(veil_env_name, config_dir):
             ])
             hosts_to_install.append(host.base_name)
         for server in host.server_list:
-            resources.append(veil_container_resource(host=host, server=server, config_dir=config_dir))
+            resources.extend([
+                veil_host_directory_resource(host=host, remote_path=host.etc_dir / server.name, owner='root', owner_group='root', mode=0755),
+                veil_host_directory_resource(host=host, remote_path=host.log_dir / server.name, owner=host.ssh_user, owner_group=host.ssh_user_group,
+                    mode=0755),
+                veil_container_resource(host=host, server=server, config_dir=config_dir)
+            ])
     return resources
 
 
@@ -60,26 +65,23 @@ def veil_host_config_resource(host, config_dir):
     if host.base_name in hosts_configured:
         return []
 
-    veil_server_user_name = host.ssh_user
     env_config_dir = config_dir / host.env_name
     resources = [
-        veil_host_directory_resource(host=host, remote_path='/home/{}/.ssh'.format(veil_server_user_name), owner=veil_server_user_name,
-            owner_group=veil_server_user_name, mode=0755),
+        veil_host_directory_resource(host=host, remote_path='/home/{}/.ssh'.format(host.ssh_user), owner=host.ssh_user,
+            owner_group=host.ssh_user_group, mode=0755),
         veil_host_file_resource(local_path=env_config_dir / '.ssh' / 'authorized_keys', host=host,
-            remote_path='/home/{}/.ssh/authorized_keys'.format(veil_server_user_name), owner=veil_server_user_name, owner_group=veil_server_user_name,
-            mode=0644),
+            remote_path='/home/{}/.ssh/authorized_keys'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0644),
         veil_host_file_resource(local_path=env_config_dir / '.ssh' / 'known_hosts', host=host,
-            remote_path='/home/{}/.ssh/known_hosts'.format(veil_server_user_name), owner=veil_server_user_name, owner_group=veil_server_user_name,
-            mode=0644),
+            remote_path='/home/{}/.ssh/known_hosts'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0644),
         veil_host_file_resource(local_path=env_config_dir / '.ssh' / 'known_hosts', host=host, remote_path='/root/.ssh/known_hosts',
-            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644),
+            owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0644),
         veil_host_file_resource(local_path=CURRENT_DIR / 'apt-config', host=host, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config',
             owner='root', owner_group='root', mode=0644),
         veil_host_sources_list_resource(host=host)
     ]
     if (env_config_dir / '.config').exists():
         resources.append(veil_host_file_resource(local_path=env_config_dir / '.config', host=host,
-            remote_path='/home/{}/.config'.format(veil_server_user_name), owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0600))
+            remote_path='/home/{}/.config'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0600))
 
     hosts_configured.append(host.base_name)
     return resources
@@ -163,7 +165,9 @@ def veil_host_init_resource(host):
     # enable time sync on lxc hosts, and which is shared among lxc guests
     fabric.api.sudo(
         '''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
-    fabric.api.sudo('mkdir -p {} {} {} {}'.format(DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.veil_home.parent))
+    fabric.api.sudo('mkdir -p -m 0755 {}'.format(' '.join([DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.code_dir, host.etc_dir,
+        host.editorial_dir, host.buckets_dir, host.data_dir, host.log_dir])))
+    fabric.api.sudo('chown {}:{} {} {}'.format(host.ssh_user, host.ssh_user_group, host.buckets_dir, host.data_dir))
     fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "setuptools>=4.0.1"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "pip>=1.5.6"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))
     fabric.api.sudo('pip install -i {} --download-cache {} --upgrade "virtualenv>=1.11.6"'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR))

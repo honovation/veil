@@ -17,8 +17,8 @@ containers_configured = []
 def veil_container_resource(host, server, config_dir):
     resources = [
         veil_container_lxc_resource(host=host, server=server),
-        veil_container_onetime_config_resource(host=host, server=server, config_dir=config_dir),
-        veil_container_config_resource(host=host, server=server, config_dir=config_dir)
+        veil_container_onetime_config_resource(server=server, config_dir=config_dir),
+        veil_container_config_resource(server=server, config_dir=config_dir)
     ]
     return resources
 
@@ -55,7 +55,7 @@ def veil_container_lxc_resource(host, server):
 
 
 @composite_installer
-def veil_container_onetime_config_resource(host, server, config_dir):
+def veil_container_onetime_config_resource(server, config_dir):
     initialized = fabric.contrib.files.exists(server.container_initialized_tag_path)
     if initialized:
         return []
@@ -70,38 +70,36 @@ def veil_container_onetime_config_resource(host, server, config_dir):
         veil_container_file_resource(local_path=CURRENT_DIR / 'sudoers.d.no-password', server=server, remote_path='/etc/sudoers.d/no-password',
             owner='root', owner_group='root', mode=0440),
         veil_container_directory_resource(server=server, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0755),
-        veil_container_config_resource(host=host, server=server, config_dir=config_dir),
+        veil_container_config_resource(server=server, config_dir=config_dir),
         veil_container_init_resource(server=server)
     ]
     return resources
 
 
 @composite_installer
-def veil_container_config_resource(host, server, config_dir):
+def veil_container_config_resource(server, config_dir):
     if server.name in containers_configured:
         return []
 
-    veil_server_user_name = host.ssh_user
     env_config_dir = config_dir / server.env_name
     server_config_dir = env_config_dir / 'servers' / server.name
     resources = [
         veil_server_boot_script_resource(server=server),
         veil_container_file_resource(local_path=env_config_dir / '.ssh' / 'known_hosts', server=server, remote_path='/root/.ssh/known_hosts',
-            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644),
+            owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0644),
         veil_container_file_resource(local_path=CURRENT_DIR / 'apt-config', server=server, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config',
             owner='root', owner_group='root', mode=0644),
         veil_container_sources_list_resource(server=server)
     ]
     for local_path in server_config_dir.files('*.crt'):
         resources.append(veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/certs/{}'.format(local_path.name),
-            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0644))
+            owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0644))
     for local_path in server_config_dir.files('*.key'):
         resources.append(veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/private/{}'.format(local_path.name),
-            owner=veil_server_user_name, owner_group=veil_server_user_name, mode=0640))
+            owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0640))
     if (server_config_dir / '.ssh' / 'id_rsa').exists():
         resources.append(veil_container_file_resource(local_path=server_config_dir / '.ssh' / 'id_rsa', server=server,
-            remote_path='/home/{}/.ssh/id_rsa'.format(veil_server_user_name), owner=veil_server_user_name, owner_group=veil_server_user_name,
-            mode=0600))
+            remote_path='/home/{}/.ssh/id_rsa'.format(server.ssh_user), owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
         resources.append(veil_container_file_resource(local_path=server_config_dir / '.ssh' / 'id_rsa', server=server,
             remote_path='/root/.ssh/id_rsa', owner='root', owner_group='root', mode=0600))
 
@@ -210,7 +208,6 @@ def render_veil_server_boot_script(server):
 
 
 def render_installer_file(host, server):
-    veil_server_user_name = host.ssh_user
     mac_address = '{}:{}'.format(host.mac_prefix, server.sequence_no)
     ip_address = '{}.{}'.format(host.lan_range, server.sequence_no)
     gateway = '{}.1'.format(host.lan_range)
@@ -220,8 +217,10 @@ def render_installer_file(host, server):
         'POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(host.lan_range, host.lan_range)
     ]
     installer_file_content = render_config('container-installer-file.j2', mac_address=mac_address, lan_interface=host.lan_interface,
-        ip_address=ip_address, gateway=gateway, iptables_rules=iptables_rules, container_name=server.container_name, user_name=veil_server_user_name,
-        name_servers=','.join(server.name_servers), start_order=server.start_order, memory_limit=server.memory_limit, cpu_share=server.cpu_share)
+        ip_address=ip_address, gateway=gateway, iptables_rules=iptables_rules, container_name=server.container_name, user_name=server.ssh_user,
+        name_servers=','.join(server.name_servers), start_order=server.start_order, etc_dir=server.etc_dir, log_dir=server.log_dir,
+        editorial_dir=server.editorial_dir, buckets_dir=server.buckets_dir, data_dir=server.data_dir, memory_limit=server.memory_limit,
+        cpu_share=server.cpu_share)
     lines = [installer_file_content]
     for resource in host.resources:
         installer_name, installer_args = resource

@@ -5,8 +5,6 @@ lxc.utsname = {{ name }}
 lxc.arch = x86_64
 lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
 lxc.mount = /var/lib/lxc/{{ name }}/fstab
-lxc.mount.entry = {{ HOST_SHARE_DIR }} {{ HOST_SHARE_DIR[1:] }} none bind,create=dir 0 0
-lxc.mount.entry = {{ HOST_CODE_DIR }} {{ HOST_CODE_DIR[1:] }} none bind,create=dir 0 0
 lxc.network.type = veth
 lxc.network.link = {{ lan_interface }}
 lxc.network.flags = up
@@ -72,9 +70,6 @@ lxc.arch = x86_64
 lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
 lxc.mount = /var/lib/lxc/{{ name }}/fstab
 
-lxc.mount.entry = {{ HOST_SHARE_DIR }} {{ HOST_SHARE_DIR[1:] }} none bind,create=dir 0 0
-lxc.mount.entry = {{ HOST_CODE_DIR }} {{ HOST_CODE_DIR[1:] }} none bind,create=dir 0 0
-
 # Network configuration
 lxc.network.type = veth
 lxc.network.flags = up
@@ -95,4 +90,18 @@ lxc.cgroup.cpu.shares = {{ cpu_share }}
 {% endif %}
 
 
+{% endif %}
+
+lxc.mount.entry = {{ share_dir }} {{ share_dir[1:] }} none bind,create=dir 0 0
+lxc.mount.entry = {{ code_dir }} {{ code_dir[1:] }} none bind,create=dir 0 0
+lxc.mount.entry = {{ etc_dir }} {{ etc_dir[1:] }} none bind,noexec,create=dir 0 0
+lxc.mount.entry = {{ log_dir }} {{ log_dir[1:] }} none bind,noexec,create=dir 0 0
+{% if editorial_dir %}
+lxc.mount.entry = {{ editorial_dir }} {{ editorial_dir[1:] }} none bind,ro,noexec,create=dir 0 0
+{% endif %}
+{% if buckets_dir %}
+lxc.mount.entry = {{ buckets_dir }} {{ buckets_dir[1:] }} none bind,noexec,create=dir 0 0
+{% endif %}
+{% if data_dir %}
+lxc.mount.entry = {{ data_dir }} {{ data_dir[1:] }} none bind,noexec,create=dir 0 0
 {% endif %}
