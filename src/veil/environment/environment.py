@@ -20,6 +20,7 @@ VEIL_ETC_DIR = VEIL_ENV_DIR / 'etc' / VEIL_SERVER_NAME
 VEIL_VAR_DIR = VEIL_ENV_DIR / 'var'
 VEIL_EDITORIAL_DIR = VEIL_VAR_DIR / 'editorial'
 VEIL_BUCKETS_DIR = VEIL_VAR_DIR / 'buckets'
+VEIL_BUCKET_LOG_DIR = VEIL_BUCKETS_DIR / 'log'
 VEIL_DATA_DIR = VEIL_VAR_DIR / 'data'
 VEIL_LOG_DIR = VEIL_ENV_DIR / 'log' / VEIL_SERVER_NAME
 
@@ -33,6 +34,7 @@ BASIC_LAYOUT_RESOURCES = [
     directory_resource(path=VEIL_ETC_DIR),
     directory_resource(path=VEIL_VAR_DIR),
     directory_resource(path=VEIL_BUCKETS_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+    directory_resource(path=VEIL_BUCKET_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
     directory_resource(path=VEIL_DATA_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
     directory_resource(path=VEIL_LOG_DIR.parent),
     directory_resource(path=VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),

@@ -20,6 +20,7 @@ from .environment import VEIL_ETC_DIR
 from .environment import VEIL_VAR_DIR
 from .environment import VEIL_EDITORIAL_DIR
 from .environment import VEIL_BUCKETS_DIR
+from .environment import VEIL_BUCKET_LOG_DIR
 from .environment import VEIL_DATA_DIR
 from .environment import VEIL_LOG_DIR
 from .environment import BASIC_LAYOUT_RESOURCES

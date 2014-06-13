@@ -1,6 +1,5 @@
 {% if is_precise %}
 
-
 lxc.utsname = {{ name }}
 lxc.arch = x86_64
 lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
@@ -53,9 +52,7 @@ lxc.cgroup.devices.allow = c 10:228 rwm
 #kvm
 lxc.cgroup.devices.allow = c 10:232 rwm
 
-
 {% else %}
-
 
 # Template used to create this container: /usr/share/lxc/templates/lxc-ubuntu
 # Parameters passed to the template:
@@ -83,12 +80,10 @@ lxc.start.order = {{ start_order }} # higher value means starts earlier
 {% if memory_limit %}
 lxc.cgroup.memory.limit_in_bytes = {{ memory_limit }}
 {% endif %}
-
 {% if cpu_share %}
 # default to 1024
 lxc.cgroup.cpu.shares = {{ cpu_share }}
 {% endif %}
-
 
 {% endif %}
 
