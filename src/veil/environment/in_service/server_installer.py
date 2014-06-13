@@ -23,8 +23,8 @@ def veil_server_resource(server, action='PATCH'):
     fabric.api.env.forward_agent = True
     with fabric.api.cd(server.veil_home):
         if 'DEPLOY' == action:
-            fabric.api.sudo('{}/veil :{} deploy'.format(server.veil_framework_home, server.fullname))
+            fabric.api.sudo('{}/bin/veil :{} deploy'.format(server.veil_framework_home, server.fullname))
             fabric.api.sudo('touch {}'.format(server.deployed_tag_path))
         else:  # PATCH
-            fabric.api.sudo('{}/veil :{} patch'.format(server.veil_framework_home, server.fullname))
+            fabric.api.sudo('{}/bin/veil :{} patch'.format(server.veil_framework_home, server.fullname))
             fabric.api.sudo('touch {}'.format(server.patched_tag_path))
