@@ -145,7 +145,7 @@ def veil_container_sources_list_resource(server):
     context = dict(mirror=APT_URL, codename=fabric.api.sudo('chroot {} lsb_release -cs'.format(container_rootfs_path)))
     fabric.contrib.files.upload_template('sources.list.j2', full_sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
-    fabric.api.sudo('chroot {} chown {}:{} {}'.format(container_rootfs_path, 'root', 'root', sources_list_path))
+    fabric.api.sudo('chroot {} chown root:root {}'.format(container_rootfs_path, sources_list_path))
 
     sources_list_installed.append(server.name)
 

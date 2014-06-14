@@ -189,7 +189,7 @@ def veil_host_sources_list_resource(host):
     context = dict(mirror=APT_URL, codename=fabric.api.run('lsb_release -cs'))
     fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
-    fabric.api.sudo('chown {}:{} {}'.format('root', 'root', sources_list_path))
+    fabric.api.sudo('chown root:root {}'.format(sources_list_path))
 
 
 @atomic_installer
@@ -206,7 +206,7 @@ def veil_lxc_config_resource(host):
     context = dict(is_precise=is_precise, mirror=APT_URL)
     fabric.contrib.files.upload_template('lxc.j2', lxc_config_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
-    fabric.api.sudo('chown {}:{} {}'.format('root', 'root', lxc_config_path))
+    fabric.api.sudo('chown root:root {}'.format(lxc_config_path))
     if not is_precise:
         install_resource(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc-net', host=host, remote_path='/etc/default/lxc-net',
             owner='root', owner_group='root', mode=0644, keep_origin=True))
