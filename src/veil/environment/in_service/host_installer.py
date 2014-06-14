@@ -49,10 +49,10 @@ def veil_host_onetime_config_resource(host, config_dir):
             owner='root', owner_group='root', mode=0755),
         veil_host_file_resource(local_path=CURRENT_DIR / 'iptablessave', host=host, remote_path='/etc/network/if-post-down.d/iptablessave',
             owner='root', owner_group='root', mode=0755),
-        veil_host_file_resource(local_path=CURRENT_DIR / 'ipv4-ip-forward.conf', host=host, remote_path='/etc/sysctl.d/60-lxc-ipv4-ip-forward.conf',
-            owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
         veil_host_file_resource(local_path=CURRENT_DIR / 'sudoers.d.ssh-auth-sock', host=host, remote_path='/etc/sudoers.d/ssh-auth-sock',
             owner='root', owner_group='root', mode=0440),
+        veil_host_file_resource(local_path=CURRENT_DIR / 'ipv4-ip-forward.conf', host=host, remote_path='/etc/sysctl.d/60-lxc-ipv4-ip-forward.conf',
+            owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
         veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0755),
         veil_host_config_resource(host=host, config_dir=config_dir),
         veil_host_init_resource(host=host)
@@ -74,7 +74,7 @@ def veil_host_config_resource(host, config_dir):
         veil_host_file_resource(local_path=env_config_dir / '.ssh' / 'known_hosts', host=host,
             remote_path='/home/{}/.ssh/known_hosts'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0644),
         veil_host_file_resource(local_path=env_config_dir / '.ssh' / 'known_hosts', host=host, remote_path='/root/.ssh/known_hosts',
-            owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0644),
+            owner='root', owner_group='root', mode=0644),
         veil_host_file_resource(local_path=CURRENT_DIR / 'apt-config', host=host, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config',
             owner='root', owner_group='root', mode=0644),
         veil_host_sources_list_resource(host=host)

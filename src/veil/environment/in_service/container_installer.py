@@ -10,7 +10,7 @@ from veil.environment import *
 from veil.server.config import *
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
-containers_configured = []
+sources_list_installed = []
 
 
 @composite_installer
@@ -70,7 +70,7 @@ def veil_container_onetime_config_resource(server, config_dir):
         veil_container_file_resource(local_path=CURRENT_DIR / 'sudoers.d.no-password', server=server, remote_path='/etc/sudoers.d/no-password',
             owner='root', owner_group='root', mode=0440),
         veil_container_directory_resource(server=server, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0755),
-        veil_container_config_resource(server=server, config_dir=config_dir),
+        veil_container_sources_list_resource(server=server),
         veil_container_init_resource(server=server)
     ]
     return resources
@@ -78,15 +78,12 @@ def veil_container_onetime_config_resource(server, config_dir):
 
 @composite_installer
 def veil_container_config_resource(server, config_dir):
-    if server.name in containers_configured:
-        return []
-
     env_config_dir = config_dir / server.env_name
     server_config_dir = env_config_dir / 'servers' / server.name
     resources = [
         veil_server_boot_script_resource(server=server),
         veil_container_file_resource(local_path=env_config_dir / '.ssh' / 'known_hosts', server=server, remote_path='/root/.ssh/known_hosts',
-            owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0644),
+            owner='root', owner_group='root', mode=0644),
         veil_container_file_resource(local_path=CURRENT_DIR / 'apt-config', server=server, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config',
             owner='root', owner_group='root', mode=0644),
         veil_container_sources_list_resource(server=server)
@@ -102,8 +99,6 @@ def veil_container_config_resource(server, config_dir):
             remote_path='/home/{}/.ssh/id_rsa'.format(server.ssh_user), owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
         resources.append(veil_container_file_resource(local_path=server_config_dir / '.ssh' / 'id_rsa', server=server,
             remote_path='/root/.ssh/id_rsa', owner='root', owner_group='root', mode=0600))
-
-    containers_configured.append(server.name)
     return resources
 
 
@@ -135,6 +130,9 @@ def veil_container_init_resource(server):
 
 @atomic_installer
 def veil_container_sources_list_resource(server):
+    if server.name in sources_list_installed:
+        return
+
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_container_sources_list?{}'.format(server.container_name)
@@ -147,6 +145,8 @@ def veil_container_sources_list_resource(server):
     context = dict(mirror=APT_URL, codename=fabric.api.sudo('chroot {} lsb_release -cs'.format(container_rootfs_path)))
     fabric.contrib.files.upload_template('sources.list.j2', full_sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
+
+    sources_list_installed.append(server.name)
 
 
 @atomic_installer
