@@ -55,7 +55,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
             download_packages(veil_env_name)
         stop_env(veil_env_name)
         create_backup_for_rollback(hosts)
-    install_resource(veil_servers_resource(servers=sorted(servers, key=lambda s: s.name, reverse=True), action='DEPLOY'))
+    install_resource(veil_servers_resource(servers=servers[::-1], action='DEPLOY'))
     if ever_deployed:
         delete_backup_for_rollback(hosts)
 
@@ -83,7 +83,7 @@ def patch_env(veil_env_name):
     """
     do_local_preparation(veil_env_name)
     tag_patch(veil_env_name)
-    install_resource(veil_servers_resource(servers=sorted(list_veil_servers(veil_env_name), key=lambda s: s.name, reverse=True), action='PATCH'))
+    install_resource(veil_servers_resource(servers=list_veil_servers(veil_env_name)[::-1], action='PATCH'))
 
 
 def do_local_preparation(veil_env_name):
