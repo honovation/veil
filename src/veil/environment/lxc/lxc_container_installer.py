@@ -29,7 +29,7 @@ def lxc_container_created_resource(container_name, user_name):
     LOGGER.info('create lxc container: %(container_name)s, and bind user %(user_name)s ...', {'container_name': container_name, 'user_name': user_name})
     shell_execute('lxc-create -t ubuntu -n {} -- -b {}'.format(container_name, user_name))
     if CURRENT_OS.codename == 'precise':
-        shell_execute('ln -s /var/lib/lxc/{}/config /etc/lxc/auto/{}.conf'.format(container_name, container_name))
+        shell_execute('ln -sf /var/lib/lxc/{}/config /etc/lxc/auto/{}.conf'.format(container_name, container_name))
 
 
 @composite_installer

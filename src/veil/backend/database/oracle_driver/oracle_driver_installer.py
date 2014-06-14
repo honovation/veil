@@ -50,7 +50,7 @@ def install_oracle_instantclient(env):
             set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return
     download_oracle_instantclient()
-    shell_execute('ln -s libclntsh.so.12.1 libclntsh.so', cwd=ORACLE_HOME)
+    shell_execute('ln -sf libclntsh.so.12.1 libclntsh.so', cwd=ORACLE_HOME)
     install_resource(file_resource(path=ORACLE_DRIVER_CONF_PATH, content=ORACLE_HOME))
     env['LD_LIBRARY_PATH'] = '{}:{}'.format(env.get('LD_LIBRARY_PATH', ''), ORACLE_HOME)
     shell_execute('ldconfig')
