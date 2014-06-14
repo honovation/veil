@@ -216,11 +216,8 @@ def render_installer_file(host, server):
         'PREROUTING -d {}/32 -p tcp -m tcp --dport {}22 -j DNAT --to-destination {}:22'.format(host.internal_ip, server.sequence_no, ip_address),
         'POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(host.lan_range, host.lan_range)
     ]
-    installer_file_content = render_config('container-installer-file.j2', mac_address=mac_address, lan_interface=host.lan_interface,
-        ip_address=ip_address, gateway=gateway, iptables_rules=iptables_rules, container_name=server.container_name, user_name=server.ssh_user,
-        name_servers=','.join(server.name_servers), start_order=server.start_order, etc_dir=server.etc_dir, log_dir=server.log_dir,
-        editorial_dir=server.editorial_dir, buckets_dir=server.buckets_dir, data_dir=server.data_dir, memory_limit=server.memory_limit,
-        cpu_share=server.cpu_share)
+    installer_file_content = render_config('container-installer-file.j2', mac_address=mac_address, ip_address=ip_address, gateway=gateway,
+        iptables_rules=iptables_rules, server=server, host=host)
     lines = [installer_file_content]
     for resource in host.resources:
         installer_name, installer_args = resource
