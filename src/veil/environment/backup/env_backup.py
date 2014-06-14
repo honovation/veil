@@ -59,22 +59,25 @@ def delete_old_backups():
 
 def bring_down_server(server):
     fabric.api.env.host_string = server.deploys_via
+    fabric.api.env.key_filename = '/etc/ssh/id_rsa-@guard'
     with fabric.api.cd(server.veil_home):
         fabric.api.sudo('veil :{} down'.format(server.fullname))
 
 
 def bring_up_server(server):
     fabric.api.env.host_string = server.deploys_via
+    fabric.api.env.key_filename = '/etc/ssh/id_rsa-@guard'
     with fabric.api.cd(server.veil_home):
         fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))
 
 
 def backup_host(host, timestamp):
     fabric.api.env.host_string = host.deploys_via
-    fabric.api.env.forward_agent = True
+    fabric.api.env.key_filename = '/etc/ssh/id_rsa-@guard'
+    # fabric.api.env.forward_agent = True # TODO: remove this if works
     backup_path = '/backup/{timestamp}/{}-{}-{timestamp}.tar.gz'.format(host.env_name, host.base_name, timestamp=timestamp)
     with fabric.api.cd(host.veil_home):
-        fabric.api.sudo('veil :{} backup {}'.format(host.env_name, backup_path))
+        fabric.api.sudo('veil :{} backup {}'.format(host.env_name, backup_path)) # FIXME: sudo will ask for password
     as_path('/backup/{}'.format(timestamp)).makedirs(0755)
     fabric.api.get(backup_path, backup_path)
     fabric.api.sudo('rm -rf /backup')  # backup is centrally stored in @guard container

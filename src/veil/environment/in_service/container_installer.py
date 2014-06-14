@@ -94,11 +94,9 @@ def veil_container_config_resource(server, config_dir):
     for local_path in server_config_dir.files('*.key'):
         resources.append(veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/private/{}'.format(local_path.name),
             owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0640))
-    if (server_config_dir / '.ssh' / 'id_rsa').exists():
-        veil_container_directory_resource(server=server, remote_path='/home/{}/.ssh'.format(server.ssh_user), owner=server.ssh_user,
-            owner_group=server.ssh_user_group, mode=0755),
+    if '@guard' == server.name:
         resources.append(veil_container_file_resource(local_path=server_config_dir / '.ssh' / 'id_rsa', server=server,
-            remote_path='/home/{}/.ssh/id_rsa'.format(server.ssh_user), owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
+            remote_path='/etc/ssh/id_rsa-@guard', owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
         resources.append(veil_container_file_resource(local_path=server_config_dir / '.ssh' / 'id_rsa', server=server,
             remote_path='/root/.ssh/id_rsa', owner='root', owner_group='root', mode=0600))
     return resources

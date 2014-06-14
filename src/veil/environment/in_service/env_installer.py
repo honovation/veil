@@ -156,8 +156,8 @@ def ensure_servers_down(hosts):
 
 
 @script('backup-env')
-def backup_env(veil_env_name, should_bring_up_servers='TRUE', veil_guard_name='@guard'):
-    server_guard = get_veil_server(veil_env_name, veil_guard_name)
+def backup_env(veil_env_name, should_bring_up_servers='TRUE'):
+    server_guard = get_veil_server(veil_env_name, '@guard')
     fabric.api.env.host_string = server_guard.deploys_via
     with fabric.api.cd(server_guard.veil_home):
         fabric.api.sudo('veil :{} backup-env {}'.format(server_guard.fullname, should_bring_up_servers))
