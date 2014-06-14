@@ -1,11 +1,11 @@
-veil.server.os.directory_resource?path={{ host.env_dir }}
-veil.server.os.directory_resource?path={{ host.etc_dir }}
-veil.server.os.directory_resource?path={{ host.log_dir }}
-veil.server.os.directory_resource?path={{ host.var_dir }}
 veil.environment.lxc.lxc_container_resource?container_name={{ server.container_name }}&user_name={{ server.ssh_user }}&mac_address={{ mac_address }}&lan_interface={{ host.lan_interface }}&start_order={{ server.start_order }}&etc_dir={{ server.etc_dir }}&log_dir={{ server.log_dir }}&editorial_dir={{ server.editorial_dir or '' }}&buckets_dir={{ server.buckets_dir or '' }}&data_dir={{ server.data_dir or '' }}&memory_limit={{ server.memory_limit or '' }}&cpu_share={{ server.cpu_share or '' }}
 veil.environment.lxc.lxc_container_timezone_resource?container_name={{ server.container_name }}&timezone=Asia/Shanghai
 veil.environment.lxc.lxc_container_network_resource?container_name={{ server.container_name }}&ip_address={{ ip_address }}&gateway={{ gateway }}
 veil.environment.lxc.lxc_container_name_servers_resource?container_name={{ server.container_name }}&name_servers={{ ','.join(server.name_servers) }}
+veil.server.os.directory_resource?path=/var/lib/lxc/{{ server.container_name }}/rootfs{{ host.env_dir }}
+veil.server.os.directory_resource?path=/var/lib/lxc/{{ server.container_name }}/rootfs{{ host.etc_dir }}
+veil.server.os.directory_resource?path=/var/lib/lxc/{{ server.container_name }}/rootfs{{ host.var_dir }}
+veil.server.os.directory_resource?path=/var/lib/lxc/{{ server.container_name }}/rootfs{{ host.log_dir }}
 veil.environment.lxc.lxc_container_in_service_resource?container_name={{ server.container_name }}&restart_if_running=True
 {% for iptables_rule in iptables_rules %}
 veil.environment.networking.iptables_rule_resource?table=nat&rule={{ iptables_rule }}
