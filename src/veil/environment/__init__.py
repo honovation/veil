@@ -10,6 +10,7 @@ from .environment import PYPI_ARCHIVE_DIR
 from .environment import VEIL_ENV_TYPE
 from .environment import VEIL_ENV_NAME
 from .environment import CURRENT_OS
+from .environment import SECURITY_CONFIG_FILE
 from .environment import CURRENT_USER
 from .environment import CURRENT_USER_GROUP
 from .environment import CURRENT_USER_HOME

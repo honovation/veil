@@ -35,6 +35,7 @@ from .environment import VEIL_ENV_TYPE
 from .environment import VEIL_ENV_NAME
 from .environment import VEIL_SERVER_NAME
 from .environment import CURRENT_OS
+from .environment import SECURITY_CONFIG_FILE
 from .colors import red
 from .colors import green
 from .colors import yellow

@@ -15,8 +15,6 @@ POSTGRESQL_CLIENTS = ['vsee']
 
 WEBSITES = ['person']
 
-SECURITY_CONFIG_FILE = VEIL_HOME / '.config' if VEIL_ENV_TYPE in ('development', 'test') else as_path(os.getenv('HOME')) / '.config'
-
 SECURITY_CONFIG = load_config_from(
     SECURITY_CONFIG_FILE,
     'db_user',
@@ -35,7 +33,7 @@ LOGGING_LEVEL_CONFIG = objectify({
         'log_min_duration_statement': 0 if VEIL_ENV_TYPE == 'development' else 300
     },
     'vsee': {
-        '__default__': 'DEBUG' if VEIL_ENV_TYPE in {'development', 'test'} else 'INFO',
+        '__default__': 'DEBUG' if VEIL_ENV_TYPE in ('development', 'test') else 'INFO',
 #        'vsee.feature': 'DEBUG',
     }
 })
