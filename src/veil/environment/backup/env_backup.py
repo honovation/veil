@@ -79,7 +79,7 @@ def backup_host(host, timestamp):
     with fabric.api.cd(host.veil_home):
         fabric.api.run('veil :{} backup {}'.format(host.env_name, host_backup_path))
     fabric.api.get(host_backup_path, backup_path)
-    fabric.api.sudo('rm -rf {}'.format(host_backup_path.parent.parent))  # backup is centrally stored in @guard container
+    fabric.api.run('rm -rf {}'.format(host_backup_path.parent.parent))  # backup is centrally stored in @guard container
 
 
 def rsync_to_backup_mirror():
