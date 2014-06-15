@@ -31,6 +31,7 @@ def create_env_backup(should_bring_up_servers='TRUE'):
             bring_down_server(server)
         now = datetime.datetime.now()
         timestamp = now.strftime('%Y%m%d%H%M%S')
+        as_path('/backup/{}'.format(timestamp)).makedirs(0755)
         for host in hosts:
             backup_host(host, timestamp)
         shell_execute('ln -snf {} latest'.format(timestamp), cwd='/backup')
@@ -74,13 +75,12 @@ def bring_up_server(server):
 def backup_host(host, timestamp):
     fabric.api.env.host_string = host.deploys_via
     fabric.api.env.key_filename = '/etc/ssh/id_rsa-@guard'
-    # fabric.api.env.forward_agent = True # TODO: remove this if works
     backup_path = '/backup/{timestamp}/{}-{}-{timestamp}.tar.gz'.format(host.env_name, host.base_name, timestamp=timestamp)
+    host_backup_path = host.ssh_user_home / 'tmp' / backup_path[1:]
     with fabric.api.cd(host.veil_home):
-        fabric.api.sudo('veil :{} backup {}'.format(host.env_name, backup_path)) # FIXME: sudo will ask for password
-    as_path('/backup/{}'.format(timestamp)).makedirs(0755)
-    fabric.api.get(backup_path, backup_path)
-    fabric.api.sudo('rm -rf /backup')  # backup is centrally stored in @guard container
+        fabric.api.run('veil :{} backup {}'.format(host.env_name, host_backup_path))
+    fabric.api.get(host_backup_path, backup_path)
+    fabric.api.sudo('rm -rf {}'.format(host_backup_path.parent.parent))  # backup is centrally stored in @guard container
 
 
 def rsync_to_backup_mirror():
