@@ -19,8 +19,8 @@ def create_host_backup(backup_path):
     if is_any_servers_running():
         raise Exception('can not backup veil host while not all veil servers on the host are down')
     backup_path.parent.makedirs(0755)
-    shell_execute('tar -czfps --same-owner {}  {} --exclude=uploaded-files --exclude=inline-static-files --exclude=captcha-image'.format(backup_path,
-        VEIL_VAR_DIR))
+    shell_execute('tar -czf {} . -p -s --same-owner --exclude=uploaded-files --exclude=inline-static-files --exclude=captcha-image'.format(
+        backup_path), cwd=VEIL_VAR_DIR)
 
 
 def is_any_servers_running():

@@ -75,7 +75,7 @@ def bring_up_server(server):
 def backup_host(host, timestamp):
     fabric.api.env.host_string = host.deploys_via
     fabric.api.env.key_filename = '/etc/ssh/id_rsa-@guard'
-    backup_path = '/backup/{timestamp}/{}-{}-{timestamp}.tar.gz'.format(host.env_name, host.base_name, timestamp=timestamp)
+    backup_path = '/backup/{timestamp}/{}_{}_{timestamp}.tar.gz'.format(host.env_name, host.base_name, timestamp=timestamp)
     host_backup_path = host.ssh_user_home / 'tmp' / backup_path[1:]
     with fabric.api.cd(host.veil_home):
         fabric.api.run('veil :{} backup {}'.format(host.env_name, host_backup_path))
