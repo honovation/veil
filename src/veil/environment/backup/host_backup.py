@@ -24,4 +24,4 @@ def create_host_backup(backup_path):
 
 
 def is_any_servers_running():
-    return bool(shell_execute('lxc-ps --lxc -ef | grep supervisord', capture=True))
+    return bool(shell_execute('lxc-ps --lxc -ef | grep supervisord | grep -v -e @guard -e @monitor', capture=True))
