@@ -5,6 +5,7 @@ import fabric.api
 import fabric.contrib.files
 from veil.development.git import *
 from veil.utility.misc import *
+from veil.utility.timer import *
 from veil_component import *
 from veil_installer import *
 from veil.frontend.cli import *
@@ -36,6 +37,7 @@ def is_all_servers_ever_deployed(servers):
 
 
 @script('deploy-env')
+@log_elapsed_time
 def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     """
     Bring down veil servers in sorted server names order (in create-backup)
@@ -76,6 +78,7 @@ def download_packages(veil_env_name):
 
 
 @script('patch-env')
+@log_elapsed_time
 def patch_env(veil_env_name):
     """
     Iterate veil server in reversed sorted server names order (in veil_servers_resource and local_deployer:patch)

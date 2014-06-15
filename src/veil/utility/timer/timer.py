@@ -7,6 +7,7 @@ import time
 
 LOGGER = logging.getLogger(__name__)
 
+
 def run_every(crontab_expression):
     return Timer(crontab_expression)
 
@@ -24,8 +25,8 @@ class Timer(object):
             })
             while True:
                 now = get_current_timestamp()
-                next = croniter(self.crontab_expression, now).get_next()
-                delta = next - now
+                next_run = croniter(self.crontab_expression, now).get_next()
+                delta = next_run - now
                 LOGGER.info('timer sleep: wake up after %(delta)s seconds', {
                     'delta': delta
                 })
@@ -39,5 +40,18 @@ class Timer(object):
                     LOGGER.info('timer work done: in %(elapsed_time)s seconds', {
                         'elapsed_time': after - before
                     })
-
         return wrapper
+
+
+def log_elapsed_time(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        try:
+            return func(*args, **kwargs)
+        finally:
+            elapsed_seconds = time.time() - start
+            LOGGER.info('Elapsed time for function execution: %(function_name)s took %(elapsed_seconds)s seconds to finish', {
+                'function_name': func.__name__, 'elapsed_seconds': elapsed_seconds
+            })
+    return wrapper
