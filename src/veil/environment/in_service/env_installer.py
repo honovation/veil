@@ -127,9 +127,7 @@ def create_backup_for_rollback(hosts):
         backup_dir = '{}-backup'.format(source_dir)
         if fabric.contrib.files.exists(backup_dir):
             raise Exception('{}: backup already exists'.format(host.base_name))
-        with fabric.api.cd(host.veil_home):
-            fabric.api.sudo('cp -r -p {} {}'.format(source_dir, backup_dir))
-            # fabric.api.sudo('git reset --hard HEAD') # TODO: remove this if no problems with deployment
+        fabric.api.sudo('cp -r -p {} {}'.format(source_dir, backup_dir))
 
 
 def rollback(hosts):

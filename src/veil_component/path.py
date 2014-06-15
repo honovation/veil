@@ -1,5 +1,4 @@
-# TODO
-# clear paver only stuff
+# TODO: clear paver only stuff
 
 import sys, warnings, os, fnmatch, glob, shutil, codecs
 
