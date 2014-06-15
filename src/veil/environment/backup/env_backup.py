@@ -25,14 +25,13 @@ def create_env_backup(should_bring_up_servers='TRUE'):
         dry_run_result['env_backup'] = 'BACKUP'
         return
     servers = [server for server in list_veil_servers(VEIL_ENV_NAME) if server.name not in {'@guard', '@monitor'}]
-    hosts = [get_veil_host(server.env_name, server.host_name) for server in unique(servers, id_func=lambda s: s.host_base_name)]
     try:
         for server in servers:
             bring_down_server(server)
         now = datetime.datetime.now()
         timestamp = now.strftime('%Y%m%d%H%M%S')
         as_path('/backup/{}'.format(timestamp)).makedirs(0755)
-        for host in hosts:
+        for host in [get_veil_host(server.env_name, server.host_name) for server in unique(servers, id_func=lambda s: s.host_base_name)]:
             backup_host(host, timestamp)
         shell_execute('ln -snf {} latest'.format(timestamp), cwd='/backup')
     finally:

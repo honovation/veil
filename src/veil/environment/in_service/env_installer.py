@@ -66,14 +66,23 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
 def download_packages(veil_env_name):
     # this command should not interrupt normal website operation
     # designed to run when website is still running, to prepare for a full deployment
-    for server in list_veil_servers(veil_env_name):
-        fabric.api.env.host_string = server.deploys_via
+    hosts = list_veil_hosts(veil_env_name)
+    hosts_retrieved_latest_version = []
+    for host in hosts:
+        fabric.api.env.host_string = host.deploys_via
         fabric.api.env.forward_agent = True
-        with fabric.api.cd(server.veil_home):
-            fabric.api.sudo('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x')
-            try:
-                fabric.api.sudo('veil :{} install-server --download-only'.format(server.fullname))
-            finally:
+        if host.base_name not in hosts_retrieved_latest_version:
+            with fabric.api.cd(host.veil_home):
+                fabric.api.sudo('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x')
+            hosts_retrieved_latest_version.append(host.base_name)
+        try:
+            for server in host.server_list:
+                fabric.api.env.host_string = server.deploys_via
+                with fabric.api.cd(server.veil_home):
+                    fabric.api.sudo('veil :{} install-server --download-only'.format(server.fullname))
+        finally:
+            fabric.api.env.host_string = host.deploys_via
+            with fabric.api.cd(host.veil_home):
                 fabric.api.sudo('git checkout -- RESOURCE-LATEST-VERSION-*')
 
 
