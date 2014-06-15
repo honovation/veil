@@ -152,7 +152,11 @@ def delete_backup_for_rollback(hosts):
 def ensure_servers_down(hosts):
     for host in hosts:
         fabric.api.env.host_string = host.deploys_via
-        if fabric.api.sudo('lxc-ps --lxc -ef | grep supervisord', capture=True):
+        try:
+            fabric.api.sudo('lxc-ps --lxc -ef | grep {} | grep supervisord'.format(host.env_name))
+        except:
+            pass
+        else:
             raise Exception('{}: can not rollback while not all veil servers are down'.format(host.base_name))
 
 
