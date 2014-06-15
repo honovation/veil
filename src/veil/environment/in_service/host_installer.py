@@ -4,8 +4,9 @@ from time import sleep
 import uuid
 import fabric.api
 import fabric.contrib.files
-from veil.environment import *
 from veil_component import as_path
+from veil.environment import *
+from veil.utility.misc import *
 from veil_installer import *
 from .container_installer import veil_container_resource, get_remote_file_content
 
@@ -13,6 +14,7 @@ from .container_installer import veil_container_resource, get_remote_file_conten
 CURRENT_DIR = as_path(os.path.dirname(__file__))
 hosts_to_install = []
 hosts_configured = []
+
 
 @composite_installer
 def veil_hosts_resource(veil_env_name, config_dir):
@@ -33,6 +35,11 @@ def veil_hosts_resource(veil_env_name, config_dir):
                 veil_container_resource(host=host, server=server, config_dir=config_dir)
             ])
     return resources
+
+
+@composite_installer
+def veil_hosts_application_codebase_resource(veil_env_name):
+    return [veil_host_application_codebase_resource(host=host) for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name)]
 
 
 @composite_installer

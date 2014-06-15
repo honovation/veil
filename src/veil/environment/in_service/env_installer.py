@@ -13,7 +13,7 @@ from veil.environment import *
 from veil.utility.clock import *
 from veil.utility.shell import *
 from veil.backend.database.migration import *
-from .host_installer import veil_hosts_resource
+from .host_installer import veil_hosts_resource, veil_hosts_application_codebase_resource
 from .server_installer import veil_servers_resource
 
 
@@ -86,6 +86,7 @@ def patch_env(veil_env_name):
     """
     do_local_preparation(veil_env_name)
     tag_patch(veil_env_name)
+    installer_resource(veil_hosts_application_codebase_resource(veil_env_name=veil_env_name))
     install_resource(veil_servers_resource(servers=list_veil_servers(veil_env_name)[::-1], action='PATCH'))
 
 
