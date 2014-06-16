@@ -256,12 +256,7 @@ def veil_host_file_resource(local_path, host, remote_path, owner, owner_group, m
 
 @atomic_installer
 def veil_host_user_editor_resource(host, config_dir):
-    try:
-        fabric.api.run('getent passwd editor')
-    except:
-        installed = False
-    else:
-        installed = True
+    installed = fabric.contrib.files.contains('/etc/ssh/sshd_config', 'Match User editor')
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_host_user_editor?{}'.format(host.env_name)
@@ -270,10 +265,13 @@ def veil_host_user_editor_resource(host, config_dir):
 
     if installed:
         return
-    
-    fabric.api.sudo('adduser editor --gecos editor --disabled-login --shell /usr/sbin/nologin --quiet')
 
-    fabric.api.sudo('mkdir /home/editor/.ssh')
+    try:
+        fabric.api.run('getent passwd editor')
+    except:
+        fabric.api.sudo('adduser editor --gecos editor --disabled-login --shell /usr/sbin/nologin --quiet')
+
+    fabric.api.sudo('mkdir -p /home/editor/.ssh')
     fabric.api.put(config_dir / host.env_name / 'hosts' / host.base_name / 'editor-id_rsa.pub', '/home/editor/.ssh/authorized_keys', use_sudo=True,
         mode=0400)
     fabric.api.sudo('chown -R editor:editor /home/editor/.ssh')
