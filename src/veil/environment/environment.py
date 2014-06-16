@@ -197,7 +197,7 @@ def get_application():
     return __veil__
 
 
-VEIL_FRAMEWORK_CODEBASE = 'git@ljhost-003.dmright.com:/opt/git/veil.git'
+VEIL_FRAMEWORK_CODEBASE = 'git@git.dmright.com:/opt/git/veil.git'
 
 
 _application_version = None
