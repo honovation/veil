@@ -18,7 +18,7 @@ PYPI_ARCHIVE_DIR = SHARE_DIR / 'pypi'
 VEIL_ENV_DIR = (VEIL_HOME if VEIL_ENV_TYPE in ('development', 'test') else OPT_DIR) / VEIL_ENV_NAME
 VEIL_ETC_DIR = VEIL_ENV_DIR / 'etc' / VEIL_SERVER_NAME
 VEIL_VAR_DIR = VEIL_ENV_DIR / 'var'
-VEIL_EDITORIAL_DIR = VEIL_VAR_DIR / 'editorial'
+VEIL_EDITORIAL_DIR = VEIL_VAR_DIR / 'editor_root' / 'editorial'
 VEIL_BUCKETS_DIR = VEIL_VAR_DIR / 'buckets'
 VEIL_BUCKET_LOG_DIR = VEIL_BUCKETS_DIR / 'log'
 VEIL_DATA_DIR = VEIL_VAR_DIR / 'data'
@@ -83,7 +83,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         host.etc_dir = host.env_dir / 'etc'
         host.log_dir = host.env_dir / 'log'
         host.var_dir = host.env_dir / 'var'
-        host.editorial_dir = host.var_dir / 'editorial'
+        host.editorial_dir = host.var_dir / 'editor_root' / 'editorial'
         host.buckets_dir = host.var_dir / 'buckets'
         host.data_dir = host.var_dir / 'data'
         host.veil_home = env.veil_home

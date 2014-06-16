@@ -10,6 +10,7 @@ veil.server.os.directory_resource?path=/var/lib/lxc/{{ server.container_name }}/
 veil.server.os.directory_resource?path=/var/lib/lxc/{{ server.container_name }}/rootfs{{ server.etc_dir }}
 veil.server.os.directory_resource?path=/var/lib/lxc/{{ server.container_name }}/rootfs{{ host.var_dir }}
 {% if server.editorial_dir %}
+veil.server.os.directory_resource?path=/var/lib/lxc/{{ server.container_name }}/rootfs{{ server.editorial_dir.parent }}
 veil.server.os.directory_resource?path=/var/lib/lxc/{{ server.container_name }}/rootfs{{ server.editorial_dir }}
 {% endif %}
 {% if server.buckets_dir %}
