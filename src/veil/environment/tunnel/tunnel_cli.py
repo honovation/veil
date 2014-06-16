@@ -9,7 +9,7 @@ from veil.utility.shell import *
 from veil.server.process import *
 
 LOGGER = logging.getLogger(__name__)
-host_lan_ranges = set()
+lan_ranges = set()
 
 
 @script('socks-proxy-up')
@@ -47,25 +47,25 @@ def bring_up_tunnel(target_env, gateway_host_name=None, gateway_host_ssh_port=No
     env['VEIL_TUNNEL_GATEWAY_HOST_SSH_USER'] = gateway_host_ssh_user or 'dejavu'
 
     hosts = list_veil_hosts(target_env)
-    set_host_lan_ranges(hosts)
+    set_lan_ranges(hosts)
     add_iptables_rules()
     shell_execute('supervisord -c {}/tunnel-supervisord.cfg'.format(os.path.dirname(__file__)), env=env)
 
 
-def set_host_lan_ranges(hosts):
-    global host_lan_ranges
-    host_lan_ranges = {host.lan_range for host in hosts}
+def set_lan_ranges(hosts):
+    global lan_ranges
+    lan_ranges = {host.lan_range.rsplit('.', 1)[0] for host in hosts}
 
 
 def add_iptables_rules():
-    for lan_range in host_lan_ranges:
-        shell_execute('sudo iptables -t nat -I OUTPUT -p tcp -d {}.0/24 -j REDIRECT --to-ports 12345'.format(lan_range))
+    for lan_range in lan_ranges:
+        shell_execute('sudo iptables -t nat -I OUTPUT -p tcp -d {}.0.0/16 -j REDIRECT --to-ports 12345'.format(lan_range))
 
 
 @event(EVENT_PROCESS_TEARDOWN)
 def remove_iptables_rules():
-    for lan_range in host_lan_ranges:
+    for lan_range in lan_ranges:
         try:
-            shell_execute('sudo iptables -t nat -D OUTPUT -p tcp -d {}.0/24 -j REDIRECT --to-ports 12345'.format(lan_range))
+            shell_execute('sudo iptables -t nat -D OUTPUT -p tcp -d {}.0.0/16 -j REDIRECT --to-ports 12345'.format(lan_range))
         except:
             LOGGER.exception('Cannot remove iptables rules for lan range: %(lan_range)s', {'lan_range': lan_range})
