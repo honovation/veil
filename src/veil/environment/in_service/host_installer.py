@@ -278,5 +278,5 @@ def veil_host_user_editor_resource(host, config_dir):
     fabric.api.sudo('chown -R editor:editor /home/editor/.ssh')
 
     fabric.contrib.files.append('/etc/ssh/sshd_config',
-        ['Match User editor', 'ChrootDirectory {}'.format(host.editorial_dir), 'ForceCommand internal-sftp'], use_sudo=True)
+        ['Match User editor', 'ChrootDirectory {}'.format(host.editorial_dir.parent), 'ForceCommand internal-sftp'], use_sudo=True)
     fabric.api.sudo('service ssh reload')
