@@ -270,6 +270,8 @@ def veil_host_user_editor_resource(host, config_dir):
     except:
         fabric.api.sudo('adduser editor --gecos editor --disabled-login --shell /usr/sbin/nologin --quiet')
 
+    fabric.api.sudo('chown -R editor:editor {}'.format(host.editorial_dir))
+
     fabric.api.sudo('mkdir -p /home/editor/.ssh')
     fabric.api.put(config_dir / host.env_name / 'hosts' / host.base_name / 'editor-id_rsa.pub', '/home/editor/.ssh/authorized_keys', use_sudo=True,
         mode=0400)
