@@ -24,7 +24,7 @@ def create_env_backup(should_bring_up_servers='TRUE'):
     if dry_run_result is not None:
         dry_run_result['env_backup'] = 'BACKUP'
         return
-    servers = [server for server in list_veil_servers(VEIL_ENV_NAME) if server.name not in {'@guard', '@monitor'}]
+    servers = [server for server in list_veil_servers(VEIL_ENV_NAME) if server.name not in ('@guard', '@monitor')]
     try:
         for server in servers:
             bring_down_server(server)

@@ -37,20 +37,20 @@ def website_upstreams(purpose, start_port, process_count):
     } for i in range(process_count)]}
 
 
-def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_file_size='1m', extra_headers=None, extra_locations=None):
+def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_file_size='1m', extra_headers=(), extra_locations=None):
     if is_api_only:
         return {'/': {
             '_': '''
                 proxy_pass http://{}-tornado;
                 {}
-                '''.format(purpose, extra_headers or '')
+                '''.format(purpose, '\n'.join(extra_headers))
         }}
 
     extra_headers = '''
         add_header X-Frame-Options SAMEORIGIN;
         add_header X-UA-Compatible "IE=Edge,chrome=1";
         {}
-        '''.format(extra_headers or '')
+        '''.format('\n'.join(extra_headers))
     extra_locations = extra_locations or {}
     if not has_bunker:
         extra_locations.update({

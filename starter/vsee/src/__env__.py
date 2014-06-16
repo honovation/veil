@@ -135,7 +135,7 @@ def person_website_programs(config):
 
 def person_website_nginx_server(config, extra_locations=None):
     extra_locations = extra_locations or {}
-    locations = website_locations('person', VEIL_ENV_TYPE in {'public', 'staging'}, max_upload_file_size=PERSON_WEBSITE_MAX_UPLOAD_FILE_SIZE)
+    locations = website_locations('person', VEIL_ENV_TYPE in ('public', 'staging'), max_upload_file_size=PERSON_WEBSITE_MAX_UPLOAD_FILE_SIZE)
     for purpose in PERSON_WEBSITE_BUCKETS:
         locations = merge_multiple_settings(locations, extra_locations, website_bucket_location(purpose))
     return nginx_server(config.person_website_domain, config.person_website_domain_port, locations=locations,

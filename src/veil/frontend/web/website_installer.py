@@ -64,7 +64,7 @@ def get_website_domain(purpose):
 
 def get_website_parent_domain(purpose, with_prefix_dot=True):
     parts = get_website_domain(purpose).split('.')[1:]
-    if parts[0].lower() in {'dev', 'test', 'staging', 'uat', 'prod'}:
+    if parts[0].lower() in ('dev', 'test', 'staging', 'uat', 'prod'):
         parts = parts[1:]
     parent_domain = '.'.join(parts)
     if with_prefix_dot:
