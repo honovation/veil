@@ -19,14 +19,15 @@ hosts_configured = []
 @composite_installer
 def veil_hosts_resource(veil_env_name, config_dir):
     resources = []
-    for host in list_veil_hosts(veil_env_name):
+    hosts = list_veil_hosts(veil_env_name)
+    for host in hosts:
         if host.base_name not in hosts_to_install:
             resources.extend([
                 veil_host_onetime_config_resource(host=host, config_dir=config_dir),
                 veil_host_config_resource(host=host, config_dir=config_dir),
                 veil_host_application_codebase_resource(host=host)
             ])
-            if host.has_user_editor:
+            if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
                 resources.append(veil_host_user_editor_resource(host=host, config_dir=config_dir))
             hosts_to_install.append(host.base_name)
         for server in host.server_list:

@@ -91,7 +91,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         host.code_dir = host.veil_home.parent
         host.veil_framework_home = host.code_dir / 'veil'
         host.initialized_tag_path = SHARE_DIR / 'veil-host-{}.initialized'.format(host.env_name)
-        host.has_user_editor = False
+        host.with_user_editor = False
         host.server_list = []
         for server_name, server in env.servers.items():
             if host.name != server.host_name:
@@ -106,7 +106,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
             server.editorial_dir = host.editorial_dir if server.mount_editorial_dir else None
             server.buckets_dir = host.buckets_dir if server.mount_buckets_dir else None
             server.data_dir = host.data_dir if server.mount_data_dir else None
-            host.has_user_editor = host.has_user_editor or server.mount_editorial_dir
+            host.with_user_editor = host.with_user_editor or server.mount_editorial_dir
             host.server_list.append(server)
         host.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))
 
