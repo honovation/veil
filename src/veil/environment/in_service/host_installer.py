@@ -21,6 +21,8 @@ def veil_hosts_resource(veil_env_name, config_dir):
     resources = []
     hosts = list_veil_hosts(veil_env_name)
     for host in hosts:
+        fabric.api.env.host_string = host.deploys_via
+        fabric.api.env.forward_agent = True
         if host.base_name not in hosts_to_install:
             resources.extend([
                 veil_host_onetime_config_resource(host=host, config_dir=config_dir),
@@ -47,9 +49,6 @@ def veil_hosts_application_codebase_resource(veil_env_name):
 
 @composite_installer
 def veil_host_onetime_config_resource(host, config_dir):
-    fabric.api.env.host_string = host.deploys_via
-    fabric.api.env.forward_agent = True
-
     initialized = fabric.contrib.files.exists(host.initialized_tag_path)
     if initialized:
         return []
