@@ -268,6 +268,9 @@ def veil_host_user_editor_resource(host, config_dir):
         dry_run_result[key] = '-' if installed else 'INSTALL'
         return
 
+    if installed:
+        return
+    
     fabric.api.sudo('adduser editor --gecos editor --disabled-login --shell /usr/sbin/nologin --quiet')
 
     fabric.api.sudo('mkdir /home/editor/.ssh')
