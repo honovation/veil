@@ -16,7 +16,6 @@ from .queue_client_installer import queue_client_config
 from .queue_client_installer import queue_client_resource
 
 LOGGER = getLogger(__name__)
-
 _current_queue = None
 
 def register_queue():

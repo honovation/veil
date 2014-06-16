@@ -6,7 +6,7 @@ from datetime import timedelta
 import functools
 import logging
 import uuid
-from veil.frontend.cli import *
+from veil.backend.queue import *
 from veil.utility.pillow import *
 from veil.utility.shell import *
 from veil_installer import *
@@ -99,11 +99,9 @@ def captcha_bucket_key(challenge_code):
     return '{}/{}.gif'.format(challenge_code[:2], challenge_code[2:])
 
 
-@script('remove-expired-captcha-images')
-def remove_expired_captcha_images():
+@periodic_job('11 * * * *')
+def clean_up_captcha_images_job():
     if not hasattr(bucket(), 'base_directory'):
-        print('failed as captcha images are not saved in file-system-based bucket')
+        LOGGER.warn('failed as captcha images are not saved in file-system-based bucket')
         return
-    command_line = 'find {} -type f -cmin +{} -delete'.format(bucket().base_directory, CAPTCHA_ANSWER_ALIVE_MINUTES)
-    print('try to remove expired captcha images: {}'.format(command_line))
-    shell_execute(command_line, capture=True)
+    shell_execute('find {} -type f -mmin +{} -delete'.format(bucket().base_directory, CAPTCHA_ANSWER_ALIVE_MINUTES * 2), capture=True)

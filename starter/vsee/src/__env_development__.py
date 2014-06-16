@@ -41,7 +41,10 @@ ENV_DEVELOPMENT = {
                 __env__.vsee_job_worker_program(
                     worker_name='development',
                     queue_names=[
+                        'send_transactional_sms',
                         'send_transactional_email',
+                        'clean_up_captcha_images',
+                        'clean_up_inline_static_files',
                     ],
                     config=config, count=2),
                 __env__.person_website_programs(config),

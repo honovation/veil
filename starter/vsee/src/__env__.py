@@ -78,6 +78,19 @@ def vsee_job_worker_program(worker_name, queue_names, config, run_as=None, count
         queue_names=queue_names, application_config=vsee_config(config), run_as=run_as, count=count, timeout=timeout)
 
 
+def routines_job_worker_program(config, count=1):
+    return vsee_job_worker_program('routines',
+        [
+            'clean_up_captcha_images',
+            'clean_up_inline_static_files',
+        ],
+        config, count=count)
+
+
+def transactional_sms_worker_program(config, count=1):
+    return vsee_job_worker_program('transactional_sms', ['send_transactional_sms'], config, count=count)
+
+
 def transactional_email_worker_program(config, count=1):
     return vsee_job_worker_program('transactional_email', ['send_transactional_email'], config, count=count)
 

@@ -5,6 +5,8 @@ import re
 import logging
 from markupsafe import Markup
 from veil_component import as_path
+from veil.utility.shell import *
+from veil.backend.queue import *
 from veil.utility.misc import *
 from veil.utility.encoding import *
 from veil.frontend.template import *
@@ -129,3 +131,8 @@ def write_inline_static_file(page_handler, suffix, content):
     page_name = page_handler.__name__.replace('_widget', '').replace('_page', '').replace('_', '-')
     pseudo_file_name = '{}.{}'.format(page_name, suffix)
     return 'v-{}-{}/{}'.format(hash[:2], hash[2:], pseudo_file_name)
+
+
+@periodic_job('13 1 * * *')
+def clean_up_inline_static_files_job():
+    shell_execute('find {} -type f -atime +15 -delete'.format(inline_static_files_directory), capture=True)
