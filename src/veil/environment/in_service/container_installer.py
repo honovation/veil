@@ -214,7 +214,6 @@ def render_installer_file(host, server):
     gateway = '{}.1'.format(host.lan_range)
 
     iptables_rules = [
-        'PREROUTING -d {}/32 -p tcp -m tcp --dport {}22 -j DNAT --to-destination {}:22'.format(host.internal_ip, server.sequence_no, ip_address),
         'POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(host.lan_range, host.lan_range)
     ]
     installer_file_content = render_config('container-installer-file.j2', mac_address=mac_address, ip_address=ip_address, gateway=gateway,
