@@ -103,6 +103,8 @@ def veil_host_application_codebase_resource(host):
         key = 'veil_host_application_codebase?{}'.format(host.env_name)
         dry_run_result[key] = 'INSTALL'
         return
+    fabric.api.env.host_string = host.deploys_via
+    fabric.api.env.forward_agent = True
     clone_application(host)
     pull_application(host)
     clone_framework(host)
