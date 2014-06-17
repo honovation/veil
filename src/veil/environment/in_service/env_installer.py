@@ -95,7 +95,7 @@ def patch_env(veil_env_name):
     """
     do_local_preparation(veil_env_name)
     tag_patch(veil_env_name)
-    install_resources(veil_hosts_application_codebase_resource(veil_env_name=veil_env_name))
+    installer_resource(name=veil_hosts_application_codebase_resource(veil_env_name=veil_env_name))
     install_resource(veil_servers_resource(servers=list_veil_servers(veil_env_name)[::-1], action='PATCH'))
 
 
