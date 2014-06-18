@@ -9,7 +9,6 @@ import uuid
 from veil.backend.queue import *
 from veil.utility.pillow import *
 from veil.utility.shell import *
-from veil_installer import *
 from veil.frontend.template import *
 from veil.frontend.web import *
 from veil.backend.bucket import *
@@ -25,8 +24,6 @@ CAPTCHA_ANSWER_ALIVE_TIME = timedelta(minutes=CAPTCHA_ANSWER_ALIVE_MINUTES)
 
 
 def register_captcha(website):
-    add_application_sub_resource('captcha_image_bucket', lambda config: bucket_resource(purpose='captcha_image', config=config))
-    add_application_sub_resource('persist_store_redis_client', lambda config: redis_client_resource(purpose='persist_store', **config))
     import_widget(captcha_widget)
     route('GET', '/captcha', website=website, tags=(TAG_NO_LOGIN_REQUIRED,))(captcha_widget)
     return captcha_protected
