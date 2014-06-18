@@ -22,7 +22,6 @@ def veil_hosts_resource(veil_env_name, config_dir):
     hosts = list_veil_hosts(veil_env_name)
     for host in hosts:
         fabric.api.env.host_string = host.deploys_via
-        fabric.api.env.forward_agent = True
         if host.base_name not in hosts_to_install:
             resources.extend([
                 veil_host_onetime_config_resource(host=host, config_dir=config_dir),
@@ -44,7 +43,11 @@ def veil_hosts_resource(veil_env_name, config_dir):
 
 @composite_installer
 def veil_hosts_application_codebase_resource(veil_env_name):
-    return [veil_host_application_codebase_resource(host=host) for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name)]
+    resources = []
+    for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
+        fabric.api.env.host_string = host.deploys_via
+        resources.append(veil_host_application_codebase_resource(host=host))
+    return resources
 
 
 @composite_installer
@@ -103,7 +106,6 @@ def veil_host_application_codebase_resource(host):
         key = 'veil_host_application_codebase?{}'.format(host.env_name)
         dry_run_result[key] = 'INSTALL'
         return
-    fabric.api.env.host_string = host.deploys_via
     fabric.api.env.forward_agent = True
     clone_application(host)
     pull_application(host)

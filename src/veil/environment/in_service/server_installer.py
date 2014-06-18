@@ -20,7 +20,6 @@ def veil_server_resource(server, action='PATCH'):
         return
 
     fabric.api.env.host_string = server.deploys_via
-    fabric.api.env.forward_agent = True
     with fabric.api.cd(server.veil_home):
         if 'DEPLOY' == action:
             fabric.api.sudo('{}/bin/veil :{} deploy'.format(server.veil_framework_home, server.fullname))
