@@ -16,7 +16,7 @@ def download_baseline(veil_env_name, pattern):
 
 
 @script('restore-from-baseline')
-def restore_from_baseline(veil_env_name=None, pattern=''):
+def restore_from_baseline(veil_env_name=None, pattern='data'):
     if veil_env_name:
         download_baseline(veil_env_name, pattern)
     if not BASELINE_DIR.exists():
