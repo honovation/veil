@@ -30,10 +30,12 @@ def create_env_backup(should_bring_up_servers='TRUE'):
             bring_down_server(server)
         now = datetime.datetime.now()
         timestamp = now.strftime('%Y%m%d%H%M%S')
-        as_path('/backup/{}'.format(timestamp)).makedirs(0755)
+        backup_dir = as_path('/backup/{}'.format(timestamp))
+        backup_dir.makedirs(0755)
         for host in [get_veil_host(server.env_name, server.host_name) for server in unique(servers, id_func=lambda s: s.host_base_name)]:
-            backup_host(host, timestamp)
-        shell_execute('ln -snf {} latest'.format(timestamp), cwd='/backup')
+            backup_file_template = '{}_{}_{{}}_{}.tar.gz'.format(host.env_name, host.base_name, timestamp)
+            backup_host(host, backup_dir, backup_file_template)
+        shell_execute('ln -snf {} latest'.format(timestamp), cwd=backup_dir.parent)
     finally:
         if should_bring_up_servers == 'TRUE':
             for server in reversed(servers):
@@ -71,15 +73,14 @@ def bring_up_server(server):
         fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))
 
 
-def backup_host(host, timestamp):
+def backup_host(host, backup_dir, backup_file_template):
     fabric.api.env.host_string = host.deploys_via
     fabric.api.env.key_filename = '/etc/ssh/id_rsa-@guard'
-    backup_path = '/backup/{timestamp}/{}_{}_{timestamp}.tar.gz'.format(host.env_name, host.base_name, timestamp=timestamp)
-    host_backup_path = host.ssh_user_home / 'tmp' / backup_path[1:]
+    host_backup_dir = host.ssh_user_home / 'tmp' / backup_dir[1:]
     with fabric.api.cd(host.veil_home):
-        fabric.api.run('veil :{} backup {}'.format(host.env_name, host_backup_path))
-    fabric.api.get(host_backup_path, backup_path)
-    fabric.api.run('rm -rf {}'.format(host_backup_path.parent.parent))  # backup is centrally stored in @guard container
+        fabric.api.run('veil :{} backup {} {}'.format(host.env_name, host_backup_dir, backup_file_template))
+    fabric.api.get(host_backup_dir / '*', backup_dir)
+    fabric.api.run('rm -rf {}'.format(host_backup_dir))  # backup is centrally stored in @guard container
 
 
 def rsync_to_backup_mirror():

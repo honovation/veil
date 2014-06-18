@@ -7,20 +7,27 @@ from veil.utility.shell import *
 
 
 @script('create-host-backup')
-def create_host_backup(backup_path):
-    backup_path = as_path(backup_path)
-    backed_up = backup_path.exists()
+def create_host_backup(backup_dir, backup_file_template):
+    backup_dir = as_path(backup_dir)
+    backed_up = True
+    not_backed_up_subdir_name2path = {}
+    for subdir in VEIL_VAR_DIR.dirs():
+        path = backup_dir / backup_file_template.format(subdir.name)
+        if not path.exists():
+            backed_up = False
+            not_backed_up_subdir_name2path[subdir.name] = path
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        dry_run_result['backup?{}'.format(backup_path)] = '-' if backed_up else 'BACKUP'
+        dry_run_result['backup?{}'.format(backup_dir)] = '-' if backed_up else 'BACKUP'
         return
     if backed_up:
         return
     if is_any_servers_running():
         raise Exception('can not backup veil host while not all veil servers on the host are down')
-    backup_path.parent.makedirs(0755)
-    shell_execute('tar -czf {} . -p -s --same-owner --exclude=uploaded-files --exclude=inline-static-files --exclude=captcha-image'.format(
-        backup_path), cwd=VEIL_VAR_DIR)
+    backup_dir.makedirs(0755)
+    for dir_name, path in not_backed_up_subdir_name2path.items():
+        shell_execute('tar -czf {} {} -p -s --same-owner --exclude=uploaded-files --exclude=inline-static-files --exclude=captcha-image'.format(
+            path, dir_name), cwd=VEIL_VAR_DIR)
 
 
 def is_any_servers_running():
