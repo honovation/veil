@@ -100,10 +100,10 @@ def patch_env(veil_env_name):
 
 
 def do_local_preparation(veil_env_name):
-    check_no_local_changes()
-    check_all_local_commits_pushed()
-    check_all_locked_migration_scripts()
-    check_if_locked_migration_scripts_being_changed()
+    check_no_changes_not_committed()
+    check_no_commits_not_pushed()
+    check_no_migration_scripts_not_locked()
+    check_no_locked_migration_scripts_changed()
     display_deployment_memo(veil_env_name)
     update_branch(veil_env_name)
 

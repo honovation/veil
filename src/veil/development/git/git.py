@@ -15,7 +15,7 @@ def pull():
 
 def pull_dir(cwd):
     LOGGER.info('pull %(workspace)s ...', {'workspace': cwd})
-    having_changes = has_local_changes(cwd)
+    having_changes = has_changes_not_committed(cwd)
     if having_changes:
         shell_execute('git stash', cwd=cwd)
     try:
@@ -25,31 +25,29 @@ def pull_dir(cwd):
             shell_execute('git stash pop --index', capture=True, cwd=cwd)
 
 
-def has_local_changes(cwd):
+def has_changes_not_committed(cwd):
     return bool(shell_execute('git diff-index HEAD', capture=True, cwd=cwd))
 
 
-def check_no_local_changes():
+def check_no_changes_not_committed():
     dirs = []
-    if has_local_changes(VEIL_HOME):
+    if has_changes_not_committed(VEIL_HOME):
         dirs.append(VEIL_HOME)
-    if has_local_changes(VEIL_FRAMEWORK_HOME):
+    if has_changes_not_committed(VEIL_FRAMEWORK_HOME):
         dirs.append(VEIL_FRAMEWORK_HOME)
     if dirs:
-        print('Local changes detected in {} !!!'.format(', '.join(dirs)))
-        exit(-1)
+        raise Exception('Local changes detected in {} !!!'.format(', '.join(dirs)))
 
 
-def has_local_commits_not_pushed(cwd):
+def has_commits_not_pushed(cwd):
     return bool(shell_execute('git log origin/master..HEAD', capture=True, cwd=cwd))
 
 
-def check_all_local_commits_pushed():
+def check_no_commits_not_pushed():
     dirs = []
-    if has_local_commits_not_pushed(VEIL_HOME):
+    if has_commits_not_pushed(VEIL_HOME):
         dirs.append(VEIL_HOME)
-    if has_local_commits_not_pushed(VEIL_FRAMEWORK_HOME):
+    if has_commits_not_pushed(VEIL_FRAMEWORK_HOME):
         dirs.append(VEIL_FRAMEWORK_HOME)
     if dirs:
-        print('Local commits not pushed detected in {} !!!'.format(', '.join(dirs)))
-        exit(-1)
+        raise Exception('Local commits not pushed detected in {} !!!'.format(', '.join(dirs)))

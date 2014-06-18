@@ -31,7 +31,7 @@ def lock_migration_scripts(purpose):
         lock_path.write_text(md5)
 
 
-def check_if_locked_migration_scripts_being_changed():
+def check_no_locked_migration_scripts_changed():
     if not os.path.exists(VEIL_HOME / 'db'):
         return
     for purpose in os.listdir(VEIL_HOME / 'db'):
@@ -47,7 +47,7 @@ def check_if_locked_migration_scripts_being_changed():
                     raise Exception('locked migration script {} should not be changed'.format(sql_path))
 
 
-def check_all_locked_migration_scripts():
+def check_no_migration_scripts_not_locked():
     if not os.path.exists(VEIL_HOME / 'db'):
         return
     migration_script_dir = VEIL_HOME / 'db'
@@ -56,7 +56,4 @@ def check_all_locked_migration_scripts():
         locked_file_count = len(purpose.files('*.locked'))
         script_file_count = len(purpose.files('*.sql'))
         if locked_file_count < script_file_count:
-            print('You must lock scripts in {} using: veil backend database migration lock-migration-scripts {}'.format(purpose, purpose))
-            exit(-1)
-        else:
-            print('Migration script check in {} ...passed!'.format(purpose))
+            raise Exception('You must lock scripts in {} using: veil backend database migration lock-migration-scripts {}'.format(purpose, purpose))

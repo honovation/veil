@@ -2,30 +2,25 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import threading
 import functools
-from veil.frontend.cli import *
+from veil.environment import get_current_veil_server
 from veil.utility.shell import *
-from veil.environment import *
+from veil.development.git import *
+from veil.frontend.cli import *
 
 LOGGER = logging.getLogger(__name__)
 
 
 @script('deploy')
 def deploy():
-    assert_no_local_change(VEIL_FRAMEWORK_HOME)
-    assert_no_local_change(VEIL_HOME)
+    check_no_changes_not_committed()
+    check_no_commits_not_pushed()
     shell_execute('veil install veil_installer.component_resource?veil.server.supervisor')
     shell_execute('veil down')
     shell_execute('veil install-server')
     shell_execute('veil up --daemonize')
     shell_execute('veil migrate')
-    assert_no_local_change(VEIL_FRAMEWORK_HOME)
-    assert_no_local_change(VEIL_HOME)
-
-
-def assert_no_local_change(dir_):
-    output = shell_execute('git status -s', cwd=dir_, capture=True)
-    if output:
-        raise Exception('Local change detected:\n{}'.format(output))
+    check_no_changes_not_committed()
+    check_no_commits_not_pushed()
 
 
 @script('patch')
