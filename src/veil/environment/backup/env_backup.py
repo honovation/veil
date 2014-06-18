@@ -88,6 +88,7 @@ def rsync_to_backup_mirror():
     if not backup_mirror:
         return
     fabric.api.env.host_string = backup_mirror.deploys_via
+    fabric.api.env.key_filename = '/etc/ssh/id_rsa-@guard'
     backup_mirror_path = '~/backup_mirror/{}/'.format(VEIL_ENV_NAME)
     fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
     shell_execute(

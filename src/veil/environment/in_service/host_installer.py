@@ -65,7 +65,7 @@ def veil_host_onetime_config_resource(host, config_dir):
             owner='root', owner_group='root', mode=0440),
         veil_host_file_resource(local_path=CURRENT_DIR / 'ipv4-ip-forward.conf', host=host, remote_path='/etc/sysctl.d/60-lxc-ipv4-ip-forward.conf',
             owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
-        veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0755),
+        veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0700),
         veil_host_config_resource(host=host, config_dir=config_dir),
         veil_host_init_resource(host=host)
     ]
@@ -80,13 +80,13 @@ def veil_host_config_resource(host, config_dir):
     env_config_dir = config_dir / host.env_name
     resources = [
         veil_host_directory_resource(host=host, remote_path='/home/{}/.ssh'.format(host.ssh_user), owner=host.ssh_user,
-            owner_group=host.ssh_user_group, mode=0755),
+            owner_group=host.ssh_user_group, mode=0700),
         veil_host_file_resource(local_path=env_config_dir / '.ssh' / 'authorized_keys', host=host,
-            remote_path='/home/{}/.ssh/authorized_keys'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0644),
+            remote_path='/home/{}/.ssh/authorized_keys'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0600),
         veil_host_file_resource(local_path=env_config_dir / '.ssh' / 'known_hosts', host=host,
-            remote_path='/home/{}/.ssh/known_hosts'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0644),
+            remote_path='/home/{}/.ssh/known_hosts'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0600),
         veil_host_file_resource(local_path=env_config_dir / '.ssh' / 'known_hosts', host=host, remote_path='/root/.ssh/known_hosts',
-            owner='root', owner_group='root', mode=0644),
+            owner='root', owner_group='root', mode=0600),
         veil_host_file_resource(local_path=CURRENT_DIR / 'apt-config', host=host, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config',
             owner='root', owner_group='root', mode=0644),
         veil_host_sources_list_resource(host=host)
@@ -276,9 +276,9 @@ def veil_host_user_editor_resource(host, config_dir):
 
     fabric.api.sudo('chown -R editor:editor {}'.format(host.editorial_dir))
 
-    fabric.api.sudo('mkdir -p /home/editor/.ssh')
+    fabric.api.sudo('mkdir -p -m 0700 /home/editor/.ssh')
     fabric.api.put(config_dir / host.env_name / 'hosts' / host.base_name / 'editor-id_rsa.pub', '/home/editor/.ssh/authorized_keys', use_sudo=True,
-        mode=0400)
+        mode=0600)
     fabric.api.sudo('chown -R editor:editor /home/editor/.ssh')
 
     fabric.contrib.files.append('/etc/ssh/sshd_config',

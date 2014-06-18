@@ -69,7 +69,7 @@ def veil_container_onetime_config_resource(server, config_dir):
             owner='root', owner_group='root', mode=0440),
         veil_container_file_resource(local_path=CURRENT_DIR / 'sudoers.d.no-password', server=server, remote_path='/etc/sudoers.d/no-password',
             owner='root', owner_group='root', mode=0440),
-        veil_container_directory_resource(server=server, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0755),
+        veil_container_directory_resource(server=server, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0700),
         veil_container_sources_list_resource(server=server),
         veil_container_init_resource(server=server)
     ]
@@ -83,7 +83,7 @@ def veil_container_config_resource(server, config_dir):
     resources = [
         veil_server_boot_script_resource(server=server),
         veil_container_file_resource(local_path=env_config_dir / '.ssh' / 'known_hosts', server=server, remote_path='/root/.ssh/known_hosts',
-            owner='root', owner_group='root', mode=0644),
+            owner='root', owner_group='root', mode=0600),
         veil_container_file_resource(local_path=CURRENT_DIR / 'apt-config', server=server, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config',
             owner='root', owner_group='root', mode=0644),
         veil_container_sources_list_resource(server=server)
@@ -93,12 +93,10 @@ def veil_container_config_resource(server, config_dir):
             owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0644))
     for local_path in server_config_dir.files('*.key'):
         resources.append(veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/private/{}'.format(local_path.name),
-            owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0640))
+            owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
     if '@guard' == server.name:
         resources.append(veil_container_file_resource(local_path=server_config_dir / '.ssh' / 'id_rsa', server=server,
             remote_path='/etc/ssh/id_rsa-@guard', owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
-        resources.append(veil_container_file_resource(local_path=server_config_dir / '.ssh' / 'id_rsa', server=server,
-            remote_path='/root/.ssh/id_rsa', owner='root', owner_group='root', mode=0600))
     return resources
 
 
