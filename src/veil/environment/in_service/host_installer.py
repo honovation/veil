@@ -233,7 +233,8 @@ def veil_host_directory_resource(host, remote_path, owner, owner_group, mode):
         key = 'veil_host_directory?{}&path={}'.format(host.env_name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
-    fabric.api.sudo('mkdir -p -m {:o} {}'.format(mode, remote_path))
+    fabric.api.sudo('mkdir -p {}'.format(remote_path))
+    fabric.api.sudo('chmod {:o} {}'.format(mode, remote_path))
     fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
 
 

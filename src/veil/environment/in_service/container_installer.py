@@ -156,7 +156,8 @@ def veil_container_directory_resource(server, remote_path, owner, owner_group, m
         dry_run_result[key] = 'INSTALL'
         return
     container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
-    fabric.api.sudo('chroot {} mkdir -p -m {:o} {}'.format(container_rootfs_path, mode, remote_path))
+    fabric.api.sudo('chroot {} mkdir -p {}'.format(container_rootfs_path, remote_path))
+    fabric.api.sudo('chroot {} chmod {:o} {}'.format(container_rootfs_path, mode, remote_path))
     fabric.api.sudo('chroot {} chown {}:{} {}'.format(container_rootfs_path, owner, owner_group, remote_path))
 
 
