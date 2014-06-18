@@ -173,6 +173,7 @@ def veil_host_init_resource(host):
     fabric.api.sudo('service ssh reload')
 
     fabric.api.sudo('apt-get -q update')
+    fabric.api.sudo('apt-get -q upgrade')
     fabric.api.sudo('apt-get -q -y purge ntp whoopsie network-manager')
     fabric.api.sudo('apt-get -q -y install ntpdate unattended-upgrades iptables git-core language-pack-en unzip wget python python-dev python-pip python-virtualenv lxc')
     # enable time sync on lxc hosts, and which is shared among lxc guests
