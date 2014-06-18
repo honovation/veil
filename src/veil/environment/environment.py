@@ -45,8 +45,8 @@ BASIC_LAYOUT_RESOURCES = [
 def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=None):
     server_names = servers.keys()
     if sorted_server_names:
-        assert set(sorted_server_names) == set(server_names), 'ENV {}: inconsistency between sorted_server_names {} and server_names {}'.format(
-            VEIL_ENV_NAME, sorted_server_names, server_names)
+        assert set(sorted_server_names) == set(server_names), 'ENV {}: inconsistency between sorted_server_names {} and server_names {}'.format(name,
+            sorted_server_names, server_names)
     else:
         sorted_server_names = sorted(server_names)
 
@@ -112,10 +112,10 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         host.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))
 
     if env.hosts:
-        assert all(host.server_list for host in env.hosts.values()), 'ENV {}: found host without server(s)'.format(VEIL_ENV_NAME)
-        assert all(server.host for server in env.servers.values()), 'ENV {}: found server without host'.format(VEIL_ENV_NAME)
+        assert all(host.server_list for host in env.hosts.values()), 'ENV {}: found host without server(s)'.format(env.name)
+        assert all(server.host for server in env.servers.values()), 'ENV {}: found server without host'.format(env.name)
         assert all(len(host.server_list) == len(set(server.sequence_no for server in host.server_list)) for host in env.hosts.values()), \
-            'ENV {}: found sequence no conflict among servers on one host'.format(VEIL_ENV_NAME)
+            'ENV {}: found sequence no conflict among servers on one host'.format(env.name)
 
     # break cyclic reference between host and server to get freeze_dict_object out of complain
     for server in env.servers.values():
