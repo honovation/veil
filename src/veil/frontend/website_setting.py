@@ -114,10 +114,10 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
         # /static/v-xxxx/a-b.js
         '~ ^/static/v-(.*)-(.*)/': {
             '_': '''
-                alias {}/inline-static-files/$1/$2;
+                alias {}/$1/$2;
                 access_log off;
                 expires max;
-                '''.format(VEIL_BUCKETS_DIR)
+                '''.format(VEIL_BUCKET_INLINE_STATIC_FILES_DIR)
         }
     }
     locations.update(extra_locations)

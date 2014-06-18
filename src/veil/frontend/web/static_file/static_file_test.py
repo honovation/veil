@@ -1,18 +1,15 @@
 from __future__ import unicode_literals, print_function, division
-import tempfile
 import lxml.html
 import lxml.etree
-from veil_component import as_path
+from veil.environment import VEIL_BUCKET_INLINE_STATIC_FILES_DIR
 from veil.development.test import *
-from .static_file import set_inline_static_files_directory
-from .static_file import process_javascript
-from .static_file import process_stylesheet
+from .static_file import process_javascript, process_stylesheet
+
 
 class ProcessJavascriptTest(TestCase):
     def setUp(self):
         super(ProcessJavascriptTest, self).setUp()
-        self.temp_dir = as_path(tempfile.gettempdir())
-        set_inline_static_files_directory(self.temp_dir)
+
 
     def test_nothing_to_process(self):
         self.assertEqual('', unicode(process_javascript(None, '')))
@@ -51,14 +48,12 @@ class ProcessJavascriptTest(TestCase):
         processed_html = unicode(process_javascript(test_page, test_page()).strip())
         doc = lxml.etree.fromstring(processed_html)
         self.assertEqual('/static/v-06-0ab1eb927023ecd106bb46f6aa2539/test.js', doc.attrib['src'])
-        self.assertIn('test2', (self.temp_dir / '06' / '0ab1eb927023ecd106bb46f6aa2539').text())
+        self.assertIn('test2', (VEIL_BUCKET_INLINE_STATIC_FILES_DIR / '06' / '0ab1eb927023ecd106bb46f6aa2539').text())
 
 
 class ProcessStylesheetTest(TestCase):
     def setUp(self):
         super(ProcessStylesheetTest, self).setUp()
-        self.temp_dir = as_path(tempfile.gettempdir())
-        set_inline_static_files_directory(self.temp_dir)
 
     def test_link_element_relocated_before_head_end(self):
         processed_html = process_stylesheet(None, '''
@@ -90,4 +85,4 @@ class ProcessStylesheetTest(TestCase):
         processed_html = unicode(process_stylesheet(test_page, test_page()).strip())
         doc = lxml.etree.fromstring(processed_html)
         self.assertEqual('/static/v-d4-d47e28f5e98547ee210c3efe99cc2e/test.css', doc.attrib['href'])
-        self.assertEqual('test\ntest2', (self.temp_dir / 'd4' / 'd47e28f5e98547ee210c3efe99cc2e').text())
+        self.assertEqual('test\ntest2', (VEIL_BUCKET_INLINE_STATIC_FILES_DIR / 'd4' / 'd47e28f5e98547ee210c3efe99cc2e').text())

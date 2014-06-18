@@ -54,7 +54,6 @@ def create_website_http_handler(purpose, config):
         locale_provider = lambda: get_locale(config.locale)
     else:
         locale_provider = lambda: None
-    set_inline_static_files_directory(VEIL_BUCKETS_DIR / 'inline-static-files')
     set_external_static_files_directory(VEIL_HOME / 'static')
     master_template_directory = config.master_template_directory
     if master_template_directory:

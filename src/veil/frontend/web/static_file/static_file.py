@@ -4,6 +4,7 @@ import hashlib
 import re
 import logging
 from markupsafe import Markup
+from veil.environment import *
 from veil_component import as_path
 from veil.utility.shell import *
 from veil.backend.queue import *
@@ -19,19 +20,7 @@ from .style_element import process_style_elements
 LOGGER = logging.getLogger(__name__)
 
 static_file_hashes = {}
-inline_static_files_directory = None
 external_static_files_directory = None
-
-def set_inline_static_files_directory(value):
-    global inline_static_files_directory
-    executing_test = get_executing_test(optional=True)
-    if executing_test:
-        def reset():
-            global inline_static_files_directory
-            inline_static_files_directory = None
-
-        executing_test.addCleanup(reset)
-    inline_static_files_directory = value
 
 
 def set_external_static_files_directory(value):
@@ -119,14 +108,11 @@ def wrap_js_to_ensure_load_once(js):
 
 
 def write_inline_static_file(page_handler, suffix, content):
-    assert inline_static_files_directory
     hash = hashlib.md5(to_str(content)).hexdigest()
-    dir = as_path(inline_static_files_directory) / hash[:2]
-    dir_not_exist = not dir.exists()
-    if dir_not_exist:
-        dir.makedirs(0755)
+    dir = VEIL_BUCKET_INLINE_STATIC_FILES_DIR / hash[:2]
+    dir.makedirs(0755)
     inline_static_file = dir / hash[2:]
-    if dir_not_exist or not inline_static_file.exists():
+    if not inline_static_file.exists():
         inline_static_file.write_text(to_str(content))
     page_name = page_handler.__name__.replace('_widget', '').replace('_page', '').replace('_', '-')
     pseudo_file_name = '{}.{}'.format(page_name, suffix)
@@ -135,4 +121,6 @@ def write_inline_static_file(page_handler, suffix, content):
 
 @periodic_job('13 1 * * *')
 def clean_up_inline_static_files_job():
-    shell_execute('find {} -type f -atime +15 -delete'.format(inline_static_files_directory), capture=True)
+    if not VEIL_BUCKET_INLINE_STATIC_FILES_DIR.exists():
+        return
+    shell_execute('find {} -type f -atime +15 -delete'.format(VEIL_BUCKET_INLINE_STATIC_FILES_DIR), capture=True)
