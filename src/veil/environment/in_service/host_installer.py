@@ -277,8 +277,7 @@ def veil_host_user_editor_resource(host, config_dir):
     fabric.api.sudo('chown -R editor:editor {}'.format(host.editorial_dir))
 
     fabric.api.sudo('mkdir -p -m 0700 /home/editor/.ssh')
-    fabric.api.put(config_dir / host.env_name / 'hosts' / host.base_name / 'editor-id_rsa.pub', '/home/editor/.ssh/authorized_keys', use_sudo=True,
-        mode=0600)
+    fabric.api.put(config_dir / host.env_name / '.ssh-editor' / 'editor-id_rsa.pub', '/home/editor/.ssh/authorized_keys', use_sudo=True, mode=0600)
     fabric.api.sudo('chown -R editor:editor /home/editor/.ssh')
 
     fabric.contrib.files.append('/etc/ssh/sshd_config',
