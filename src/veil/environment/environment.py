@@ -125,7 +125,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
 
 
 def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_range='10.0.3', lan_interface='lxcbr0', mac_prefix='00:16:3e:73:bb',
-        resources=()):
+        sshd_config=(), resources=()):
     from veil.model.collection import objectify
     return objectify({
         'internal_ip': internal_ip,
@@ -136,6 +136,7 @@ def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_rang
         'lan_range': lan_range,
         'lan_interface': lan_interface,
         'mac_prefix': mac_prefix,
+        'sshd_config': sshd_config,
         'resources': resources,
         'deploys_via': '{}@{}:{}'.format(ssh_user, internal_ip, ssh_port)
     })
