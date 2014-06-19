@@ -4,6 +4,7 @@ import logging
 import base64
 import re
 from hashlib import md5
+from veil.model.collection import *
 from veil.utility.http import *
 from veil.utility.encoding import *
 from .yto_client_installer import yto_client_config
@@ -38,6 +39,10 @@ def get_brief(status_obj):
         return result
     else:
         return YTO_STATUS.get(status_obj.infoContent.text)
+
+
+def get_logistics_status(status_obj):
+    return DictObject(code=status_obj.infoContent.text, brief=get_brief(status_obj))
 
 
 def subscribe(purchase_id, purchase_xml_data):
