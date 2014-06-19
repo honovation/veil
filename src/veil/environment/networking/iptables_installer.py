@@ -47,3 +47,18 @@ def iptables_policy_resource(table, chain, policy):
     LOGGER.info('install iptables policy: %(chain)s %(policy)s to table %(table)s...', {
         'chain': chain, 'policy': policy, 'table': table})
     shell_execute('iptables -t {} -P {} {}'.format(table, chain, policy))
+
+
+def list_iptables_resources_to_secure_host():
+    resources = [
+        #  Allow all loopback (lo0) traffic and drop all traffic to 127/8 that doesn't use lo0
+        iptables_rule_resource(table='filter', rule='INPUT -i lo -j ACCEPT'),
+        iptables_rule_resource(table='filter', rule='INPUT -d 127.0.0.0/8 -j REJECT'),
+        #  Accept all established inbound connections
+        iptables_rule_resource(table='filter', rule='INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT'),
+        #  Allow SSH connections
+        iptables_rule_resource(table='filter', rule='INPUT -p tcp -m tcp --dport 22 -j ACCEPT'),
+        #  Drop all other inbound - default deny unless explicitly allowed policy
+        iptables_policy_resource(table='filter', chain='INPUT', policy='DROP')
+    ]
+    return resources

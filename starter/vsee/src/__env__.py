@@ -1,6 +1,4 @@
 from __future__ import unicode_literals, print_function, division
-import os
-from veil_component import as_path
 from veil.model.collection import *
 from veil.profile.setting import *
 from veil.frontend.nginx_setting import NGINX_PID_PATH
