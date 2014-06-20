@@ -21,23 +21,23 @@ def veil_hosts_resource(veil_env_name, config_dir):
     resources = []
     hosts = list_veil_hosts(veil_env_name)
     for host in hosts:
-        with fabric.api.settings(host_string=host.deploys_via):
-            if host.base_name not in hosts_to_install:
-                resources.extend([
-                    veil_host_onetime_config_resource(host=host, config_dir=config_dir),
-                    veil_host_config_resource(host=host, config_dir=config_dir),
-                    veil_host_application_codebase_resource(host=host)
-                ])
-                if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
-                    resources.append(veil_host_user_editor_resource(host=host, config_dir=config_dir))
-                hosts_to_install.append(host.base_name)
-            for server in host.server_list:
-                resources.extend([
-                    veil_host_directory_resource(host=host, remote_path=host.etc_dir / server.name, owner='root', owner_group='root', mode=0755),
-                    veil_host_directory_resource(host=host, remote_path=host.log_dir / server.name, owner=host.ssh_user,
-                        owner_group=host.ssh_user_group, mode=0755),
-                    veil_container_resource(host=host, server=server, config_dir=config_dir)
-                ])
+        fabric.api.env.host_string = host.deploys_via
+        if host.base_name not in hosts_to_install:
+            resources.extend([
+                veil_host_onetime_config_resource(host=host, config_dir=config_dir),
+                veil_host_config_resource(host=host, config_dir=config_dir),
+                veil_host_application_codebase_resource(host=host)
+            ])
+            if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
+                resources.append(veil_host_user_editor_resource(host=host, config_dir=config_dir))
+            hosts_to_install.append(host.base_name)
+        for server in host.server_list:
+            resources.extend([
+                veil_host_directory_resource(host=host, remote_path=host.etc_dir / server.name, owner='root', owner_group='root', mode=0755),
+                veil_host_directory_resource(host=host, remote_path=host.log_dir / server.name, owner=host.ssh_user, owner_group=host.ssh_user_group,
+                    mode=0755),
+                veil_container_resource(host=host, server=server, config_dir=config_dir)
+            ])
     return resources
 
 
@@ -45,8 +45,8 @@ def veil_hosts_resource(veil_env_name, config_dir):
 def veil_hosts_application_codebase_resource(veil_env_name):
     resources = []
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
-        with fabric.api.settings(host_string=host.deploys_via):
-            resources.append(veil_host_application_codebase_resource(host=host))
+        fabric.api.env.host_string = host.deploys_via
+        resources.append(veil_host_application_codebase_resource(host=host))
     return resources
 
 
@@ -168,7 +168,7 @@ def veil_host_init_resource(host):
     fabric.api.sudo('service ssh reload')
 
     fabric.api.sudo('apt-get -q update')
-    fabric.api.sudo('apt-get -q upgrade')
+    fabric.api.sudo('apt-get -q -y upgrade')
     fabric.api.sudo('apt-get -q -y purge ntp whoopsie network-manager')
     fabric.api.sudo('apt-get -q -y install ntpdate unattended-upgrades iptables git-core language-pack-en unzip wget python python-dev python-pip python-virtualenv lxc')
     # enable time sync on lxc hosts, and which is shared among lxc guests
