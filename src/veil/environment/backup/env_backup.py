@@ -25,23 +25,24 @@ def create_env_backup(should_bring_up_servers='TRUE'):
         dry_run_result['env_backup'] = 'BACKUP'
         return
     servers = [server for server in list_veil_servers(VEIL_ENV_NAME) if server.name not in ('@guard', '@monitor')]
-    try:
-        for server in servers:
-            bring_down_server(server)
-        now = datetime.datetime.now()
-        timestamp = now.strftime('%Y%m%d%H%M%S')
-        backup_dir = as_path('/backup/{}'.format(timestamp))
-        backup_dir.makedirs(0755)
-        for host in [get_veil_host(server.env_name, server.host_name) for server in unique(servers, id_func=lambda s: s.host_base_name)]:
-            backup_file_template = '{}_{}_{{}}_{}.tar.gz'.format(host.env_name, host.base_name, timestamp)
-            backup_host(host, backup_dir, backup_file_template)
-        shell_execute('ln -snf {} latest'.format(timestamp), cwd=backup_dir.parent)
-    finally:
-        if should_bring_up_servers == 'TRUE':
-            for server in reversed(servers):
-                bring_up_server(server)
-    delete_old_backups()
-    rsync_to_backup_mirror()
+    with fabric.api.settings(disable_known_hosts=True, key_filename='/etc/ssh/id_rsa-@guard'):
+        try:
+            for server in servers:
+                bring_down_server(server)
+            now = datetime.datetime.now()
+            timestamp = now.strftime('%Y%m%d%H%M%S')
+            backup_dir = as_path('/backup/{}'.format(timestamp))
+            backup_dir.makedirs(0755)
+            for host in [get_veil_host(server.env_name, server.host_name) for server in unique(servers, id_func=lambda s: s.host_base_name)]:
+                backup_file_template = '{}_{}_{{}}_{}.tar.gz'.format(host.env_name, host.base_name, timestamp)
+                backup_host(host, backup_dir, backup_file_template)
+            shell_execute('ln -snf {} latest'.format(timestamp), cwd=backup_dir.parent)
+        finally:
+            if should_bring_up_servers == 'TRUE':
+                for server in reversed(servers):
+                    bring_up_server(server)
+        delete_old_backups()
+        rsync_to_backup_mirror()
 
 
 @script('delete-old-backups')
@@ -60,37 +61,33 @@ def delete_old_backups():
 
 
 def bring_down_server(server):
-    fabric.api.env.host_string = server.deploys_via
-    fabric.api.env.key_filename = '/etc/ssh/id_rsa-@guard'
-    with fabric.api.cd(server.veil_home):
-        fabric.api.sudo('veil :{} down'.format(server.fullname))
+    with fabric.api.settings(host_string=server.deploys_via):
+        with fabric.api.cd(server.veil_home):
+            fabric.api.sudo('veil :{} down'.format(server.fullname))
 
 
 def bring_up_server(server):
-    fabric.api.env.host_string = server.deploys_via
-    fabric.api.env.key_filename = '/etc/ssh/id_rsa-@guard'
-    with fabric.api.cd(server.veil_home):
-        fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))
+    with fabric.api.settings(host_string=server.deploys_via):
+        with fabric.api.cd(server.veil_home):
+            fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))
 
 
 def backup_host(host, backup_dir, backup_file_template):
-    fabric.api.env.host_string = host.deploys_via
-    fabric.api.env.key_filename = '/etc/ssh/id_rsa-@guard'
     host_backup_dir = host.ssh_user_home / 'tmp' / backup_dir[1:]
-    with fabric.api.cd(host.veil_home):
-        fabric.api.run('veil :{} backup {} {}'.format(host.env_name, host_backup_dir, backup_file_template))
-    fabric.api.get(host_backup_dir / '*', backup_dir)
-    fabric.api.run('rm -rf {}'.format(host_backup_dir))  # backup is centrally stored in @guard container
+    with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.cd(host.veil_home):
+            fabric.api.run('veil :{} backup {} {}'.format(host.env_name, host_backup_dir, backup_file_template))
+        fabric.api.get(host_backup_dir / '*', backup_dir)
+        fabric.api.run('rm -rf {}'.format(host_backup_dir))  # backup is centrally stored in @guard container
 
 
 def rsync_to_backup_mirror():
     backup_mirror = get_current_veil_server().backup_mirror
     if not backup_mirror:
         return
-    fabric.api.env.host_string = backup_mirror.deploys_via
-    fabric.api.env.key_filename = '/etc/ssh/id_rsa-@guard'
     backup_mirror_path = '~/backup_mirror/{}/'.format(VEIL_ENV_NAME)
-    fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
+    with fabric.api.settings(host_string=backup_mirror.deploys_via):
+        fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
     shell_execute(
         '''rsync -ave "ssh -p {} -o StrictHostKeyChecking=no" --progress --bwlimit={} --delete /backup/ {}@{}:{}'''.format(
             backup_mirror.ssh_port, backup_mirror.bandwidth_limit,

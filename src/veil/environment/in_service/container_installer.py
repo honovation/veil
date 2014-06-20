@@ -17,7 +17,7 @@ sources_list_installed = []
 def veil_container_resource(host, server, config_dir):
     resources = [
         veil_container_lxc_resource(host=host, server=server),
-        veil_container_onetime_config_resource(server=server, config_dir=config_dir),
+        veil_container_onetime_config_resource(server=server),
         veil_container_config_resource(server=server, config_dir=config_dir)
     ]
     return resources
@@ -55,7 +55,7 @@ def veil_container_lxc_resource(host, server):
 
 
 @composite_installer
-def veil_container_onetime_config_resource(server, config_dir):
+def veil_container_onetime_config_resource(server):
     initialized = fabric.contrib.files.exists(server.container_initialized_tag_path)
     if initialized:
         return []

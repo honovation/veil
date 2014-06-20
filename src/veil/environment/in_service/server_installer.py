@@ -19,11 +19,11 @@ def veil_server_resource(server, action='PATCH'):
         dry_run_result['veil_server?{}'.format(server.container_name)] = action
         return
 
-    fabric.api.env.host_string = server.deploys_via
-    with fabric.api.cd(server.veil_home):
-        if 'DEPLOY' == action:
-            fabric.api.sudo('{}/bin/veil :{} deploy'.format(server.veil_framework_home, server.fullname))
-            fabric.api.sudo('touch {}'.format(server.deployed_tag_path))
-        else:  # PATCH
-            fabric.api.sudo('{}/bin/veil :{} patch'.format(server.veil_framework_home, server.fullname))
-            fabric.api.sudo('touch {}'.format(server.patched_tag_path))
+    with fabric.api.settings(host_string=server.deploys_via):
+        with fabric.api.cd(server.veil_home):
+            if 'DEPLOY' == action:
+                fabric.api.sudo('{}/bin/veil :{} deploy'.format(server.veil_framework_home, server.fullname))
+                fabric.api.sudo('touch {}'.format(server.deployed_tag_path))
+            else:  # PATCH
+                fabric.api.sudo('{}/bin/veil :{} patch'.format(server.veil_framework_home, server.fullname))
+                fabric.api.sudo('touch {}'.format(server.patched_tag_path))

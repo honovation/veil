@@ -76,7 +76,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         host.env_name = env.name
         host.name = host_name
         # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.env_name, host.base_name))
-        host.base_name = host.name.split('/', 1)[0]  # e.g. ljhost-005/3 => ljhost-005
+        host.base_name = host.name.split('/', 1)[0]  # e.g. ljhost-90/1 => ljhost-90
         host.ssh_user_home = as_path('/home') / host.ssh_user
         host.opt_dir = OPT_DIR
         host.share_dir = SHARE_DIR
