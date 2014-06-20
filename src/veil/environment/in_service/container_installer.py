@@ -65,8 +65,6 @@ def veil_container_onetime_config_resource(server):
             owner='root', owner_group='root', mode=0755),
         veil_container_file_resource(local_path=CURRENT_DIR / 'iptablessave', server=server, remote_path='/etc/network/if-post-down.d/iptablessave',
             owner='root', owner_group='root', mode=0755),
-        veil_container_file_resource(local_path=CURRENT_DIR / 'sudoers.d.ssh-auth-sock', server=server, remote_path='/etc/sudoers.d/ssh-auth-sock',
-            owner='root', owner_group='root', mode=0440),
         veil_container_file_resource(local_path=CURRENT_DIR / 'sudoers.d.no-password', server=server, remote_path='/etc/sudoers.d/no-password',
             owner='root', owner_group='root', mode=0440),
         veil_container_sources_list_resource(server=server),
