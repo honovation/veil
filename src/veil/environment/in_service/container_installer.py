@@ -69,7 +69,6 @@ def veil_container_onetime_config_resource(server):
             owner='root', owner_group='root', mode=0440),
         veil_container_file_resource(local_path=CURRENT_DIR / 'sudoers.d.no-password', server=server, remote_path='/etc/sudoers.d/no-password',
             owner='root', owner_group='root', mode=0440),
-        veil_container_directory_resource(server=server, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0700),
         veil_container_sources_list_resource(server=server),
         veil_container_init_resource(server=server)
     ]
@@ -82,8 +81,6 @@ def veil_container_config_resource(server, config_dir):
     server_config_dir = env_config_dir / 'servers' / server.name
     resources = [
         veil_server_boot_script_resource(server=server),
-        veil_container_file_resource(local_path=env_config_dir / '.ssh' / 'known_hosts', server=server, remote_path='/root/.ssh/known_hosts',
-            owner='root', owner_group='root', mode=0600),
         veil_container_file_resource(local_path=CURRENT_DIR / 'apt-config', server=server, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config',
             owner='root', owner_group='root', mode=0644),
         veil_container_sources_list_resource(server=server)
