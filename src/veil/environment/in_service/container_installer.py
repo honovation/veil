@@ -85,15 +85,15 @@ def veil_container_config_resource(server, config_dir):
             owner='root', owner_group='root', mode=0644),
         veil_container_sources_list_resource(server=server)
     ]
+    if '@guard' == server.name:
+        resources.append(veil_container_file_resource(local_path=env_config_dir / '.ssh-@guard' / 'id_rsa', server=server,
+            remote_path='/etc/ssh/id_rsa-@guard', owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
     for local_path in server_config_dir.files('*.crt'):
         resources.append(veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/certs/{}'.format(local_path.name),
             owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0644))
     for local_path in server_config_dir.files('*.key'):
         resources.append(veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/private/{}'.format(local_path.name),
             owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
-    if '@guard' == server.name:
-        resources.append(veil_container_file_resource(local_path=server_config_dir / '.ssh' / 'id_rsa', server=server,
-            remote_path='/etc/ssh/id_rsa-@guard', owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
     return resources
 
 
