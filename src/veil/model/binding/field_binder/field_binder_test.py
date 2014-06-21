@@ -4,6 +4,7 @@ import __builtin__
 from veil.development.test import TestCase
 from .field_binder import *
 
+
 class FieldBinderTest(TestCase):
     def setUp(self):
         super(FieldBinderTest, self).setUp()
@@ -107,10 +108,10 @@ class FieldBinderTest(TestCase):
             to_time()('07.30')
 
     def test_validate_datetime(self):
-        #Creating localtimes is also tricky, and the reason why working with local times is not recommended. Unfortunately, you cannot just pass a ‘tzinfo’ argument when constructing a datetime.
+        # Creating localtimes is also tricky, and the reason why working with local times is not recommended. Unfortunately, you cannot just pass a ‘tzinfo’ argument when constructing a datetime.
         tz = pytz.timezone('Asia/Shanghai')
         self.assertEquals(
-            tz.localize(datetime(2011, 07, 01, 0, 10, 0,)).astimezone(pytz.utc), to_datetime()('2011-07-01 00:10:00'))
+            tz.localize(datetime(2011, 07, 01, 0, 10, 0, )).astimezone(pytz.utc), to_datetime()('2011-07-01 00:10:00'))
         with self.assertRaises(Invalid):
             to_datetime()('2011-07-01 00:10')
         with self.assertRaises(Invalid):
@@ -134,3 +135,16 @@ class FieldBinderTest(TestCase):
             to_datetime_with_minute_precision_from_iso8601('2011-07-01 00:10:00 +08:00')
         with self.assertRaises(Invalid):
             to_datetime_with_minute_precision_from_iso8601('2011-07-01 00:10 08:00')
+
+    def test_validate_clamp(self):
+        self.assertEqual(0, clamp(min=0, max=1)(0))
+        with self.assertRaises(Invalid):
+            clamp(min=0, max=1)(-1)
+        with self.assertRaises(Invalid):
+            clamp(min=0, max=1)(2)
+        # default [0, 1]
+        self.assertEqual(1, clamp(min=0, max=1)(1))
+        with self.assertRaises(Invalid):
+            clamp(min=0, max=1, can_equal_to_max=False)(1)
+        with self.assertRaises(Invalid):
+            clamp(min=0, max=1, can_equal_to_min=False)(0)
