@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 import __builtin__
-from datetime import datetime, date, time
 from veil.development.test import TestCase
 from .field_binder import *
 
@@ -101,11 +100,11 @@ class FieldBinderTest(TestCase):
             to_date(format='%m/%d/%Y')('07-30-2007')
 
     def test_validate_time(self):
-        converted = to_time('07:30 pm')
-        self.assertEquals(time(19, 30), converted)
+        converted = to_time()('07:30:20')
+        self.assertEquals(time(7, 30, 20), converted)
 
         with self.assertRaises(Invalid):
-            to_time('07.30')
+            to_time()('07.30')
 
     def test_validate_datetime(self):
         #Creating localtimes is also tricky, and the reason why working with local times is not recommended. Unfortunately, you cannot just pass a ‘tzinfo’ argument when constructing a datetime.
