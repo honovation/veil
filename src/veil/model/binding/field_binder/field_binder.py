@@ -245,15 +245,15 @@ def clamp_length(min=None, max=None):
     bind.max = max
     return bind
 
-def clamp(min=None, max=None, can_equal_to_min=True, can_equal_to_max=True):
+def clamp(min=None, max=None, include_min=True, include_max=True):
     """
     clamp a value between minimum and maximum (either
     of which are optional).
     """
     def bind(value):
-        if bind.min is not None and (value < bind.min or not can_equal_to_min and value == bind.min):
+        if bind.min is not None and (value < bind.min or not include_min and value == bind.min):
             raise Invalid(_('值超出范围'))
-        if bind.max is not None and (value > bind.max or not can_equal_to_max and value == bind.max):
+        if bind.max is not None and (value > bind.max or not include_max and value == bind.max):
             raise Invalid(_('值超出范围'))
         return value
     bind.min = min

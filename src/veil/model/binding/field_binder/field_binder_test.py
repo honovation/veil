@@ -145,6 +145,6 @@ class FieldBinderTest(TestCase):
         # default [0, 1]
         self.assertEqual(1, clamp(min=0, max=1)(1))
         with self.assertRaises(Invalid):
-            clamp(min=0, max=1, can_equal_to_max=False)(1)
+            clamp(min=0, max=1, include_max=False)(1)
         with self.assertRaises(Invalid):
-            clamp(min=0, max=1, can_equal_to_min=False)(0)
+            clamp(min=0, max=1, include_min=False)(0)
