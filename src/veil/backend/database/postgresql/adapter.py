@@ -21,20 +21,19 @@ psycopg2.extensions.register_type(register_uuid())
 class DictObject2Json(object):
     def __init__(self, adapted):
         self.adapted = adapted
-        self.dumps = to_readable_json
 
     def __conform__(self, proto):
         if proto is ISQLQuote:
             return self
 
     def dumps(self, obj):
-        return self.dumps(obj)
+        return to_readable_json(obj) if obj.get('readable', True) else to_json(obj)
 
     def getquoted(self):
         s = self.dumps(self.adapted)
         return QuotedString(s).getquoted()
 psycopg2.extensions.register_adapter(DictObject, DictObject2Json)
-psycopg2.extras.register_default_json(globally=True, loads=from_json)
+psycopg2.extras.register_default_json(globally=True, loads=lambda obj: objectify(from_json(obj)))
 
 
 class PostgresqlAdapter(object):
