@@ -131,19 +131,31 @@ def to_bool(value):
     return bool(value)
 
 
-def to_time(value):
-    try:
-        dt = datetime.strptime(value, '%I:%M %p')
-    except (TypeError, ValueError):
-        raise Invalid(_('不是有效的时间'))
-    else:
-        return time(dt.hour, dt.minute)
-
-
-def to_date(format='%Y-%m-%d', return_none_when_invalid=False):
-    def bind(value):
+def to_time(format='%H:%M:%S', naive=True):
+    def bind(value, return_none_when_invalid=False):
         if isinstance(value, datetime):
-            return convert_datetime_to_client_timezone(value).date()
+            return (convert_datetime_to_naive_local(value) if naive else convert_datetime_to_utc_timezone(value)).time()
+        elif isinstance(value, time):
+            return convert_datetime_to_naive_local(value) if naive else convert_datetime_to_utc_timezone(value)
+        try:
+            dt = datetime.strptime(value, bind.format)
+        except (TypeError, ValueError):
+            if return_none_when_invalid:
+                return None
+            else:
+                raise Invalid(_('不是有效的时间'))
+        else:
+            if not naive:
+                dt = convert_datetime_to_utc_timezone(dt)
+            return dt.time()
+    bind.format = format
+    return bind
+
+
+def to_date(format='%Y-%m-%d', naive=True):
+    def bind(value, return_none_when_invalid=False):
+        if isinstance(value, datetime):
+            return (convert_datetime_to_naive_local(value) if naive else convert_datetime_to_utc_timezone(value)).date()
         elif isinstance(value, date):
             return value
         try:
@@ -166,17 +178,21 @@ def to_datetime_via_parse(value):
         raise Invalid(_('不是有效的日期时间'))
 
 
-def to_datetime(format='%Y-%m-%d %H:%M:%S'):
+def to_datetime(format='%Y-%m-%d %H:%M:%S', naive=False):
     def bind(value):
         if isinstance(value, datetime):
-            return convert_datetime_to_utc_timezone(value)
+            return convert_datetime_to_naive_local(value) if naive else convert_datetime_to_utc_timezone(value)
         else:
             if not value:
                 raise Invalid(_('不是有效的日期时间'))
             try:
-                return convert_datetime_to_utc_timezone(datetime.strptime(value, bind.format))
+                dt = datetime.strptime(value, bind.format)
             except (TypeError, ValueError):
                 raise Invalid(_('不是有效的日期时间'))
+            else:
+                if not naive:
+                    dt = convert_datetime_to_utc_timezone(dt)
+                return dt
     bind.format = format
     return bind
 
