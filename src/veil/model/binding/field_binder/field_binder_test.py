@@ -96,7 +96,7 @@ class FieldBinderTest(TestCase):
         self.assertEquals(date(2007, 07, 30), converted)
         converted = to_date(format='%m/%d/%Y')('07/30/2007')
         self.assertEquals(date(2007, 07, 30), converted)
-
+        self.assertIsNone(to_date(return_none_when_invalid=True)(None))
         with self.assertRaises(Invalid):
             to_date(format='%m/%d/%Y')('07-30-2007')
 
