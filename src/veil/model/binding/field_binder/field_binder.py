@@ -152,8 +152,8 @@ def to_time(format='%H:%M:%S', naive=True):
     return bind
 
 
-def to_date(format='%Y-%m-%d', naive=True, return_none_when_invalid=False):
-    def bind(value):
+def to_date(format='%Y-%m-%d', naive=True):
+    def bind(value, return_none_when_invalid=False):
         if isinstance(value, datetime):
             return (convert_datetime_to_naive_local(value) if naive else convert_datetime_to_utc_timezone(value)).date()
         elif isinstance(value, date):
