@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
-import datetime
+from datetime import datetime, timedelta
 import pytz
 import babel.dates
 from veil.frontend.template import *
@@ -28,7 +28,7 @@ def timedelta_by_now_filter(value, granularity='second'):
 def time_filter(value, format='HH:mm:ss'):
     if isinstance(value, basestring):
         return value
-    if isinstance(value, datetime.datetime):
+    if isinstance(value, datetime):
         if is_naive_datetime(value):
             value = convert_naive_datetime_to_aware(value)
     return babel.dates.format_time(time=value, format=format, tzinfo=DEFAULT_CLIENT_TIMEZONE, locale=get_current_locale())
@@ -38,8 +38,8 @@ def time_filter(value, format='HH:mm:ss'):
 def date_filter(value, format='yyyy-MM-dd', delta=0):
     if isinstance(value, basestring):
         return value
-    date_to_show = value + datetime.timedelta(days=delta)
-    if isinstance(date_to_show, datetime.datetime):
+    date_to_show = value + timedelta(days=delta)
+    if isinstance(date_to_show, datetime):
         date_to_show = convert_datetime_to_client_timezone(date_to_show)
     return babel.dates.format_date(date=date_to_show, format=format, locale=get_current_locale())
 
@@ -51,7 +51,7 @@ def datetime_filter(value, format='yyyy-MM-dd HH:mm:ss'):
     if value and is_naive_datetime(value):
         value = convert_naive_datetime_to_aware(value)
     if 'epoch' == format:
-        epoch = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=pytz.utc)
+        epoch = datetime.utcfromtimestamp(0).replace(tzinfo=pytz.utc)
         delta = value - epoch
         return delta.total_seconds()
     else:
@@ -60,5 +60,5 @@ def datetime_filter(value, format='yyyy-MM-dd HH:mm:ss'):
 
 def parse_epoch_datetime(text):
     if text:
-        return datetime.datetime.utcfromtimestamp(float(text)).replace(tzinfo=pytz.utc)
+        return datetime.utcfromtimestamp(float(text)).replace(tzinfo=pytz.utc)
     return None

@@ -1,6 +1,6 @@
 from __future__ import print_function, division
 import calendar
-import datetime
+from datetime import datetime
 import email.utils
 import functools
 import hashlib
@@ -125,7 +125,7 @@ class HTTPResponse(object):
                 'value': value,
                 'headers_written': self.headers_written
             })
-        if isinstance(value, datetime.datetime):
+        if isinstance(value, datetime):
             t = calendar.timegm(value.utctimetuple())
             value = email.utils.formatdate(t, localtime=False, usegmt=True)
         elif isinstance(value, int) or isinstance(value, long):

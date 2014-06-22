@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import base64
 import calendar
-import datetime
+from datetime import datetime, timedelta
 import email.utils
 from logging import getLogger
 import re
@@ -93,7 +93,7 @@ def clear_cookies(request=None, response=None):
 
 
 def clear_cookie(name, path='/', domain=None, response=None):
-    expires = datetime.datetime.utcnow() - datetime.timedelta(days=365)
+    expires = datetime.utcnow() - timedelta(days=365)
     set_cookie(response=response, name=name, value='', path=path, expires=expires, domain=domain)
 
 
@@ -113,7 +113,7 @@ def create_cookie(cookies, name, value, domain=None, expires=None, path='/', exp
     if domain:
         cookie['domain'] = domain
     if not expires and (expires_days is not None or expires_minutes is not None):
-        expires = datetime.datetime.utcnow() + datetime.timedelta(days=expires_days or 0, minutes=expires_minutes or 0)
+        expires = datetime.utcnow() + timedelta(days=expires_days or 0, minutes=expires_minutes or 0)
     if expires:
         timestamp = calendar.timegm(expires.utctimetuple())
         cookie['expires'] = email.utils.formatdate(timestamp, localtime=False, usegmt=True)
