@@ -145,7 +145,7 @@ def rollback(hosts):
         backup_dir = '{}-backup'.format(source_dir)
         with fabric.api.settings(host_string=host.deploys_via):
             if fabric.contrib.files.exists(source_dir):
-                fabric.api.sudo('mv {source_dir} {source_dir}-to-be-deleted-{}'.format(datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
+                fabric.api.sudo('mv {source_dir} {source_dir}-to-be-deleted-{}'.format(datetime.now().strftime('%Y%m%d%H%M%S'),
                     source_dir=source_dir))
             fabric.api.sudo('cp -r -p {} {}'.format(backup_dir, source_dir))
 

@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import fabric.api
-import datetime
+from datetime import datetime, timedelta
 import logging
 from veil_component import as_path
 from veil.environment import *
@@ -29,7 +29,7 @@ def create_env_backup(should_bring_up_servers='TRUE'):
         try:
             for server in servers:
                 bring_down_server(server)
-            now = datetime.datetime.now()
+            now = datetime.now()
             timestamp = now.strftime('%Y%m%d%H%M%S')
             backup_dir = as_path('/backup/{}'.format(timestamp))
             backup_dir.makedirs(0755)
@@ -47,13 +47,13 @@ def create_env_backup(should_bring_up_servers='TRUE'):
 
 @script('delete-old-backups')
 def delete_old_backups():
-    now = datetime.datetime.now()
+    now = datetime.now()
     for path in as_path('/backup').dirs():
         if 'latest' == path.basename():
             continue
         try:
-            backup_time = datetime.datetime.strptime(path.basename(), '%Y%m%d%H%M%S')
-            if now - backup_time > datetime.timedelta(days=KEEP_BACKUP_FOR_DAYS):
+            backup_time = datetime.strptime(path.basename(), '%Y%m%d%H%M%S')
+            if now - backup_time > timedelta(days=KEEP_BACKUP_FOR_DAYS):
                 LOGGER.info('delete old back: %(path)s', {'path': path})
                 path.rmtree()
         except:
