@@ -87,8 +87,8 @@ def veil_host_config_resource(host, config_dir):
         veil_host_sources_list_resource(host=host)
     ]
     if (env_config_dir / '.config').exists():
-        resources.append(veil_host_file_resource(local_path=env_config_dir / '.config', host=host,
-            remote_path='/home/{}/.config-{}'.format(host.ssh_user, host.env_name), owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0600))
+        resources.append(veil_host_file_resource(local_path=env_config_dir / '.config', host=host, remote_path=host.etc_dir / '.config',
+            owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0600))
 
     hosts_configured.append(host.base_name)
     return resources

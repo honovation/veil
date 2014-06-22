@@ -13,7 +13,6 @@ from .environment import CURRENT_OS
 from .environment import SECURITY_CONFIG_FILE
 from .environment import CURRENT_USER
 from .environment import CURRENT_USER_GROUP
-from .environment import CURRENT_USER_HOME
 
 from .environment import VEIL_HOME
 from .environment import VEIL_FRAMEWORK_HOME

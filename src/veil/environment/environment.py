@@ -27,7 +27,8 @@ VEIL_LOG_DIR = VEIL_ENV_DIR / 'log' / VEIL_SERVER_NAME
 
 CURRENT_USER = os.getenv('SUDO_USER') or getpass.getuser()
 CURRENT_USER_GROUP = CURRENT_USER
-CURRENT_USER_HOME = as_path(os.getenv('HOME'))
+
+SECURITY_CONFIG_FILE = (VEIL_HOME if VEIL_ENV_TYPE in ('development', 'test') else VEIL_ETC_DIR.parent) / '.config'
 
 BASIC_LAYOUT_RESOURCES = [
     directory_resource(path=VEIL_ENV_DIR),
@@ -51,7 +52,9 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         sorted_server_names = sorted(server_names)
 
     from veil.model.collection import objectify
-    env = objectify({'name': name, 'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names, 'deployment_memo': deployment_memo})
+    env = objectify({
+        'name': name, 'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names, 'deployment_memo': deployment_memo
+    })
     env.env_dir = OPT_DIR / env.name
     env.veil_home = VEIL_HOME if env.name in ('development', 'test') else env.env_dir / 'code' / 'app'
     env.server_list = []

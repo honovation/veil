@@ -23,8 +23,3 @@ VEIL_ENV_TYPE = VEIL_ENV_NAME.rsplit('-', 1)[-1]  # development, test, staging, 
 
 CURRENT_OS = namedtuple('VeilOS', 'distname, version, codename')(*platform.linux_distribution())
 assert CURRENT_OS.distname == 'Ubuntu' and CURRENT_OS.codename in ('precise', 'trusty') # precise is deprecated
-
-if VEIL_ENV_TYPE in ('development', 'test'):
-    SECURITY_CONFIG_FILE = VEIL_HOME / '.config'
-else:
-    SECURITY_CONFIG_FILE = as_path(os.getenv('HOME')) / '.config-{}'.format(VEIL_ENV_NAME)
