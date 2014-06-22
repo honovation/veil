@@ -28,7 +28,7 @@ VEIL_LOG_DIR = VEIL_ENV_DIR / 'log' / VEIL_SERVER_NAME
 CURRENT_USER = os.getenv('SUDO_USER') or getpass.getuser()
 CURRENT_USER_GROUP = CURRENT_USER
 
-SECURITY_CONFIG_FILE = (VEIL_HOME if VEIL_ENV_TYPE in ('development', 'test') else VEIL_ETC_DIR.parent) / '.config'
+SECURITY_CONFIG_FILE = (VEIL_HOME if VEIL_ENV_TYPE in ('development', 'test') else VEIL_HOME.parent) / '.config'
 
 BASIC_LAYOUT_RESOURCES = [
     directory_resource(path=VEIL_ENV_DIR),
