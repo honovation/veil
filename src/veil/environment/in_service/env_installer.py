@@ -28,7 +28,7 @@ def display_deployment_memo(veil_env_name):
                 break
 
 
-def is_all_servers_ever_deployed(servers):
+def are_all_servers_ever_deployed(servers):
     for server in servers:
         with fabric.api.settings(host_string=server.deploys_via):
             if not fabric.contrib.files.exists(server.deployed_tag_path):
@@ -50,7 +50,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     config_dir = as_path(config_dir)
     install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     servers = list_veil_servers(veil_env_name)
-    ever_deployed = is_all_servers_ever_deployed(servers)
+    ever_deployed = are_all_servers_ever_deployed(servers)
     hosts = unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name)
     if ever_deployed:
         if 'TRUE' == should_download_packages:
@@ -161,7 +161,7 @@ def ensure_servers_down(hosts):
     for host in hosts:
         try:
             with fabric.api.settings(host_string=host.deploys_via):
-                fabric.api.sudo('lxc-ps --lxc -ef | grep {} | grep supervisord'.format(host.env_name))
+                fabric.api.sudo('ps -ef | grep supervisord | grep {}'.format(host.etc_dir))
         except:
             pass
         else:

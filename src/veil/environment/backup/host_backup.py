@@ -22,7 +22,7 @@ def create_host_backup(backup_dir, backup_file_template):
         return
     if backed_up:
         return
-    if is_any_servers_running():
+    if is_any_server_running():
         raise Exception('can not backup veil host while not all veil servers on the host are down')
     backup_dir.makedirs(0755)
     for dir_name, path in not_backed_up_subdir_name2path.items():
@@ -30,9 +30,9 @@ def create_host_backup(backup_dir, backup_file_template):
             path, dir_name), cwd=VEIL_VAR_DIR)
 
 
-def is_any_servers_running():
+def is_any_server_running():
     try:
-        shell_execute('lxc-ps --lxc -ef | grep {} | grep supervisord | grep -v -e @guard -e @monitor'.format(VEIL_ENV_NAME), capture=True)
+        shell_execute('ps -ef | grep supervisord | grep {} | grep -v -e @guard -e @monitor'.format(VEIL_ETC_DIR.parent), capture=True)
     except:
         return False
     else:
