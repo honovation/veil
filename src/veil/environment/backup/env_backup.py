@@ -6,15 +6,18 @@ from veil_component import as_path
 from veil.environment import *
 from veil_installer import *
 from veil.frontend.cli import *
+from veil.utility.timer import *
 from veil.utility.misc import *
 from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
 
+SSH_KEY_PATH = '/etc/ssh/id_rsa-@guard'
 KEEP_BACKUP_FOR_DAYS = 3 if VEIL_ENV_TYPE == 'staging' else 15
 
 
 @script('create-env-backup')
+@log_elapsed_time
 def create_env_backup(should_bring_up_servers='TRUE'):
     """
     Bring down veil servers in sorted server names order
@@ -25,7 +28,7 @@ def create_env_backup(should_bring_up_servers='TRUE'):
         dry_run_result['env_backup'] = 'BACKUP'
         return
     servers = [server for server in list_veil_servers(VEIL_ENV_NAME) if server.name not in ('@guard', '@monitor')]
-    with fabric.api.settings(disable_known_hosts=True, key_filename='/etc/ssh/id_rsa-@guard'):
+    with fabric.api.settings(disable_known_hosts=True, key_filename=SSH_KEY_PATH):
         try:
             for server in servers:
                 bring_down_server(server)
@@ -88,9 +91,5 @@ def rsync_to_backup_mirror():
     backup_mirror_path = '~/backup_mirror/{}/'.format(VEIL_ENV_NAME)
     with fabric.api.settings(host_string=backup_mirror.deploys_via):
         fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
-    shell_execute(
-        '''rsync -ave "ssh -p {} -o StrictHostKeyChecking=no" --progress --bwlimit={} --delete /backup/ {}@{}:{}'''.format(
-            backup_mirror.ssh_port, backup_mirror.bandwidth_limit,
-            backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror_path
-        )
-    )
+    shell_execute('''rsync -ave "ssh -i {} -p {} -o StrictHostKeyChecking=no" --progress --bwlimit={} --delete /backup/ {}@{}:{}'''.format(
+        SSH_KEY_PATH, backup_mirror.ssh_port, backup_mirror.bandwidth_limit, backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror_path))

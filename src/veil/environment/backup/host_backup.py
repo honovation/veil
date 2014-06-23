@@ -3,10 +3,12 @@ from veil_component import as_path
 from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
+from veil.utility.timer import *
 from veil.utility.shell import *
 
 
 @script('create-host-backup')
+@log_elapsed_time
 def create_host_backup(backup_dir, backup_file_template):
     backup_dir = as_path(backup_dir)
     backed_up = True
