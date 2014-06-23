@@ -41,9 +41,8 @@ def shell_execute(command_line, capture=False, waits=True, shell=True, debug=Fal
 def try_shell_execute(command_line, capture=False, waits=True, shell=True, **kwargs):
     try:
         shell_execute(command_line, capture=capture, waits=waits, shell=shell, **kwargs)
-    except:
+    except ShellExecutionError:
         LOGGER.warn('ignored exception in shell execute', exc_info=1)
-        pass
 
 
 def pass_control_to(command_line):

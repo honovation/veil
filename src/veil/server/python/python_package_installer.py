@@ -224,7 +224,7 @@ def install_python_package_remotely(name, version, url, **kwargs):
 def install_python_package(name, version, url=None, **kwargs):
     try:
         shell_execute('pip install --no-index --find-links {} {}=={}'.format(PYPI_ARCHIVE_DIR, name, version), capture=True, debug=True, **kwargs)
-    except:
+    except ShellExecutionError:
         LOGGER.warn('cannot install from local and try install from remote', exc_info=1)
         install_python_package_remotely(name, version, url, **kwargs)
     return version

@@ -18,7 +18,7 @@ def bring_up_programs(*argv):
     # create socket directory for postgresql if not exists
     try:
         shell_execute('getent passwd postgres')
-    except:
+    except ShellExecutionError:
         pass
     else:
         shell_execute('install -d -m 2775 -o postgres -g postgres /var/run/postgresql')
