@@ -30,7 +30,7 @@ def download_db2_clidriver():
     local_path = DEPENDENCY_DIR / 'db2-clidriver.tar.gz'
     if not os.path.exists(local_path):
         shell_execute('wget -c {}/db2-clidriver.tar.gz -O {}'.format(DEPENDENCY_URL, local_path))
-    shell_execute('tar xzf {} -C {}'.format(local_path, DEPENDENCY_INSTALL_DIR))
+    shell_execute('tar -xvzf {} -C {}'.format(local_path, DEPENDENCY_INSTALL_DIR))
 
 
 def is_db2_clidriver_installed():

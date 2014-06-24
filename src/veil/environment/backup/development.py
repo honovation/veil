@@ -25,7 +25,7 @@ def restore_from_baseline(veil_env_name=None, pattern='data'):
     VEIL_VAR_DIR.rmtree()
     VEIL_VAR_DIR.mkdir()
     for backup_path in BASELINE_DIR.files('*.tar.gz'):
-        shell_execute('tar -xzf {}'.format(backup_path), cwd=VEIL_VAR_DIR)
+        shell_execute('tar -xvpzf {}'.format(backup_path), cwd=VEIL_VAR_DIR)
     shell_execute('veil install-server')
     shell_execute('veil up --daemonize')
     shell_execute('veil migrate')
