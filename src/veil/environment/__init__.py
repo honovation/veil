@@ -6,6 +6,7 @@ from .environment import SHARE_DIR
 from .environment import DEPENDENCY_DIR
 from .environment import DEPENDENCY_INSTALL_DIR
 from .environment import PYPI_ARCHIVE_DIR
+from .environment import BACKUP_ROOT
 
 from .environment import VEIL_ENV_TYPE
 from .environment import VEIL_ENV_NAME

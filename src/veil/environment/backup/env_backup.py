@@ -1,8 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import fabric.api
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
-from veil_component import as_path
 from veil.environment import *
 from veil_installer import *
 from veil.frontend.cli import *
@@ -34,12 +33,12 @@ def create_env_backup(should_bring_up_servers='TRUE'):
                 bring_down_server(server)
             now = datetime.now()
             timestamp = now.strftime('%Y%m%d%H%M%S')
-            backup_dir = as_path('/backup/{}'.format(timestamp))
+            backup_dir = BACKUP_ROOT / timestamp
             backup_dir.makedirs(0755)
             for host in [get_veil_host(server.env_name, server.host_name) for server in unique(servers, id_func=lambda s: s.host_base_name)]:
                 backup_file_template = '{}_{}_{{}}_{}.tar.gz'.format(host.env_name, host.base_name, timestamp)
                 backup_host(host, backup_dir, backup_file_template)
-            shell_execute('ln -snf {} latest'.format(timestamp), cwd=backup_dir.parent)
+            shell_execute('ln -sf {} latest'.format(timestamp), cwd=BACKUP_ROOT)
         finally:
             if should_bring_up_servers == 'TRUE':
                 for server in reversed(servers):
@@ -50,17 +49,7 @@ def create_env_backup(should_bring_up_servers='TRUE'):
 
 @script('delete-old-backups')
 def delete_old_backups():
-    now = datetime.now()
-    for path in as_path('/backup').dirs():
-        if 'latest' == path.basename():
-            continue
-        try:
-            backup_time = datetime.strptime(path.basename(), '%Y%m%d%H%M%S')
-            if now - backup_time > timedelta(days=KEEP_BACKUP_FOR_DAYS):
-                LOGGER.info('delete old back: %(path)s', {'path': path})
-                path.rmtree()
-        except:
-            LOGGER.exception('failed to parse datetime from %(path)s', {'path': path})
+    shell_execute('find . -type d -ctime +{} -exec rm -r {} +'.format(KEEP_BACKUP_FOR_DAYS), cwd=BACKUP_ROOT)
 
 
 def bring_down_server(server):
@@ -88,8 +77,6 @@ def rsync_to_backup_mirror():
     backup_mirror = get_current_veil_server().backup_mirror
     if not backup_mirror:
         return
-    backup_mirror_path = '~/backup_mirror/{}/'.format(VEIL_ENV_NAME)
-    with fabric.api.settings(host_string=backup_mirror.deploys_via):
-        fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
-    shell_execute('''rsync -ave "ssh -i {} -p {} -o StrictHostKeyChecking=no" --progress --bwlimit={} --delete /backup/ {}@{}:{}'''.format(
-        SSH_KEY_PATH, backup_mirror.ssh_port, backup_mirror.bandwidth_limit, backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror_path))
+    backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV_NAME)
+    shell_execute('''rsync -avPe "ssh -i {} -p {} -o StrictHostKeyChecking=no" --bwlimit={} --delete {}/ {}@{}:{}'''.format(SSH_KEY_PATH,
+        backup_mirror.ssh_port, backup_mirror.bandwidth_limit, BACKUP_ROOT, backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror_path))
