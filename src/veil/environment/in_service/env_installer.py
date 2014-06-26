@@ -161,7 +161,7 @@ def ensure_servers_down(hosts):
     for host in hosts:
         try:
             with fabric.api.settings(host_string=host.deploys_via):
-                fabric.api.sudo('ps -ef | grep supervisord | grep {}'.format(host.etc_dir))
+                fabric.api.sudo('ps -ef | grep supervisord | grep {} | grep -v grep'.format(host.etc_dir))
         except:
             pass
         else:

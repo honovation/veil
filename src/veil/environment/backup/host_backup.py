@@ -35,9 +35,9 @@ def check_servers_down(host_base_name):
     server_names = [server.name for server in list_veil_servers(VEIL_ENV_NAME) if server.mount_data_dir and server.host_base_name == host_base_name]
     if not server_names:
         return
-    pattern = ' '.join('-e {}'.format(server_name) for server_name in server_names)
+    pattern = ' '.join('-e {}/{}'.format(VEIL_ETC_DIR.parent, server_name) for server_name in server_names)
     try:
-        shell_execute('ps -ef | grep supervisord | grep {} | grep {}'.format(VEIL_ETC_DIR.parent, pattern), capture=True)
+        shell_execute('ps -ef | grep supervisord | grep {} | grep -v grep'.format(pattern), capture=True)
     except ShellExecutionError:
         pass
     else:
