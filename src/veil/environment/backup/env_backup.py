@@ -12,7 +12,7 @@ from veil.utility.shell import *
 LOGGER = logging.getLogger(__name__)
 
 SSH_KEY_PATH = '/etc/ssh/id_rsa-@guard'
-KEEP_BACKUP_FOR_DAYS = 3 if VEIL_ENV_TYPE == 'staging' else 15
+KEEP_BACKUP_FOR_DAYS = 3 if VEIL_ENV_TYPE == 'staging' else 10
 
 
 @script('create-env-backup')
@@ -27,22 +27,22 @@ def create_env_backup(should_bring_up_servers='TRUE'):
         dry_run_result['env_backup'] = 'BACKUP'
         return
     servers = [server for server in list_veil_servers(VEIL_ENV_NAME) if server.name not in ('@guard', '@monitor')]
+    hosts_to_backup = [get_veil_host(server.env_name, server.host_name) for server in unique(servers, id_func=lambda s: s.host_base_name)]
+    servers_to_down_before_backup = [server for server in servers if server.mount_data_dir]
     with fabric.api.settings(disable_known_hosts=True, key_filename=SSH_KEY_PATH):
         try:
-            for server in servers:
+            for server in servers_to_down_before_backup:
                 bring_down_server(server)
-            now = datetime.now()
-            timestamp = now.strftime('%Y%m%d%H%M%S')
-            backup_dir = BACKUP_ROOT / timestamp
-            backup_dir.makedirs(0755)
-            for host in [get_veil_host(server.env_name, server.host_name) for server in unique(servers, id_func=lambda s: s.host_base_name)]:
-                backup_file_template = '{}_{}_{{}}_{}.tar.gz'.format(host.env_name, host.base_name, timestamp)
-                backup_host(host, backup_dir, backup_file_template)
-            shell_execute('ln -sf {} latest'.format(timestamp), cwd=BACKUP_ROOT)
+            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+            for host in hosts_to_backup:
+                backup_host(host, timestamp)
         finally:
             if should_bring_up_servers == 'TRUE':
-                for server in reversed(servers):
+                for server in reversed(servers_to_down_before_backup):
                     bring_up_server(server)
+        for host in hosts_to_backup:
+            fetch_host_backup(host, timestamp)
+        shell_execute('ln -sf {} latest'.format(timestamp), cwd=BACKUP_ROOT)
         delete_old_backups()
         rsync_to_backup_mirror()
 
@@ -64,19 +64,27 @@ def bring_up_server(server):
             fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))
 
 
-def backup_host(host, backup_dir, backup_file_template):
-    host_backup_dir = host.ssh_user_home / 'tmp' / backup_dir[1:]
+def backup_host(host, timestamp):
+    host_backup_dir = host.ssh_user_home / 'tmp' / BACKUP_ROOT[1:] / timestamp
+    backup_file_template = '{}_{}_{{}}_{}.tar.gz'.format(host.env_name, host.base_name, timestamp)
     with fabric.api.settings(host_string=host.deploys_via):
         with fabric.api.cd(host.veil_home):
-            fabric.api.run('veil :{} backup {} {}'.format(host.env_name, host_backup_dir, backup_file_template))
+            fabric.api.run('veil :{} backup {} {} {}'.format(host.env_name, host.base_name, host_backup_dir, backup_file_template))
+
+
+def fetch_host_backup(host, timestamp):
+    backup_dir = BACKUP_ROOT / timestamp
+    backup_dir.makedirs(0755)
+    host_backup_dir = host.ssh_user_home / 'tmp' / BACKUP_ROOT[1:] / timestamp
+    with fabric.api.settings(host_string=host.deploys_via):
         fabric.api.get(host_backup_dir / '*', backup_dir)
-        fabric.api.run('rm -rf {}'.format(host_backup_dir))  # backup is centrally stored in @guard container
+        fabric.api.run('rm -rf {}/*'.format(host_backup_dir.parent))
 
 
 def rsync_to_backup_mirror():
     backup_mirror = get_current_veil_server().backup_mirror
     if not backup_mirror:
         return
-    backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV_NAME)
+    backup_mirror_path = '~/backup_mirror/{}/'.format(VEIL_ENV_NAME)
     shell_execute('''rsync -avPe "ssh -i {} -p {} -o StrictHostKeyChecking=no" --bwlimit={} --delete {}/ {}@{}:{}'''.format(SSH_KEY_PATH,
         backup_mirror.ssh_port, backup_mirror.bandwidth_limit, BACKUP_ROOT, backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror_path))
