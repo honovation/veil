@@ -73,12 +73,18 @@ def backup_host(host, timestamp):
 
 
 def fetch_host_backup(host, timestamp):
-    backup_dir = BACKUP_ROOT / timestamp
-    backup_dir.makedirs(0755)
     host_backup_dir = host.ssh_user_home / 'tmp' / BACKUP_ROOT[1:] / timestamp
-    with fabric.api.settings(host_string=host.deploys_via):
-        fabric.api.get(host_backup_dir / '*', backup_dir)
-        fabric.api.run('rm -rf {}/*'.format(host_backup_dir.parent))
+    server_guard = get_veil_server(VEIL_ENV_NAME, '@guard')
+    if server_guard.host_base_name == host.base_name:
+        BACKUP_ROOT.makedirs(0755)
+        shell_execute('mv {} {}'.format(host_backup_dir, BACKUP_ROOT))
+        shell_execute('rm -rf {}/*'.format(host_backup_dir.parent))
+    else:
+        backup_dir = BACKUP_ROOT / timestamp
+        backup_dir.makedirs(0755)
+        with fabric.api.settings(host_string=host.deploys_via):
+            fabric.api.get(host_backup_dir / '*', backup_dir)
+            fabric.api.run('rm -rf {}/*'.format(host_backup_dir.parent))
 
 
 def rsync_to_backup_mirror():
