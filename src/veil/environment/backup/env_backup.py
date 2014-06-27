@@ -34,7 +34,7 @@ def create_env_backup():
             with fabric.api.settings(host_string=host.deploys_via):
                 backup_host(host, timestamp)
                 fetch_host_backup(host, timestamp)
-    shell_execute('ln -sf {} latest'.format(timestamp), cwd=VEIL_BACKUP_ROOT)
+    shell_execute('rm -f latest && ln -s {} latest'.format(timestamp), cwd=VEIL_BACKUP_ROOT)
     delete_old_backups()
     rsync_to_backup_mirror()
 
