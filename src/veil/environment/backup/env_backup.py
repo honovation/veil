@@ -49,34 +49,38 @@ def backup_host(host, timestamp):
         fabric.api.run('mkdir -p {}'.format(host_backup_dir))
         with fabric.api.cd(VEIL_VAR_DIR):
             servers_to_down = [s for s in list_veil_servers(VEIL_ENV_NAME) if s.mount_data_dir and s.host_base_name == host.base_name and is_server_running(s)]
-            for subdir_name in fabric.api.run('find . -maxdepth 1 -mindepth 1 -type d -printf "%P\n"', quiet=True).splitlines():
-                try:
-                    if VEIL_DATA_DIR.name == subdir_name:
-                        for server in servers_to_down:
-                            bring_down_server(server)
-                    backup_path = host_backup_dir / backup_file_template.format(subdir_name)
-                    fabric.api.run('tar -cpzf {} {} --exclude=uploaded-files --exclude=inline-static-files --exclude=captcha-image'.format(
-                        backup_path, subdir_name))
-                finally:
-                    if VEIL_DATA_DIR.name == subdir_name:
-                        for server in reversed(servers_to_down):
-                            bring_up_server(server)
+            for subdir_name in fabric.api.run('find . -maxdepth 1 -mindepth 1 -type d -printf "%P\n"', warn_only=True).splitlines():
+                subdir_backup_path = host_backup_dir / backup_file_template.format(subdir_name)
+                backup_host_dir(subdir_name, subdir_backup_path, servers_to_down)
 
 
-def bring_down_server(server):
-    with fabric.api.settings(host_string=server.deploys_via):
-        with fabric.api.cd(server.veil_home):
-            fabric.api.sudo('veil :{} down'.format(server.fullname))
+@log_elapsed_time
+def backup_host_dir(dir_name, backup_path, servers_to_down):
+    try:
+        if VEIL_DATA_DIR.name == dir_name:
+            bring_down_servers(servers_to_down)
+        fabric.api.run('tar -cpzf {} {} --exclude=uploaded-files --exclude=inline-static-files --exclude=captcha-image'.format(backup_path, dir_name))
+    finally:
+        if VEIL_DATA_DIR.name == dir_name:
+            bring_up_servers(reversed(servers_to_down))
 
 
-def bring_up_server(server):
-    with fabric.api.settings(host_string=server.deploys_via):
-        with fabric.api.cd(server.veil_home):
-            fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))
+def bring_down_servers(servers):
+    for server in servers:
+        with fabric.api.settings(host_string=server.deploys_via):
+            with fabric.api.cd(server.veil_home):
+                fabric.api.sudo('veil :{} down'.format(server.fullname))
+
+
+def bring_up_servers(servers):
+    for server in servers:
+        with fabric.api.settings(host_string=server.deploys_via):
+            with fabric.api.cd(server.veil_home):
+                fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))
 
 
 def is_server_running(server):
-    ret = fabric.api.run('ps -ef | grep supervisord | grep -e {}/{} | grep -v grep'.format(VEIL_ETC_DIR.parent, server.name), quiet=True)
+    ret = fabric.api.run('ps -ef | grep supervisord | grep -e {}/{} | grep -v grep'.format(VEIL_ETC_DIR.parent, server.name), warn_only=True)
     return ret.return_code == 0
 
 
