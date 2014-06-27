@@ -105,7 +105,10 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
             server.host_base_name = host.base_name
             server.ssh_user = host.ssh_user
             server.ssh_user_group = host.ssh_user_group
-            server.deploys_via = server.deploys_via or '{}@{}:{}'.format(host.ssh_user, host.internal_ip, '{}22'.format(server.sequence_no))
+            server.deploys_via = '{}@{}:{}'.format(host.ssh_user, '{}.{}'.format(host.lan_range, server.sequence_no), host.ssh_port)
+            if server.backup_mirror:
+                assert server.backup_mirror.host_ip.rsplit('.', 1)[0] != host.lan_range, \
+                    'ENV {}: local backup mirror does not make sense, please use remote mirror (on-site must, off-site optional)'.format(env.name)
             server.etc_dir = host.etc_dir / server.name
             server.log_dir = host.log_dir / server.name
             server.editorial_dir = host.editorial_dir if server.mount_editorial_dir else None
@@ -128,25 +131,25 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
     return env
 
 
-def veil_host(internal_ip, external_ip, ssh_port=22, ssh_user='dejavu', lan_range='10.0.3', lan_interface='lxcbr0', mac_prefix='00:16:3e:73:bb',
-        sshd_config=(), resources=()):
+def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ssh_user='dejavu', sshd_config=(), resources=()):
     from veil.model.collection import objectify
+    internal_ip = '{}.1'.format(lan_interface)
     return objectify({
+        'lan_range': lan_range,
+        'lan_interface': lan_interface,
+        'mac_prefix': mac_prefix,
         'internal_ip': internal_ip,
         'external_ip': external_ip,
         'ssh_port': ssh_port,
         'ssh_user': ssh_user,
         'ssh_user_group': ssh_user,
-        'lan_range': lan_range,
-        'lan_interface': lan_interface,
-        'mac_prefix': mac_prefix,
         'sshd_config': sshd_config,
         'resources': resources,
         'deploys_via': '{}@{}:{}'.format(ssh_user, internal_ip, ssh_port)
     })
 
 
-def veil_server(host_name, sequence_no, programs, deploys_via=None, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None,
+def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None,
         mount_editorial_dir=False, mount_buckets_dir=False, mount_data_dir=False, memory_limit=None, cpu_share=None):
     from veil.model.collection import objectify
     if backup_mirror:
@@ -164,8 +167,7 @@ def veil_server(host_name, sequence_no, programs, deploys_via=None, resources=()
         'mount_buckets_dir': mount_buckets_dir,
         'mount_data_dir': mount_data_dir,
         'memory_limit': memory_limit,
-        'cpu_share': cpu_share,
-        'deploys_via': deploys_via
+        'cpu_share': cpu_share
     })
 
 
