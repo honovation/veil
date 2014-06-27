@@ -38,7 +38,6 @@ def create_env_backup():
         rsync_to_backup_mirror()
 
 
-@script('delete-old-backups')
 def delete_old_backups():
     shell_execute('find . -type d -ctime +{} -exec rm -r {{}} +'.format(KEEP_BACKUP_FOR_DAYS), cwd=VEIL_BACKUP_ROOT)
 
