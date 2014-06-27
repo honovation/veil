@@ -14,7 +14,6 @@ SHARE_DIR = OPT_DIR / 'share'
 DEPENDENCY_DIR = SHARE_DIR / 'dependency'
 DEPENDENCY_INSTALL_DIR = SHARE_DIR / 'dependency-install'
 PYPI_ARCHIVE_DIR = SHARE_DIR / 'pypi'
-BACKUP_ROOT = as_path('/backup')
 
 VEIL_ENV_DIR = (VEIL_HOME if VEIL_ENV_TYPE in ('development', 'test') else OPT_DIR) / VEIL_ENV_NAME
 VEIL_ETC_DIR = VEIL_ENV_DIR / 'etc' / VEIL_SERVER_NAME
@@ -25,6 +24,8 @@ VEIL_BUCKET_LOG_DIR = VEIL_BUCKETS_DIR / 'log'
 VEIL_BUCKET_INLINE_STATIC_FILES_DIR = VEIL_BUCKETS_DIR / 'inline-static-files'
 VEIL_DATA_DIR = VEIL_VAR_DIR / 'data'
 VEIL_LOG_DIR = VEIL_ENV_DIR / 'log' / VEIL_SERVER_NAME
+
+VEIL_BACKUP_ROOT = as_path('/backup')
 
 CURRENT_USER = os.getenv('SUDO_USER') or getpass.getuser()
 CURRENT_USER_GROUP = CURRENT_USER
