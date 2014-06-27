@@ -49,7 +49,7 @@ def create_env_backup(should_bring_up_servers='TRUE'):
 
 @script('delete-old-backups')
 def delete_old_backups():
-    shell_execute('find . -type d -ctime +{} -exec rm -r {} +'.format(KEEP_BACKUP_FOR_DAYS), cwd=BACKUP_ROOT)
+    shell_execute('find . -type d -ctime +{} -exec rm -r {{}} +'.format(KEEP_BACKUP_FOR_DAYS), cwd=BACKUP_ROOT)
 
 
 def bring_down_server(server):
