@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import fabric.api
 from veil_component import as_path
 from veil_installer import *
 from veil.frontend.cli import *
@@ -24,21 +25,28 @@ def create_host_backup(host_base_name, backup_dir, backup_file_template):
         return
     if backed_up:
         return
-    check_servers_down(host_base_name)
     backup_dir.makedirs(0755)
     for dir_name, path in not_backed_up_subdir_name2path.items():
-        shell_execute('tar -cpzf {} {} --exclude=uploaded-files --exclude=inline-static-files --exclude=captcha-image'.format(path, dir_name),
-            cwd=VEIL_VAR_DIR)
+        try:
+            if VEIL_DATA_DIR.name == dir_name:
+                servers_to_down = [s for s in list_veil_servers(VEIL_ENV_NAME) if s.mount_data_dir and s.host_base_name == host_base_name]
+                for server in servers_to_down:
+                    bring_down_server(server)
+            shell_execute('tar -cpzf {} {} --exclude=uploaded-files --exclude=inline-static-files --exclude=captcha-image'.format(path, dir_name),
+                cwd=VEIL_VAR_DIR)
+        finally:
+            if VEIL_DATA_DIR.name == dir_name:
+                for server in servers_to_down:
+                    bring_up_server(server)
 
 
-def check_servers_down(host_base_name):
-    server_names = [server.name for server in list_veil_servers(VEIL_ENV_NAME) if server.mount_data_dir and server.host_base_name == host_base_name]
-    if not server_names:
-        return
-    pattern = ' '.join('-e {}/{}'.format(VEIL_ETC_DIR.parent, server_name) for server_name in server_names)
-    try:
-        shell_execute('ps -ef | grep supervisord | grep {} | grep -v grep'.format(pattern), capture=True)
-    except ShellExecutionError:
-        pass
-    else:
-        raise Exception('can not backup veil host while veil servers {} are running'.format(server_names))
+def bring_down_server(server):
+    with fabric.api.settings(host_string=server.deploys_via, disable_known_hosts=True):
+        with fabric.api.cd(server.veil_home):
+            fabric.api.sudo('veil :{} down'.format(server.fullname))
+
+
+def bring_up_server(server):
+    with fabric.api.settings(host_string=server.deploys_via, disable_known_hosts=True):
+        with fabric.api.cd(server.veil_home):
+            fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))

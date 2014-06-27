@@ -17,7 +17,7 @@ KEEP_BACKUP_FOR_DAYS = 3 if VEIL_ENV_TYPE == 'staging' else 10
 
 @script('create-env-backup')
 @log_elapsed_time
-def create_env_backup(should_bring_up_servers='TRUE'):
+def create_env_backup():
     """
     Bring down veil servers in sorted server names order
     Bring up veil servers in reversed sorted server names order
@@ -28,19 +28,10 @@ def create_env_backup(should_bring_up_servers='TRUE'):
         return
     servers = [server for server in list_veil_servers(VEIL_ENV_NAME) if server.name not in ('@guard', '@monitor')]
     hosts_to_backup = [get_veil_host(server.env_name, server.host_name) for server in unique(servers, id_func=lambda s: s.host_base_name)]
-    servers_to_down_before_backup = [server for server in servers if server.mount_data_dir]
-    with fabric.api.settings(disable_known_hosts=True, key_filename=SSH_KEY_PATH):
-        try:
-            for server in servers_to_down_before_backup:
-                bring_down_server(server)
-            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-            for host in hosts_to_backup:
-                backup_host(host, timestamp)
-        finally:
-            if should_bring_up_servers == 'TRUE':
-                for server in reversed(servers_to_down_before_backup):
-                    bring_up_server(server)
+    with fabric.api.settings(disable_known_hosts=True, key_filename=SSH_KEY_PATH, forward_agent=True):
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
         for host in hosts_to_backup:
+            backup_host(host, timestamp)
             fetch_host_backup(host, timestamp)
         shell_execute('ln -sf {} latest'.format(timestamp), cwd=BACKUP_ROOT)
         delete_old_backups()
@@ -50,18 +41,6 @@ def create_env_backup(should_bring_up_servers='TRUE'):
 @script('delete-old-backups')
 def delete_old_backups():
     shell_execute('find . -type d -ctime +{} -exec rm -r {{}} +'.format(KEEP_BACKUP_FOR_DAYS), cwd=BACKUP_ROOT)
-
-
-def bring_down_server(server):
-    with fabric.api.settings(host_string=server.deploys_via):
-        with fabric.api.cd(server.veil_home):
-            fabric.api.sudo('veil :{} down'.format(server.fullname))
-
-
-def bring_up_server(server):
-    with fabric.api.settings(host_string=server.deploys_via):
-        with fabric.api.cd(server.veil_home):
-            fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))
 
 
 def backup_host(host, timestamp):

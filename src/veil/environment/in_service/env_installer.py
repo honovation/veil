@@ -169,11 +169,11 @@ def ensure_servers_down(hosts):
 
 
 @script('backup-env')
-def backup_env(veil_env_name, should_bring_up_servers='TRUE'):
+def backup_env(veil_env_name):
     server_guard = get_veil_server(veil_env_name, '@guard')
     with fabric.api.settings(host_string=server_guard.deploys_via):
         with fabric.api.cd(server_guard.veil_home):
-            fabric.api.sudo('veil :{} backup-env {}'.format(server_guard.fullname, should_bring_up_servers))
+            fabric.api.sudo('veil :{} backup-env'.format(server_guard.fullname))
 
 
 @script('purge-left-overs')
