@@ -2,9 +2,10 @@ from __future__ import unicode_literals, print_function, division
 import discipline_coach
 import logging
 import os
-from veil.environment import VEIL_HOME, VEIL_FRAMEWORK_HOME
 from veil_component import check_static_dependency_integrity
 from veil_component import check_static_dependency_cycle
+from veil.environment import VEIL_HOME, VEIL_FRAMEWORK_HOME
+from veil.utility.timer import *
 from veil.frontend.cli import *
 from veil.utility.shell import *
 from veil.development.live_document import check_live_document
@@ -28,6 +29,7 @@ SELF_CHECKERS = {
 }
 
 @script('self-check')
+@log_elapsed_time
 def self_check():
     if 0 == os.getuid():
         raise Exception('self-check can not be executed using root privilege')
@@ -44,6 +46,7 @@ def self_check():
 
 
 @script('quick-check')
+@log_elapsed_time
 def quick_check(checker_name=None):
     if checker_name:
         SELF_CHECKERS[checker_name]()
