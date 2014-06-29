@@ -106,10 +106,7 @@ def veil_container_init_resource(server):
     container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
 
     fabric.contrib.files.append('{}/etc/ssh/sshd_config'.format(container_rootfs_path), 'PasswordAuthentication no', use_sudo=True)
-    if 'precise' == fabric.api.sudo('chroot {} lsb_release -cs'.format(container_rootfs_path)):
-        fabric.api.sudo('chroot {} /etc/init.d/ssh restart'.format(container_rootfs_path))
-    else:
-        fabric.api.sudo('chroot {} service ssh reload'.format(container_rootfs_path))
+    fabric.api.sudo('chroot {} service ssh reload'.format(container_rootfs_path))
 
     fabric.api.sudo('chroot {} apt-get -q update'.format(container_rootfs_path))
     fabric.api.sudo('chroot {} apt-get -q -y purge ntpdate ntp whoopsie network-manager'.format(container_rootfs_path))

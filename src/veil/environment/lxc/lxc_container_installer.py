@@ -12,7 +12,7 @@ def lxc_container_resource(container_name, user_name, mac_address, lan_interface
         file_resource(path='/var/lib/lxc/{}/config'.format(container_name), content=render_config('lxc-container.cfg.j2', name=container_name,
             mac_address=mac_address, lan_interface=lan_interface, start_order=start_order, memory_limit=memory_limit, cpu_share=cpu_share,
             share_dir=SHARE_DIR, code_dir=VEIL_HOME.parent, etc_dir=etc_dir, editorial_dir=editorial_dir, buckets_dir=buckets_dir, data_dir=data_dir,
-            log_dir=log_dir, is_precise=CURRENT_OS.codename == 'precise'), keep_origin=True)
+            log_dir=log_dir), keep_origin=True)
     ]
     return resources
 
@@ -28,8 +28,6 @@ def lxc_container_created_resource(container_name, user_name):
         return
     LOGGER.info('create lxc container: %(container_name)s, and bind user %(user_name)s ...', {'container_name': container_name, 'user_name': user_name})
     shell_execute('lxc-create -t ubuntu -n {} -- -b {}'.format(container_name, user_name))
-    if CURRENT_OS.codename == 'precise':
-        shell_execute('ln -sf /var/lib/lxc/{}/config /etc/lxc/auto/{}.conf'.format(container_name, container_name))
 
 
 @composite_installer
@@ -47,10 +45,7 @@ def lxc_container_in_service_resource(container_name, restart_if_running=False):
         return
     if running:
         LOGGER.info('reboot lxc container: %(container_name)s ...', {'container_name': container_name})
-        if CURRENT_OS.codename == 'precise':
-            shell_execute('lxc-shutdown -n {} -r'.format(container_name), capture=True)
-        else:
-            shell_execute('lxc-stop -n {} -r'.format(container_name), capture=True)
+        shell_execute('lxc-stop -n {} -r'.format(container_name), capture=True)
     else:
         LOGGER.info('start lxc container: %(container_name)s ...', {'container_name': container_name})
         shell_execute('lxc-start -n {} -d'.format(container_name), capture=True)
