@@ -33,6 +33,7 @@ from .environment import VEIL_FRAMEWORK_HOME
 from .environment import VEIL_HOME
 from .environment import VEIL_ENV_TYPE
 from .environment import VEIL_ENV_NAME
+from .environment import VEIL_ENV_SHORT_NAME
 from .environment import VEIL_SERVER_NAME
 from .environment import CURRENT_OS
 from .colors import red
