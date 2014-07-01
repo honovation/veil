@@ -26,6 +26,7 @@ def veil_hosts_resource(veil_env_name, config_dir):
             resources.extend([
                 veil_host_onetime_config_resource(host=host, config_dir=config_dir),
                 veil_host_config_resource(host=host, config_dir=config_dir),
+                veil_host_application_config_resource(host=host, config_dir=config_dir),
                 veil_host_application_codebase_resource(host=host)
             ])
             if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
@@ -86,12 +87,20 @@ def veil_host_config_resource(host, config_dir):
             owner='root', owner_group='root', mode=0644),
         veil_host_sources_list_resource(host=host)
     ]
-    if (env_config_dir / '.config').exists():
-        resources.append(veil_host_file_resource(local_path=env_config_dir / '.config', host=host, remote_path=host.code_dir / '.config',
-            owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0600))
 
     hosts_configured.append(host.base_name)
     return resources
+
+
+@composite_installer
+def veil_host_application_config_resource(host, config_dir):
+    env_config_dir = config_dir / host.env_name
+    if not (env_config_dir / '.config').exists():
+        return []
+    return [
+        veil_host_file_resource(local_path=env_config_dir / '.config', host=host, remote_path=host.code_dir / '.config',
+            owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0600)
+    ]
 
 
 @atomic_installer

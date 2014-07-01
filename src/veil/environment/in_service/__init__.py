@@ -5,6 +5,7 @@ with veil_component.init_component(__name__):
     from .host_installer import veil_hosts_application_codebase_resource
     from .host_installer import veil_host_onetime_config_resource
     from .host_installer import veil_host_config_resource
+    from .host_installer import veil_host_application_config_resource
     from .host_installer import veil_host_application_codebase_resource
     from .host_installer import veil_host_sources_list_resource
     from .host_installer import veil_host_init_resource
@@ -31,6 +32,7 @@ with veil_component.init_component(__name__):
         veil_hosts_application_codebase_resource.__name__,
         veil_host_onetime_config_resource.__name__,
         veil_host_config_resource.__name__,
+        veil_host_application_config_resource.__name__,
         veil_host_application_codebase_resource.__name__,
         veil_host_sources_list_resource.__name__,
         veil_host_init_resource.__name__,
