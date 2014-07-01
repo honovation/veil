@@ -286,10 +286,10 @@ class Database(object):
 
     def _execute(self, sql, **kwargs):
         check_table_dependencies(self.component_name, self.purpose, sql)
-        with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
-            reconnected = False
-            within_transaction_context = not self.autocommit
-            while True:
+        while True:
+            with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
+                reconnected = False
+                within_transaction_context = not self.autocommit
                 try:
                     cursor.execute(sql, kwargs)
                 except Exception as e:
@@ -300,6 +300,7 @@ class Database(object):
                         })
                         raise
                     else:
+                        LOGGER.debug('reconnect db server and close this cursor')
                         reconnected = self.conn.reconnect_if_broken_per_exception(e)
                         if not reconnected or within_transaction_context:
                             LOGGER.exception('failed to execute statement: sql is %(sql)s and kwargs are %(kwargs)s', {
@@ -312,10 +313,10 @@ class Database(object):
 
     def _executemany(self, sql, seq_of_parameters):
         check_table_dependencies(self.component_name, self.purpose, sql)
-        with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
-            reconnected = False
-            within_transaction_context = not self.autocommit
-            while True:
+        while True:
+            with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
+                reconnected = False
+                within_transaction_context = not self.autocommit
                 try:
                     cursor.executemany(sql, seq_of_parameters)
                 except Exception as e:
@@ -326,6 +327,7 @@ class Database(object):
                         })
                         raise
                     else:
+                        LOGGER.debug('reconnect db server and close this cursor')
                         reconnected = self.conn.reconnect_if_broken_per_exception(e)
                         if not reconnected or within_transaction_context:
                             LOGGER.exception('failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s', {
@@ -338,10 +340,10 @@ class Database(object):
 
     def _query(self, sql, returns_dict_object=True, **kwargs):
         check_table_dependencies(self.component_name, self.purpose, sql)
-        with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
-            reconnected = False
-            within_transaction_context = not self.autocommit
-            while True:
+        while True:
+            with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
+                reconnected = False
+                within_transaction_context = not self.autocommit
                 try:
                     cursor.execute(sql, kwargs)
                 except Exception as e:
@@ -352,6 +354,7 @@ class Database(object):
                         })
                         raise
                     else:
+                        LOGGER.debug('reconnect db server and close this cursor')
                         reconnected = self.conn.reconnect_if_broken_per_exception(e)
                         if not reconnected or within_transaction_context:
                             LOGGER.exception('failed to execute query: sql is %(sql)s and kwargs are %(kwargs)s', {
@@ -393,6 +396,7 @@ class Database(object):
                     })
                     raise
                 else:
+                    LOGGER.debug('reconnect db server and close this cursor')
                     reconnected = self.conn.reconnect_if_broken_per_exception(e)
                     if not reconnected or within_transaction_context:
                         LOGGER.exception('failed to query large result set: sql is %(sql)s and kwargs are %(kwargs)s', {
