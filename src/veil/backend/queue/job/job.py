@@ -9,6 +9,7 @@ from veil.server.process import *
 
 LOGGER = getLogger(__name__)
 
+
 def job(queue, retry_every=None, retry_timeout=0):
     if isfunction(queue):
         job_handler = queue

@@ -6,7 +6,12 @@ from veil_component import *
 from veil.utility.clock import get_current_timestamp
 from .job import JobHandlerDecorator
 
-schedules = defaultdict(set) # schedule => set(job_handler)
+schedules = defaultdict(set)  # schedule => set(job_handler)
+
+
+def get_periodic_job_schedules():
+    return schedules
+
 
 def periodic_job(schedule, queue=None):
     if isinstance(schedule, timedelta):

@@ -6,8 +6,8 @@ import signal
 from veil_component import *
 from veil.frontend.cli import *
 from veil.utility.clock import *
-from ..periodic_job import schedules
-from ..queue import require_queue
+from veil.backend.queue.job import *
+from .queue import require_queue
 
 LOGGER = getLogger(__name__)
 
@@ -22,6 +22,7 @@ class PeriodicJobScheduler(object):
         self.stopped = False
         self.last_handle_at = None
         self.next_handle_at = None
+        self.schedules = get_periodic_job_schedules()
 
     def register_signal_handlers(self):
         LOGGER.info('registering signals')
@@ -36,9 +37,9 @@ class PeriodicJobScheduler(object):
     def run(self):
         LOGGER.info('starting up')
         self.register_signal_handlers()
-        if schedules:
-            for schedule in schedules:
-                jobs = ', '.join({str(job_handler) for job_handler in schedules[schedule]})
+        if self.schedules:
+            for schedule in self.schedules:
+                jobs = ', '.join({str(job_handler) for job_handler in self.schedules[schedule]})
                 LOGGER.info('schedule loaded: schedule is %(schedule)s and jobs are %(jobs)s', {
                     'schedule': schedule,
                     'jobs': jobs
@@ -54,10 +55,10 @@ class PeriodicJobScheduler(object):
     def handle(self):
         now = get_current_timestamp()
         earliest_next = float('inf')
-        for schedule in schedules:
+        for schedule in self.schedules:
             next = schedule.get_next_timestamp(self.last_handle_at)
             if next <= now:
-                for job_handler in schedules[schedule]:
+                for job_handler in self.schedules[schedule]:
                     LOGGER.info('job due: about to enqueue %(job_handler)s', {
                         'job_handler': job_handler
                     })
