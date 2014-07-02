@@ -29,13 +29,13 @@ def verify_request(data, sign):
 
 def get_brief(status_obj):
     if status_obj.infoContent.text == 'SENT_SCAN':
-        return '{}：{}'.format(YTO_STATUS['SENT_SCAN'], status_obj.find('remark').text if status_obj.find('remark') else '')
+        return '：'.join(e for e in [YTO_STATUS['SENT_SCAN'], status_obj.find('remark').text if status_obj.find('remark') else None] if e)
     elif status_obj.infoContent.text == YTO_REJECTED_STATUS:
-        return '{} 原因：{}'.format(YTO_STATUS[YTO_REJECTED_STATUS], status_obj.find('remark').text if status_obj.find('remark') else '')
+        return '{} 原因：{}'.format(YTO_STATUS[YTO_REJECTED_STATUS], status_obj.find('remark').text if status_obj.find('remark') else '-')
     elif status_obj.infoContent.text == YTO_SIGNED_STATUS:
         result = '{} 签收人：{}'.format(YTO_STATUS[YTO_SIGNED_STATUS], status_obj.find('name').text if status_obj.find('name') else '-')
-        if status_obj.remark.text:
-            return '{} ({})'.format(result, status_obj.find('remark').text if status_obj.find('remark') else '')
+        if status_obj.find('remark'):
+            return '{} ({})'.format(result, status_obj.find('remark').text)
         return result
     else:
         return YTO_STATUS.get(status_obj.infoContent.text)
