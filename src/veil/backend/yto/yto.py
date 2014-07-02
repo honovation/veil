@@ -33,7 +33,7 @@ def get_brief(status_obj):
     elif status_obj.infoContent.text == YTO_REJECTED_STATUS:
         return '{} 原因：{}'.format(YTO_STATUS[YTO_REJECTED_STATUS], status_obj.find('remark').text if status_obj.find('remark') else '')
     elif status_obj.infoContent.text == YTO_SIGNED_STATUS:
-        result = '{} 签收人：{}'.format(YTO_STATUS[YTO_SIGNED_STATUS], status_obj.name.text)
+        result = '{} 签收人：{}'.format(YTO_STATUS[YTO_SIGNED_STATUS], status_obj.find('name').text if status_obj.find('name') else '-')
         if status_obj.remark.text:
             return '{} ({})'.format(result, status_obj.find('remark').text if status_obj.find('remark') else '')
         return result
