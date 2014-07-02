@@ -6,15 +6,15 @@ from suds.sudsobject import Object
 from veil_component import *
 from veil_installer import *
 from veil.model.collection import *
-from .web_service_client_installer import web_service_client_config
-from .web_service_client_installer import web_service_client_resource
+from .web_service_client_installer import web_service_config
+from .web_service_client_installer import web_service_resource
 
 Object = Object
 
 instances = {} # purpose => instance
 
 def register_web_service(purpose):
-    add_application_sub_resource('{}_web_service_client'.format(purpose), lambda config: web_service_client_resource(purpose=purpose, **config))
+    add_application_sub_resource('{}_web_service'.format(purpose), lambda config: web_service_resource(purpose=purpose, **config))
     loading_component_name = get_loading_component_name()
     if ('web-service', purpose) not in list_consumed_dynamic_dependencies(loading_component_name):
         raise Exception('{} can not reference web service {}'.format(loading_component_name, purpose))
@@ -23,7 +23,7 @@ def register_web_service(purpose):
 
 def require_web_service(purpose):
     if purpose not in instances:
-        config = web_service_client_config(purpose)
+        config = web_service_config(purpose)
         if config.user:
             instances[purpose] = WebService(config.url, username=config.user, password=config.password, proxy_netloc=config.proxy_netloc)
         else:
