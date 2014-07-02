@@ -12,7 +12,7 @@ class ResQWrapper(ResQ):
         super(ResQWrapper, self).__init__(server, password)
 
     def enqueue_at_from_string(self, datetime, klass_as_string, queue, *args, **kwargs):
-        LOGGER.info('scheduled %(klass_as_string)s job on queue %(queue)s for execution at %(datetime)s', {
+        LOGGER.info('scheduled job: scheduled %(klass_as_string)s job on queue %(queue)s for execution at %(datetime)s', {
             'klass_as_string': klass_as_string, 'queue': queue, 'datetime': datetime
         })
         if args:
@@ -27,7 +27,7 @@ class ResQWrapper(ResQ):
         if 'first_attempt' in kwargs:
             payload['first_attempt'] = kwargs['first_attempt']
         self.push(queue, payload)
-        LOGGER.info('enqueued %(klass_as_string)s job on queue %(queue)s', {'klass_as_string': klass_as_string, 'queue': queue})
+        LOGGER.info('job enqueued: enqueued %(klass_as_string)s job on queue %(queue)s', {'klass_as_string': klass_as_string, 'queue': queue})
         if args:
             LOGGER.debug('job arguments: %(args)s', {'args': args})
         else:
