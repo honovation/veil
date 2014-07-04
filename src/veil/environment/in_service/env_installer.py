@@ -56,10 +56,8 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
         if 'TRUE' == should_download_packages:
             download_packages(veil_env_name)
         stop_env(veil_env_name)
-        create_backup_for_rollback(hosts)
+        make_rollback_backup(hosts)
     install_resource(veil_servers_resource(servers=servers[::-1], action='DEPLOY'))
-    if ever_deployed:
-        delete_backup_for_rollback(hosts)
 
 
 @script('download-packages')
@@ -113,14 +111,13 @@ def rollback_env(veil_env_name):
     Bring up veil servers in reversed sorted server names order
     """
     hosts = unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name)
-    check_backup(hosts)
+    check_rollback_backup(hosts)
     stop_env(veil_env_name)
     rollback(hosts)
     start_env(veil_env_name)
-    delete_backup_for_rollback(hosts)
 
 
-def check_backup(hosts):
+def check_rollback_backup(hosts):
     for host in hosts:
         backup_dir = '{}-backup'.format(host.env_dir)
         with fabric.api.settings(host_string=host.deploys_via):
@@ -128,14 +125,12 @@ def check_backup(hosts):
                 raise Exception('{}: backup does not exist'.format(host.base_name))
 
 
-def create_backup_for_rollback(hosts):
+def make_rollback_backup(hosts):
     for host in hosts:
         source_dir = host.env_dir
         backup_dir = '{}-backup'.format(source_dir)
         with fabric.api.settings(host_string=host.deploys_via):
-            if fabric.contrib.files.exists(backup_dir):
-                raise Exception('{}: backup already exists'.format(host.base_name))
-            fabric.api.sudo('cp -r -p {} {}'.format(source_dir, backup_dir))
+            fabric.api.sudo('rsync -avh --delete {}/ {}'.format(source_dir, backup_dir))
 
 
 def rollback(hosts):
@@ -145,16 +140,9 @@ def rollback(hosts):
         backup_dir = '{}-backup'.format(source_dir)
         with fabric.api.settings(host_string=host.deploys_via):
             if fabric.contrib.files.exists(source_dir):
-                fabric.api.sudo('mv {source_dir} {source_dir}-to-be-deleted-{}'.format(datetime.now().strftime('%Y%m%d%H%M%S'),
-                    source_dir=source_dir))
-            fabric.api.sudo('cp -r -p {} {}'.format(backup_dir, source_dir))
-
-
-def delete_backup_for_rollback(hosts):
-    for host in hosts:
-        backup_dir = '{}-backup'.format(host.env_dir)
-        with fabric.api.settings(host_string=host.deploys_via):
-            fabric.api.sudo('rm -rf {}'.format(backup_dir))
+                left_over_dir = '{}-to-be-deleted-{}'.format(source_dir, datetime.now().strftime('%Y%m%d%H%M%S'))
+                fabric.api.sudo('rsync -avh --delete --link-dest={} {}/ {}'.format(backup_dir, source_dir, left_over_dir))
+            fabric.api.sudo('rsync -avh --delete {}/ {}'.format(backup_dir, source_dir))
 
 
 def ensure_servers_down(hosts):
@@ -181,7 +169,7 @@ def purge_left_overs(veil_env_name):
     hosts = unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name)
     for host in hosts:
         with fabric.api.settings(host_string=host.deploys_via):
-            fabric.api.sudo('rm -rf {source_dir}-backup {source_dir}-to-be-deleted-*'.format(source_dir=host.env_dir))
+            fabric.api.sudo('rm -rf {}-to-be-deleted-*'.format(host.env_dir))
 
 
 @script('restart-env')
