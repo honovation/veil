@@ -15,34 +15,40 @@ worker_processes auto;
 # uncomment this if you are not running nginx under supervisord
 daemon off;
 pid /tmp/nginx.pid;
+events {
+    worker_connections 100;
+    multi_accept on;
+    use epoll;
+}
+http{
+    server {
+      listen                *:80 ;
+      access_log            /var/log/nginx/kibana.access.log;
 
-server {
-  listen                *:80 ;
-  access_log            /var/log/nginx/kibana.access.log;
+      location / {
+        root  {{ kibana_root }};
+        index  index.html  index.htm;
+      }
 
-  location / {
-    root  {{ kibana_root }};
-    index  index.html  index.htm;
-  }
-
-  location ~ ^/_aliases$ {
-    proxy_pass http://127.0.0.1:9200;
-    proxy_read_timeout 90;
-  }
-  location ~ ^/.*/_aliases$ {
-    proxy_pass http://127.0.0.1:9200;
-    proxy_read_timeout 90;
-  }
-  location ~ ^/_nodes$ {
-    proxy_pass http://127.0.0.1:9200;
-    proxy_read_timeout 90;
-  }
-  location ~ ^/.*/_search$ {
-    proxy_pass http://127.0.0.1:9200;
-    proxy_read_timeout 90;
-  }
-  location ~ ^/.*/_mapping {
-    proxy_pass http://127.0.0.1:9200;
-    proxy_read_timeout 90;
-  }
+      location ~ ^/_aliases$ {
+        proxy_pass http://127.0.0.1:9200;
+        proxy_read_timeout 90;
+      }
+      location ~ ^/.*/_aliases$ {
+        proxy_pass http://127.0.0.1:9200;
+        proxy_read_timeout 90;
+      }
+      location ~ ^/_nodes$ {
+        proxy_pass http://127.0.0.1:9200;
+        proxy_read_timeout 90;
+      }
+      location ~ ^/.*/_search$ {
+        proxy_pass http://127.0.0.1:9200;
+        proxy_read_timeout 90;
+      }
+      location ~ ^/.*/_mapping {
+        proxy_pass http://127.0.0.1:9200;
+        proxy_read_timeout 90;
+      }
+    }
 }
