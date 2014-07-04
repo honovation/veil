@@ -1,15 +1,15 @@
 input {
     redis {
-        "host" => "{{ log_collector_redis_host or 'localhost' }}"
-        "port" => "{{ log_collector_redis_port or 5140 }}"
+        "host" => "{{ logs_redis_host or 'localhost' }}"
+        "port" => "{{ logs_redis_port or 5140 }}"
         "key" => "json_event"
         "data_type" => "list"
         "format" => "json_event"
         "type" => "json_event"
     }
     redis {
-        "host" => "{{ log_collector_redis_host or 'localhost' }}"
-        "port" => "{{ log_collector_redis_port or 5140 }}"
+        "host" => "{{ logs_redis_host or 'localhost' }}"
+        "port" => "{{ logs_redis_port or 5140 }}"
         "key" => "postgresql"
         "data_type" => "list"
         "format" => "plain"
