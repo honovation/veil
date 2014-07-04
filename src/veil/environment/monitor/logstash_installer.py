@@ -10,7 +10,7 @@ APT_SOURCES_LIST_DIR = as_path('/etc/apt/sources.list.d')
 @composite_installer
 def logstash_resource(config):
     if not (OPT_DIR / 'logstash-1.4.2.tar.gz').exists():
-        shell_execute('curl -O https://download.elasticsearch.org/logstash/logstash/logstash-1.4.2.tar.gz', cwd=OPT_DIR)
+        shell_execute('wget -O https://download.elasticsearch.org/logstash/logstash/logstash-1.4.2.tar.gz', cwd=OPT_DIR)
     if not (OPT_DIR / 'logstash-1.4.2').exists():
         shell_execute('tar zxvf logstash-1.4.2.tar.gz', cwd=OPT_DIR)
 
