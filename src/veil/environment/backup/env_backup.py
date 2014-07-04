@@ -102,6 +102,6 @@ def rsync_to_backup_mirror():
     backup_mirror = get_current_veil_server().backup_mirror
     if not backup_mirror:
         return
-    backup_mirror_path = '~/backup_mirror/{}/'.format(VEIL_ENV_NAME)
-    shell_execute('''rsync -avPe "ssh -i {} -p {} -o StrictHostKeyChecking=no" --delete --bwlimit={} {}/ {}@{}:{}'''.format(SSH_KEY_PATH,
+    backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV_NAME)
+    shell_execute('''rsync -avPe "ssh -i {} -p {} -o StrictHostKeyChecking=no" --delete --bwlimit={} {}/ {}@{}:{}/'''.format(SSH_KEY_PATH,
         backup_mirror.ssh_port, backup_mirror.bandwidth_limit, VEIL_BACKUP_ROOT, backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror_path))

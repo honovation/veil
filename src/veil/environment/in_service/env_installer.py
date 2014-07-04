@@ -47,17 +47,30 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
     """
     do_local_preparation(veil_env_name)
     tag_deploy(veil_env_name)
-    config_dir = as_path(config_dir)
-    install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=config_dir))
     servers = list_veil_servers(veil_env_name)
     ever_deployed = are_all_servers_ever_deployed(servers)
-    hosts = unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name)
+    if ever_deployed:
+        make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True)
+    install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=as_path(config_dir)))
     if ever_deployed:
         if 'TRUE' == should_download_packages:
             download_packages(veil_env_name)
         stop_env(veil_env_name)
-        make_rollback_backup(hosts)
+        make_rollback_backup(veil_env_name, exclude_code_dir=True, exclude_data_dir=False)
     install_resource(veil_servers_resource(servers=servers[::-1], action='DEPLOY'))
+
+
+def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True):
+    for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
+        source_dir = host.env_dir
+        backup_dir = '{}-backup'.format(source_dir)
+        excludes = []
+        if exclude_code_dir:
+            excludes.append('--exclude "/{}"'.format(host.env_dir.relpathto(host.code_dir)))
+        if exclude_data_dir:
+            excludes.append('--exclude "/{}"'.format(host.env_dir.relpathto(host.data_dir)))
+        with fabric.api.settings(host_string=host.deploys_via):
+            fabric.api.sudo('rsync -a --delete {} {}/ {}/'.format(' '.join(excludes), source_dir, backup_dir))
 
 
 @script('download-packages')
@@ -125,14 +138,6 @@ def check_rollback_backup(hosts):
                 raise Exception('{}: backup does not exist'.format(host.base_name))
 
 
-def make_rollback_backup(hosts):
-    for host in hosts:
-        source_dir = host.env_dir
-        backup_dir = '{}-backup'.format(source_dir)
-        with fabric.api.settings(host_string=host.deploys_via):
-            fabric.api.sudo('rsync -a --delete {}/ {}'.format(source_dir, backup_dir))
-
-
 def rollback(hosts):
     ensure_servers_down(hosts)
     for host in hosts:
@@ -141,8 +146,8 @@ def rollback(hosts):
         with fabric.api.settings(host_string=host.deploys_via):
             if fabric.contrib.files.exists(source_dir):
                 left_over_dir = '{}-to-be-deleted-{}'.format(source_dir, datetime.now().strftime('%Y%m%d%H%M%S'))
-                fabric.api.sudo('rsync -a --delete --link-dest={} {}/ {}'.format(backup_dir, source_dir, left_over_dir))
-            fabric.api.sudo('rsync -a --delete {}/ {}'.format(backup_dir, source_dir))
+                fabric.api.sudo('rsync -a --delete --link-dest={}/ {}/ {}/'.format(backup_dir, source_dir, left_over_dir))
+            fabric.api.sudo('rsync -a --delete {}/ {}/'.format(backup_dir, source_dir))
 
 
 def ensure_servers_down(hosts):
