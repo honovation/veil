@@ -13,6 +13,7 @@ def kibana_resource():
     if not (OPT_DIR / 'kibana-latest.zip').exists():
         shell_execute('wget http://download.elasticsearch.org/kibana/kibana/kibana-latest.zip', cwd=OPT_DIR)
     if not KIBANA_DIR.exists():
+        shell_execute('apt-get install unzip')
         shell_execute('unzip kibana-latest.zip', cwd=OPT_DIR)
     resources = [
         file_resource(path=KIBANA_DIR / 'config.js', content=render_config('kibana.config.js.j2', port=80)),

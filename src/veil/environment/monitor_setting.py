@@ -12,7 +12,7 @@ def monitor_program(config):
             'resources': [('veil.environment.monitor.kibana_resource', {})]
         },
         'elasticsearch': {
-            'execute_command': '/usr/share/elasticsearch/bin/elasticsearch',
+            'execute_command': '{}/elasticsearch-1.1.1/bin/elasticsearch'.format(OPT_DIR),
             'run_as': 'root',
             'resources': [('veil.environment.monitor.elasticsearch_resource', {})]
         },

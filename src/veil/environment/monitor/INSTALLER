@@ -1,3 +1,0 @@
-veil.server.os.os_ppa_repository_resource?webupd8team/java
-veil.server.os.os_package_resource?oracle-java7-installer
-veil.server.os.os_package_resource?unzip
