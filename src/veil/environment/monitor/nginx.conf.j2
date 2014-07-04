@@ -10,6 +10,12 @@
 # If you use this, you'll want to point config.js at http://FQDN:80/ instead of
 # http://FQDN:9200
 #
+
+worker_processes auto;
+# uncomment this if you are not running nginx under supervisord
+daemon off;
+pid /tmp/nginx.pid;
+
 server {
   listen                *:80 ;
   access_log            /var/log/nginx/kibana.access.log;
