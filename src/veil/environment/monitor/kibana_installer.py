@@ -10,14 +10,16 @@ KIBANA_DIR = OPT_DIR / 'kibana-latest'
 
 @composite_installer
 def kibana_resource():
-    shell_execute('wget http://download.elasticsearch.org/kibana/kibana/kibana-latest.zip', cwd=OPT_DIR)
-    shell_execute('unzip kibana-latest.zip', cwd=OPT_DIR)
+    if not (OPT_DIR / 'kibana-latest.zip').exists():
+        shell_execute('wget http://download.elasticsearch.org/kibana/kibana/kibana-latest.zip', cwd=OPT_DIR)
+    if not KIBANA_DIR.exists():
+        shell_execute('unzip kibana-latest.zip', cwd=OPT_DIR)
     resources = [
-        file_resource(KIBANA_DIR / 'config.js', content=render_config('kibana.config.js.j2', port=80)),
+        file_resource(path=KIBANA_DIR / 'config.js', content=render_config('kibana.config.js.j2', port=80)),
         os_ppa_repository_resource(name='nginx/stable'),
         os_package_resource(name='nginx-extras'),
         os_service_resource(state='not_installed', name='nginx'),
-        file_resource(VEIL_ETC_DIR / 'nginx.conf', content=render_config('nginx.conf.j2', kibana_root=KIBANA_DIR))
+        file_resource(path=VEIL_ETC_DIR / 'nginx.conf', content=render_config('nginx.conf.j2', kibana_root=KIBANA_DIR))
     ]
 
     return resources

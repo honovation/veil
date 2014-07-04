@@ -16,10 +16,7 @@ def logstash_resource(config):
 
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
-        # file_resource(APT_SOURCES_LIST_DIR / 'logstash.list', render_config('logstash.list')),
-        # os_package_resource('logstash=1.4.2-1-2c0f5a1'),
-        # os_service_resource('logstash', 'not_installed'),
-        file_resource(LOGSTASH_CONF, render_config('logstash.conf.j2', logs_redis_host=config.logs_redis_host,
+        file_resource(path=LOGSTASH_CONF, content=render_config('logstash.conf.j2', logs_redis_host=config.logs_redis_host,
             logs_redis_port=config.logs_redis_port, elasticsearch_host=config.elasticsearch_host, elasticsearch_port=config.elasticsearch_port))
     ])
 
