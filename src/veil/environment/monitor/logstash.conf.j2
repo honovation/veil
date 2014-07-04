@@ -1,0 +1,71 @@
+input {
+    redis {
+        "host" => "{{ log_collector_redis_host or 'localhost' }}"
+        "port" => "{{ log_collector_redis_port or 5140 }}"
+        "key" => "json_event"
+        "data_type" => "list"
+        "format" => "json_event"
+        "type" => "json_event"
+    }
+    redis {
+        "host" => "{{ log_collector_redis_host or 'localhost' }}"
+        "port" => "{{ log_collector_redis_port or 5140 }}"
+        "key" => "postgresql"
+        "data_type" => "list"
+        "format" => "plain"
+        "type" => "postgresql"
+    }
+}
+filter {
+    multiline {
+        type => "postgresql"
+        pattern => "^20"
+        negate => true
+        what => "previous"
+    }
+    csv {
+        "type" => "postgresql"
+        "fields" => ["log_time","user_name","database_name","process_id","connection_from","session_id",
+            "session_line_num","command_tag","session_start_time","virtual_transaction_id","transaction_id",
+            "error_severity","sql_state_code","message","detail","hint","internal_query","internal_query_pos",
+            "context","query","query_pos","location","application_name"]
+    }
+    date {
+        "type" => "postgresql"
+        "log_time" => "yyyy-MM-dd HH:mm:ss.SSS 'CST'"
+    }
+    grep {
+        "type" => "nginx"
+        "match" => ["request", "GET / HTTP/1.1"]
+        "add_tag" => "home_page"
+    }
+    metrics {
+        "type" => "nginx"
+        "tags" => ["home_page"]
+        "timer" => ["request_time", "%%{request_time}"]
+        "add_tag" => ["metrics", "home_page_request_time"]
+    }
+    mutate {
+        "type" => "nginx"
+        "add_field" => ["@title", "NGINX %%{status} <%%{browser_code}-%%{user_code}> %%{request}"]
+    }
+    mutate {
+        "type" => "veil"
+        "add_field" => ["@title", "VEIL %%{level} <%%{browser_code}-%%{user_code}> %%{event}"]
+    }
+    mutate {
+        "type" => "postgresql"
+        "add_field" => ["@title", "POSTGRESQL %%{error_severity} <%%{process_id}-%%{session_id}> %%{message}"]
+    }
+}
+output {
+    stdout {
+        "debug" => "true"
+    }
+    elasticsearch {
+        "cluster" => "ljinsight"
+        "exclude_tags" => ["_jsonparsefailure", "metrics"]
+        "host" => "{{ elasticsearch_host or 'localhost'}}"
+        "port" => "{{ elasticsearch_port or 9200 }}"
+    }
+}

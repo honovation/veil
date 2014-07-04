@@ -7,6 +7,7 @@ with veil_component.init_component(__name__):
     from veil.environment.networking import *
     from veil.server.vcs import *
     from veil.environment.guard_setting import guard_program
+    from veil.environment.monitor_setting import monitor_program
     from veil.backend.database.postgresql_setting import postgresql_program
     from veil.backend.redis_setting import redis_program
     from veil.backend.queue_setting import queue_program
