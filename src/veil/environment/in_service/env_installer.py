@@ -30,9 +30,12 @@ def display_deployment_memo(veil_env_name):
 
 def are_all_servers_ever_deployed(servers):
     for server in servers:
-        with fabric.api.settings(host_string=server.deploys_via):
-            if not fabric.contrib.files.exists(server.deployed_tag_path):
-                return False
+        try:
+            with fabric.api.settings(host_string=server.deploys_via):
+                if not fabric.contrib.files.exists(server.deployed_tag_path):
+                    return False
+        except Exception:
+            return False
     return True
 
 
