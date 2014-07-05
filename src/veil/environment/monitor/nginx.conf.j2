@@ -21,6 +21,51 @@ events {
     use epoll;
 }
 http{
+    etag off;
+    server_tokens off;
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+
+    keepalive_timeout 30;
+    client_header_timeout 20;
+    client_body_timeout 20;
+    send_timeout 20;
+    reset_timedout_connection on;
+
+    client_body_buffer_size 128k;
+
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:ECDHE-RSA-RC4-SHA:ECDHE-ECDSA-RC4-SHA:AES128:AES256:RC4-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+
+    gzip on;
+    # Enable compression both for HTTP/1.0 and HTTP/1.1 (required for CloudFront).
+    gzip_http_version 1.0;
+    gzip_static off;
+    gzip_proxied any;
+    gzip_min_length 256;
+    gzip_comp_level 5;
+    gzip_types text/plain text/css text/javascript application/javascript application/x-javascript application/json text/x-json text/xml application/xml application/xml+rss application/atom+xml image/x-icon image/bmp image/x-ms-bmp;
+    gzip_vary on;
+    gzip_buffers 64 8k;
+    gzip_disable "msie6";
+
+    open_file_cache max=65000 inactive=20s;
+    open_file_cache_valid 30s;
+    open_file_cache_min_uses 2;
+    open_file_cache_errors on;
+
+    proxy_http_version 1.1;
+    proxy_read_timeout 200;
+    proxy_buffers 256 8k;
+    proxy_intercept_errors on;
+    proxy_pass_request_headers on;
+
     server {
       listen                *:80 ;
       access_log            /var/log/nginx/kibana.access.log;
