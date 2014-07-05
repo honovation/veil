@@ -66,7 +66,7 @@ def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir
         if exclude_data_dir:
             excludes.append('--exclude "/{}"'.format(host.env_dir.relpathto(host.data_dir)))
         with fabric.api.settings(host_string=host.deploys_via):
-            fabric.api.sudo('rsync -avh --delete {} {}/ {}/'.format(' '.join(excludes), source_dir, rollback_backup_dir))
+            fabric.api.sudo('rsync -avh --delete {} --link-dest={}/ {}/ {}/'.format(' '.join(excludes), source_dir, source_dir, rollback_backup_dir))
             fabric.api.sudo('touch {}'.format(host.rollbackable_tag_path))
 
 

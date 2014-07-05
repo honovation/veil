@@ -49,9 +49,9 @@ def backup_host(host):
         running_servers_to_down = [s for s in list_veil_servers(VEIL_ENV_NAME) if s.mount_data_dir and s.host_base_name == host.base_name and is_server_running(s)]
         try:
             bring_down_servers(running_servers_to_down)
-            fabric.api.run('rsync -avh --delete --exclude "/{}" --exclude "/{}" --exclude "/{}" {}/ {}/'.format(
+            fabric.api.run('rsync -avh --delete --exclude "/{}" --exclude "/{}" --exclude "/{}" --link-dest={}/ {}/ {}/'.format(
                 host.var_dir.relpathto(host.bucket_inline_static_files_dir), host.var_dir.relpathto(host.bucket_captcha_image_dir),
-                host.var_dir.relpathto(host.bucket_uploaded_files_dir), host.var_dir, host_backup_dir))
+                host.var_dir.relpathto(host.bucket_uploaded_files_dir), host.var_dir, host.var_dir, host_backup_dir))
         finally:
             bring_up_servers(reversed(running_servers_to_down))
 
@@ -83,6 +83,7 @@ def fetch_host_backup(host, timestamp):
     link_dest = '--link-dest={}/'.format(VEIL_BACKUP_ROOT / 'latest') if (VEIL_BACKUP_ROOT / 'latest').exists() else ''
     server_guard = get_veil_server(VEIL_ENV_NAME, '@guard')
     if server_guard.host_base_name == host.base_name:
+        link_dest = link_dest or '--link-dest={}/'.format(host_backup_dir)
         shell_execute('rsync -avh --delete {} {} {}/'.format(link_dest, host_backup_dir, backup_dir))
     else:
         shell_execute('rsync -avhPe "ssh -i {} -p {} -o StrictHostKeyChecking=no" --delete {} {}@{}:{} {}/'.format(SSH_KEY_PATH, host.ssh_port,
