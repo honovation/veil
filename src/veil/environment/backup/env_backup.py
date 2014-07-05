@@ -49,7 +49,7 @@ def backup_host(host):
         running_servers_to_down = [s for s in list_veil_servers(VEIL_ENV_NAME) if s.mount_data_dir and s.host_base_name == host.base_name and is_server_running(s)]
         try:
             bring_down_servers(running_servers_to_down)
-            fabric.api.run('rsync -avh --delete --exclude "/{}" --exclude "/{}" --exclude "/{}" --link-dest={}/ {}/ {}/'.format(
+            fabric.api.run('rsync -avh --numeric-ids --delete --exclude "/{}" --exclude "/{}" --exclude "/{}" --link-dest={}/ {}/ {}/'.format(
                 host.var_dir.relpathto(host.bucket_inline_static_files_dir), host.var_dir.relpathto(host.bucket_captcha_image_dir),
                 host.var_dir.relpathto(host.bucket_uploaded_files_dir), host.var_dir, host.var_dir, host_backup_dir))
         finally:
@@ -84,10 +84,10 @@ def fetch_host_backup(host, timestamp):
     server_guard = get_veil_server(VEIL_ENV_NAME, '@guard')
     if server_guard.host_base_name == host.base_name:
         link_dest = link_dest or '--link-dest={}/'.format(host_backup_dir)
-        shell_execute('rsync -avh --delete {} {} {}/'.format(link_dest, host_backup_dir, backup_dir))
+        shell_execute('rsync -avh --numeric-ids --delete {} {} {}/'.format(link_dest, host_backup_dir, backup_dir))
     else:
-        shell_execute('rsync -avhPe "ssh -i {} -p {} -o StrictHostKeyChecking=no" --delete {} {}@{}:{} {}/'.format(SSH_KEY_PATH, host.ssh_port,
-            link_dest, host.ssh_user, host.internal_ip, host_backup_dir, backup_dir))
+        shell_execute('rsync -avhPz -e "ssh -i {} -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete {} {}@{}:{} {}/'.format(
+            SSH_KEY_PATH, host.ssh_port, link_dest, host.ssh_user, host.internal_ip, host_backup_dir, backup_dir))
 
 
 def delete_old_backups():
@@ -99,5 +99,6 @@ def rsync_to_backup_mirror():
     if not backup_mirror:
         return
     backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV_NAME)
-    shell_execute('''rsync -avhPe "ssh -i {} -p {} -o StrictHostKeyChecking=no" --delete --bwlimit={} {}/ {}@{}:{}/'''.format(SSH_KEY_PATH,
-        backup_mirror.ssh_port, backup_mirror.bandwidth_limit, VEIL_BACKUP_ROOT, backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror_path))
+    shell_execute('''rsync -avhHPz -e "ssh -i {} -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete --bwlimit={} {}/ {}@{}:{}/'''.format(
+        SSH_KEY_PATH, backup_mirror.ssh_port, backup_mirror.bandwidth_limit, VEIL_BACKUP_ROOT, backup_mirror.ssh_user, backup_mirror.host_ip,
+        backup_mirror_path))

@@ -39,5 +39,5 @@ def restore_from_baseline(force_download, veil_env_name, host_name=None, relativ
 def download_baseline(veil_env_name, remote_path, baseline_path):
     baseline_path.mkdirs()
     server_guard = get_veil_server(veil_env_name, '@guard')
-    shell_execute('''rsync -avhPe "ssh -p {} -o StrictHostKeyChecking=no" --delete {}@{}:{}/ {}/'''.format(server_guard.ssh_port,
-        server_guard.ssh_user, server_guard.internal_ip, remote_path, baseline_path))
+    shell_execute('''rsync -avhPz -e "ssh -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --delete {}@{}:{}/ {}/'''.format(
+        server_guard.ssh_port, server_guard.ssh_user, server_guard.internal_ip, remote_path, baseline_path))
