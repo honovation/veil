@@ -95,7 +95,7 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
                 proxy_set_body off;
                 proxy_pass http://{}-tornado;
                 {}
-            '''.format(max_upload_file_size, VEIL_BUCKETS_DIR / 'uploaded-files', purpose, extra_headers)
+            '''.format(max_upload_file_size, VEIL_BUCKET_UPLOADED_FILES_DIR, purpose, extra_headers)
         },
         '^~ /fupload-/': {
             '_': '''

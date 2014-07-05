@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 from veil.frontend.nginx_setting import NGINX_PID_PATH
 
+
 @composite_installer
 def nginx_resource(servers, config):
     resources = list(BASIC_LAYOUT_RESOURCES)
@@ -18,8 +19,7 @@ def nginx_resource(servers, config):
             'servers': servers
         }, **config)))
     ])
-    uploaded_files_directory = VEIL_BUCKETS_DIR / 'uploaded-files'
-    resources.append(directory_resource(path=uploaded_files_directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770))
+    resources.append(directory_resource(path=VEIL_BUCKET_UPLOADED_FILES_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770))
     for i in range(10):
-        resources.append(directory_resource(path=uploaded_files_directory / str(i), owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770))
+        resources.append(directory_resource(path=VEIL_BUCKET_UPLOADED_FILES_DIR / str(i), owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770))
     return resources

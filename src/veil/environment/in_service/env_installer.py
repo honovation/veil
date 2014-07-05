@@ -73,7 +73,7 @@ def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir
         if exclude_data_dir:
             excludes.append('--exclude "/{}"'.format(host.env_dir.relpathto(host.data_dir)))
         with fabric.api.settings(host_string=host.deploys_via):
-            fabric.api.sudo('rsync -a --delete {} {}/ {}/'.format(' '.join(excludes), source_dir, backup_dir))
+            fabric.api.sudo('rsync -avh --delete {} {}/ {}/'.format(' '.join(excludes), source_dir, backup_dir))
 
 
 @script('download-packages')
@@ -149,8 +149,8 @@ def rollback(hosts):
         with fabric.api.settings(host_string=host.deploys_via):
             if fabric.contrib.files.exists(source_dir):
                 left_over_dir = '{}-to-be-deleted-{}'.format(source_dir, datetime.now().strftime('%Y%m%d%H%M%S'))
-                fabric.api.sudo('rsync -a --delete --link-dest={}/ {}/ {}/'.format(backup_dir, source_dir, left_over_dir))
-            fabric.api.sudo('rsync -a --delete {}/ {}/'.format(backup_dir, source_dir))
+                fabric.api.sudo('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(backup_dir, source_dir, left_over_dir))
+            fabric.api.sudo('rsync -avh --delete {}/ {}/'.format(backup_dir, source_dir))
 
 
 def ensure_servers_down(hosts):

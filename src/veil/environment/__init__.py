@@ -22,6 +22,8 @@ from .environment import VEIL_EDITORIAL_DIR
 from .environment import VEIL_BUCKETS_DIR
 from .environment import VEIL_BUCKET_LOG_DIR
 from .environment import VEIL_BUCKET_INLINE_STATIC_FILES_DIR
+from .environment import VEIL_BUCKET_CAPTCHA_IMAGE_DIR
+from .environment import VEIL_BUCKET_UPLOADED_FILES_DIR
 from .environment import VEIL_DATA_DIR
 from .environment import VEIL_LOG_DIR
 from .environment import BASIC_LAYOUT_RESOURCES
