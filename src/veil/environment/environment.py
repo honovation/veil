@@ -7,7 +7,7 @@ from veil.server.os import *
 
 APT_URL = 'http://mirrors.163.com/ubuntu/'
 DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
-PYPI_INDEX_URL = 'http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
+PYPI_INDEX_URL = 'http://pypi.douban.com/simple/'  # the official url "https://pypi.python.org/simple/" is blocked
 
 OPT_DIR = as_path('/opt')
 SHARE_DIR = OPT_DIR / 'share'
@@ -111,8 +111,10 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
             server.host = host
             server.host_base_name = host.base_name
             server.ssh_user = host.ssh_user
+            server.ssh_port = host.ssh_port
             server.ssh_user_group = host.ssh_user_group
-            server.deploys_via = '{}@{}:{}'.format(host.ssh_user, '{}.{}'.format(host.lan_range, server.sequence_no), host.ssh_port)
+            server.internal_ip = '{}.{}'.format(host.lan_range, server.sequence_no)
+            server.deploys_via = '{}@{}:{}'.format(server.ssh_user, server.internal_ip, server.ssh_port)
             if server.backup_mirror:
                 assert server.backup_mirror.host_ip.rsplit('.', 1)[0] != host.lan_range, \
                     'ENV {}: local backup mirror does not make sense, please use remote mirror (on-site must, off-site optional)'.format(env.name)
