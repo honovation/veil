@@ -57,7 +57,7 @@ filter {
 }
 output {
     stdout {
-        "debug" => "true"
+        "codec" => "rubydebug"
     }
     if "_jsonparsefailure" not in [tags] and "metrics" not in [tags] {
         elasticsearch {
