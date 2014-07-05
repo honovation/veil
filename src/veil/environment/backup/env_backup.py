@@ -50,14 +50,14 @@ def backup_host(host):
         try:
             bring_down_servers(running_servers_to_down)
             fabric.api.run('rsync -avh --delete --exclude "/{}" --exclude "/{}" --exclude "/{}" {}/ {}/'.format(
-                VEIL_VAR_DIR.relpathto(VEIL_BUCKET_INLINE_STATIC_FILES_DIR), VEIL_VAR_DIR.relpathto(VEIL_BUCKET_CAPTCHA_IMAGE_DIR),
-                VEIL_VAR_DIR.relpathto(VEIL_BUCKET_UPLOADED_FILES_DIR), VEIL_VAR_DIR, host_backup_dir))
+                host.var_dir.relpathto(host.bucket_inline_static_files_dir), host.var_dir.relpathto(host.bucket_captcha_image_dir),
+                host.var_dir.relpathto(host.bucket_uploaded_files_dir), host.var_dir, host_backup_dir))
         finally:
             bring_up_servers(reversed(running_servers_to_down))
 
 
 def is_server_running(server):
-    ret = fabric.api.run('ps -ef | grep supervisord | grep -e {}/{} | grep -v grep'.format(VEIL_ETC_DIR.parent, server.name), warn_only=True)
+    ret = fabric.api.run('ps -ef | grep supervisord | grep -e {} | grep -v grep'.format(server.etc_dir), warn_only=True)
     return ret.return_code == 0
 
 

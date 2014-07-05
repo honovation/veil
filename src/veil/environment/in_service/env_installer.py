@@ -14,7 +14,7 @@ from veil.utility.clock import *
 from veil.utility.shell import *
 from veil.backend.database.migration import *
 from .host_installer import veil_hosts_resource, veil_hosts_application_codebase_resource
-from .server_installer import veil_servers_resource
+from .server_installer import veil_servers_resource, is_container_running, is_server_running
 
 
 def display_deployment_memo(veil_env_name):
@@ -28,30 +28,21 @@ def display_deployment_memo(veil_env_name):
                 break
 
 
-def are_all_servers_ever_deployed(servers):
-    for server in servers:
-        try:
-            with fabric.api.settings(host_string=server.deploys_via):
+def is_ever_successfully_deployed(veil_env_name):
+    for host in list_veil_hosts(veil_env_name):
+        with fabric.api.settings(host_string=host.deploys_via):
+            for server in host.server_list:
                 if not fabric.contrib.files.exists(server.deployed_tag_path):
                     return False
-        except Exception:
-            return False
     return True
 
 
 @script('deploy-env')
 @log_elapsed_time
 def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
-    """
-    Bring down veil servers in sorted server names order (in create-backup)
-    Bring up veil servers in reversed sorted server names order (in veil_servers_resource and local_deployer:deploy)
-
-    should_download_packages: set to FALSE when download-packages before deploy-env
-    """
     do_local_preparation(veil_env_name)
     tag_deploy(veil_env_name)
-    servers = list_veil_servers(veil_env_name)
-    ever_deployed = are_all_servers_ever_deployed(servers)
+    ever_deployed = is_ever_successfully_deployed(veil_env_name)
     if ever_deployed:
         make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True)
     install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=as_path(config_dir)))
@@ -60,7 +51,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
             download_packages(veil_env_name)
         stop_env(veil_env_name)
         make_rollback_backup(veil_env_name, exclude_code_dir=True, exclude_data_dir=False)
-    install_resource(veil_servers_resource(servers=servers[::-1], action='DEPLOY'))
+    install_resource(veil_servers_resource(servers=list_veil_servers(veil_env_name)[::-1], action='DEPLOY'))
 
 
 def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True):
@@ -91,6 +82,9 @@ def download_packages(veil_env_name):
                     hosts_retrieved_latest_version.append(host.base_name)
                 try:
                     for server in host.server_list:
+                        if not is_container_running(server):
+                            print(yellow('Skipped downloading packages for server {} as its container is not running'.format(server.container_name)))
+                            continue
                         with fabric.api.settings(host_string=server.deploys_via):
                             with fabric.api.cd(server.veil_home):
                                 fabric.api.sudo('veil :{} install-server --download-only'.format(server.fullname))
@@ -155,13 +149,10 @@ def rollback(hosts):
 
 def ensure_servers_down(hosts):
     for host in hosts:
-        try:
-            with fabric.api.settings(host_string=host.deploys_via):
-                fabric.api.sudo('ps -ef | grep supervisord | grep {} | grep -v grep'.format(host.etc_dir))
-        except:
-            pass
-        else:
-            raise Exception('{}: can not rollback while not all veil servers are down'.format(host.base_name))
+        with fabric.api.settings(host_string=host.deploys_via):
+            ret = fabric.api.run('ps -ef | grep supervisord | grep {} | grep -v grep'.format(host.etc_dir), warn_only=True)
+            if ret.return_code == 0:
+                raise Exception('{}: can not rollback while having running veil server(s)'.format(host.base_name))
 
 
 @script('backup-env')
@@ -196,6 +187,8 @@ def stop_env(veil_env_name):
     Bring down veil servers in sorted server names order
     """
     for server in list_veil_servers(veil_env_name):
+        if not is_server_running(server, not_on_host=True):
+            continue
         with fabric.api.settings(host_string=server.deploys_via):
             with fabric.api.cd(server.veil_home):
                 fabric.api.sudo('veil :{} down'.format(server.fullname))
@@ -207,9 +200,16 @@ def start_env(veil_env_name):
     Bring up veil servers in reversed sorted server names order
     """
     for server in reversed(list_veil_servers(veil_env_name)):
-        with fabric.api.settings(host_string=server.deploys_via):
-            with fabric.api.cd(server.veil_home):
-                fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))
+        if is_server_running(server, not_on_host=True):
+            continue
+        if is_container_running(server, not_on_host=True):
+            with fabric.api.settings(host_string=server.deploys_via):
+                with fabric.api.cd(server.veil_home):
+                    fabric.api.sudo('veil :{} up --daemonize'.format(server.fullname))
+        else:
+            host = get_veil_host(server.env_name, server.host_name)
+            with fabric.api.settings(host_string=host.deploys_via):
+                fabric.api.sudo('lxc-start -n {} -d'.format(server.container_name))
 
 
 @script('upgrade-env-pip')

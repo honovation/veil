@@ -3,7 +3,6 @@ import logging
 from veil_component import as_path
 from veil_installer import *
 from veil.utility.shell import *
-from .lxc_container_installer import is_lxc_container_running
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,5 +25,3 @@ def lxc_container_timezone_resource(container_name, timezone):
     })
     etc_timezone_path.write_text(timezone)
     shell_execute('chroot {} dpkg-reconfigure --frontend noninteractive tzdata'.format(container_rootfs_path), capture=True)
-    if is_lxc_container_running(container_name):
-        shell_execute('lxc-attach -n {} -- service cron restart'.format(container_name), capture=True)

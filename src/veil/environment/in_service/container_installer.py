@@ -8,6 +8,7 @@ from veil_component import as_path
 from veil_installer import *
 from veil.environment import *
 from veil.server.config import *
+from .server_installer import is_container_running
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
 sources_list_installed = []
@@ -46,6 +47,8 @@ def veil_container_lxc_resource(host, server):
         dry_run_result[key] = action or '-'
         return
     if not action:
+        if not is_container_running(server):
+            fabric.api.sudo('lxc-start -n {} -d'.format(server.container_name))
         return
     with contextlib.closing(StringIO(installer_file_content)) as f:
         fabric.api.put(f, server.container_installer_path, use_sudo=True, mode=0600)

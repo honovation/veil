@@ -1,6 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 import fabric.api
 import fabric.contrib.files
+from veil_component import *
+from veil.environment import *
 from veil_installer import *
 
 
@@ -19,6 +21,9 @@ def veil_server_resource(server, action='PATCH'):
         dry_run_result['veil_server?{}'.format(server.container_name)] = action
         return
 
+    if not is_container_running(server, not_on_host=True):
+        print(yellow('Skipped patching server {} as its container is not running'.format(server.container_name)))
+
     with fabric.api.settings(host_string=server.deploys_via):
         with fabric.api.cd(server.veil_home):
             if 'DEPLOY' == action:
@@ -27,3 +32,23 @@ def veil_server_resource(server, action='PATCH'):
             else:  # PATCH
                 fabric.api.sudo('{}/bin/veil :{} patch'.format(server.veil_framework_home, server.fullname))
                 fabric.api.sudo('touch {}'.format(server.patched_tag_path))
+
+
+def is_container_running(server, not_on_host=False):
+    if not_on_host:
+        host = get_veil_host(server.env_name, server.host_name)
+        with fabric.api.settings(host_string=host.deploys_via):
+            ret = fabric.api.sudo('lxc-info -n {} -s'.format(server.container_name), warn_only=True)
+    else:
+        ret = fabric.api.sudo('lxc-info -n {} -s'.format(server.container_name), warn_only=True)
+    return ret.return_code == 0 and 'RUNNING' in ret
+
+
+def is_server_running(server, not_on_host=False):
+    if not_on_host:
+        host = get_veil_host(server.env_name, server.host_name)
+        with fabric.api.settings(host_string=host.deploys_via):
+            ret = fabric.api.run('ps -ef | grep supervisord | grep -e {} | grep -v grep'.format(server.etc_dir), warn_only=True)
+    else:
+        ret = fabric.api.run('ps -ef | grep supervisord | grep -e {} | grep -v grep'.format(server.etc_dir), warn_only=True)
+    return ret.return_code == 0

@@ -93,6 +93,9 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         host.var_dir = host.env_dir / 'var'
         host.editorial_dir = host.var_dir / 'editor-rootfs' / 'editorial'
         host.buckets_dir = host.var_dir / 'buckets'
+        host.bucket_inline_static_files_dir = host.buckets_dir / 'inline-static-files'
+        host.bucket_captcha_image_dir = host.buckets_dir / 'captcha-image'
+        host.bucket_uploaded_files_dir = host.buckets_dir / 'uploaded-files'
         host.data_dir = host.var_dir / 'data'
         host.veil_home = env.veil_home
         host.veil_application_branch = 'env-{}'.format(host.env_name)

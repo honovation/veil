@@ -1,10 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 from veil_component import as_path
-from veil.utility.shell import *
 from veil_installer import *
 from veil.server.config import *
-from .lxc_container_installer import is_lxc_container_running
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,8 +26,6 @@ def lxc_container_network_resource(container_name, ip_address, gateway):
         'gateway': gateway
     })
     network_interfaces_path.write_text(config_content)
-    if is_lxc_container_running(container_name):
-        shell_execute('lxc-attach -n {} -- sh -c "ifdown --exclude=lo -a && ifup --exclude=lo -a"'.format(container_name), capture=True)
 
 
 @atomic_installer
@@ -47,5 +43,3 @@ def lxc_container_name_servers_resource(container_name, name_servers):
         return
     LOGGER.info('set container name servers: in %(container_name)s to %(name_servers)s', {'container_name': container_name, 'name_servers': name_servers})
     resolve_conf_path.write_text(config_content)
-    if is_lxc_container_running(container_name):
-        shell_execute('lxc-attach -n {} -- resolvconf -u'.format(container_name), capture=True)
