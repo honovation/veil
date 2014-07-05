@@ -13,8 +13,6 @@ def logstash_resource(config):
         shell_execute('wget https://download.elasticsearch.org/logstash/logstash/logstash-1.4.2.tar.gz', cwd=OPT_DIR)
     if not (OPT_DIR / 'logstash-1.4.2').exists():
         shell_execute('tar zxf logstash-1.4.2.tar.gz', cwd=OPT_DIR)
-        print('Downloading logstash contrib')
-        shell_execute('{}/logstash-1.4.2/bin/plugin install contrib'.format(OPT_DIR))
 
 
     resources = list(BASIC_LAYOUT_RESOURCES)
