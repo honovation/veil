@@ -18,7 +18,7 @@ def kibana_resource():
         if (KIBANA_DIR / 'app/dashboards/logstash.json').exists():
             shell_execute('mv {} default.json'.format(KIBANA_DIR / 'app/dashboards/logstash.json'))
     resources = [
-        file_resource(path=KIBANA_DIR / 'config.js', content=render_config('kibana.config.js.j2', port=80)),
+        file_resource(path=KIBANA_DIR / 'config.js', content=render_config('kibana.config.js.j2')),
         os_ppa_repository_resource(name='nginx/stable'),
         os_package_resource(name='nginx-extras'),
         os_service_resource(state='not_installed', name='nginx'),
