@@ -56,7 +56,7 @@ output {
     stdout {
         "codec" => "rubydebug"
     }
-    if "_jsonparsefailure" not in [tags] and "metrics" not in [tags] {
+    if "_jsonparsefailure" not in [tags] {
         elasticsearch {
             "cluster" => "{{ elasticsearch_cluster }}"
             "host" => "{{ elasticsearch_host }}"

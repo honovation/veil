@@ -55,7 +55,6 @@ class LogShipper(object):
                 if line:
                     try:
                         self.redis_client.rpush(self.redis_key, line)
-                        LOGGER.info('pushed log to monitor: %(content)s', {'content': line})
                     except:
                         LOGGER.exception('failed to push log: %(line)s, %(path)s', {
                             'line': line,
@@ -64,7 +63,6 @@ class LogShipper(object):
                         self.wait_for_redis_back()
                         try:
                             self.redis_client.rpush(self.redis_key, line)
-                            LOGGER.info('pushed log to monitor again: %(content)s', {'content': line})
                         except:
                             LOGGER.critical('failed to push log again: %(line)s, %(path)s', {
                                 'line': line,
