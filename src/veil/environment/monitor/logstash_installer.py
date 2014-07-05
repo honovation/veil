@@ -11,8 +11,12 @@ APT_SOURCES_LIST_DIR = as_path('/etc/apt/sources.list.d')
 def logstash_resource(config):
     if not (OPT_DIR / 'logstash-1.4.2.tar.gz').exists():
         shell_execute('wget https://download.elasticsearch.org/logstash/logstash/logstash-1.4.2.tar.gz', cwd=OPT_DIR)
+    if not (OPT_DIR / 'logstash-contrib-1.4.2.tar.gz').exists():
+        shell_execute('wget http://download.elasticsearch.org/logstash/logstash/logstash-contrib-1.4.2.tar.gz', cwd=OPT_DIR)
     if not (OPT_DIR / 'logstash-1.4.2').exists():
-        shell_execute('tar zxvf logstash-1.4.2.tar.gz', cwd=OPT_DIR)
+        shell_execute('tar zxf logstash-1.4.2.tar.gz', cwd=OPT_DIR)
+        shell_execute('tar zxf logstash-contrib-1.4.2.tar.gz', cwd=OPT_DIR)
+
 
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
