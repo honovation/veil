@@ -1,4 +1,4 @@
-cluster.name: @monitor
+cluster.name: "{{ elasticsearch_cluster }}"
 path.logs: {{ log_dir }}
 path.data: {{ data_dir }}
 network.host: {{ elasticsearch_host }}
