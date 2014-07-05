@@ -102,6 +102,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         host.code_dir = host.veil_home.parent
         host.veil_framework_home = host.code_dir / 'veil'
         host.initialized_tag_path = SHARE_DIR / 'veil-host-{}.initialized'.format(host.env_name)
+        host.rollbackable_tag_path = SHARE_DIR / 'veil-host-{}.rollbackable'.format(host.env_name)
         host.with_user_editor = False
         host.server_list = []
         for server_name, server in env.servers.items():

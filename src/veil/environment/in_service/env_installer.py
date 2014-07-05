@@ -52,19 +52,28 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE'):
         stop_env(veil_env_name)
         make_rollback_backup(veil_env_name, exclude_code_dir=True, exclude_data_dir=False)
     install_resource(veil_servers_resource(servers=list_veil_servers(veil_env_name)[::-1], action='DEPLOY'))
+    if ever_deployed:
+        remove_rollbackable_tags(veil_env_name)
 
 
 def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True):
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
         source_dir = host.env_dir
-        backup_dir = '{}-backup'.format(source_dir)
+        rollback_backup_dir = '{}-backup'.format(source_dir)
         excludes = []
         if exclude_code_dir:
             excludes.append('--exclude "/{}"'.format(host.env_dir.relpathto(host.code_dir)))
         if exclude_data_dir:
             excludes.append('--exclude "/{}"'.format(host.env_dir.relpathto(host.data_dir)))
         with fabric.api.settings(host_string=host.deploys_via):
-            fabric.api.sudo('rsync -avh --delete {} {}/ {}/'.format(' '.join(excludes), source_dir, backup_dir))
+            fabric.api.sudo('rsync -avh --delete {} {}/ {}/'.format(' '.join(excludes), source_dir, rollback_backup_dir))
+            fabric.api.sudo('touch {}'.format(host.rollbackable_tag_path))
+
+
+def remove_rollbackable_tags(veil_env_name):
+    for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
+        with fabric.api.settings(host_string=host.deploys_via):
+            fabric.api.sudo('rm -f {}'.format(host.rollbackable_tag_path))
 
 
 @script('download-packages')
@@ -121,30 +130,31 @@ def rollback_env(veil_env_name):
     Bring up veil servers in reversed sorted server names order
     """
     hosts = unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name)
-    check_rollback_backup(hosts)
+    check_rollbackable(hosts)
     stop_env(veil_env_name)
     rollback(hosts)
     start_env(veil_env_name)
+    remove_rollbackable_tags(veil_env_name)
 
 
-def check_rollback_backup(hosts):
+def check_rollbackable(hosts):
     for host in hosts:
-        backup_dir = '{}-backup'.format(host.env_dir)
+        rollback_backup_dir = '{}-backup'.format(host.env_dir)
         with fabric.api.settings(host_string=host.deploys_via):
-            if not fabric.contrib.files.exists(backup_dir):
-                raise Exception('{}: backup does not exist'.format(host.base_name))
+            if not fabric.contrib.files.exists(host.rollbackable_tag_path) or not fabric.contrib.files.exists(rollback_backup_dir):
+                raise Exception('{}: no rollbackable tag or no rollback backup'.format(host.base_name))
 
 
 def rollback(hosts):
     ensure_servers_down(hosts)
     for host in hosts:
         source_dir = host.env_dir
-        backup_dir = '{}-backup'.format(source_dir)
+        rollback_backup_dir = '{}-backup'.format(source_dir)
         with fabric.api.settings(host_string=host.deploys_via):
             if fabric.contrib.files.exists(source_dir):
                 left_over_dir = '{}-to-be-deleted-{}'.format(source_dir, datetime.now().strftime('%Y%m%d%H%M%S'))
-                fabric.api.sudo('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(backup_dir, source_dir, left_over_dir))
-            fabric.api.sudo('rsync -avh --delete {}/ {}/'.format(backup_dir, source_dir))
+                fabric.api.sudo('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(rollback_backup_dir, source_dir, left_over_dir))
+            fabric.api.sudo('rsync -avh --delete {}/ {}/'.format(rollback_backup_dir, source_dir))
 
 
 def ensure_servers_down(hosts):
