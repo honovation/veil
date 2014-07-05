@@ -15,6 +15,8 @@ def kibana_resource():
     if not KIBANA_DIR.exists():
         shell_execute('apt-get install unzip')
         shell_execute('unzip kibana-latest.zip', cwd=OPT_DIR)
+        if (KIBANA_DIR / 'app/dashboards/logstash.json').exists():
+            shell_execute('mv {} default.json'.format(KIBANA_DIR / 'app/dashboards/logstash.json'))
     resources = [
         file_resource(path=KIBANA_DIR / 'config.js', content=render_config('kibana.config.js.j2', port=80)),
         os_ppa_repository_resource(name='nginx/stable'),
