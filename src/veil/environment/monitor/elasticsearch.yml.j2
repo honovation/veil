@@ -1,0 +1,42 @@
+cluster.name: @monitor
+path.logs: {{ log_dir }}
+path.data: {{ data_dir }}
+network.host: {{ config.network_host }}
+http.port: {{ config.http_port }}
+transport.tcp.port: {{ config.transport_tcp_port }}
+
+bootstrap.mlockall: true
+
+index.number_of_shards: 3
+index.number_of_replicas: 1
+indices.memory.index_buffer_size: 50%
+index.translog.flush_threshold_ops: 50000
+index.refresh_interval: 30s
+index.store.compress.stored: true
+index.fielddata.cache: soft
+
+# index pool
+threadpool.index.type: fixed
+threadpool.index.size: 12
+threadpool.index.queue_size: 200
+
+# search pool
+threadpool.search.type: fixed
+threadpool.search.size: 6
+threadpool.search.queue_size: 100
+
+# suggest pool
+threadpool.suggest.type: fixed
+threadpool.suggest.size: 6
+
+# get pool
+threadpool.get.type: fixed
+threadpool.get.size: 6
+
+# bulk pool
+threadpool.bulk.type: fixed
+threadpool.bulk.size: 6
+
+# percolate pool
+threadpool.percolate.type: fixed
+threadpool.percolate.size: 6

@@ -37,13 +37,11 @@ filter {
         }
     }
     if "nginx" in [tags] {
-        grep {
-            "add_tag" => ["home_page"]
-            "match" => ["request", "GET / HTTP/1.1"]
-        }
-        metrics {
-            "timer" => ["request_time", "%%{request_time}"]
-            "add_tag" => ["home_page", "metrics", "home_page_request_time"]
+        if "GET / HTTP/1.1" in [request] {
+            metrics {
+                "add_tag" => ["home_page", "metrics", "home_page_request_time"]
+                "timer" => ["request_time", "%%{request_time}"]
+            }
         }
         mutate {
             "add_field" => ["@title", "NGINX %%{status} <%%{browser_code}-%%{user_code}> %%{request}"]
