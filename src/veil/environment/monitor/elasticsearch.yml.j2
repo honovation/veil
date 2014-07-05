@@ -1,9 +1,9 @@
 cluster.name: @monitor
 path.logs: {{ log_dir }}
 path.data: {{ data_dir }}
-network.host: {{ config.network_host }}
-http.port: {{ config.http_port }}
-transport.tcp.port: {{ config.transport_tcp_port }}
+network.host: {{ elasticsearch_host }}
+http.port: {{ elasticsearch_port }}
+transport.tcp.port: {{ elasticsearch_transport_port }}
 
 bootstrap.mlockall: true
 

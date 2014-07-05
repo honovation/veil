@@ -1,14 +1,14 @@
 input {
     redis {
-        "host" => "{{ logs_redis_host or 'localhost' }}"
-        "port" => "{{ logs_redis_port or 5140 }}"
+        "host" => "{{ logs_redis_host }}"
+        "port" => "{{ logs_redis_port }}"
         "key" => "json_event"
         "data_type" => "list"
         "codec" => "json"
     }
     redis {
-        "host" => "{{ logs_redis_host or 'localhost' }}"
-        "port" => "{{ logs_redis_port or 5140 }}"
+        "host" => "{{ logs_redis_host }}"
+        "port" => "{{ logs_redis_port }}"
         "key" => "postgresql"
         "data_type" => "list"
         "codec" => "plain"
@@ -58,9 +58,9 @@ output {
     }
     if "_jsonparsefailure" not in [tags] and "metrics" not in [tags] {
         elasticsearch {
-            "cluster" => "@monitor"
-            "host" => "{{ elasticsearch_host or 'localhost'}}"
-            "port" => "{{ elasticsearch_port or 9200 }}"
+            "cluster" => "{{ elasticsearch_cluster }}"
+            "host" => "{{ elasticsearch_host }}"
+            "port" => "{{ elasticsearch_transport_port }}"
         }
     }
 }

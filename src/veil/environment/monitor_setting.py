@@ -12,9 +12,9 @@ def monitor_program(config):
             'resources': [('veil.environment.monitor.kibana_resource', {})]
         },
         'elasticsearch': {
-            'execute_command': '{}/elasticsearch-1.1.1/bin/elasticsearch'.format(OPT_DIR),
+            'execute_command': '{}/elasticsearch-1.1.1/bin/elasticsearch -Des.config={}/elasticsearch.yml'.format(OPT_DIR, VEIL_ETC_DIR),
             'run_as': 'root',
-            'resources': [('veil.environment.monitor.elasticsearch_resource', {})]
+            'resources': [('veil.environment.monitor.elasticsearch_resource', {'config': config})]
         },
         'logstash': {
             'execute_command': '{}/logstash-1.4.2/bin/logstash agent -f {}/logstash.conf -v'.format(OPT_DIR, VEIL_ETC_DIR),
