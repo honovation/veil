@@ -5,7 +5,6 @@ input {
         "key" => "json_event"
         "data_type" => "list"
         "codec" => "json"
-        "type" => "json_event"
     }
     redis {
         "host" => "{{ logs_redis_host or 'localhost' }}"
@@ -36,7 +35,7 @@ filter {
             "add_field" => ["@title", "POSTGRESQL %%{error_severity} <%%{process_id}-%%{session_id}> %%{message}"]
         }
     }
-    if "nginx" in [tags] {
+    if "nginx" in [type] {
         if "GET / HTTP/1.1" in [request] {
             metrics {
                 "add_tag" => ["home_page", "metrics", "home_page_request_time"]
@@ -47,7 +46,7 @@ filter {
             "add_field" => ["@title", "NGINX %%{status} <%%{browser_code}-%%{user_code}> %%{request}"]
         }
     }
-    if "veil" in [tags] {
+    if "veil" in [type] {
         mutate {
             "add_field" => ["@title", "VEIL %%{level} <%%{browser_code}-%%{user_code}> %%{event}"]
         }
