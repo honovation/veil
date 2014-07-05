@@ -7,7 +7,7 @@ BASELINE_DIR = VEIL_HOME / 'baseline'
 
 
 @script('restore-from-baseline')
-def restore_from_baseline(veil_env_name, host_name=None, relative_path=None, force_download=False):
+def restore_from_baseline(force_download, veil_env_name, host_name=None, relative_path=None):
     if not host_name:
         for server in list_veil_servers(veil_env_name):
             if server.mount_data_dir:
@@ -25,7 +25,7 @@ def restore_from_baseline(veil_env_name, host_name=None, relative_path=None, for
         remote_path = VEIL_BACKUP_ROOT / 'latest' / host.base_name / relative_path
         baseline_path = BASELINE_DIR / veil_env_name / host.base_name / relative_path
         restored_to_path = VEIL_VAR_DIR / relative_path
-    if force_download or not baseline_path.exists():
+    if force_download.upper() == 'TRUE' or not baseline_path.exists():
         download_baseline(veil_env_name, remote_path, baseline_path)
     shell_execute('veil down')
     shell_execute('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(baseline_path, baseline_path, restored_to_path))
