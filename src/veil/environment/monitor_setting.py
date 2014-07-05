@@ -9,7 +9,7 @@ def monitor_program(config):
         'nginx': {
             'execute_command': 'nginx -c {}/nginx.conf'.format(VEIL_ETC_DIR),
             'run_as': 'root',
-            'resources': [('veil.environment.monitor.kibana_resource', {})]
+            'resources': [('veil.environment.monitor.kibana_resource', {'config': config})]
         },
         'elasticsearch': {
             'execute_command': '{}/elasticsearch-1.1.1/bin/elasticsearch -Des.config={}/elasticsearch.yml'.format(OPT_DIR, VEIL_ETC_DIR),
