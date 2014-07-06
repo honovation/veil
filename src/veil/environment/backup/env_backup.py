@@ -83,7 +83,6 @@ def fetch_host_backup(host, timestamp):
     link_dest = '--link-dest={}/'.format(VEIL_BACKUP_ROOT / 'latest') if (VEIL_BACKUP_ROOT / 'latest').exists() else ''
     server_guard = get_veil_server(VEIL_ENV_NAME, '@guard')
     if server_guard.host_base_name == host.base_name:
-        link_dest = link_dest or '--link-dest={}/'.format(host_backup_dir)
         shell_execute('rsync -avh --numeric-ids --delete {} {} {}/'.format(link_dest, host_backup_dir, backup_dir), debug=True)
     else:
         shell_execute('rsync -avhPz -e "ssh -i {} -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete {} root@{}:{} {}/'.format(
