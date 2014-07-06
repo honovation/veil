@@ -28,7 +28,7 @@ def restore_from_baseline(force_download, veil_env_name, host_name=None, relativ
     if force_download.upper() == 'TRUE' or not baseline_path.exists():
         download_baseline(veil_env_name, remote_path, baseline_path)
     shell_execute('veil down')
-    shell_execute('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(baseline_path, baseline_path, restored_to_path))
+    shell_execute('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(baseline_path, baseline_path, restored_to_path), debug=True)
     shell_execute('veil install-server')
     shell_execute('veil up --daemonize')
     shell_execute('veil migrate')
@@ -40,4 +40,4 @@ def download_baseline(veil_env_name, remote_path, baseline_path):
     baseline_path.mkdirs()
     server_guard = get_veil_server(veil_env_name, '@guard')
     shell_execute('''rsync -avhPz -e "ssh -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --delete {}@{}:{}/ {}/'''.format(
-        server_guard.ssh_port, server_guard.ssh_user, server_guard.internal_ip, remote_path, baseline_path))
+        server_guard.ssh_port, server_guard.ssh_user, server_guard.internal_ip, remote_path, baseline_path), debug=True)

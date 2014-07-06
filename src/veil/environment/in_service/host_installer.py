@@ -87,6 +87,12 @@ def veil_host_config_resource(host, config_dir):
             owner='root', owner_group='root', mode=0644),
         veil_host_sources_list_resource(host=host)
     ]
+    if '@guard' in get_veil_env(host.env_name).servers:
+        resources.extend([
+            veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0700),
+            veil_host_file_resource(local_path=env_config_dir / '.ssh-@guard' / 'id_rsa.pub', host=host, remote_path='/root/.ssh/authorized_keys',
+                owner='root', owner_group='root', mode=0600)
+        ])
 
     hosts_configured.append(host.base_name)
     return resources

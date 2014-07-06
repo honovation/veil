@@ -44,7 +44,7 @@ def create_env_backup():
 @log_elapsed_time
 def backup_host(host):
     host_backup_dir = host.ssh_user_home / 'backup' / host.env_name / host.base_name
-    with fabric.api.settings(host_string=host.deploys_via):
+    with fabric.api.settings(host_string='root@{}:{}'.format(host.internal_ip, host.ssh_port)):
         fabric.api.run('mkdir -p {}'.format(host_backup_dir))
         running_servers_to_down = [s for s in list_veil_servers(VEIL_ENV_NAME) if s.mount_data_dir and s.host_base_name == host.base_name and is_server_running(s)]
         try:
@@ -84,14 +84,15 @@ def fetch_host_backup(host, timestamp):
     server_guard = get_veil_server(VEIL_ENV_NAME, '@guard')
     if server_guard.host_base_name == host.base_name:
         link_dest = link_dest or '--link-dest={}/'.format(host_backup_dir)
-        shell_execute('rsync -avh --numeric-ids --delete {} {} {}/'.format(link_dest, host_backup_dir, backup_dir))
+        shell_execute('rsync -avh --numeric-ids --delete {} {} {}/'.format(link_dest, host_backup_dir, backup_dir), debug=True)
     else:
-        shell_execute('rsync -avhPz -e "ssh -i {} -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete {} {}@{}:{} {}/'.format(
-            SSH_KEY_PATH, host.ssh_port, link_dest, host.ssh_user, host.internal_ip, host_backup_dir, backup_dir))
+        shell_execute('rsync -avhPz -e "ssh -i {} -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete {} root@{}:{} {}/'.format(
+            SSH_KEY_PATH, host.ssh_port, link_dest, host.internal_ip, host_backup_dir, backup_dir), debug=True)
 
 
 def delete_old_backups():
-    shell_execute('find . -maxdepth 1 -mindepth 1 -type d -ctime +{} -exec rm -r {{}} +'.format(KEEP_BACKUP_FOR_DAYS), cwd=VEIL_BACKUP_ROOT)
+    shell_execute('find . -maxdepth 1 -mindepth 1 -type d -ctime +{} -exec rm -r {{}} +'.format(KEEP_BACKUP_FOR_DAYS), cwd=VEIL_BACKUP_ROOT,
+        debug=True)
 
 
 def rsync_to_backup_mirror():
@@ -101,4 +102,4 @@ def rsync_to_backup_mirror():
     backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV_NAME)
     shell_execute('''rsync -avhHPz -e "ssh -i {} -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete --bwlimit={} {}/ {}@{}:{}/'''.format(
         SSH_KEY_PATH, backup_mirror.ssh_port, backup_mirror.bandwidth_limit, VEIL_BACKUP_ROOT, backup_mirror.ssh_user, backup_mirror.host_ip,
-        backup_mirror_path))
+        backup_mirror_path), debug=True)

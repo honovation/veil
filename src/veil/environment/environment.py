@@ -184,11 +184,11 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
 
 
 def list_veil_servers(veil_env_name):
-    return get_application().ENVIRONMENTS[veil_env_name].server_list
+    return get_veil_env(veil_env_name).server_list
 
 
 def get_veil_server(veil_env_name, veil_server_name):
-    return get_application().ENVIRONMENTS[veil_env_name].servers[veil_server_name]
+    return get_veil_env(veil_env_name).servers[veil_server_name]
 
 
 def get_current_veil_server():
@@ -196,15 +196,19 @@ def get_current_veil_server():
 
 
 def list_veil_hosts(veil_env_name):
-    return sorted(get_application().ENVIRONMENTS[veil_env_name].hosts.values(), key=lambda h: h.name)
+    return sorted(get_veil_env(veil_env_name).hosts.values(), key=lambda h: h.name)
 
 
 def get_veil_host(veil_env_name, veil_host_name):
-    return get_application().ENVIRONMENTS[veil_env_name].hosts[veil_host_name]
+    return get_veil_env(veil_env_name).hosts[veil_host_name]
 
 
 def get_veil_env_deployment_memo(veil_env_name):
-    return get_application().ENVIRONMENTS[veil_env_name].deployment_memo
+    return get_veil_env(veil_env_name).deployment_memo
+
+
+def get_veil_env(veil_env_name):
+    return get_application().ENVIRONMENTS[veil_env_name]
 
 
 def get_application_codebase():

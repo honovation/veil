@@ -35,10 +35,11 @@ from .environment import get_application_codebase
 from .environment import get_application_version
 from .environment import get_veil_framework_version
 
-from .environment import get_veil_env_deployment_memo
 from .environment import veil_env
 from .environment import veil_host
 from .environment import veil_server
+from .environment import get_veil_env
+from .environment import get_veil_env_deployment_memo
 from .environment import list_veil_hosts
 from .environment import get_veil_host
 from .environment import list_veil_servers
