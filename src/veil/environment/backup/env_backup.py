@@ -45,7 +45,7 @@ def create_env_backup():
 def backup_host(host):
     host_backup_dir = host.ssh_user_home / 'backup' / host.env_name / host.base_name
     with fabric.api.settings(host_string='root@{}:{}'.format(host.internal_ip, host.ssh_port)):
-        fabric.api.run('mkdir -p {}'.format(host_backup_dir))
+        fabric.api.run('mkdir -p -m 0700 {}'.format(host_backup_dir))
         running_servers_to_down = [s for s in list_veil_servers(VEIL_ENV_NAME) if s.mount_data_dir and s.host_base_name == host.base_name and is_server_running(s)]
         try:
             bring_down_servers(running_servers_to_down)
@@ -78,7 +78,7 @@ def bring_up_servers(servers):
 @log_elapsed_time
 def fetch_host_backup(host, timestamp):
     backup_dir = VEIL_BACKUP_ROOT / timestamp
-    backup_dir.makedirs(0755)
+    backup_dir.makedirs(0700)
     host_backup_dir = host.ssh_user_home / 'backup' / host.env_name / host.base_name
     link_dest = '--link-dest={}/'.format(VEIL_BACKUP_ROOT / 'latest') if (VEIL_BACKUP_ROOT / 'latest').exists() else ''
     server_guard = get_veil_server(VEIL_ENV_NAME, '@guard')
