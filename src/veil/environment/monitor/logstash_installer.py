@@ -7,7 +7,7 @@ MAJOR_VERSION = '1.4'
 
 @composite_installer
 def logstash_resource(config):
-    shell_execute('echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections')
+    shell_execute('echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections')
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
         os_ppa_repository_resource(name='webupd8team/java'),
