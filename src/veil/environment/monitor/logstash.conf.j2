@@ -1,14 +1,14 @@
 input {
     redis {
-        "host" => "{{ logs_redis_host }}"
-        "port" => "{{ logs_redis_port }}"
+        "host" => "{{ log_buffer_redis_host }}"
+        "port" => "{{ log_buffer_redis_port }}"
         "key" => "json_event"
         "data_type" => "list"
         "codec" => "json"
     }
     redis {
-        "host" => "{{ logs_redis_host }}"
-        "port" => "{{ logs_redis_port }}"
+        "host" => "{{ log_buffer_redis_host }}"
+        "port" => "{{ log_buffer_redis_port }}"
         "key" => "postgresql"
         "data_type" => "list"
         "codec" => "plain"

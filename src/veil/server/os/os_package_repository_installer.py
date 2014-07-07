@@ -8,6 +8,8 @@ from .os_package_installer import os_package_resource, set_apt_get_update_execut
 LOGGER = logging.getLogger(__name__)
 ETC_APT = as_path('/etc/apt')
 POSTGRESQL_APT_REPOSITORY_NAME = 'pgdg'
+ELASTICSEARCH_APT_REPOSITORY_NAME = 'elasticsearch'
+LOGSTASH_APT_REPOSITORY_NAME = 'logstash'
 
 
 @atomic_installer
@@ -43,10 +45,48 @@ def postgresql_apt_repository_resource():
     set_apt_get_update_executed(False)
 
 
-def is_os_package_repository_installed(name):
+@atomic_installer
+def elasticsearch_apt_repository_resource(major_version):
+    installed = is_os_package_repository_installed(ELASTICSEARCH_APT_REPOSITORY_NAME, version=major_version)
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        dry_run_result['elasticsearch_apt_repository?name={}&major_version={}'.format(ELASTICSEARCH_APT_REPOSITORY_NAME, major_version)] = '-' if installed else 'INSTALL'
+        return
+    if installed:
+        return
+    LOGGER.info('installing elasticsearch apt repository: %(name)s, %(major_version)s ...', {
+        'name': ELASTICSEARCH_APT_REPOSITORY_NAME, 'major_version': major_version
+    })
+    shell_execute('echo "deb http://packages.elasticsearch.org/elasticsearch/{}/debian stable main" > /etc/apt/sources.list.d/{}.list'.format(
+        major_version, ELASTICSEARCH_APT_REPOSITORY_NAME), capture=True)
+    shell_execute('wget -q -O - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | apt-key add -', capture=True)
+    set_apt_get_update_executed(False)
+
+
+@atomic_installer
+def logstash_apt_repository_resource(major_version):
+    installed = is_os_package_repository_installed(LOGSTASH_APT_REPOSITORY_NAME, version=major_version)
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        dry_run_result['logstash_apt_repository?name={}&major_version={}'.format(LOGSTASH_APT_REPOSITORY_NAME, major_version)] = '-' if installed else 'INSTALL'
+        return
+    if installed:
+        return
+    LOGGER.info('installing logstash apt repository: %(name)s, %(major_version)s ...', {
+        'name': LOGSTASH_APT_REPOSITORY_NAME, 'major_version': major_version
+    })
+    shell_execute('echo "deb http://packages.elasticsearch.org/logstash/{}/debian stable main" > /etc/apt/sources.list.d/{}.list'.format(
+        major_version, LOGSTASH_APT_REPOSITORY_NAME), capture=True)
+    shell_execute('wget -q -O - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | apt-key add -', capture=True)
+    set_apt_get_update_executed(False)
+
+
+def is_os_package_repository_installed(name, version=None):
     for path in (ETC_APT / 'sources.list.d').files():
-        if name in path.text():
+        sources_list_d_content = path.text()
+        if name in sources_list_d_content and (not version or version in sources_list_d_content):
             return True
-    if name in (ETC_APT / 'sources.list').text():
+    sources_list_content = (ETC_APT / 'sources.list').text()
+    if name in sources_list_content and (not version or version in sources_list_content):
         return True
     return False

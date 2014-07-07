@@ -1,25 +1,20 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
-from veil.environment.environment import OPT_DIR
 from veil.profile.installer import *
 
-LOGSTASH_CONF = VEIL_ETC_DIR / 'logstash.conf'
-APT_SOURCES_LIST_DIR = as_path('/etc/apt/sources.list.d')
+MAJOR_VERSION = '1.4'
 
 
 @composite_installer
 def logstash_resource(config):
-    if not (OPT_DIR / 'logstash-1.4.2.tar.gz').exists():
-        shell_execute('wget https://download.elasticsearch.org/logstash/logstash/logstash-1.4.2.tar.gz', cwd=OPT_DIR)
-    if not (OPT_DIR / 'logstash-1.4.2').exists():
-        shell_execute('tar zxf logstash-1.4.2.tar.gz', cwd=OPT_DIR)
-
-
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
         os_ppa_repository_resource(name='webupd8team/java'),
         os_package_resource(name='oracle-java8-installer'),
-        file_resource(path=LOGSTASH_CONF, content=render_config('logstash.conf.j2', elasticsearch_cluster=VEIL_ENV_NAME, **config))
+        logstash_apt_repository_resource(major_version=MAJOR_VERSION),
+        os_package_resource(name='logstash'),
+        os_service_resource(state='not_installed', name='logstash'),
+        os_service_resource(state='not_installed', name='logstash-web'),
+        file_resource(path=VEIL_ETC_DIR / 'logstash.conf', content=render_config('logstash.conf.j2', elasticsearch_cluster=VEIL_ENV_NAME, **config))
     ])
-
     return resources
