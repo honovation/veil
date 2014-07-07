@@ -12,10 +12,19 @@ KIBANA_DIR = OPT_DIR / 'kibana-latest'
 def kibana_resource(config):
     if not (OPT_DIR / 'kibana-latest.zip').exists():
         shell_execute('wget http://download.elasticsearch.org/kibana/kibana/kibana-latest.zip', cwd=OPT_DIR)
-    if not KIBANA_DIR.exists():
-        shell_execute('unzip kibana-latest.zip', cwd=OPT_DIR)
-        if (KIBANA_DIR / 'app/dashboards/logstash.json').exists():
-            shell_execute('mv {} default.json'.format('logstash.json'), cwd=KIBANA_DIR / 'app/dashboards')
+    else:
+        current_kibana_md5 = shell_execute('md5sum kibana-latest.zip', cwd=OPT_DIR, capture=True).split()[0]
+        shell_execute('wget -N http://download.elasticsearch.org/kibana/kibana/kibana-latest.zip', cwd=OPT_DIR)
+        new_kibana_md5 = shell_execute('md5sum kibana-latest.zip', cwd=OPT_DIR, capture=True).split()[0]
+        if current_kibana_md5 != new_kibana_md5:
+            shell_execute('rm -rf kibana-latest', cwd=OPT_DIR)
+        else:
+            print('no change for kibana-latest')
+            return
+    shell_execute('unzip -o kibana-latest.zip', cwd=OPT_DIR)
+    if (KIBANA_DIR / 'app/dashboards/logstash.json').exists():
+        shell_execute('mv logstash.json default.json', cwd=KIBANA_DIR / 'app/dashboards')
+
     resources = [
         os_ppa_repository_resource(name='nginx/stable'),
         os_package_resource(name='nginx-extras'),
