@@ -15,7 +15,7 @@ def kibana_resource(config):
     if not KIBANA_DIR.exists():
         shell_execute('unzip kibana-latest.zip', cwd=OPT_DIR)
         if (KIBANA_DIR / 'app/dashboards/logstash.json').exists():
-            shell_execute('mv {} default.json'.format(KIBANA_DIR / 'app/dashboards/logstash.json'))
+            shell_execute('mv {} default.json'.format('logstash.json'), cwd=KIBANA_DIR / 'app/dashboards')
     resources = [
         os_ppa_repository_resource(name='nginx/stable'),
         os_package_resource(name='nginx-extras'),

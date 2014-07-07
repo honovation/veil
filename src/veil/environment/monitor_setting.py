@@ -13,7 +13,7 @@ def monitor_programs(config):
             'resources': [('veil.environment.monitor.logstash_resource', {'config': config})]
         }},
         {'elasticsearch': {
-            'execute_command': '/usr/share/elasticsearch/bin/elasticsearch -Des.config={}/elasticsearch.yml'.format(VEIL_ETC_DIR),
+            'execute_command': '/usr/share/elasticsearch/bin/elasticsearch -Des.path.conf={}'.format(VEIL_ETC_DIR),
             'run_as': 'root',
             'resources': [('veil.environment.monitor.elasticsearch_resource', {'config': config})]
         }},
