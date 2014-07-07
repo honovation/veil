@@ -15,7 +15,7 @@ def elasticsearch_resource(config):
     resources.extend([
         file_resource(
             path=VEIL_ETC_DIR / 'elasticsearch.yml',
-            content=render_config('elasticsearch.yml.j2', log_dir=VEIL_LOG_DIR, data_dir=VEIL_VAR_DIR, **config))
+            content=render_config('elasticsearch.yml.j2', log_dir=VEIL_LOG_DIR, data_dir=VEIL_VAR_DIR, elasticsearch_cluster=VEIL_ENV_NAME, **config))
     ])
 
     return resources

@@ -19,7 +19,7 @@ def logstash_resource(config):
     resources.extend([
         os_ppa_repository_resource(name='webupd8team/java'),
         os_package_resource(name='oracle-java7-installer'),
-        file_resource(path=LOGSTASH_CONF, content=render_config('logstash.conf.j2', **config))
+        file_resource(path=LOGSTASH_CONF, content=render_config('logstash.conf.j2', elasticsearch_cluster=VEIL_ENV_NAME, **config))
     ])
 
     return resources
