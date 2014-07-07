@@ -234,18 +234,13 @@ def upgrade_env_pip(veil_env_name, setuptools_version, pip_version):
                 fabric.api.sudo('veil :{} upgrade-pip {} {}'.format(server.fullname, setuptools_version, pip_version))
 
 
-@script('print-deployed-at')
-def print_deployed_at():
-    print(get_deployed_at())
-
-
 def get_deployed_at():
     last_commit = shell_execute('git rev-parse HEAD', capture=True)
     lines = shell_execute("git show-ref --tags -d | grep ^{} | sed -e 's,.* refs/tags/,,' -e 's/\^{{}}//'".format(last_commit), capture=True)
     deployed_ats = []
     for tag in lines.splitlines(False):
-        if tag.startswith('{}-'.format(VEIL_ENV_NAME)):
-            formatted_deployed_at = tag.replace('{}-'.format(VEIL_ENV_NAME), '').split('-')[0]
+        env_name, formatted_deployed_at, _ = tag.rsplit('-', 2)
+        if env_name == VEIL_ENV_NAME:
             deployed_ats.append(convert_datetime_to_client_timezone(datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S')))
     return max(deployed_ats) if deployed_ats else None
 
@@ -261,8 +256,7 @@ def update_branch(veil_env_name):
 
 
 def tag_deploy(veil_env_name):
-    tag_name = '{}-{}-{}'.format(
-        veil_env_name, get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
+    tag_name = '{}-{}-{}'.format(veil_env_name, get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
     shell_execute('git tag {}'.format(tag_name))
     shell_execute('git push origin tag {}'.format(tag_name))
 
