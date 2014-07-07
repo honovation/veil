@@ -44,7 +44,7 @@ def kibana_resource(config):
         current_kibana_md5 = shell_execute('md5sum {}'.format(KIBANA_SOURCE_PATH), capture=True).split()[0]
     else:
         current_kibana_md5 = None
-    shell_execute('wget -N http://download.elasticsearch.org/kibana/kibana/kibana-latest.zip', cwd=KIBANA_SOURCE_PATH.parent)
+    shell_execute('wget -U "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36" -N http://download.elasticsearch.org/kibana/kibana/kibana-latest.zip', cwd=KIBANA_SOURCE_PATH.parent)
     new_kibana_md5 = shell_execute('md5sum {}'.format(KIBANA_SOURCE_PATH), capture=True).split()[0]
     if current_kibana_md5 != new_kibana_md5:
         LOGGER.info('installing new version of Kibana...')
