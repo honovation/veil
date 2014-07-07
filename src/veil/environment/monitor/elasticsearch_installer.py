@@ -8,6 +8,7 @@ MAJOR_VERSION = '1.1'
 @composite_installer
 def elasticsearch_resource(config):
     resources = list(BASIC_LAYOUT_RESOURCES)
+    shell_execute('echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections')
     resources.extend([
         os_ppa_repository_resource(name='webupd8team/java'),
         os_package_resource(name='oracle-java8-installer'),
