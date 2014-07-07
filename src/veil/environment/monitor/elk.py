@@ -56,7 +56,7 @@ def kibana_resource(config):
     if current_kibana_md5 != new_kibana_md5:
         LOGGER.info('installing new version of Kibana...')
         shell_execute('rm -rf kibana-latest', cwd=KIBANA_HOME.parent)
-        shell_execute('unzip -o kibana-latest.zip', cwd=KIBANA_HOME.parent)
+        shell_execute('unzip -o kibana-latest.zip', cwd=KIBANA_SOURCE_PATH.parent)
         if (KIBANA_HOME / 'app' / 'dashboards' / 'logstash.json').exists():
             shell_execute('mv -f logstash.json default.json', cwd=KIBANA_HOME / 'app' / 'dashboards')
     resources = [
