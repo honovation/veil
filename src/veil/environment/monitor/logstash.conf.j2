@@ -16,11 +16,6 @@ input {
     }
 }
 filter {
-    multiline {
-        "pattern" => "^\s"
-        "negate" => true
-        "what" => "previous"
-    }
     if [@type] == "postgresql" {
         multiline {
             "pattern" => "^20"
