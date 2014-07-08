@@ -12,11 +12,11 @@ input {
         "key" => "postgresql"
         "data_type" => "list"
         "codec" => "plain"
-        "tags" => ["postgresql"]
+        "type" => "postgresql"
     }
 }
 filter {
-    if "postgresql" in [tags] {
+    if [type] == "postgresql" {
         multiline {
             "pattern" => "^20"
             "negate" => true
@@ -35,7 +35,7 @@ filter {
             "add_field" => ["@title", "POSTGRESQL %%{error_severity} <%%{process_id}-%%{session_id}> %%{message}"]
         }
     }
-    if "nginx" in [type] {
+    if [type] == "nginx" {
         if "GET / HTTP/1.1" in [request] {
             metrics {
                 "add_tag" => ["home_page", "metrics", "home_page_request_time"]
@@ -46,7 +46,7 @@ filter {
             "add_field" => ["@title", "NGINX %%{status} <%%{browser_code}-%%{user_code}> %%{request}"]
         }
     }
-    if "veil" in [type] {
+    if [type] == "veil" {
         mutate {
             "add_field" => ["@title", "VEIL %%{level} <%%{browser_code}-%%{user_code}> %%{event}"]
         }
