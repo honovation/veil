@@ -12,7 +12,7 @@ input {
         "key" => "postgresql"
         "data_type" => "list"
         "codec" => "plain"
-        "@type" => "postgresql"
+        "add_field" => {"@type" => "postgresql"}
     }
 }
 filter {
@@ -32,23 +32,23 @@ filter {
             "match" => ["log_time", "yyyy-MM-dd HH:mm:ss.SSS 'CST'"]
         }
         mutate {
-            "add_field" => ["@title", "POSTGRESQL %%{error_severity} <%%{process_id}-%%{session_id}> %%{message}"]
+            "add_field" => ["@title", "POSTGRESQL %{error_severity} <%{process_id}-%%{session_id}> %{message}"]
         }
     }
     if [@type] == "nginx" {
-        if "GET / HTTP/1.1" in [request] {
+        if "GET / HTTP/1.1" in [@fields][request] {
             metrics {
                 "add_tag" => ["home_page", "metrics", "home_page_request_time"]
-                "timer" => ["request_time", "%%{request_time}"]
+                "timer" => ["request_time", "%{[@fields][request_time]}"]
             }
         }
         mutate {
-            "add_field" => ["@title", "NGINX %%{status} <%%{browser_code}-%%{user_code}> %%{request}"]
+            "add_field" => ["@title", "NGINX %{[@fields][status]} <%{[@fields][browser_code]}-%{[@fields][user_code]}> %{[@fields][request]}"]
         }
     }
     if [@type] == "veil" {
         mutate {
-            "add_field" => ["@title", "VEIL %%{level} <%%{browser_code}-%%{user_code}> %%{event}"]
+            "add_field" => ["@title", "VEIL %{[@fields][level]} <%{[@fields][browser_code]}-%{[@fields][user_code]}> %{[@fields][event]}"]
         }
     }
 }

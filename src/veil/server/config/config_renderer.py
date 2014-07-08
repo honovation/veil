@@ -12,8 +12,7 @@ def get_template_from_file(template_path):
         func = get_executing_installer()
         if not func:
             raise Exception('can only render_config from installer')
-        current_template_directory = os.path.dirname(
-            os.path.abspath(importlib.import_module(func.__module__).__file__))
+        current_template_directory = os.path.dirname(os.path.abspath(importlib.import_module(func.__module__).__file__))
         template_path = os.path.join(current_template_directory, template_path)
     template = create_environment().get_template('root:{}'.format(template_path))
     return template

@@ -3,6 +3,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 
 LOGGER = logging.getLogger(__name__)
+CURRENT_DIR = as_path(os.path.dirname(__file__))
 LOGSTASH_MAJOR_VERSION = '1.4'
 ELASTICSEARCH_MAJOR_VERSION = '1.1'
 KIBANA_SOURCE_PATH = DEPENDENCY_DIR / 'kibana-latest.zip'
@@ -53,12 +54,6 @@ def kibana_resource(config):
             raise
     else:
         new_kibana_md5 = shell_execute('md5sum {}'.format(KIBANA_SOURCE_PATH), capture=True).split()[0]
-    if current_kibana_md5 != new_kibana_md5:
-        LOGGER.info('installing new version of Kibana...')
-        shell_execute('rm -rf kibana-latest', cwd=KIBANA_HOME.parent)
-        shell_execute('unzip -o {}'.format(KIBANA_SOURCE_PATH), cwd=KIBANA_HOME.parent)
-        if (KIBANA_HOME / 'app' / 'dashboards' / 'logstash.json').exists():
-            shell_execute('mv -f logstash.json default.json', cwd=KIBANA_HOME / 'app' / 'dashboards')
     resources = [
         os_ppa_repository_resource(name='nginx/stable'),
         os_package_resource(name='nginx-extras'),
@@ -66,6 +61,12 @@ def kibana_resource(config):
         file_resource(path=VEIL_ETC_DIR / 'nginx.conf', content=render_config('nginx.conf.j2', kibana_root=KIBANA_HOME)),
         file_resource(path=KIBANA_HOME / 'config.js', content=render_config('kibana.config.js.j2', **config))
     ]
+    if current_kibana_md5 != new_kibana_md5:
+        LOGGER.info('installing new version of Kibana...')
+        shell_execute('rm -rf kibana-latest', cwd=KIBANA_HOME.parent)
+        shell_execute('unzip -o {}'.format(KIBANA_SOURCE_PATH), cwd=KIBANA_HOME.parent)
+        resources.append(file_resource(path=KIBANA_HOME / 'app' / 'dashboards' / 'default.json',
+            content=(CURRENT_DIR / 'kibana.logstash.json').text(), keep_origin=True))
     return resources
 
 
