@@ -83,8 +83,10 @@ databases {{ config.get('max_databases_count', 100) }}
 #
 #   save ""
 
-{% for save_config in config.get('save_configs', []) %}
-save {{ save_config.interval }} {{ save_config.changed_keys }}
+{% for snapshot_config in config.get('snapshot_configs', []) %}
+save {{ snapshot_config.interval }} {{ snapshot_config.changed_keys }}
+{% else %}
+save ""
 {% endfor %}
 
 # By default Redis will stop accepting writes if RDB snapshots are enabled
@@ -387,7 +389,7 @@ no-appendfsync-on-rewrite no
 # Specify a percentage of zero in order to disable the automatic AOF
 # rewrite feature.
 
-auto-aof-rewrite-percentage 100
+auto-aof-rewrite-percentage 60
 auto-aof-rewrite-min-size 64mb
 
 ################################ LUA SCRIPTING  ###############################
