@@ -17,11 +17,16 @@ input {
 }
 filter {
     multiline {
+        "pattern" => "^\s"
+        "negate" => true
+        "what" => "previous"
+    }
+    if [@type] == "postgresql" {
+        multiline {
             "pattern" => "^20"
             "negate" => true
             "what" => "previous"
-    }
-    if [@type] == "postgresql" {
+        }
         csv {
             "columns" => ["log_time","user_name","database_name","process_id","connection_from","session_id",
                 "session_line_num","command_tag","session_start_time","virtual_transaction_id","transaction_id",
