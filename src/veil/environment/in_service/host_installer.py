@@ -27,7 +27,7 @@ def veil_hosts_resource(veil_env_name, config_dir):
                 veil_host_onetime_config_resource(host=host, config_dir=config_dir),
                 veil_host_config_resource(host=host, config_dir=config_dir),
                 veil_host_application_config_resource(host=host, config_dir=config_dir),
-                veil_host_application_codebase_resource(host=host)
+                veil_host_codebase_resource(host=host)
             ])
             if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
                 resources.append(veil_host_user_editor_resource(host=host, config_dir=config_dir))
@@ -43,11 +43,11 @@ def veil_hosts_resource(veil_env_name, config_dir):
 
 
 @composite_installer
-def veil_hosts_application_codebase_resource(veil_env_name):
+def veil_hosts_codebase_resource(veil_env_name):
     resources = []
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
         fabric.api.env.host_string = host.deploys_via
-        resources.append(veil_host_application_codebase_resource(host=host))
+        resources.append(veil_host_codebase_resource(host=host))
     return resources
 
 
@@ -110,10 +110,10 @@ def veil_host_application_config_resource(host, config_dir):
 
 
 @atomic_installer
-def veil_host_application_codebase_resource(host):
+def veil_host_codebase_resource(host):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'veil_host_application_codebase?{}'.format(host.env_name)
+        key = 'veil_host_codebase?{}'.format(host.env_name)
         dry_run_result[key] = 'INSTALL'
         return
     with fabric.api.settings(forward_agent=True):

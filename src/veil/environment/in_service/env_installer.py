@@ -13,31 +13,44 @@ from veil.environment import *
 from veil.utility.clock import *
 from veil.utility.shell import *
 from veil.backend.database.migration import *
-from .host_installer import veil_hosts_resource, veil_hosts_application_codebase_resource
+from .host_installer import veil_hosts_resource, veil_hosts_codebase_resource
 from .server_installer import veil_servers_resource, is_container_running, is_server_running
 
 
 @script('deploy-env')
 @log_elapsed_time
 def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', include_monitor_server='FALSE'):
+    print(green('Make local preparation ...'))
     do_local_preparation(veil_env_name)
+    print(green('Tag deploy ...'))
     tag_deploy(veil_env_name)
 
+    print(green('Make rollback backup -- include code dir, exclude data dir ...'))
     make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True)
+    print(green('Deploy hosts ...'))
     install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=as_path(config_dir)))
     if should_download_packages == 'TRUE':
+        print(green('Download packages ...'))
         download_packages(veil_env_name)
     first_round_servers = list_veil_servers(veil_env_name, False, False)
+    first_round_server_names = [server.name for server in first_round_servers]
+    print(green('Stop round-1 servers {} ...'.format(first_round_server_names)))
     stop_server(first_round_servers)
+    print(green('Make rollback backup -- exclude code dir, include data dir ...'))
     make_rollback_backup(veil_env_name, exclude_code_dir=True, exclude_data_dir=False)
+    print(green('Deploy round-1 servers {} ...'.format(first_round_server_names[::-1])))
     install_resource(veil_servers_resource(servers=first_round_servers[::-1], action='DEPLOY'))
 
     second_round_servers = [get_veil_server(veil_env_name, '@guard')]
+    second_round_server_names = [server.name for server in second_round_servers]
     if include_monitor_server == 'TRUE':
         second_round_servers.append(get_veil_server(veil_env_name, '@monitor'))
+    print(green('Stop round-2 servers {} ...'.format(second_round_server_names)))
     stop_server(second_round_servers)
+    print(green('Deploy round-2 servers {} ...'.format(second_round_server_names[::-1])))
     install_resource(veil_servers_resource(servers=second_round_servers[::-1], action='DEPLOY'))
 
+    print(green('Remove rollbackable tags ...'))
     remove_rollbackable_tags(veil_env_name)
 
 
@@ -75,6 +88,7 @@ def download_packages(veil_env_name):
                     fabric.api.sudo('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x')
                 try:
                     for server in host.server_list:
+                        print(green('Download packages for server {} ...'.format(server.name)))
                         if not fabric.contrib.files.exists(server.deployed_tag_path):
                             print(yellow('Skipped downloading packages for server {} as it is not successfully deployed'.format(
                                 server.container_name)))
@@ -96,10 +110,16 @@ def patch_env(veil_env_name):
     Iterate veil server in reversed sorted server names order (in veil_servers_resource and local_deployer:patch)
         and patch programs
     """
+    print(green('Make local preparation ...'))
     do_local_preparation(veil_env_name)
+    print(green('Tag patch ...'))
     tag_patch(veil_env_name)
-    install_resource(veil_hosts_application_codebase_resource(veil_env_name=veil_env_name))
-    install_resource(veil_servers_resource(servers=list_veil_servers(veil_env_name, False, False)[::-1], action='PATCH'))
+    print(green('Pull codebase ...'))
+    install_resource(veil_hosts_codebase_resource(veil_env_name=veil_env_name))
+    servers = list_veil_servers(veil_env_name, False, False)
+    server_names = [server.name for server in servers]
+    print(green('Patch servers {} ...'.format(server_names[::-1])))
+    install_resource(veil_servers_resource(servers=servers[::-1], action='PATCH'))
 
 
 def do_local_preparation(veil_env_name):
