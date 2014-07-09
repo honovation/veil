@@ -36,14 +36,14 @@ filter {
         }
     }
     if [@type] == "nginx" {
+        mutate {
+            "add_field" => ["@title", "NGINX %{[@fields][status]} <%{[@fields][browser_code]}-%{[@fields][user_code]}> %{[@fields][request]}"]
+        }
         if "GET / HTTP/1.1" in [@fields][request] {
             metrics {
                 "add_tag" => ["home_page", "metrics", "home_page_request_time"]
                 "timer" => ["request_time", "%{[@fields][request_time]}"]
             }
-        }
-        mutate {
-            "add_field" => ["@title", "NGINX %{[@fields][status]} <%{[@fields][browser_code]}-%{[@fields][user_code]}> %{[@fields][request]}"]
         }
     }
     if [@type] == "veil" {
