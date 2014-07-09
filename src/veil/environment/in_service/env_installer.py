@@ -44,8 +44,6 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
 def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True):
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
         source_dir = host.env_dir
-        if not fabric.contrib.files.exists(source_dir):
-            continue
         rollback_backup_dir = '{}-backup'.format(source_dir)
         excludes = []
         if exclude_code_dir:
@@ -53,6 +51,8 @@ def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir
         if exclude_data_dir:
             excludes.append('--exclude "/{}"'.format(host.env_dir.relpathto(host.data_dir)))
         with fabric.api.settings(host_string=host.deploys_via):
+            if not fabric.contrib.files.exists(source_dir):
+                continue
             fabric.api.sudo('rsync -ah --numeric-ids --delete {} --link-dest={}/ {}/ {}/'.format(' '.join(excludes), source_dir, source_dir,
                 rollback_backup_dir))
             fabric.api.sudo('touch {}'.format(host.rollbackable_tag_path))
