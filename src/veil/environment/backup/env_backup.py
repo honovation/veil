@@ -4,6 +4,7 @@ from datetime import datetime
 import logging
 from veil.environment import *
 from veil_installer import *
+from veil.environment.in_service import is_server_running
 from veil.frontend.cli import *
 from veil.utility.timer import *
 from veil.utility.misc import *
@@ -18,16 +19,11 @@ KEEP_BACKUP_FOR_DAYS = 7 if VEIL_ENV_TYPE == 'staging' else 15
 @script('create-env-backup')
 @log_elapsed_time
 def create_env_backup():
-    """
-    Bring down veil servers in sorted server names order
-    Bring up veil servers in reversed sorted server names order
-    """
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         dry_run_result['env_backup'] = 'BACKUP'
         return
-    servers = [server for server in list_veil_servers(VEIL_ENV_NAME) if server.name not in ('@guard', '@monitor')]
-    hosts_to_backup = [get_veil_host(server.env_name, server.host_name) for server in unique(servers, id_func=lambda s: s.host_base_name)]
+    hosts_to_backup = [get_veil_host(server.env_name, server.host_name) for server in unique(list_veil_servers(VEIL_ENV_NAME, False, False), id_func=lambda s: s.host_base_name)]
     if not hosts_to_backup:
         LOGGER.warn('no hosts to backup: %(env_name)s', {'env_name': VEIL_ENV_NAME})
         return
@@ -46,7 +42,7 @@ def backup_host(host):
     host_backup_dir = host.ssh_user_home / 'backup' / host.env_name / host.base_name
     with fabric.api.settings(host_string='root@{}:{}'.format(host.internal_ip, host.ssh_port)):
         fabric.api.run('mkdir -p -m 0700 {}'.format(host_backup_dir))
-        running_servers_to_down = [s for s in list_veil_servers(VEIL_ENV_NAME) if s.mount_data_dir and s.host_base_name == host.base_name and is_server_running(s)]
+        running_servers_to_down = [s for s in list_veil_servers(VEIL_ENV_NAME, False, False) if s.mount_data_dir and s.host_base_name == host.base_name and is_server_running(s)]
         try:
             bring_down_servers(running_servers_to_down)
             fabric.api.run('rsync -avh --numeric-ids --delete --exclude "/{}" --exclude "/{}" --exclude "/{}" --link-dest={}/ {}/ {}/'.format(
@@ -54,11 +50,6 @@ def backup_host(host):
                 host.var_dir.relpathto(host.bucket_uploaded_files_dir), host.var_dir, host.var_dir, host_backup_dir))
         finally:
             bring_up_servers(reversed(running_servers_to_down))
-
-
-def is_server_running(server):
-    ret = fabric.api.run('ps -ef | grep supervisord | grep -e {} | grep -v grep'.format(server.etc_dir), warn_only=True)
-    return ret.return_code == 0
 
 
 def bring_down_servers(servers):

@@ -24,6 +24,7 @@ with veil_component.init_component(__name__):
     from .container_installer import veil_container_directory_resource
     from .server_installer import veil_servers_resource
     from .server_installer import veil_server_resource
+    from .server_installer import is_server_running
     from .env_installer import get_deployed_at
 
     __all__ = [
@@ -53,6 +54,7 @@ with veil_component.init_component(__name__):
         # from server_installer
         veil_servers_resource.__name__,
         veil_server_resource.__name__,
+        is_server_running.__name__,
         # from env_installer
         get_deployed_at.__name__
     ]

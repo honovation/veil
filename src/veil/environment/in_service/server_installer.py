@@ -22,7 +22,7 @@ def veil_server_resource(server, action='PATCH'):
         return
 
     if not is_container_running(server, not_on_host=True):
-        print(yellow('Skipped patching server {} as its container is not running'.format(server.container_name)))
+        print(yellow('Skipped {} server {} as its container is not running'.format(action, server.container_name)))
 
     with fabric.api.settings(host_string=server.deploys_via):
         with fabric.api.cd(server.veil_home):

@@ -52,6 +52,8 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
     if sorted_server_names:
         assert set(sorted_server_names) == set(server_names), 'ENV {}: inconsistency between sorted_server_names {} and server_names {}'.format(name,
             sorted_server_names, server_names)
+        assert '@monitor' not in sorted_server_names or '@monitor' == sorted_server_names[-1], 'ENV {}: @monitor should be the last one in {}'.format(
+            name, sorted_server_names)
     else:
         sorted_server_names = sorted(server_names)
 
@@ -183,8 +185,13 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
     })
 
 
-def list_veil_servers(veil_env_name):
-    return get_veil_env(veil_env_name).server_list
+def list_veil_servers(veil_env_name, include_guard_server=True, include_monitor_server=True):
+    exclude_server_names = []
+    if not include_guard_server:
+        exclude_server_names.append('@guard')
+    if not include_monitor_server:
+        exclude_server_names.append('@monitor')
+    return [server for server in get_veil_env(veil_env_name).server_list if server.name not in exclude_server_names]
 
 
 def get_veil_server(veil_env_name, veil_server_name):
