@@ -26,7 +26,7 @@ def veil_server_resource(server, action='PATCH'):
 
     with fabric.api.settings(host_string=server.deploys_via):
         with fabric.api.cd(server.veil_home):
-            print(green('{} server {} ...'.format(action, server.name)))
+            print(cyan('{} server {} ...'.format(action, server.name)))
             if 'DEPLOY' == action:
                 fabric.api.sudo('{}/bin/veil :{} deploy'.format(server.veil_framework_home, server.fullname))
                 fabric.api.sudo('touch {}'.format(server.deployed_tag_path))
