@@ -69,7 +69,7 @@ startretries={{ program.get('startretries', 3) }}
 stopwaitsecs={{ program.get('stopwaitsecs', 10) }}
 stopsignal={{ program.get('stop_signal', 'TERM') }}
 exitcodes={{ ','.join(program.get('expected_exit_codes', '02')) }}
-redirect_stderr={{ program.redirect_stderr }}
+redirect_stderr={{ 'true' if program.redirect_stderr else 'false' }}
 {% if program.redirect_stderr %}
 stdout_logfile={{ config.logging.directory }}/{{ program_name }}.log
 {% else %}
