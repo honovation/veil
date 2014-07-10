@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+from veil_component import as_path
 from veil.environment import *
 from veil.frontend.cli import *
 from veil.utility.shell import *
@@ -37,7 +38,12 @@ def restore_from_baseline(force_download, veil_env_name, host_name=None, relativ
 
 @script('download-baseline')
 def download_baseline(veil_env_name, remote_path, baseline_path):
-    baseline_path.mkdirs()
+    if isinstance(baseline_path, basestring):
+        baseline_path = as_path(baseline_path)
+    baseline_path.makedirs(0755)
+    guard_key = as_path('../ljsecurity') / veil_env_name / '.ssh-@guard' / 'id_rsa'
     server_guard = get_veil_server(veil_env_name, '@guard')
-    shell_execute('''rsync -avhPz -e "ssh -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --delete {}@{}:{}/ {}/'''.format(
-        server_guard.ssh_port, server_guard.ssh_user, server_guard.internal_ip, remote_path, baseline_path), debug=True)
+    host_guard = get_veil_host(veil_env_name, server_guard.host_name)
+    container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server_guard.container_name)
+    shell_execute('''rsync -avhPz -e "ssh -i {} -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --delete root@{}:{}/{}/ {}/'''.format(
+        guard_key, host_guard.ssh_port, host_guard.internal_ip, container_rootfs_path, remote_path, baseline_path), debug=True)
