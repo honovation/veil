@@ -52,7 +52,7 @@ class LogShipper(object):
             cur_pos, eof_pos_at_start_time = get_file_current_and_eof_positions(self.log_file)
             for line in iter(self.log_file.readline, ''): # donot use "for line in self.log_file" due to its read-ahead behavior
                 line = line.strip()
-                if line:
+                if line and line.startswith('{'):
                     try:
                         self.redis_client.rpush(self.redis_key, line)
                     except:
