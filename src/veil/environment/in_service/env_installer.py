@@ -35,7 +35,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
     first_round_servers = list_veil_servers(veil_env_name, False, False)
     first_round_server_names = [server.name for server in first_round_servers]
     print(green('Stop round-1 servers {} ...'.format(first_round_server_names)))
-    stop_server(first_round_servers)
+    stop_servers(first_round_servers)
     print(green('Make rollback backup -- exclude code dir, include data dir ...'))
     make_rollback_backup(veil_env_name, exclude_code_dir=True, exclude_data_dir=False)
     print(green('Deploy round-1 servers {} ...'.format(first_round_server_names[::-1])))
@@ -46,7 +46,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
     if include_monitor_server == 'TRUE':
         second_round_servers.append(get_veil_server(veil_env_name, '@monitor'))
     print(green('Stop round-2 servers {} ...'.format(second_round_server_names)))
-    stop_server(second_round_servers)
+    stop_servers(second_round_servers)
     print(green('Deploy round-2 servers {} ...'.format(second_round_server_names[::-1])))
     install_resource(veil_servers_resource(servers=second_round_servers[::-1], action='DEPLOY'))
 
@@ -101,6 +101,14 @@ def download_packages(veil_env_name):
                                 fabric.api.sudo('veil :{} install-server --download-only'.format(server.fullname))
                 finally:
                     fabric.api.sudo('git checkout -- RESOURCE-LATEST-VERSION-*')
+
+
+@script('deploy-monitor')
+@log_elapsed_time
+def deploy_monitor(veil_env_name):
+    server = get_veil_server(veil_env_name, '@monitor')
+    stop_servers([server])
+    install_resource(veil_servers_resource(servers=[server], action='DEPLOY'))
 
 
 @script('patch-env')
@@ -219,10 +227,10 @@ def stop_env(veil_env_name, include_guard_server=True, include_monitor_server=Tr
         include_guard_server = include_guard_server == 'TRUE'
     if isinstance(include_monitor_server, basestring):
         include_monitor_server = include_monitor_server == 'TRUE'
-    stop_server(list_veil_servers(veil_env_name, include_guard_server, include_monitor_server))
+    stop_servers(list_veil_servers(veil_env_name, include_guard_server, include_monitor_server))
 
 
-def stop_server(servers):
+def stop_servers(servers):
     for server in servers:
         if not is_server_running(server, not_on_host=True):
             continue
