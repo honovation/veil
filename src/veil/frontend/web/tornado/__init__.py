@@ -1,6 +1,8 @@
 import veil_component
 
 with veil_component.init_component(__name__):
+    veil_component.configure_logging('tornado.application')  # clear log handlers and add a human-readable handler which logs to stdout
+
     from .context import get_current_http_context
     from .context import get_current_http_request
     from .context import get_current_http_response
