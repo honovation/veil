@@ -112,7 +112,7 @@ def deploy_monitor(veil_env_name):
         if not fabric.contrib.files.exists(server.deployed_tag_path):
             print(yellow('Use deploy-env to deploy monitor first time'))
             return
-    install_resource(veil_host_codebase_resource(host=host))
+        install_resource(veil_host_codebase_resource(host=host))
     stop_servers([server])
     install_resource(veil_servers_resource(servers=[server], action='DEPLOY'))
 
