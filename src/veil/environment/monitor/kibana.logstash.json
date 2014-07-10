@@ -127,7 +127,7 @@
             "font-size": "9pt"
           },
           "overflow": "min-height",
-          "fields": ["@title"],
+          "fields": ["@timestamp", "@title"],
           "localTime": true,
           "timeField": "@timestamp",
           "highlight": [],
