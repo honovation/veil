@@ -69,6 +69,7 @@ def kibana_resource(config):
         LOGGER.info('installing new version of Kibana...')
         shell_execute('rm -rf kibana-latest', cwd=KIBANA_HOME.parent)
         shell_execute('unzip -o {}'.format(KIBANA_SOURCE_PATH), cwd=KIBANA_HOME.parent)
+    if KIBANA_HOME.exists():
         resources.extend([
             file_resource(path=KIBANA_HOME / 'config.js', content=render_config('kibana.config.js.j2', **config)),
             file_resource(path=KIBANA_HOME / 'app' / 'dashboards' / 'default.json', content=(CURRENT_DIR / 'kibana.logstash.json').text(),
