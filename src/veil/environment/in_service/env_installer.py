@@ -146,7 +146,7 @@ def display_deployment_memo(veil_env_name):
 def rollback_env(veil_env_name):
     hosts = [host for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name) if is_rollbackable(host)]
     if hosts:
-        stop_env(veil_env_name)
+        stop_env(veil_env_name, True, False)
         rollback(hosts)
         start_env(veil_env_name)
         remove_rollbackable_tags(veil_env_name)
@@ -211,7 +211,7 @@ def restart_env(veil_env_name):
 
 
 @script('stop-env')
-def stop_env(veil_env_name, include_guard_server=True, include_monitor_server=False):
+def stop_env(veil_env_name, include_guard_server=True, include_monitor_server=True):
     """
     Bring down veil servers in sorted server names order
     """
