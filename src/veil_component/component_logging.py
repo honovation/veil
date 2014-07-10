@@ -13,9 +13,11 @@ from .component_map import get_root_component
 VEIL_LOGGING_LEVEL_CONFIG = 'VEIL_LOGGING_LEVEL_CONFIG'
 VEIL_LOGGING_EVENT = 'VEIL_LOGGING_EVENT'
 
+
 def configure_logging(component_name):
     logger = logging.getLogger(component_name)
     logger.setLevel(get_logging_level(component_name))
+    clear_logger_handlers(logger)
     configure_root_component_logger(get_root_component(component_name) or component_name)
 
 
@@ -53,9 +55,7 @@ def configure_root_component_logger(root_component_name):
         return
     configured_root_loggers.add(root_component_name)
     logger = logging.getLogger(root_component_name)
-    # TODO: still have dup logs and donot know why, maybe the dup is relevant to supervisord;
-    # After fix this, remove the config excluding logs with tag _jsonparsefailure in @monitor elasticsearch
-    clear_logger_handlers(logger)
+    logger.propagate = False
     human_handler = logging.StreamHandler(os.fdopen(sys.stdout.fileno(), 'w', 0))
     human_handler.setFormatter(ColoredFormatter(fmt='%(asctime)s [%(name)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
     logger.addHandler(human_handler)
