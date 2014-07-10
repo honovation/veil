@@ -2,12 +2,14 @@ from __future__ import unicode_literals, print_function, division
 from veil_component import as_path
 from veil.environment import *
 from veil.frontend.cli import *
+from veil.utility.timer import *
 from veil.utility.shell import *
 
 BASELINE_DIR = VEIL_HOME / 'baseline'
 
 
 @script('restore-from-baseline')
+@log_elapsed_time
 def restore_from_baseline(force_download, veil_env_name, host_name=None, relative_path=None):
     if not host_name:
         for server in list_veil_servers(veil_env_name):
@@ -37,6 +39,7 @@ def restore_from_baseline(force_download, veil_env_name, host_name=None, relativ
 
 
 @script('download-baseline')
+@log_elapsed_time
 def download_baseline(veil_env_name, remote_path, baseline_path):
     if isinstance(baseline_path, basestring):
         baseline_path = as_path(baseline_path)
