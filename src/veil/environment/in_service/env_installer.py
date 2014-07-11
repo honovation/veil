@@ -41,14 +41,18 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
     print(cyan('Deploy round-1 servers {} ...'.format(first_round_server_names[::-1])))
     install_resource(veil_servers_resource(servers=first_round_servers[::-1], action='DEPLOY'))
 
-    second_round_servers = [get_veil_server(veil_env_name, '@guard')]
+    all_veil_server_names = [s.name for s in list_veil_servers(veil_env_name, True, True)]
+    second_round_servers = []
+    if '@guard' in all_veil_server_names:
+        second_round_servers.append(get_veil_server(veil_env_name, '@guard'))
     second_round_server_names = [server.name for server in second_round_servers]
-    if include_monitor_server == 'TRUE':
+    if include_monitor_server == 'TRUE' and '@monitor' in all_veil_server_names:
         second_round_servers.append(get_veil_server(veil_env_name, '@monitor'))
-    print(cyan('Stop round-2 servers {} ...'.format(second_round_server_names)))
-    stop_servers(second_round_servers)
-    print(cyan('Deploy round-2 servers {} ...'.format(second_round_server_names[::-1])))
-    install_resource(veil_servers_resource(servers=second_round_servers[::-1], action='DEPLOY'))
+    if second_round_server_names:
+        print(cyan('Stop round-2 servers {} ...'.format(second_round_server_names)))
+        stop_servers(second_round_servers)
+        print(cyan('Deploy round-2 servers {} ...'.format(second_round_server_names[::-1])))
+        install_resource(veil_servers_resource(servers=second_round_servers[::-1], action='DEPLOY'))
 
     print(cyan('Remove rollbackable tags ...'))
     remove_rollbackable_tags(veil_env_name)
