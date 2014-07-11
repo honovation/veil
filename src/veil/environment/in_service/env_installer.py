@@ -25,34 +25,41 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
     print(cyan('Tag deploy ...'))
     tag_deploy(veil_env_name)
 
-    print(cyan('Make rollback backup -- include code dir, exclude data dir ...'))
-    make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True)
-    print(cyan('Deploy hosts ...'))
-    install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=as_path(config_dir)))
-    if should_download_packages == 'TRUE':
-        print(cyan('Download packages ...'))
-        download_packages(veil_env_name)
-    first_round_servers = list_veil_servers(veil_env_name, False, False)
-    first_round_server_names = [server.name for server in first_round_servers]
-    print(cyan('Stop round-1 servers {} ...'.format(first_round_server_names)))
-    stop_servers(first_round_servers)
-    print(cyan('Make rollback backup -- exclude code dir, include data dir ...'))
-    make_rollback_backup(veil_env_name, exclude_code_dir=True, exclude_data_dir=False)
-    print(cyan('Deploy round-1 servers {} ...'.format(first_round_server_names[::-1])))
-    install_resource(veil_servers_resource(servers=first_round_servers[::-1], action='DEPLOY'))
-
-    all_veil_server_names = [s.name for s in list_veil_servers(veil_env_name, True, True)]
+    first_round_servers = []
     second_round_servers = []
-    if '@guard' in all_veil_server_names:
-        second_round_servers.append(get_veil_server(veil_env_name, '@guard'))
-    second_round_server_names = [server.name for server in second_round_servers]
-    if include_monitor_server == 'TRUE' and '@monitor' in all_veil_server_names:
-        second_round_servers.append(get_veil_server(veil_env_name, '@monitor'))
-    if second_round_server_names:
+    for server in list_veil_servers(veil_env_name):
+        if server.name not in ('@guard', '@monitor'):
+            first_round_servers.append(server)
+        else:
+            if server.name != '@monitor' or include_monitor_server == 'TRUE':
+                second_round_servers.append(server)
+
+    if first_round_servers:
+        print(cyan('Make rollback backup -- include code dir, exclude data dir ...'))
+        make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True)
+        print(cyan('Deploy hosts ...'))
+        install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=as_path(config_dir)))
+        if should_download_packages == 'TRUE':
+            print(cyan('Download packages ...'))
+            download_packages(veil_env_name)
+        first_round_server_names = [server.name for server in first_round_servers]
+        print(cyan('Stop round-1 servers {} ...'.format(first_round_server_names)))
+        stop_servers(first_round_servers)
+        print(cyan('Make rollback backup -- exclude code dir, include data dir ...'))
+        make_rollback_backup(veil_env_name, exclude_code_dir=True, exclude_data_dir=False)
+        print(cyan('Deploy round-1 servers {} ...'.format(first_round_server_names[::-1])))
+        install_resource(veil_servers_resource(servers=first_round_servers[::-1], action='DEPLOY'))
+    else:
+        print(cyan('No round-1 servers to deploy'))
+
+    if second_round_servers:
+        second_round_server_names = [server.name for server in second_round_servers]
         print(cyan('Stop round-2 servers {} ...'.format(second_round_server_names)))
         stop_servers(second_round_servers)
         print(cyan('Deploy round-2 servers {} ...'.format(second_round_server_names[::-1])))
         install_resource(veil_servers_resource(servers=second_round_servers[::-1], action='DEPLOY'))
+    else:
+        print(cyan('No round-2 servers to deploy'))
 
     print(cyan('Remove rollbackable tags ...'))
     remove_rollbackable_tags(veil_env_name)
