@@ -103,7 +103,7 @@ class EventFormatter(logging.Formatter):
             '@type': 'veil',
             '@source': to_unicode(socket.gethostname()),
             '@message': to_unicode(record.getMessage()),
-            '@timestamp': time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(record.created)),
+            '@timestamp': time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime(record.created)),
             '@fields': {
                 'logged_by': to_unicode(record.name),
                 'level': record.levelname,
