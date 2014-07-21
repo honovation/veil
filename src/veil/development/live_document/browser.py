@@ -140,7 +140,13 @@ else:
         old_cwd = os.getcwd()
         os.chdir('/tmp')
         try:
-            webdriver = selenium.webdriver.Chrome()
+            chromium_binary_location = '/usr/bin/chromium-browser'
+            if os.path.exists(chromium_binary_location):
+                use_chromium = selenium.webdriver.chrome.options.Options()
+                use_chromium.binary_location = chromium_binary_location
+            else:
+                use_chromium = None
+            webdriver = selenium.webdriver.Chrome(chrome_options=use_chromium)
             atexit.register(webdriver.close) # only close when we finished everything
             get_executing_test().addCleanup(webdriver.delete_all_cookies) # delete all cookies to isolate document-checking
             return webdriver
