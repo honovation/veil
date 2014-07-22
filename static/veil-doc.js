@@ -1,6 +1,7 @@
 jQuery.ajaxSetup({
     async: false
 });
+
 var veil = veil || {};
 
 veil.doc = {};
@@ -13,6 +14,7 @@ veil.doc.setCurrentPage = function (pageName, statementExecutors) {
 };
 
 veil.doc.jsErrors = [];
+
 window.onerror = function(errorMessage) {
     veil.doc.jsErrors.push(errorMessage);
 };
