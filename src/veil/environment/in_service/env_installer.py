@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import time
 from datetime import datetime
 import sys
 import fabric.api
@@ -42,6 +43,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
         if should_download_packages == 'TRUE':
             print(cyan('Download packages ...'))
             download_packages(veil_env_name)
+        start_time = time.time()
         first_round_server_names = [server.name for server in first_round_servers]
         print(cyan('Stop round-1 servers {} ...'.format(first_round_server_names)))
         stop_servers(first_round_servers)
@@ -49,6 +51,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
         make_rollback_backup(veil_env_name, exclude_code_dir=True, exclude_data_dir=False)
         print(cyan('Deploy round-1 servers {} ...'.format(first_round_server_names[::-1])))
         install_resource(veil_servers_resource(servers=first_round_servers[::-1], action='DEPLOY'))
+        print(cyan('Elapsed time for deploying round-1 servers: {} seconds'.format(time.time() - start_time)))
     else:
         print(cyan('No round-1 servers to deploy'))
 
