@@ -19,7 +19,7 @@ from .server_installer import veil_servers_resource, is_container_running, is_se
 
 @script('deploy-env')
 @log_elapsed_time
-def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', include_monitor_server='FALSE'):
+def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', include_monitor_server='TRUE'):
     print(cyan('Make local preparation ...'))
     do_local_preparation(veil_env_name)
     print(cyan('Tag deploy ...'))
