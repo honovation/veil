@@ -51,7 +51,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
         make_rollback_backup(veil_env_name, exclude_code_dir=True, exclude_data_dir=False)
         print(cyan('Deploy round-1 servers {} ...'.format(first_round_server_names[::-1])))
         install_resource(veil_servers_resource(servers=first_round_servers[::-1], action='DEPLOY'))
-        print(cyan('Elapsed time for deploying round-1 servers: {} seconds'.format(time.time() - start_time)))
+        print(cyan('\nElapsed time for deploying round-1 servers: {} seconds\n'.format(time.time() - start_time)))
     else:
         print(cyan('No round-1 servers to deploy'))
 
