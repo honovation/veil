@@ -51,8 +51,10 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
         make_rollback_backup(veil_env_name, exclude_code_dir=True, exclude_data_dir=False)
         print(cyan('Deploy round-1 servers {} ...'.format(first_round_server_names[::-1])))
         install_resource(veil_servers_resource(servers=first_round_servers[::-1], action='DEPLOY'))
-        print(cyan('\nElapsed time for deploying round-1 servers: {} seconds\n'.format(time.time() - start_time)))
+        elapsed_seconds_to_deploy_first_round_servers = time.time() - start_time
+        print(cyan('\nElapsed time for deploying round-1 servers: {} seconds\n'.format(elapsed_seconds_to_deploy_first_round_servers)))
     else:
+        elapsed_seconds_to_deploy_first_round_servers = None
         print(cyan('No round-1 servers to deploy'))
 
     if second_round_servers:
@@ -66,6 +68,9 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
 
     print(cyan('Remove rollbackable tags ...'))
     remove_rollbackable_tags(veil_env_name)
+
+    if elapsed_seconds_to_deploy_first_round_servers:
+        print(cyan('\nElapsed time for deploying round-1 servers: {} seconds\n'.format(elapsed_seconds_to_deploy_first_round_servers)))
 
 
 def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True):
