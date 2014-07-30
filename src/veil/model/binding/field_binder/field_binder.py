@@ -64,7 +64,7 @@ def one_of(seq):
     assert seq is not None
     def bind(value):
         if value not in bind.seq:
-            raise Invalid(_('值不在范围之内'))
+            raise Invalid(_('值不合法'))
         return value
     bind.seq = seq
     return bind
