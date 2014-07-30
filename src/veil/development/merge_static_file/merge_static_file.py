@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
+import logging
 import contextlib
 from cStringIO import StringIO
 from veil.environment import VEIL_HOME
@@ -8,6 +9,7 @@ from veil.utility.misc import *
 
 STATIC_FILE_DIR = VEIL_HOME / 'static'
 SUPPORT_STATIC_FILE_TYPES = ('js', 'css')
+LOGGER = logging.getLogger(__name__)
 
 
 def list_static_file_dependencies():
@@ -53,3 +55,4 @@ def merge_files(purpose, static_file_type):
             if current_md5 != new_md5:
                 with open(STATIC_FILE_DIR / output_file_name, mode='wb') as f:
                     f.write(buffer_.read())
+                LOGGER.debug('new file generated: %(output_file_name)s', {'output_file_name': output_file_name})
