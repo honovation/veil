@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
+from cStringIO import StringIO
+import gzip
 import logging
 import json
 import socket
@@ -11,7 +13,7 @@ from veil.model.collection import *
 LOGGER = logging.getLogger(__name__)
 
 
-def http_call(service, url, data=None, content_type=None, accept=None, accept_charset=None, log_data=True, max_tries=1, sleep_at_start=0,
+def http_call(service, url, data=None, content_type=None, accept=None, accept_charset=None, accept_encoding=None, log_data=True, log_response=True, max_tries=1, sleep_at_start=0,
         sleep_before_retry=0, http_timeout=15):
     if data:
         if content_type and content_type.startswith('application/json'):
@@ -27,6 +29,8 @@ def http_call(service, url, data=None, content_type=None, accept=None, accept_ch
         request.add_header('Accept', accept)
     if accept_charset:
         request.add_header('Accept-Charset', accept_charset)
+    if accept_encoding:
+        request.add_header('Accept-Encoding', accept_encoding)
     tries = 1
     if sleep_at_start > 0:
         sleep(sleep_at_start)
@@ -34,9 +38,9 @@ def http_call(service, url, data=None, content_type=None, accept=None, accept_ch
         try:
             # TODO: urllib2 cannot verify server certificates, use pycurl2 instead
             if http_timeout:
-                response = urllib2.urlopen(request, timeout=http_timeout).read()
+                http_response = urllib2.urlopen(request, timeout=http_timeout)
             else:
-                response = urllib2.urlopen(request).read()
+                http_response = urllib2.urlopen(request)
         except Exception as e:
             if isinstance(e, urllib2.HTTPError):
                 reason = 'cannot fulfill the request'
@@ -62,8 +66,14 @@ def http_call(service, url, data=None, content_type=None, accept=None, accept_ch
                 })
                 raise
         else:
+            if http_response.info().get('Content-Encoding') == 'gzip':
+                buf = StringIO(http_response.read())
+                f = gzip.GzipFile(fileobj=buf)
+                response = f.read()
+            else:
+                response = http_response.read()
             LOGGER.info('[HTTP CALL]succeeded to get response: %(service)s, %(url)s, %(headers)s, %(data)s, %(response)s', {
-                'service': service, 'url': url, 'headers': request.headers, 'data': request.data if log_data else None, 'response': response
+                'service': service, 'url': url, 'headers': request.headers, 'data': request.data if log_data else None, 'response': response if log_response else None
             })
             if accept == 'application/json':
                 response = objectify(json.loads(response))
