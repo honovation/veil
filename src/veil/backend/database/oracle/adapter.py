@@ -25,7 +25,7 @@ class OracleAdapter(object):
     def _get_conn(self):
         os.environ['NLS_LANG'] = 'AMERICAN_CHINA.UTF8'
         conn = None
-        connection_string = '{}/{}@{}:{}/{}'.format(self.user, self.password, self.host, self.port, self.database)
+        connection_string = '{}/{}@{}'.format(self.user, self.password, cx_Oracle.makedsn(self.host, self.port, self.database))
         try:
             conn = cx_Oracle.connect(connection_string)
             conn.autocommit = True
