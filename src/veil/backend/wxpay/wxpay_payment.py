@@ -1,0 +1,156 @@
+# -*- coding: UTF-8 -*-
+from __future__ import unicode_literals, print_function, division
+from decimal import Decimal, DecimalException
+import logging
+import urllib
+import hashlib
+from uuid import uuid4
+from veil.environment import VEIL_ENV_TYPE
+from veil.utility.clock import *
+from veil.model.binding import *
+from veil.model.event import *
+from veil.model.collection import *
+from veil.profile.web import *
+from veil.utility.encoding import *
+from .wxpay_client_installer import wxpay_client_config
+
+LOGGER = logging.getLogger(__name__)
+
+EVENT_WXPAY_TRADE_PAID = define_event('wxpay-trade-paid') # valid notification
+
+
+NOTIFIED_FROM_RETURN_URL = 'return_url'
+NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
+NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # wxpay require this 7 characters to be returned to them
+WXPAY_BANK_TYPE = 'WX'
+
+
+def create_wxpay_package(out_trade_no, body, total_fee, show_url, notify_url, time_start, time_expire, shopper_ip_address):
+    time_start_beijing_time_str = convert_datetime_to_client_timezone(time_start).strftime('%Y%m%d%H%M%S')
+    time_expire_beijing_time_str = convert_datetime_to_client_timezone(time_expire).strftime('%Y%m%d%H%M%S')
+    params = {
+        'bank_type': WXPAY_BANK_TYPE,
+        'body': body,
+        'attach': show_url,
+        'partner': wxpay_client_config().partner_id,
+        'out_trade_no': out_trade_no,
+        'total_fee': str(int(total_fee * 100)), # unit: cent
+        'fee_type': '1',
+        'notify_url': notify_url,
+        'spbill_create_ip': shopper_ip_address, # 防钓鱼IP地址检查
+        'time_start': time_start_beijing_time_str, # 交易起始时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+        'time_expire': time_expire_beijing_time_str, # 交易结束时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+        'input_charset': 'UTF-8'
+    }
+    encoded_params = '&'.join('{}={}'.format(to_str(key), urllib.quote(to_str(params[key]))) for key in sorted(params.keys()) if params[key])
+    sign = sign_md5(params)
+    return '{}&sign={}'.format(encoded_params, sign)
+
+
+def get_wxpay_request(out_trade_no, body, total_fee, show_url, notify_url, time_start, time_expire, shopper_ip_address):
+    request = DictObject()
+    request.appId = wxpay_client_config().app_id
+    request.timeStamp = str(get_current_timestamp())
+    request.nonceStr = uuid4().get_hex()
+    request.package = create_wxpay_package(out_trade_no, body, total_fee, show_url, notify_url, time_start, time_expire, shopper_ip_address)
+    request.signType = 'SHA1'
+    params = {
+        'appid': request.appId,
+        'timestamp': request.timeStamp,
+        'noncestr': request.nonceStr,
+        'package': request.package,
+        'appkey': wxpay_client_config().pay_sign_key
+    }
+    params = {to_str(k): to_str(v) for k, v in params.items()}
+    request.paySign = sign_sha1(params)
+    return request
+
+
+def sign_sha1(params):
+    param_str = to_url_params_string(params)
+    return hashlib.sha1(param_str).hexdigest()
+
+
+def process_wxpay_payment_notification(out_trade_no, http_arguments, notified_from):
+    trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_notification(http_arguments)
+    if discarded_reasons:
+        LOGGER.warn('wxpay trade notification discarded: %(discarded_reasons)s, %(http_arguments)s', {
+            'discarded_reasons': discarded_reasons,
+            'http_arguments': http_arguments
+        })
+        set_http_status_code(httplib.BAD_REQUEST)
+        return '<br/>'.join(discarded_reasons)
+    publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
+        paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
+        notified_from=notified_from)
+    return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
+
+
+def validate_notification(http_arguments):
+    discarded_reasons = []
+    if VEIL_ENV_TYPE not in ('development', 'test'):
+        if is_sign_correct(http_arguments):
+            notify_id = http_arguments.get('notify_id', None)
+            if not notify_id:
+                discarded_reasons.append('no notify_id')
+        else:
+            discarded_reasons.append('sign is incorrect')
+    if '0' != http_arguments.get('trade_state', None):
+        discarded_reasons.append('trade not succeeded')
+    if not http_arguments.get('out_trade_no', None):
+        discarded_reasons.append('no out_trade_no')
+    trade_no = http_arguments.get('transaction_id', None)
+    if not trade_no:
+        discarded_reasons.append('no transaction_id')
+    if wxpay_client_config().partner_id != http_arguments.get('partner', None):
+        discarded_reasons.append('partner ID mismatched')
+    paid_total = http_arguments.get('total_fee', None)
+    if paid_total:
+        try:
+            paid_total = Decimal(paid_total) / 100
+        except DecimalException:
+            LOGGER.warn('invalid total_fee: %(total_fee)s', {'total_fee': paid_total})
+            discarded_reasons.append('invalid total_fee')
+    else:
+        discarded_reasons.append('no total_fee')
+    paid_at = http_arguments.get('time_end', None) # 支付完成时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+    if paid_at:
+        try:
+            paid_at = to_datetime(format='%Y%m%d%H%M%S')(paid_at)
+        except Exception:
+            LOGGER.warn('invalid time_end: %(paid_at)s', {'paid_at': paid_at})
+            discarded_reasons.append('invalid time_end')
+    else:
+        discarded_reasons.append('no time_end')
+    show_url = http_arguments.get('attach', None)
+    if not show_url:
+        discarded_reasons.append('no attach (show_url inside)')
+    buyer_alias = http_arguments.get('buyer_alias', None)
+    bank_code = http_arguments.get('bank_type', None)
+    bank_billno = http_arguments.get('bank_billno', None)
+    return trade_no, buyer_alias, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons
+
+
+def is_sign_correct(http_arguments):
+    actual_sign = http_arguments.get('sign', None)
+    verify_params = http_arguments.copy()
+    if 'sign' in verify_params:
+        del verify_params['sign']
+    expected_sign = sign_md5(verify_params)
+    if not actual_sign or actual_sign.upper() != expected_sign:
+        LOGGER.error('wrong sign, maybe a fake wxpay notification: sign=%(actual_sign)s, should be %(expected_sign)s, http_arguments: %(http_arguments)s', {
+            'actual_sign': actual_sign,
+            'expected_sign': expected_sign,
+            'http_arguments': http_arguments
+        })
+        return False
+    return True
+
+
+def sign_md5(params):
+    param_str = '{}&key={}'.format(to_url_params_string(params), wxpay_client_config().partner_key)
+    return hashlib.md5(param_str.encode('UTF-8')).hexdigest().upper()
+
+
+def to_url_params_string(params):
+    return '&'.join('{}={}'.format(key, params[key]) for key in sorted(params.keys()) if params[key])
