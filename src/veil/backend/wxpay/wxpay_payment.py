@@ -12,6 +12,8 @@ from veil.model.event import *
 from veil.model.collection import *
 from veil.profile.web import *
 from veil.utility.encoding import *
+from veil.utility.http import *
+from veil.utility.json import *
 from .wxpay_client_installer import wxpay_client_config
 
 LOGGER = logging.getLogger(__name__)
@@ -19,10 +21,12 @@ LOGGER = logging.getLogger(__name__)
 EVENT_WXPAY_TRADE_PAID = define_event('wxpay-trade-paid') # valid notification
 
 
-NOTIFIED_FROM_RETURN_URL = 'return_url'
+NOTIFIED_FROM_ORDER_QUERY = 'order_query'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # wxpay require this 7 characters to be returned to them
 WXPAY_BANK_TYPE = 'WX'
+WXPAY_ORDER_QUERY_URL_TEMPLATE = 'https://api.weixin.qq.com/pay/orderquery?access_token={}'
+WXMP_ACCESS_TOKEN_AUTHORIZATION_URL_TEMPLATE = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={}&secret={}'
 
 
 def create_wxpay_package(out_trade_no, body, total_fee, show_url, notify_url, time_start, time_expire, shopper_ip_address):
@@ -84,6 +88,75 @@ def process_wxpay_payment_notification(out_trade_no, http_arguments, notified_fr
         paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
         notified_from=notified_from)
     return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
+
+
+def query_order_status(access_token, out_trade_no):
+    params = DictObject()
+    params.appid = wxpay_client_config().app_id
+    params.package = create_wxpay_query_order_status_package(out_trade_no)
+    params.timestamp = str(get_current_timestamp())
+    params.app_signature = sign_sha1({
+        'appid': params.appid,
+        'appkey': wxpay_client_config().pay_sign_key,
+        'package': params.package,
+        'timestamp': params.timestamp
+    })
+    params.sign_method = 'sha1'
+    try:
+        response = http_call('wxpay-order-query', WXPAY_ORDER_QUERY_URL_TEMPLATE.format(access_token), data=params, content_type='application/json', max_tries=3)
+    except:
+        raise
+    else:
+        query_result = from_json(response)
+        if query_result.errcode != 0:
+            LOGGER.info('Got error from query order status: %(error_message)s, %(response)s', {
+                'error_message': query_result.errmsg, 'response': query_result
+            })
+        else:
+            trade_no, paid_total, paid_at, bank_billno = validate_order_info(query_result.order_info)
+            publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=None,
+                paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=None, bank_billno=bank_billno, show_url=None,
+                notified_from=NOTIFIED_FROM_ORDER_QUERY)
+
+
+def create_wxpay_query_order_status_package(out_trade_no):
+    return sign_md5(DictObject(out_trade_no=out_trade_no, partner=wxpay_client_config().partner_id))
+
+
+def validate_order_info(order_info):
+    trade_no = order_info.transaction_id
+    if not trade_no:
+        raise OrderInfoException('no transaction id')
+    paid_total = order_info.total_fee
+    if paid_total:
+        try:
+            paid_total = Decimal(paid_total) / 100
+        except DecimalException:
+            LOGGER.warn('invalid total_fee: %(total_fee)s', {'total_fee': paid_total})
+            raise OrderInfoException('invalid total fee: {}'.format(paid_total))
+    paid_at = order_info.time_end
+    if paid_at:
+        try:
+            paid_at = to_datetime(format='%Y%m%d%H%M%S')(paid_at)
+        except Exception:
+            LOGGER.warn('invalid time_end: %(paid_at)s', {'paid_at': paid_at})
+            raise OrderInfoException('invalid time end format: {}'.format(paid_at))
+    bank_billno = order_info.bank_billno
+
+    return trade_no, paid_total, paid_at, bank_billno
+
+
+def request_wxmp_access_token():
+    app_id = wxpay_client_config().app_id
+    app_secret = wxpay_client_config().app_secret
+    try:
+        response = http_call('get-wxmp-access-token', WXMP_ACCESS_TOKEN_AUTHORIZATION_URL_TEMPLATE.format(app_id, app_secret), max_tries=3)
+    except:
+        raise
+    else:
+        LOGGER.info('Authorized got access token from wxmp: %(response)s', {'response': response})
+        result = from_json(response)
+        return result.access_token
 
 
 def validate_notification(http_arguments):
@@ -154,3 +227,7 @@ def sign_md5(params):
 
 def to_url_params_string(params):
     return '&'.join('{}={}'.format(key, params[key]) for key in sorted(params.keys()) if params[key])
+
+
+class OrderInfoException(Exception):
+    pass

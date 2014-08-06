@@ -5,10 +5,10 @@ add_application_sub_resource('wxpay_client', lambda config: wxpay_client_resourc
 
 
 @composite_installer
-def wxpay_client_resource(app_id, partner_id, partner_key, pay_sign_key):
+def wxpay_client_resource(app_id, app_secret, partner_id, partner_key, pay_sign_key):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.append(file_resource(path=VEIL_ETC_DIR / 'wxpay-client.cfg',
-        content=render_config('wxpay-client.cfg.j2', app_id=app_id, partner_id=partner_id, partner_key=partner_key, pay_sign_key=pay_sign_key)))
+        content=render_config('wxpay-client.cfg.j2', app_id=app_id, app_secret=app_secret, partner_id=partner_id, partner_key=partner_key, pay_sign_key=pay_sign_key)))
     return resources
 
 
