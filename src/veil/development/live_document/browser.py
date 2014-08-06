@@ -5,6 +5,7 @@ import contextlib
 import os
 import jinjatag
 import atexit
+import time
 from veil.environment import VEIL_ENV_TYPE
 from veil.frontend.web import *
 from veil.development.test import *
@@ -98,10 +99,20 @@ else:
             }
             ''')
         if page_name != current_page_name:
-            assert_no_js_errors()
-            message = 'we are on the wrong page, expected: {}, actual: {}, url: {}'.format(
-                page_name, current_page_name, webdriver.current_url)
-            report_error(message)
+            #TODO: known issue Chrome/Chromium version 34+ execute javascript slow? wait 1 second and execute again
+            time.sleep(1)
+            current_page_name = require_webdriver().execute_script('''
+            if (window.veil && veil.doc && veil.doc.currentPage) {
+                return veil.doc.currentPage.pageName;
+            } else {
+                return null;
+            }
+            ''')
+            if page_name != current_page_name:
+                assert_no_js_errors()
+                message = 'we are on the wrong page, expected: {}, actual: {}, url: {}'.format(
+                    page_name, current_page_name, webdriver.current_url)
+                report_error(message)
 
     def assert_no_js_errors():
         js_errors = require_webdriver().execute_script('''
