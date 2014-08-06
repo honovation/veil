@@ -26,7 +26,7 @@ def init_region(purpose):
     @transactional(db)
     def init():
         if db().get_scalar('SELECT COUNT(*) FROM {REGION_TABLE}'.format(REGION_TABLE=REGION_TABLE)) != 0:
-            LOGGER.info('can not initialize region table: already initialized')
+            LOGGER.warn('can not initialize region table: already initialized')
             return
         db().execute('''
             DROP TABLE IF EXISTS {REGION_BACKUP_TABLE};
@@ -58,7 +58,7 @@ def check_region_update(purpose):
     def check_update():
         latest_db_region_version = db().get('SELECT * FROM {REGION_VERSION_TABLE} ORDER BY id DESC FETCH FIRST ROW ONLY'.format(REGION_VERSION_TABLE=REGION_VERSION_TABLE))
         if not latest_db_region_version:
-            LOGGER.info('can not check update: can not find region version in db')
+            LOGGER.error('can not check update: can not find region version in db')
             return
         gov_latest_region_version = extract_gov_latest_region_version(pq(url=CONTENTS_URL)('ul.center_list_contlist'))
         if gov_latest_region_version.due_date <= latest_db_region_version.due_date or gov_latest_region_version.published_at <= latest_db_region_version.published_at:
@@ -137,10 +137,10 @@ def rollback_update(purpose):
     def rollback():
         db_region_versions = db().list('SELECT * FROM {REGION_VERSION_TABLE} ORDER BY id DESC FETCH FIRST 2 ROWS ONLY'.format(REGION_VERSION_TABLE=REGION_VERSION_TABLE))
         if not db_region_versions:
-            LOGGER.info('can not rollback: can not find region version')
+            LOGGER.error('can not rollback: can not find region version')
             return
         if db().get_scalar('SELECT COUNT(*) FROM {REGION_BACKUP_TABLE}'.format(REGION_BACKUP_TABLE=REGION_BACKUP_TABLE)) == 0:
-            LOGGER.info('can not rollback: no data in backup table')
+            LOGGER.error('can not rollback: no data in backup table')
             return
         LOGGER.info('current region version: published at %(published_at)s, applied_at: %(applied_at)s', {
             'published_at': db_region_versions[0].published_at, 'applied_at': db_region_versions[0].applied_at
@@ -158,7 +158,7 @@ def rollback_update(purpose):
         try:
             deleted_count = db().execute('DELETE FROM {REGION_TABLE} WHERE code NOT IN (SELECT code FROM {REGION_BACKUP_TABLE})'.format(REGION_TABLE=REGION_TABLE, REGION_BACKUP_TABLE=REGION_BACKUP_TABLE))
         except Exception:
-            LOGGER.info('can not delete rows in %(REGION_TABLE)s but not in backup table', {'REGION_TABLE': REGION_TABLE})
+            LOGGER.error('can not delete rows in %(REGION_TABLE)s but not in backup table', {'REGION_TABLE': REGION_TABLE})
             raise
         else:
             if deleted_count > 0:
@@ -169,8 +169,8 @@ def rollback_update(purpose):
 
     try:
         rollback()
-    except Exception as e:
-        LOGGER.info('rollback failed')
+    except Exception:
+        LOGGER.exception('rollback failed')
 
 
 def extract_gov_latest_region_version(contents):
