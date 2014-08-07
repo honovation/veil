@@ -109,7 +109,7 @@ def query_order_status(access_token, out_trade_no):
     except:
         raise
     else:
-        query_result = from_json(response)
+        query_result = objectify(from_json(response))
         if query_result.errcode != 0:
             LOGGER.info('Got error from query order status: %(error_message)s, %(response)s', {
                 'error_message': query_result.errmsg, 'response': query_result
@@ -157,7 +157,7 @@ def request_wxmp_access_token():
         raise
     else:
         LOGGER.info('Authorized got access token from wxmp: %(response)s', {'response': response})
-        result = from_json(response)
+        result = objectify(from_json(response))
         return result.access_token
 
 
