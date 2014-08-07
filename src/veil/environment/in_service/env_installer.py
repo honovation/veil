@@ -212,7 +212,7 @@ def rollback(hosts):
 def ensure_servers_down(hosts):
     for host in hosts:
         with fabric.api.settings(host_string=host.deploys_via):
-            ret = fabric.api.run('ps -ef | grep supervisord | grep {} | grep -v grep'.format(host.etc_dir), warn_only=True)
+            ret = fabric.api.run('ps -ef | grep supervisord | grep {} | grep -v @monitor | grep -v grep'.format(host.etc_dir), warn_only=True)
             if ret.return_code == 0:
                 raise Exception('{}: can not rollback while having running veil server(s)'.format(host.base_name))
 
