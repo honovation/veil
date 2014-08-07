@@ -189,6 +189,7 @@ veil.resource.create = function (options) {
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
+    var onComplete = options.onComplete;
     var widget = options.widget;
     if (widget){
         veil.widget.clearErrorMessages(widget);
@@ -213,6 +214,7 @@ veil.resource.create = function (options) {
         dataType:dataType,
         success:onSuccess,
         error:onError,
+        complete:onComplete,
         statusCode:{
             400: onValidationError,
             401: function(jqXHR){
@@ -442,7 +444,7 @@ veil.widget.handle = function (widget_selector, child_selector, event, handler, 
     });
 };
 
-veil.widget.createResource = function (widget, onSuccess, data, dataFormat, dataType) {
+veil.widget.createResource = function (widget, onSuccess, data, dataFormat, dataType, onComplete) {
     if (data === undefined) {
         data = dataFormat === 'json' ? widget.serializeObject() : widget.serialize();
     }
@@ -452,7 +454,8 @@ veil.widget.createResource = function (widget, onSuccess, data, dataFormat, data
         data: data,
         dataFormat: dataFormat,
         dataType: dataType,
-        onSuccess: onSuccess
+        onSuccess: onSuccess,
+        onComplete: onComplete
     };
     return veil.resource.create(_);
 };
