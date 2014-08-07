@@ -122,7 +122,12 @@ def query_order_status(access_token, out_trade_no):
 
 
 def create_wxpay_query_order_status_package(out_trade_no):
-    return sign_md5(DictObject(out_trade_no=out_trade_no, partner=wxpay_client_config().partner_id))
+    params = {
+        'out_trade_no': out_trade_no,
+        'partner': wxpay_client_config().partner_id
+    }
+    encoded_params = '&'.join('{}={}'.format(to_str(key), to_str(params[key])) for key in sorted(params.keys()) if params[key])
+    return '{}&sign={}'.format(encoded_params, sign_md5(DictObject(out_trade_no=out_trade_no, partner=wxpay_client_config().partner_id)))
 
 
 def validate_order_info(order_info):
