@@ -5,6 +5,7 @@ import logging
 import urllib
 import hashlib
 from uuid import uuid4
+import lxml.objectify
 from veil.environment import VEIL_ENV_TYPE
 from veil.utility.clock import *
 from veil.model.binding import *
@@ -27,6 +28,7 @@ NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # wxpay require this 7 chara
 WXPAY_BANK_TYPE = 'WX'
 WXPAY_ORDER_QUERY_URL_TEMPLATE = 'https://api.weixin.qq.com/pay/orderquery?access_token={}'
 WXMP_ACCESS_TOKEN_AUTHORIZATION_URL_TEMPLATE = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={}&secret={}'
+VERIFY_URL_TEMPLATE = 'https://gw.tenpay.com/gateway/simpleverifynotifyid.xml?{}'
 
 
 def create_wxpay_package(out_trade_no, body, total_fee, show_url, notify_url, time_start, time_expire, shopper_ip_address):
@@ -166,6 +168,10 @@ def validate_notification(http_arguments):
             notify_id = http_arguments.get('notify_id', None)
             if not notify_id:
                 discarded_reasons.append('no notify_id')
+            if not try_to_verify_notification_is_from_wxpay(notify_id):
+                pass
+            else:
+                LOGGER.info('notification has been verified from wxpay')
         else:
             discarded_reasons.append('sign is incorrect')
     if '0' != http_arguments.get('trade_state', None):
@@ -204,6 +210,24 @@ def validate_notification(http_arguments):
     return trade_no, buyer_alias, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons
 
 
+def try_to_verify_notification_is_from_wxpay(notify_id):
+    verify_url = VERIFY_URL_TEMPLATE.format(
+        make_query({'sign_type': 'MD5', 'input_charset': 'UTF-8', 'partner': wxpay_client_config().partner_id, 'notify_id': notify_id}))
+    try:
+        response = http_call('WXPAY-NOTIFY-VERIFY-API', verify_url, max_tries=2)
+    except Exception:
+        response = None
+    if response:
+        arguments = parse_notify_verify_response(response)
+        if is_sign_correct(arguments) and '0' == arguments.get('retcode', None):
+            LOGGER.debug('wxpay notify verify passed: %(response)s, %(verify_url)s', {'response': response, 'verify_url': verify_url})
+            return True
+    LOGGER.error('received notification not from wxpay: %(response)s, %(verify_url)s', {
+        'response': response, 'verify_url': verify_url
+    })
+    return False
+
+
 def is_sign_correct(http_arguments):
     actual_sign = http_arguments.get('sign', None)
     verify_params = http_arguments.copy()
@@ -227,6 +251,25 @@ def sign_md5(params):
 
 def to_url_params_string(params):
     return '&'.join('{}={}'.format(key, params[key]) for key in sorted(params.keys()) if params[key])
+
+
+def make_query(params):
+    if 'sign' in params:
+        del params['sign']
+    sign = sign_md5(params)
+    params['sign'] = sign
+    # urllib.urlencode does not handle unicode well
+    params = {to_str(k): to_str(v) for k, v in params.items()}
+    return urllib.urlencode(params)
+
+
+def parse_notify_verify_response(response):
+    arguments = DictObject()
+    root = lxml.objectify.fromstring(response)
+    for e in root.iterchildren():
+        if e.text:
+            arguments[e.tag] = e.text
+    return arguments
 
 
 class OrderInfoException(Exception):
