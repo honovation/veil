@@ -221,7 +221,7 @@ class Database(object):
             if not value_providers:
                 return None if returns_id or returns_record else 0
 
-        column_names = column_names or list(value_providers.keys())
+        column_names = column_names or value_providers.keys() or (objects[0].keys() if objects else ())
 
         def get_rows_values():
             if objects is not None:
