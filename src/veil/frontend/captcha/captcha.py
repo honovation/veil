@@ -101,4 +101,6 @@ def clean_up_captcha_images_job():
     if not isinstance(bucket(), FilesystemBucket):
         LOGGER.warn('failed as captcha images are not saved in file-system-based bucket')
         return
+    if not bucket().base_directory.exists():
+        return
     shell_execute('find {} -type f -mmin +{} -delete'.format(bucket().base_directory, CAPTCHA_ANSWER_ALIVE_MINUTES * 2), capture=True)
