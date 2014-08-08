@@ -21,6 +21,7 @@ LOGGER = getLogger(__name__)
 instances = {} # purpose => adapter instance
 adapter_classes = {} # database type => adapter class
 
+
 def register_adapter_class(type, adapter_class):
     adapter_classes[type] = adapter_class
 
@@ -210,7 +211,9 @@ class Database(object):
         return rows[0][0]
 
     def insert(self, table, objects=None, returns_id=False, returns_record=False, should_insert=None,
-               **value_providers):
+               column_names=(), exclude_column_names=(), **value_providers):
+        if exclude_column_names:
+            value_providers = {k: v for k, v in value_providers.items() if k not in exclude_column_names}
         if objects is not None:
             if not objects:
                 return None if returns_id or returns_record else 0
@@ -218,16 +221,19 @@ class Database(object):
             if not value_providers:
                 return None if returns_id or returns_record else 0
 
-        column_names = list(value_providers.keys())
+        column_names = column_names or list(value_providers.keys())
 
         def get_rows_values():
             if objects is not None:
                 for column_name in column_names:
-                    value_provider = value_providers[column_name]
-                    if not inspect.isfunction(value_provider) and not isinstance(value_provider, functools.partial):
-                        value_providers[column_name] = ConstValueProvider(value_provider)
+                    if column_name in value_providers:
+                        value_provider = value_providers[column_name]
+                        if not inspect.isfunction(value_provider) and not isinstance(value_provider, functools.partial):
+                            value_providers[column_name] = ConstValueProvider(value_provider)
+                        else:
+                            value_providers[column_name] = FunctionValueProvider(value_provider)
                     else:
-                        value_providers[column_name] = FunctionValueProvider(value_provider)
+                        value_providers[column_name] = DictValueProvider(column_name)
                 for object in objects:
                     if should_insert and not should_insert(object):
                         continue
@@ -435,6 +441,14 @@ class ConstValueProvider(object):
 
     def __call__(self, obj):
         return self.const
+
+
+class DictValueProvider(object):
+    def __init__(self, key):
+        self.key = key
+
+    def __call__(self, obj):
+        return obj[self.key]
 
 
 @event(EVENT_PROCESS_TEARDOWN)

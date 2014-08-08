@@ -100,19 +100,19 @@ else:
             ''')
         if page_name != current_page_name:
             #TODO: known issue Chrome/Chromium version 34+ execute javascript slow? wait 1 second and execute again
-            time.sleep(1)
+            time.sleep(0.5)
             current_page_name = require_webdriver().execute_script('''
-            if (window.veil && veil.doc && veil.doc.currentPage) {
-                return veil.doc.currentPage.pageName;
-            } else {
-                return null;
-            }
-            ''')
-            if page_name != current_page_name:
-                assert_no_js_errors()
-                message = 'we are on the wrong page, expected: {}, actual: {}, url: {}'.format(
-                    page_name, current_page_name, webdriver.current_url)
-                report_error(message)
+                if (window.veil && veil.doc && veil.doc.currentPage) {
+                    return veil.doc.currentPage.pageName;
+                } else {
+                    return null;
+                }
+                ''')
+        if page_name != current_page_name:
+            assert_no_js_errors()
+            message = 'we are on the wrong page, expected: {}, actual: {}, url: {}'.format(
+                page_name, current_page_name, webdriver.current_url)
+            report_error(message)
 
     def assert_no_js_errors():
         js_errors = require_webdriver().execute_script('''
