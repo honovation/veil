@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
 import traceback
-import pytz
 from logging import getLogger
 from datetime import timedelta, datetime
 from redis.client import Redis
@@ -55,9 +54,9 @@ class RedisQueue(object):
 
     def enqueue(self, job_handler, to_queue=None, **payload):
         assert getattr(job_handler, 'perform'), 'must decorate job handler {} with @job to enqueue'.format(job_handler)
-        for value in payload.values():
-            if isinstance(value, datetime):
-                assert pytz.utc == value.tzinfo, 'must provide datetime in pytz.utc timezone'
+        for k in payload:
+            if isinstance(payload[k], datetime):
+                payload[k] = convert_datetime_to_utc_timezone(payload[k])
         to_queue = to_queue or job_handler.queue
         self.resq.enqueue_from_string('{}.{}'.format(job_handler.__module__, job_handler.__name__), to_queue, payload)
 
@@ -67,11 +66,11 @@ class RedisQueue(object):
         convert_datetime_to_naive_local is to convert a datetime to naive local date time, this is an okay workaround as all servers are in UTC in production
         ideally it is to change pyres to stick with UTC and convert aware datetime to UTC in pyres interfaces such as enqueu_at
         """
-        assert scheduled_at.tzinfo == pytz.utc, 'must provide datetime in pytz.utc timezone'
         assert getattr(job_handler, 'perform'), 'must decorate job handler {} with @job to enqueue'.format(job_handler)
-        for value in payload.values():
-            if isinstance(value, datetime):
-                assert pytz.utc == value.tzinfo, 'must provide datetime in pytz.utc timezone'
+        scheduled_at = convert_datetime_to_utc_timezone(scheduled_at)
+        for k in payload:
+            if isinstance(payload[k], datetime):
+                payload[k] = convert_datetime_to_utc_timezone(payload[k])
         to_queue = to_queue or job_handler.queue
         self.resq.enqueue_at_from_string(convert_datetime_to_naive_local(scheduled_at), '{}.{}'.format(job_handler.__module__, job_handler.__name__),
             to_queue, payload)
