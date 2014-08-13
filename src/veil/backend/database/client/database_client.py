@@ -212,7 +212,7 @@ class Database(object):
 
     def insert(self, table, objects=None, returns_id=False, returns_record=False, should_insert=None,
                column_names=(), exclude_column_names=(), **value_providers):
-        if exclude_column_names:
+        if value_providers and exclude_column_names:
             value_providers = {k: v for k, v in value_providers.items() if k not in exclude_column_names}
         if objects is not None:
             if not objects:
@@ -221,7 +221,14 @@ class Database(object):
             if not value_providers:
                 return None if returns_id or returns_record else 0
 
-        column_names = column_names or value_providers.keys() or (objects[0].keys() if objects else ())
+        specify_column_names = True
+        column_names = column_names or value_providers.keys()
+        if not column_names and objects:
+            if isinstance(objects[0], dict):
+                column_names = [k for k in objects[0] if k not in exclude_column_names]
+            else:
+                column_names = list(range(len(objects[0])))
+                specify_column_names = False
 
         def get_rows_values():
             if objects is not None:
@@ -233,7 +240,7 @@ class Database(object):
                         else:
                             value_providers[column_name] = FunctionValueProvider(value_provider)
                     else:
-                        value_providers[column_name] = DictValueProvider(column_name)
+                        value_providers[column_name] = DictValueProvider(column_name if specify_column_names else column_names.index(column_name))
                 for object in objects:
                     if should_insert and not should_insert(object):
                         continue
@@ -241,17 +248,12 @@ class Database(object):
             else:
                 yield [value_providers[column_name] for column_name in column_names]
 
-        fragments = ['INSERT INTO ', table, ' (']
-        first_column_name = True
+        fragments = ['INSERT INTO ', table]
+        if specify_column_names:
+            fragments.append(' ({})'.format(', '.join(column_names)))
+        fragments.append(' VALUES ')
         arg_index = 0
         args = {}
-        for column_name in column_names:
-            if first_column_name:
-                first_column_name = False
-            else:
-                fragments.append(', ')
-            fragments.append(column_name)
-        fragments.append(' ) VALUES ')
         first_row_values = True
         for row_values in get_rows_values():
             if first_row_values:
@@ -265,11 +267,9 @@ class Database(object):
                     first_column_value = False
                 else:
                     fragments.append(', ')
-                fragments.append('%(')
                 arg_index += 1
                 arg_name = ''.join(('a', unicode(arg_index)))
-                fragments.append(arg_name)
-                fragments.append(')s')
+                fragments.append('%({})s'.format(arg_name))
                 args[arg_name] = column_value
             fragments.append(')')
         if returns_id:
