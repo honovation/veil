@@ -49,7 +49,8 @@ def periodic_job_scheduler_program(application_logging_levels, application_confi
                 'VEIL_LOGGING_EVENT': 'True'
             },
             'redirect_stderr': False,
-            'resources': resources
+            'resources': resources,
+            'patchable': True
         }
     })
 
