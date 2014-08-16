@@ -4,6 +4,7 @@ import sys
 from veil.model.binding.binder_maker import compose, each
 from veil.model.binding.invalid import Invalid
 
+
 class ObjectBinder(object):
     def __init__(self, sub_binders, allow_missing=True, allow_extra=True):
         self.fields_binders = normalize_sub_binders(sub_binders)
@@ -39,15 +40,16 @@ class ObjectBinder(object):
 
     def assert_no_extra_no_missing(self, data):
         if not (self.allow_extra and self.allow_missing):
-            actual_fields_names = set(data.keys())
-            expected_fields_names = get_expected_fields_names(self.fields_binders)
+            actual_field_names = set(data.keys())
+            expected_field_names = get_expected_field_names(self.fields_binders)
             if not self.allow_extra:
-                extra_fields_names = actual_fields_names.difference(expected_fields_names)
-                if extra_fields_names:
-                    raise Invalid(_('Extra fields found in the submitted data: {}'.format(', '.join(extra_fields_names))))
+                extra_field_names = actual_field_names - expected_field_names
+                if extra_field_names:
+                    raise Invalid(_('Extra fields found in the submitted data: {}'.format(extra_field_names)))
             if not self.allow_missing:
-                if expected_fields_names.difference(actual_fields_names):
-                    raise Invalid(_('Missing fields in the submitted data'))
+                missing_field_names = expected_field_names - actual_field_names
+                if missing_field_names:
+                    raise Invalid(_('Missing fields in the submitted data: {}'.format(missing_field_names)))
 
 
 def normalize_sub_binders(sub_binders):
@@ -63,17 +65,13 @@ def normalize_sub_binders(sub_binders):
         else:
             field = field_or_fields
             fields = tuple([field])
-            binder = each(binder) # unbox the tuple passed in as single value
+            binder = each(binder)  # unbox the tuple passed in as single value
         fields_binders[fields] = binder
     return fields_binders
 
 
-def get_expected_fields_names(fields_binders):
-    expected_fields_names = set()
-    for fields_names in fields_binders:
-        for field_name in fields_names:
-            expected_fields_names.add(field_name)
-    return expected_fields_names
+def get_expected_field_names(fields_binders):
+    return set(field_name for fields_names in fields_binders for field_name in fields_names)
 
 
 def _(*args, **kwargs):

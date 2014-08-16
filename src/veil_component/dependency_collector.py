@@ -7,6 +7,7 @@ from .import_collector import list_imports
 
 LOGGER = logging.getLogger(__name__)
 
+
 def list_dependencies(component_name, walk_component=None, recursive=False):
     walk_component = walk_component or OnceComponentWalker().walk_component
     dependency_collector = DependencyCollector(component_name, walk_component, recursive=recursive)
@@ -39,7 +40,7 @@ class DependencyCollector(ComponentInternalVisitor):
     def collect_own_dependencies(self, more_dependencies):
         more_dependencies = set(more_dependencies)
         existing_dependencies = self.component_dependencies.get(self.component_name, set())
-        self.component_dependencies[self.component_name] = existing_dependencies.union(more_dependencies)
+        self.component_dependencies[self.component_name] = existing_dependencies | more_dependencies
         new_dependencies = more_dependencies - existing_dependencies
         for dependency in new_dependencies:
             self.collect_others_dependencies(dependency)

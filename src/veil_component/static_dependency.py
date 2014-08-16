@@ -157,8 +157,7 @@ def calculate_actual_dependencies(this_component_name, includes_children):
     if includes_children:
         children = list_child_component_names(this_component_name)
         for child_component_name in children:
-            actual_dependencies = actual_dependencies.union(
-                calculate_actual_dependencies(child_component_name, includes_children))
+            actual_dependencies |= calculate_actual_dependencies(child_component_name, includes_children)
     return actual_dependencies
 
 

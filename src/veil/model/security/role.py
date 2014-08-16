@@ -34,7 +34,7 @@ class Role(DictObject):
         return self
 
     def grant_role(self, *role_names):
-        self.granted_role_names = self.granted_role_names.union(set(role_names))
+        self.granted_role_names |= set(role_names)
         return self
 
     def grant_all_roles(self):
@@ -42,15 +42,15 @@ class Role(DictObject):
         return self
 
     def revoke_role(self, *role_names):
-        self.revoked_role_names = self.revoked_role_names.union(set(role_names))
+        self.revoked_role_names |= set(role_names)
         return self
 
     def list_granted_permissions(self):
         final_permissions = set()
         for role_name in self.granted_role_names:
-            final_permissions = final_permissions.union(get_role(role_name).list_granted_permissions())
+            final_permissions |= get_role(role_name).list_granted_permissions()
         for role_name in self.revoked_role_names:
             final_permissions = final_permissions - get_role(role_name).list_granted_permissions()
-        final_permissions = final_permissions.union(self.granted_permissions)
+        final_permissions |= self.granted_permissions
         final_permissions = final_permissions - self.revoked_permissions
         return final_permissions

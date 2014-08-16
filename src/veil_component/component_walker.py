@@ -39,7 +39,7 @@ def search_components(root_path, path=None):
         component_names.add(component_name)
     else:
         for sub_path in path.dirs():
-            component_names = component_names.union(search_components(root_path, sub_path))
+            component_names |= search_components(root_path, sub_path)
     return component_names
 
 

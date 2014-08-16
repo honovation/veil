@@ -41,7 +41,7 @@ class RouteDecorator(object):
         self.method = method
         self.path_template = path_template
         self.website = website.lower()
-        self.tags = tags
+        self.tags = set(tags)
         self.delegates_to = delegates_to
         self.path_template_params = path_template_params
         veil_component.record_dynamic_dependency_provider(veil_component.get_loading_component_name(), 'website', self.website)

@@ -33,7 +33,7 @@ def grant_permissions(list_permissions):
     def f():
         global granted_permissions
         new_permissions = list_permissions() - granted_permissions
-        granted_permissions = granted_permissions.union(new_permissions)
+        granted_permissions |= new_permissions
         try:
             yield
         finally:

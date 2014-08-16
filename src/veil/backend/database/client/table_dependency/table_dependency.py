@@ -33,8 +33,8 @@ RE_JOIN = re.compile(r'\s+JOIN\s(\w+)\s+', re.IGNORECASE)
 
 SUB_QUERY_TOKEN = '__SUB_QUERY__'
 
-writable_tables = None # per dynamic dependency defined in DEP-DYNAMIC-MANUAL and DEP-DYNAMIC-RECORDED
-readable_tables = None # infer from writable_tables based on component dependencies
+writable_tables = None  # per dynamic dependency defined in DEP-DYNAMIC-MANUAL and DEP-DYNAMIC-RECORDED
+readable_tables = None  # infer from writable_tables based on component dependencies
 LOGGER = logging.getLogger(__name__)
 
 def disable_logging():
@@ -78,10 +78,10 @@ def list_readable_tables():
         return readable_tables
     readable_tables = {}
     for component_name in get_component_map().keys():
-        readable_tables[component_name] = set(list_writable_tables().get(component_name, set()))
+        readable_tables[component_name] = list_writable_tables().get(component_name, set())
         transitive_dependencies = get_transitive_dependencies(component_name)
         for dependency in transitive_dependencies:
-            readable_tables[component_name] = readable_tables[component_name].union(set(list_writable_tables().get(dependency, set())))
+            readable_tables[component_name] |= list_writable_tables().get(dependency, set())
     providers, consumers = list_dynamic_dependencies()
     for component_name, deps in consumers.items():
         for dep in deps:
@@ -162,7 +162,7 @@ def check_readable_table_dependencies(readable_tables, component_name, purpose, 
     sub_queries = []
     extract_sub_queries(sql_, sub_queries)
     for sub_query in sub_queries:
-        reading_table_names = reading_table_names.union(get_reading_table_names(sub_query))
+        reading_table_names |= get_reading_table_names(sub_query)
     reading_table_names -= {SUB_QUERY_TOKEN}
     component_tables = readable_tables.get(component_name, set())
     for table in reading_table_names:
@@ -203,16 +203,14 @@ def extract_sub_queries(sql, queries):
 
 def get_reading_table_names(sql):
     if not RE_SELECT.match(sql):
-        return []
+        return set()
     match = RE_FROM.search(sql)
     if not match:
-        return []
-    sql = sql[match.end():] # remove stuff before FROM and FROM itself
-    sql = RE_AS.sub('', sql) # remove AS xxx
+        return set()
+    sql = sql[match.end():]  # remove stuff before FROM and FROM itself
+    sql = RE_AS.sub('', sql)  # remove AS xxx
     sql_froms, sql_joins = get_sql_froms_and_joins(sql)
-    table_names = set(get_sql_froms_tables(sql_froms)).union(
-        set(get_sql_joins_tables(sql_joins)))
-    return [t.split(' ')[0] for t in table_names if t and t[0] != '(']
+    return set(t.split(' ')[0] for t in get_sql_froms_tables(sql_froms) + get_sql_joins_tables(sql_joins) if t and t[0] != '(')
 
 
 def get_sql_froms_and_joins(sql):

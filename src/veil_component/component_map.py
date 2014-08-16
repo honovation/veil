@@ -5,9 +5,10 @@ from .dependency_collector import OnceComponentWalker
 from .environment import VEIL_HOME
 from .environment import VEIL_FRAMEWORK_HOME
 
-component_map = {}
-component_dependencies = {}
+component_map = {}  # component name => set(dependent component names)
+component_dependencies = {}  # component name => set(dependent package)
 component_walker = OnceComponentWalker()
+
 
 def scan_all_components():
     for component_name in list_all_components():
@@ -26,19 +27,19 @@ def get_dependent_component_names(component_name, includes_children=False):
     direct = component_map.get(component_name, set())
     if not includes_children:
         return direct
-    return direct.union(list_child_component_names(component_name))
+    return direct | list_child_component_names(component_name)
 
 
 def list_child_component_names(component_name):
-    return set([c for c in component_map.keys() if c.startswith('{}.'.format(component_name))])
+    return set(c for c in component_map if c.startswith('{}.'.format(component_name)))
 
 
 def get_component_map():
-    return dict(component_map)
+    return component_map
 
 
 def get_component_dependencies():
-    return dict(component_dependencies)
+    return component_dependencies
 
 
 def get_transitive_dependencies(component_name):
@@ -48,9 +49,8 @@ def get_transitive_dependencies(component_name):
 
 
 def collect_transitive_dependencies(component_name, dependencies):
-    direct_dependent_component_names = get_component_map().get(component_name, ())
-    sub_component_names = [c for c in component_map.keys() if c.startswith('{}.'.format(component_name))]
-    dependent_component_names = set(direct_dependent_component_names).union(set(sub_component_names))
+    direct_dependent_component_names = get_component_map().get(component_name, set())
+    dependent_component_names = direct_dependent_component_names | set(c for c in component_map if c.startswith('{}.'.format(component_name)))
     for dependent_component_name in dependent_component_names:
         if dependent_component_name not in dependencies:
             dependencies.add(dependent_component_name)
@@ -72,7 +72,7 @@ def filter_dependent_component_names(my_component_name, component_names, depende
 
 def get_root_component(module_name):
     matched_component_names = []
-    for component_name in component_map.keys():
+    for component_name in component_map:
         if module_name == component_name or module_name.startswith('{}.'.format(component_name)):
             matched_component_names.append(component_name)
     if not matched_component_names:
@@ -82,7 +82,7 @@ def get_root_component(module_name):
 
 def get_leaf_component(module_name):
     matched_component_names = []
-    for component_name in component_map.keys():
+    for component_name in component_map:
         if module_name == component_name or module_name.startswith('{}.'.format(component_name)):
             matched_component_names.append(component_name)
     if not matched_component_names:
@@ -102,7 +102,7 @@ def list_all_components():
 
     all_components = search_components(VEIL_HOME / 'src')
     if VEIL_FRAMEWORK_HOME:
-        all_components = all_components.union(search_components(VEIL_FRAMEWORK_HOME / 'src'))
+        all_components |= search_components(VEIL_FRAMEWORK_HOME / 'src')
     return all_components
 
 
