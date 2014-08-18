@@ -20,6 +20,7 @@ from .wxpay_client_installer import wxpay_client_config
 LOGGER = logging.getLogger(__name__)
 
 EVENT_WXPAY_TRADE_PAID = define_event('wxpay-trade-paid') # valid notification
+EVENT_WXPAY_DELIVER_NOTIFY_SENT = define_event('wxpay-deliver-notify-sent')
 
 
 NOTIFIED_FROM_ORDER_QUERY = 'order_query'
@@ -27,6 +28,7 @@ NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # wxpay require this 7 characters to be returned to them
 WXPAY_BANK_TYPE = 'WX'
 WXPAY_ORDER_QUERY_URL_TEMPLATE = 'https://api.weixin.qq.com/pay/orderquery?access_token={}'
+WXPAY_DELIVER_NOTIFY_URL_TEMPLATE = 'https://api.weixin.qq.com/pay/delivernotify?access_token={}'
 WXMP_ACCESS_TOKEN_AUTHORIZATION_URL_TEMPLATE = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={}&secret={}'
 VERIFY_URL_TEMPLATE = 'https://gw.tenpay.com/gateway/simpleverifynotifyid.xml?{}'
 
@@ -119,6 +121,40 @@ def query_order_status(access_token, out_trade_no):
             publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=None,
                 paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=None, bank_billno=bank_billno, show_url=None,
                 notified_from=NOTIFIED_FROM_ORDER_QUERY)
+
+
+def send_deliver_notify(access_token, out_trade_no, openid, transid, deliver_status, deliver_msg):
+    params = DictObject()
+    params.appid = wxpay_client_config().app_id
+    params.openid = openid
+    params.transid = transid
+    params.out_trade_no = out_trade_no
+    params.deliver_timestamp = str(get_current_timestamp())
+    params.deliver_status = deliver_status
+    params.deliver_msg = deliver_msg
+    params.app_signature = sign_sha1({
+        'appid': params.appid,
+        'appkey': wxpay_client_config().pay_sign_key,
+        'openid': params.openid,
+        'transid': params.transid,
+        'out_trade_no': params.out_trade_no,
+        'deliver_timestamp': params.deliver_timestamp,
+        'deliver_status': params.deliver_status,
+        'deliver_msg': params.deliver_msg
+    })
+    params.sign_method = 'sha1'
+    try:
+        response = http_call('wxpay-deliver-notify', WXPAY_DELIVER_NOTIFY_URL_TEMPLATE.format(access_token), data=params, content_type='application/json', max_tries=3)
+    except:
+        raise
+    else:
+        query_result = objectify(from_json(response))
+        if query_result.errcode != 0:
+            LOGGER.info('Got error from send deliver notify: %(error_message)s, %(response)s', {
+                'error_message': query_result.errmsg, 'response': query_result
+            })
+        else:
+            publish_event(EVENT_WXPAY_DELIVER_NOTIFY_SENT, out_trade_no=out_trade_no)
 
 
 def create_wxpay_query_order_status_package(out_trade_no):
