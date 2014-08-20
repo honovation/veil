@@ -224,7 +224,7 @@ class Database(object):
         specify_column_names = True
         column_names = column_names or value_providers.keys()
         if not column_names and objects:
-            some_object, = next(iter(objects))
+            some_object = next(iter(objects))
             if isinstance(some_object, dict):
                 column_names = [k for k in some_object if k not in exclude_column_names]
             else:
