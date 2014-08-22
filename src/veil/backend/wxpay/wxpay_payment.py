@@ -106,21 +106,18 @@ def query_order_status(access_token, out_trade_no):
         'timestamp': params.timestamp
     })
     params.sign_method = 'sha1'
-    try:
-        response = http_call('wxpay-order-query', WXPAY_ORDER_QUERY_URL_TEMPLATE.format(access_token), data=params, content_type='application/json', max_tries=3)
-    except:
-        raise
+    response = http_call('wxpay-order-query', WXPAY_ORDER_QUERY_URL_TEMPLATE.format(access_token), data=params, content_type='application/json',
+        max_tries=3)
+    query_result = objectify(from_json(response))
+    if query_result.errcode != 0:
+        LOGGER.info('Got error from query order status: %(error_message)s, %(response)s', {
+            'error_message': query_result.errmsg, 'response': query_result
+        })
     else:
-        query_result = objectify(from_json(response))
-        if query_result.errcode != 0:
-            LOGGER.info('Got error from query order status: %(error_message)s, %(response)s', {
-                'error_message': query_result.errmsg, 'response': query_result
-            })
-        else:
-            trade_no, paid_total, paid_at, bank_billno = validate_order_info(query_result.order_info)
-            publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=None,
-                paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=None, bank_billno=bank_billno, show_url=None,
-                notified_from=NOTIFIED_FROM_ORDER_QUERY)
+        trade_no, paid_total, paid_at, bank_billno = validate_order_info(query_result.order_info)
+        publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=None,
+            paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=None, bank_billno=bank_billno, show_url=None,
+            notified_from=NOTIFIED_FROM_ORDER_QUERY)
 
 
 def send_deliver_notify(access_token, out_trade_no, openid, transid, deliver_status, deliver_msg):
@@ -143,18 +140,14 @@ def send_deliver_notify(access_token, out_trade_no, openid, transid, deliver_sta
         'deliver_msg': params.deliver_msg
     })
     params.sign_method = 'sha1'
-    try:
-        response = http_call('wxpay-deliver-notify', WXPAY_DELIVER_NOTIFY_URL_TEMPLATE.format(access_token), data=params, content_type='application/json', max_tries=3)
-    except:
-        raise
+    response = http_call('wxpay-deliver-notify', WXPAY_DELIVER_NOTIFY_URL_TEMPLATE.format(access_token), data=params, content_type='application/json', max_tries=3)
+    query_result = objectify(from_json(response))
+    if query_result.errcode != 0:
+        LOGGER.info('Got error from send deliver notify: %(error_message)s, %(response)s', {
+            'error_message': query_result.errmsg, 'response': query_result
+        })
     else:
-        query_result = objectify(from_json(response))
-        if query_result.errcode != 0:
-            LOGGER.info('Got error from send deliver notify: %(error_message)s, %(response)s', {
-                'error_message': query_result.errmsg, 'response': query_result
-            })
-        else:
-            publish_event(EVENT_WXPAY_DELIVER_NOTIFY_SENT, out_trade_no=out_trade_no)
+        publish_event(EVENT_WXPAY_DELIVER_NOTIFY_SENT, out_trade_no=out_trade_no)
 
 
 def create_wxpay_query_order_status_package(out_trade_no):
@@ -192,14 +185,10 @@ def validate_order_info(order_info):
 def request_wxmp_access_token():
     app_id = wxpay_client_config().app_id
     app_secret = wxpay_client_config().app_secret
-    try:
-        response = http_call('get-wxmp-access-token', WXMP_ACCESS_TOKEN_AUTHORIZATION_URL_TEMPLATE.format(app_id, app_secret), max_tries=3)
-    except:
-        raise
-    else:
-        LOGGER.info('Authorized got access token from wxmp: %(response)s', {'response': response})
-        result = objectify(from_json(response))
-        return result.access_token
+    response = http_call('get-wxmp-access-token', WXMP_ACCESS_TOKEN_AUTHORIZATION_URL_TEMPLATE.format(app_id, app_secret), max_tries=3)
+    LOGGER.info('Authorized got access token from wxmp: %(response)s', {'response': response})
+    result = objectify(from_json(response))
+    return result.access_token
 
 
 def validate_notification(http_arguments):
