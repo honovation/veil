@@ -10,6 +10,7 @@ from zipimport import zipimporter
 LOGGER = logging.getLogger(__name__)
 RE_COMPONENT = re.compile(r'.\s*init_component\s*\(')
 
+
 class ComponentInternalVisitor(object):
     def visit_component_start(self, component_name, path, source_code):
         pass

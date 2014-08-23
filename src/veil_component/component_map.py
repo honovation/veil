@@ -1,9 +1,10 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from .dependency_collector import list_dependencies
-from .dependency_collector import OnceComponentWalker
 from .environment import VEIL_HOME
 from .environment import VEIL_FRAMEWORK_HOME
+from .dependency_collector import list_dependencies
+from .dependency_collector import OnceComponentWalker
+from .component_walker import search_components
 
 component_map = {}  # component name => set(dependent component names)
 component_dependencies = {}  # component name => set(dependent package)
@@ -13,6 +14,7 @@ component_walker = OnceComponentWalker()
 def scan_all_components():
     for component_name in list_all_components():
         scan_component(component_name)
+
 
 def scan_component(component_name):
     if component_name in component_map:
@@ -98,8 +100,6 @@ def load_all_components():
 
 
 def list_all_components():
-    from veil_component import search_components
-
     all_components = search_components(VEIL_HOME / 'src')
     if VEIL_FRAMEWORK_HOME:
         all_components |= search_components(VEIL_FRAMEWORK_HOME / 'src')

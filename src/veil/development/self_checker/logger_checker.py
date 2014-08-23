@@ -5,6 +5,7 @@ import veil_component
 
 LOGGER = logging.getLogger(__name__)
 
+
 def check_logger():
     wrong_usages_count = 0
     for module_name, module in sys.modules.items():
@@ -15,6 +16,7 @@ def check_logger():
                 wrong_usages_count += 1
     if wrong_usages_count:
         raise Exception('Loggers were not being used correctly, in {} places'.format(wrong_usages_count))
+
 
 def check_file(file_path):
     failed = False

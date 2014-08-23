@@ -2,8 +2,18 @@ from __future__ import unicode_literals, print_function, division
 import importlib
 import veil_component
 
+
 def check_encapsulation():
+    veil_component.scan_all_components()
     component_dependencies = veil_component.get_component_dependencies()
+
+    component_names_without_public_apis = []
+    for component_name in component_dependencies:
+        if not component_name.startswith('veil.profile.') and not hasattr(importlib.import_module(component_name), '__all__'):
+            component_names_without_public_apis.append(component_name)
+    if component_names_without_public_apis:
+        raise Exception('{} has not public APIs defined'.format(sorted(component_names_without_public_apis)))
+
     for component_name, dependencies in component_dependencies.items():
         check_component(component_name, dependencies)
 
