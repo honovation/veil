@@ -82,12 +82,15 @@ function veil_scaffold {
         echo "veil scaffold is only supported under development environment"
         exit 1
     fi
-    STARTER_PROJECT=vsee
+    STARTER_PROJECT="$1"
     if [ -d $STARTER_PROJECT ] ; then
         echo "$STARTER_PROJECT already exists under the current path"
         exit 1
     fi
-    cp -rd $VEIL_FRAMEWORK_HOME/starter/vsee .
+    cp -rd $VEIL_FRAMEWORK_HOME/starter/vsee ./$STARTER_PROJECT
+    mv ./$STARTER_PROJECT/db/vsee ./$STARTER_PROJECT/db/$STARTER_PROJECT
+    mv ./$STARTER_PROJECT/src/vsee ./$STARTER_PROJECT/src/$STARTER_PROJECT
+    grep -i "vsee" -r ./$STARTER_PROJECT | awk -F : '{print $1}' | sort | uniq | xargs sed -i "s/vsee/${STARTER_PROJECT}/g"
     cd $STARTER_PROJECT
     git init
     git add -A .
@@ -165,7 +168,7 @@ case "$1" in
         ;;
     scaffold)
         shift
-        veil_scaffold
+        veil_scaffold $1
         ;;
     init)
         shift

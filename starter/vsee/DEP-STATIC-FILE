@@ -6,10 +6,10 @@ STATIC_FILE_DEPENDENCIES = {
             {
                 'output': 'person.js',
                 'files': [
-                    'js/jquery-1.10.2.min.js',
-                    'js/jquery-cookie-1.4.0.js',
-                    'js/json3-3.3.0.min.js',
-                    'js/veil.js',
+                    'person/js/jquery-1.10.2.min.js',
+                    'person/js/jquery-cookie-1.4.0.js',
+                    'person/js/json3-3.3.0.min.js',
+                    'person/js/veil.js',
                 ]
             }
         ],
@@ -17,9 +17,9 @@ STATIC_FILE_DEPENDENCIES = {
             {
                 'output': 'person.css',
                 'files': [
-                    'css/reset.min.css',
-                    'css/screen.min.css',
-                    'css/common.min.css',
+                    'person/css/reset.min.css',
+                    'person/css/screen.min.css',
+                    'person/css/common.min.css',
                 ]
             }
         ],

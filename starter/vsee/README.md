@@ -24,7 +24,7 @@ Veil Sample Application
 
 10.`veil backend database postgresql reset vsee`
 
-11.open browser and access(you should add this example domain to your hosts file and make it point to 127.0.0.1): http://person.dev.dmright.com:8070/
+11.open browser and access(you should add this example domain to your hosts file and make it point to 127.0.0.1): http://person.dev.dmright.com:2000/
 
 ###PyCharm Setting
 
