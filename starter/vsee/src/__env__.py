@@ -85,10 +85,6 @@ def routines_job_worker_program(config, count=1):
         config, count=count)
 
 
-def transactional_sms_worker_program(config, count=1):
-    return vsee_job_worker_program('transactional_sms', ['send_transactional_sms'], config, count=count)
-
-
 def transactional_email_worker_program(config, count=1):
     return vsee_job_worker_program('transactional_email', ['send_transactional_email'], config, count=count)
 

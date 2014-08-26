@@ -3,7 +3,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 from veil.profile.web import *
 from veil.profile.model import *
-from const import GENDER
+from vsee.const import GENDERS
 
 LOGGER = logging.getLogger(__name__)
 db = register_database('vsee')
@@ -15,4 +15,4 @@ def list_persons():
 
 @template_filter('gender')
 def render_gender(value):
-    return GENDER[value]
+    return GENDERS[value]
