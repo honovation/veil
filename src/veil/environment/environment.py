@@ -222,6 +222,16 @@ def get_application_codebase():
     return get_application().CODEBASE
 
 
+def get_application_sms_whitelist():
+    application = get_application()
+    return application.SMS_WHITELIST if hasattr(application, 'SMS_WHITELIST') else set()
+
+
+def get_application_email_whitelist():
+    application = get_application()
+    return application.EMAIL_WHITELIST if hasattr(application, 'EMAIL_WHITELIST') else set()
+
+
 def get_application():
     import __veil__
 

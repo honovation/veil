@@ -6,6 +6,8 @@ from email.utils import parseaddr, formataddr
 from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from veil_component import VEIL_ENV_TYPE
+from veil.environment import get_application_email_whitelist
 from veil.backend.queue import *
 from veil.development.test import *
 from veil.model.event import *
@@ -54,6 +56,9 @@ def send_email(sender, recipient, subject, text='', html='', category='', email_
     sender_name, sender_addr = parseaddr(sender)
     from_addr = formataddr((Header(sender_name, 'UTF-8').encode(), sender_addr))
     recipient_name, recipient_addr = parseaddr(recipient)
+    if 'public' != VEIL_ENV_TYPE and recipient_addr not in get_application_email_whitelist():
+        LOGGER.warn('Ignored email address not in the whitelist under non-public env: %(recipient_addr)s', {'recipient_addr': recipient_addr})
+        return
     to_addr = formataddr((Header(recipient_name, 'UTF-8').encode(), recipient_addr))
 
     msg = MIMEMultipart('alternative')

@@ -2,6 +2,8 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import re
+from veil_component import VEIL_ENV_TYPE
+from veil.environment import get_application_sms_whitelist
 from veil.backend.queue import *
 from veil.utility.http import *
 from .emay_sms_client_installer import emay_sms_client_config
@@ -22,7 +24,16 @@ def send_sms(receivers, message, sms_code):
     LOGGER.debug('attempt to send sms: %(sms_code)s, %(receivers)s, %(message)s', {'sms_code': sms_code, 'receivers': receivers, 'message': message})
     if isinstance(receivers, basestring):
         receivers = [receivers]
-    receivers = [r.strip() for r in receivers if r.strip()]
+    receivers = set(r.strip() for r in receivers if r.strip())
+    if 'public' != VEIL_ENV_TYPE:
+        receivers_not_in_whitelist = set(r for r in receivers if r not in get_application_sms_whitelist())
+        if receivers_not_in_whitelist:
+            LOGGER.warn('Ignored sms receivers not in the whitelist under non-public env: %(receivers_not_in_whitelist)s', {
+                'receivers_not_in_whitelist': receivers_not_in_whitelist
+            })
+            receivers -= receivers_not_in_whitelist
+            if not receivers:
+                return
     if len(receivers) > MAX_SMS_RECEIVERS:
         raise Exception('try to send sms to receivers over {}'.format(MAX_SMS_RECEIVERS))
     if len(message) > MAX_SMS_CONTENT_LENGTH:

@@ -33,6 +33,8 @@ from .environment import VEIL_BACKUP_ROOT
 from .environment import VEIL_FRAMEWORK_CODEBASE
 from .environment import get_application_codebase
 from .environment import get_application_version
+from .environment import get_application_sms_whitelist
+from .environment import get_application_email_whitelist
 from .environment import get_veil_framework_version
 
 from .environment import veil_env
