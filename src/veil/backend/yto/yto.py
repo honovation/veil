@@ -28,21 +28,41 @@ def verify_request(data, sign):
 
 
 def get_brief(status_obj):
+    element_remark = status_obj.find('remark')
     if status_obj.infoContent.text == 'SENT_SCAN':
-        return '：'.join(e for e in [YTO_STATUS['SENT_SCAN'], status_obj.find('remark').text if status_obj.find('remark') else None] if e)
-    elif status_obj.infoContent.text == YTO_REJECTED_STATUS:
-        return '{} 原因：{}'.format(YTO_STATUS[YTO_REJECTED_STATUS], status_obj.find('remark').text if status_obj.find('remark') else '-')
+        return '：'.join(e for e in [YTO_STATUS['SENT_SCAN'], element_remark.text if element_remark else None] if e)
+    elif is_rejected_response(status_obj):
+        return '{} 原因：{}'.format(YTO_STATUS[YTO_REJECTED_STATUS], element_remark.text if element_remark else '-')
     elif status_obj.infoContent.text == YTO_SIGNED_STATUS:
-        result = '{} 签收人：{}'.format(YTO_STATUS[YTO_SIGNED_STATUS], status_obj.find('name').text if status_obj.find('name') else '-')
-        if status_obj.find('remark'):
-            return '{} ({})'.format(result, status_obj.find('remark').text)
+        name_element = status_obj.find('name')
+        result = '{} 签收人：{}'.format(YTO_STATUS[YTO_SIGNED_STATUS], name_element.text if name_element else '-')
+        if element_remark:
+            return '{} ({})'.format(result, element_remark.text)
         return result
     else:
         return YTO_STATUS.get(status_obj.infoContent.text)
 
 
 def get_logistics_status(status_obj):
-    return DictObject(code=status_obj.infoContent.text, brief=get_brief(status_obj))
+    code = YTO_REJECTED_STATUS if is_rejected_response(status_obj) else status_obj.infoContent.text
+    return DictObject(code=code, brief=get_brief(status_obj))
+
+
+def is_rejected_response(status_obj):
+    if status_obj.infoContent.text == YTO_REJECTED_STATUS:
+        return True
+    if status_obj.infoContent.text != YTO_SIGNED_STATUS:
+        return False
+    name_element = status_obj.find('name')
+    if name_element and '退' in name_element.text:
+        if name_element.text.startswith('退'):
+            return True
+        else:
+            logistics_no = status_obj.txLogisticID.text
+            LOGGER.info('maybe new pattern of reject: %(logistics_no)s, %(name)s', {
+                'logistics_no': logistics_no, 'name': name_element.text
+            })
+    return False
 
 
 def subscribe(purchase_id, purchase_xml_data):
