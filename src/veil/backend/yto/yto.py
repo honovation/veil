@@ -43,8 +43,19 @@ def get_brief(status_obj):
         return YTO_STATUS.get(status_obj.infoContent.text)
 
 
+def get_signed_name_and_reject_reason(status_obj):
+    name = status_obj.find('name')
+    name = name.text if name else None
+    reason = status_obj.find('remark')
+    reason = reason.text if reason else None
+    return name, reason
+
+
 def get_logistics_status(status_obj):
     code = YTO_REJECTED_STATUS if is_rejected_response(status_obj) else status_obj.infoContent.text
+    if code in (YTO_REJECTED_STATUS, YTO_SIGNED_STATUS):
+        name, reason = get_signed_name_and_reject_reason(status_obj)
+        return DictObject(code=code, brief=get_brief(status_obj), signed_name=name, rejected_reason=reason)
     return DictObject(code=code, brief=get_brief(status_obj))
 
 
