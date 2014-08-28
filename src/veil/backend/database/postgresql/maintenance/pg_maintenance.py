@@ -141,7 +141,8 @@ def create_database_migration_table_if_not_exists(purpose):
             id SERIAL PRIMARY KEY,
             from_version INT NOT NULL,
             to_version INT NOT NULL,
-            migrated_at TIMESTAMP WITH TIME ZONE NOT NULL
+            migrated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+            EXCLUDE USING GIST (NUMRANGE(from_version, to_version) WITH &&)
         )
         ''')
 
