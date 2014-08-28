@@ -108,9 +108,10 @@ def wait_for_server_up(purpose):
 
 
 def database_existed(version, host, port, owner, database, env):
-    return '1' == shell_execute(
+    output = shell_execute(
         '{}/psql -h {} -p {} -U {} -lqt | cut -d \| -f 1 | grep -w {} | wc -l'.format(get_pg_bin_dir(version), host, port, owner, database), env=env,
-        capture=True)
+        capture=True, debug=True)
+    return 1 == int(output)
 
 
 @script('create-database')
@@ -151,7 +152,7 @@ def psql(purpose, version, extra_arg, database=None, **kwargs):
     config = database_client_config(purpose)
     env = os.environ.copy()
     env['PGPASSWORD'] = config.password
-    shell_execute('{pg_bin_dir}/psql -h {host} -p {port} -U {user} {extra_arg} --set ON_ERROR_STOP=1 {database}'.format(
+    shell_execute('{pg_bin_dir}/psql -h {host} -p {port} -U {user} {extra_arg} --set ON_ERROR_STOP=1 -d {database}'.format(
         pg_bin_dir=get_pg_bin_dir(version),
         host=config.host,
         port=config.port,

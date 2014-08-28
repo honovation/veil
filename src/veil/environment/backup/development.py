@@ -34,6 +34,7 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', host_name=None,
     shell_execute('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(baseline_path, baseline_path, restored_to_path), debug=True)
     shell_execute('veil install-server')
     shell_execute('veil up --daemonize')
+    #need change db owner and user's password to dev environment's manually if they are different between dev env & the source env to copy db from
     shell_execute('veil migrate')
     shell_execute('veil down')
 
