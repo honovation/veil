@@ -294,11 +294,22 @@ def upgrade_env_pip(veil_env_name, setuptools_version, pip_version):
 
 
 def get_deployed_at():
+    """
+        tag format:
+            APP-ENV-TIMESTAMP-UUID-{patch}
+
+        exmaples:
+            patch tag: app-public-20140829142721-cb557ad92be8eea70c4ec9bf45321026c5e18d56-patch
+            or
+            deploy tag: app-public-20140829142721-cb557ad92be8eea70c4ec9bf45321026c5e18d56
+    """
     last_commit = shell_execute('git rev-parse HEAD', capture=True)
-    lines = shell_execute("git show-ref --tags -d | grep ^{} | sed -e 's,.* refs/tags/,,' -e 's/\^{{}}//'".format(last_commit), capture=True)
+    lines = shell_execute("git show-ref --tags -d | grep ^{} | sed -e 's,.* refs/tags/,,'".format(last_commit), capture=True)
     deployed_ats = []
     for tag in lines.splitlines(False):
-        env_name, formatted_deployed_at, _ = tag.rsplit('-', 2)
+        parts = tag.split('-')
+        env_name = '{}-{}'.format(parts[0], parts[1])
+        formatted_deployed_at = parts[2]
         if env_name == VEIL_ENV_NAME:
             deployed_ats.append(convert_datetime_to_client_timezone(datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S')))
     return max(deployed_ats) if deployed_ats else None
