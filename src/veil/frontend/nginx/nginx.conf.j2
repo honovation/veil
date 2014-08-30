@@ -118,6 +118,9 @@ http {
     {% for server_name, server_properties in config.servers.items() %}
     server {
         server_name  {{ server_name }};
+        if ($request_method !~ ^(GET|HEAD|POST|PUT|PATCH|DELETE)$ ) {
+             return 444;
+        }
         error_log {{ config.log_directory }}/{{ server_name }}-error.log;
         {% if not config.has_bunker or config.is_bunker %}
         access_log {{ config.log_directory }}/{{ server_name }}-access.log logstash_json;
