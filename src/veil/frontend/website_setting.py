@@ -49,6 +49,7 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
     extra_headers = '''
         add_header X-Frame-Options SAMEORIGIN;
         add_header X-UA-Compatible "IE=Edge,chrome=1";
+        add_header X-XSS-Protection "1; mode=block";
         {}
         '''.format('\n'.join(extra_headers))
     extra_locations = extra_locations or {}
