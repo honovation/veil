@@ -13,6 +13,7 @@ from .context import get_current_http_response
 
 LOGGER = getLogger(__name__)
 
+
 def get_secure_cookie(name, value=None, default=None, max_age_days=31, request=None):
     if value is None:
         value = get_cookie(name, request=request)
@@ -102,7 +103,7 @@ def set_cookie(response=None, **kwargs):
     create_cookie(response.cookies, **kwargs)
 
 
-def create_cookie(cookies, name, value, domain=None, expires=None, path='/', expires_days=None, expires_minutes=None, **kwargs):
+def create_cookie(cookies, name, value, domain=None, expires=None, path='/', expires_days=None, expires_minutes=None, httponly=True, **kwargs):
     name = to_str(name)
     value = to_str(value)
     if re.search(br'[\x00-\x20]', name + value):
@@ -119,6 +120,8 @@ def create_cookie(cookies, name, value, domain=None, expires=None, path='/', exp
         cookie['expires'] = email.utils.formatdate(timestamp, localtime=False, usegmt=True)
     if path:
         cookie['path'] = path
+    if httponly:
+        cookie['httponly'] = httponly
     for k, v in kwargs.items():
         if 'max_age' == k:
             k = 'max-age'

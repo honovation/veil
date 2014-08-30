@@ -53,15 +53,14 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
                     set_http_status_code(httplib.FORBIDDEN)
                     end_http_request_processing()
             else:
-                browser_code = get_browser_code()
-                new_browser_code = browser_code or uuid.uuid4().get_hex()
-                set_browser_code(purpose, new_browser_code)
+                browser_code = get_browser_code() or uuid.uuid4().get_hex()
+                set_browser_code(purpose, browser_code)
 
                 latest_user_id = get_latest_user_id(purpose)
                 if latest_user_id:
                     set_latest_user_id(purpose, latest_user_id)
 
-                session = get_user_session(purpose, new_browser_code)
+                session = get_user_session(purpose, browser_code)
                 if session:
                     refresh_user_session_ttl(session)
 
@@ -71,7 +70,7 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
                     else:
                         login_referer = request.headers.get('Referer')
                     if login_referer:
-                        remember_user_login_referer(purpose, login_referer, new_browser_code)
+                        remember_user_login_referer(purpose, login_referer, browser_code)
                     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                         set_http_status_code(httplib.UNAUTHORIZED)
                         get_current_http_response().set_header('WWW-Authenticate', login_url)
