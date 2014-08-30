@@ -37,7 +37,8 @@ def website_upstreams(purpose, start_port, process_count):
     } for i in range(process_count)]}
 
 
-def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_file_size='1m', extra_headers=(), extra_locations=None):
+def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_file_size='1m', extra_headers=(), extra_locations=None,
+        valid_referer_domains=None):
     if is_api_only:
         return {'/': {
             '_': '''
@@ -52,6 +53,15 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
         add_header X-XSS-Protection "1; mode=block";
         {}
         '''.format('\n'.join(extra_headers))
+    if valid_referer_domains:
+        stop_referring = '''
+            valid_referers none blocked {};
+            if ($invalid_referer) {{
+                return 403;
+            }}
+            '''.format(valid_referer_domains)
+    else:
+        stop_referring = ''
     extra_locations = extra_locations or {}
     if not has_bunker:
         extra_locations.update({
@@ -72,12 +82,12 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
             '/static/': {
                 '_': '''
                     alias {}/static/;
-                    access_log off;
+                    access_log off;{}
                     expires max;
                     if ($query_string !~ "v=.+") {{
                         expires 4h;
                     }}
-                    '''.format(VEIL_HOME)
+                    '''.format(VEIL_HOME, stop_referring)
             }
         })
     locations = {
@@ -116,9 +126,9 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
         '~ ^/static/v-(.*)-(.*)/': {
             '_': '''
                 alias {}/$1/$2;
-                access_log off;
+                access_log off;{}
                 expires max;
-                '''.format(VEIL_BUCKET_INLINE_STATIC_FILES_DIR)
+                '''.format(VEIL_BUCKET_INLINE_STATIC_FILES_DIR, stop_referring)
         }
     }
     locations.update(extra_locations)
