@@ -79,15 +79,27 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
                     ''',
                 'alias': VEIL_HOME / 'static' / purpose / 'robots.txt'
             },
-            '/static/': {
+            '~ ^/static/images/(logo.*\.gif)$': {
                 '_': '''
-                    alias {}/static/;
-                    access_log off;{}
+                    set $logo_file $1;
+                    alias {}/static/images/$logo_file;
+                    access_log off;
                     expires max;
                     if ($query_string !~ "v=.+") {{
                         expires 4h;
                     }}
-                    '''.format(VEIL_HOME, stop_referring)
+                    '''.format(VEIL_HOME)
+            },
+            '/static/': {
+                '_': '''
+                    {}
+                    alias {}/static/;
+                    access_log off;
+                    expires max;
+                    if ($query_string !~ "v=.+") {{
+                        expires 4h;
+                    }}
+                    '''.format(stop_referring, VEIL_HOME)
             }
         })
     locations = {
@@ -125,10 +137,11 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
         # /static/v-xxxx/a-b.js
         '~ ^/static/v-(.*)-(.*)/': {
             '_': '''
+                {}
                 alias {}/$1/$2;
-                access_log off;{}
+                access_log off;
                 expires max;
-                '''.format(VEIL_BUCKET_INLINE_STATIC_FILES_DIR, stop_referring)
+                '''.format(stop_referring, VEIL_BUCKET_INLINE_STATIC_FILES_DIR)
         }
     }
     locations.update(extra_locations)

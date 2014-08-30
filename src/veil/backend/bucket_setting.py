@@ -12,11 +12,12 @@ def bucket_location(base_directory, valid_referer_domains=None):
         stop_referring = ''
     return {
         '_': '''
+            {}
             alias {}/;
-            access_log off;{}
+            access_log off;
             expires max;
             if ($query_string !~ "v=.+") {{
                 expires 4h;
             }}
-            '''.format(base_directory, stop_referring)
+            '''.format(stop_referring, base_directory)
     }

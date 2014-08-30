@@ -3,15 +3,15 @@ from veil.model.collection import *
 from veil.profile.setting import *
 from veil.frontend.nginx_setting import NGINX_PID_PATH
 
-PERSON_WEBSITE_MAX_UPLOAD_FILE_SIZE = '3m'
+WEBSITES = ['person']
 
 PERSON_WEBSITE_BUCKETS = ['captcha_image', 'person_images']
+
+PERSON_WEBSITE_MAX_UPLOAD_FILE_SIZE = '3m'
 
 REDIS_CLIENTS = ['persist_store', 'memory_cache']
 
 POSTGRESQL_CLIENTS = ['vsee']
-
-WEBSITES = ['person']
 
 SECURITY_CONFIG = load_config_from(
     SECURITY_CONFIG_FILE,
@@ -128,10 +128,8 @@ def person_website_programs(config):
 
 
 def person_website_nginx_server(config, extra_locations=None):
-    extra_locations = extra_locations or {}
     locations = website_locations('person', VEIL_ENV_TYPE in ('public', 'staging'), max_upload_file_size=PERSON_WEBSITE_MAX_UPLOAD_FILE_SIZE)
-    for purpose in PERSON_WEBSITE_BUCKETS:
-        locations = merge_multiple_settings(locations, extra_locations, website_bucket_location(purpose))
+    locations = merge_multiple_settings(locations, extra_locations or {}, website_bucket_locations(PERSON_WEBSITE_BUCKETS))
     return nginx_server(config.person_website_domain, config.person_website_domain_port, locations=locations,
         upstreams=website_upstreams('person', config.person_website_start_port, config.person_website_process_count),
         error_page={'404': '404.html', '500': '500.html'}, error_page_dir='{}/static/person/error-page'.format(VEIL_HOME))
@@ -211,6 +209,9 @@ def vsee_config(config):
     return vsee_config_
 
 
-def website_bucket_location(purpose):
-    bucket_base_directory = VEIL_BUCKETS_DIR / purpose.replace('_', '-')
-    return {'^~ /buckets/{}/'.format(purpose.replace('_', '-')): bucket_location(bucket_base_directory)}
+def website_bucket_locations(purposes):
+    locations = {}
+    for purpose in purposes:
+        bucket_base_directory = VEIL_BUCKETS_DIR / purpose.replace('_', '-')
+        locations.update({'^~ /buckets/{}/'.format(purpose.replace('_', '-')): bucket_location(bucket_base_directory)})
+    return locations
