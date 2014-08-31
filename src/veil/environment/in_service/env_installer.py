@@ -293,26 +293,26 @@ def upgrade_env_pip(veil_env_name, setuptools_version, pip_version):
                 fabric.api.sudo('veil :{} upgrade-pip {} {}'.format(host.env_name, setuptools_version, pip_version))
 
 
-def get_deployed_at():
+def get_deployed_or_patched_at():
     """
         tag format:
-            APP-ENV-TIMESTAMP-UUID-{patch}
+            APP-ENV-TIMESTAMP-UUID[-patch]
 
         exmaples:
-            patch tag: app-public-20140829142721-cb557ad92be8eea70c4ec9bf45321026c5e18d56-patch
+            deploy tag: app-public--3-20140829142721-cb557ad92be8eea70c4ec9bf45321026c5e18d56
             or
-            deploy tag: app-public-20140829142721-cb557ad92be8eea70c4ec9bf45321026c5e18d56
+            patch tag: app-public--3-20140829142721-cb557ad92be8eea70c4ec9bf45321026c5e18d56-patch
     """
     last_commit = shell_execute('git rev-parse HEAD', capture=True)
     lines = shell_execute("git show-ref --tags -d | grep ^{} | sed -e 's,.* refs/tags/,,'".format(last_commit), capture=True)
-    deployed_ats = []
+    deployed_or_patched_at = []
     for tag in lines.splitlines(False):
-        parts = tag.split('-')
-        env_name = '{}-{}'.format(parts[0], parts[1])
-        formatted_deployed_at = parts[2]
+        if tag.endswith('-patch'):
+            tag = tag[:-len('-patch')]
+        env_name, formatted_deployed_at, _ = tag.rsplit('-', 2)
         if env_name == VEIL_ENV_NAME:
-            deployed_ats.append(convert_datetime_to_client_timezone(datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S')))
-    return max(deployed_ats) if deployed_ats else None
+            deployed_or_patched_at.append(convert_datetime_to_client_timezone(datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S')))
+    return max(deployed_or_patched_at) if deployed_or_patched_at else None
 
 
 def update_branch(veil_env_name):
@@ -332,7 +332,6 @@ def tag_deploy(veil_env_name):
 
 
 def tag_patch(veil_env_name):
-    tag_name = '{}-{}-{}-patch'.format(
-        veil_env_name, get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
+    tag_name = '{}-{}-{}-patch'.format(veil_env_name, get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
     shell_execute('git tag {}'.format(tag_name))
     shell_execute('git push origin tag {}'.format(tag_name))
