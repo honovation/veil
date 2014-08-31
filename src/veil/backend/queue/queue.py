@@ -17,6 +17,7 @@ from .queue_client_installer import queue_client_resource
 LOGGER = getLogger(__name__)
 _current_queue = None
 
+
 def register_queue():
     add_application_sub_resource('queue_client', lambda config: queue_client_resource(**config))
     return lambda: require_queue()

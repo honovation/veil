@@ -6,13 +6,20 @@ from redis.client import Redis
 from veil.frontend.cli import *
 from .queue_client_installer import queue_client_config
 
+
 @script('count-failed-jobs')
 def count_failed_jobs(queue):
+    resq = get_resq()
+    count = _count_failed_jobs(resq, queue)
+    print(count)
+
+
+def _count_failed_jobs(resq, queue):
     count = 0
-    for job in pyres.failure.all(get_resq(), 0, -1):
+    for job in pyres.failure.all(resq, 0, -1):
         if queue == job['queue']:
             count += 1
-    print(count)
+    return count
 
 
 @script('delete-failed-jobs')
@@ -28,17 +35,36 @@ def delete_failed_jobs(queue):
 
 @script('count-pending-jobs')
 def count_pending_jobs(queue):
-    resq = get_resq()
-    count = resq.redis.llen('resque:queue:{}'.format(queue))
+    count = get_resq().size(queue)
     print(count)
 
 
 @script('delete-pending-jobs')
 def delete_pending_jobs(queue):
     resq = get_resq()
-    count = resq.redis.llen('resque:queue:{}'.format(queue))
+    count = resq.size(queue)
     resq.redis.delete('resque:queue:{}'.format(queue))
     print(count)
+
+
+@script('remove-queue')
+def remove_queue(queue):
+    resq = get_resq()
+    if _count_failed_jobs(resq, queue):
+        print('cannot remove queue with failed jobs')
+        exit(-1)
+    queue_job_list_key = 'resque:queue:{}'.format(queue)
+
+    def _remove_queue(pipe):
+        if pipe.llen(queue_job_list_key):
+            print('cannot remove queue with pending jobs')
+            exit(-1)
+        pipe.multi()
+        pipe.srem('resque:queues', queue)
+        pipe.delete(queue_job_list_key)
+
+    resq.redis.transaction(_remove_queue, queue_job_list_key)
+    print('removed queue')
 
 
 def get_resq():
