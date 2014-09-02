@@ -16,14 +16,18 @@ LOGGER = logging.getLogger(__name__)
 
 def http_call_use_requests(service, url, data=None, content_type=None, accept=None, accept_charset=None, accept_encoding=None, verify=False, log_data=True, log_response=True, max_tries=1, sleep_at_start=0,
         sleep_before_retry=0, http_timeout=15):
+    s = requests.Session()
+    a = requests.adapters.HTTPAdapter(max_retries=max_tries)
+    s.mount('http://', a)
+    s.mount('https://', a)
     if data:
         if content_type and content_type.startswith('application/json'):
             encoded_data = json.dumps(data)
         else:
             encoded_data = urllib.urlencode(data)
-        request_method = requests.post
+        request_method = s.post
     else:
-        request_method = requests.get
+        request_method = s.get
         encoded_data = None
     headers = {}
     if content_type:
@@ -34,49 +38,38 @@ def http_call_use_requests(service, url, data=None, content_type=None, accept=No
         headers['Accept-Charset'] = accept_charset
     if accept_encoding:
         headers['Accept-Encoding'] = accept_encoding
-    tries = 1
     if sleep_at_start > 0:
         sleep(sleep_at_start)
-    while True:
-        try:
-            if http_timeout:
-                http_response = request_method(url, headers=headers, data=encoded_data, timeout=http_timeout, verify=verify)
-            else:
-                http_response = request_method(url, headers=headers, data=encoded_data, verify=verify)
-        except Exception as e:
-            if isinstance(e, requests.exceptions.HTTPError):
-                reason = 'invalid HTTP response'
-            elif isinstance(e, requests.exceptions.Timeout):
-                reason = 'timed out'
-            elif isinstance(e, requests.exceptions.ConnectionError):
-                reason = 'network problem'
-            elif isinstance(e, requests.exceptions.TooManyRedirects):
-                reason = 'too many redirects'
-            else:
-                reason = 'misc'
-            if tries < max_tries:
-                tries += 1
-                if sleep_before_retry > 0:
-                    sleep(sleep_before_retry)
-            else:
-                LOGGER.exception('[HTTP CALL]failed to get response: %(service)s, %(reason)s, %(url)s, %(headers)s, %(data)s, %(max_tries)s, %(timeout)s', {
-                    'service': service, 'reason': reason, 'url': url, 'headers': headers, 'data': encoded_data if log_data else None,
-                    'max_tries': max_tries, 'timeout': http_timeout
-                })
-                raise
+    try:
+        if http_timeout:
+            http_response = request_method(url, headers=headers, data=encoded_data, timeout=http_timeout, verify=verify)
         else:
-            if 400 <= http_response.status_code < 500:  # 4xx, client error, need not retry
-                LOGGER.exception('[HTTP CALL]failed to get response: %(service)s, %(reason)s, %(url)s, %(headers)s, %(data)s', {
-                    'service': service, 'reason': 'cannot fulfill the request', 'url': url, 'headers': headers, 'data': encoded_data if log_data else None
-                })
-                raise
-            response = http_response.text
-            LOGGER.info('[HTTP CALL]succeeded to get response: %(service)s, %(url)s, %(headers)s, %(data)s, %(response)s', {
-                'service': service, 'url': url, 'headers': headers, 'data': encoded_data if log_data else None, 'response': response if log_response else None
-            })
-            if accept == 'application/json':
-                response = objectify(response.json())
-            return response
+            http_response = request_method(url, headers=headers, data=encoded_data, verify=verify)
+        http_response.raise_for_status()
+    except Exception as e:
+        if isinstance(e, requests.exceptions.HTTPError):
+            reason = 'invalid HTTP response'
+        elif isinstance(e, requests.exceptions.Timeout):
+            reason = 'timed out'
+        elif isinstance(e, requests.exceptions.ConnectionError):
+            reason = 'network problem'
+        elif isinstance(e, requests.exceptions.TooManyRedirects):
+            reason = 'too many redirects'
+        else:
+            reason = 'misc'
+        LOGGER.exception('[HTTP CALL]failed to get response: %(service)s, %(reason)s, %(url)s, %(headers)s, %(data)s, %(max_tries)s, %(timeout)s', {
+            'service': service, 'reason': reason, 'url': url, 'headers': headers, 'data': encoded_data if log_data else None,
+            'max_tries': max_tries, 'timeout': http_timeout
+        })
+        raise
+    else:
+        response = http_response.text
+        LOGGER.info('[HTTP CALL]succeeded to get response: %(service)s, %(url)s, %(headers)s, %(data)s, %(response)s', {
+            'service': service, 'url': url, 'headers': headers, 'data': encoded_data if log_data else None, 'response': response if log_response else None
+        })
+        if accept == 'application/json':
+            response = objectify(response.json())
+        return response
 
 
 def http_call(service, url, data=None, content_type=None, accept=None, accept_charset=None, accept_encoding=None, log_data=True, log_response=True, max_tries=1, sleep_at_start=0,
