@@ -12,13 +12,14 @@ from .yto_client_installer import yto_client_config
 LOGGER = logging.getLogger(__name__)
 
 YTO_SIGNED_STATUS = 'SIGNED'
-YTO_REJECTED_STATUS = 'FAILED'
+YTO_SIGNED_FAILED_STATUS = 'FAILED'
+YTO_REJECTED_REMARK = '收方客户拒收'
 YTO_STATUS = {
     'GOT': '揽收成功',
     'NOT_SEND': '揽收失败',
     'SENT_SCAN': '派件扫描',
     YTO_SIGNED_STATUS: '签收成功',
-    YTO_REJECTED_STATUS: '签收失败'
+    YTO_SIGNED_FAILED_STATUS: '签收失败'
 }
 
 
@@ -32,7 +33,7 @@ def get_brief(status_obj):
     if status_obj.infoContent.text == 'SENT_SCAN':
         return '：'.join(e for e in [YTO_STATUS['SENT_SCAN'], element_remark.text if element_remark else None] if e)
     elif is_rejected_response(status_obj):
-        return '{} 原因：{}'.format(YTO_STATUS[YTO_REJECTED_STATUS], element_remark.text if element_remark else '-')
+        return '{} 原因：{}'.format(YTO_STATUS[YTO_SIGNED_FAILED_STATUS], element_remark.text if element_remark else '-')
     elif status_obj.infoContent.text == YTO_SIGNED_STATUS:
         name_element = status_obj.find('name')
         result = '{} 签收人：{}'.format(YTO_STATUS[YTO_SIGNED_STATUS], name_element.text if name_element else '-')
@@ -43,7 +44,7 @@ def get_brief(status_obj):
         return YTO_STATUS.get(status_obj.infoContent.text)
 
 
-def get_signed_name_and_reject_reason(status_obj):
+def get_signed_name_and_signed_failed_reason(status_obj):
     name = status_obj.find('name')
     name = name.text if name else None
     reason = status_obj.find('remark')
@@ -52,15 +53,18 @@ def get_signed_name_and_reject_reason(status_obj):
 
 
 def get_logistics_status(status_obj):
-    code = YTO_REJECTED_STATUS if is_rejected_response(status_obj) else status_obj.infoContent.text
-    if code in (YTO_REJECTED_STATUS, YTO_SIGNED_STATUS):
-        name, reason = get_signed_name_and_reject_reason(status_obj)
-        return DictObject(code=code, brief=get_brief(status_obj), signed_name=name, rejected_reason=reason)
+    code = status_obj.infoContent.text
+    if code in (YTO_SIGNED_FAILED_STATUS, YTO_SIGNED_STATUS):
+        is_rejected = is_rejected_response(status_obj)
+        if is_rejected:
+            code = YTO_SIGNED_FAILED_STATUS
+        name, reason = get_signed_name_and_signed_failed_reason(status_obj)
+        return DictObject(code=code, brief=get_brief(status_obj), signed_name=name, signed_failed_reason=reason, is_rejected=is_rejected)
     return DictObject(code=code, brief=get_brief(status_obj))
 
 
 def is_rejected_response(status_obj):
-    if status_obj.infoContent.text == YTO_REJECTED_STATUS:
+    if status_obj.infoContent.text == YTO_SIGNED_FAILED_STATUS and status_obj.remark.text == YTO_REJECTED_REMARK:
         return True
     if status_obj.infoContent.text != YTO_SIGNED_STATUS:
         return False

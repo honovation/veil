@@ -5,7 +5,7 @@ with veil_component.init_component(__name__):
     from .yto import subscribe
     from .yto import YTO_STATUS
     from .yto import YTO_SIGNED_STATUS
-    from .yto import YTO_REJECTED_STATUS
+    from .yto import YTO_SIGNED_FAILED_STATUS
     from .yto import get_logistics_status
     from .yto import verify_request
     from .yto import SubscribeLogisticsStatusException
@@ -16,7 +16,7 @@ with veil_component.init_component(__name__):
         subscribe.__name__,
         'YTO_STATUS',
         'YTO_SIGNED_STATUS',
-        'YTO_REJECTED_STATUS',
+        'YTO_SIGNED_FAILED_STATUS',
         verify_request.__name__,
         get_logistics_status.__name__,
         SubscribeLogisticsStatusException.__name__,
