@@ -9,7 +9,7 @@ from veil_installer import *
 from veil.utility.clock import *
 from veil.model.event import *
 from veil.server.process import *
-from veil.backend.queue import *
+from veil.backend.queue.job import *
 from .resq_wrapper import ResQWrapper
 from .queue_client_installer import queue_client_config
 from .queue_client_installer import queue_client_resource
@@ -142,7 +142,8 @@ class ImmediateQueue(object):
     def clear(self):
         self.clear_queued_jobs()
 
-    def perform_job(self, job_handler, payload):
+    @staticmethod
+    def perform_job(job_handler, payload):
         try:
             return job_handler(**payload)
         except InvalidJob:
