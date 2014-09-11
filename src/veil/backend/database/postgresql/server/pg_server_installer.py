@@ -276,14 +276,14 @@ def zhparser_installer(purpose, version, host, port, owner, owner_password):
         shell_execute('unzip {}'.format(ZHPARSER_RESOURCE_NAME), cwd='/opt')
     if not ZHPARSER_SO_PATH.exists():
         shell_execute('SCWS_HOME=/usr/local make && make install', cwd=ZHPARSER_RESOURCE_DIR)
-    pg_bin_dir = get_pg_bin_dir(version)
-    commands = '''
-        CREATE EXTENSION IF NOT EXISTS {ext_name};
-        DROP TEXT SEARCH CONFIGURATION IF EXISTS {ext_config_name};
-        CREATE TEXT SEARCH CONFIGURATION {ext_config_name} (PARSER={ext_name});
-        ALTER TEXT SEARCH CONFIGURATION {ext_config_name} DROP MAPPING IF EXISTS FOR {token_types};
-        ALTER TEXT SEARCH CONFIGURATION {ext_config_name} ADD MAPPING FOR {token_types} WITH {dictionary_name};
-    '''.format(ext_name='zhparser', ext_config_name='zhparser_config', token_types='n,v,a,i,e,l', dictionary_name='simple')
-    env = os.environ.copy()
-    env['PGPASSWORD'] = owner_password
-    shell_execute('{}/psql -h {} -p {} -U {} -d {} -c "{}"'.format(pg_bin_dir, host, port, owner, purpose, commands), env=env)
+    with postgresql_server_running(version, get_pg_data_dir(purpose, version), owner):
+        commands = '''
+            CREATE EXTENSION IF NOT EXISTS {ext_name};
+            DROP TEXT SEARCH CONFIGURATION IF EXISTS {ext_config_name};
+            CREATE TEXT SEARCH CONFIGURATION {ext_config_name} (PARSER={ext_name});
+            ALTER TEXT SEARCH CONFIGURATION {ext_config_name} DROP MAPPING IF EXISTS FOR {token_types};
+            ALTER TEXT SEARCH CONFIGURATION {ext_config_name} ADD MAPPING FOR {token_types} WITH {dictionary_name};
+        '''.format(ext_name='zhparser', ext_config_name='zhparser_config', token_types='n,v,a,i,e,l', dictionary_name='simple')
+        env = os.environ.copy()
+        env['PGPASSWORD'] = owner_password
+        shell_execute('{}/psql -h {} -p {} -U {} -d {} -c "{}"'.format(get_pg_bin_dir(version), host, port, owner, purpose, commands), env=env)
