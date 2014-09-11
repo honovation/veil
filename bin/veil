@@ -83,6 +83,10 @@ function veil_scaffold {
         exit 1
     fi
     STARTER_PROJECT="$1"
+    if [[ "$STARTER_PROJECT" == "" ]] ; then
+        echo "please specify veil app name"
+        exit 1
+    fi
     if [ -d $STARTER_PROJECT ] ; then
         echo "$STARTER_PROJECT already exists under the current path"
         exit 1

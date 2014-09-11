@@ -6,7 +6,7 @@ Veil Sample Application
 
 1.`cd ~/Projects`
 
-2.`veil/bin/veil scaffold`
+2.`veil/bin/veil scaffold vsee`
 
 3.`cd vsee`
 
