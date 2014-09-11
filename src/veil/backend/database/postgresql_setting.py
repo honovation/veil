@@ -4,7 +4,7 @@ from veil.profile.installer import *
 
 def postgresql_program(purpose, version, host, port, owner, owner_password, user, password, log_min_duration_statement, log_filename=None,
         shared_buffers='24MB', work_mem='1MB', maintenance_work_mem='16MB', effective_io_concurrency=1, checkpoint_segments=3,
-        checkpoint_completion_target=0.5, effective_cache_size='128MB', kernel_shmmax=None, kernel_shmall=None, enable_zhparser=False):
+        checkpoint_completion_target=0.5, effective_cache_size='128MB', kernel_shmmax=None, kernel_shmall=None, enable_chinese_fts=False):
     return objectify({
         '{}_postgresql'.format(purpose): {
             'execute_command': '{}/postgres -D {}'.format(get_pg_bin_dir(version), get_pg_data_dir(purpose, version)),
@@ -33,7 +33,7 @@ def postgresql_program(purpose, version, host, port, owner, owner_password, user
                     'kernel_shmall': kernel_shmall,
                     'log_min_duration_statement': log_min_duration_statement,
                     'log_filename': log_filename, # set to None, postgresql will rotate it for us
-                    'enable_zhparser': enable_zhparser
+                    'enable_chinese_fts': enable_chinese_fts
                 }
             })]
         }

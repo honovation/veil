@@ -9,7 +9,7 @@ LOGGER = logging.getLogger(__name__)
 SCWS_RESOURCE_NAME = 'scws-1.2.2.tar.bz2'
 SCWS_RESOURCE_URL = '{}/{}'.format(DEPENDENCY_URL, SCWS_RESOURCE_NAME)
 SCWS_RESOURCE_DIR = as_path('{}/scws-1.2.2'.format(DEPENDENCY_INSTALL_DIR))
-SCWS_BIN_PATH = as_path('/usr/local/scws/bin/scws')
+SCWS_BIN_PATH = as_path('/usr/local/bin/scws')
 ZHPARSER_RESOURCE_NAME = 'zhparser-zhparser-0.1.4.zip'
 ZHPARSER_RESOURCE_URL = '{}/{}'.format(DEPENDENCY_URL, ZHPARSER_RESOURCE_NAME)
 ZHPARSER_RESOURCE_DIR = as_path('{}/zhparser-zhparser-0.1.4'.format(DEPENDENCY_INSTALL_DIR))
@@ -89,11 +89,11 @@ def postgresql_server_resource(purpose, config):
         postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
             owner_password=config.owner_password, user='readonly', password='r1adonly')
     ])
-    if config.enable_zhparser:
+    if config.enable_chinese_fts:
         resources.extend([
             os_package_resource(name='postgresql-server-dev-{}'.format(config.version)),
-            scws_installer(),
-            zhparser_installer(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
+            scws_resource(),
+            zhparser_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
                 owner_password=config.owner_password)
         ])
 
@@ -259,7 +259,7 @@ def load_postgresql_maintenance_config(purpose, must_exist):
 
 
 @atomic_installer
-def scws_installer():
+def scws_resource():
     local_path = DEPENDENCY_DIR / SCWS_RESOURCE_NAME
     if not local_path.exists():
         shell_execute('wget -c {} -O {}'.format(SCWS_RESOURCE_URL, local_path))
@@ -270,7 +270,7 @@ def scws_installer():
 
 
 @atomic_installer
-def zhparser_installer(purpose, version, host, port, owner, owner_password):
+def zhparser_resource(purpose, version, host, port, owner, owner_password):
     local_path = DEPENDENCY_DIR / ZHPARSER_RESOURCE_NAME
     if not local_path.exists():
         shell_execute('wget -c {} -O {}'.format(ZHPARSER_RESOURCE_URL, local_path))
@@ -278,14 +278,14 @@ def zhparser_installer(purpose, version, host, port, owner, owner_password):
         shell_execute('unzip {}'.format(local_path), cwd=DEPENDENCY_INSTALL_DIR)
     if not ZHPARSER_SO_PATH.exists():
         shell_execute('SCWS_HOME=/usr/local make && make install', cwd=ZHPARSER_RESOURCE_DIR)
-    with postgresql_server_running(version, get_pg_data_dir(purpose, version), owner):
-        commands = '''
-            CREATE EXTENSION IF NOT EXISTS {ext_name};
-            DROP TEXT SEARCH CONFIGURATION IF EXISTS {ext_config_name};
-            CREATE TEXT SEARCH CONFIGURATION {ext_config_name} (PARSER={ext_name});
-            ALTER TEXT SEARCH CONFIGURATION {ext_config_name} DROP MAPPING IF EXISTS FOR {token_types};
-            ALTER TEXT SEARCH CONFIGURATION {ext_config_name} ADD MAPPING FOR {token_types} WITH {dictionary_name};
-        '''.format(ext_name='zhparser', ext_config_name='zhparser_config', token_types='n,v,a,i,e,l', dictionary_name='simple')
-        env = os.environ.copy()
-        env['PGPASSWORD'] = owner_password
-        shell_execute('{}/psql -h {} -p {} -U {} -d {} -c "{}"'.format(get_pg_bin_dir(version), host, port, owner, purpose, commands), env=env)
+        with postgresql_server_running(version, get_pg_data_dir(purpose, version), owner):
+            commands = '''
+                CREATE EXTENSION IF NOT EXISTS {ext_name};
+                DROP TEXT SEARCH CONFIGURATION IF EXISTS {ext_config_name};
+                CREATE TEXT SEARCH CONFIGURATION {ext_config_name} (PARSER={ext_name});
+                ALTER TEXT SEARCH CONFIGURATION {ext_config_name} DROP MAPPING IF EXISTS FOR {token_types};
+                ALTER TEXT SEARCH CONFIGURATION {ext_config_name} ADD MAPPING FOR {token_types} WITH {dictionary_name};
+            '''.format(ext_name='zhparser', ext_config_name='zhparser_config', token_types='n,v,a,i,e,l', dictionary_name='simple')
+            env = os.environ.copy()
+            env['PGPASSWORD'] = owner_password
+            shell_execute('{}/psql -h {} -p {} -U {} -d {} -c "{}"'.format(get_pg_bin_dir(version), host, port, owner, purpose, commands), env=env)

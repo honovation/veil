@@ -6,8 +6,8 @@ with veil_component.init_component(__name__):
     from .server.pg_server_installer import postgresql_user_resource
     from .server.pg_server_installer import postgresql_cluster_resource
     from .server.pg_server_installer import postgresql_cluster_upgrading_resource
-    from .server.pg_server_installer import scws_installer
-    from .server.pg_server_installer import zhparser_installer
+    from .server.pg_server_installer import scws_resource
+    from .server.pg_server_installer import zhparser_resource
 
     __all__ = [
         postgresql_apt_repository_resource.__name__,
@@ -15,8 +15,8 @@ with veil_component.init_component(__name__):
         postgresql_user_resource.__name__,
         postgresql_cluster_resource.__name__,
         postgresql_cluster_upgrading_resource.__name__,
-        scws_installer.__name__,
-        zhparser_installer.__name__,
+        scws_resource.__name__,
+        zhparser_resource.__name__,
     ]
 
     def init():
