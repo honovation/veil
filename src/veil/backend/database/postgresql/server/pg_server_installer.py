@@ -6,6 +6,15 @@ from ...postgresql_setting import get_pg_config_dir, get_pg_data_dir, get_pg_bin
 LOGGER = logging.getLogger(__name__)
 
 
+SCWS_RESOURCE_NAME = 'scws-1.2.2.tar.bz2'
+SCWS_RESOURCE_URL = '{}/{}'.format(DEPENDENCY_URL, SCWS_RESOURCE_NAME)
+SCWS_RESOURCE_DIR = as_path('/opt/scws-1.2.2')
+SCWS_BIN_PATH = as_path('/usr/local/scws/bin/scws')
+ZHPARSER_RESOURCE_NAME = 'zhparser-zhparser-0.1.4.zip'
+ZHPARSER_RESOURCE_URL = '{}/{}'.format(DEPENDENCY_URL, ZHPARSER_RESOURCE_NAME)
+ZHPARSER_RESOURCE_DIR = as_path('/opt/zhparser-zhparser-0.1.4')
+ZHPARSER_SO_PATH = as_path('{}/zhparser.so'.format(ZHPARSER_RESOURCE_DIR))
+
 @composite_installer
 def postgresql_server_resource(purpose, config):
     upgrading = False
@@ -80,6 +89,13 @@ def postgresql_server_resource(purpose, config):
         postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
             owner_password=config.owner_password, user='readonly', password='r1adonly')
     ])
+    if config.enable_zhparser:
+        resources.extend([
+            os_package_resource(name='postgresql-server-dev-{}'.format(config.version)),
+            scws_installer(),
+            zhparser_installer(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
+                owner_password=config.owner_password)
+        ])
 
     return resources
 
@@ -240,3 +256,34 @@ def load_postgresql_maintenance_config(purpose, must_exist):
     if not must_exist and not maintenance_config_path.exists():
         return DictObject()
     return load_config_from(maintenance_config_path, 'version', 'owner', 'owner_password')
+
+
+@atomic_installer
+def scws_installer():
+    if not as_path('/opt/{}'.format(SCWS_RESOURCE_NAME)).exists():
+        shell_execute('wget -c {}'.format(SCWS_RESOURCE_URL), cwd='/opt')
+    if not SCWS_RESOURCE_DIR.exists():
+        shell_execute('tar jxf {}'.format(SCWS_RESOURCE_NAME), cwd='/opt')
+    if not SCWS_BIN_PATH.exists():
+        shell_execute('./configure ; make install', cwd=SCWS_RESOURCE_DIR)
+
+
+@atomic_installer
+def zhparser_installer(purpose, version, host, port, owner, owner_password):
+    if not as_path('/opt/{}'.format(ZHPARSER_RESOURCE_NAME)).exists():
+        shell_execute('wget -c {}'.format(ZHPARSER_RESOURCE_URL), cwd='/opt')
+    if not ZHPARSER_RESOURCE_DIR.exists():
+        shell_execute('unzip {}'.format(ZHPARSER_RESOURCE_NAME), cwd='/opt')
+    if not ZHPARSER_SO_PATH.exists():
+        shell_execute('SCWS_HOME=/usr/local make && make install', cwd=ZHPARSER_RESOURCE_DIR)
+    pg_bin_dir = get_pg_bin_dir(version)
+    commands = '''
+        CREATE EXTENSION IF NOT EXISTS {ext_name};
+        DROP TEXT SEARCH CONFIGURATION IF EXISTS {ext_config_name};
+        CREATE TEXT SEARCH CONFIGURATION {ext_config_name} (PARSER={ext_name});
+        ALTER TEXT SEARCH CONFIGURATION {ext_config_name} DROP MAPPING IF EXISTS FOR {token_types};
+        ALTER TEXT SEARCH CONFIGURATION {ext_config_name} ADD MAPPING FOR {token_types} WITH {dictionary_name};
+    '''.format(ext_name='zhparser', ext_config_name='zhparser_config', token_types='n,v,a,i,e,l', dictionary_name='simple')
+    env = os.environ.copy()
+    env['PGPASSWORD'] = owner_password
+    shell_execute('{}/psql -h {} -p {} -U {} -d {} -c "{}"'.format(pg_bin_dir, host, port, owner, purpose, commands), env=env)
