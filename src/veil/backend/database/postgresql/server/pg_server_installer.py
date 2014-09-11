@@ -8,11 +8,11 @@ LOGGER = logging.getLogger(__name__)
 
 SCWS_RESOURCE_NAME = 'scws-1.2.2.tar.bz2'
 SCWS_RESOURCE_URL = '{}/{}'.format(DEPENDENCY_URL, SCWS_RESOURCE_NAME)
-SCWS_RESOURCE_DIR = as_path('/opt/scws-1.2.2')
+SCWS_RESOURCE_DIR = as_path('{}/scws-1.2.2'.format(DEPENDENCY_INSTALL_DIR))
 SCWS_BIN_PATH = as_path('/usr/local/scws/bin/scws')
 ZHPARSER_RESOURCE_NAME = 'zhparser-zhparser-0.1.4.zip'
 ZHPARSER_RESOURCE_URL = '{}/{}'.format(DEPENDENCY_URL, ZHPARSER_RESOURCE_NAME)
-ZHPARSER_RESOURCE_DIR = as_path('/opt/zhparser-zhparser-0.1.4')
+ZHPARSER_RESOURCE_DIR = as_path('{}/zhparser-zhparser-0.1.4'.format(DEPENDENCY_INSTALL_DIR))
 ZHPARSER_SO_PATH = as_path('{}/zhparser.so'.format(ZHPARSER_RESOURCE_DIR))
 
 @composite_installer
@@ -260,20 +260,22 @@ def load_postgresql_maintenance_config(purpose, must_exist):
 
 @atomic_installer
 def scws_installer():
-    if not as_path('/opt/{}'.format(SCWS_RESOURCE_NAME)).exists():
-        shell_execute('wget -c {}'.format(SCWS_RESOURCE_URL), cwd='/opt')
+    local_path = DEPENDENCY_DIR / SCWS_RESOURCE_NAME
+    if not local_path.exists():
+        shell_execute('wget -c {} -O {}'.format(SCWS_RESOURCE_URL, local_path))
     if not SCWS_RESOURCE_DIR.exists():
-        shell_execute('tar jxf {}'.format(SCWS_RESOURCE_NAME), cwd='/opt')
+        shell_execute('tar jxf {} '.format(local_path), cwd=DEPENDENCY_INSTALL_DIR)
     if not SCWS_BIN_PATH.exists():
-        shell_execute('./configure ; make install', cwd=SCWS_RESOURCE_DIR)
+        shell_execute('./configure;make install', cwd=SCWS_RESOURCE_DIR)
 
 
 @atomic_installer
 def zhparser_installer(purpose, version, host, port, owner, owner_password):
-    if not as_path('/opt/{}'.format(ZHPARSER_RESOURCE_NAME)).exists():
-        shell_execute('wget -c {}'.format(ZHPARSER_RESOURCE_URL), cwd='/opt')
+    local_path = DEPENDENCY_DIR / ZHPARSER_RESOURCE_NAME
+    if not local_path.exists():
+        shell_execute('wget -c {} -O {}'.format(ZHPARSER_RESOURCE_URL, local_path))
     if not ZHPARSER_RESOURCE_DIR.exists():
-        shell_execute('unzip {}'.format(ZHPARSER_RESOURCE_NAME), cwd='/opt')
+        shell_execute('unzip {}'.format(local_path), cwd=DEPENDENCY_INSTALL_DIR)
     if not ZHPARSER_SO_PATH.exists():
         shell_execute('SCWS_HOME=/usr/local make && make install', cwd=ZHPARSER_RESOURCE_DIR)
     with postgresql_server_running(version, get_pg_data_dir(purpose, version), owner):
