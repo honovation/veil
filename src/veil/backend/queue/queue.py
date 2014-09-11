@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import traceback
 from logging import getLogger
 from datetime import timedelta, datetime
+from pyres import ResQ
 from redis.client import Redis
 from veil.environment import VEIL_ENV_TYPE
 from veil.utility.encoding import *
@@ -10,7 +11,6 @@ from veil.utility.clock import *
 from veil.model.event import *
 from veil.server.process import *
 from veil.backend.queue.job import *
-from .resq_wrapper import ResQWrapper
 from .queue_client_installer import queue_client_config
 from .queue_client_installer import queue_client_resource
 
@@ -29,7 +29,7 @@ def require_queue():
         config = queue_client_config()
         if 'redis' == config.type:
             redis = Redis(host=config.host, port=config.port)
-            resq = ResQWrapper(redis)
+            resq = ResQ(redis)
             _current_queue = RedisQueue(resq)
         elif 'immediate' == config.type:
             _current_queue = ImmediateQueue()
