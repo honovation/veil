@@ -3,8 +3,6 @@ import functools
 import logging
 import sys
 import inspect
-import traceback
-from veil.environment import VEIL_ENV_TYPE
 from veil_component import *
 from veil.utility.tracing import *
 from veil.utility.encoding import *
@@ -14,6 +12,7 @@ from veil.server.process import *
 LOGGER = logging.getLogger(__name__)
 script_handlers = {}
 executing_script_handlers = []
+
 
 def is_script_defined(*argv):
     current_level = script_handlers
@@ -25,22 +24,14 @@ def is_script_defined(*argv):
 
 
 def execute_script(*argv):
-    try:
-        if VEIL_ENV_TYPE in ('development', 'test'):
-            start_recording_dynamic_dependencies()
-        argv = [to_unicode(arg) for arg in argv]
-        import_script_handlers(argv)
-        # after components loaded, so necessary event handlers installed
-        publish_event(EVENT_PROCESS_SETUP, loads_event_handlers=False)
-        level = script_handlers
-        execute_script_at_level(level, argv)
-    except SystemExit:
-        raise
-    except:
-        _, value, tb = sys.exc_info()
-        LOGGER.error(traceback.format_exc())
-        LOGGER.error(value.message)
-        sys.exit(1)
+    if VEIL_ENV_TYPE in ('development', 'test'):
+        start_recording_dynamic_dependencies()
+    argv = [to_unicode(arg) for arg in argv]
+    import_script_handlers(argv)
+    # after components loaded, so necessary event handlers installed
+    publish_event(EVENT_PROCESS_SETUP, loads_event_handlers=False)
+    level = script_handlers
+    execute_script_at_level(level, argv)
 
 
 def execute_script_at_level(level, argv):
