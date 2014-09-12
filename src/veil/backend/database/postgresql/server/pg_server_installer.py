@@ -278,14 +278,24 @@ def zhparser_resource(purpose, version, host, port, owner, owner_password):
         shell_execute('unzip {}'.format(local_path), cwd=DEPENDENCY_INSTALL_DIR)
     if not ZHPARSER_SO_PATH.exists():
         shell_execute('SCWS_HOME=/usr/local make && make install', cwd=ZHPARSER_RESOURCE_DIR)
-        with postgresql_server_running(version, get_pg_data_dir(purpose, version), owner):
+    with postgresql_server_running(version, get_pg_data_dir(purpose, version), owner):
+        env = os.environ.copy()
+        env['PGPASSWORD'] = owner_password
+        if not zhparser_configured(version, host, port, owner, purpose, env):
             commands = '''
+                BEGIN;
                 CREATE EXTENSION IF NOT EXISTS {ext_name};
                 DROP TEXT SEARCH CONFIGURATION IF EXISTS {ext_config_name};
                 CREATE TEXT SEARCH CONFIGURATION {ext_config_name} (PARSER={ext_name});
                 ALTER TEXT SEARCH CONFIGURATION {ext_config_name} DROP MAPPING IF EXISTS FOR {token_types};
                 ALTER TEXT SEARCH CONFIGURATION {ext_config_name} ADD MAPPING FOR {token_types} WITH {dictionary_name};
+                COMMIT;
             '''.format(ext_name='zhparser', ext_config_name='zhparser_config', token_types='n,v,a,i,e,l', dictionary_name='simple')
-            env = os.environ.copy()
-            env['PGPASSWORD'] = owner_password
             shell_execute('{}/psql -h {} -p {} -U {} -d {} -c "{}"'.format(get_pg_bin_dir(version), host, port, owner, purpose, commands), env=env)
+
+
+def zhparser_configured(version, host, port, owner, database, env):
+    output = shell_execute(
+        '{}/psql -h {} -p {} -U {} -d {} -c "CREATE EXTENSION {}"'.format(get_pg_bin_dir(version), host, port, owner, database, 'zhparser'), env=env,
+        expected_return_codes=(0, 1), capture=True, debug=True)
+    return 'already exists' in output
