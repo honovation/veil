@@ -137,7 +137,7 @@ class InvalidCommand(Exception):
         parts = []
         for k, v in self.errors.items():
             parts.append('{}=[{}]'.format(k, ', '.join(v)))
-        return to_str(', '.join(parts))
+        return ', '.join(parts)
 
 
 class CommandError(Exception):
