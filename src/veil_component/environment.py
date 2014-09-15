@@ -22,5 +22,4 @@ VEIL_ENV_BASE_NAME = VEIL_ENV_NAME.rsplit('--', 1)[0]
 VEIL_ENV_TYPE = VEIL_ENV_BASE_NAME.rsplit('-', 1)[-1]  # development, test, staging, public (i.e. production)
 
 CURRENT_OS = namedtuple('VeilOS', 'distname, version, codename')(*platform.linux_distribution())
-# TODO: update after every dev upgrades to trusty
-assert CURRENT_OS.distname == 'Ubuntu' and (VEIL_ENV_TYPE in ('development', 'test') or CURRENT_OS.codename in ('trusty',))
+assert CURRENT_OS.distname == 'Ubuntu' and CURRENT_OS.codename in ('trusty',)

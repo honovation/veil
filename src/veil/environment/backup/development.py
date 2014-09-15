@@ -10,7 +10,12 @@ BASELINE_DIR = VEIL_HOME / 'baseline'
 
 @script('restore-from-baseline')
 @log_elapsed_time
-def restore_from_baseline(veil_env_name, force_download='FALSE', host_name=None, relative_path=None):
+def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=None, host_name=None):
+    """
+    Examples:
+        sudo veil restore-from-baseline ljmall-public TRUE data/ljmall-postgresql-9.3
+        sudo veil restore-from-baseline ljmall-public FALSE data/ljmall-postgresql-9.3
+    """
     if not host_name:
         for server in list_veil_servers(veil_env_name):
             if server.mount_data_dir:
