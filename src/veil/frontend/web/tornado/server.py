@@ -53,7 +53,7 @@ class HTTPHandler(object):
     def __call__(self, request):
         http_context = HTTPContext(request, HTTPResponse(request))
         with create_stack_context(require_current_http_context_being, http_context=http_context):
-            with create_stack_context(handle_exception):
+            with handle_exception():
                 with normalize_arguments():
                     with tunnel_put_and_delete():
                         self.handler()

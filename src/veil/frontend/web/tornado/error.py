@@ -9,6 +9,7 @@ from .context import get_current_http_response
 
 LOGGER = getLogger(__name__)
 
+
 def end_http_request_processing():
     raise HTTPError(None)
 
