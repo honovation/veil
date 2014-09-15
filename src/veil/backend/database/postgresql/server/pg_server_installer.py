@@ -5,7 +5,6 @@ from ...postgresql_setting import get_pg_config_dir, get_pg_data_dir, get_pg_bin
 
 LOGGER = logging.getLogger(__name__)
 
-
 SCWS_RESOURCE_NAME = 'scws-1.2.2.tar.bz2'
 SCWS_RESOURCE_URL = '{}/{}'.format(DEPENDENCY_URL, SCWS_RESOURCE_NAME)
 SCWS_RESOURCE_DIR = as_path('{}/scws-1.2.2'.format(DEPENDENCY_INSTALL_DIR))
@@ -14,6 +13,7 @@ ZHPARSER_RESOURCE_NAME = 'zhparser-zhparser-0.1.4.zip'
 ZHPARSER_RESOURCE_URL = '{}/{}'.format(DEPENDENCY_URL, ZHPARSER_RESOURCE_NAME)
 ZHPARSER_RESOURCE_DIR = as_path('{}/zhparser-zhparser-0.1.4'.format(DEPENDENCY_INSTALL_DIR))
 ZHPARSER_SO_PATH = as_path('{}/zhparser.so'.format(ZHPARSER_RESOURCE_DIR))
+
 
 @composite_installer
 def postgresql_server_resource(purpose, config):
@@ -102,6 +102,14 @@ def postgresql_server_resource(purpose, config):
 
 @atomic_installer
 def postgresql_cluster_upgrading_resource(purpose, old_version, new_version, host, port, owner, owner_password):
+    pg_data_dir = get_pg_data_dir(purpose, new_version)
+    installed = pg_data_dir.exists()
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        dry_run_result['postgresql_cluster_upgrading?{}'.format(purpose)] = '-' if installed else 'INSTALL'
+        return
+    if installed:
+        return
     upgrade_postgresql_cluster(purpose, old_version, new_version, owner, check_only=True)
     if not confirm_postgresql_cluster_upgrading(old_version, new_version):
         return
