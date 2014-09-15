@@ -39,6 +39,7 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
     shell_execute('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(baseline_path, baseline_path, restored_to_path), debug=True)
     shell_execute('veil install-server')
     shell_execute('veil up --daemonize')
+    #TODO: automate via prompting for db owner&user password
     #need change db owner and user's password to dev environment's manually if they are different between dev env & the source env to copy db from
     shell_execute('veil migrate')
     shell_execute('veil down')
@@ -47,6 +48,7 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
 @script('download-baseline')
 @log_elapsed_time
 def download_baseline(veil_env_name, remote_path, baseline_path):
+    #TODO: download from BACKUP MIRROR
     if isinstance(baseline_path, basestring):
         baseline_path = as_path(baseline_path)
     baseline_path.makedirs(0755)

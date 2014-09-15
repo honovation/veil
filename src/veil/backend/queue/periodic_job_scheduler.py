@@ -11,8 +11,9 @@ from .queue import require_queue
 
 LOGGER = getLogger(__name__)
 
+
 @script('periodic-job-scheduler-up')
-def bring_up_periodic_job_scheduler(*argv): # TODO: remove argv
+def bring_up_periodic_job_scheduler():
     load_dynamic_dependency_providers('periodic-job', '@')
     PeriodicJobScheduler().run()
 
