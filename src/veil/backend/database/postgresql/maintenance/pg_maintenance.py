@@ -41,6 +41,7 @@ def drop_database(purpose):
 def migrate(purpose):
     wait_for_server_up(purpose)
     create_database_if_not_exists(purpose)
+    enable_database_chinese_fts(purpose)
     versions = load_versions(purpose)
     db = lambda: require_database(purpose)
 
@@ -82,9 +83,7 @@ def migrate(purpose):
                 'to_version': to_version
             })
             db().execute(versions[to_version].text('UTF-8'))
-        db().insert(
-            'database_migration_event', from_version=from_version,
-            to_version=to_version, migrated_at=get_current_time())
+        db().insert('database_migration_event', from_version=from_version, to_version=to_version, migrated_at=get_current_time())
         LOGGER.info('[MIGRATE] migrated postgresql server: %(purpose)s from %(from_version)s to %(max_version)s', {
             'purpose': purpose,
             'from_version': from_version,
@@ -133,6 +132,36 @@ def create_database_if_not_exists(purpose):
         ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO readonly;
         ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO readonly;
         '''), capture=True)
+
+
+@script('enable-database-chinese-fts')
+def enable_database_chinese_fts(purpose):
+    config = database_client_config(purpose)
+    if not config.enable_chinese_fts:
+        return
+    maintenance_config = postgresql_maintenance_config(purpose)
+    env = os.environ.copy()
+    env['PGPASSWORD'] = maintenance_config.owner_password
+    if database_chinese_fts_enabled(maintenance_config.version, config.host, config.port, maintenance_config.owner, config.database, env):
+        return
+    commands = '''
+        BEGIN;
+        CREATE EXTENSION IF NOT EXISTS {ext_name};
+        DROP TEXT SEARCH CONFIGURATION IF EXISTS {ext_config_name};
+        CREATE TEXT SEARCH CONFIGURATION {ext_config_name} (PARSER={ext_name});
+        ALTER TEXT SEARCH CONFIGURATION {ext_config_name} DROP MAPPING IF EXISTS FOR {token_types};
+        ALTER TEXT SEARCH CONFIGURATION {ext_config_name} ADD MAPPING FOR {token_types} WITH {dictionary_name};
+        COMMIT;
+        '''.format(ext_name='zhparser', ext_config_name='zhparser_config', token_types='n,v,a,i,e,l', dictionary_name='simple')
+    shell_execute('{}/psql -h {} -p {} -U {} -d {} -c "{}"'.format(get_pg_bin_dir(maintenance_config.version), config.host, config.port,
+        maintenance_config.owner, config.database, commands), env=env, debug=True)
+
+
+def database_chinese_fts_enabled(version, host, port, owner, database, env):
+    output = shell_execute(
+        '{}/psql -h {} -p {} -U {} -d {} -c "CREATE EXTENSION {}"'.format(get_pg_bin_dir(version), host, port, owner, database, 'zhparser'), env=env,
+        expected_return_codes=(0, 1), capture=True, debug=True)
+    return 'already exists' in output
 
 
 def create_database_migration_table_if_not_exists(purpose):

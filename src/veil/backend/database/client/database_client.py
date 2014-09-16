@@ -49,6 +49,7 @@ def require_database(purpose, component_name=None, verify_db=False):
         instances[purpose].reconnect_if_broken_per_verification()
     if purpose not in instances:
         config = database_client_config(purpose).copy()
+        config.pop('enable_chinese_fts', None)
         __import__(config.pop('driver'))
         instances[purpose] = connect(**config)
         assert instances[purpose].autocommit, 'autocommit should no be disabled'

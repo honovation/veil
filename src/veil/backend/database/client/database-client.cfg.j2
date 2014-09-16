@@ -6,3 +6,6 @@ database={{ config.database }}
 user={{ config.user }}
 password={{ config.password }}
 schema={{ config.schema }}
+{% if config.get('enable_chinese_fts') %}
+enable_chinese_fts=1
+{% endif %}

@@ -2,17 +2,9 @@ from __future__ import unicode_literals, print_function, division
 import sys
 from veil.profile.installer import *
 from ...postgresql_setting import get_pg_config_dir, get_pg_data_dir, get_pg_bin_dir
+from .pg_fts_chinese import scws_resource, zhparser_resource
 
 LOGGER = logging.getLogger(__name__)
-
-SCWS_RESOURCE_NAME = 'scws-1.2.2.tar.bz2'
-SCWS_RESOURCE_URL = '{}/{}'.format(DEPENDENCY_URL, SCWS_RESOURCE_NAME)
-SCWS_RESOURCE_DIR = as_path('{}/scws-1.2.2'.format(DEPENDENCY_INSTALL_DIR))
-SCWS_BIN_PATH = as_path('/usr/local/bin/scws')
-ZHPARSER_RESOURCE_NAME = 'zhparser-zhparser-0.1.4.zip'
-ZHPARSER_RESOURCE_URL = '{}/{}'.format(DEPENDENCY_URL, ZHPARSER_RESOURCE_NAME)
-ZHPARSER_RESOURCE_DIR = as_path('{}/zhparser-zhparser-0.1.4'.format(DEPENDENCY_INSTALL_DIR))
-ZHPARSER_SO_PATH = as_path('{}/zhparser.so'.format(ZHPARSER_RESOURCE_DIR))
 
 
 @composite_installer
@@ -93,8 +85,7 @@ def postgresql_server_resource(purpose, config):
         resources.extend([
             os_package_resource(name='postgresql-server-dev-{}'.format(config.version)),
             scws_resource(),
-            zhparser_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
-                owner_password=config.owner_password)
+            zhparser_resource()
         ])
 
     return resources
@@ -264,46 +255,3 @@ def load_postgresql_maintenance_config(purpose, must_exist):
     if not must_exist and not maintenance_config_path.exists():
         return DictObject()
     return load_config_from(maintenance_config_path, 'version', 'owner', 'owner_password')
-
-
-@atomic_installer
-def scws_resource():
-    local_path = DEPENDENCY_DIR / SCWS_RESOURCE_NAME
-    if not local_path.exists():
-        shell_execute('wget -c {} -O {}'.format(SCWS_RESOURCE_URL, local_path))
-    if not SCWS_RESOURCE_DIR.exists():
-        shell_execute('tar jxf {} '.format(local_path), cwd=DEPENDENCY_INSTALL_DIR)
-    if not SCWS_BIN_PATH.exists():
-        shell_execute('./configure;make install', cwd=SCWS_RESOURCE_DIR)
-
-
-@atomic_installer
-def zhparser_resource(purpose, version, host, port, owner, owner_password):
-    local_path = DEPENDENCY_DIR / ZHPARSER_RESOURCE_NAME
-    if not local_path.exists():
-        shell_execute('wget -c {} -O {}'.format(ZHPARSER_RESOURCE_URL, local_path))
-    if not ZHPARSER_RESOURCE_DIR.exists():
-        shell_execute('unzip {}'.format(local_path), cwd=DEPENDENCY_INSTALL_DIR)
-    if not ZHPARSER_SO_PATH.exists():
-        shell_execute('SCWS_HOME=/usr/local make && make install', cwd=ZHPARSER_RESOURCE_DIR)
-    with postgresql_server_running(version, get_pg_data_dir(purpose, version), owner):
-        env = os.environ.copy()
-        env['PGPASSWORD'] = owner_password
-        if not zhparser_configured(version, host, port, owner, purpose, env):
-            commands = '''
-                BEGIN;
-                CREATE EXTENSION IF NOT EXISTS {ext_name};
-                DROP TEXT SEARCH CONFIGURATION IF EXISTS {ext_config_name};
-                CREATE TEXT SEARCH CONFIGURATION {ext_config_name} (PARSER={ext_name});
-                ALTER TEXT SEARCH CONFIGURATION {ext_config_name} DROP MAPPING IF EXISTS FOR {token_types};
-                ALTER TEXT SEARCH CONFIGURATION {ext_config_name} ADD MAPPING FOR {token_types} WITH {dictionary_name};
-                COMMIT;
-            '''.format(ext_name='zhparser', ext_config_name='zhparser_config', token_types='n,v,a,i,e,l', dictionary_name='simple')
-            shell_execute('{}/psql -h {} -p {} -U {} -d {} -c "{}"'.format(get_pg_bin_dir(version), host, port, owner, purpose, commands), env=env)
-
-
-def zhparser_configured(version, host, port, owner, database, env):
-    output = shell_execute(
-        '{}/psql -h {} -p {} -U {} -d {} -c "CREATE EXTENSION {}"'.format(get_pg_bin_dir(version), host, port, owner, database, 'zhparser'), env=env,
-        expected_return_codes=(0, 1), capture=True, debug=True)
-    return 'already exists' in output

@@ -14,6 +14,7 @@ def load_database_client_config(purpose):
     config = load_config_from(VEIL_ETC_DIR / '{}-database-client.cfg'.format(purpose.replace('_', '-')), 'driver', 'type', 'host', 'port',
         'database', 'user', 'password', 'schema')
     config.port = int(config.port)
+    config.enable_chinese_fts = config.get('enable_chinese_fts', '0') == '1'
     return config
 
 
