@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 
+
 def filter_single_or_none(collection, criteria):
     return single_or_none(filter(criteria, collection))
 

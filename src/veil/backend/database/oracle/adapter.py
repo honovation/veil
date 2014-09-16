@@ -93,12 +93,12 @@ class OracleAdapter(object):
     def close(self):
         self.conn.close()
 
-    def cursor(self, returns_dict_object=True, **kwargs):
+    def cursor(self, returns_dict_object=True, primary_keys=None, **kwargs):
         self._reconnect_if_broken_per_lightweight_detection()
         cursor = self.conn.cursor(**kwargs)
         cursor = NamedParameterCursor(cursor)
         if returns_dict_object:
-            return ReturningDictObjectCursor(cursor)
+            return ReturningDictObjectCursor(cursor, primary_keys)
         else:
             return cursor
 
@@ -154,8 +154,9 @@ class NamedParameterCursor(object):
 
 
 class ReturningDictObjectCursor(object):
-    def __init__(self, cursor):
+    def __init__(self, cursor, primary_keys=None):
         self.cursor = cursor
+        self.primary_keys = primary_keys
 
     def fetchone(self):
         return self.to_dict_object(self.cursor.fetchone())
@@ -170,7 +171,7 @@ class ReturningDictObjectCursor(object):
         o = DictObject()
         for i, cell in enumerate(row):
             o[self.get_column_name(i)] = cell
-        return o
+        return Entity(o, primary_keys=self.primary_keys) if self.primary_keys else o
 
     def get_column_name(self, i):
         return self.cursor.description[i][0].lower()

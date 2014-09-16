@@ -211,7 +211,7 @@ class Database(object):
             })
         return rows[0][0]
 
-    def insert(self, table, objects=None, returns_id=False, returns_record=False, should_insert=None,
+    def insert(self, table, objects=None, returns_id=False, returns_record=False, primary_keys=None, should_insert=None,
                column_names=(), exclude_column_names=(), **value_providers):
         if value_providers and exclude_column_names:
             value_providers = {k: v for k, v in value_providers.items() if k not in exclude_column_names}
@@ -279,7 +279,10 @@ class Database(object):
             return self.list_scalar(''.join(fragments), **args) if objects else self.get_scalar(''.join(fragments), **args)
         elif returns_record:
             fragments.append(' RETURNING *')
-            return self.list(''.join(fragments), **args) if objects else self.get(''.join(fragments), **args)
+            if objects:
+                return self.list(''.join(fragments), primary_keys=primary_keys, **args)
+            else:
+                return self.get(''.join(fragments), primary_keys=primary_keys, **args)
         else:
             return self.execute(''.join(fragments), **args)
 
@@ -343,12 +346,12 @@ class Database(object):
                 else:
                     return cursor.rowcount
 
-    def _query(self, sql, returns_dict_object=True, **kwargs):
+    def _query(self, sql, returns_dict_object=True, primary_keys=None, **kwargs):
         check_table_dependencies(self.component_name, self.purpose, sql)
         reconnected = False
         within_transaction_context = not self.autocommit
         while True:
-            with closing(self.conn.cursor(returns_dict_object=returns_dict_object)) as cursor:
+            with closing(self.conn.cursor(returns_dict_object=returns_dict_object, primary_keys=primary_keys)) as cursor:
                 try:
                     cursor.execute(sql, kwargs)
                 except Exception as e:
@@ -369,7 +372,7 @@ class Database(object):
                 else:
                     return cursor.fetchall()
 
-    def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, **kwargs):
+    def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, primary_keys=None, **kwargs):
         """
         Run a query with potentially large result set using server-side cursor
         """
@@ -381,7 +384,7 @@ class Database(object):
                 # psycopg2 named cursor is implemented as 'DECLARE name CURSOR WITHOUT HOLD FOR query'
                 # and should be within a transaction and not be used in autocommit mode
                 with require_transaction_context(self):
-                    cursor = self.conn.cursor(name=self._unique_cursor_name(), returns_dict_object=returns_dict_object)
+                    cursor = self.conn.cursor(name=self._unique_cursor_name(), returns_dict_object=returns_dict_object, primary_keys=primary_keys)
                     if db_fetch_size:
                         cursor.itersize = db_fetch_size
                     cursor.execute(sql, kwargs)
