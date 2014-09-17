@@ -24,7 +24,6 @@ import uuid
 from veil.backend.redis import *
 from veil.development.test import *
 from veil.model.collection import *
-from veil.utility.http import *
 from veil.frontend.nginx import *
 from veil.frontend.web import *
 

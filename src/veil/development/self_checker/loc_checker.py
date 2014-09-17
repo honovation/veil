@@ -16,7 +16,7 @@ def check_loc():
             module_loc = get_loc(module_file)
             component_files.setdefault(component_name, []).append((module_file, module_loc))
     max_loc = 0
-    for component_name in sorted(component_files.keys()):
+    for component_name in sorted(component_files):
         files = component_files[component_name]
         component_loc = sum(f[1] for f in files)
         if component_name not in WHITE_LIST:

@@ -47,6 +47,6 @@ def load_all():
 
 def save_all():
     RESOURCE_LATEST_VERSION.write_text(
-        '\n'.join('{}={}'.format(key, version_cache['development'][key]) for key in sorted(version_cache['development'].keys())))
+        '\n'.join('{}={}'.format(key, version_cache['development'][key]) for key in sorted(version_cache['development'])))
     RESOURCE_LATEST_VERSION_TEST.write_text(
-        '\n'.join('{}={}'.format(key, version_cache['test'][key]) for key in sorted(version_cache['test'].keys())))
+        '\n'.join('{}={}'.format(key, version_cache['test'][key]) for key in sorted(version_cache['test'])))

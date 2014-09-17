@@ -10,7 +10,6 @@ import logging
 import contextlib
 from urlparse import urlparse
 from veil.utility.encoding import *
-from veil.utility.http import *
 from veil.frontend.web import *
 
 LOGGER = logging.getLogger(__name__)

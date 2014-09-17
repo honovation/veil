@@ -6,8 +6,8 @@ import re
 from hashlib import md5
 from dateutil.parser import parse
 import lxml
+import requests
 from veil.model.collection import *
-from veil.utility.http import *
 from veil.utility.encoding import *
 from veil.utility.clock import *
 from .yto_client_installer import yto_client_config
@@ -26,6 +26,8 @@ STATUS2LABEL = {
     STATUS_SIGNED: '签收成功',
     STATUS_REJECTED: '签收失败'
 }
+
+PATTERN_FOR_REASON = re.compile('<reason>(.*?)</reason>')
 
 
 def verify_logistics_notify(notify_data, sign):
@@ -76,21 +78,24 @@ def get_delivery_status(notification):
 def subscribe_logistics_notify(logistics_id, logistics_order):
     config = yto_client_config()
     sign = base64.b64encode(md5(to_str('{}{}'.format(logistics_order, config.partner_id))).digest())
-    data = {
-        'logistics_interface': to_str(logistics_order),
-        'data_digest': sign,
-        'type': config.type,
-        'clientId': config.client_id
-    }
-    response = to_unicode(http_call('Subscribe-purchases-logistics-status', config.api_url, data=data,
-        content_type='application/x-www-form-urlencoded; charset=UTF-8'))
-    if '<success>false</success>' in response:
-        reason = re.findall('<reason>(.*)</reason>', response)[0]
-        LOGGER.info('Failed to subscribe logistics notify: %(logistics_id)s, %(reason)s', {'logistics_id': logistics_id, 'reason': reason})
-        raise Exception('Failed to subscribe logistics notify: {}, {}'.format(logistics_id, reason))
-    elif '<success>true</success>' in response:
-        LOGGER.info('Subscribed logistics notify successfully: %(logistics_id)s', {'logistics_id': logistics_id})
-        return True
+    headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+    data = {'logistics_interface': to_str(logistics_order), 'data_digest': sign, 'type': config.type, 'clientId': config.client_id}
+    try:
+        response = requests.post(config.api_url, data=data, headers=headers, timeout=(3.05, 9))
+        response.raise_for_status()
+    except:
+        LOGGER.exception('yto logistics subscribe exception-thrown: %(data)s, %(headers)s', {'data': data, 'headers': headers})
+        raise
     else:
-        LOGGER.info('Got error response to logistics-notify subscription from yto: %(response)s', {'response': response})
-    return False
+        if '<success>true</success>' in response.text:
+            LOGGER.info('yto logistics subscribe succeeded: %(logistics_id)s', {'logistics_id': logistics_id})
+        elif '<success>false</success>' in response.text:
+            m = PATTERN_FOR_REASON.search(response.text)
+            reason = m.group(1) if m else ''
+            LOGGER.info('yto logistics subscribe failed: %(logistics_id)s, %(reason)s', {'logistics_id': logistics_id, 'reason': reason})
+            raise Exception('yto logistics subscribe failed: {}, {}'.format(logistics_id, reason))
+        else:
+            LOGGER.info('yto logistics subscribe failed with bad response: %(logistics_id)s, %(response)s', {
+                'logistics_id': logistics_id, 'response': response.text
+            })
+            raise Exception('yto logistics subscribe failed with bad response: {}, {}'.format(logistics_id, response.text))

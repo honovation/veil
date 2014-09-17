@@ -2,10 +2,10 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import re
+import requests
 from veil_component import VEIL_ENV_TYPE
 from veil.environment import get_application_sms_whitelist
 from veil.backend.queue import *
-from veil.utility.http import *
 from .emay_sms_client_installer import emay_sms_client_config
 
 LOGGER = logging.getLogger(__name__)
@@ -15,9 +15,9 @@ MAX_SMS_RECEIVERS = 200
 MAX_SMS_CONTENT_LENGTH = 500 # 500 Chinese or 1000 English chars
 
 
-def get_return_value(xml):
-    result = re.findall('<error>(\d)</error>', xml)
-    return int(result[0]) if result else None
+@job('send_transactional_sms', retry_every=10, retry_timeout=90)
+def send_transactional_sms_job(receiver, message, sms_code):
+    send_sms(receiver, message, sms_code)
 
 
 def send_sms(receivers, message, sms_code):
@@ -43,19 +43,23 @@ def send_sms(receivers, message, sms_code):
     config = emay_sms_client_config()
     data = {'cdkey': config.cdkey, 'password': config.password, 'phone': receivers, 'message': message}
     try:
-        # sleep_before_retry: avoid IP blocking due to too frequent queries
-        response = http_call('EMAY-SMS-SEND-API', SEND_SMS_URL, data, log_data=False, max_tries=2, sleep_before_retry=10)
-    except Exception:
-        LOGGER.exception('failed to send sms: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
+        #TODO: retry at most 2 times upon connection timeout or 500 errors, back-off 3 seconds (avoid IP blocking due to too frequent queries) when new-version requests supports
+        response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9))
+        response.raise_for_status()
+    except:
+        LOGGER.exception('emay sms send exception-thrown: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
         raise
     else:
-        return_value = get_return_value(response)
+        return_value = get_return_value(response.text)
         if return_value == 0:
-            LOGGER.info('succeeded to send sms: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
+            LOGGER.info('emay sms send succeeded: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
         else:
-            raise Exception('failed to send sms with bad value returned: {}, {}, {}'.format(response, sms_code, receivers))
+            LOGGER.error('emay sms send failed: %(sms_code)s, %(response)s, %(receivers)s', {
+                'sms_code': sms_code, 'response': response.text, 'receivers': receivers
+            })
+            raise Exception('emay sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers))
 
 
-@job('send_transactional_sms', retry_every=10, retry_timeout=90)
-def send_transactional_sms_job(receiver, message, sms_code):
-    send_sms(receiver, message, sms_code)
+def get_return_value(xml):
+    result = re.findall('<error>(\d)</error>', xml)
+    return int(result[0]) if result else None

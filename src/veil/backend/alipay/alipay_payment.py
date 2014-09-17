@@ -4,9 +4,9 @@ from decimal import Decimal, DecimalException
 import logging
 import urllib
 import hashlib
+import requests
 from veil.environment import VEIL_ENV_TYPE
 from veil.utility.encoding import *
-from veil.utility.http import *
 from veil.model.binding import *
 from veil.model.event import *
 from veil.profile.web import *
@@ -16,8 +16,8 @@ LOGGER = logging.getLogger(__name__)
 
 EVENT_ALIPAY_TRADE_PAID = define_event('alipay-trade-paid') # valid notification
 
-PAYMENT_URL_TEMPLATE = 'https://mapi.alipay.com/gateway.do?{}'
-VERIFY_URL_TEMPLATE = 'https://mapi.alipay.com/gateway.do?service=notify_verify&partner={}&notify_id={}'
+PAYMENT_URL = 'https://mapi.alipay.com/gateway.do'
+VERIFY_URL = PAYMENT_URL
 
 NOTIFIED_FROM_RETURN_URL = 'return_url'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
@@ -27,7 +27,7 @@ NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # alipay require this 7 char
 def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, minutes_to_complete_payment,
         shopper_ip_address):
     params = {
-        'service': 'create_direct_pay_by_user', #即时到帐
+        'service': 'create_direct_pay_by_user',  #即时到帐
         'partner': alipay_client_config().partner_id,
         '_input_charset': 'UTF-8',
         'out_trade_no': out_trade_no,
@@ -48,12 +48,12 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
         'extra_common_param': show_url,
         'it_b_pay': '{}m'.format(minutes_to_complete_payment), # 未付款交易的超时时间
     }
-    sign = sign_md5(params)
-    params['sign'] = sign
+    params['sign'] = sign_md5(params)
     params['sign_type'] = 'MD5'
     # urllib.urlencode does not handle unicode well
     params = {to_str(k): to_str(v) for k, v in params.items()}
-    return PAYMENT_URL_TEMPLATE.format(urllib.urlencode(params))
+    query = urllib.urlencode(params)
+    return '{}?{}'.format(PAYMENT_URL, query)
 
 
 def process_alipay_payment_notification(out_trade_no, http_arguments, notified_from):
@@ -79,8 +79,9 @@ def validate_notification(http_arguments):
         if is_sign_correct(http_arguments):
             notify_id = http_arguments.get('notify_id', None)
             if notify_id:
-                if not is_notification_from_alipay(notify_id):
-                    discarded_reasons.append('notification not from alipay')
+                error = validate_notification_from_alipay(notify_id)
+                if error:
+                    discarded_reasons.append(error)
             else:
                 discarded_reasons.append('no notify_id')
         else:
@@ -142,19 +143,23 @@ def sign_md5(params):
 
 
 def to_url_params_string(params):
-    return '&'.join('{}={}'.format(key, params[key]) for key in sorted(params.keys()) if params[key])
+    return '&'.join('{}={}'.format(key, params[key]) for key in sorted(params) if params[key])
 
 
-def is_notification_from_alipay(notify_id):
-    verify_url = VERIFY_URL_TEMPLATE.format(alipay_client_config().partner_id, notify_id)
+def validate_notification_from_alipay(notify_id):
+    error = None
+    params = {'service': 'notify_verify', 'partner': alipay_client_config().partner_id, 'notify_id': notify_id}
     try:
-        response = http_call('ALIPAY-NOTIFY-VERIFY-API', verify_url, max_tries=2)
-    except Exception:
-        response = None
-    if 'true' == response:
-        LOGGER.debug('alipay notify verify passed: %(response)s, %(verify_url)s', {'response': response, 'verify_url': verify_url})
-        return True
-    LOGGER.error('received notification not from alipay: %(response)s, %(verify_url)s', {
-        'response': response, 'verify_url': verify_url
-    })
-    return False
+        #TODO: retry when new-version requests supports
+        response = requests.get(VERIFY_URL, params=params, timeout=(3.05, 9))
+        response.raise_for_status()
+    except:
+        LOGGER.exception('alipay notify verify exception-thrown: %(params)s', {'params': params})
+        error = 'failed to validate alipay notification'
+    else:
+        if 'true' == response.text:
+            LOGGER.debug('alipay notify verify succeeded: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
+        else:
+            LOGGER.warn('alipay notify verify failed: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
+            error = 'notification not from alipay'
+    return error

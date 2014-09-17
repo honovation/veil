@@ -4,6 +4,7 @@ with veil_component.init_component(__name__):
     from .const import HTML_START_TAG_PREFIX
     from .const import HEAD_END_TAG
     from .const import BODY_END_TAG
+
     from .website_launcher import start_website
     from .website_launcher import start_test_website
     from .website_launcher import register_website_context_manager
@@ -12,7 +13,9 @@ with veil_component.init_component(__name__):
     from .website_installer import get_website_domain
     from .website_installer import get_website_parent_domain
     from .website_installer import website_resource
+
     from .client import start_website_and_client
+
     from .routing import route
     from .routing import route_for
     from .routing import async_route
@@ -24,8 +27,10 @@ with veil_component.init_component(__name__):
     from .routing import TAG_NO_POST_PROCESS
     from .routing import TAG_NO_LOGIN_REQUIRED
     from .routing import publish_new_website_event
+
     from .static_file import static_url
     from .static_file import process_script_elements
+
     from .tornado import get_current_http_context
     from .tornado import get_current_http_request
     from .tornado import get_current_http_response
@@ -50,27 +55,29 @@ with veil_component.init_component(__name__):
     from .tornado import delete_http_argument
     from .tornado import clear_http_arguments
     from .tornado import require_io_loop_executor
+
     from .xsrf import xsrf_token
     from .xsrf import TAG_NO_XSRF_CHECK
 
+    from .web_spider import is_web_spider
+
     __all__ = [
-        # from consts
         'HTML_START_TAG_PREFIX',
         'HEAD_END_TAG',
         'BODY_END_TAG',
-        # from website
+
         start_website.__name__,
         start_test_website.__name__,
         register_website_context_manager.__name__,
         remove_no_longer_used_cookies.__name__,
-        # from website_installer
+
         get_website_url_prefix.__name__,
         get_website_domain.__name__,
         get_website_parent_domain.__name__,
         website_resource.__name__,
-        # from client
+
         start_website_and_client.__name__,
-        # from routing
+
         route.__name__,
         route_for.__name__,
         async_route.__name__,
@@ -82,10 +89,10 @@ with veil_component.init_component(__name__):
         'TAG_NO_POST_PROCESS',
         'TAG_NO_LOGIN_REQUIRED',
         publish_new_website_event.__name__,
-        # from static_file
+
         static_url.__name__,
         process_script_elements.__name__,
-        # from tornado
+
         get_current_http_context.__name__,
         get_current_http_request.__name__,
         get_current_http_response.__name__,
@@ -110,9 +117,11 @@ with veil_component.init_component(__name__):
         delete_http_argument.__name__,
         clear_http_arguments.__name__,
         require_io_loop_executor.__name__,
-        # from xsrf
+
         xsrf_token.__name__,
-        'TAG_NO_XSRF_CHECK'
+        'TAG_NO_XSRF_CHECK',
+
+        is_web_spider.__name__,
     ]
 
     def init():

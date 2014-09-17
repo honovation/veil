@@ -1,15 +1,15 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 import logging
-import urllib
-from veil.utility.encoding import *
-from veil.utility.http import *
+from time import sleep
+import requests
+from veil.model.collection import objectify
 from .kuaidi100_client_installer import kuaidi100_client_config
 
 LOGGER = logging.getLogger(__name__)
 
+API_URL = 'http://api.kuaidi100.com/api'
 WEB_URL_TEMPLATE = 'http://www.kuaidi100.com/chaxun?com={}&nu={}'
-API_URL_TEMPLATE = 'http://api.kuaidi100.com/api?id={}&com={}&nu={}&show=0&muti=1&order=desc'
 
 STATUS_NO_INFO_YET = '0'  # 物流单暂无结果
 STATUS_QUERY_SUCCESS = '1'  # 查询成功
@@ -29,23 +29,27 @@ def waybill_web_url(shipper_code, shipping_code):
 def get_delivery_status(shipper_code, shipping_code, sleep_at_start=0):
     if 'youzhengguonei' == shipper_code: # kuaidi100 API does not support China Post yet
         return {}
-    url = API_URL_TEMPLATE.format(kuaidi100_client_config().api_id, shipper_code, urllib.quote(to_str(shipping_code)))
+    params = {'id': kuaidi100_client_config().api_id, 'com': shipper_code, 'nu': shipping_code, 'muti': '1', 'order': 'desc'}
+    # sleep_at_start: avoid IP blocking due to too frequent queries
+    if sleep_at_start > 0:
+        sleep(sleep_at_start)
     try:
-        # sleep_at_start & sleep_before_retry: avoid IP blocking due to too frequent queries
-        response = http_call('KUAIDI100-QUERY-API', url, accept='application/json', max_tries=2, sleep_at_start=sleep_at_start, sleep_before_retry=10)
-    except Exception:
-        pass
+        response = requests.get(API_URL, params=params, headers={'accept': 'application/json'}, timeout=(3.05, 9))
+        response.raise_for_status()
+    except:
+        LOGGER.exception('kuaidi100 query exception-thrown: %(params)s', {'params': params})
     else:
-        if response.status == STATUS_QUERY_SUCCESS:
-            LOGGER.debug('succeeded get response from kuaidi100: %(url)s, %(response)s', {'url': url, 'response': response})
-            return response
-        elif response.status == STATUS_QUERY_ERROR:
-            LOGGER.error('kaudi100 error: %(url)s, %(response)s', {'url': url, 'response': response})
-        elif response.status == STATUS_NO_INFO_YET:
-            if all(keyword in response.message for keyword in ('IP地址', '禁止')):
-                raise IPBlockedException('IP blocked by kuaidi100: {}'.format(response))
+        result = objectify(response.json())
+        if result.status == STATUS_QUERY_SUCCESS:
+            LOGGER.debug('kuaidi100 query succeeded: %(result)s, %(url)s', {'result': result, 'url': response.url})
+            return result
+        elif result.status == STATUS_QUERY_ERROR:
+            LOGGER.error('kuaidi100 query error: %(result)s, %(url)s', {'result': result, 'url': response.url})
+        elif result.status == STATUS_NO_INFO_YET:
+            if all(keyword in result.message for keyword in ('IP地址', '禁止')):
+                raise IPBlockedException('IP blocked by kuaidi100: {}'.format(result))
             else:
-                LOGGER.info('kaudi100 has no info yet: %(url)s, %(response)s', {'url': url, 'response': response})
+                LOGGER.info('kuaidi100 query no info yet: %(result)s, %(url)s', {'result': result, 'url': response.url})
     return {}
 
 

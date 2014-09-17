@@ -5,10 +5,10 @@ import logging
 import urllib
 import hashlib
 import lxml.objectify
+import requests
 from veil.environment import VEIL_ENV_TYPE
 from veil.utility.encoding import *
 from veil.utility.clock import *
-from veil.utility.http import *
 from veil.model.binding import *
 from veil.model.event import *
 from veil.model.collection import *
@@ -19,8 +19,8 @@ LOGGER = logging.getLogger(__name__)
 
 EVENT_TENPAY_TRADE_PAID = define_event('tenpay-trade-paid') # valid notification
 
-PAYMENT_URL_TEMPLATE = 'https://gw.tenpay.com/gateway/pay.htm?{}'
-VERIFY_URL_TEMPLATE = 'https://gw.tenpay.com/gateway/simpleverifynotifyid.xml?{}'
+PAYMENT_URL = 'https://gw.tenpay.com/gateway/pay.htm'
+VERIFY_URL = 'https://gw.tenpay.com/gateway/simpleverifynotifyid.xml'
 
 NOTIFIED_FROM_RETURN_URL = 'return_url'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
@@ -50,7 +50,11 @@ def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
         'time_expire': time_expire_beijing_time_str, # 交易结束时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
         'trade_mode': '1' # 交易模式：即时到账
     }
-    return PAYMENT_URL_TEMPLATE.format(make_query(params))
+    params['sign'] = sign_md5(params)
+    # urllib.urlencode does not handle unicode well
+    params = {to_str(k): to_str(v) for k, v in params.items()}
+    query = urllib.urlencode(params)
+    return '{}?{}'.format(PAYMENT_URL, query)
 
 
 def process_tenpay_payment_notification(out_trade_no, http_arguments, notified_from):
@@ -77,8 +81,9 @@ def validate_notification(http_arguments):
         if is_sign_correct(http_arguments):
             notify_id = http_arguments.get('notify_id', None)
             if notify_id:
-                if not is_notification_from_tenpay(notify_id):
-                    discarded_reasons.append('notification not from tenpay')
+                error = validate_notification_from_tenpay(notify_id)
+                if error:
+                    discarded_reasons.append(error)
             else:
                 discarded_reasons.append('no notify_id')
         else:
@@ -141,36 +146,28 @@ def sign_md5(params):
 
 
 def to_url_params_string(params):
-    return '&'.join('{}={}'.format(key, params[key]) for key in sorted(params.keys()) if params[key])
+    return '&'.join('{}={}'.format(key, params[key]) for key in sorted(params) if params[key])
 
 
-def is_notification_from_tenpay(notify_id):
-    verify_url = VERIFY_URL_TEMPLATE.format(
-        make_query({'sign_type': 'MD5', 'input_charset': 'UTF-8', 'partner': tenpay_client_config().partner_id, 'notify_id': notify_id}))
+def validate_notification_from_tenpay(notify_id):
+    error = None
+    params = {'sign_type': 'MD5', 'input_charset': 'UTF-8', 'partner': tenpay_client_config().partner_id, 'notify_id': notify_id}
+    params['sign'] = sign_md5(params)
     try:
-        response = http_call('TENPAY-NOTIFY-VERIFY-API', verify_url, max_tries=2)
-    except Exception:
-        response = None
-    if response:
-        arguments = parse_notify_verify_response(response)
+        #TODO: retry when new-version requests supports
+        response = requests.get(VERIFY_URL, params=params, timeout=(3.05, 9))
+        response.raise_for_status()
+    except:
+        LOGGER.exception('tenpay notify verify exception-thrown: %(params)s', {'params': params})
+        error = 'failed to validate tenpay notification'
+    else:
+        arguments = parse_notify_verify_response(response.text)
         if is_sign_correct(arguments) and '0' == arguments.get('retcode', None):
-            LOGGER.debug('tenpay notify verify passed: %(response)s, %(verify_url)s', {'response': response, 'verify_url': verify_url})
-            return True
-    LOGGER.error('received notification not from tenpay: %(response)s, %(verify_url)s', {
-        'response': response, 'verify_url': verify_url
-    })
-    return False
-
-
-def make_query(params):
-    if 'sign' in params:
-        del params['sign']
-    sign = sign_md5(params)
-    params['sign'] = sign
-    # urllib.urlencode does not handle unicode well
-    params = {to_str(k): to_str(v) for k, v in params.items()}
-    return urllib.urlencode(params)
-
+            LOGGER.debug('tenpay notify verify succeeded: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
+        else:
+            LOGGER.warn('tenpay notify verify failed: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
+            error = 'notification not from tenpay'
+    return error
 
 def parse_notify_verify_response(response):
     arguments = DictObject()

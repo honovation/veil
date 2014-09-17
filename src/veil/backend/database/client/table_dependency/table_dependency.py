@@ -55,7 +55,7 @@ def print_readable_table_dependencies(threshold=8):
 
 def print_table_dependencies_for(component_tables, threshold=8):
     threshold = int(threshold)
-    for component_name in sorted(component_tables.keys()):
+    for component_name in sorted(component_tables):
         tables = component_tables[component_name]
         tables = ['{}/{}'.format(db, tbl) for db, tbl in tables]
         if tables:
