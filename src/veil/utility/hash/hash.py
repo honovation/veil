@@ -58,6 +58,11 @@ def get_password_hash(password, dynamic_salt=None):
     return get_hmac(password, strong=True) if dynamic_salt is None else get_hmac(password, dynamic_salt, strong=True)
 
 
+def get_password_md5(password, dynamic_salt=None):
+    to_be_encrypted = password if dynamic_salt is None else '{}{}'.format(password, dynamic_salt)
+    return hashlib.md5(to_be_encrypted).hexdigest().lower()
+
+
 def get_hmac(*parts, **kwargs):
     strong = kwargs.pop('strong', True)
     digestmod = hashlib.sha256 if strong else hashlib.sha1

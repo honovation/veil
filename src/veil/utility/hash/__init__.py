@@ -4,6 +4,7 @@ with veil_component.init_component(__name__):
     from .hash import encode_token
     from .hash import decode_token
     from .hash import get_password_hash
+    from .hash import get_password_md5
     from .hash import get_hmac
     from .hash import verify_hmac
     from .hash import get_check_code
@@ -15,6 +16,7 @@ with veil_component.init_component(__name__):
         encode_token.__name__,
         decode_token.__name__,
         get_password_hash.__name__,
+        get_password_md5.__name__,
         get_hmac.__name__,
         verify_hmac.__name__,
         get_check_code.__name__,
