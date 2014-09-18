@@ -159,7 +159,9 @@ class Database(object):
     def execute(self, sql, **kwargs):
         return self._execute(sql, **kwargs)
 
-    def executemany(self, sql, seq_of_parameters):
+    def executemany(self, sql, seq_of_parameters, should_insert=None):
+        if should_insert:
+            seq_of_parameters = [e for e in seq_of_parameters if should_insert(e)]
         if not seq_of_parameters:
             return 0
         return self._executemany(sql, seq_of_parameters)
@@ -274,6 +276,8 @@ class Database(object):
                 fragments.append('%({})s'.format(arg_name))
                 args[arg_name] = column_value
             fragments.append(')')
+        if not args:  # not values to insert
+            return None if returns_id or returns_record else 0
         if returns_id:
             fragments.append(' RETURNING id')
             return self.list_scalar(''.join(fragments), **args) if objects else self.get_scalar(''.join(fragments), **args)
