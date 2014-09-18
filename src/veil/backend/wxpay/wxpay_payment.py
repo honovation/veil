@@ -101,7 +101,7 @@ def query_order_status(access_token, out_trade_no):
     data = dict(appid=config.app_id, package=create_wxpay_query_order_status_package(out_trade_no), timestamp=unicode(get_current_timestamp()))
     data['app_signature'] = sign_sha1(dict(data, appkey=config.pay_sign_key))
     data['sign_method'] = 'sha1'
-    headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept-Charset': 'UTF-8'}
+    headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept': 'application/json'}
     try:
         #TODO: retry when new-version requests supports
         response = requests.post(WXPAY_ORDER_QUERY_URL, params=params, data=json.dumps(data), headers=headers, timeout=(3.05, 9))
@@ -129,7 +129,7 @@ def send_deliver_notify(access_token, out_trade_no, openid, transid, deliver_sta
         deliver_status=deliver_status, deliver_msg=deliver_msg)
     data['app_signature'] = sign_sha1(dict(data, appkey=config.pay_sign_key))
     data['sign_method'] = 'sha1'
-    headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept-Charset': 'UTF-8'}
+    headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept': 'application/json'}
     try:
         #TODO: retry when new-version requests supports
         response = requests.post(WXPAY_DELIVER_NOTIFY_URL, params=params, data=json.dumps(data), headers=headers, timeout=(3.05, 9))
@@ -185,7 +185,7 @@ def request_wxmp_access_token():
     params = dict(grant_type='client_credential', appid=config.app_id, secret=config.app_secret)
     try:
         #TODO: retry when new-version requests supports
-        response = requests.get(WXMP_ACCESS_TOKEN_AUTHORIZATION_URL, params=params, timeout=(3.05, 9))
+        response = requests.get(WXMP_ACCESS_TOKEN_AUTHORIZATION_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9))
         response.raise_for_status()
     except:
         LOGGER.exception('wxmp request access token exception-thrown')
