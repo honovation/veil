@@ -161,7 +161,7 @@ def validate_notification_from_tenpay(notify_id):
         LOGGER.exception('tenpay notify verify exception-thrown: %(params)s', {'params': params})
         error = 'failed to validate tenpay notification'
     else:
-        arguments = parse_notify_verify_response(response.text)
+        arguments = parse_notify_verify_response(response.content)
         if is_sign_correct(arguments) and '0' == arguments.get('retcode', None):
             LOGGER.debug('tenpay notify verify succeeded: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
         else:
