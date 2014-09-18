@@ -141,4 +141,4 @@ class Entity(DictObject):
         return self._hash
 
     def __repr__(self):
-        return '<{}: {}>'.format(type(self).__name__, ', '.join(tuple('{}={}'.format(k, getattr(self, k, None)) for k in self.primary_keys)))
+        return '<{}: {}>'.format(type(self).__name__, ', '.join('{}={}'.format(k, getattr(self, k, None)) for k in self.primary_keys))

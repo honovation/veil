@@ -21,6 +21,7 @@ TAG_NO_LOGIN_REQUIRED = 'PUBLIC'
 original_routes = {}
 routes = {}
 
+
 @test_hook
 def remember_original_routes():
     get_executing_test().addCleanup(reset_routes)
@@ -41,7 +42,7 @@ class RouteDecorator(object):
         self.method = method
         self.path_template = path_template
         self.website = website.lower()
-        self.tags = set(tags)
+        self.tags = tags
         self.delegates_to = delegates_to
         self.path_template_params = path_template_params
         veil_component.record_dynamic_dependency_provider(veil_component.get_loading_component_name(), 'website', self.website)
@@ -77,14 +78,12 @@ def route_for(website, tags=()):
 
 
 def async_route(*args, **kwargs):
-    kwargs['tags'] = set(kwargs.get('tags', ()))
-    kwargs['tags'].add('ASYNC')
+    kwargs['tags'] = set(kwargs.get('tags', ())) | {'ASYNC'}
     return route(*args, **kwargs)
 
 
 def public_route(*args, **kwargs):
-    kwargs['tags'] = set(kwargs.get('tags', ()))
-    kwargs['tags'].add(TAG_NO_LOGIN_REQUIRED)
+    kwargs['tags'] = set(kwargs.get('tags', ())) | {TAG_NO_LOGIN_REQUIRED}
     return route(*args, **kwargs)
 
 
@@ -180,7 +179,7 @@ class Route(object):
         self.route_handler = route_handler
         self.method = method
         self.path_template = PathTemplate(path_template, path_template_params)
-        self.tags = set(tags)
+        self.tags = tags if isinstance(tags, set) else set(tags)
 
     def __repr__(self):
         return '{} {}'.format(self.method, self.path_template)
