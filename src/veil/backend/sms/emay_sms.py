@@ -12,7 +12,9 @@ LOGGER = logging.getLogger(__name__)
 
 SEND_SMS_URL = 'http://sdkhttp.eucp.b2m.cn/sdkproxy/sendsms.action'
 MAX_SMS_RECEIVERS = 200
-MAX_SMS_CONTENT_LENGTH = 500 # 500 Chinese or 1000 English chars
+MAX_SMS_CONTENT_LENGTH = 500  # 500 Chinese or 1000 English chars
+
+PATTERN_FOR_ERROR = re.compile('<error>(\d+?)</error>')
 
 
 @job('send_transactional_sms', retry_every=10, retry_timeout=90)
@@ -61,5 +63,5 @@ def send_sms(receivers, message, sms_code):
 
 
 def get_return_value(xml):
-    result = re.findall('<error>(\d)</error>', xml)
-    return int(result[0]) if result else None
+    m = PATTERN_FOR_ERROR.search(xml)
+    return int(m.group(1)) if m else None
