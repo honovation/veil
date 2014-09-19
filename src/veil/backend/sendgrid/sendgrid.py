@@ -30,7 +30,7 @@ def close_connection():
 
 def open_connection():
     global smtp
-    smtp = smtplib.SMTP('smtp.sendgrid.net', port=587, timeout=30)
+    smtp = smtplib.SMTP('smtp.sendgrid.net', port=587, timeout=60)
     config = sendgrid_client_config()
     smtp.login(config.username, config.password)
 
@@ -40,7 +40,7 @@ def is_connected():
         return False
     try:
         status = smtp.noop()[0]
-    except Exception:  # smtplib.SMTPServerDisconnected
+    except Exception:   # smtplib.SMTPServerDisconnected
         status = -1
     return status == 250
 
