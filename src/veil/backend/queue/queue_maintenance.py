@@ -8,7 +8,7 @@ from .queue_client_installer import queue_client_config
 
 
 @script('count-failed-jobs')
-def count_failed_jobs(queue):
+def count_failed_jobs(queue=None):
     resq = get_resq()
     count = _count_failed_jobs(resq, queue)
     print(count)
@@ -17,7 +17,7 @@ def count_failed_jobs(queue):
 def _count_failed_jobs(resq, queue):
     count = 0
     for job in pyres.failure.all(resq, 0, -1):
-        if queue == job['queue']:
+        if not queue or queue == job['queue']:
             count += 1
     return count
 
