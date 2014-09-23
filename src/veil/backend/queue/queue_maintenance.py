@@ -8,10 +8,15 @@ from .queue_client_installer import queue_client_config
 
 
 @script('count-failed-jobs')
+def count_failed_jobs_(queue=None):
+    count = count_failed_jobs(queue)
+    print(count)
+
+
 def count_failed_jobs(queue=None):
     resq = get_resq()
     count = _count_failed_jobs(resq, queue)
-    print(count)
+    return count
 
 
 def _count_failed_jobs(resq, queue):
@@ -23,6 +28,11 @@ def _count_failed_jobs(resq, queue):
 
 
 @script('delete-failed-jobs')
+def delete_failed_jobs_(queue):
+    count = delete_failed_jobs(queue)
+    print(count)
+
+
 def delete_failed_jobs(queue):
     resq = get_resq()
     count = 0
@@ -30,7 +40,7 @@ def delete_failed_jobs(queue):
         if queue == job['queue']:
             pyres.failure.delete(resq, base64.decodestring(job['redis_value']))
             count += 1
-    print(count)
+    return count
 
 
 @script('count-pending-jobs')
@@ -40,11 +50,16 @@ def count_pending_jobs(queue):
 
 
 @script('delete-pending-jobs')
+def delete_pending_jobs_(queue):
+    count = delete_pending_jobs(queue)
+    print(count)
+
+
 def delete_pending_jobs(queue):
     resq = get_resq()
     count = resq.size(queue)
     resq.redis.delete('resque:queue:{}'.format(queue))
-    print(count)
+    return count
 
 
 @script('remove-queue')
