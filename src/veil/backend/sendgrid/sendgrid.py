@@ -24,13 +24,15 @@ def close_connection():
     if smtp is not None:
         try:
             smtp.quit()
+        except smtplib.SMTPServerDisconnected:
+            pass
         except Exception:
             LOGGER.exception('failed to quit smtp')
 
 
 def open_connection():
     global smtp
-    smtp = smtplib.SMTP('smtp.sendgrid.net', port=587, timeout=60)
+    smtp = smtplib.SMTP('smtp.sendgrid.net', port=587, timeout=120)
     config = sendgrid_client_config()
     smtp.login(config.username, config.password)
 
