@@ -76,7 +76,7 @@ def remove_exponent_and_insignificant_zeros(d):
 
 
 def remove_elements_without_value_from_dict(d):
-    for key in list(d.keys()):
+    for key in d.keys():
         if not d[key]:
             del d[key]
 
@@ -85,7 +85,7 @@ def whitespace2none(l_or_d_or_str):
     if isinstance(l_or_d_or_str, (str, unicode)):
         return l_or_d_or_str.strip() or None
     elif isinstance(l_or_d_or_str, (list, dict)):
-        for k in range(len(l_or_d_or_str)) if isinstance(l_or_d_or_str, list) else l_or_d_or_str.keys():
+        for k in range(len(l_or_d_or_str)) if isinstance(l_or_d_or_str, list) else l_or_d_or_str:
             l_or_d_or_str[k] = whitespace2none(l_or_d_or_str[k])
     return l_or_d_or_str
 

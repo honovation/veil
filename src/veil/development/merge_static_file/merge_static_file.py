@@ -25,10 +25,8 @@ def list_static_file_dependencies():
 @script('merge')
 def merge():
     static_file_dep = list_static_file_dependencies()
-    purposes = static_file_dep.keys()
-    for purpose in purposes:
-        file_types = static_file_dep[purpose].keys()
-        for file_type in file_types:
+    for purpose in static_file_dep:
+        for file_type in static_file_dep[purpose]:
             merge_files(purpose, file_type)
 
 

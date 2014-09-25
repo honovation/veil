@@ -40,7 +40,7 @@ class ObjectBinder(object):
 
     def assert_no_extra_no_missing(self, data):
         if not (self.allow_extra and self.allow_missing):
-            actual_field_names = set(data.keys())
+            actual_field_names = set(data)
             expected_field_names = get_expected_field_names(self.fields_binders)
             if not self.allow_extra:
                 extra_field_names = actual_field_names - expected_field_names

@@ -42,7 +42,7 @@ def check_component(component_name, dependencies):
 
 
 def list_parent_component_names(module_name):
-    return [c for c in veil_component.get_component_map().keys() if module_name.startswith('{}.'.format(c))]
+    return [c for c in veil_component.get_component_map() if module_name.startswith('{}.'.format(c))]
 
 
 def find_proper_level_to_reference(from_component_name, to_component_names, to_module_name):

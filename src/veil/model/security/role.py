@@ -38,7 +38,7 @@ class Role(DictObject):
         return self
 
     def grant_all_roles(self):
-        self.granted_role_names = set(roles.keys()) - {self.name}
+        self.granted_role_names = set(roles) - {self.name}
         return self
 
     def revoke_role(self, *role_names):

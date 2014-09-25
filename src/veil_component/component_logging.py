@@ -40,7 +40,7 @@ def load_logging_levels():
 def get_logging_level(target):
     load_logging_levels()
     matched_component_names = []
-    for component_name in logging_levels.keys():
+    for component_name in logging_levels:
         if target == component_name or target.startswith('{}.'.format(component_name)):
             matched_component_names.append(component_name)
     if not matched_component_names:

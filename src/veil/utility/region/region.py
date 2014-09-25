@@ -196,8 +196,8 @@ def get_db_latest_region(purpose):
 
 
 def diff(db_source, site_source):
-    db_codes = set(db_source.keys())
-    site_codes = set(site_source.keys())
+    db_codes = set(db_source)
+    site_codes = set(site_source)
     added_codes = site_codes - db_codes
     deleted_codes = set(code for code in db_codes - site_codes if not db_source[code].deleted)
     modified_codes = set(code for code in db_codes & site_codes if (db_source[code].name, db_source[code].deleted) != (site_source[code], False))
@@ -207,7 +207,7 @@ def diff(db_source, site_source):
 
 def add_regions(db, regions):
         new_regions = []
-        for code in regions.keys():
+        for code in regions:
             if code[2:] == '0000':
                 level = 1
                 parent_code = None

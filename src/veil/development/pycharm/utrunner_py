@@ -58,7 +58,7 @@ def to_module_name(file_name):
             if is_valid_module_name(path, module_name):
                 possible_module_names[path] = module_name
     if possible_module_names:
-        return possible_module_names[max(possible_module_names.keys())]
+        return possible_module_names[max(possible_module_names)]
     else:
         raise Exception('can not infer module name from file path {}'.format(file_path))
 

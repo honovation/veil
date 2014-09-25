@@ -197,7 +197,7 @@ class PathTemplate(object):
     def validate(cls, template, template_params):
         matches = cls.REGEX_PATH_TEMPLATE_PARAMETER.findall(template)
         present_params = list(match.strip() for match in matches)
-        if set(present_params) != set(template_params.keys()):
+        if set(present_params) != set(template_params):
             raise Exception('{} present, actually provided {}'.format(present_params, template_params))
 
     def translate_to_regex(self):

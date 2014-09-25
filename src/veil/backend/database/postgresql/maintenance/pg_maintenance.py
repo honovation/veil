@@ -55,7 +55,7 @@ def migrate(purpose):
             LIMIT 1
             ''') or 0
         from_version = current_version
-        max_version = max(versions.keys()) if versions else None
+        max_version = max(versions) if versions else None
         if from_version > max_version:
             LOGGER.info('[MIGRATE] postgresql server current version higher than code: %(purpose)s is version %(from_version)s, code is version %(max_version)s', {
                 'purpose': purpose,
