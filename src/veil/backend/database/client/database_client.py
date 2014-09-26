@@ -215,24 +215,23 @@ class Database(object):
 
     def insert(self, table, objects=None, returns_id=False, returns_record=False, primary_keys=None, should_insert=None,
                column_names=(), exclude_column_names=(), **value_providers):
-        if value_providers and exclude_column_names:
+        if exclude_column_names:
             value_providers = {k: v for k, v in value_providers.items() if k not in exclude_column_names}
-        if objects is not None:
-            if not objects:
-                return None if returns_id or returns_record else 0
-        else:
-            if not value_providers:
-                return None if returns_id or returns_record else 0
+            column_names = tuple(k for k in column_names if k not in exclude_column_names)
 
-        specify_column_names = True
-        column_names = column_names or value_providers.keys()
+        if objects is None and not value_providers or objects is not None and not objects:
+            return None if returns_id or returns_record else 0
+
+        specified_column_names = True
+        if value_providers:
+            column_names += tuple(k for k in value_providers if k not in column_names)
         if not column_names and objects:
             some_object = next(iter(objects))
             if isinstance(some_object, dict):
                 column_names = [k for k in some_object if k not in exclude_column_names]
             else:
                 column_names = list(range(len(some_object)))
-                specify_column_names = False
+                specified_column_names = False
 
         def get_rows_values():
             if objects is not None:
@@ -244,7 +243,7 @@ class Database(object):
                         else:
                             value_providers[column_name] = FunctionValueProvider(value_provider)
                     else:
-                        value_providers[column_name] = DictValueProvider(column_name if specify_column_names else column_names.index(column_name))
+                        value_providers[column_name] = DictValueProvider(column_name if specified_column_names else column_names.index(column_name))
                 for object in objects:
                     if should_insert and not should_insert(object):
                         continue
@@ -253,7 +252,7 @@ class Database(object):
                 yield [value_providers[column_name] for column_name in column_names]
 
         fragments = ['INSERT INTO ', table]
-        if specify_column_names:
+        if specified_column_names:
             fragments.append(' ({})'.format(', '.join(column_names)))
         fragments.append(' VALUES ')
         arg_index = 0
