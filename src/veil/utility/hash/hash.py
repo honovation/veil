@@ -13,15 +13,14 @@ LOGGER = getLogger(__name__)
 
 add_application_sub_resource('hash', lambda config: hash_resource(**config))
 
+_hash_salt = None
+
 
 @composite_installer
 def hash_resource(salt):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.append(file_resource(path=VEIL_ETC_DIR / 'hash.cfg', content='salt={}'.format(salt)))
     return resources
-
-
-_hash_salt = None
 
 
 def get_hash_salt():
@@ -58,13 +57,8 @@ def get_password_hash(password, dynamic_salt=None):
     return get_hmac(password, strong=True) if dynamic_salt is None else get_hmac(password, dynamic_salt, strong=True)
 
 
-def get_password_md5(password, dynamic_salt=None):
-    to_be_encrypted = password if dynamic_salt is None else '{}{}'.format(password, dynamic_salt)
-    return hashlib.md5(to_be_encrypted).hexdigest().lower()
-
-
 def get_hmac(*parts, **kwargs):
-    strong = kwargs.pop('strong', True)
+    strong = kwargs.get('strong', True)
     digestmod = hashlib.sha256 if strong else hashlib.sha1
     msg = b'|'.join(to_str(part) for part in parts)
     return unicode(hmac.new(to_str(get_hash_salt()), msg, digestmod).hexdigest())
@@ -75,10 +69,10 @@ def verify_hmac(hmac_, *parts, **kwargs):
 
 
 def get_check_code(*parts, **kwargs):
-    size = kwargs.pop('size', 6)
-    salt = kwargs.pop('salt', get_hash_salt())
-    msg = '|'.join(str(part) for part in parts)
-    return hex(hash(str(salt) + msg))[-size:]
+    size = kwargs.get('size', 6)
+    salt = kwargs.get('salt', get_hash_salt())
+    msg = '|'.join(parts)
+    return hex(hash('{}{}'.format(salt, msg)))[-size:].upper()
 
 
 def verify_check_code(check_code, *parts, **kwargs):
