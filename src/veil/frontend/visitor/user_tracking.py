@@ -116,7 +116,7 @@ def get_user_session(purpose, browser_code=None):
     session_value = get_secure_cookie(purpose)
     if session_value:
         try:
-            session_purpose, session_browser_code, session_user_id = session_value.split('|')
+            session_purpose, session_browser_code, session_user_id = session_value.split('|', 2)
         except:
             pass
         else:
