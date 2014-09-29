@@ -3,11 +3,12 @@ import contextlib
 import logging
 import threading
 from tornado.ioloop import IOLoop
-from tornado.stack_context import  NullContext
+from tornado.stack_context import NullContext
 import sys
 import time
 
 LOGGER = logging.getLogger(__name__)
+
 
 @contextlib.contextmanager
 def require_io_loop_executor():
@@ -20,6 +21,7 @@ def require_io_loop_executor():
         executor.stop()
         thread.join()
 
+
 class IOLoopExecutor(object):
     def __init__(self, io_loop):
         self.io_loop = io_loop
@@ -28,7 +30,7 @@ class IOLoopExecutor(object):
         self.failure = None
         self.return_value = None
 
-    def execute(self, condition=None, timeout=60):
+    def execute(self, condition=None, timeout=90):
         """Runs the IOLoop until stop is called or timeout has passed.
 
         In the event of a timeout, an exception will be thrown.
