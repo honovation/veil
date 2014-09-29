@@ -213,47 +213,47 @@ class Database(object):
             })
         return rows[0][0]
 
-    def insert(self, table, objects=None, returns_id=False, returns_record=False, primary_keys=None, should_insert=None,
-               column_names=(), exclude_column_names=(), **value_providers):
-        if exclude_column_names:
-            value_providers = {k: v for k, v in value_providers.items() if k not in exclude_column_names}
-            column_names = tuple(k for k in column_names if k not in exclude_column_names)
+    def insert(self, table, objects=None, returns_id=False, returns_record=False, primary_keys=None, should_insert=None, columns=(),
+            exclude_columns=(), **value_providers):
+        if exclude_columns:
+            value_providers = {k: v for k, v in value_providers.items() if k not in exclude_columns}
+            columns = tuple(c for c in columns if c not in exclude_columns)
 
         if objects is None and not value_providers or objects is not None and not objects:
             return None if returns_id or returns_record else 0
 
-        specified_column_names = True
+        specified_columns = True
         if value_providers:
-            column_names += tuple(k for k in value_providers if k not in column_names)
-        if not column_names and objects:
+            columns += tuple(k for k in value_providers if k not in columns)
+        if not columns and objects:
             some_object = next(iter(objects))
             if isinstance(some_object, dict):
-                column_names = [k for k in some_object if k not in exclude_column_names]
+                columns = [k for k in some_object if k not in exclude_columns]
             else:
-                column_names = list(range(len(some_object)))
-                specified_column_names = False
+                columns = list(range(len(some_object)))
+                specified_columns = False
 
         def get_rows_values():
             if objects is not None:
-                for column_name in column_names:
-                    if column_name in value_providers:
-                        value_provider = value_providers[column_name]
+                for column in columns:
+                    if column in value_providers:
+                        value_provider = value_providers[column]
                         if not inspect.isfunction(value_provider) and not isinstance(value_provider, functools.partial):
-                            value_providers[column_name] = ConstValueProvider(value_provider)
+                            value_providers[column] = ConstValueProvider(value_provider)
                         else:
-                            value_providers[column_name] = FunctionValueProvider(value_provider)
+                            value_providers[column] = FunctionValueProvider(value_provider)
                     else:
-                        value_providers[column_name] = DictValueProvider(column_name if specified_column_names else column_names.index(column_name))
-                for object in objects:
-                    if should_insert and not should_insert(object):
+                        value_providers[column] = DictValueProvider(column if specified_columns else columns.index(column))
+                for o in objects:
+                    if should_insert and not should_insert(o):
                         continue
-                    yield [value_providers[column_name](object) for column_name in column_names]
+                    yield [value_providers[column](o) for column in columns]
             else:
-                yield [value_providers[column_name] for column_name in column_names]
+                yield [value_providers[column] for column in columns]
 
         fragments = ['INSERT INTO ', table]
-        if specified_column_names:
-            fragments.append(' ({})'.format(', '.join(column_names)))
+        if specified_columns:
+            fragments.append(' ({})'.format(', '.join(columns)))
         fragments.append(' VALUES ')
         arg_index = 0
         args = {}
