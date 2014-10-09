@@ -1,7 +1,9 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 import logging
+import os
 import re
+import tempfile
 from veil_component import as_path
 from veil_installer import *
 from veil.utility.misc import *
@@ -62,9 +64,20 @@ class FilesystemBucket(Bucket):
         self.validate_key(key)
         path = self.to_path(key)
         path.parent.makedirs(mode=0770)
-        with path.open('wb') as f:
-            for chunk in iter_file_in_chunks(file):
-                f.write(chunk)
+        temp_path = None
+        try:
+            with tempfile.NamedTemporaryFile('wb', suffix='---{}'.format(path.name), delete=False) as tf:
+                temp_path = tf.name
+                for chunk in iter_file_in_chunks(file):
+                    tf.write(chunk)
+            os.rename(temp_path, path)
+        except:
+            if temp_path:
+                try:
+                    os.remove(temp_path)
+                except:
+                    LOGGER.exception('exception while removing temp file: %(temp_path)s', {'temp_path': temp_path})
+            raise
 
     def retrieve(self, key):
         return open(self.to_path(key), 'rb')

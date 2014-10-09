@@ -10,6 +10,7 @@ from .bucket_installer import override_bucket_config
 if 'test' == VEIL_ENV_TYPE:
     bucket = register_bucket('test')
 
+
 class FilesystemBucketTest(TestCase):
     def setUp(self):
         super(FilesystemBucketTest, self).setUp()
@@ -19,6 +20,8 @@ class FilesystemBucketTest(TestCase):
     def test_happy_path(self):
         bucket().store('a/b/c', StringIO('d'))
         self.assertEqual('d', bucket().retrieve('a/b/c').read())
+        bucket().store('a/b/c', StringIO('dd'))
+        self.assertEqual('dd', bucket().retrieve('a/b/c').read())
 
     def test_hacking(self):
         with self.assertRaises(AssertionError):
