@@ -3,6 +3,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import os
 import re
+import shutil
 import tempfile
 from veil_component import as_path
 from veil_installer import *
@@ -70,7 +71,7 @@ class FilesystemBucket(Bucket):
                 temp_path = tf.name
                 for chunk in iter_file_in_chunks(file):
                     tf.write(chunk)
-            os.rename(temp_path, path)
+            shutil.move(temp_path, path)
         except:
             if temp_path:
                 try:
