@@ -3,7 +3,6 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import os
 import re
-import shutil
 import tempfile
 from veil_component import as_path
 from veil_installer import *
@@ -67,11 +66,11 @@ class FilesystemBucket(Bucket):
         path.parent.makedirs(mode=0770)
         temp_path = None
         try:
-            with tempfile.NamedTemporaryFile('wb', suffix='---{}'.format(path.name), delete=False) as tf:
+            with tempfile.NamedTemporaryFile('wb', suffix='---{}---tmp'.format(path.name), dir=path.parent, delete=False) as tf:
                 temp_path = tf.name
                 for chunk in iter_file_in_chunks(file):
                     tf.write(chunk)
-            shutil.move(temp_path, path)
+            os.rename(temp_path, path)
         except:
             if temp_path:
                 try:
