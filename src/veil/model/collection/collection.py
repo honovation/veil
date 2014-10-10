@@ -1,5 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 
+DEFAULT_PRIMARY_KEYS = ('id',)
+
 
 def filter_single_or_none(collection, criteria):
     return single_or_none(filter(criteria, collection))
@@ -58,7 +60,7 @@ def objectify(o):
         return o
 
 
-def entitify(o, primary_keys=None):
+def entitify(o, primary_keys=True):
     if isinstance(o, Entity):
         return o
     elif isinstance(o, (dict, DictObject)):
@@ -109,9 +111,9 @@ class FrozenDictObject(DictObject):
 
 
 class Entity(DictObject):
-    def __init__(self, seq=None, primary_keys=None, **kwargs):
+    def __init__(self, seq=None, primary_keys=True, **kwargs):
         super(Entity, self).__init__(seq, **kwargs)
-        self.primary_keys = primary_keys or ('id',)
+        self.primary_keys = DEFAULT_PRIMARY_KEYS if primary_keys is True else primary_keys
         assert self.primary_keys, 'must specify primary_keys'
         if all(getattr(self, primary_key, None) is None for primary_key in self.primary_keys):
             raise Exception('{} does not have any of {}'.format(self, self.primary_keys))

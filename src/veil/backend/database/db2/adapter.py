@@ -95,7 +95,7 @@ class DB2Adapter(object):
     def close(self):
         self.conn.close()
 
-    def cursor(self, returns_dict_object=True, primary_keys=None, **kwargs):
+    def cursor(self, returns_dict_object=True, primary_keys=False, **kwargs):
         self._reconnect_if_broken_per_lightweight_detection()
         cursor = self.conn.cursor(**kwargs)
         cursor = NamedParameterCursor(cursor)
@@ -146,7 +146,7 @@ class NamedParameterCursor(object):
 
 
 class ReturningDictObjectCursor(object):
-    def __init__(self, cursor, primary_keys=None):
+    def __init__(self, cursor, primary_keys):
         self.cursor = cursor
         self.primary_keys = primary_keys
 

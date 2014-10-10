@@ -119,7 +119,7 @@ class PostgresqlAdapter(object):
         if not self.conn.closed:
             self.conn.close()
 
-    def cursor(self, returns_dict_object=True, primary_keys=None, **kwargs):
+    def cursor(self, returns_dict_object=True, primary_keys=False, **kwargs):
         self._reconnect_if_broken_per_lightweight_detection()
         cursor = self.conn.cursor(cursor_factory=NamedTupleCursor if returns_dict_object else NormalCursor, **kwargs)
         if returns_dict_object:
@@ -133,7 +133,7 @@ class PostgresqlAdapter(object):
 
 
 class ReturningDictObjectCursor(object):
-    def __init__(self, cursor, primary_keys=None):
+    def __init__(self, cursor, primary_keys):
         self.cursor = cursor
         self.primary_keys = primary_keys
 

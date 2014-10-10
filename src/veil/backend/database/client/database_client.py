@@ -213,7 +213,7 @@ class Database(object):
             })
         return rows[0][0]
 
-    def insert(self, table, objects=None, returns_id=False, returns_record=False, primary_keys=None, should_insert=None, columns=(),
+    def insert(self, table, objects=None, returns_id=False, returns_record=False, primary_keys=False, should_insert=None, columns=(),
             exclude_columns=(), **value_providers):
         if exclude_columns:
             value_providers = {k: v for k, v in value_providers.items() if k not in exclude_columns}
@@ -349,7 +349,7 @@ class Database(object):
                 else:
                     return cursor.rowcount
 
-    def _query(self, sql, returns_dict_object=True, primary_keys=None, **kwargs):
+    def _query(self, sql, returns_dict_object=True, primary_keys=False, **kwargs):
         check_table_dependencies(self.component_name, self.purpose, sql)
         reconnected = False
         within_transaction_context = not self.autocommit
@@ -375,7 +375,7 @@ class Database(object):
                 else:
                     return cursor.fetchall()
 
-    def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, primary_keys=None, **kwargs):
+    def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, primary_keys=False, **kwargs):
         """
         Run a query with potentially large result set using server-side cursor
         """
