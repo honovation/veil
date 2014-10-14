@@ -9,6 +9,7 @@ with veil_component.init_component(__name__):
     from .wxpay_payment import query_order_status
     from .wxpay_payment import request_wxmp_access_token
     from .wxpay_payment import send_deliver_notify
+    from .wxpay_payment import decode_wxpay_package
     from .wxpay_client_installer import wxpay_client_resource
     from .wxpay_client_installer import wxpay_client_config
 
@@ -23,6 +24,7 @@ with veil_component.init_component(__name__):
         query_order_status.__name__,
         request_wxmp_access_token.__name__,
         send_deliver_notify.__name__,
+        decode_wxpay_package.__name__,
         # from wxpay_client_installer
         wxpay_client_resource.__name__,
         wxpay_client_config.__name__,

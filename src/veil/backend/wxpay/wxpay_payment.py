@@ -55,6 +55,10 @@ def create_wxpay_package(out_trade_no, body, total_fee, show_url, notify_url, ti
     return '{}&sign={}'.format(encoded_params, sign)
 
 
+def decode_wxpay_package(package):
+    return DictObject(p.split('=') for p in package.split('&'))
+
+
 def get_wxpay_request(out_trade_no, body, total_fee, show_url, notify_url, time_start, time_expire, shopper_ip_address):
     request = DictObject()
     config = wxpay_client_config()
