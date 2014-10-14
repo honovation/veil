@@ -148,6 +148,7 @@ def send_deliver_notify(access_token, out_trade_no, openid, transid, deliver_sta
         LOGGER.exception('wxpay deliver notify exception-thrown: %(out_trade_no)s, %(data)s', {'out_trade_no': out_trade_no, 'data': data})
         raise
     else:
+        LOGGER.info('wxpay deliver notify received: %(out_trade_no)s, %(response)s', {'out_trade_no': out_trade_no, 'response': response.text})
         result = objectify(response.json())
         if result.errcode == 0:
             LOGGER.info('wxpay deliver notify succeeded: %(out_trade_no)s, %(result)s', {'out_trade_no': out_trade_no, 'result': result})
