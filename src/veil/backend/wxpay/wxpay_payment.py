@@ -84,7 +84,7 @@ def get_wxpay_request(out_trade_no, body, total_fee, show_url, notify_url, time_
 
 def sign_sha1(params):
     param_str = to_url_params_string(params)
-    return hashlib.sha1(param_str).hexdigest()
+    return hashlib.sha1(param_str.encode('UTF-8')).hexdigest()
 
 
 def process_wxpay_payment_notification(out_trade_no, http_arguments, notified_from):
