@@ -22,7 +22,6 @@ LOGGER = logging.getLogger(__name__)
 EVENT_WXPAY_TRADE_PAID = define_event('wxpay-trade-paid') # valid notification
 EVENT_WXPAY_DELIVER_NOTIFY_SENT = define_event('wxpay-deliver-notify-sent')
 
-
 NOTIFIED_FROM_ORDER_QUERY = 'order_query'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # wxpay require this 7 characters to be returned to them
@@ -55,8 +54,12 @@ def create_wxpay_package(out_trade_no, body, total_fee, show_url, notify_url, ti
     return '{}&sign={}'.format(encoded_params, sign)
 
 
-def decode_wxpay_package(package):
-    return DictObject(p.split('=') for p in package.split('&'))
+def decode_wxpay_package(package, need_verify_sign=True):
+    params = DictObject((to_unicode(k), urllib.unquote(to_unicode(v))) for p in package.split('&') for k, v in [tuple(p.split('='))])
+    sign = params.pop('sign')
+    if need_verify_sign:
+        verify_sign(params, sign)
+    return params
 
 
 def get_wxpay_request(out_trade_no, body, total_fee, show_url, notify_url, time_start, time_expire, shopper_ip_address):
@@ -100,6 +103,7 @@ def process_wxpay_payment_notification(out_trade_no, http_arguments, notified_fr
 
 
 def query_order_status(access_token, out_trade_no):
+    paid = False
     params = dict(access_token=access_token)
     config = wxpay_client_config()
     data = dict(appid=config.app_id, package=create_wxpay_query_order_status_package(out_trade_no), timestamp=unicode(get_current_timestamp()))
@@ -116,6 +120,7 @@ def query_order_status(access_token, out_trade_no):
     else:
         result = objectify(response.json())
         if result.errcode == 0 and result.order_info.ret_code == 0 and result.order_info.trade_state == '0':
+            paid = True
             LOGGER.info('wxpay order query succeeded: %(out_trade_no)s, %(result)s', {'out_trade_no': out_trade_no, 'result': result})
             trade_no, paid_total, paid_at, bank_billno = validate_order_info(result.order_info)
             publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=None,
@@ -124,6 +129,7 @@ def query_order_status(access_token, out_trade_no):
         else:
             LOGGER.error('wxpay order query failed: %(out_trade_no)s, %(result)s', {'out_trade_no': out_trade_no, 'result': result})
             raise Exception('wxpay order query failed: {}, {}'.format(out_trade_no, result))
+    return paid
 
 
 def send_deliver_notify(access_token, out_trade_no, openid, transid, deliver_status, deliver_msg):
@@ -274,20 +280,20 @@ def validate_notification_from_wxpay(notify_id):
     return error
 
 
-def is_sign_correct(http_arguments):
-    actual_sign = http_arguments.get('sign', None)
-    verify_params = http_arguments.copy()
-    if 'sign' in verify_params:
-        del verify_params['sign']
-    expected_sign = sign_md5(verify_params)
-    if not actual_sign or actual_sign.upper() != expected_sign:
-        LOGGER.error('wrong sign, maybe a fake wxpay notification: sign=%(actual_sign)s, should be %(expected_sign)s, http_arguments: %(http_arguments)s', {
-            'actual_sign': actual_sign,
-            'expected_sign': expected_sign,
-            'http_arguments': http_arguments
-        })
+def verify_sign(content, sign=None):
+    sign = sign or content.pop('sign', None)
+    if not sign or sign.upper() != sign_md5(content):
+        raise Exception('failed to verify sign: sign={}, content={}'.format(sign, content))
+
+
+def is_sign_correct(arguments):
+    try:
+        verify_sign(arguments)
+    except:
+        LOGGER.exception('wrong sign, maybe a fake wxpay notification')
         return False
-    return True
+    else:
+        return True
 
 
 def sign_md5(params):
