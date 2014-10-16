@@ -136,7 +136,7 @@ def send_deliver_notify(access_token, out_trade_no, openid, transid, deliver_sta
     params = dict(access_token=access_token)
     config = wxpay_client_config()
     data = dict(appid=config.app_id, openid=openid, transid=transid, out_trade_no=out_trade_no, deliver_timestamp=unicode(get_current_timestamp()),
-        deliver_status=deliver_status, deliver_msg='ok')
+        deliver_status=deliver_status, deliver_msg=deliver_msg)
     data['app_signature'] = sign_sha1(dict(data, appkey=config.pay_sign_key))
     data['sign_method'] = 'sha1'
     headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept': 'application/json'}
