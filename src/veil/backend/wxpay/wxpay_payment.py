@@ -142,6 +142,8 @@ def send_deliver_notify(access_token, out_trade_no, openid, transid, deliver_sta
     headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept': 'application/json'}
     try:
         #TODO: retry when new-version requests supports
+        data.deliver_msg = to_str(data.deliver_msg)
+        LOGGER.info(data)
         response = requests.post(WXPAY_DELIVER_NOTIFY_URL, params=params, data=json.dumps(data), headers=headers, timeout=(3.05, 9))
         response.raise_for_status()
     except:
