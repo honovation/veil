@@ -55,6 +55,7 @@ def create_wxpay_package(out_trade_no, body, total_fee, show_url, notify_url, ti
 
 
 def decode_wxpay_package(package, need_verify_sign=True):
+    package = urllib.unquote(package)
     params = DictObject((to_unicode(k), urllib.unquote(to_unicode(v))) for p in package.split('&') for k, v in [tuple(p.split('='))])
     sign = params.pop('sign')
     if need_verify_sign:
