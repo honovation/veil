@@ -252,8 +252,6 @@ def validate_notification(http_arguments):
     else:
         discarded_reasons.append('no time_end')
     show_url = http_arguments.get('attach', None)
-    if not show_url:
-        discarded_reasons.append('no attach (show_url inside)')
     buyer_alias = http_arguments.get('buyer_alias', None)
     bank_code = http_arguments.get('bank_type', None)
     bank_billno = http_arguments.get('bank_billno', None)
