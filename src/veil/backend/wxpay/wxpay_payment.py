@@ -270,7 +270,6 @@ def validate_notification_from_wxpay(notify_id):
         LOGGER.exception('wxpay notify verify exception-thrown: %(params)s', {'params': params})
         error = 'failed to validate wxpay notification'
     else:
-        LOGGER.info('wxpay notify verify response received: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
         arguments = parse_notify_verify_response(response.content)
         if is_sign_correct(arguments) and '0' == arguments.get('retcode', None):
             LOGGER.debug('wxpay notify verify succeeded: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
