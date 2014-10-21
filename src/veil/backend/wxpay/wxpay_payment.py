@@ -204,7 +204,9 @@ def request_wxmp_access_token():
     else:
         result = objectify(response.json())
         if hasattr(result, 'access_token'):
-            LOGGER.info('wxmp request access token succeeded: %(result)s', {'result': result})
+            LOGGER.info('wxmp request access token succeeded: %(result)s, %(appid)s', {
+                'result': result, 'appid': params['appid']
+            })
             return result.access_token, result.expires_in
         else:
             LOGGER.error('wxmp request access token failed: %(result)s', {'result': result})
