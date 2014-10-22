@@ -100,17 +100,15 @@ def validate_notification(http_arguments):
         try:
             paid_total = Decimal(paid_total)
         except DecimalException:
-            LOGGER.warn('invalid total_fee: %(total_fee)s', {'total_fee': paid_total})
-            discarded_reasons.append('invalid total_fee')
+            discarded_reasons.append('invalid total_fee: {}'.format(paid_total))
     else:
         discarded_reasons.append('no total_fee')
     paid_at = http_arguments.get('gmt_payment', None) or http_arguments.get('notify_time', None) # 买家付款时间，时区为GMT+8 beijing，格式为 yyyy-MM-dd HH:mm:ss
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y-%m-%d %H:%M:%S')(paid_at)
-        except Exception:
-            LOGGER.warn('invalid gmt_payment or notify_time: %(paid_at)s', {'paid_at': paid_at})
-            discarded_reasons.append('invalid gmt_payment or notify_time')
+        except:
+            discarded_reasons.append('invalid gmt_payment or notify_time: {}'.format(paid_at))
     else:
         discarded_reasons.append('no gmt_payment or notify_time')
     show_url = http_arguments.get('extra_common_param', None)

@@ -102,17 +102,15 @@ def validate_notification(http_arguments):
         try:
             paid_total = Decimal(paid_total) / 100
         except DecimalException:
-            LOGGER.warn('invalid total_fee: %(total_fee)s', {'total_fee': paid_total})
-            discarded_reasons.append('invalid total_fee')
+            discarded_reasons.append('invalid total_fee: {}'.format(paid_total))
     else:
         discarded_reasons.append('no total_fee')
     paid_at = http_arguments.get('time_end', None) # 支付完成时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y%m%d%H%M%S')(paid_at)
-        except Exception:
-            LOGGER.warn('invalid time_end: %(paid_at)s', {'paid_at': paid_at})
-            discarded_reasons.append('invalid time_end')
+        except:
+            discarded_reasons.append('invalid time_end: {}'.format(paid_at))
     else:
         discarded_reasons.append('no time_end')
     show_url = http_arguments.get('attach', None)

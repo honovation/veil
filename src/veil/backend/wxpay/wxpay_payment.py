@@ -121,15 +121,18 @@ def query_order_status(access_token, out_trade_no):
     else:
         result = objectify(response.json())
         if result.errcode == 0 and result.order_info.ret_code == 0 and result.order_info.trade_state == '0':
-            paid = True
-            LOGGER.info('wxpay order query succeeded: %(out_trade_no)s, %(result)s', {'out_trade_no': out_trade_no, 'result': result})
-            trade_no, paid_total, paid_at, bank_billno = validate_order_info(result.order_info)
-            publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=None,
-                paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=None, bank_billno=bank_billno, show_url=None,
-                notified_from=NOTIFIED_FROM_ORDER_QUERY)
-        else:
-            LOGGER.error('wxpay order query failed: %(out_trade_no)s, %(result)s', {'out_trade_no': out_trade_no, 'result': result})
-            raise Exception('wxpay order query failed: {}, {}'.format(out_trade_no, result))
+            LOGGER.debug('wxpay order query succeeded: %(out_trade_no)s, %(result)s', {'out_trade_no': out_trade_no, 'result': result})
+            trade_no, paid_total, paid_at, bank_billno, errors = validate_order_info(result.order_info)
+            if errors:
+                LOGGER.error('wxpay order query invalid order_info found: %(errors)s, %(order_info)s', {
+                    'errors': errors,
+                    'order_info': result.order_info
+                })
+            else:
+                publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=None,
+                    paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=None, bank_billno=bank_billno, show_url=None,
+                    notified_from=NOTIFIED_FROM_ORDER_QUERY)
+                paid = True
     return paid
 
 
@@ -169,26 +172,24 @@ def create_wxpay_query_order_status_package(out_trade_no):
 
 
 def validate_order_info(order_info):
+    errors = []
     trade_no = order_info.transaction_id
     if not trade_no:
-        raise OrderInfoException('no transaction id')
+        errors.append('no transaction_id')
     paid_total = order_info.total_fee
     if paid_total:
         try:
             paid_total = Decimal(paid_total) / 100
         except DecimalException:
-            LOGGER.warn('invalid total_fee: %(total_fee)s', {'total_fee': paid_total})
-            raise OrderInfoException('invalid total fee: {}'.format(paid_total))
+            errors.append('invalid total_fee: {}'.format(paid_total))
     paid_at = order_info.time_end
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y%m%d%H%M%S')(paid_at)
-        except Exception:
-            LOGGER.warn('invalid time_end: %(paid_at)s', {'paid_at': paid_at})
-            raise OrderInfoException('invalid time end format: {}'.format(paid_at))
+        except:
+            errors.append('invalid time_end: {}'.format(paid_at))
     bank_billno = order_info.bank_billno
-
-    return trade_no, paid_total, paid_at, bank_billno
+    return trade_no, paid_total, paid_at, bank_billno, errors
 
 
 def request_wxmp_access_token():
@@ -204,9 +205,7 @@ def request_wxmp_access_token():
     else:
         result = objectify(response.json())
         if hasattr(result, 'access_token'):
-            LOGGER.info('wxmp request access token succeeded: %(result)s, %(appid)s', {
-                'result': result, 'appid': params['appid']
-            })
+            LOGGER.info('wxmp request access token succeeded: %(result)s, %(appid)s', {'result': result, 'appid': params['appid']})
             return result.access_token, result.expires_in
         else:
             LOGGER.error('wxmp request access token failed: %(result)s', {'result': result})
@@ -240,17 +239,15 @@ def validate_notification(http_arguments):
         try:
             paid_total = Decimal(paid_total) / 100
         except DecimalException:
-            LOGGER.warn('invalid total_fee: %(total_fee)s', {'total_fee': paid_total})
-            discarded_reasons.append('invalid total_fee')
+            discarded_reasons.append('invalid total_fee: {}'.format(paid_total))
     else:
         discarded_reasons.append('no total_fee')
     paid_at = http_arguments.get('time_end', None) # 支付完成时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y%m%d%H%M%S')(paid_at)
-        except Exception:
-            LOGGER.warn('invalid time_end: %(paid_at)s', {'paid_at': paid_at})
-            discarded_reasons.append('invalid time_end')
+        except:
+            discarded_reasons.append('invalid time_end: {}'.format(paid_at))
     else:
         discarded_reasons.append('no time_end')
     show_url = http_arguments.get('attach', None)
@@ -313,7 +310,3 @@ def parse_notify_verify_response(response):
         if e.text:
             arguments[e.tag] = e.text
     return arguments
-
-
-class OrderInfoException(Exception):
-    pass
