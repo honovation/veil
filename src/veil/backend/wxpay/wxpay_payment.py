@@ -9,6 +9,8 @@ from uuid import uuid4
 import lxml.objectify
 import requests
 from veil.environment import VEIL_ENV_TYPE
+from veil.frontend.cli import *
+from veil.backend.redis import *
 from veil.utility.clock import *
 from veil.model.binding import *
 from veil.model.event import *
@@ -18,9 +20,12 @@ from veil.utility.encoding import *
 from .wxpay_client_installer import wxpay_client_config
 
 LOGGER = logging.getLogger(__name__)
+redis = register_redis('persist_store')
 
 EVENT_WXPAY_TRADE_PAID = define_event('wxpay-trade-paid') # valid notification
 EVENT_WXPAY_DELIVER_NOTIFY_SENT = define_event('wxpay-deliver-notify-sent')
+
+WXMP_ACCESS_TOKEN_KEY = 'wxmp-access-token'
 
 NOTIFIED_FROM_ORDER_QUERY = 'order_query'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
@@ -30,6 +35,54 @@ WXPAY_ORDER_QUERY_URL = 'https://api.weixin.qq.com/pay/orderquery'
 WXPAY_DELIVER_NOTIFY_URL = 'https://api.weixin.qq.com/pay/delivernotify'
 WXMP_ACCESS_TOKEN_AUTHORIZATION_URL = 'https://api.weixin.qq.com/cgi-bin/token'
 VERIFY_URL = 'https://gw.tenpay.com/gateway/simpleverifynotifyid.xml'
+
+
+def get_wxmp_access_token(with_ttl=False, need_refresh=False):
+    if VEIL_ENV_TYPE not in ('public', 'staging'):
+        raise Exception('cannot get wx access token under environment: {}'.format(VEIL_ENV_TYPE))
+    if not need_refresh:
+        with redis().pipeline() as pipe:
+            pipe.get(WXMP_ACCESS_TOKEN_KEY)
+            pipe.ttl(WXMP_ACCESS_TOKEN_KEY)
+            access_token, ttl = pipe.execute()
+        if access_token and ttl <= 0:
+            access_token = None
+    if need_refresh or not access_token:
+        access_token, ttl = refresh_wxmp_access_token()
+    return DictObject(access_token=access_token, expires_in=ttl) if with_ttl else access_token
+
+
+@script('refresh-wxmp-access-token')
+def refresh_wxmp_access_token_():
+    access_token, ttl = refresh_wxmp_access_token()
+    LOGGER.info('wxmp access token refreshed: %(access_token)s, %(ttl)s', {'access_token': access_token, 'ttl': ttl})
+
+
+def refresh_wxmp_access_token():
+    access_token, expires_in = request_wxmp_access_token()
+    ttl = expires_in - 300
+    redis().setex(WXMP_ACCESS_TOKEN_KEY, ttl, access_token)
+    return access_token, ttl
+
+
+def request_wxmp_access_token():
+    config = wxpay_client_config()
+    params = dict(grant_type='client_credential', appid=config.app_id, secret=config.app_secret)
+    try:
+        #TODO: retry when new-version requests supports
+        response = requests.get(WXMP_ACCESS_TOKEN_AUTHORIZATION_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9))
+        response.raise_for_status()
+    except:
+        LOGGER.exception('wxmp request access token exception-thrown')
+        raise
+    else:
+        result = objectify(response.json())
+        if hasattr(result, 'access_token'):
+            LOGGER.info('wxmp request access token succeeded: %(result)s, %(appid)s', {'result': result, 'appid': params['appid']})
+            return result.access_token, result.expires_in
+        else:
+            LOGGER.error('wxmp request access token failed: %(result)s', {'result': result})
+            raise Exception('wxmp request access token failed: {}'.format(result))
 
 
 def create_wxpay_package(out_trade_no, body, total_fee, show_url, notify_url, time_start, time_expire, shopper_ip_address):
@@ -103,7 +156,15 @@ def process_wxpay_payment_notification(out_trade_no, http_arguments, notified_fr
     return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
 
 
-def query_order_status(access_token, out_trade_no):
+def query_order_status(out_trade_no, access_token=None):
+    try:
+        paid = query_order_status_(access_token or get_wxmp_access_token(), out_trade_no)
+    except InvalidWXAccessToken:
+        paid = query_order_status_(get_wxmp_access_token(need_refresh=True), out_trade_no)
+    return paid
+
+
+def query_order_status_(access_token, out_trade_no):
     paid = False
     params = dict(access_token=access_token)
     config = wxpay_client_config()
@@ -133,10 +194,20 @@ def query_order_status(access_token, out_trade_no):
                     paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=None, bank_billno=bank_billno, show_url=None,
                     notified_from=NOTIFIED_FROM_ORDER_QUERY)
                 paid = True
+        else:
+            if result.errcode in (40001, 40014):
+                raise InvalidWXAccessToken('wxpay order query invalid access token: {}, {}'.format(out_trade_no, result))
     return paid
 
 
-def send_deliver_notify(access_token, out_trade_no, openid, transid, deliver_status, deliver_msg):
+def send_deliver_notify(out_trade_no, openid, transid, deliver_status, deliver_msg, access_token=None):
+    try:
+        send_deliver_notify_(access_token or get_wxmp_access_token(), out_trade_no, openid, transid, deliver_status, deliver_msg)
+    except InvalidWXAccessToken:
+        send_deliver_notify_(get_wxmp_access_token(need_refresh=True), out_trade_no, openid, transid, deliver_status, deliver_msg)
+
+
+def send_deliver_notify_(access_token, out_trade_no, openid, transid, deliver_status, deliver_msg):
     params = dict(access_token=access_token)
     config = wxpay_client_config()
     data = dict(appid=config.app_id, openid=openid, transid=transid, out_trade_no=out_trade_no, deliver_timestamp=unicode(get_current_timestamp()),
@@ -158,7 +229,10 @@ def send_deliver_notify(access_token, out_trade_no, openid, transid, deliver_sta
             publish_event(EVENT_WXPAY_DELIVER_NOTIFY_SENT, out_trade_no=out_trade_no)
         else:
             LOGGER.error('wxpay deliver notify failed: %(out_trade_no)s, %(result)s', {'out_trade_no': out_trade_no, 'result': result})
-            raise Exception('wxpay deliver notify failed: {}, {}'.format(out_trade_no, result))
+            if result.errcode in (40001, 40014):
+                raise InvalidWXAccessToken('wxpay deliver notify invalid access token: {}, {}'.format(out_trade_no, result))
+            else:
+                raise Exception('wxpay deliver notify failed: {}, {}'.format(out_trade_no, result))
 
 
 def create_wxpay_query_order_status_package(out_trade_no):
@@ -190,26 +264,6 @@ def validate_order_info(order_info):
             errors.append('invalid time_end: {}'.format(paid_at))
     bank_billno = order_info.bank_billno
     return trade_no, paid_total, paid_at, bank_billno, errors
-
-
-def request_wxmp_access_token():
-    config = wxpay_client_config()
-    params = dict(grant_type='client_credential', appid=config.app_id, secret=config.app_secret)
-    try:
-        #TODO: retry when new-version requests supports
-        response = requests.get(WXMP_ACCESS_TOKEN_AUTHORIZATION_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9))
-        response.raise_for_status()
-    except:
-        LOGGER.exception('wxmp request access token exception-thrown')
-        raise
-    else:
-        result = objectify(response.json())
-        if hasattr(result, 'access_token'):
-            LOGGER.info('wxmp request access token succeeded: %(result)s, %(appid)s', {'result': result, 'appid': params['appid']})
-            return result.access_token, result.expires_in
-        else:
-            LOGGER.error('wxmp request access token failed: %(result)s', {'result': result})
-            raise Exception('wxmp request access token failed: {}'.format(result))
 
 
 def validate_notification(http_arguments):
@@ -310,3 +364,7 @@ def parse_notify_verify_response(response):
         if e.text:
             arguments[e.tag] = e.text
     return arguments
+
+
+class InvalidWXAccessToken(Exception):
+    pass
