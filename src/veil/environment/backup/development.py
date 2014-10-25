@@ -39,8 +39,14 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
     shell_execute('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(baseline_path, baseline_path, restored_to_path), debug=True)
     shell_execute('veil install-server')
     shell_execute('veil up --daemonize')
-    #TODO: automate via prompting for db owner&user password
-    #need change db owner and user's password to dev environment's manually if they are different between dev env & the source env to copy db from
+    if VEIL_ENV_TYPE == 'development':
+        password = 'p@55word'
+    elif VEIL_ENV_TYPE == 'staging':
+        password = 'p@55wordStag'
+    else:
+        raise Exception('Invalid env type')
+    shell_execute('''sudo -u dejavu psql -d template1 -c "ALTER ROLE dejavu WITH PASSWORD '{}'"'''.format(password))
+    shell_execute('''sudo -u dejavu psql -d template1 -c "ALTER ROLE veil WITH PASSWORD '{}'"'''.format(password))
     shell_execute('veil migrate')
     shell_execute('veil down')
 
