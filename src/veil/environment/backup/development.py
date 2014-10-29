@@ -4,6 +4,8 @@ from veil.environment import *
 from veil.frontend.cli import *
 from veil.utility.timer import *
 from veil.utility.shell import *
+from veil.backend.database.client import *
+from veil.backend.database.postgresql import *
 
 BASELINE_DIR = VEIL_HOME / 'baseline'
 
@@ -39,15 +41,23 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
     shell_execute('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(baseline_path, baseline_path, restored_to_path), debug=True)
     shell_execute('veil install-server')
     shell_execute('veil up --daemonize')
-    if VEIL_ENV_TYPE == 'development':
-        password = 'p@55word'
-    elif VEIL_ENV_TYPE == 'staging':
-        password = 'p@55wordStag'
-    else:
-        raise Exception('Invalid env type')
-    shell_execute('''sudo -u dejavu psql -d template1 -c "ALTER ROLE dejavu WITH PASSWORD '{}'"'''.format(password))
-    shell_execute('''sudo -u dejavu psql -d template1 -c "ALTER ROLE veil WITH PASSWORD '{}'"'''.format(password))
+
+    purposes = []
+    if VEIL_DATA_DIR.startswith(restored_to_path):
+        for pg_data_dir in VEIL_DATA_DIR.dirs('*-postgresql-*'):
+            purposes.append(pg_data_dir.name.split('-postgresql-', 1)[0])
+    elif restored_to_path.startswith(VEIL_DATA_DIR) and restored_to_path.name.contains('-postgresql-'):
+        purposes.append(restored_to_path.name.split('-postgresql-', 1)[0])
+    print('found postgresql purposes: {}'.format(purposes))
+    for purpose in purposes:
+        # set db owner password
+        config = postgresql_maintenance_config(purpose)
+        shell_execute('''sudo -u dejavu psql -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.owner, config.owner_password))
+        # set db user password
+        config = database_client_config(purpose)
+        shell_execute('''sudo -u dejavu psql -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.user, config.password))
     shell_execute('veil migrate')
+
     shell_execute('veil down')
 
 
