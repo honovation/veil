@@ -223,14 +223,17 @@ class Database(object):
             return None if returns_id or returns_record else 0
 
         specified_columns = True
-        if value_providers:
-            columns += tuple(k for k in value_providers if k not in columns)
-        if not columns and objects:
+        if columns:
+            if value_providers:
+                columns += tuple(k for k in value_providers if k not in columns)
+        elif objects:
             some_object = next(iter(objects))
             if isinstance(some_object, dict):
-                columns = [k for k in some_object if k not in exclude_columns]
-            else:
-                columns = list(range(len(some_object)))
+                columns = tuple(k for k in some_object if k not in exclude_columns)
+                if value_providers:
+                    columns += tuple(k for k in value_providers if k not in columns)
+            elif not value_providers:
+                columns = tuple(range(len(some_object)))
                 specified_columns = False
 
         def get_rows_values():
