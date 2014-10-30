@@ -35,7 +35,7 @@ def get_hash_salt():
 
 def encode_token(*parts):
     signature = get_hmac(*parts, strong=False)
-    return '|'.join(unicode(p) for p in (list(parts) + [signature]))
+    return '{}|{}'.format('|'.join(unicode(p) for p in parts), signature)
 
 
 def decode_token(token, *part_types):
@@ -60,7 +60,7 @@ def get_password_hash(password, dynamic_salt=None):
 def get_hmac(*parts, **kwargs):
     strong = kwargs.get('strong', True)
     digestmod = hashlib.sha256 if strong else hashlib.sha1
-    msg = b'|'.join(to_str(part) for part in parts)
+    msg = b'|'.join(to_str(p) for p in parts)
     return unicode(hmac.new(to_str(get_hash_salt()), msg, digestmod).hexdigest())
 
 
@@ -71,8 +71,8 @@ def verify_hmac(hmac_, *parts, **kwargs):
 def get_check_code(*parts, **kwargs):
     size = kwargs.get('size', 6)
     salt = kwargs.get('salt', get_hash_salt())
-    msg = '|'.join(parts)
-    return hex(hash('{}{}'.format(salt, msg)))[-size:].upper()
+    msg = b'|'.join(to_str(p) for p in parts)
+    return hex(hash(b'{}|{}'.format(to_str(salt), msg)))[-size:].upper()
 
 
 def verify_check_code(check_code, *parts, **kwargs):
