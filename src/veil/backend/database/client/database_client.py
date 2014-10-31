@@ -223,10 +223,10 @@ class Database(object):
             return None if returns_id or returns_record else 0
 
         specified_columns = True
-        if columns:
+        if columns or not objects:
             if value_providers:
                 columns += tuple(k for k in value_providers if k not in columns)
-        elif objects:
+        else:
             some_object = next(iter(objects))
             if isinstance(some_object, dict):
                 columns = tuple(k for k in some_object if k not in exclude_columns)
