@@ -225,6 +225,8 @@ class Database(object):
 
         specified_columns = True
         if columns is not None or not objects:
+            if columns is None:
+                columns = ()
             if value_providers:
                 columns += tuple(k for k in value_providers if k not in columns)
         else:
@@ -234,7 +236,7 @@ class Database(object):
                 if value_providers:
                     columns += tuple(k for k in value_providers if k not in columns)
             elif value_providers:
-                columns = tuple(k for k in value_providers if k not in columns)
+                columns = tuple(value_providers)
             else:
                 columns = tuple(range(len(some_object)))
                 specified_columns = False
