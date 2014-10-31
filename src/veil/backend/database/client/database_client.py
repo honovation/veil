@@ -213,17 +213,18 @@ class Database(object):
             })
         return rows[0][0]
 
-    def insert(self, table, objects=None, returns_id=False, returns_record=False, primary_keys=False, should_insert=None, columns=(),
+    def insert(self, table, objects=None, returns_id=False, returns_record=False, primary_keys=False, should_insert=None, columns=None,
             exclude_columns=(), **value_providers):
         if exclude_columns:
             value_providers = {k: v for k, v in value_providers.items() if k not in exclude_columns}
-            columns = tuple(c for c in columns if c not in exclude_columns)
+            if columns is not None:
+                columns = tuple(c for c in columns if c not in exclude_columns)
 
         if objects is None and not value_providers or objects is not None and not objects:
             return None if returns_id or returns_record else 0
 
         specified_columns = True
-        if columns or not objects:
+        if columns is not None or not objects:
             if value_providers:
                 columns += tuple(k for k in value_providers if k not in columns)
         else:
@@ -232,7 +233,9 @@ class Database(object):
                 columns = tuple(k for k in some_object if k not in exclude_columns)
                 if value_providers:
                     columns += tuple(k for k in value_providers if k not in columns)
-            elif not value_providers:
+            elif value_providers:
+                columns = tuple(k for k in value_providers if k not in columns)
+            else:
                 columns = tuple(range(len(some_object)))
                 specified_columns = False
 
