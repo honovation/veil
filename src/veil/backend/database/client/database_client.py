@@ -232,11 +232,11 @@ class Database(object):
         columns = tuple(value_providers)
         if objects:
             if include_attributes:
-                columns += tuple(a for a in include_attributes if a not in exclude_columns)
+                columns += tuple(a for a in include_attributes if a not in exclude_columns and a not in columns)
             elif include_attributes is None:
                 some_object = next(iter(objects))
                 if isinstance(some_object, dict):
-                    columns += tuple(k for k in some_object if k not in exclude_columns)
+                    columns += tuple(k for k in some_object if k not in exclude_columns and k not in columns)
                 elif not columns:
                     columns = tuple(range(len(some_object)))
                     specified_columns = False
