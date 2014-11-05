@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 from decimal import Decimal, DecimalException
-import json
 import logging
 import urllib
 import hashlib
@@ -181,7 +180,7 @@ def query_order_status_(access_token, out_trade_no):
     headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept': 'application/json'}
     try:
         #TODO: retry when new-version requests supports
-        response = requests.post(WXPAY_ORDER_QUERY_URL, params=params, data=json.dumps(data), headers=headers, timeout=(3.05, 9))
+        response = requests.post(WXPAY_ORDER_QUERY_URL, params=params, json=data, headers=headers, timeout=(3.05, 9))
         response.raise_for_status()
     except:
         LOGGER.exception('wxpay order query exception-thrown: %(out_trade_no)s, %(data)s', {'out_trade_no': out_trade_no, 'data': data})
@@ -225,7 +224,7 @@ def send_deliver_notify_(access_token, out_trade_no, openid, transid, deliver_st
     headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept': 'application/json'}
     try:
         #TODO: retry when new-version requests supports
-        response = requests.post(WXPAY_DELIVER_NOTIFY_URL, params=params, data=json.dumps(data), headers=headers, timeout=(3.05, 9))
+        response = requests.post(WXPAY_DELIVER_NOTIFY_URL, params=params, json=data, headers=headers, timeout=(3.05, 9))
         response.raise_for_status()
     except:
         LOGGER.exception('wxpay deliver notify exception-thrown: %(out_trade_no)s, %(data)s', {'out_trade_no': out_trade_no, 'data': data})
