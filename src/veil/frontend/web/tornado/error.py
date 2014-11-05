@@ -17,10 +17,10 @@ def end_http_request_processing():
 class HTTPError(Exception):
     EXPECTED_WIDGET_ERROR = 'true'
 
-    def __init__(self, status_code, body=None):
+    def __init__(self, status_code, message=None):
         super(HTTPError, self).__init__()
         self.status_code = status_code
-        self.body = body
+        self.message = message
 
 
 @contextlib.contextmanager
@@ -32,16 +32,8 @@ def handle_exception():
     except HTTPError as e:
         if e.status_code:
             response.status_code = e.status_code
-        if e.body is not None:
-            response.write(e.body)
-        response.finish()
-    except NotFoundError as e:
-        response.status_code = httplib.NOT_FOUND
-        response.write(e.message)
-        response.finish()
-    except CommandError as e:
-        response.status_code = httplib.INTERNAL_SERVER_ERROR
-        response.write(e.message)
+        if e.message is not None:
+            response.write(e.message)
         response.finish()
     except PermissionDenied as e:
         response.status_code = httplib.FORBIDDEN

@@ -78,7 +78,7 @@ def get_http_argument(field, default=None, request=None, list_field=False, optio
             'arguments': request.arguments,
             'stack_trace': str('').join(traceback.format_stack())
         })
-        raise HTTPError(httplib.BAD_REQUEST, '{} not found in http arguments: {}'.format(field, request.arguments))
+        raise HTTPError(httplib.BAD_REQUEST, '{} not found in http arguments'.format(field))
     values = request.arguments[field]
     return values if list_field else values[0]
 

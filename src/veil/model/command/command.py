@@ -48,10 +48,6 @@ class CommandHandlerDecorator(object):
                 return command_handler(*positional_args, **keyword_args)
             except Invalid as e:
                 raise InvalidCommand(e.fields_errors)
-            except CommandError as e:
-                e.command = command
-                raise
-
 
         wrapper.args_names = getargspec(command_handler).args
         return wrapper
@@ -138,34 +134,6 @@ class InvalidCommand(Exception):
         for k, v in self.errors.items():
             parts.append('{}=[{}]'.format(k, ', '.join(v)))
         return ', '.join(parts)
-
-
-class CommandError(Exception):
-    def __init__(self, message):
-        super(CommandError, self).__init__()
-        self.message = message
-        self.command = None
-
-    @property
-    def message(self):
-        return self._message
-
-    @message.setter
-    def message(self, message):
-        self._message = message
-
-    def __str__(self):
-        return repr(self)
-
-    def __unicode__(self, *args, **kwargs):
-        return repr(self)
-
-    def __repr__(self):
-        return '{}: {}'.format(self.message or 'failed', self.command)
-
-
-class NotFoundError(CommandError):
-    pass
 
 
 def _(*args, **kwargs):

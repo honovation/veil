@@ -4,7 +4,6 @@ from veil.development.test import TestCase
 from veil.model.binding import *
 from .command import command
 from .command import InvalidCommand
-from .command import CommandError
 
 class StrictCommandHandlerTest(TestCase):
     def setUp(self):
@@ -86,7 +85,7 @@ class InvalidCommandHandlerTest(TestCase):
 
 class RaiseCommandErrorTest(TestCase):
     def test(self):
-        with self.assertRaises(CommandError):
+        with self.assertRaises(DummyException):
             raises_command_error_handler('abc')
 
 @command
@@ -116,4 +115,7 @@ def one_field_two_binders_handler(field=(optional(to_integer), optional(default=
 
 @command
 def raises_command_error_handler(dummy=not_empty):
-    raise CommandError(dummy)
+    raise DummyException(dummy)
+
+class DummyException(Exception):
+    pass
