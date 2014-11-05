@@ -43,8 +43,6 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
         return {'/': {
             '_': '''
                 proxy_pass http://{}-tornado;
-                add_header X-XSS-Protection "1; mode=block";
-                add_header X-Frame-Options deny;
                 {}
                 '''.format(purpose, '\n'.join(extra_headers))
         }}
