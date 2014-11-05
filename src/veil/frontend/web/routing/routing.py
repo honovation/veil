@@ -140,8 +140,10 @@ class RoutingHTTPHandler(object):
             set_http_status_code(httplib.BAD_REQUEST)
             data = e.errors
         not_head_request = request.method.upper() != 'HEAD'
-        if data is not None and not isinstance(data, basestring) or 'application/json' in request.headers.get('Accept', ''):
-            response.set_header('Content-Type', 'application/json; charset=UTF-8')
+        responsed_in_json = 'application/json' in response.headers.get('Content-Type', '')
+        if responsed_in_json or data is not None and not isinstance(data, basestring) or 'application/json' in request.headers.get('Accept', ''):
+            if not responsed_in_json:
+                response.set_header('Content-Type', 'application/json; charset=UTF-8')
             if not_head_request:
                 data = to_readable_json(data)
         else:
