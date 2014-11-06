@@ -18,8 +18,8 @@ PATTERN_FOR_ERROR = re.compile('<error>(\d+?)</error>')
 
 
 @job('send_transactional_sms', retry_every=10, retry_timeout=90)
-def send_transactional_sms_job(receiver, message, sms_code):
-    send_sms(receiver, message, sms_code)
+def send_transactional_sms_job(receivers, message, sms_code):
+    send_sms(receivers, message, sms_code)
 
 
 def send_sms(receivers, message, sms_code):
