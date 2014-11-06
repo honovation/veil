@@ -33,14 +33,18 @@ def require_web_service(purpose):
 
 RE_NETLOC = re.compile(br'(?<=//)[^/]+(?=/)')
 
+
 class WebService(object):
     def __init__(self, url, username=None, password=None, proxy_netloc=None):
         self.timeout = 180 # default suds transport timeout is 90 seconds
         faults = True # raise faults raised by server, else return tuple from service method invocation as (httpcode, object).
+        cache_policy = {}
+        if VEIL_ENV_TYPE != 'public':
+            cache_policy['cache'] = None
         if username:
-            self.suds_client = Client(url, username=username, password=password, timeout=self.timeout, faults=faults)
+            self.suds_client = Client(url, username=username, password=password, timeout=self.timeout, faults=faults, **cache_policy)
         else:
-            self.suds_client = Client(url, timeout=self.timeout, faults=faults)
+            self.suds_client = Client(url, timeout=self.timeout, faults=faults, **cache_policy)
         self.proxy_netloc = str(proxy_netloc) if proxy_netloc else None
 
     def new_object_of_type(self, wsdl_type, returns_dict_object=False):
