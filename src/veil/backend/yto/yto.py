@@ -102,7 +102,7 @@ def subscribe_logistics_notify(logistics_id, logistics_order):
 
 
 def query_logistics_status(query_order):
-    config = yto_client_config(purpose='public')
+    config = yto_client_config()
     sign = base64.b64encode(md5(to_str('{}{}'.format(query_order, config.partner_id))).digest())
     headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
     data = {'logistics_interface': to_str(query_order), 'data_digest': sign, 'type': config.type, 'clientId': config.client_id}
@@ -113,7 +113,6 @@ def query_logistics_status(query_order):
         LOGGER.exception('yto logistics query exception-thrown: %(data)s, %(headers)s', {'data': data, 'headers': headers})
         raise
     else:
-        LOGGER.info(response.text)
         query_result = lxml.objectify.fromstring(response.text)
         steps = []
         for step in query_result.orders.order.steps.iterchildren():
