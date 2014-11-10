@@ -102,7 +102,7 @@ def subscribe_logistics_notify(logistics_id, logistics_order):
 
 
 def query_logistics_status(query_order):
-    config = yto_client_config()
+    config = yto_client_config(purpose='public')
     sign = base64.b64encode(md5(to_str('{}{}'.format(query_order, config.partner_id))).digest())
     headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
     data = {'logistics_interface': to_str(query_order), 'data_digest': sign, 'type': config.type, 'clientId': config.client_id}
@@ -114,8 +114,14 @@ def query_logistics_status(query_order):
         raise
     else:
         query_result = lxml.objectify.fromstring(response.text)
-        steps = []
+        LOGGER.info(response.text)
+        logistics_status = DictObject(steps = [], signed_at=None, rejected_at=None)
         for step in query_result.orders.order.steps.iterchildren():
-            steps.append(DictObject(brief='{} {} {}'.format(step.remark.text or '', step.acceptAddress.text or '', step.name.text or ''),
-                created_at=convert_datetime_to_client_timezone(parse(step.acceptTime.text))))
-        return steps
+            step_created_at = convert_datetime_to_client_timezone(parse(step.acceptTime.text))
+            if step.name.text and '退' in step.name.text:
+                logistics_status.rejected_at = step_created_at
+            logistics_status.steps.append(DictObject(brief='{} {} {}'.format(step.remark.text or '', step.acceptAddress.text or '', step.name.text or ''),
+                created_at=step_created_at))
+        if query_result.orders.order.orderStatus.text == STATUS_SIGNED and logistics_status.rejected_at is None:
+            logistics_status.signed_at = logistics_status.steps[-1].created_at
+        return logistics_status
