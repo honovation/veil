@@ -24,8 +24,8 @@ def load_yto_client_config(purpose):
 _config = {}
 
 
-def yto_client_config():
-    purpose = 'test' if VEIL_ENV_TYPE != 'public' else 'public'
+def yto_client_config(purpose=None):
+    purpose = purpose or ('test' if VEIL_ENV_TYPE != 'public' else 'public')
     global _config
     if not _config.get(purpose):
         _config[purpose] = load_yto_client_config(purpose)

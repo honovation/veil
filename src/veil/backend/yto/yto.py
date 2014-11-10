@@ -5,7 +5,7 @@ import base64
 import re
 from hashlib import md5
 from dateutil.parser import parse
-import lxml
+import lxml.objectify
 import requests
 from veil.model.collection import *
 from veil.utility.encoding import *
@@ -99,3 +99,24 @@ def subscribe_logistics_notify(logistics_id, logistics_order):
                 'logistics_id': logistics_id, 'response': response.text
             })
             raise Exception('yto logistics subscribe failed with bad response: {}, {}'.format(logistics_id, response.text))
+
+
+def query_logistics_status(query_order):
+    config = yto_client_config(purpose='public')
+    sign = base64.b64encode(md5(to_str('{}{}'.format(query_order, config.partner_id))).digest())
+    headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+    data = {'logistics_interface': to_str(query_order), 'data_digest': sign, 'type': config.type, 'clientId': config.client_id}
+    try:
+        response = requests.post(config.api_url, data=data, headers=headers, timeout=(3.05, 9))
+        response.raise_for_status()
+    except:
+        LOGGER.exception('yto logistics query exception-thrown: %(data)s, %(headers)s', {'data': data, 'headers': headers})
+        raise
+    else:
+        LOGGER.info(response.text)
+        query_result = lxml.objectify.fromstring(response.text)
+        steps = []
+        for step in query_result.orders.order.steps.iterchildren():
+            steps.append(DictObject(brief='{} {} {}'.format(step.remark.text or '', step.acceptAddress.text or '', step.name.text or ''),
+                created_at=convert_datetime_to_client_timezone(parse(step.acceptTime.text))))
+        return steps
