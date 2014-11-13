@@ -7,6 +7,7 @@ from veil.frontend.web.tornado import *
 
 LOGGER = logging.getLogger(__name__)
 
+
 @contextlib.contextmanager
 def install_translations(locale_provider):
     locale = locale_provider()
@@ -22,7 +23,7 @@ def install_translations(locale_provider):
                 'remote_ip': request.remote_ip,
                 'user_agent': request.headers.get('User-Agent'),
                 'accept_language': request.headers.get('Accept-Language'),
-                'stack_trace': str('').join(traceback.format_stack())
+                'stack_trace': b''.join(traceback.format_stack())
             })
             locale = get_default_locale()
     with require_current_locale_being(locale):

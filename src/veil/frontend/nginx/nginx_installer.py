@@ -21,5 +21,5 @@ def nginx_resource(servers, config):
     ])
     resources.append(directory_resource(path=VEIL_BUCKET_UPLOADED_FILES_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770))
     for i in range(10):
-        resources.append(directory_resource(path=VEIL_BUCKET_UPLOADED_FILES_DIR / str(i), owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770))
+        resources.append(directory_resource(path=VEIL_BUCKET_UPLOADED_FILES_DIR / unicode(i), owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770))
     return resources

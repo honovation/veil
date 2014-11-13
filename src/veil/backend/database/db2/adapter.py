@@ -50,7 +50,7 @@ class DB2Adapter(object):
             self._reconnect()
 
     def reconnect_if_broken_per_exception(self, e):
-        if isinstance(e, OperationalError) or isinstance(e, Error) and "SystemError('error return without exception set',)" in str(e):
+        if isinstance(e, OperationalError) or isinstance(e, Error) and "SystemError('error return without exception set',)" in unicode(e):
         # ibm-db driver bug: should raise OperationalError this case
             return self._reconnect()
         else:

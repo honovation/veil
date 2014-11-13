@@ -43,12 +43,12 @@ def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
         'notify_url': notify_url,
         'partner': tenpay_client_config().partner_id,
         'out_trade_no': out_trade_no,
-        'total_fee': str(int(total_fee * 100)), # unit: cent
+        'total_fee': unicode(int(total_fee * 100)),  # unit: cent
         'fee_type': '1',
-        'spbill_create_ip': shopper_ip_address, # 防钓鱼IP地址检查
-        'time_start': time_start_beijing_time_str, # 交易起始时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
-        'time_expire': time_expire_beijing_time_str, # 交易结束时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
-        'trade_mode': '1' # 交易模式：即时到账
+        'spbill_create_ip': shopper_ip_address,  # 防钓鱼IP地址检查
+        'time_start': time_start_beijing_time_str,  # 交易起始时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+        'time_expire': time_expire_beijing_time_str,  # 交易结束时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+        'trade_mode': '1'  # 交易模式：即时到账
     }
     params['sign'] = sign_md5(params)
     # urllib.urlencode does not handle unicode well

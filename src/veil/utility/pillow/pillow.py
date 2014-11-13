@@ -95,7 +95,7 @@ def generate_captcha_image_and_answer(size=(180, 30), img_type="GIF", mode="RGB"
             second_number = random.choice(numbers)
         question = '{}{}{}'.format(first_number, selected_operator, second_number)
         eval_question = question.replace('x', '*')
-        answer = str(eval(eval_question))
+        answer = unicode(eval(eval_question))
         return '{}= ?'.format(question), answer
 
     def create_lines():

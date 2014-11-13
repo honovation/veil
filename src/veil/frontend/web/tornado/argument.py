@@ -76,7 +76,7 @@ def get_http_argument(field, default=None, request=None, list_field=False, optio
         LOGGER.error('http argument not found: field %(field)s can not be found among %(arguments)s\n%(stack_trace)s', {
             'field': field,
             'arguments': request.arguments,
-            'stack_trace': str('').join(traceback.format_stack())
+            'stack_trace': b''.join(traceback.format_stack())
         })
         raise HTTPError(httplib.BAD_REQUEST, '{} not found in http arguments'.format(field))
     values = request.arguments[field]

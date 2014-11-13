@@ -11,7 +11,8 @@ from .web_service_client_installer import web_service_resource
 
 Object = Object
 
-instances = {} # purpose => instance
+instances = {}  # purpose => instance
+
 
 def register_web_service(purpose):
     add_application_sub_resource('{}_web_service'.format(purpose), lambda config: web_service_resource(purpose=purpose, **config))

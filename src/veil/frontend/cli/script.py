@@ -66,9 +66,9 @@ def import_script_handlers(argv):
         possible_module_names = []
         for i in range(len(argv)):
             if i:
-                module_name = to_unicode(str('.').join(argv[:-i]))
+                module_name = to_unicode(b'.'.join(argv[:-i]))
             else:
-                module_name = to_unicode(str('.').join(argv))
+                module_name = to_unicode(b'.'.join(argv))
             module_name = module_name.replace('-', '_')
             possible_module_names.append(module_name)
             possible_module_names.append('veil.{}'.format(module_name))

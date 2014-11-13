@@ -17,6 +17,7 @@ loaders = {'root': FileSystemLoader('/')}
 env = None
 current_template_directories = []
 
+
 def template_filter(func_or_name):
 # syntax sugar for register_template_filter
     if inspect.isfunction(func_or_name):
@@ -130,7 +131,7 @@ def get_or_create_environment():
     jinja_tag.init()
     env.filters.update(filters)
     env.install_null_translations()
-    env.created_by = to_unicode(str('').join(traceback.format_stack()))
+    env.created_by = to_unicode(b''.join(traceback.format_stack()))
     executing_test = get_executing_test(optional=True)
     if executing_test:
         executing_test.addCleanup(reset_template_environment)

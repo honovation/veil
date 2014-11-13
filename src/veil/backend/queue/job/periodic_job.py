@@ -44,7 +44,7 @@ class TimedeltaSchedule(object):
         return now + self.seconds
 
     def __repr__(self):
-        return str(self.timedelta)
+        return repr(self.timedelta)
 
 
 class CroniterSchedule(object):
@@ -57,4 +57,4 @@ class CroniterSchedule(object):
         return croniter(self.crontab_expression, now).get_next(ret_type=float)
 
     def __repr__(self):
-        return self.crontab_expression
+        return repr(self.crontab_expression)

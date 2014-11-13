@@ -7,6 +7,7 @@ WHITE_LIST = {'veil.frontend.web.tornado'} # copied from somewhere
 THRESHOLD = 500
 GOAL = 500
 
+
 def check_loc():
     component_files = {}
     for module_name, module in sys.modules.items():
@@ -23,7 +24,7 @@ def check_loc():
             max_loc = max(component_loc, max_loc)
             if component_loc > THRESHOLD:
                 raise Exception('{} contains {} lines of code, extract component out!\n{}'.format(
-                    component_name, component_loc, '\n'.join(str(f) for f in files)))
+                    component_name, component_loc, '\n'.join(unicode(f) for f in files)))
     if THRESHOLD > GOAL and THRESHOLD - max_loc > 50:
         raise Exception('Threshold can be reduced to {} now', max_loc)
 

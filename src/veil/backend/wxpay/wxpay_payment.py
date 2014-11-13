@@ -99,12 +99,12 @@ def create_wxpay_package(out_trade_no, body, total_fee, show_url, notify_url, ti
         'attach': show_url,
         'partner': wxpay_client_config().partner_id,
         'out_trade_no': out_trade_no,
-        'total_fee': str(int(total_fee * 100)), # unit: cent
+        'total_fee': unicode(int(total_fee * 100)),  # unit: cent
         'fee_type': '1',
         'notify_url': notify_url,
-        'spbill_create_ip': shopper_ip_address, # 防钓鱼IP地址检查
-        'time_start': time_start_beijing_time_str, # 交易起始时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
-        'time_expire': time_expire_beijing_time_str, # 交易结束时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+        'spbill_create_ip': shopper_ip_address,  # 防钓鱼IP地址检查
+        'time_start': time_start_beijing_time_str,  # 交易起始时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+        'time_expire': time_expire_beijing_time_str,  # 交易结束时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
         'input_charset': 'UTF-8'
     }
     encoded_params = '&'.join('{}={}'.format(to_str(key), urllib.quote(to_str(params[key]))) for key in sorted(params) if params[key])
@@ -125,7 +125,7 @@ def get_wxpay_request(out_trade_no, body, total_fee, show_url, notify_url, time_
     request = DictObject()
     config = wxpay_client_config()
     request.appId = config.app_id
-    request.timeStamp = str(get_current_timestamp())
+    request.timeStamp = unicode(get_current_timestamp())
     request.nonceStr = uuid4().get_hex()
     request.package = create_wxpay_package(out_trade_no, body, total_fee, show_url, notify_url, time_start, time_expire, shopper_ip_address)
     request.signType = 'SHA1'

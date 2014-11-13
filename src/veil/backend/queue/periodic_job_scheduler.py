@@ -40,7 +40,7 @@ class PeriodicJobScheduler(object):
         self.register_signal_handlers()
         if self.schedules:
             for schedule in self.schedules:
-                jobs = ', '.join({str(job_handler) for job_handler in self.schedules[schedule]})
+                jobs = ', '.join({unicode(job_handler) for job_handler in self.schedules[schedule]})
                 LOGGER.info('schedule loaded: schedule is %(schedule)s and jobs are %(jobs)s', {
                     'schedule': schedule,
                     'jobs': jobs
