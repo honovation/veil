@@ -26,10 +26,6 @@ with veil_component.init_component(__name__):
     from .server_installer import veil_server_resource
     from .server_installer import is_server_running
     from .env_installer import get_deployed_or_patched_at
-    from .iptables_installer import list_iptables_resources_to_secure_host
-    from .iptables_installer import iptables_rule_resource
-    from .iptables_installer import iptables_rule_removed_resource
-    from .iptables_installer import iptables_policy_resource
 
     __all__ = [
         # from host_installer
@@ -61,9 +57,4 @@ with veil_component.init_component(__name__):
         is_server_running.__name__,
         # from env_installer
         get_deployed_or_patched_at.__name__,
-        # from iptables installer
-        list_iptables_resources_to_secure_host.__name__,
-        iptables_rule_resource.__name__,
-        iptables_rule_removed_resource.__name__,
-        iptables_policy_resource.__name__
     ]
