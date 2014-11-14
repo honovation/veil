@@ -31,6 +31,7 @@ def veil_hosts_resource(veil_env_name, config_dir):
             ])
             if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
                 resources.append(veil_host_user_editor_resource(host=host, config_dir=config_dir))
+            resources.extend(host.resources)
             hosts_to_install.append(host.base_name)
         for server in host.server_list:
             resources.extend([
