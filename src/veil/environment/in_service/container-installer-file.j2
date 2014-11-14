@@ -23,5 +23,5 @@ veil.server.os.directory_resource?path=/var/lib/lxc/{{ server.container_name }}/
 veil.server.os.directory_resource?path=/var/lib/lxc/{{ server.container_name }}/rootfs{{ server.log_dir }}&owner={{ server.ssh_user }}&group={{ server.ssh_user }}
 veil.environment.lxc.lxc_container_in_service_resource?container_name={{ server.container_name }}&restart_if_running=True
 {% for iptables_rule in iptables_rules %}
-veil.environment.networking.iptables_rule_resource?table=nat&rule={{ iptables_rule }}
+veil.environment.networking.local_iptables_rule_resource?table=nat&rule={{ iptables_rule }}
 {% endfor %}
