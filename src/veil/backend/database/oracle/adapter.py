@@ -30,7 +30,7 @@ class OracleAdapter(object):
             conn = cx_Oracle.connect(connection_string)
             conn.autocommit = True
             if self.schema:
-                conn.current_schema = self.schema
+                conn.current_schema = str(self.schema)
         except:
             LOGGER.critical('Cannot connect to database: %(connection_string)s', {'connection_string': connection_string}, exc_info=1)
             try:
