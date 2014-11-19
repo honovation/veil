@@ -46,7 +46,7 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
     if VEIL_DATA_DIR.startswith(restored_to_path):
         for pg_data_dir in VEIL_DATA_DIR.dirs('*-postgresql-*'):
             purposes.append(pg_data_dir.name.split('-postgresql-', 1)[0])
-    elif restored_to_path.startswith(VEIL_DATA_DIR) and restored_to_path.name.contains('-postgresql-'):
+    elif restored_to_path.startswith(VEIL_DATA_DIR) and '-postgresql-' in restored_to_path.name:
         purposes.append(restored_to_path.name.split('-postgresql-', 1)[0])
     print('found postgresql purposes: {}'.format(purposes))
     for purpose in purposes:
