@@ -345,9 +345,11 @@ veil.resource.del = function (options) {
     var onValidationError = options.onValidationError;
     var widget = options.widget;
     if (widget){
+        var widgetParent = widget.parent();
         veil.widget.clearErrorMessages(widget);
         onSuccess = function () {
             widget.remove();
+            widgetParent.append('正在删除...');
             if (options.onSuccess){
                 options.onSuccess();
             }
