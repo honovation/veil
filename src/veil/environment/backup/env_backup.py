@@ -13,7 +13,7 @@ from veil.utility.shell import *
 LOGGER = logging.getLogger(__name__)
 
 SSH_KEY_PATH = '/etc/ssh/id_rsa-@guard'
-KEEP_BACKUP_FOR_DAYS = 7 if VEIL_ENV_TYPE == 'staging' else 15
+KEEP_BACKUP_FOR_DAYS = 5 if VEIL_ENV_TYPE == 'staging' else 10
 
 
 @script('create-env-backup')
