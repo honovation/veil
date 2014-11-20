@@ -257,11 +257,15 @@ def stop_env(veil_env_name, include_guard_server=True, include_monitor_server=Tr
 
 def stop_servers(servers):
     for server in servers:
-        if not is_server_running(server, not_on_host=True):
-            continue
-        with fabric.api.settings(host_string=server.deploys_via):
-            with fabric.api.cd(server.veil_home):
-                fabric.api.sudo('veil :{} down'.format(server.fullname))
+        host = get_veil_host(server.env_name, server.host_name)
+        with fabric.api.settings(host_string=host.deploys_via):
+            if not is_container_running(server):
+                continue
+            if is_server_running(server):
+                with fabric.api.settings(host_string=server.deploys_via):
+                    with fabric.api.cd(server.veil_home):
+                        fabric.api.sudo('veil :{} down'.format(server.fullname))
+            fabric.api.sudo('lxc-stop -n {}'.format(server.container_name))
 
 
 @script('start-env')
