@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import os
 import veil_component
-from .installer import composite_installer
+from .installer import composite_installer, parse_resource
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,14 +40,3 @@ def installer_resource(name):
             LOGGER.error('failed to parse: %(installer_path)s', {'installer_path': installer_path})
             raise
     return resources
-
-
-def parse_resource(line):
-    if '?' not in line:
-        return line, {}
-    installer_name, installer_args = line.split('?')
-    if not installer_args:
-        return installer_name, {}
-    installer_args = [arg if '=' in arg else 'name={}'.format(arg) for arg in installer_args.split('&')]
-    installer_args = {arg.split('=', 1)[0].strip(): arg.split('=', 1)[1].strip() for arg in installer_args}
-    return installer_name, installer_args

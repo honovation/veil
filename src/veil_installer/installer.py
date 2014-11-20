@@ -145,8 +145,19 @@ def to_resource_code(resource):
     installer_name, installer_args = resource
     if not isinstance(installer_args, dict):
         raise Exception('invalid resource: {}, {}'.format(installer_name, installer_args))
-    resource_code = '{}?{}'.format(installer_name, '&'.join(['{}={}'.format(k, installer_args[k]) for k in sorted(installer_args)]))
+    resource_code = '{}?{}'.format(installer_name, '&'.join('{}={}'.format(k, installer_args[k]) for k in sorted(installer_args)))
     return resource_code
+
+
+def parse_resource(resource_code):
+    if '?' not in resource_code:
+        return resource_code, {}
+    installer_name, installer_args = resource_code.split('?', 1)
+    if not installer_args:
+        return installer_name, {}
+    installer_args = [arg if '=' in arg else 'name={}'.format(arg) for arg in installer_args.split('&')]
+    installer_args = dict(tuple(item.strip() for item in arg.split('=', 1)) for arg in installer_args)
+    return installer_name, installer_args
 
 
 def get_dry_run_result():

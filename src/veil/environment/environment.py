@@ -103,6 +103,8 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         host.veil_application_branch = 'env-{}'.format(host.env_name)
         host.code_dir = host.veil_home.parent
         host.veil_framework_home = host.code_dir / 'veil'
+        host.iptables_rules_installer_path = SHARE_DIR / 'veil-host-iptables-rules-INSTALLER-{}'.format(host.env_name)
+        host.installed_iptables_rules_installer_path = '{}.installed'.format(host.iptables_rules_installer_path)
         host.initialized_tag_path = SHARE_DIR / 'veil-host-{}.initialized'.format(host.env_name)
         host.rollbackable_tag_path = SHARE_DIR / 'veil-host-{}.rollbackable'.format(host.env_name)
         host.with_user_editor = False
@@ -145,7 +147,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
     return env
 
 
-def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ssh_user='dejavu', sshd_config=(), resources=()):
+def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ssh_user='dejavu', sshd_config=(), iptables_rule_resources=()):
     from veil.model.collection import objectify
     internal_ip = '{}.1'.format(lan_range)
     return objectify({
@@ -158,7 +160,7 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
         'ssh_user': ssh_user,
         'ssh_user_group': ssh_user,
         'sshd_config': sshd_config,
-        'resources': resources,
+        'iptables_rule_resources': iptables_rule_resources,
         'deploys_via': '{}@{}:{}'.format(ssh_user, internal_ip, ssh_port)
     })
 

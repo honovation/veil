@@ -11,6 +11,7 @@ with veil_component.init_component(__name__):
     from .installer import get_executing_installer
     from .installer import is_upgrading
     from .installer import is_downloading_while_dry_run
+    from .installer import to_resource_code
     from .component_installer import component_resource
     from .component_installer import installer_resource
     from .latest_version_cache import set_resource_latest_version
@@ -28,6 +29,7 @@ with veil_component.init_component(__name__):
         get_executing_installer.__name__,
         is_upgrading.__name__,
         is_downloading_while_dry_run.__name__,
+        to_resource_code.__name__,
         # from component_installer
         component_resource.__name__,
         installer_resource.__name__,

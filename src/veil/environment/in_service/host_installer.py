@@ -1,4 +1,6 @@
 from __future__ import unicode_literals, print_function, division
+from cStringIO import StringIO
+import contextlib
 import os
 from time import sleep
 import uuid
@@ -6,6 +8,7 @@ import fabric.api
 import fabric.contrib.files
 from veil_component import as_path
 from veil.environment import *
+from veil.environment.networking import *
 from veil.utility.misc import *
 from veil_installer import *
 from .container_installer import veil_container_resource, get_remote_file_content
@@ -31,6 +34,7 @@ def veil_hosts_resource(veil_env_name, config_dir):
             ])
             if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
                 resources.append(veil_host_user_editor_resource(host=host, config_dir=config_dir))
+            resources.append(veil_host_iptables_rules_resource(host=host))
             hosts_to_install.append(host.base_name)
         for server in host.server_list:
             resources.extend([
@@ -49,6 +53,39 @@ def veil_hosts_codebase_resource(veil_env_name):
         fabric.api.env.host_string = host.deploys_via
         resources.append(veil_host_codebase_resource(host=host))
     return resources
+
+
+def render_iptables_rules_installer_file(host):
+    resources = []
+    for h in list_veil_hosts(host.env_name):
+        if h.base_name != host.base_name:
+            continue
+        resources.append(iptables_rule_resource(table='nat', rule='POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(h.lan_range, h.lan_range)))
+        resources.extend(h.iptables_rule_resources)
+    resources.extend(list_iptables_resources_to_secure_host())
+    return '\n'.join(to_resource_code(resource) for resource in resources)
+
+
+@atomic_installer
+def veil_host_iptables_rules_resource(host):
+    remote_installer_file_content = get_remote_file_content(host.installed_iptables_rules_installer_path)
+    installer_file_content = render_iptables_rules_installer_file(host)
+    if remote_installer_file_content:
+        action = None if installer_file_content == remote_installer_file_content else 'UPDATE'
+    else:
+        action = 'INSTALL'
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        key = 'veil_host_iptables_rules?{}'.format(host.env_name)
+        dry_run_result[key] = action or '-'
+        return
+    if not action:
+        return
+    with contextlib.closing(StringIO(installer_file_content)) as f:
+        fabric.api.put(f, host.iptables_rules_installer_path, use_sudo=True, mode=0600)
+    with fabric.api.cd(host.veil_home):
+        fabric.api.sudo('veil :{} install veil_installer.installer_resource?{}'.format(host.env_name, host.iptables_rules_installer_path))
+    fabric.api.sudo('mv -f {} {}'.format(host.iptables_rules_installer_path, host.installed_iptables_rules_installer_path))
 
 
 @composite_installer

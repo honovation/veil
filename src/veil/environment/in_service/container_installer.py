@@ -206,15 +206,6 @@ def render_installer_file(host, server):
     mac_address = '{}:{}'.format(host.mac_prefix, server.sequence_no)
     ip_address = '{}.{}'.format(host.lan_range, server.sequence_no)
     gateway = '{}.1'.format(host.lan_range)
-
-    iptables_rules = [
-        'POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(host.lan_range, host.lan_range)
-    ]
     installer_file_content = render_config('container-installer-file.j2', mac_address=mac_address, ip_address=ip_address, gateway=gateway,
-        iptables_rules=iptables_rules, server=server, host=host)
-    lines = [installer_file_content]
-    for resource in host.resources:
-        installer_name, installer_args = resource
-        line = '{}?{}'.format(installer_name, '&'.join('{}={}'.format(k, v) for k, v in installer_args.items()))
-        lines.append(line)
-    return '\n'.join(lines)
+        server=server, host=host)
+    return installer_file_content
