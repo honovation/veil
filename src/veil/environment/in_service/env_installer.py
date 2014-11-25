@@ -252,10 +252,10 @@ def stop_env(veil_env_name, include_guard_server=True, include_monitor_server=Tr
         include_guard_server = include_guard_server == 'TRUE'
     if isinstance(include_monitor_server, basestring):
         include_monitor_server = include_monitor_server == 'TRUE'
-    stop_servers(list_veil_servers(veil_env_name, include_guard_server, include_monitor_server))
+    stop_servers(list_veil_servers(veil_env_name, include_guard_server, include_monitor_server), stop_container=True)
 
 
-def stop_servers(servers):
+def stop_servers(servers, stop_container=False):
     for server in servers:
         host = get_veil_host(server.env_name, server.host_name)
         with fabric.api.settings(host_string=host.deploys_via):
@@ -265,7 +265,8 @@ def stop_servers(servers):
                 with fabric.api.settings(host_string=server.deploys_via):
                     with fabric.api.cd(server.veil_home):
                         fabric.api.sudo('veil :{} down'.format(server.fullname))
-            fabric.api.sudo('lxc-stop -n {}'.format(server.container_name))
+            if stop_container:
+                fabric.api.sudo('lxc-stop -n {}'.format(server.container_name))
 
 
 @script('start-env')
