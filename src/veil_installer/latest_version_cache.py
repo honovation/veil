@@ -11,7 +11,7 @@ version_cache = {'development': None, 'test': None}
 
 
 def set_resource_latest_version(key, version):
-    assert VEIL_ENV_TYPE in ('development', 'test')
+    assert VEIL_ENV_TYPE in {'development', 'test'}
     assert version, 'key={}, version={}'.format(key, version)
     load_all()
     if VEIL_ENV_TYPE == 'development' or key in version_cache['development']:

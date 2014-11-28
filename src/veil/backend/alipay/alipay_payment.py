@@ -75,7 +75,7 @@ def process_alipay_payment_notification(out_trade_no, http_arguments, notified_f
 
 def validate_notification(http_arguments):
     discarded_reasons = []
-    if VEIL_ENV_TYPE not in ('development', 'test'):
+    if VEIL_ENV_TYPE not in {'development', 'test'}:
         if is_sign_correct(http_arguments):
             notify_id = http_arguments.get('notify_id', None)
             if notify_id:

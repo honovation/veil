@@ -46,7 +46,7 @@ def is_oracle_instantclient_installed():
 
 def install_oracle_instantclient(env):
     if is_oracle_instantclient_installed():
-        if VEIL_ENV_TYPE in ('development', 'test') and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
+        if VEIL_ENV_TYPE in {'development', 'test'} and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
             set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return
     download_oracle_instantclient()
@@ -54,5 +54,5 @@ def install_oracle_instantclient(env):
     install_resource(file_resource(path=ORACLE_DRIVER_CONF_PATH, content=ORACLE_HOME))
     env['LD_LIBRARY_PATH'] = '{}:{}'.format(env.get('LD_LIBRARY_PATH', ''), ORACLE_HOME)
     shell_execute('ldconfig')
-    if VEIL_ENV_TYPE in ('development', 'test'):
+    if VEIL_ENV_TYPE in {'development', 'test'}:
         set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)

@@ -15,7 +15,7 @@ DEPENDENCY_DIR = SHARE_DIR / 'dependency'
 DEPENDENCY_INSTALL_DIR = SHARE_DIR / 'dependency-install'
 PYPI_ARCHIVE_DIR = SHARE_DIR / 'pypi'
 
-VEIL_ENV_DIR = (VEIL_HOME if VEIL_ENV_TYPE in ('development', 'test') else OPT_DIR) / VEIL_ENV_NAME
+VEIL_ENV_DIR = (VEIL_HOME if VEIL_ENV_TYPE in {'development', 'test'} else OPT_DIR) / VEIL_ENV_NAME
 VEIL_ETC_DIR = VEIL_ENV_DIR / 'etc' / VEIL_SERVER_NAME
 VEIL_VAR_DIR = VEIL_ENV_DIR / 'var'
 VEIL_EDITORIAL_DIR = VEIL_VAR_DIR / 'editor-rootfs' / 'editorial'
@@ -32,7 +32,7 @@ VEIL_BACKUP_ROOT = as_path('/backup')
 CURRENT_USER = os.getenv('SUDO_USER') or getpass.getuser()
 CURRENT_USER_GROUP = CURRENT_USER
 
-SECURITY_CONFIG_FILE = (VEIL_HOME if VEIL_ENV_TYPE in ('development', 'test') else VEIL_HOME.parent) / '.config'
+SECURITY_CONFIG_FILE = (VEIL_HOME if VEIL_ENV_TYPE in {'development', 'test'} else VEIL_HOME.parent) / '.config'
 
 BASIC_LAYOUT_RESOURCES = [
     directory_resource(path=VEIL_ENV_DIR),
@@ -62,7 +62,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, deployment_memo=Non
         'name': name, 'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names, 'deployment_memo': deployment_memo
     })
     env.env_dir = OPT_DIR / env.name
-    env.veil_home = VEIL_HOME if env.name in ('development', 'test') else env.env_dir / 'code' / 'app'
+    env.veil_home = VEIL_HOME if env.name in {'development', 'test'} else env.env_dir / 'code' / 'app'
     env.server_list = []
     for server_name, server in env.servers.items():
         server.env_name = env.name
@@ -246,7 +246,7 @@ VEIL_FRAMEWORK_CODEBASE = 'git@git.dmright.com:/opt/git/veil.git'
 _application_version = None
 
 def get_application_version():
-    if VEIL_ENV_TYPE in ('development', 'test'):
+    if VEIL_ENV_TYPE in {'development', 'test'}:
         return  VEIL_ENV_TYPE
     global _application_version
     from veil.utility.shell import shell_execute

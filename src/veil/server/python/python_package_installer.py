@@ -30,7 +30,7 @@ def python_package_resource(name, version=None, url=None, reload_after_install=F
     downloaded_version = get_downloaded_python_package_version(name, version)
     latest_version = get_resource_latest_version(to_resource_key(name))
     if upgrading:
-        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
+        may_update_resource_latest_version = VEIL_ENV_TYPE in {'development', 'test'}
         if installed_version:
             if version:
                 if version == installed_version:
@@ -50,7 +50,7 @@ def python_package_resource(name, version=None, url=None, reload_after_install=F
             need_download = True
             action = 'INSTALL'
     else:
-        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and (not latest_version or version and version != latest_version or not version and latest_version < installed_version)
+        may_update_resource_latest_version = VEIL_ENV_TYPE in {'development', 'test'} and (not latest_version or version and version != latest_version or not version and latest_version < installed_version)
         need_install = not installed_version or (version or latest_version) and (version or latest_version) != installed_version
         need_download = need_install and (not downloaded_version or (version or latest_version) and (version or latest_version) != downloaded_version)
         if need_install:
@@ -244,7 +244,7 @@ def python_sourcecode_package_resource(package_dir, name, version, env=None):
     upgrading = is_upgrading()
     installed_version = get_python_package_installed_version(name)
     latest_version = get_resource_latest_version(to_resource_key(name))
-    need_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and version != latest_version
+    need_update_resource_latest_version = VEIL_ENV_TYPE in {'development', 'test'} and version != latest_version
     if upgrading:
         if installed_version:
             if version == installed_version:

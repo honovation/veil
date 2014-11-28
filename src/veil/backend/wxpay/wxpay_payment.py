@@ -37,7 +37,7 @@ VERIFY_URL = 'https://gw.tenpay.com/gateway/simpleverifynotifyid.xml'
 
 
 def get_wxmp_access_token(with_ttl=False, access_token_to_refresh=None):
-    if VEIL_ENV_TYPE not in ('public', 'staging'):
+    if VEIL_ENV_TYPE not in {'public', 'staging'}:
         raise Exception('cannot get wx access token under environment: {}'.format(VEIL_ENV_TYPE))
     if not access_token_to_refresh:
         with redis().pipeline() as pipe:
@@ -275,7 +275,7 @@ def validate_order_info(order_info):
 
 def validate_notification(http_arguments):
     discarded_reasons = []
-    if VEIL_ENV_TYPE not in ('development', 'test'):
+    if VEIL_ENV_TYPE not in {'development', 'test'}:
         if is_sign_correct(http_arguments):
             notify_id = http_arguments.get('notify_id', None)
             if notify_id:

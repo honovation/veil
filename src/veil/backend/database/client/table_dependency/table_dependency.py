@@ -110,7 +110,7 @@ def list_writable_tables():
 
 
 def check_table_dependencies(component_name, purpose, sql):
-    if VEIL_ENV_TYPE not in ('development', 'test'):
+    if VEIL_ENV_TYPE not in {'development', 'test'}:
         return
     if not component_name:
         return
