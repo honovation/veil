@@ -13,12 +13,12 @@ def os_package_resource(name, cmd_run_before_install=None, cmd_run_if_install_fa
     installed_version, downloaded_version = get_local_os_package_versions(name)
     latest_version = get_resource_latest_version(to_resource_key(name))
     if upgrading:
-        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test')
+        may_update_resource_latest_version = VEIL_ENV_TYPE in {'development', 'test'}
         need_install = None if installed_version else True
         need_download = True
         action = 'UPGRADE' if installed_version else 'INSTALL'
     else:
-        may_update_resource_latest_version = VEIL_ENV_TYPE in ('development', 'test') and (not latest_version or latest_version < installed_version)
+        may_update_resource_latest_version = VEIL_ENV_TYPE in {'development', 'test'} and (not latest_version or latest_version < installed_version)
         need_install = not installed_version or latest_version and latest_version != installed_version
         need_download = need_install and (not downloaded_version or latest_version and latest_version != downloaded_version)
         if need_install:
@@ -114,7 +114,13 @@ def set_apt_get_update_executed(value):
 def update_os_package_catalogue():
     if not apt_get_update_executed:
         LOGGER.info('updating os package catalogue...')
-        shell_execute('apt-get -q update', capture=True, debug=True)
+        try:
+            shell_execute('apt-get -q update', capture=True, debug=True)
+        except ShellExecutionError:
+            if VEIL_ENV_TYPE in {'development', 'test'}:
+                LOGGER.exception('ignore the failure of running "apt-get update" under dev & test env.')
+            else:
+                raise
         set_apt_get_update_executed(True)
 
 
