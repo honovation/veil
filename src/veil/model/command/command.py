@@ -5,9 +5,9 @@ from inspect import getargspec, isfunction
 import sys
 from veil.model.binding import *
 from veil.model.collection import *
-from veil.utility.encoding import *
 
 LOGGER = logging.getLogger(__name__)
+
 
 def command(binders):
 # syntax sugar for CommandHandlerDecorator

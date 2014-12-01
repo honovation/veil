@@ -30,6 +30,7 @@ def each(*binders):
 
     return bind
 
+
 def optional(*binders, **kwargs):
     def bind(value):
         composite_binder = CompositeBinder(binders)

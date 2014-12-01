@@ -14,9 +14,9 @@ from veil.utility.clock import *
 from ..invalid import Invalid
 
 EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9_=%.+-]+@([a-zA-Z0-9_=%+-]+\.)+[a-zA-Z]{2,6}$')
-PASSWORD_PATTERN = re.compile(r'[A-Za-z0-9`~!@#$%^&*()=+\-\[\]\{\};:,\/?.]{8,16}')
+PASSWORD_PATTERN = re.compile(r'[A-Za-z0-9`~!@#$%^&*()=+\-\[\]\{\};:,\\/?.]{8,16}')
 # reference to http://www.cnfgg.com/article/Asp/Asp_phoneCheck.htm
-MOBILE_PATTERN = re.compile(r'^1[34578]\d{9}$') # can reference to 支付宝账户支持绑定的手机号段有哪些？(http://help.alipay.com/lab/help_detail.htm?help_id=255119)
+MOBILE_PATTERN = re.compile(r'^1[34578]\d{9}$')  # can reference to 支付宝账户支持绑定的手机号段有哪些？(http://help.alipay.com/lab/help_detail.htm?help_id=255119)
 LANDLIINE_PATTERN = re.compile(r'^(\d{2,4}[-.\s_－—]?)?\d{3,8}([-.\s_－—]?\d{3,8})?([-.\s_－—]?\d{1,7})?$')
 ISO8601_PATTERN = re.compile(r'(?P<year>[0-9]{4})-(?P<month>[0-9]{2})-(?P<day>[0-9]{2}) (?P<hour>[0-9]{2}):(?P<minute>[0-9]{2}) ?(?P<prefix>[+-])(?P<hours>[0-9]{2}):?(?P<minutes>[0-9]{2})')
 
@@ -57,6 +57,7 @@ def match(pattern):
         return value
     return bind
 
+
 def is_list(value):
     if isinstance(value, (list, tuple)):
         return value
@@ -65,6 +66,7 @@ def is_list(value):
 
 def one_of(seq):
     assert seq is not None
+
     def bind(value):
         if value not in bind.seq:
             raise Invalid(_('值不合法'))
@@ -219,8 +221,7 @@ def to_datetime_with_minute_precision_from_iso8601(value):
             hours = -hours
             minutes = -minutes
         tz = pytz.FixedOffset(hours * 60 + minutes)
-        return datetime(int(groups['year']), int(groups['month']), int(groups['day']), int(groups['hour']),
-            int(groups['minute']), tzinfo=tz)
+        return datetime(int(groups['year']), int(groups['month']), int(groups['day']), int(groups['hour']), int(groups['minute']), tzinfo=tz)
     except:
         raise Invalid(_('不是有效的日期时间'))
 

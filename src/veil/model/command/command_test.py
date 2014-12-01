@@ -5,6 +5,7 @@ from veil.model.binding import *
 from .command import command
 from .command import InvalidCommand
 
+
 class StrictCommandHandlerTest(TestCase):
     def setUp(self):
         super(StrictCommandHandlerTest, self).setUp()
@@ -14,6 +15,8 @@ class StrictCommandHandlerTest(TestCase):
         strict_handler('a', 'b')
         with self.assertRaises(InvalidCommand):
             strict_handler('', 'b')
+        with self.assertRaises(InvalidCommand):
+            strict_handler(None, 'b')
 
     def test_pass_extra_positional_arguments(self):
         with self.assertRaises(InvalidCommand):
@@ -77,16 +80,18 @@ class InvalidCommandHandlerTest(TestCase):
 
     def test_no_binder(self):
         with self.assertRaises(Exception):
-            command(lambda a:None)
+            command(lambda a: None)
         with self.assertRaises(Exception):
             command(lambda a=None: None)
         with self.assertRaises(Exception):
             command(lambda a, b=not_empty: None)
 
+
 class RaiseCommandErrorTest(TestCase):
     def test(self):
         with self.assertRaises(DummyException):
             raises_command_error_handler('abc')
+
 
 @command
 def strict_handler(field1=not_empty, field2=not_empty):
@@ -98,13 +103,13 @@ def loose_handler(field1=not_empty, field2=anything, *args, **kwargs):
     return field1, field2, args, kwargs
 
 
-def only_accpet_one_and_one(values):
+def accept_one_and_one_only(values):
     if (1, 1) == values:
         return values
     raise Invalid('I do not like them')
 
 
-@command({('field1', 'field2'): only_accpet_one_and_one})
+@command({('field1', 'field2'): accept_one_and_one_only})
 def two_fields_one_binder_handler(field1=anything, field2=anything):
     return field1, field2
 
@@ -113,9 +118,11 @@ def two_fields_one_binder_handler(field1=anything, field2=anything):
 def one_field_two_binders_handler(field=(optional(to_integer), optional(default=0))):
     return field
 
+
 @command
 def raises_command_error_handler(dummy=not_empty):
     raise DummyException(dummy)
+
 
 class DummyException(Exception):
     pass
