@@ -79,7 +79,7 @@ def postgresql_server_resource(purpose, config):
         postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
             owner_password=config.owner_password, user=config.user, password=config.password),
         postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
-            owner_password=config.owner_password, user='readonly', password='r1adonly')
+            owner_password=config.owner_password, user='readonly', password='r1adonly', readonly=True)
     ])
     if config.enable_chinese_fts:
         resources.extend([
@@ -189,7 +189,7 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
 
 
 @atomic_installer
-def postgresql_user_resource(purpose, version, host, port, owner, owner_password, user, password):
+def postgresql_user_resource(purpose, version, host, port, owner, owner_password, user, password, readonly=False):
     assert user, 'must specify postgresql user'
     assert password, 'must specify postgresql user password'
     pg_data_dir = get_pg_data_dir(purpose, version)
@@ -207,9 +207,14 @@ def postgresql_user_resource(purpose, version, host, port, owner, owner_password
         env = os.environ.copy()
         env['PGPASSWORD'] = owner_password
         if not postgresql_user_existed(version, host, port, owner, user, env):
-            shell_execute('''
-                {}/psql -h {} -p {} -U {} -d postgres -c "CREATE USER {} WITH PASSWORD '{}'"
-                '''.format(pg_bin_dir, host, port, owner, user, password), env=env, capture=True)
+            if readonly:
+                shell_execute('''
+                    {}/psql -h {} -p {} -U {} -d postgres -c "CREATE USER {} WITH PASSWORD '{}'; ALTER USER {} SET default_transaction_read_only=on;"
+                    '''.format(pg_bin_dir, host, port, owner, user, password, user), env=env, capture=True)
+            else:
+                shell_execute('''
+                    {}/psql -h {} -p {} -U {} -d postgres -c "CREATE USER {} WITH PASSWORD '{}'"
+                    '''.format(pg_bin_dir, host, port, owner, user, password), env=env, capture=True)
         user_installed_tag_file.touch()
 
 
