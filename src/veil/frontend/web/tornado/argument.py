@@ -63,7 +63,7 @@ def delete_http_argument(field, request=None):
     request.arguments.pop(field, None)
 
 
-def get_http_argument(field, default=None, request=None, list_field=False, optional=False):
+def get_http_argument(field, default=None, request=None, list_field=False, optional=False, to_type=None):
     request = request or get_current_http_request()
     if field not in request.arguments:
         if optional:
@@ -80,7 +80,13 @@ def get_http_argument(field, default=None, request=None, list_field=False, optio
         })
         raise HTTPError(httplib.BAD_REQUEST, '{} not found in http arguments'.format(field))
     values = request.arguments[field]
-    return values if list_field else values[0]
+    if to_type:
+        if list_field:
+            return [None if v is None else to_type(v) for v in values]
+        else:
+            return None if values[0] is None else to_type(values[0])
+    else:
+        return values if list_field else values[0]
 
 
 def get_http_file(field, default=None, request=None, list_field=False, optional=False):
