@@ -174,7 +174,16 @@ veil.resource.get = function (options) {
                     window.location.href = loginUrl + window.location.hash;
                 }
             },
-            403: function() {veil.alert('权限不足');}
+            403: function() {veil.alert('权限不足');},
+            500: function () {
+                alert('服务内部错误');
+            },
+            502: function(){
+                alert('服务暂时不可用，请稍后重试');
+            },
+            503: function () {
+                alert('服务暂时不可用，请稍后重试');
+            }
         }
     };
     return $.ajax(_);
@@ -225,7 +234,16 @@ veil.resource.create = function (options) {
                     window.location.href = loginUrl + window.location.hash;
                 }
             },
-            403: function() {veil.alert('权限不足');}
+            403: function() {veil.alert('权限不足');},
+            500: function () {
+                alert('服务内部错误');
+            },
+            502: function(){
+                alert('服务暂时不可用，请稍后重试');
+            },
+            503: function () {
+                alert('服务暂时不可用，请稍后重试');
+            }
         }
     };
     if(dataFormat === 'json') {
@@ -276,7 +294,16 @@ veil.resource.update = function (options) {
                     window.location.href = loginUrl + window.location.hash;
                 }
             },
-            403: function() {veil.alert('权限不足');}
+            403: function() {veil.alert('权限不足');},
+            500: function () {
+                alert('服务内部错误');
+            },
+            502: function(){
+                alert('服务暂时不可用，请稍后重试');
+            },
+            503: function () {
+                alert('服务暂时不可用，请稍后重试');
+            }
         }
     };
     if(dataFormat === 'json') {
@@ -327,7 +354,16 @@ veil.resource.patch = function (options) {
                     window.location.href = loginUrl + window.location.hash;
                 }
             },
-            403: function() {veil.alert('权限不足');}
+            403: function() {veil.alert('权限不足');},
+            500: function () {
+                alert('服务内部错误');
+            },
+            502: function(){
+                alert('服务暂时不可用，请稍后重试');
+            },
+            503: function () {
+                alert('服务暂时不可用，请稍后重试');
+            }
         }
     };
     if(dataFormat === 'json') {
@@ -343,6 +379,7 @@ veil.resource.del = function (options) {
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
+    var onServerError = options.onServerError;
     var widget = options.widget;
     if (widget){
         var widgetParent = widget.parent();
@@ -383,7 +420,17 @@ veil.resource.del = function (options) {
                     window.location.href = loginUrl + window.location.hash;
                 }
             },
-            403:function() {veil.alert('权限不足');}
+            403:function() {veil.alert('权限不足');},
+            500: function () {
+                alert('服务内部错误');
+            },
+            502: function(){
+                alert('服务暂时不可用，请稍后重试');
+            },
+            503: function () {
+                alert('服务暂时不可用，请稍后重试');
+            }
+
         }
     };
     return $.ajax(_);
