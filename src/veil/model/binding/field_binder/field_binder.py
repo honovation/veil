@@ -132,6 +132,17 @@ def to_decimal(value):
         raise Invalid(_('数据不合法'))
 
 
+def to_money_amount(value):
+    try:
+        amount = Decimal(value)
+    except (TypeError, ValueError, InvalidOperation):
+        raise Invalid(_('金额不合法'))
+    else:
+        if amount != amount.quantize(Decimal('0.01'), ROUND_FLOOR):
+            raise Invalid(_('金额不合法'))
+        return amount
+
+
 def to_bool(value):
     if isinstance(value, basestring) and value.lower() in ['0', 'f', 'false']:
         return False

@@ -17,6 +17,7 @@ with veil_component.init_component(__name__):
     from .field_binder import to_integer
     from .field_binder import to_float
     from .field_binder import to_decimal
+    from .field_binder import to_money_amount
     from .field_binder import to_bool
     from .field_binder import to_date
     from .field_binder import to_time
@@ -45,6 +46,7 @@ with veil_component.init_component(__name__):
         to_integer.__name__,
         to_float.__name__,
         to_decimal.__name__,
+        to_money_amount.__name__,
         to_bool.__name__,
         to_date.__name__,
         to_time.__name__,
