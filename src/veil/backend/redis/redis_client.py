@@ -8,23 +8,26 @@ from .redis_client_installer import redis_client_config
 
 LOGGER = getLogger(__name__)
 
-instances = {} # purpose => instance (a.k.a Redis class instance)
+instances = {}  # (purpose, decode_responses) => instance (a.k.a Redis class instance)
 
-def register_redis(purpose):
+
+def register_redis(purpose, decode_responses=True):
     add_application_sub_resource('{}_redis_client'.format(purpose), lambda config: redis_client_resource(purpose=purpose, **config))
-    return lambda: require_redis(purpose)
+    return lambda: require_redis(purpose, decode_responses)
 
 
-def require_redis(purpose):
-    if purpose not in instances:
+def require_redis(purpose, decode_responses):
+    key = (purpose, decode_responses)
+    if key not in instances:
         config = redis_client_config(purpose)
-        instances[purpose] = StrictRedis(**config)
+        config['decode_responses'] = decode_responses
+        instances[key] = StrictRedis(**config)
     executing_test = get_executing_test(optional=True)
     if executing_test:
         def flush():
-            instances[purpose].flushall()
+            instances[key].flushall()
         executing_test.addCleanup(flush)
-    return instances[purpose]
+    return instances[key]
 
 
 def delete_per_pattern(self, match, count=None):
