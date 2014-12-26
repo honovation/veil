@@ -181,7 +181,7 @@ def remove_logged_in_user_id(purpose, session=None, browser_code=None):
 
 
 def remove_logged_in_user_ids(purpose):
-    count = redis().delete_per_pattern('lu:{}:*'.format(purpose), 2000)
+    count = redis().del_per_pattern('lu:{}:*'.format(purpose), 2000)
     LOGGER.info('kicked logged-in users out: %(purpose)s, %(count)s', {'purpose': purpose, 'count': count})
     return count
 

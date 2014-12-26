@@ -30,7 +30,7 @@ def require_redis(purpose, decode_responses):
     return instances[key]
 
 
-def delete_per_pattern(self, match, count=None):
+def del_per_pattern(self, match, count=None):
     deleted_count = 0
     cursor = '0'
     while True:
@@ -40,4 +40,16 @@ def delete_per_pattern(self, match, count=None):
         deleted_count += self.delete(*keys)
     return deleted_count
 
-StrictRedis.delete_per_pattern = delete_per_pattern
+
+def hdel_per_pattern(self, key, match, count=None):
+    deleted_count = 0
+    cursor = '0'
+    while True:
+        cursor, fields = self.hscan(key, cursor, match, count)
+        if not fields:
+            break
+        deleted_count += self.hdel(key, *fields)
+    return deleted_count
+
+StrictRedis.del_per_pattern = del_per_pattern
+StrictRedis.hdel_per_pattern = hdel_per_pattern
