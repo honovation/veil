@@ -235,15 +235,10 @@ veil.resource.create = function (options) {
                 }
             },
             403: function() {veil.alert('权限不足');},
-            500: function () {
-                alert('服务内部错误');
-            },
-            502: function(){
-                alert('服务暂时不可用，请稍后重试');
-            },
-            503: function () {
-                alert('服务暂时不可用，请稍后重试');
-            }
+            404: function() {veil.alert('未找到')},
+            500: function() {veil.alert('服务内部错误');},
+            502: function() {veil.alert('服务暂时不可用，请稍后重试');},
+            503: function() {veil.alert('服务暂时不可用，请稍后重试');}
         }
     };
     if(dataFormat === 'json') {
@@ -295,15 +290,10 @@ veil.resource.update = function (options) {
                 }
             },
             403: function() {veil.alert('权限不足');},
-            500: function () {
-                alert('服务内部错误');
-            },
-            502: function(){
-                alert('服务暂时不可用，请稍后重试');
-            },
-            503: function () {
-                alert('服务暂时不可用，请稍后重试');
-            }
+            404: function() {veil.alert('未找到')},
+            500: function() {veil.alert('服务内部错误');},
+            502: function() {veil.alert('服务暂时不可用，请稍后重试');},
+            503: function() {veil.alert('服务暂时不可用，请稍后重试');}
         }
     };
     if(dataFormat === 'json') {
@@ -355,15 +345,10 @@ veil.resource.patch = function (options) {
                 }
             },
             403: function() {veil.alert('权限不足');},
-            500: function () {
-                alert('服务内部错误');
-            },
-            502: function(){
-                alert('服务暂时不可用，请稍后重试');
-            },
-            503: function () {
-                alert('服务暂时不可用，请稍后重试');
-            }
+            404: function() {veil.alert('未找到')},
+            500: function() {veil.alert('服务内部错误');},
+            502: function() {veil.alert('服务暂时不可用，请稍后重试');},
+            503: function() {veil.alert('服务暂时不可用，请稍后重试');}
         }
     };
     if(dataFormat === 'json') {
@@ -420,16 +405,11 @@ veil.resource.del = function (options) {
                     window.location.href = loginUrl + window.location.hash;
                 }
             },
-            403:function() {veil.alert('权限不足');},
-            500: function () {
-                alert('服务内部错误');
-            },
-            502: function(){
-                alert('服务暂时不可用，请稍后重试');
-            },
-            503: function () {
-                alert('服务暂时不可用，请稍后重试');
-            }
+            403: function() {veil.alert('权限不足');},
+            404: function() {veil.alert('未找到')},
+            500: function() {veil.alert('服务内部错误');},
+            502: function() {veil.alert('服务暂时不可用，请稍后重试');},
+            503: function() {veil.alert('服务暂时不可用，请稍后重试');}
 
         }
     };
