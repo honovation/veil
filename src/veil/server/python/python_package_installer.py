@@ -3,7 +3,7 @@ import logging
 import re
 import imp
 from pkg_resources import safe_name, safe_version, parse_version, to_filename
-from veil.environment import VEIL_ENV_TYPE, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR
+from veil.environment import VEIL_ENV_TYPE, PYPI_INDEX_HOST, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR
 from veil.utility.shell import *
 from veil_installer import *
 from veil.frontend.cli import *
@@ -12,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 @atomic_installer
-def python_package_resource(name, version=None, url=None, reload_after_install=False, **kwargs):
+def python_package_resource(name, version=None, url=None, reload_after_install=False, allow_external=False, **kwargs):
     name = safe_name(name)
     if version:
         version = safe_version(version)
@@ -61,7 +61,7 @@ def python_package_resource(name, version=None, url=None, reload_after_install=F
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         if need_download and is_downloading_while_dry_run():
-            new_downloaded_version = download_python_package(name, version or (None if upgrading else latest_version), url=url, **kwargs)
+            new_downloaded_version = download_python_package(name, version or (None if upgrading else latest_version), url=url, allow_external=allow_external, **kwargs)
             if new_downloaded_version != downloaded_version:
                 LOGGER.debug('python package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s, %(url)s', {
                     'name': name,
@@ -78,7 +78,7 @@ def python_package_resource(name, version=None, url=None, reload_after_install=F
         return
 
     if need_download:
-        new_downloaded_version = download_python_package(name, version or (None if upgrading else latest_version), url=url, **kwargs)
+        new_downloaded_version = download_python_package(name, version or (None if upgrading else latest_version), url=url, allow_external=allow_external, **kwargs)
         if new_downloaded_version != downloaded_version:
             LOGGER.debug('python package with new version downloaded: %(name)s, %(installed_version)s, %(latest_version)s, %(downloaded_version)s, %(new_downloaded_version)s, %(url)s', {
                 'name': name,
@@ -106,7 +106,7 @@ def python_package_resource(name, version=None, url=None, reload_after_install=F
                 'latest_version': latest_version,
                 'version_to_install': downloaded_version
             })
-        installed_version = install_python_package(name, downloaded_version, url=url, **kwargs)
+        installed_version = install_python_package(name, downloaded_version, url=url, allow_external=allow_external, **kwargs)
         if reload_after_install:
             reload_python_package(name)
 
@@ -125,6 +125,7 @@ def to_resource_key(package_name):
 
 installed_package_name2version = None
 
+
 def get_python_package_installed_version(name, from_cache=True):
     global installed_package_name2version
     if not from_cache:
@@ -142,29 +143,31 @@ def get_python_package_installed_version(name, from_cache=True):
 RE_OUTDATED_PACKAGE = re.compile(r'^(.+) \(Current: .+ Latest: (.+)\)$')
 outdated_package_name2latest_version = None
 
+
 def get_installed_package_remote_latest_version(name):
     global outdated_package_name2latest_version
     if outdated_package_name2latest_version is None:
         outdated_package_name2latest_version = {}
-        for line in shell_execute('pip list -i {} -l -o | grep Latest:'.format(PYPI_INDEX_URL), capture=True, debug=True).splitlines(False):
+        for line in shell_execute('pip list -i {} --trusted-host {} -l -o | grep Latest:'.format(PYPI_INDEX_URL, PYPI_INDEX_HOST), capture=True, debug=True).splitlines(False):
             match = RE_OUTDATED_PACKAGE.match(line)
             outdated_package_name2latest_version[match.group(1)] = match.group(2)
     return outdated_package_name2latest_version.get(name)
 
 
-def download_python_package(name, version=None, url=None, **kwargs):
+def download_python_package(name, version=None, url=None, allow_external=False, **kwargs):
     tries = 0
     max_tries = 3
+    allow_external_term = '--allow-external {}'.format(name) if allow_external else ''
+    trusted_host_term = '--trusted-host {}'.format(PYPI_INDEX_HOST)
+    name_term = '{}{}'.format(name, '=={}'.format(version) if version else '')
     while True:
         tries += 1
         try:
             if url:
-                shell_execute('pip install -i {} --timeout 30 --download-cache {} -d {} {}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, PYPI_ARCHIVE_DIR,
-                    url), capture=True, debug=True, **kwargs)
+                shell_execute('pip install -i {} {trusted_host_term} --timeout 30 -d {} {} {allow_external_term}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, url, trusted_host_term=trusted_host_term, allow_external=allow_external), capture=True, debug=True, **kwargs)
             else:
-                shell_execute('pip install -i {} --timeout 30 --download-cache {} -d {} {}{}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR,
-                    PYPI_ARCHIVE_DIR, name, '=={}'.format(version) if version else ''), capture=True, debug=True, **kwargs)
-        except:
+                shell_execute('pip install -i {} {trusted_host_term} --timeout 30 -d {} {name_term} {allow_external_term}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, name_term=name_term, trusted_host_term=trusted_host_term, allow_external_term=allow_external_term), capture=True, debug=True, **kwargs)
+        except Exception:
             if tries >= max_tries:
                 raise
         else:
@@ -176,6 +179,7 @@ def download_python_package(name, version=None, url=None, **kwargs):
 
 
 RE_ARCHIVE_FILENAME = re.compile(r'^.+\-(.+)\-$')
+
 
 def get_downloaded_python_package_version(name, version=None):
     versions = []
@@ -202,18 +206,19 @@ def get_downloaded_python_package_version(name, version=None):
     return versions[0] if versions else None
 
 
-def install_python_package_remotely(name, version, url, **kwargs):
+def install_python_package_remotely(name, version, url, allow_external=False, **kwargs):
     tries = 0
     max_tries = 3
+    allow_external_term = '--allow-external {}'.format(name) if allow_external else ''
+    trusted_host_term = '--trusted-host {}'.format(PYPI_INDEX_HOST)
+    name_term = '{}=={}'.format(name, version)
     while True:
         tries += 1
         try:
             if url:
-                shell_execute('pip install -i {} --timeout 30 --download-cache {} {}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, url), capture=True,
-                    debug=True, **kwargs)
+                shell_execute('pip install -i {} {trusted_host_term} --timeout 30 {} {allow_external_term}'.format(PYPI_INDEX_URL, url, allow_external_term=allow_external_term), capture=True, debug=True, **kwargs)
             else:
-                shell_execute('pip install -i {} --timeout 30 --download-cache {} {}=={}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, name, version),
-                    capture=True, debug=True, **kwargs)
+                shell_execute('pip install -i {} {trusted_host_term} --timeout 30 {name_term} {allow_external_term}'.format(PYPI_INDEX_URL, trusted_host_term=trusted_host_term, name_term=name_term, allow_external_term=allow_external_term), capture=True, debug=True, **kwargs)
         except:
             if tries >= max_tries:
                 raise
@@ -221,21 +226,19 @@ def install_python_package_remotely(name, version, url, **kwargs):
             break
 
 
-def install_python_package(name, version, url=None, **kwargs):
+def install_python_package(name, version, url=None, allow_external=False, **kwargs):
     try:
         shell_execute('pip install --no-index --find-links {} {}=={}'.format(PYPI_ARCHIVE_DIR, name, version), capture=True, debug=True, **kwargs)
     except ShellExecutionError:
         LOGGER.warn('cannot install from local and try install from remote', exc_info=1)
-        install_python_package_remotely(name, version, url, **kwargs)
+        install_python_package_remotely(name, version, url, allow_external=allow_external, **kwargs)
     return version
 
 
 @script('upgrade-pip')
 def upgrade_pip(setuptools_version, pip_version):
-    shell_execute('pip install -i {} --download-cache {} --upgrade setuptools=={}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, setuptools_version),
-        capture=True, debug=True)
-    shell_execute('pip install -i {} --download-cache {} --upgrade pip=={}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, pip_version), capture=True,
-        debug=True)
+    shell_execute('pip install -i {} --trusted-host {} --upgrade setuptools=={}'.format(PYPI_INDEX_URL, PYPI_INDEX_HOST, setuptools_version), capture=True, debug=True)
+    shell_execute('pip install -i {} --trusted-host {} --upgrade pip=={}'.format(PYPI_INDEX_URL, PYPI_INDEX_HOST, pip_version), capture=True, debug=True)
 
 
 @atomic_installer
@@ -305,5 +308,5 @@ def reload_python_package(name):
                 # Since we may exit via an exception, close fp explicitly.
                 if fp:
                     fp.close()
-    except:
+    except Exception:
         LOGGER.warn('cannot reload python package: %(name)s', {'name': name}, exc_info=1)

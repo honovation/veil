@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from .environment import APT_URL
 from .environment import DEPENDENCY_URL
+from .environment import PYPI_INDEX_HOST
 from .environment import PYPI_INDEX_URL
 from .environment import SHARE_DIR
 from .environment import DEPENDENCY_DIR
