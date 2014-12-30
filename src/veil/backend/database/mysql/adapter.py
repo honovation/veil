@@ -91,7 +91,7 @@ class MySQLAdapter(object):
 
     def cursor(self, returns_dict_object=True, primary_keys=False, **kwargs):
         self._reconnect_if_broken_per_lightweight_detection()
-        cursor = self.conn.cursor(**kwargs)
+        cursor = self.conn.cursor(dictionary=True, **kwargs)
         cursor = NamedParameterCursor(cursor)
         if returns_dict_object:
             return ReturningDictObjectCursor(cursor, primary_keys)
@@ -164,13 +164,8 @@ class ReturningDictObjectCursor(object):
         return [self.to_dict_object(row) for row in self.cursor.fetchall()]
 
     def to_dict_object(self, row):
-        o = DictObject()
-        for i, cell in enumerate(row):
-            o[self.get_column_name(i)] = cell
+        o = DictObject(row)
         return Entity(o, primary_keys=self.primary_keys) if self.primary_keys else o
-
-    def get_column_name(self, i):
-        return self.cursor.description[i][0].lower()
 
     def __iter__(self):
         while 1:
