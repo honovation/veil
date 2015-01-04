@@ -56,9 +56,10 @@ function veil_init {
                 sudo mkdir -p $PYPI_ARCHIVE_DIR
             fi
             PYPI_INDEX_URL='http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
-            sudo pip install -i $PYPI_INDEX_URL --download-cache $PYPI_ARCHIVE_DIR --upgrade "setuptools>=4.0.1"
-            sudo pip install -i $PYPI_INDEX_URL --download-cache $PYPI_ARCHIVE_DIR --upgrade "pip>=1.5.6"
-            sudo pip install -i $PYPI_INDEX_URL --download-cache $PYPI_ARCHIVE_DIR --upgrade "virtualenv>=1.11.6"
+            PYPI_INDEX_HOST='pypi.douban.com'
+            sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "setuptools>=11.0"
+            sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "pip>=6.0.6"
+            sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "virtualenv>=12.0.5"
         fi
         virtualenv env
         echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth

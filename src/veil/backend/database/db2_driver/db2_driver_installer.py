@@ -21,7 +21,7 @@ def db2_driver_resource():
     else:
         install_db2_clidriver()
 
-    install_resource(python_package_resource(name='ibm-db', env=env))
+    install_resource(python_package_resource(name='ibm_db', env=env))
 
 
 def download_db2_clidriver():
