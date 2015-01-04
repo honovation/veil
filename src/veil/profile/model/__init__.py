@@ -10,3 +10,4 @@ with veil_component.init_component(__name__):
     from veil.backend.database.client import *
     from veil.backend.redis import *
     from veil.backend.queue import *
+    from veil.backend.bucket import *
