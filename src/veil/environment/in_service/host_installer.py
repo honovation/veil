@@ -229,8 +229,8 @@ def veil_host_init_resource(host):
     fabric.api.sudo('mkdir -p -m 0755 {}'.format(' '.join([DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.code_dir, host.etc_dir,
         host.editorial_dir, host.buckets_dir, host.data_dir, host.log_dir])))
     fabric.api.sudo('chown {}:{} {} {}'.format(host.ssh_user, host.ssh_user_group, host.buckets_dir, host.data_dir))
+    fabric.api.sudo('pip install pip --upgrade')
     fabric.api.sudo('pip install -i {} --trusted-host {} --upgrade "setuptools>=11.0"'.format(PYPI_INDEX_URL, PYPI_INDEX_HOST))
-    fabric.api.sudo('pip install -i {} --trusted-host {} --upgrade "pip>=6.0.6"'.format(PYPI_INDEX_URL, PYPI_INDEX_HOST))
     fabric.api.sudo('pip install -i {} --trusted-host {} --upgrade "virtualenv>=12.0.5"'.format(PYPI_INDEX_URL, PYPI_INDEX_HOST))
 
     install_resource(veil_lxc_config_resource(host=host))
