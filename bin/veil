@@ -57,8 +57,8 @@ function veil_init {
             fi
             PYPI_INDEX_URL='http://pypi.douban.com/simple/' # the official url "https://pypi.python.org/simple/" is blocked
             PYPI_INDEX_HOST='pypi.douban.com'
+            sudo pip install --upgrade "pip>=6.0.6"
             sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "setuptools>=11.0"
-            sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "pip>=6.0.6"
             sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "virtualenv>=12.0.5"
         fi
         virtualenv env
