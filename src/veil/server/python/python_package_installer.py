@@ -237,8 +237,10 @@ def install_python_package(name, version, url=None, allow_external=False, **kwar
 
 @script('upgrade-pip')
 def upgrade_pip(setuptools_version, pip_version):
-    shell_execute('pip install -i {} --upgrade setuptools=={}'.format(PYPI_INDEX_URL, setuptools_version), capture=True, debug=True)
-    shell_execute('pip install -i {} --upgrade pip=={}'.format(PYPI_INDEX_URL, pip_version), capture=True, debug=True)
+    shell_execute('pip install -i {} --trusted-host {} --upgrade pip=={}'.format(PYPI_INDEX_URL, PYPI_INDEX_HOST, pip_version),
+        capture=True, debug=True)
+    shell_execute('pip install -i {} --trusted-host {} --upgrade setuptools=={}'.format(PYPI_INDEX_URL, PYPI_INDEX_HOST, setuptools_version),
+        capture=True, debug=True)
 
 
 @atomic_installer
