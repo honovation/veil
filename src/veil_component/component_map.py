@@ -107,6 +107,8 @@ def list_all_components():
 
 
 if '__main__' == __name__:
+    import sys
+    from pprint import pprint
     logging.basicConfig(level=logging.DEBUG)
-    scan_component('ljmall')
-    print(get_transitive_dependencies('ljmall'))
+    scan_component(sys.argv[1])
+    pprint(get_transitive_dependencies(sys.argv[1]))

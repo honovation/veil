@@ -6,8 +6,8 @@ from veil.utility.shell import *
 from ...postgresql_setting import get_pg_bin_dir
 from ..server.pg_server_installer import postgresql_maintenance_config
 
-#pg_dump --host 10.24.3.10 --port 5432 --username "veil" --no-password  --format tar --blobs --verbose --file "/home/dejavu/dump" "ljmall"
-#pg_restore --host localhost --port 5432 --username "veil" --no-password  --format tar --verbose -c -d ljmall /home/dejavu/dump.tar
+#pg_dump --host 10.24.3.10 --port 5432 --username "veil" --no-password  --format tar --blobs --verbose --file "/home/dejavu/dump" "xxx"
+#pg_restore --host localhost --port 5432 --username "veil" --no-password  --format tar --verbose -c -d xxx /home/dejavu/dump.tar
 
 @script('create-backup')
 def create_backup(purpose, backup_path):
