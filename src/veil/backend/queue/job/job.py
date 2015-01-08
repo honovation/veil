@@ -44,8 +44,8 @@ def perform(job_handler, payload):
                 payload[key] = convert_datetime_to_utc_timezone(value)
         try:
             return job_handler(**payload)
-        except InvalidJob:
-            LOGGER.warn('Invalid job: %(job_handler_name)s, %(payload)s', {
+        except IgnorableInvalidJob:
+            LOGGER.warn('Ignored ignorable invalid job: %(job_handler_name)s, %(payload)s', {
                 'job_handler_name': job_handler.__name__,
                 'payload': payload
             }, exc_info=1)
@@ -54,5 +54,5 @@ def perform(job_handler, payload):
         publish_event(EVENT_PROCESS_TEARDOWN, loads_event_handlers=False)
 
 
-class InvalidJob(Exception):
+class IgnorableInvalidJob(Exception):
     pass
