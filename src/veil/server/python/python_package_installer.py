@@ -3,7 +3,7 @@ import logging
 import re
 import imp
 from pkg_resources import safe_name, safe_version, parse_version, to_filename
-from veil.environment import VEIL_ENV_TYPE, PYPI_INDEX_HOST, PYPI_INDEX_URL, PYPI_ARCHIVE_DIR
+from veil.environment import VEIL_ENV_TYPE, PYPI_ARCHIVE_DIR, get_current_veil_server
 from veil.utility.shell import *
 from veil_installer import *
 from veil.frontend.cli import *
@@ -148,7 +148,9 @@ def get_installed_package_remote_latest_version(name):
     global outdated_package_name2latest_version
     if outdated_package_name2latest_version is None:
         outdated_package_name2latest_version = {}
-        for line in shell_execute('pip list -i {} --trusted-host {} -l -o | grep Latest:'.format(PYPI_INDEX_URL, PYPI_INDEX_HOST), capture=True, debug=True).splitlines(False):
+        server = get_current_veil_server()
+        for line in shell_execute('pip list -i {} --trusted-host {} -l -o | grep Latest:'.format(server.pypi_index_url, server.pypi_index_host),
+                capture=True, debug=True).splitlines(False):
             match = RE_OUTDATED_PACKAGE.match(line)
             outdated_package_name2latest_version[match.group(1)] = match.group(2)
     return outdated_package_name2latest_version.get(name)
@@ -157,16 +159,19 @@ def get_installed_package_remote_latest_version(name):
 def download_python_package(name, version=None, url=None, allow_external=False, **kwargs):
     tries = 0
     max_tries = 3
+    server = get_current_veil_server()
     allow_external_term = '--allow-external {}'.format(name) if allow_external else ''
-    trusted_host_term = '--trusted-host {}'.format(PYPI_INDEX_HOST)
     name_term = '{}{}'.format(name, '=={}'.format(version) if version else '')
     while True:
         tries += 1
         try:
             if url:
-                shell_execute('pip install -i {} {trusted_host_term} --timeout 30 -d {} {} {allow_external_term}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, url, trusted_host_term=trusted_host_term, allow_external=allow_external), capture=True, debug=True, **kwargs)
+                shell_execute('pip install -i {} --trusted-host {} --timeout 30 -d {} {} {allow_external_term}'.format(server.pypi_index_url,
+                    server.pypi_index_host, PYPI_ARCHIVE_DIR, url, allow_external=allow_external), capture=True, debug=True, **kwargs)
             else:
-                shell_execute('pip install -i {} {trusted_host_term} --timeout 30 -d {} {name_term} {allow_external_term}'.format(PYPI_INDEX_URL, PYPI_ARCHIVE_DIR, name_term=name_term, trusted_host_term=trusted_host_term, allow_external_term=allow_external_term), capture=True, debug=True, **kwargs)
+                shell_execute('pip install -i {} --trusted-host {} --timeout 30 -d {} {name_term} {allow_external_term}'.format(server.pypi_index_url,
+                    server.pypi_index_host, PYPI_ARCHIVE_DIR, name_term=name_term, allow_external_term=allow_external_term), capture=True, debug=True,
+                    **kwargs)
         except Exception:
             if tries >= max_tries:
                 raise
@@ -209,16 +214,17 @@ def get_downloaded_python_package_version(name, version=None):
 def install_python_package_remotely(name, version, url, allow_external=False, **kwargs):
     tries = 0
     max_tries = 3
+    server = get_current_veil_server()
     allow_external_term = '--allow-external {}'.format(name) if allow_external else ''
-    trusted_host_term = '--trusted-host {}'.format(PYPI_INDEX_HOST)
-    name_term = '{}=={}'.format(name, version)
     while True:
         tries += 1
         try:
             if url:
-                shell_execute('pip install -i {} {trusted_host_term} --timeout 30 {} {allow_external_term}'.format(PYPI_INDEX_URL, url, allow_external_term=allow_external_term), capture=True, debug=True, **kwargs)
+                shell_execute('pip install -i {} --trusted-host {} --timeout 30 {} {allow_external_term}'.format(server.pypi_index_url,
+                    server.pypi_index_host, url, allow_external_term=allow_external_term), capture=True, debug=True, **kwargs)
             else:
-                shell_execute('pip install -i {} {trusted_host_term} --timeout 30 {name_term} {allow_external_term}'.format(PYPI_INDEX_URL, trusted_host_term=trusted_host_term, name_term=name_term, allow_external_term=allow_external_term), capture=True, debug=True, **kwargs)
+                shell_execute('pip install -i {} --trusted-host {} --timeout 30 {}=={} {allow_external_term}'.format(server.pypi_index_url,
+                    server.pypi_index_host, name, version, allow_external_term=allow_external_term), capture=True, debug=True, **kwargs)
         except:
             if tries >= max_tries:
                 raise
@@ -237,10 +243,11 @@ def install_python_package(name, version, url=None, allow_external=False, **kwar
 
 @script('upgrade-pip')
 def upgrade_pip(setuptools_version, pip_version):
-    shell_execute('pip install -i {} --trusted-host {} --upgrade pip=={}'.format(PYPI_INDEX_URL, PYPI_INDEX_HOST, pip_version),
+    server = get_current_veil_server()
+    shell_execute('pip install -i {} --trusted-host {} --upgrade pip=={}'.format(server.pypi_index_url, server.pypi_index_host, pip_version),
         capture=True, debug=True)
-    shell_execute('pip install -i {} --trusted-host {} --upgrade setuptools=={}'.format(PYPI_INDEX_URL, PYPI_INDEX_HOST, setuptools_version),
-        capture=True, debug=True)
+    shell_execute('pip install -i {} --trusted-host {} --upgrade setuptools=={}'.format(server.pypi_index_url, server.pypi_index_host,
+        setuptools_version), capture=True, debug=True)
 
 
 @atomic_installer

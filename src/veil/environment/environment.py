@@ -1,12 +1,13 @@
 from __future__ import unicode_literals, print_function, division
 import getpass
 import os
+from urlparse import urlparse
 from veil_component import *
 from veil.server.os import *
 
 
 DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
-PYPI_INDEX_HOST = 'pypi.douban.com'
+APT_URL = 'http://mirrors.aliyun.com/ubuntu/'
 PYPI_INDEX_URL = 'http://pypi.douban.com/simple/'  # the official url "https://pypi.python.org/simple/" is blocked
 
 OPT_DIR = as_path('/opt')
@@ -47,7 +48,7 @@ BASIC_LAYOUT_RESOURCES = [
 ]
 
 
-def veil_env(name, hosts, servers, sorted_server_names=None, apt_url='http://mirrors.aliyun.com/ubuntu/', deployment_memo=None):
+def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, pypi_index_url=PYPI_INDEX_URL, deployment_memo=None):
     server_names = servers.keys()
     if sorted_server_names:
         assert set(sorted_server_names) == set(server_names), 'ENV {}: inconsistency between sorted_server_names {} and server_names {}'.format(name,
@@ -59,7 +60,8 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url='http://mir
 
     from veil.model.collection import objectify
     env = objectify({
-        'name': name, 'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names, 'apt_url': apt_url,
+        'name': name, 'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names,
+        'apt_url': apt_url, 'pypi_index_host': urlparse(pypi_index_url).hostname, 'pypi_index_url': pypi_index_url,
         'deployment_memo': deployment_memo
     })
     env.env_dir = OPT_DIR / env.name
@@ -71,6 +73,8 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url='http://mir
         server.fullname = '{}/{}'.format(server.env_name, server.name)
         server.start_order = 1000 + 10 * sorted_server_names.index(server.name) if sorted_server_names else 0
         server.apt_url = env.apt_url
+        server.pypi_index_host = env.pypi_index_host
+        server.pypi_index_url = env.pypi_index_url
         server.veil_home = env.veil_home
         server.code_dir = server.veil_home.parent
         server.veil_framework_home = server.code_dir / 'veil'
@@ -89,6 +93,8 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url='http://mir
         # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.env_name, host.base_name))
         host.base_name = host.name.split('/', 1)[0]  # e.g. ljhost-90/1 => ljhost-90
         host.apt_url = env.apt_url
+        host.pypi_index_host = env.pypi_index_host
+        host.pypi_index_url = env.pypi_index_url
         host.ssh_user_home = as_path('/home') / host.ssh_user
         host.opt_dir = OPT_DIR
         host.share_dir = SHARE_DIR
@@ -248,9 +254,10 @@ VEIL_FRAMEWORK_CODEBASE = 'git@git.dmright.com:/opt/git/veil.git'
 
 _application_version = None
 
+
 def get_application_version():
     if VEIL_ENV_TYPE in {'development', 'test'}:
-        return  VEIL_ENV_TYPE
+        return VEIL_ENV_TYPE
     global _application_version
     from veil.utility.shell import shell_execute
     if not _application_version:
