@@ -8,7 +8,7 @@ from veil.server.os import *
 
 DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
 APT_URL = 'http://mirrors.aliyun.com/ubuntu/'
-PYPI_INDEX_URL = 'http://pypi.douban.com/simple/'  # the official url "https://pypi.python.org/simple/" is blocked
+PYPI_INDEX_URL = 'http://mirrors.aliyun.com/pypi/simple/'  # the official url "https://pypi.python.org/simple/" is blocked
 
 OPT_DIR = as_path('/opt')
 SHARE_DIR = OPT_DIR / 'share'
