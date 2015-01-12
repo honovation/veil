@@ -247,7 +247,7 @@ def veil_host_sources_list_resource(host):
         return
     sources_list_path = '/etc/apt/sources.list'
     fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=sources_list_path))
-    context = dict(mirror=APT_URL, codename=fabric.api.run('lsb_release -cs'))
+    context = dict(mirror=host.apt_url, codename=fabric.api.run('lsb_release -cs'))
     fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
     fabric.api.sudo('chown root:root {}'.format(sources_list_path))
@@ -263,7 +263,7 @@ def veil_lxc_config_resource(host):
 
     lxc_config_path = '/etc/default/lxc'
     fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=lxc_config_path))
-    fabric.contrib.files.upload_template('lxc.j2', lxc_config_path, context=dict(mirror=APT_URL), use_jinja=True, template_dir=CURRENT_DIR,
+    fabric.contrib.files.upload_template('lxc.j2', lxc_config_path, context=dict(mirror=host.apt_url), use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
     fabric.api.sudo('chown root:root {}'.format(lxc_config_path))
     install_resource(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc-net', host=host, remote_path='/etc/default/lxc-net',
