@@ -2,8 +2,8 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 from time import sleep
-import requests
 from veil.model.collection import objectify
+from veil.utility.http import *
 from .kuaidi100_client_installer import kuaidi100_client_config
 
 LOGGER = logging.getLogger(__name__)
@@ -34,7 +34,8 @@ def get_delivery_status(shipper_code, shipping_code, sleep_at_start=0):
     if sleep_at_start > 0:
         sleep(sleep_at_start)
     try:
-        response = requests.get(API_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9))
+        response = requests.get(API_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9),
+            max_retries=Retry(total=3, backoff_factor=0.5))
         response.raise_for_status()
     except:
         LOGGER.exception('kuaidi100 query exception-thrown: %(params)s', {'params': params})

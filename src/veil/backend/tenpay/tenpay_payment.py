@@ -5,8 +5,8 @@ import logging
 import urllib
 import hashlib
 import lxml.objectify
-import requests
 from veil.environment import VEIL_ENV_TYPE
+from veil.utility.http import *
 from veil.utility.encoding import *
 from veil.utility.clock import *
 from veil.model.binding import *
@@ -152,8 +152,7 @@ def validate_notification_from_tenpay(notify_id):
     params = {'sign_type': 'MD5', 'input_charset': 'UTF-8', 'partner': tenpay_client_config().partner_id, 'notify_id': notify_id}
     params['sign'] = sign_md5(params)
     try:
-        #TODO: retry when new-version requests supports
-        response = requests.get(VERIFY_URL, params=params, timeout=(3.05, 9))
+        response = requests.get(VERIFY_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
     except:
         LOGGER.exception('tenpay notify verify exception-thrown: %(params)s', {'params': params})

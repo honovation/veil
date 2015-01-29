@@ -6,7 +6,6 @@ import urllib
 import hashlib
 from uuid import uuid4
 import lxml.objectify
-import requests
 from veil.environment import VEIL_ENV_TYPE
 from veil.frontend.cli import *
 from veil.backend.redis import *
@@ -15,6 +14,7 @@ from veil.model.binding import *
 from veil.model.event import *
 from veil.model.collection import *
 from veil.profile.web import *
+from veil.utility.http import *
 from veil.utility.encoding import *
 from .wxpay_client_installer import wxpay_client_config
 
@@ -74,8 +74,8 @@ def request_wxmp_access_token():
     config = wxpay_client_config()
     params = dict(grant_type='client_credential', appid=config.app_id, secret=config.app_secret)
     try:
-        #TODO: retry when new-version requests supports
-        response = requests.get(WXMP_ACCESS_TOKEN_AUTHORIZATION_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9))
+        response = requests.get(WXMP_ACCESS_TOKEN_AUTHORIZATION_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9),
+            max_retries=Retry(total=5, backoff_factor=0.2))
         response.raise_for_status()
     except:
         LOGGER.exception('wxmp request access token exception-thrown')
@@ -179,8 +179,8 @@ def query_order_status_(access_token, out_trade_no):
     data['sign_method'] = 'sha1'
     headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept': 'application/json'}
     try:
-        #TODO: retry when new-version requests supports
-        response = requests.post(WXPAY_ORDER_QUERY_URL, params=params, json=data, headers=headers, timeout=(3.05, 9))
+        response = requests.post(WXPAY_ORDER_QUERY_URL, params=params, json=data, headers=headers, timeout=(3.05, 9),
+            max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
     except:
         LOGGER.exception('wxpay order query exception-thrown: %(out_trade_no)s, %(data)s', {'out_trade_no': out_trade_no, 'data': data})
@@ -223,8 +223,8 @@ def send_deliver_notify_(access_token, out_trade_no, openid, transid, deliver_st
     data['sign_method'] = 'sha1'
     headers = {'Content-Type': 'application/json; charset=UTF-8', 'Accept': 'application/json'}
     try:
-        #TODO: retry when new-version requests supports
-        response = requests.post(WXPAY_DELIVER_NOTIFY_URL, params=params, json=data, headers=headers, timeout=(3.05, 9))
+        response = requests.post(WXPAY_DELIVER_NOTIFY_URL, params=params, json=data, headers=headers, timeout=(3.05, 9),
+            max_retries=Retry(total=3, read=False, backoff_factor=0.2))
         response.raise_for_status()
     except:
         LOGGER.exception('wxpay deliver notify exception-thrown: %(out_trade_no)s, %(data)s', {'out_trade_no': out_trade_no, 'data': data})
@@ -323,8 +323,7 @@ def validate_notification_from_wxpay(notify_id):
     params = {'sign_type': 'MD5', 'input_charset': 'UTF-8', 'partner': wxpay_client_config().partner_id, 'notify_id': notify_id}
     params['sign'] = sign_md5(params)
     try:
-        #TODO: retry when new-version requests supports
-        response = requests.get(VERIFY_URL, params=params, timeout=(3.05, 9))
+        response = requests.get(VERIFY_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
     except:
         LOGGER.exception('wxpay notify verify exception-thrown: %(params)s', {'params': params})

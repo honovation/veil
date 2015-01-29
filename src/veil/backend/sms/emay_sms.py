@@ -2,10 +2,10 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import re
-import requests
 from veil_component import VEIL_ENV_TYPE
 from veil.environment import get_application_sms_whitelist
 from veil.backend.queue import *
+from veil.utility.http import *
 from .emay_sms_client_installer import emay_sms_client_config
 
 LOGGER = logging.getLogger(__name__)
@@ -45,8 +45,9 @@ def send_sms(receivers, message, sms_code):
     config = emay_sms_client_config()
     data = {'cdkey': config.cdkey, 'password': config.password, 'phone': receivers, 'message': message}
     try:
-        #TODO: retry at most 2 times upon connection timeout or 500 errors, back-off 3 seconds (avoid IP blocking due to too frequent queries) when new-version requests supports
-        response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9))
+        #retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
+        response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9),
+            max_retries=Retry(total=2, read=False, method_whitelist={'POST'}, status_forcelist=[500, 503], backoff_factor=2))
         response.raise_for_status()
     except:
         LOGGER.exception('emay sms send exception-thrown: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})

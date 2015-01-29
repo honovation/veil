@@ -2,4 +2,3 @@ veil.server.os.os_package_resource?python-dev
 veil.server.os.os_package_resource?libxslt1-dev
 veil.server.os.os_package_resource?zlib1g-dev
 veil.server.python.python_package_resource?lxml
-veil.server.python.python_package_resource?requests
