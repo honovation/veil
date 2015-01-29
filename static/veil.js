@@ -451,7 +451,7 @@ veil.widget.reset = function () {
 veil.widget.HANDLERS = {};
 
 veil.widget.handle = function (widget_selector, child_selector, event, handler, base_selector) {
-    var selector = child_selector ? widget_selector + ' ' + child_selector : widget_selector;
+    var selector = widget_selector && child_selector ? widget_selector + ' ' + child_selector : widget_selector || child_selector;
     var fullSelector = base_selector ? base_selector + ' ' + selector : selector;
     if (veil.widget.HANDLERS[event]) {
         if ($.inArray(fullSelector, veil.widget.HANDLERS[event]) != -1) {
@@ -463,7 +463,7 @@ veil.widget.handle = function (widget_selector, child_selector, event, handler, 
     veil.widget.HANDLERS[event].push(fullSelector);
 
     $(base_selector || document).on(event, selector, function () {
-        var widget = child_selector ? $(this).parents(widget_selector) : $(this);
+        var widget = widget_selector && child_selector ? $(this).parents(widget_selector) : $(this);
         veil.widget.clearErrorMessages(widget);
         var newArgs = [widget];
         for (var i = 0; i < arguments.length; i++) {
