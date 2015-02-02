@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import contextlib
 import traceback
+import operator
 from veil.frontend.locale import *
 from veil.frontend.web.tornado import *
 
@@ -52,7 +53,7 @@ def get_browser_locale():
                 score = 1.0
             locales.append((parts[0], score))
         if locales:
-            locales.sort(key=lambda (l, s): s, reverse=True)
+            locales.sort(key=operator.itemgetter(1), reverse=True)
             codes = [l[0] for l in locales]
             return get_locale(*codes)
     return None

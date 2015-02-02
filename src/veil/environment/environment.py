@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import getpass
 import os
 from urlparse import urlparse
+import operator
 from veil_component import *
 from veil.server.os import *
 
@@ -214,7 +215,7 @@ def get_current_veil_server():
 
 
 def list_veil_hosts(veil_env_name):
-    return sorted(get_veil_env(veil_env_name).hosts.values(), key=lambda h: h.name)
+    return sorted(get_veil_env(veil_env_name).hosts.values(), key=operator.attrgetter('name'))
 
 
 def get_veil_host(veil_env_name, veil_host_name):
