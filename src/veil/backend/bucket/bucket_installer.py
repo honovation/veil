@@ -20,10 +20,9 @@ def load_bucket_config(purpose):
     try:
         config = load_config_from(VEIL_ETC_DIR / '{}-bucket.cfg'.format(purpose.replace('_', '-')), 'type', 'base_directory', 'base_url')
     except IOError:
-        if 'test' == VEIL_ENV_TYPE:
-            config = DictObject()
-        else:
+        if 'test' != VEIL_ENV_TYPE:
             raise
+        config = DictObject()
     if 'test' == VEIL_ENV_TYPE:
         config.update(overridden_bucket_configs.get(purpose, {}))
     return config

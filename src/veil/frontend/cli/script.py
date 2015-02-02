@@ -78,8 +78,6 @@ def import_script_handlers(argv):
             except:
                 if find_module_loader_without_import(module_name):
                     raise
-                else:
-                    pass
     if not script_handlers:
         for component_name in (list_all_components()):
             try:

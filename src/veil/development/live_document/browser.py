@@ -82,7 +82,7 @@ else:
                     return return_value
             except selenium.common.exceptions.WebDriverException as e:
                 if 'modal dialog' in e.msg:
-                    require_webdriver().switch_to_alert().accept()
+                    require_webdriver().switch_to.alert().accept()
                 else:
                     assert_no_js_errors()
                     raise
@@ -128,7 +128,6 @@ else:
     def report_error(message):
         LOGGER.error(message)
         import time
-
         time.sleep(60)
         raise Exception(message)
 

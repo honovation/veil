@@ -24,7 +24,6 @@ def main():
 
     if len(a) == 1:
         raise Exception('test file or folder not supported')
-
     elif len(a) == 2:
         run_test_case(module_name=to_module_name(a[0]), test_case_name=a[1])
     else:

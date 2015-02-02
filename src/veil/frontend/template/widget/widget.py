@@ -51,8 +51,7 @@ class WidgetDecorator(object):
         widget_name = func.__name__.replace('_widget', '')
         widget = Widget(name=widget_name, func=func)
         if widget_name in widgets:
-            raise Exception('widget {} already registered by {}'.format(
-                widget_name, widgets[widget_name].registered_by))
+            raise Exception('widget {} already registered by {}'.format(widget_name, widgets[widget_name].registered_by))
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):

@@ -69,11 +69,10 @@ def close_databases():
 
 
 def connect(type, host, port, database, user, password, schema):
-    if type in adapter_classes:
-        adapter = adapter_classes[type](host=host, port=port, database=database, user=user, password=password, schema=schema)
-        return adapter
-    else:
+    if type not in adapter_classes:
         raise Exception('unknown database type: {}'.format(type))
+    adapter = adapter_classes[type](host=host, port=port, database=database, user=user, password=password, schema=schema)
+    return adapter
 
 
 @contextmanager

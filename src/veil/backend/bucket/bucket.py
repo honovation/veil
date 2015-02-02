@@ -72,12 +72,14 @@ class FilesystemBucket(Bucket):
                     tf.write(chunk)
             os.rename(temp_path, path)
         except:
-            if temp_path:
-                try:
-                    os.remove(temp_path)
-                except:
-                    LOGGER.exception('exception while removing temp file: %(temp_path)s', {'temp_path': temp_path})
-            raise
+            try:
+                raise
+            finally:
+                if temp_path:
+                    try:
+                        os.remove(temp_path)
+                    except:
+                        LOGGER.exception('exception while removing temp file: %(temp_path)s', {'temp_path': temp_path})
 
     def retrieve(self, key):
         return open(self.to_path(key), 'rb')
