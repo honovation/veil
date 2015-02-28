@@ -107,7 +107,7 @@ def create_wxpay_package(out_trade_no, body, total_fee, show_url, notify_url, ti
         'time_expire': time_expire_beijing_time_str,  # 交易结束时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
         'input_charset': 'UTF-8'
     }
-    encoded_params = '&'.join('{}={}'.format(to_str(key), urllib.quote(to_str(params[key]))) for key in sorted(params) if params[key])
+    encoded_params = '&'.join('{}={}'.format(key, urllib.quote(to_str(params[key]))) for key in sorted(params) if params[key])
     sign = sign_md5(params)
     return '{}&sign={}'.format(encoded_params, sign)
 
@@ -136,7 +136,6 @@ def get_wxpay_request(out_trade_no, body, total_fee, show_url, notify_url, time_
         'package': request.package,
         'appkey': config.pay_sign_key
     }
-    params = {to_str(k): to_str(v) for k, v in params.items()}
     request.paySign = sign_sha1(params)
     return request
 
@@ -248,7 +247,7 @@ def create_wxpay_query_order_status_package(out_trade_no):
         'out_trade_no': out_trade_no,
         'partner': config.partner_id
     }
-    encoded_params = '&'.join('{}={}'.format(to_str(key), to_str(params[key])) for key in sorted(params) if params[key])
+    encoded_params = '&'.join('{}={}'.format(key, params[key]) for key in sorted(params) if params[key])
     return '{}&sign={}'.format(encoded_params, sign_md5(DictObject(out_trade_no=out_trade_no, partner=config.partner_id)))
 
 
