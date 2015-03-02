@@ -28,7 +28,7 @@ def prevent_xsrf():
             })
         request._xsrf_token = token
     if request.method.upper() not in ['GET', 'HEAD'] and TAG_NO_XSRF_CHECK not in get_current_http_context().route.tags:
-        token = get_http_argument('_xsrf', optional=True) or request.headers.get('X-XSRF', None)
+        token = get_http_argument('_xsrf', optional=True) or request.headers.get('X-XSRF')
         if not token:
             LOGGER.warn('XSRF token not found: request is %(request)s', {'request': request})
             raise HTTPError(httplib.FORBIDDEN, 'XSRF token missing')

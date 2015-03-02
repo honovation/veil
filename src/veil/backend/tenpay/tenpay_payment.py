@@ -79,7 +79,7 @@ def validate_notification(http_arguments):
     discarded_reasons = []
     if VEIL_ENV_TYPE not in {'development', 'test'}:
         if is_sign_correct(http_arguments):
-            notify_id = http_arguments.get('notify_id', None)
+            notify_id = http_arguments.get('notify_id')
             if notify_id:
                 error = validate_notification_from_tenpay(notify_id)
                 if error:
@@ -88,16 +88,16 @@ def validate_notification(http_arguments):
                 discarded_reasons.append('no notify_id')
         else:
             discarded_reasons.append('sign is incorrect')
-    if '0' != http_arguments.get('trade_state', None):
+    if '0' != http_arguments.get('trade_state'):
         discarded_reasons.append('trade not succeeded')
-    if not http_arguments.get('out_trade_no', None):
+    if not http_arguments.get('out_trade_no'):
         discarded_reasons.append('no out_trade_no')
-    trade_no = http_arguments.get('transaction_id', None)
+    trade_no = http_arguments.get('transaction_id')
     if not trade_no:
         discarded_reasons.append('no transaction_id')
-    if tenpay_client_config().partner_id != http_arguments.get('partner', None):
+    if tenpay_client_config().partner_id != http_arguments.get('partner'):
         discarded_reasons.append('partner ID mismatched')
-    paid_total = http_arguments.get('total_fee', None)
+    paid_total = http_arguments.get('total_fee')
     if paid_total:
         try:
             paid_total = Decimal(paid_total) / 100
@@ -105,7 +105,7 @@ def validate_notification(http_arguments):
             discarded_reasons.append('invalid total_fee: {}'.format(paid_total))
     else:
         discarded_reasons.append('no total_fee')
-    paid_at = http_arguments.get('time_end', None) # 支付完成时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+    paid_at = http_arguments.get('time_end') # 支付完成时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y%m%d%H%M%S')(paid_at)
@@ -113,17 +113,17 @@ def validate_notification(http_arguments):
             discarded_reasons.append('invalid time_end: {}'.format(paid_at))
     else:
         discarded_reasons.append('no time_end')
-    show_url = http_arguments.get('attach', None)
+    show_url = http_arguments.get('attach')
     if not show_url:
         discarded_reasons.append('no attach (show_url inside)')
-    buyer_alias = http_arguments.get('buyer_alias', None)
-    bank_code = http_arguments.get('bank_type', None)
-    bank_billno = http_arguments.get('bank_billno', None)
+    buyer_alias = http_arguments.get('buyer_alias')
+    bank_code = http_arguments.get('bank_type')
+    bank_billno = http_arguments.get('bank_billno')
     return trade_no, buyer_alias, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons
 
 
 def is_sign_correct(http_arguments):
-    actual_sign = http_arguments.get('sign', None)
+    actual_sign = http_arguments.get('sign')
     verify_params = http_arguments.copy()
     if 'sign' in verify_params:
         del verify_params['sign']
@@ -159,7 +159,7 @@ def validate_notification_from_tenpay(notify_id):
         error = 'failed to validate tenpay notification'
     else:
         arguments = parse_notify_verify_response(response.content)
-        if is_sign_correct(arguments) and '0' == arguments.get('retcode', None):
+        if is_sign_correct(arguments) and '0' == arguments.get('retcode'):
             LOGGER.debug('tenpay notify verify succeeded: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
         else:
             LOGGER.warn('tenpay notify verify failed: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})

@@ -77,7 +77,7 @@ def validate_notification(http_arguments):
     discarded_reasons = []
     if VEIL_ENV_TYPE not in {'development', 'test'}:
         if is_sign_correct(http_arguments):
-            notify_id = http_arguments.get('notify_id', None)
+            notify_id = http_arguments.get('notify_id')
             if notify_id:
                 error = validate_notification_from_alipay(notify_id)
                 if error:
@@ -86,16 +86,16 @@ def validate_notification(http_arguments):
                 discarded_reasons.append('no notify_id')
         else:
             discarded_reasons.append('sign is incorrect')
-    if http_arguments.get('trade_status', None) not in ['TRADE_SUCCESS', 'TRADE_FINISHED']:
+    if http_arguments.get('trade_status') not in ['TRADE_SUCCESS', 'TRADE_FINISHED']:
         discarded_reasons.append('trade not succeeded')
-    if not http_arguments.get('out_trade_no', None):
+    if not http_arguments.get('out_trade_no'):
         discarded_reasons.append('no out_trade_no')
-    trade_no = http_arguments.get('trade_no', None)
+    trade_no = http_arguments.get('trade_no')
     if not trade_no:
         discarded_reasons.append('no trade_no')
-    if alipay_client_config().seller_email != http_arguments.get('seller_email', None):
+    if alipay_client_config().seller_email != http_arguments.get('seller_email'):
         discarded_reasons.append('seller email mismatched')
-    paid_total = http_arguments.get('total_fee', None)
+    paid_total = http_arguments.get('total_fee')
     if paid_total:
         try:
             paid_total = Decimal(paid_total)
@@ -103,7 +103,7 @@ def validate_notification(http_arguments):
             discarded_reasons.append('invalid total_fee: {}'.format(paid_total))
     else:
         discarded_reasons.append('no total_fee')
-    paid_at = http_arguments.get('gmt_payment', None) or http_arguments.get('notify_time', None) # 买家付款时间，时区为GMT+8 beijing，格式为 yyyy-MM-dd HH:mm:ss
+    paid_at = http_arguments.get('gmt_payment') or http_arguments.get('notify_time') # 买家付款时间，时区为GMT+8 beijing，格式为 yyyy-MM-dd HH:mm:ss
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y-%m-%d %H:%M:%S')(paid_at)
@@ -111,14 +111,14 @@ def validate_notification(http_arguments):
             discarded_reasons.append('invalid gmt_payment or notify_time: {}'.format(paid_at))
     else:
         discarded_reasons.append('no gmt_payment or notify_time')
-    show_url = http_arguments.get('extra_common_param', None)
+    show_url = http_arguments.get('extra_common_param')
     if not show_url:
         discarded_reasons.append('no extra_common_param (show_url inside)')
-    return trade_no, http_arguments.get('buyer_id', None), paid_total, paid_at, show_url, discarded_reasons
+    return trade_no, http_arguments.get('buyer_id'), paid_total, paid_at, show_url, discarded_reasons
 
 
 def is_sign_correct(http_arguments):
-    actual_sign = http_arguments.get('sign', None)
+    actual_sign = http_arguments.get('sign')
     verify_params = http_arguments.copy()
     if 'sign' in verify_params:
         del verify_params['sign']

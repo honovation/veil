@@ -142,7 +142,7 @@ class WidgetLookup(object):
         self.optional = optional
 
     def __getattr__(self, name):
-        widget_handler = widgets.get(current_widget_template_namespaces[-1], {}).get(name, None)
+        widget_handler = widgets.get(current_widget_template_namespaces[-1], {}).get(name)
         if not widget_handler:
             if self.optional:
                 return lambda *args, **kwargs: ''

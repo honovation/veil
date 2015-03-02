@@ -17,7 +17,7 @@ executing_script_handlers = []
 def is_script_defined(*argv):
     current_level = script_handlers
     for arg in argv:
-        current_level = current_level.get(arg, None)
+        current_level = current_level.get(arg)
         if not current_level:
             return False
     return True
