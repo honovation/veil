@@ -37,11 +37,11 @@ def captcha_widget():
 
 def generate_captcha():
     challenge_code = uuid.uuid4().get_hex()
-    image, answer = generate_captcha_image_and_answer(size=(150, 30), font_size=25)
+    image, answer = generate_captcha_image_and_answer(size=(150, 30), font_size=25, draw_lines=True, draw_points=True)
     redis().setex(captcha_redis_key(challenge_code), CAPTCHA_ANSWER_ALIVE_TIME, answer)
     bucket_key = captcha_bucket_key(challenge_code)
     with contextlib.closing(StringIO()) as buffer_:
-        image.save(buffer_, 'GIF')
+        image.save(buffer_, 'GIF', transparency=0)
         buffer_.reset()
         bucket().store(bucket_key, buffer_)
     return challenge_code, bucket().get_url(bucket_key)

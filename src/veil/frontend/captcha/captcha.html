@@ -2,20 +2,25 @@
     img[name=captcha_image] {
         vertical-align: top;
     }
+    #captcha-input-holder {
+        position: relative;
+    }
+    #change-captcha {
+        position: absolute;
+        top: 7px;
+        right: 5px;
+    }
 </style>
 <div id="captcha-wrap">
-<span id="captcha-input-holder">
+<div id="captcha-input-holder">
     <input name="captcha_challenge_code" value="{{ challenge_code }}" type="hidden"/>
     <input name="captcha_answer" id="captcha_answer" placeholder="图片验证码"/>
     <div class="inline" id="captcha-result" style="display: none">
         <i class="cus-cross error"></i>
-        <span id="captcha-error-message">未填写验证码</span>
+        <span id="captcha-error-message"></span>
     </div>
-</span>
-    <div class="captcha-image">
-        <p id="captcha-label" class="inline">计算：</p>
-        <img id="change-captcha" style="border: 1px solid #CCC;cursor: pointer" title="看不清？点击更换" src="{{ captcha_image_url }}" alt="验证码"/>
-    </div>
+    <img id="change-captcha" style="border: 1px solid #CCC;cursor: pointer" title="看不清？点击更换" src="{{ captcha_image_url }}" alt="验证码"/>
+</div>
 </div>
 <script type="text/javascript">
     $(document).ready(function () {
@@ -30,6 +35,7 @@
         $(document).on('blur', '#captcha_answer', function(){
             var $captchaResult = $('#captcha-result');
             if(!$(this).val()) {
+                $captchaResult.find('span').text('未填写验证码');
                 $captchaResult.show();
             } else {
                 $captchaResult.hide();

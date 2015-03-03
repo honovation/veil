@@ -96,7 +96,7 @@ def generate_captcha_image_and_answer(size=(180, 30), img_type="GIF", mode="RGB"
         question = '{}{}{}'.format(first_number, selected_operator, second_number)
         eval_question = question.replace('x', '*')
         answer = unicode(eval(eval_question))
-        return '{}= ?'.format(question), answer
+        return '{}等于?'.format(question), answer
 
     def create_lines():
         """绘制干扰线"""
