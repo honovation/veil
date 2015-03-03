@@ -6,15 +6,15 @@
 <div id="captcha-wrap">
 <span id="captcha-input-holder">
     <input name="captcha_challenge_code" value="{{ challenge_code }}" type="hidden"/>
-    <input name="captcha_answer" id="captcha_answer"/>
+    <input name="captcha_answer" id="captcha_answer" placeholder="图片验证码"/>
+    <div class="inline" id="captcha-result" style="display: none">
+        <i class="cus-cross error"></i>
+        <span id="captcha-error-message">未填写验证码</span>
+    </div>
 </span>
     <div class="captcha-image">
         <p id="captcha-label" class="inline">计算：</p>
         <img id="change-captcha" style="border: 1px solid #CCC;cursor: pointer" title="看不清？点击更换" src="{{ captcha_image_url }}" alt="验证码"/>
-    </div>
-    <div class="inline" id="captcha-result">
-        <i class="cus-accept accept" style="display: none"></i>
-        <i class="cus-cross error" style="display: none"></i>
     </div>
 </div>
 <script type="text/javascript">
@@ -25,16 +25,14 @@
             });
         });
         $(document).on('focus', '#captcha_answer', function(){
-            $('#captcha-result').find('i').hide();
+            $('#captcha-result').hide();
         });
         $(document).on('blur', '#captcha_answer', function(){
             var $captchaResult = $('#captcha-result');
             if(!$(this).val()) {
-                $captchaResult.find('.accept').hide();
-                $captchaResult.find('.error').show();
+                $captchaResult.show();
             } else {
-                $captchaResult.find('.error').hide();
-                $captchaResult.find('.accept').show();
+                $captchaResult.hide();
             }
         });
     });
