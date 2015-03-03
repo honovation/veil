@@ -145,12 +145,12 @@ def sign_sha1(params):
     return hashlib.sha1(param_str.encode('UTF-8')).hexdigest()
 
 
-def process_wxpay_payment_notification(out_trade_no, http_arguments, notified_from):
-    trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_notification(http_arguments)
+def process_wxpay_payment_notification(out_trade_no, arguments, notified_from):
+    trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_payment_notification(arguments)
     if discarded_reasons:
-        LOGGER.warn('wxpay trade notification discarded: %(discarded_reasons)s, %(http_arguments)s', {
+        LOGGER.warn('wxpay payment notification discarded: %(discarded_reasons)s, %(arguments)s', {
             'discarded_reasons': discarded_reasons,
-            'http_arguments': http_arguments
+            'arguments': arguments
         })
         set_http_status_code(httplib.BAD_REQUEST)
         return '<br/>'.join(discarded_reasons)
@@ -160,7 +160,7 @@ def process_wxpay_payment_notification(out_trade_no, http_arguments, notified_fr
     return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
 
 
-def query_order_status(out_trade_no, access_token=None):
+def query_wxpay_payment_status(out_trade_no, access_token=None):
     access_token = access_token or get_wxmp_access_token()
     try:
         paid = query_order_status_(access_token, out_trade_no)
@@ -205,7 +205,7 @@ def query_order_status_(access_token, out_trade_no):
     return paid
 
 
-def send_deliver_notify(out_trade_no, openid, transid, deliver_status, deliver_msg, access_token=None):
+def send_wxpay_deliver_notify(out_trade_no, openid, transid, deliver_status, deliver_msg, access_token=None):
     access_token = access_token or get_wxmp_access_token()
     try:
         send_deliver_notify_(access_token, out_trade_no, openid, transid, deliver_status, deliver_msg)
@@ -272,11 +272,11 @@ def validate_order_info(order_info):
     return trade_no, paid_total, paid_at, bank_billno, errors
 
 
-def validate_notification(http_arguments):
+def validate_payment_notification(arguments):
     discarded_reasons = []
     if VEIL_ENV_TYPE not in {'development', 'test'}:
-        if is_sign_correct(http_arguments):
-            notify_id = http_arguments.get('notify_id')
+        if is_sign_correct(arguments):
+            notify_id = arguments.get('notify_id')
             if notify_id:
                 error = validate_notification_from_wxpay(notify_id)
                 if error:
@@ -285,16 +285,16 @@ def validate_notification(http_arguments):
                 discarded_reasons.append('no notify_id')
         else:
             discarded_reasons.append('sign is incorrect')
-    if '0' != http_arguments.get('trade_state'):
+    if '0' != arguments.get('trade_state'):
         discarded_reasons.append('trade not succeeded')
-    if not http_arguments.get('out_trade_no'):
+    if not arguments.get('out_trade_no'):
         discarded_reasons.append('no out_trade_no')
-    trade_no = http_arguments.get('transaction_id')
+    trade_no = arguments.get('transaction_id')
     if not trade_no:
         discarded_reasons.append('no transaction_id')
-    if wxpay_client_config().partner_id != http_arguments.get('partner'):
+    if wxpay_client_config().partner_id != arguments.get('partner'):
         discarded_reasons.append('partner ID mismatched')
-    paid_total = http_arguments.get('total_fee')
+    paid_total = arguments.get('total_fee')
     if paid_total:
         try:
             paid_total = Decimal(paid_total) / 100
@@ -302,7 +302,7 @@ def validate_notification(http_arguments):
             discarded_reasons.append('invalid total_fee: {}'.format(paid_total))
     else:
         discarded_reasons.append('no total_fee')
-    paid_at = http_arguments.get('time_end') # 支付完成时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+    paid_at = arguments.get('time_end') # 支付完成时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y%m%d%H%M%S')(paid_at)
@@ -310,10 +310,10 @@ def validate_notification(http_arguments):
             discarded_reasons.append('invalid time_end: {}'.format(paid_at))
     else:
         discarded_reasons.append('no time_end')
-    show_url = http_arguments.get('attach')
-    buyer_alias = http_arguments.get('buyer_alias')
-    bank_code = http_arguments.get('bank_type')
-    bank_billno = http_arguments.get('bank_billno')
+    show_url = arguments.get('attach')
+    buyer_alias = arguments.get('buyer_alias')
+    bank_code = arguments.get('bank_type')
+    bank_billno = arguments.get('bank_billno')
     return trade_no, buyer_alias, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons
 
 
@@ -328,7 +328,7 @@ def validate_notification_from_wxpay(notify_id):
         LOGGER.exception('wxpay notify verify exception-thrown: %(params)s', {'params': params})
         error = 'failed to validate wxpay notification'
     else:
-        arguments = parse_notify_verify_response(response.content)
+        arguments = parse_xml_response(response.content)
         if is_sign_correct(arguments) and '0' == arguments.get('retcode'):
             LOGGER.debug('wxpay notify verify succeeded: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
         else:
@@ -362,7 +362,7 @@ def to_url_params_string(params):
     return '&'.join('{}={}'.format(key, params[key]) for key in sorted(params) if params[key])
 
 
-def parse_notify_verify_response(response):
+def parse_xml_response(response):
     arguments = DictObject()
     root = lxml.objectify.fromstring(response)
     for e in root.iterchildren():

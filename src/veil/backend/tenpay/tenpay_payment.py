@@ -21,9 +21,11 @@ EVENT_TENPAY_TRADE_PAID = define_event('tenpay-trade-paid') # valid notification
 
 PAYMENT_URL = 'https://gw.tenpay.com/gateway/pay.htm'
 VERIFY_URL = 'https://gw.tenpay.com/gateway/simpleverifynotifyid.xml'
+PAYMENT_QUERY_URL = 'https://gw.tenpay.com/gateway/normalorderquery.xml'
 
 NOTIFIED_FROM_RETURN_URL = 'return_url'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
+NOTIFIED_FROM_PAYMENT_QUERY = 'payment_query'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # tenpay require this 7 characters to be returned to them
 
 
@@ -57,47 +59,70 @@ def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
     return '{}?{}'.format(PAYMENT_URL, query)
 
 
-def process_tenpay_payment_notification(out_trade_no, http_arguments, notified_from):
-    trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_notification(http_arguments)
+def query_tenpay_payment_status(out_trade_no):
+    params = {'sign_type': 'MD5', 'input_charset': 'UTF-8', 'partner': tenpay_client_config().partner_id, 'out_trade_no': out_trade_no}
+    params['sign'] = sign_md5(params)
+    try:
+        response = requests.get(PAYMENT_QUERY_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
+        response.raise_for_status()
+    except:
+        LOGGER.exception('tenpay payment query exception-thrown: %(params)s', {'params': params})
+        raise
+    else:
+        arguments = parse_xml_response(response.content)
+        discarded_reasons = process_tenpay_payment_notification(out_trade_no, arguments, NOTIFIED_FROM_PAYMENT_QUERY)
+        paid = not bool(discarded_reasons)
+    return paid
+
+
+def process_tenpay_payment_notification(out_trade_no, arguments, notified_from):
+    trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_payment_notification(arguments,
+        NOTIFIED_FROM_PAYMENT_QUERY != notified_from)
     if discarded_reasons:
-        LOGGER.warn('tenpay trade notification discarded: %(discarded_reasons)s, %(http_arguments)s', {
+        LOGGER.warn('tenpay payment notification discarded: %(discarded_reasons)s, %(arguments)s', {
             'discarded_reasons': discarded_reasons,
-            'http_arguments': http_arguments
+            'arguments': arguments
         })
-        set_http_status_code(httplib.BAD_REQUEST)
-        return '<br/>'.join(discarded_reasons)
+        if NOTIFIED_FROM_PAYMENT_QUERY == notified_from:
+            return discarded_reasons
+        else:
+            set_http_status_code(httplib.BAD_REQUEST)
+            return '<br/>'.join(discarded_reasons)
     publish_event(EVENT_TENPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
         paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
         notified_from=notified_from)
     if NOTIFIED_FROM_RETURN_URL == notified_from:
         redirect_to(show_url or '/')
-    else:
+    elif NOTIFIED_FROM_NOTIFY_URL == notified_from:
         return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
+    else:
+        return discarded_reasons
 
 
-def validate_notification(http_arguments):
+def validate_payment_notification(arguments, with_notify_id=True):
     discarded_reasons = []
     if VEIL_ENV_TYPE not in {'development', 'test'}:
-        if is_sign_correct(http_arguments):
-            notify_id = http_arguments.get('notify_id')
-            if notify_id:
-                error = validate_notification_from_tenpay(notify_id)
-                if error:
-                    discarded_reasons.append(error)
-            else:
-                discarded_reasons.append('no notify_id')
+        if is_sign_correct(arguments):
+            if with_notify_id:
+                notify_id = arguments.get('notify_id')
+                if notify_id:
+                    error = validate_notification_from_tenpay(notify_id)
+                    if error:
+                        discarded_reasons.append(error)
+                else:
+                    discarded_reasons.append('no notify_id')
         else:
             discarded_reasons.append('sign is incorrect')
-    if '0' != http_arguments.get('trade_state'):
+    if '0' != arguments.get('trade_state'):
         discarded_reasons.append('trade not succeeded')
-    if not http_arguments.get('out_trade_no'):
+    if not arguments.get('out_trade_no'):
         discarded_reasons.append('no out_trade_no')
-    trade_no = http_arguments.get('transaction_id')
+    trade_no = arguments.get('transaction_id')
     if not trade_no:
         discarded_reasons.append('no transaction_id')
-    if tenpay_client_config().partner_id != http_arguments.get('partner'):
+    if tenpay_client_config().partner_id != arguments.get('partner'):
         discarded_reasons.append('partner ID mismatched')
-    paid_total = http_arguments.get('total_fee')
+    paid_total = arguments.get('total_fee')
     if paid_total:
         try:
             paid_total = Decimal(paid_total) / 100
@@ -105,7 +130,7 @@ def validate_notification(http_arguments):
             discarded_reasons.append('invalid total_fee: {}'.format(paid_total))
     else:
         discarded_reasons.append('no total_fee')
-    paid_at = http_arguments.get('time_end') # 支付完成时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
+    paid_at = arguments.get('time_end') # 支付完成时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y%m%d%H%M%S')(paid_at)
@@ -113,26 +138,26 @@ def validate_notification(http_arguments):
             discarded_reasons.append('invalid time_end: {}'.format(paid_at))
     else:
         discarded_reasons.append('no time_end')
-    show_url = http_arguments.get('attach')
+    show_url = arguments.get('attach')
     if not show_url:
         discarded_reasons.append('no attach (show_url inside)')
-    buyer_alias = http_arguments.get('buyer_alias')
-    bank_code = http_arguments.get('bank_type')
-    bank_billno = http_arguments.get('bank_billno')
+    buyer_alias = arguments.get('buyer_alias')
+    bank_code = arguments.get('bank_type')
+    bank_billno = arguments.get('bank_billno')
     return trade_no, buyer_alias, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons
 
 
-def is_sign_correct(http_arguments):
-    actual_sign = http_arguments.get('sign')
-    verify_params = http_arguments.copy()
+def is_sign_correct(arguments):
+    actual_sign = arguments.get('sign')
+    verify_params = arguments.copy()
     if 'sign' in verify_params:
         del verify_params['sign']
     expected_sign = sign_md5(verify_params)
     if not actual_sign or actual_sign.upper() != expected_sign:
-        LOGGER.error('wrong sign, maybe a fake tenpay notification: sign=%(actual_sign)s, should be %(expected_sign)s, http_arguments: %(http_arguments)s', {
+        LOGGER.error('wrong sign, maybe a fake tenpay notification: sign=%(actual_sign)s, should be %(expected_sign)s, arguments: %(arguments)s', {
             'actual_sign': actual_sign,
             'expected_sign': expected_sign,
-            'http_arguments': http_arguments
+            'arguments': arguments
         })
         return False
     return True
@@ -158,7 +183,7 @@ def validate_notification_from_tenpay(notify_id):
         LOGGER.exception('tenpay notify verify exception-thrown: %(params)s', {'params': params})
         error = 'failed to validate tenpay notification'
     else:
-        arguments = parse_notify_verify_response(response.content)
+        arguments = parse_xml_response(response.content)
         if is_sign_correct(arguments) and '0' == arguments.get('retcode'):
             LOGGER.debug('tenpay notify verify succeeded: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
         else:
@@ -166,7 +191,8 @@ def validate_notification_from_tenpay(notify_id):
             error = 'notification not from tenpay'
     return error
 
-def parse_notify_verify_response(response):
+
+def parse_xml_response(response):
     arguments = DictObject()
     root = lxml.objectify.fromstring(response)
     for e in root.iterchildren():

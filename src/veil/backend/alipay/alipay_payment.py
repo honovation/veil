@@ -56,12 +56,16 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
     return '{}?{}'.format(PAYMENT_URL, query)
 
 
-def process_alipay_payment_notification(out_trade_no, http_arguments, notified_from):
-    trade_no, buyer_id, paid_total, paid_at, show_url, discarded_reasons = validate_notification(http_arguments)
+def query_alipay_payment_status(out_trade_no):  # TODO
+    raise NotImplementedError()
+
+
+def process_alipay_payment_notification(out_trade_no, arguments, notified_from):
+    trade_no, buyer_id, paid_total, paid_at, show_url, discarded_reasons = validate_payment_notification(arguments)
     if discarded_reasons:
-        LOGGER.warn('alipay trade notification discarded: %(discarded_reasons)s, %(http_arguments)s', {
+        LOGGER.warn('alipay trade notification discarded: %(discarded_reasons)s, %(arguments)s', {
             'discarded_reasons': discarded_reasons,
-            'http_arguments': http_arguments
+            'arguments': arguments
         })
         set_http_status_code(httplib.BAD_REQUEST)
         return '<br/>'.join(discarded_reasons)
@@ -73,11 +77,11 @@ def process_alipay_payment_notification(out_trade_no, http_arguments, notified_f
         return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
 
 
-def validate_notification(http_arguments):
+def validate_payment_notification(arguments):
     discarded_reasons = []
     if VEIL_ENV_TYPE not in {'development', 'test'}:
-        if is_sign_correct(http_arguments):
-            notify_id = http_arguments.get('notify_id')
+        if is_sign_correct(arguments):
+            notify_id = arguments.get('notify_id')
             if notify_id:
                 error = validate_notification_from_alipay(notify_id)
                 if error:
@@ -86,16 +90,16 @@ def validate_notification(http_arguments):
                 discarded_reasons.append('no notify_id')
         else:
             discarded_reasons.append('sign is incorrect')
-    if http_arguments.get('trade_status') not in ['TRADE_SUCCESS', 'TRADE_FINISHED']:
+    if arguments.get('trade_status') not in {'TRADE_SUCCESS', 'TRADE_FINISHED'}:
         discarded_reasons.append('trade not succeeded')
-    if not http_arguments.get('out_trade_no'):
+    if not arguments.get('out_trade_no'):
         discarded_reasons.append('no out_trade_no')
-    trade_no = http_arguments.get('trade_no')
+    trade_no = arguments.get('trade_no')
     if not trade_no:
         discarded_reasons.append('no trade_no')
-    if alipay_client_config().seller_email != http_arguments.get('seller_email'):
+    if alipay_client_config().seller_email != arguments.get('seller_email'):
         discarded_reasons.append('seller email mismatched')
-    paid_total = http_arguments.get('total_fee')
+    paid_total = arguments.get('total_fee')
     if paid_total:
         try:
             paid_total = Decimal(paid_total)
@@ -103,7 +107,7 @@ def validate_notification(http_arguments):
             discarded_reasons.append('invalid total_fee: {}'.format(paid_total))
     else:
         discarded_reasons.append('no total_fee')
-    paid_at = http_arguments.get('gmt_payment') or http_arguments.get('notify_time') # 买家付款时间，时区为GMT+8 beijing，格式为 yyyy-MM-dd HH:mm:ss
+    paid_at = arguments.get('gmt_payment') or arguments.get('notify_time')  # 买家付款时间，时区为GMT+8 beijing，格式为 yyyy-MM-dd HH:mm:ss
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y-%m-%d %H:%M:%S')(paid_at)
@@ -111,25 +115,25 @@ def validate_notification(http_arguments):
             discarded_reasons.append('invalid gmt_payment or notify_time: {}'.format(paid_at))
     else:
         discarded_reasons.append('no gmt_payment or notify_time')
-    show_url = http_arguments.get('extra_common_param')
+    show_url = arguments.get('extra_common_param')
     if not show_url:
         discarded_reasons.append('no extra_common_param (show_url inside)')
-    return trade_no, http_arguments.get('buyer_id'), paid_total, paid_at, show_url, discarded_reasons
+    return trade_no, arguments.get('buyer_id'), paid_total, paid_at, show_url, discarded_reasons
 
 
-def is_sign_correct(http_arguments):
-    actual_sign = http_arguments.get('sign')
-    verify_params = http_arguments.copy()
+def is_sign_correct(arguments):
+    actual_sign = arguments.get('sign')
+    verify_params = arguments.copy()
     if 'sign' in verify_params:
         del verify_params['sign']
     if 'sign_type' in verify_params:
         del verify_params['sign_type']
     expected_sign = sign_md5(verify_params)
     if actual_sign != expected_sign:
-        LOGGER.error('wrong sign, maybe a fake alipay notification: sign=%(actual_sign)s, should be %(expected_sign)s, http_arguments: %(http_arguments)s', {
+        LOGGER.error('wrong sign, maybe a fake alipay notification: sign=%(actual_sign)s, should be %(expected_sign)s, arguments: %(arguments)s', {
             'actual_sign': actual_sign,
             'expected_sign': expected_sign,
-            'http_arguments': http_arguments
+            'arguments': arguments
         })
         return False
     return True
