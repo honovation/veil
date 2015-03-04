@@ -5,6 +5,7 @@ import logging
 import urllib
 import hashlib
 from veil.environment import VEIL_ENV_TYPE
+from veil.frontend.cli import *
 from veil.utility.http import *
 from veil.utility.encoding import *
 from veil.model.binding import *
@@ -39,14 +40,10 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
         'show_url': show_url,
         'return_url': return_url,
         'notify_url': notify_url,
-        # paymethod=directPay
-        # paymethod=motoPay
-        # paymethod=bankPay, defaultbank=CMB
-        # paymethod=expressGateway, default_login=Y
         'paymethod': 'directPay',
-        'exter_invoke_ip': shopper_ip_address, # 防钓鱼IP地址检查 (支付宝端设置已取消，这是我们期望的)
+        'exter_invoke_ip': shopper_ip_address,  # 防钓鱼IP地址检查 (支付宝端设置已取消，这是我们期望的)
         'extra_common_param': show_url,
-        'it_b_pay': '{}m'.format(minutes_to_complete_payment), # 未付款交易的超时时间
+        'it_b_pay': '{}m'.format(minutes_to_complete_payment),  # 未付款交易的超时时间
     }
     params['sign'] = sign_md5(params)
     params['sign_type'] = 'MD5'
@@ -54,6 +51,11 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
     params = {to_str(k): to_str(v) for k, v in params.items()}
     query = urllib.urlencode(params)
     return '{}?{}'.format(PAYMENT_URL, query)
+
+
+@script('query-status')
+def query_status(out_trade_no):
+    query_alipay_payment_status(out_trade_no)
 
 
 def query_alipay_payment_status(out_trade_no):  # TODO
@@ -116,8 +118,6 @@ def validate_payment_notification(arguments):
     else:
         discarded_reasons.append('no gmt_payment or notify_time')
     show_url = arguments.get('extra_common_param')
-    if not show_url:
-        discarded_reasons.append('no extra_common_param (show_url inside)')
     return trade_no, arguments.get('buyer_id'), paid_total, paid_at, show_url, discarded_reasons
 
 

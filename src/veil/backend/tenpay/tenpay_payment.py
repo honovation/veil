@@ -6,6 +6,7 @@ import urllib
 import hashlib
 import lxml.objectify
 from veil.environment import VEIL_ENV_TYPE
+from veil.frontend.cli import *
 from veil.utility.http import *
 from veil.utility.encoding import *
 from veil.utility.clock import *
@@ -57,6 +58,11 @@ def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
     params = {to_str(k): to_str(v) for k, v in params.items()}
     query = urllib.urlencode(params)
     return '{}?{}'.format(PAYMENT_URL, query)
+
+
+@script('query-status')
+def query_status(out_trade_no):
+    query_tenpay_payment_status(out_trade_no)
 
 
 def query_tenpay_payment_status(out_trade_no):
@@ -139,8 +145,6 @@ def validate_payment_notification(arguments, with_notify_id=True):
     else:
         discarded_reasons.append('no time_end')
     show_url = arguments.get('attach')
-    if not show_url:
-        discarded_reasons.append('no attach (show_url inside)')
     buyer_alias = arguments.get('buyer_alias')
     bank_code = arguments.get('bank_type')
     bank_billno = arguments.get('bank_billno')
