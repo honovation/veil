@@ -311,7 +311,7 @@ def get_deployed_or_patched_at():
     last_commit = shell_execute('git rev-parse HEAD', capture=True)
     lines = shell_execute("git show-ref --tags -d | grep ^{} | sed -e 's,.* refs/tags/,,'".format(last_commit), capture=True)
     deployed_or_patched_at = []
-    for tag in lines.splitlines(False):
+    for tag in lines.splitlines():
         if tag.endswith('-patch'):
             tag = tag[:-len('-patch')]
         env_name, formatted_deployed_at, _ = tag.rsplit('-', 2)

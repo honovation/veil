@@ -26,7 +26,3 @@ def is_supervisord_running():
         return True
     else:
         return 'refused' not in output
-
-
-def are_all_supervisord_programs_running():
-    return all(not line or 'RUNNING' in line for line in supervisorctl('status', capture=True).splitlines(False))

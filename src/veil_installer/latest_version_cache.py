@@ -35,12 +35,12 @@ def load_all():
     global version_cache
     if version_cache['development'] is None:
         if RESOURCE_LATEST_VERSION.exists():
-            version_cache['development'] = dict(line.split('=') for line in RESOURCE_LATEST_VERSION.text().splitlines(False))
+            version_cache['development'] = dict(line.split('=') for line in RESOURCE_LATEST_VERSION.text().splitlines())
         else:
             version_cache['development'] = {}
     if version_cache['test'] is None:
         if RESOURCE_LATEST_VERSION_TEST.exists():
-            version_cache['test'] = dict(line.split('=') for line in RESOURCE_LATEST_VERSION_TEST.text().splitlines(False))
+            version_cache['test'] = dict(line.split('=') for line in RESOURCE_LATEST_VERSION_TEST.text().splitlines())
         else:
             version_cache['test'] = {}
 

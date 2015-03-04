@@ -54,5 +54,5 @@ def get_html_files_with_content_matching_pattern(dir, pattern, ignore_case):
     except ShellExecutionError:
         pass
     else:
-        files = set(files.splitlines(False))
+        files = set(files.splitlines())
     return files

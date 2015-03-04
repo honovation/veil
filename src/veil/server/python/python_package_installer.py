@@ -133,7 +133,7 @@ def get_python_package_installed_version(name, from_cache=True):
     if installed_package_name2version is None:
         installed_package_name2version = {}
         pip_freeze_output = shell_execute('pip freeze', capture=True, debug=True)
-        for line in pip_freeze_output.splitlines(False):
+        for line in pip_freeze_output.splitlines():
             parts = line.split('==', 1)
             if len(parts) == 2:
                 installed_package_name2version[parts[0]] = parts[1]
@@ -150,7 +150,7 @@ def get_installed_package_remote_latest_version(name):
         outdated_package_name2latest_version = {}
         server = get_current_veil_server()
         for line in shell_execute('pip list -i {} --trusted-host {} -l -o | grep Latest:'.format(server.pypi_index_url, server.pypi_index_host),
-                capture=True, debug=True).splitlines(False):
+                capture=True, debug=True).splitlines():
             match = RE_OUTDATED_PACKAGE.match(line)
             outdated_package_name2latest_version[match.group(1)] = match.group(2)
     return outdated_package_name2latest_version.get(name)

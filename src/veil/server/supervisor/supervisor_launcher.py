@@ -7,7 +7,6 @@ from veil_component import is_recording_dynamic_dependencies, load_all_component
 from veil.environment import *
 from veil.utility.shell import *
 from veil.frontend.cli import script
-from .supervisorctl import are_all_supervisord_programs_running
 from .supervisorctl import supervisorctl
 from .supervisorctl import is_supervisord_running
 
@@ -43,12 +42,16 @@ def bring_up_supervisor(*argv):
     daemonize = args.daemonize
     if daemonize:
         shell_execute('supervisord -c {}'.format(VEIL_ETC_DIR / 'supervisor.cfg'))
-        for i in range(20):
-            if are_all_supervisord_programs_running():
+        for i in range(30):
+            supervisor_status = supervisorctl('status', capture=True)
+            lines = [line for line in supervisor_status.splitlines() if line.strip()]
+            if all('RUNNING' in line for line in lines):
                 return
-            time.sleep(6)
+            if any('FATAL' in line for line in lines):
+                break
+            time.sleep(5)
         LOGGER.info('failed to bring up supervisor: latest status: %(status)s', {
-            'status': supervisorctl('status', capture=True)
+            'status': supervisor_status
         })
         sys.exit(1)
     else:

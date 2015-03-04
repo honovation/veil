@@ -131,7 +131,7 @@ def to_resource_key(pip_package):
 def get_local_os_package_versions(name):
     installed_version = None
     downloaded_version = None
-    lines = shell_execute('apt-cache policy {}'.format(name), capture=True, debug=True).splitlines(False)
+    lines = shell_execute('apt-cache policy {}'.format(name), capture=True, debug=True).splitlines()
     if len(lines) >= 3:
         installed_version = lines[1].split('Installed:')[1].strip()
         if '(none)' == installed_version:
