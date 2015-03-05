@@ -101,8 +101,8 @@ def set_browser_code(purpose, browser_code):
         domain=get_website_parent_domain(purpose))
 
 
-def get_latest_user_id(purpose):
-    return get_secure_cookie(VEIL_SECURED_USER_CODE_COOKIE_NAME, max_age_days=config[purpose].cookie_expires_days)
+def get_latest_user_id(purpose, max_age_days=None):
+    return get_secure_cookie(VEIL_SECURED_USER_CODE_COOKIE_NAME, max_age_days=max_age_days or config[purpose].cookie_expires_days)
 
 
 def set_latest_user_id(purpose, user_id):
