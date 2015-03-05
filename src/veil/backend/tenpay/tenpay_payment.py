@@ -122,7 +122,7 @@ def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
     if not out_trade_no_:
         discarded_reasons.append('no out_trade_no')
     elif out_trade_no_ != out_trade_no:
-        discarded_reasons.append('inconsistent out_trade_no: %(expected)s, %(actual)s', {'expected': out_trade_no, 'actual': out_trade_no_})
+        discarded_reasons.append('inconsistent out_trade_no: expected={}, actual={}'.format(out_trade_no, out_trade_no_))
     trade_no = arguments.get('transaction_id')
     if not trade_no:
         discarded_reasons.append('no transaction_id')
@@ -154,8 +154,7 @@ def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
 def is_sign_correct(arguments):
     actual_sign = arguments.get('sign')
     verify_params = arguments.copy()
-    if 'sign' in verify_params:
-        del verify_params['sign']
+    verify_params.pop('sign', None)
     expected_sign = sign_md5(verify_params)
     if not actual_sign or actual_sign.upper() != expected_sign:
         LOGGER.error('wrong sign, maybe a fake tenpay notification: sign=%(actual_sign)s, should be %(expected_sign)s, arguments: %(arguments)s', {

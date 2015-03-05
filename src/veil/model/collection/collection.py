@@ -120,8 +120,7 @@ class Entity(DictObject):
 
     @classmethod
     def serialize(cls, **kwargs):
-        if '_hash' in kwargs:
-            del kwargs['_hash']
+        kwargs.pop('_hash', None)
         return kwargs
 
     @classmethod

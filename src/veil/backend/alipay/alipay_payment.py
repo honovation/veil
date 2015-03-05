@@ -4,7 +4,6 @@ from decimal import Decimal, DecimalException
 import logging
 import urllib
 import hashlib
-import itertools
 import lxml.objectify
 from veil.environment import VEIL_ENV_TYPE
 from veil.utility.http import *
@@ -71,24 +70,21 @@ def query_alipay_payment_status(out_trade_no):
         LOGGER.exception('alipay payment query exception-thrown: %(params)s', {'params': params})
         raise
     else:
-        arguments = parse_xml_response(response.content)
-        if arguments.is_success == 'T':
-            if 'out_trade_no' not in arguments:
-                arguments.out_trade_no = out_trade_no
-            discarded_reasons = process_alipay_payment_notification(out_trade_no, arguments, NOTIFIED_FROM_PAYMENT_QUERY)
-            paid = not bool(discarded_reasons)
-        else:
-            LOGGER.warn('alipay payment query failed: %(params)s, %(arguments)s', {'params': params, 'arguments': arguments})
-            paid = False
+        arguments = parse_payment_status_response(response.content)
+        discarded_reasons = process_alipay_payment_notification(out_trade_no, arguments, NOTIFIED_FROM_PAYMENT_QUERY)
+        paid = not bool(discarded_reasons)
     return paid
 
 
-def parse_xml_response(response):
-    arguments = DictObject()
+def parse_payment_status_response(response):
     root = lxml.objectify.fromstring(response)
-    for e in itertools.chain(root.iterchildren(), root.response.trade.iterchildren()) if root.is_success.text == 'T' else root.iterchildren():
-        if e.text:
-            arguments[e.tag] = e.text
+    arguments = DictObject(sign=root.sign.text, sign_type=root.sign_type.text)
+    if arguments.is_success.text == 'T':
+        for e in root.response.trade.iterchildren():
+            if e.text:
+                arguments[e.tag] = e.text
+    else:
+        arguments.error = root.error.text
     return arguments
 
 
@@ -129,13 +125,19 @@ def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
                     discarded_reasons.append('no notify_id')
         else:
             discarded_reasons.append('sign is incorrect')
+
+    error = arguments.get('error')  # payment query failure response
+    if error:
+        discarded_reasons.append('error: {}'.format(error))
+        return None, None, None, None, None, discarded_reasons
+
     if arguments.get('trade_status') not in {'TRADE_SUCCESS', 'TRADE_FINISHED'}:
         discarded_reasons.append('trade not succeeded')
     out_trade_no_ = arguments.get('out_trade_no')
     if not out_trade_no_:
         discarded_reasons.append('no out_trade_no')
     elif out_trade_no_ != out_trade_no:
-        discarded_reasons.append('inconsistent out_trade_no: %(expected)s, %(actual)s', {'expected': out_trade_no, 'actual': out_trade_no_})
+        discarded_reasons.append('inconsistent out_trade_no: expected={}, actual={}'.format(out_trade_no, out_trade_no_))
     trade_no = arguments.get('trade_no')
     if not trade_no:
         discarded_reasons.append('no trade_no')
@@ -164,10 +166,8 @@ def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
 def is_sign_correct(arguments):
     actual_sign = arguments.get('sign')
     verify_params = arguments.copy()
-    if 'sign' in verify_params:
-        del verify_params['sign']
-    if 'sign_type' in verify_params:
-        del verify_params['sign_type']
+    verify_params.pop('sign', None)
+    verify_params.pop('sign_type', None)
     expected_sign = sign_md5(verify_params)
     if actual_sign != expected_sign:
         LOGGER.error('wrong sign, maybe a fake alipay notification: sign=%(actual_sign)s, should be %(expected_sign)s, arguments: %(arguments)s', {
