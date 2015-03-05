@@ -4,25 +4,27 @@ from decimal import Decimal, DecimalException
 import logging
 import urllib
 import hashlib
+import itertools
+import lxml.objectify
 from veil.environment import VEIL_ENV_TYPE
-from veil.frontend.cli import *
 from veil.utility.http import *
 from veil.utility.encoding import *
-from veil.model.binding import *
-from veil.model.event import *
+from veil.frontend.cli import *
+from veil.profile.model import *
 from veil.profile.web import *
 from .alipay_client_installer import alipay_client_config
 
 LOGGER = logging.getLogger(__name__)
 
-EVENT_ALIPAY_TRADE_PAID = define_event('alipay-trade-paid') # valid notification
+EVENT_ALIPAY_TRADE_PAID = define_event('alipay-trade-paid')  # valid notification
 
 PAYMENT_URL = 'https://mapi.alipay.com/gateway.do'
 VERIFY_URL = PAYMENT_URL
 
 NOTIFIED_FROM_RETURN_URL = 'return_url'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
-NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # alipay require this 7 characters to be returned to them
+NOTIFIED_FROM_PAYMENT_QUERY = 'payment_query'
+NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # alipay require this 7 characters to be returned to them
 
 
 def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, minutes_to_complete_payment,
@@ -58,44 +60,82 @@ def query_status(out_trade_no):
     query_alipay_payment_status(out_trade_no)
 
 
-def query_alipay_payment_status(out_trade_no):  # TODO
-    raise NotImplementedError()
+def query_alipay_payment_status(out_trade_no):
+    params = {'service': 'single_trade_query', 'partner': alipay_client_config().partner_id, '_input_charset': 'UTF-8', 'out_trade_no': out_trade_no}
+    params['sign'] = sign_md5(params)
+    params['sign_type'] = 'MD5'
+    try:
+        response = requests.get(PAYMENT_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
+        response.raise_for_status()
+    except:
+        LOGGER.exception('alipay payment query exception-thrown: %(params)s', {'params': params})
+        raise
+    else:
+        arguments = parse_xml_response(response.content)
+        if arguments.is_success == 'T':
+            if 'out_trade_no' not in arguments:
+                arguments.out_trade_no = out_trade_no
+            discarded_reasons = process_alipay_payment_notification(out_trade_no, arguments, NOTIFIED_FROM_PAYMENT_QUERY)
+            paid = not bool(discarded_reasons)
+        else:
+            LOGGER.warn('alipay payment query failed: %(params)s, %(arguments)s', {'params': params, 'arguments': arguments})
+            paid = False
+    return paid
+
+
+def parse_xml_response(response):
+    arguments = DictObject()
+    root = lxml.objectify.fromstring(response)
+    for e in itertools.chain(root.iterchildren(), root.response.trade.iterchildren()) if root.is_success.text == 'T' else root.iterchildren():
+        if e.text:
+            arguments[e.tag] = e.text
+    return arguments
 
 
 def process_alipay_payment_notification(out_trade_no, arguments, notified_from):
-    trade_no, buyer_id, paid_total, paid_at, show_url, discarded_reasons = validate_payment_notification(arguments)
+    trade_no, buyer_id, paid_total, paid_at, show_url, discarded_reasons = validate_payment_notification(out_trade_no, arguments,
+        NOTIFIED_FROM_PAYMENT_QUERY != notified_from)
     if discarded_reasons:
         LOGGER.warn('alipay trade notification discarded: %(discarded_reasons)s, %(arguments)s', {
             'discarded_reasons': discarded_reasons,
             'arguments': arguments
         })
-        set_http_status_code(httplib.BAD_REQUEST)
-        return '<br/>'.join(discarded_reasons)
+        if NOTIFIED_FROM_PAYMENT_QUERY == notified_from:
+            return discarded_reasons
+        else:
+            set_http_status_code(httplib.BAD_REQUEST)
+            return '<br/>'.join(discarded_reasons)
     publish_event(EVENT_ALIPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
         paid_total=paid_total, paid_at=paid_at, show_url=show_url, notified_from=notified_from)
     if NOTIFIED_FROM_RETURN_URL == notified_from:
         redirect_to(show_url or '/')
-    else:
+    elif NOTIFIED_FROM_NOTIFY_URL == notified_from:
         return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
+    else:
+        return discarded_reasons
 
 
-def validate_payment_notification(arguments):
+def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
     discarded_reasons = []
     if VEIL_ENV_TYPE not in {'development', 'test'}:
         if is_sign_correct(arguments):
-            notify_id = arguments.get('notify_id')
-            if notify_id:
-                error = validate_notification_from_alipay(notify_id)
-                if error:
-                    discarded_reasons.append(error)
-            else:
-                discarded_reasons.append('no notify_id')
+            if with_notify_id:
+                notify_id = arguments.get('notify_id')
+                if notify_id:
+                    error = validate_notification_from_alipay(notify_id)
+                    if error:
+                        discarded_reasons.append(error)
+                else:
+                    discarded_reasons.append('no notify_id')
         else:
             discarded_reasons.append('sign is incorrect')
     if arguments.get('trade_status') not in {'TRADE_SUCCESS', 'TRADE_FINISHED'}:
         discarded_reasons.append('trade not succeeded')
-    if not arguments.get('out_trade_no'):
+    out_trade_no_ = arguments.get('out_trade_no')
+    if not out_trade_no_:
         discarded_reasons.append('no out_trade_no')
+    elif out_trade_no_ != out_trade_no:
+        discarded_reasons.append('inconsistent out_trade_no: %(expected)s, %(actual)s', {'expected': out_trade_no, 'actual': out_trade_no_})
     trade_no = arguments.get('trade_no')
     if not trade_no:
         discarded_reasons.append('no trade_no')

@@ -7,15 +7,11 @@ import hashlib
 from uuid import uuid4
 import lxml.objectify
 from veil.environment import VEIL_ENV_TYPE
-from veil.frontend.cli import *
-from veil.backend.redis import *
-from veil.utility.clock import *
-from veil.model.binding import *
-from veil.model.event import *
-from veil.model.collection import *
-from veil.profile.web import *
 from veil.utility.http import *
 from veil.utility.encoding import *
+from veil.frontend.cli import *
+from veil.profile.model import *
+from veil.profile.web import *
 from .wxpay_client_installer import wxpay_client_config
 
 LOGGER = logging.getLogger(__name__)

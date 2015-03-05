@@ -114,7 +114,6 @@ def query_logistics_status(query_order):
         raise
     else:
         query_result = lxml.objectify.fromstring(response.text)
-        LOGGER.info(response.text)
         logistics_status = DictObject(steps = [], signed_at=None, rejected_at=None)
         for step in query_result.orders.order.steps.iterchildren():
             step_created_at = convert_datetime_to_client_timezone(parse(step.acceptTime.text))

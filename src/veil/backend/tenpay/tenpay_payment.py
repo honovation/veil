@@ -6,19 +6,16 @@ import urllib
 import hashlib
 import lxml.objectify
 from veil.environment import VEIL_ENV_TYPE
-from veil.frontend.cli import *
 from veil.utility.http import *
 from veil.utility.encoding import *
-from veil.utility.clock import *
-from veil.model.binding import *
-from veil.model.event import *
-from veil.model.collection import *
+from veil.frontend.cli import *
+from veil.profile.model import *
 from veil.profile.web import *
 from .tenpay_client_installer import tenpay_client_config
 
 LOGGER = logging.getLogger(__name__)
 
-EVENT_TENPAY_TRADE_PAID = define_event('tenpay-trade-paid') # valid notification
+EVENT_TENPAY_TRADE_PAID = define_event('tenpay-trade-paid')  # valid notification
 
 PAYMENT_URL = 'https://gw.tenpay.com/gateway/pay.htm'
 VERIFY_URL = 'https://gw.tenpay.com/gateway/simpleverifynotifyid.xml'
@@ -27,7 +24,7 @@ PAYMENT_QUERY_URL = 'https://gw.tenpay.com/gateway/normalorderquery.xml'
 NOTIFIED_FROM_RETURN_URL = 'return_url'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 NOTIFIED_FROM_PAYMENT_QUERY = 'payment_query'
-NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success' # tenpay require this 7 characters to be returned to them
+NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # tenpay require this 7 characters to be returned to them
 
 
 def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, time_start, time_expire, shopper_ip_address,
@@ -82,8 +79,8 @@ def query_tenpay_payment_status(out_trade_no):
 
 
 def process_tenpay_payment_notification(out_trade_no, arguments, notified_from):
-    trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_payment_notification(arguments,
-        NOTIFIED_FROM_PAYMENT_QUERY != notified_from)
+    trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_payment_notification(out_trade_no,
+        arguments, NOTIFIED_FROM_PAYMENT_QUERY != notified_from)
     if discarded_reasons:
         LOGGER.warn('tenpay payment notification discarded: %(discarded_reasons)s, %(arguments)s', {
             'discarded_reasons': discarded_reasons,
@@ -105,7 +102,7 @@ def process_tenpay_payment_notification(out_trade_no, arguments, notified_from):
         return discarded_reasons
 
 
-def validate_payment_notification(arguments, with_notify_id=True):
+def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
     discarded_reasons = []
     if VEIL_ENV_TYPE not in {'development', 'test'}:
         if is_sign_correct(arguments):
@@ -121,8 +118,11 @@ def validate_payment_notification(arguments, with_notify_id=True):
             discarded_reasons.append('sign is incorrect')
     if '0' != arguments.get('trade_state'):
         discarded_reasons.append('trade not succeeded')
-    if not arguments.get('out_trade_no'):
+    out_trade_no_ = arguments.get('out_trade_no')
+    if not out_trade_no_:
         discarded_reasons.append('no out_trade_no')
+    elif out_trade_no_ != out_trade_no:
+        discarded_reasons.append('inconsistent out_trade_no: %(expected)s, %(actual)s', {'expected': out_trade_no, 'actual': out_trade_no_})
     trade_no = arguments.get('transaction_id')
     if not trade_no:
         discarded_reasons.append('no transaction_id')
