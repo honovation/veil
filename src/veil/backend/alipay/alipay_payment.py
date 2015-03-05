@@ -71,20 +71,26 @@ def query_alipay_payment_status(out_trade_no):
         raise
     else:
         arguments = parse_payment_status_response(response.content)
-        discarded_reasons = process_alipay_payment_notification(out_trade_no, arguments, NOTIFIED_FROM_PAYMENT_QUERY)
-        paid = not bool(discarded_reasons)
+        if arguments.is_success == 'T':
+            arguments.trade.update(sign=arguments.sign, sign_type=arguments.sign_type)
+            discarded_reasons = process_alipay_payment_notification(out_trade_no, arguments.trade, NOTIFIED_FROM_PAYMENT_QUERY)
+            paid = not bool(discarded_reasons)
+        else:
+            LOGGER.warn('alipay payment query failed: %(params)s, %(arguments)s', {'params': params, 'arguments': arguments})
+            paid = False
     return paid
 
 
 def parse_payment_status_response(response):
+    arguments = DictObject(trade=DictObject())
     root = lxml.objectify.fromstring(response)
-    arguments = DictObject(sign=root.sign.text, sign_type=root.sign_type.text)
-    if arguments.is_success.text == 'T':
+    for e in root.iterchildren():
+        if e.text:
+            arguments[e.tag] = e.text
+    if arguments.is_success == 'T':
         for e in root.response.trade.iterchildren():
             if e.text:
-                arguments[e.tag] = e.text
-    else:
-        arguments.error = root.error.text
+                arguments.trade[e.tag] = e.text
     return arguments
 
 
@@ -125,12 +131,6 @@ def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
                     discarded_reasons.append('no notify_id')
         else:
             discarded_reasons.append('sign is incorrect')
-
-    error = arguments.get('error')  # payment query failure response
-    if error:
-        discarded_reasons.append('error: {}'.format(error))
-        return None, None, None, None, None, discarded_reasons
-
     if arguments.get('trade_status') not in {'TRADE_SUCCESS', 'TRADE_FINISHED'}:
         discarded_reasons.append('trade not succeeded')
     out_trade_no_ = arguments.get('out_trade_no')
