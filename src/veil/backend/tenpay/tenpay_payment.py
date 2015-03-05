@@ -73,8 +73,12 @@ def query_tenpay_payment_status(out_trade_no):
         raise
     else:
         arguments = parse_xml_response(response.content)
-        discarded_reasons = process_tenpay_payment_notification(out_trade_no, arguments, NOTIFIED_FROM_PAYMENT_QUERY)
-        paid = not bool(discarded_reasons)
+        if arguments.retcode == '0':
+            discarded_reasons = process_tenpay_payment_notification(out_trade_no, arguments, NOTIFIED_FROM_PAYMENT_QUERY)
+            paid = not bool(discarded_reasons)
+        else:
+            LOGGER.warn('tenpay payment query failed: %(params)s, %(arguments)s', {'params': params, 'arguments': arguments})
+            paid = False
     return paid
 
 
