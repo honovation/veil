@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 import contextlib
 import atexit
+from functools import wraps
 from veil_component import load_all_components, record_dynamic_dependency_provider, get_loading_component_name
 from veil.development.test import *
 
@@ -24,7 +25,10 @@ def document_statement(statement_name):
     def register(func):
         record_dynamic_dependency_provider(get_loading_component_name(), 'document-statement', statement_name)
         register_document_statement(statement_name, func)
-        return func
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+        return wrapper
     return register
 
 document_statement('创建')(require_fixture)
