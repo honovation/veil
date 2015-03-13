@@ -25,7 +25,7 @@ def postgresql_server_resource(purpose, config):
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
         postgresql_apt_repository_resource(),
-        # remove cmd_run_before_install at below at next PostgreSQL server upgrade
+        #TODO: remove cmd_run_before_install at below at next PostgreSQL server upgrade 20150313
         os_package_resource(name='postgresql-{}'.format(config.version), cmd_run_before_install='rm -f /etc/sysctl.d/30-postgresql-shm.conf')])
     resources.extend([
         os_service_resource(state='not_installed', name='postgresql'),
