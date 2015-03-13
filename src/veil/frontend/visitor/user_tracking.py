@@ -22,7 +22,6 @@ import logging
 import contextlib
 import uuid
 from veil.backend.redis import *
-from veil.development.test import *
 from veil.model.collection import *
 from veil.frontend.nginx import *
 from veil.frontend.web import *
@@ -35,7 +34,8 @@ DEFAULT_COOKIE_EXPIRES_DAYS = 360
 DEFAULT_SESSION_TTL = timedelta(minutes=30)
 SESSION_TTL_ENABLED = lambda: True
 
-config = {} # one process services at most one website, i.e. a specific purpose
+config = {}  # one process services at most one website, i.e. a specific purpose
+
 
 def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSION_TTL, is_session_ttl_enabled=SESSION_TTL_ENABLED,
         session_cookie_on_parent_domain=False, cookie_expires_days=DEFAULT_COOKIE_EXPIRES_DAYS):
@@ -91,8 +91,6 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
 
 
 def get_browser_code():
-    if get_executing_test(optional=True):
-        return 'BROWSER_CODE_FOR_TEST_ENV'
     return get_cookie(VEIL_BROWSER_CODE_COOKIE_NAME)
 
 
@@ -111,8 +109,6 @@ def set_latest_user_id(purpose, user_id):
 
 
 def get_user_session(purpose, browser_code=None):
-    if get_executing_test(optional=True):
-        return DictObject(purpose=purpose, browser_code=browser_code or get_browser_code(), user_id='USER_ID_FOR_TEST_ENV')
     session_value = get_secure_cookie(purpose)
     if session_value:
         try:
@@ -156,8 +152,6 @@ def get_logged_in_user_id(purpose, session=None, is_session_ttl_enabled=None):
     is_session_ttl_enabled = is_session_ttl_enabled or config[purpose].is_session_ttl_enabled
     if is_session_ttl_enabled():
         user_id = redis().get(logged_in_user_id_key(session))
-        if get_executing_test(optional=True):
-            return user_id
         if not user_id or user_id != session.user_id:
             return None
     return session.user_id
