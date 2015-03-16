@@ -72,5 +72,5 @@ def download_baseline(veil_env_name, remote_path, baseline_path):
     server_guard = get_veil_server(veil_env_name, '@guard')
     host_guard = get_veil_host(veil_env_name, server_guard.host_name)
     container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server_guard.container_name)
-    shell_execute('''rsync -avhPz -e "ssh -i {} -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --delete root@{}:{}/{}/ {}/'''.format(
+    shell_execute('''rsync -avhPz -e "ssh -i {} -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --delete root@{}:{}/{}/ {}/'''.format(
         guard_key, host_guard.ssh_port, host_guard.internal_ip, container_rootfs_path, remote_path, baseline_path), debug=True)

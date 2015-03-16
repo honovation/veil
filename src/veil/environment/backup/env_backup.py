@@ -72,7 +72,7 @@ def fetch_host_backup(host, timestamp):
     if server_guard.host_base_name == host.base_name:
         shell_execute('rsync -avh --numeric-ids --delete {} {} {}/'.format(link_dest, host_backup_dir, backup_dir), debug=True)
     else:
-        shell_execute('rsync -avhPz -e "ssh -i {} -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete {} root@{}:{} {}/'.format(
+        shell_execute('rsync -avhPz -e "ssh -i {} -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete {} root@{}:{} {}/'.format(
             SSH_KEY_PATH, host.ssh_port, link_dest, host.internal_ip, host_backup_dir, backup_dir), debug=True)
 
 
@@ -86,6 +86,6 @@ def rsync_to_backup_mirror():
     if not backup_mirror:
         return
     backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV_NAME)
-    shell_execute('''rsync -avhHPz -e "ssh -i {} -p {} -T -x -c arcfour -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete --bwlimit={} {}/ {}@{}:{}/'''.format(
+    shell_execute('''rsync -avhHPz -e "ssh -i {} -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete --bwlimit={} {}/ {}@{}:{}/'''.format(
         SSH_KEY_PATH, backup_mirror.ssh_port, backup_mirror.bandwidth_limit, VEIL_BACKUP_ROOT, backup_mirror.ssh_user, backup_mirror.host_ip,
         backup_mirror_path), debug=True)
