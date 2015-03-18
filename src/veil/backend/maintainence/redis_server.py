@@ -6,7 +6,7 @@ from veil.backend.queue import *
 
 
 @periodic_job('17 1 * * 0')
-def rewrite_aof():
+def rewrite_redis_aof_job():
     current_veil_env = get_current_veil_env()
     if hasattr(current_veil_env.config, 'redis_servers'):
         return
