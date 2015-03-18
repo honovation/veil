@@ -49,7 +49,7 @@ BASIC_LAYOUT_RESOURCES = [
 ]
 
 
-def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, pypi_index_url=PYPI_INDEX_URL, deployment_memo=None):
+def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, pypi_index_url=PYPI_INDEX_URL, deployment_memo=None, config={}):
     server_names = servers.keys()
     if sorted_server_names:
         assert set(sorted_server_names) == set(server_names), 'ENV {}: inconsistency between sorted_server_names {} and server_names {}'.format(name,
@@ -63,7 +63,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
     env = objectify({
         'name': name, 'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names,
         'apt_url': apt_url, 'pypi_index_host': urlparse(pypi_index_url).hostname, 'pypi_index_url': pypi_index_url,
-        'deployment_memo': deployment_memo
+        'deployment_memo': deployment_memo, 'config': config
     })
     env.env_dir = OPT_DIR / env.name
     env.veil_home = VEIL_HOME if env.name in {'development', 'test'} else env.env_dir / 'code' / 'app'
@@ -222,12 +222,16 @@ def get_veil_host(veil_env_name, veil_host_name):
     return get_veil_env(veil_env_name).hosts[veil_host_name]
 
 
-def get_veil_env_deployment_memo(veil_env_name):
-    return get_veil_env(veil_env_name).deployment_memo
-
-
 def get_veil_env(veil_env_name):
     return get_application().ENVIRONMENTS[veil_env_name]
+
+
+def get_current_veil_env():
+    return get_veil_env(VEIL_ENV_NAME)
+
+
+def get_veil_env_deployment_memo(veil_env_name):
+    return get_veil_env(veil_env_name).deployment_memo
 
 
 def get_application_codebase():

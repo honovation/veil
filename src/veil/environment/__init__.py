@@ -39,6 +39,7 @@ from .environment import veil_env
 from .environment import veil_host
 from .environment import veil_server
 from .environment import get_veil_env
+from .environment import get_current_veil_env
 from .environment import get_veil_env_deployment_memo
 from .environment import list_veil_hosts
 from .environment import get_veil_host
