@@ -47,7 +47,7 @@ def send_sms(receivers, message, sms_code):
     try:
         #retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
         response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9),
-            max_retries=Retry(total=2, read=False, method_whitelist={'POST'}, status_forcelist=[500, 503], backoff_factor=2))
+            max_retries=Retry(total=2, read=False, method_whitelist={'POST'}, status_forcelist=[503], backoff_factor=2))
         response.raise_for_status()
     except:
         LOGGER.exception('emay sms send exception-thrown: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
