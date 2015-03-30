@@ -60,7 +60,7 @@ class FilesystemBucket(Bucket):
         self.base_directory = as_path(base_directory)
         self.base_url = base_url
 
-    def store(self, key, file):
+    def store(self, key, file_object):
         self.validate_key(key)
         path = self.to_path(key)
         path.parent.makedirs(mode=0770)
@@ -68,7 +68,7 @@ class FilesystemBucket(Bucket):
         try:
             with tempfile.NamedTemporaryFile('wb', suffix='---{}---tmp'.format(path.name), dir=path.parent, delete=False) as tf:
                 temp_path = tf.name
-                for chunk in iter_file_in_chunks(file):
+                for chunk in iter_file_in_chunks(file_object):
                     tf.write(chunk)
             os.rename(temp_path, path)
         except:
@@ -85,16 +85,15 @@ class FilesystemBucket(Bucket):
         return open(self.to_path(key), 'rb')
 
     def get_url(self, key):
-        if key:
-            path = self.to_path(key)
-            if path.exists():
-                with open(path) as f:
-                    hash = calculate_file_md5_hash(f)
-                return '{}/{}?v={}'.format(self.base_url, key, hash)
-            else:
-                return '{}/{}'.format(self.base_url, key)
+        if not key:
+            return ''
+        path = self.to_path(key)
+        if path.exists():
+            with open(path) as f:
+                hash = calculate_file_md5_hash(f)
+            return '{}/{}?v={}'.format(self.base_url, key, hash)
         else:
-            return None
+            return '{}/{}'.format(self.base_url, key)
 
     def delete(self, key):
         self.to_path(key).remove()

@@ -134,7 +134,7 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_f
                 '''.format(purpose, extra_headers)
         },
         # inline static files
-        # /static/v-xxxx/a-b.js
+        # /static/v-xx-xx/a-b.js
         '~ ^/static/v-(.*)-(.*)/': {
             '_': '''
                 {}

@@ -10,7 +10,7 @@ from veil.frontend.cli import *
 def load_versions(purpose):
     migration_script_dir = VEIL_HOME / 'db' / purpose
     versions = {}
-    for migration_script in migration_script_dir.files('*.sql'):
+    for migration_script in migration_script_dir.walkfiles('*.sql'):
         _, file_name = migration_script.splitpath()
         if '-' not in file_name:
             raise Exception('invalid migration script name: {}'.format(file_name))
