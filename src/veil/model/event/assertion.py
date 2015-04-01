@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from .event import subscribe_event
 from .event import unsubscribe_event
 from veil.model.collection import DictObject
-from veil.model.collection import single
+
 
 def assert_event_published(*event_types):
     assert event_types
@@ -10,7 +10,7 @@ def assert_event_published(*event_types):
     def check_events(event_types, events):
         if not events:
             if len(event_types) == 1:
-                raise Exception('did not publish event {}'.format(single(event_types)))
+                raise Exception('did not publish event {}'.format(event_types[0]))
             else:
                 raise Exception('did not publish event in any of these topics: {}'.format(event_types))
 
@@ -23,7 +23,7 @@ def assert_event_not_published(*event_types):
     def check_events(event_types, events):
         if events:
             if len(event_types) == 1:
-                raise Exception('should not publish event {}'.format(single(event_types)))
+                raise Exception('should not publish event {}'.format(event_types[0]))
             else:
                 raise Exception('should not publish event in any of these topics: {}'.format(event_types))
 

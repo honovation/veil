@@ -5,6 +5,7 @@ from .collection import first_or_none
 from .collection import single
 from .collection import DictObject
 
+
 class SingleOrNoneTest(TestCase):
     def test(self):
         self.assertIsNone(single_or_none([]))
@@ -47,6 +48,3 @@ class DictObjectTest(TestCase):
     def test_get_not_existing_attribute(self):
         with self.assertRaises(AttributeError):
             DictObject().hello
-
-
-
