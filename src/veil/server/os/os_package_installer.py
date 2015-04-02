@@ -129,6 +129,7 @@ def to_resource_key(pip_package):
 
 
 def get_local_os_package_versions(name):
+    # TODO: rely on English system language, python-apt lib?
     installed_version = None
     downloaded_version = None
     lines = shell_execute('apt-cache policy {}'.format(name), capture=True, debug=True).splitlines()
