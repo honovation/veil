@@ -3,59 +3,13 @@ from __future__ import unicode_literals, print_function, division
 DEFAULT_PRIMARY_KEYS = ('id',)
 
 
-def filter_single_or_none(collection, criteria):
-    return single_or_none(filter(criteria, collection))
-
-
-def single_or_none(collection):
-    length = len(collection)
-    if length == 0:
-        return None
-    elif length == 1:
-        return collection[0]
-    else:
-        raise Exception('more than one element in collection: {}'.format(collection))
-
-
-def filter_single(collection, criteria):
-    return single(filter(criteria, collection))
-
-
-def single(collection):
-    length = len(collection)
-    if length == 0:
-        raise Exception('no element in collection')
-    elif length == 1:
-        return collection[0]
-    else:
-        raise Exception('more than one element in collection: {}'.format(collection))
-
-
-def filter_first_or_none(collection, criteria):
-    return first_or_none(filter(criteria, collection))
-
-
-def first_or_none(collection):
-    return collection[0] if collection else None
-
-
-def filter_first(collection, criteria):
-    return first(filter(criteria, collection))
-
-
-def first(collection):
-    if not collection:
-        raise Exception('no element in collection')
-    return collection[0]
-
-
 def objectify(o):
     if isinstance(o, DictObject):
         return o
     elif isinstance(o, dict):
         return DictObject({k: objectify(v) for k, v in o.items()})
     elif isinstance(o, (tuple, set, list)):
-        return [objectify(e) for e in o]
+        return o.__class__(objectify(e) for e in o)
     else:
         return o
 
@@ -66,18 +20,39 @@ def entitify(o, primary_keys=True):
     elif isinstance(o, (dict, DictObject)):
         return Entity({k: entitify(v, primary_keys=primary_keys) for k, v in o.items()}, primary_keys=primary_keys)
     elif isinstance(o, (tuple, set, list)):
-        return [entitify(e, primary_keys=primary_keys) for e in o]
+        return o.__class__(entitify(e, primary_keys=primary_keys) for e in o)
     else:
         return o
 
 
 def freeze_dict_object(o):
-    if isinstance(o, FrozenDictObject):
+    if isinstance(o, (FrozenDictObject, FrozenEntity)):
+        return o
+    elif isinstance(o, Entity):
+        return FrozenEntity({k: freeze_dict_object(v) for k, v in o.items()})
+    elif isinstance(o, DictObject):
+        return FrozenDictObject({k: freeze_dict_object(v) for k, v in o.items()})
+    elif type(o) is dict:
+        return FrozenDictObject({k: freeze_dict_object(v) for k, v in o.items()})
+    elif isinstance(o, dict):
+        return o.__class__({k: freeze_dict_object(v) for k, v in o.items()})
+    elif isinstance(o, (tuple, set, list)):
+        return o.__class__(freeze_dict_object(e) for e in o)
+    else:
+        return o
+
+
+def unfreeze_dict_object(o):
+    if isinstance(o, FrozenEntity):
+        return Entity({k: unfreeze_dict_object(v) for k, v in o.items()})
+    elif isinstance(o, FrozenDictObject):
+        return DictObject({k: unfreeze_dict_object(v) for k, v in o.items()})
+    elif isinstance(o, DictObject):
         return o
     elif isinstance(o, dict):
-        return FrozenDictObject({k: freeze_dict_object(v) for k, v in o.items()})
+        return o.__class__({k: unfreeze_dict_object(v) for k, v in o.items()})
     elif isinstance(o, (tuple, set, list)):
-        return [freeze_dict_object(e) for e in o]
+        return o.__class__(unfreeze_dict_object(e) for e in o)
     else:
         return o
 
@@ -112,8 +87,7 @@ class FrozenDictObject(DictObject):
 
 class Entity(DictObject):
     def __init__(self, seq=None, primary_keys=True, **kwargs):
-        super(Entity, self).__init__(seq, **kwargs)
-        self.primary_keys = DEFAULT_PRIMARY_KEYS if primary_keys is True else primary_keys
+        super(Entity, self).__init__(seq, primary_keys=DEFAULT_PRIMARY_KEYS if primary_keys is True else primary_keys, **kwargs)
         assert self.primary_keys, 'must specify primary_keys'
         if all(getattr(self, primary_key, None) is None for primary_key in self.primary_keys):
             raise Exception('{} does not have any of {}'.format(self, self.primary_keys))
@@ -143,3 +117,11 @@ class Entity(DictObject):
 
     def __repr__(self):
         return '<{}: {}>'.format(type(self).__name__, ', '.join('{}={}'.format(k, getattr(self, k, None)) for k in self.primary_keys))
+
+
+class FrozenEntity(Entity):
+    def __setattr__(self, key, value):
+        raise Exception('it is frozen')
+
+    def __setitem__(self, key, value):
+        raise Exception('it is frozen')
