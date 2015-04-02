@@ -87,7 +87,7 @@ def require_transaction_context(db):
             finally:
                 try:
                     db.rollback_transaction()
-                except:
+                except Exception:
                     pass
         else:
             db.commit_transaction()
@@ -135,21 +135,21 @@ class Database(object):
     def rollback_transaction(self):
         try:
             self.conn.rollback_transaction()
-        except:
+        except Exception:
             LOGGER.exception('Cannot rollback database transaction')
             raise
 
     def commit_transaction(self):
         try:
             self.conn.commit_transaction()
-        except:
+        except Exception:
             LOGGER.exception('Cannot commit database transaction')
             raise
 
     def close(self):
         try:
             self.conn.close()
-        except:
+        except Exception:
             LOGGER.exception('Cannot close database connection')
 
     def has_rows(self, sql, **kwargs):
@@ -473,5 +473,5 @@ def close_all_connections():
             LOGGER.debug('close connection at exit: %(purpose)s', {'purpose': purpose})
         try:
             instance.close()
-        except:
+        except Exception:
             LOGGER.exception('Cannot close database connection')

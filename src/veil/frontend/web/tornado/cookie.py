@@ -43,7 +43,7 @@ def get_secure_cookie(name, value=None, default=None, max_age_days=31, request=N
         return default
     try:
         return to_unicode(base64.b64decode(parts[0]))
-    except:
+    except Exception:
         return default
 
 
@@ -73,7 +73,7 @@ def get_cookie(name, default=None, request=None):
     if name in cookies:
         try:
             return to_unicode(cookies[name].value)
-        except:
+        except Exception:
             return default
     return default
 
@@ -83,7 +83,7 @@ def get_cookie_from_response(name):
     if current_http_response and name in current_http_response.cookies:
         try:
             return to_unicode(current_http_response.cookies[name].value)
-        except:
+        except Exception:
             return None
     return None
 

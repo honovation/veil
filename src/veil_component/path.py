@@ -439,7 +439,7 @@ class Path(_base):
             try:
                 isfile = child.isfile()
                 isdir = not isfile and child.isdir()
-            except:
+            except Exception:
                 if errors == 'ignore':
                     continue
                 elif errors == 'warn':

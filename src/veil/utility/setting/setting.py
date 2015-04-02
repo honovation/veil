@@ -19,7 +19,7 @@ def merge_settings(base, updates, overrides=False):
             if k in updates:
                 try:
                     merged[k] = merge_settings(base[k], updates[k], overrides=overrides)
-                except:
+                except Exception:
                     raise Exception('can not merge: {}\r\n{}'.format(k, sys.exc_info()[1]))
             else:
                 merged[k] = base[k]

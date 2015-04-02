@@ -23,7 +23,7 @@ def publish_event(event_type, loads_event_handlers=True, **kwargs):
     for subscriber in subscribers[topic]:
         try:
             subscriber(**kwargs)
-        except:
+        except Exception:
             LOGGER.exception('failed to publish event: publishing topic %(topic)s to subscriber %(subscriber)s', {
                 'topic': topic,
                 'subscriber': subscriber

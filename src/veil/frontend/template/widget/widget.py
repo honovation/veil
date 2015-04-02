@@ -106,7 +106,7 @@ class Widget(object):
                     if content is None:
                         return None
                     return Markup(to_unicode(content))
-        except:
+        except Exception:
             type, value, traceback = sys.exc_info()
             if not getattr(value, 'EXPECTED_WIDGET_ERROR', None):
                 LOGGER.error('failed to render widget: %(name)s', {'name': self.name})

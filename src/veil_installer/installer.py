@@ -58,7 +58,7 @@ def application_resource(component_names, config):
         for component_name in component_names:
             try:
                 __import__(component_name)
-            except:
+            except Exception:
                 if get_dry_run_result() is None:
                     raise
         resources = []
@@ -116,7 +116,7 @@ def do_install(resource):
     try:
         installer = get_installer(installer_name)
         return installer(do_install=True, **installer_args) or []
-    except:
+    except Exception:
         if get_dry_run_result() is None:
             raise
         else:

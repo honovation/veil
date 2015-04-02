@@ -67,5 +67,5 @@ def remove_iptables_rules():
     for lan_range in lan_ranges:
         try:
             shell_execute('sudo iptables -t nat -D OUTPUT -p tcp -d {}.0.0/16 -j REDIRECT --to-ports 12345'.format(lan_range))
-        except:
+        except Exception:
             LOGGER.exception('Cannot remove iptables rules for lan range: %(lan_range)s', {'lan_range': lan_range})

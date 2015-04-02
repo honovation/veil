@@ -45,7 +45,7 @@ class TimedTextTestResult(TextTestResult):
         test.addCleanup(timer.cancel)
         try:
             super(TimedTextTestResult, self).startTest(test)
-        except:
+        except Exception:
             import traceback
 
             traceback.print_exc()

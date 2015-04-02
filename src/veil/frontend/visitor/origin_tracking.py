@@ -39,7 +39,7 @@ def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_pa
                         if not host.endswith(parent_domain) and all(not host.endswith(host_suffix) for host_suffix in exclude_host_suffixes) \
                                 and all(not request.path.startswith(to_str(path_prefix)) for path_prefix in exclude_path_prefixes):
                             set_visitor_origin(referer, expires_days=cookie_expires_days)
-        except:
+        except Exception:
             LOGGER.exception('failed to track visitor origin: %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
                 'uri': request.uri,
                 'referer': request.headers.get('Referer'),
@@ -79,7 +79,7 @@ def get_visitor_origin(cps_as_int=False, max_age_days=DEFAULT_ORIGIN_COOKIE_EXPI
         else:
             cps = cps or None
         cps_detail = cps_detail or None
-    except:
+    except Exception:
         LOGGER.warn('invalid visitor origin tracking cookie: %(cookie)s', {'cookie': cookie})
         return None, None, None, None
     return host, referer, cps, cps_detail

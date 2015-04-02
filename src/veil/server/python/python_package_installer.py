@@ -225,7 +225,7 @@ def install_python_package_remotely(name, version, url, allow_external=False, **
             else:
                 shell_execute('pip install -i {} --trusted-host {} --timeout 30 {}=={} {allow_external_term}'.format(server.pypi_index_url,
                     server.pypi_index_host, name, version, allow_external_term=allow_external_term), capture=True, debug=True, **kwargs)
-        except:
+        except Exception:
             if tries >= max_tries:
                 raise
         else:

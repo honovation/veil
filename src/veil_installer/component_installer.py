@@ -36,7 +36,7 @@ def installer_resource(name):
                 if not line:
                     continue
                 resources.append(parse_resource(line))
-        except:
+        except Exception:
             LOGGER.error('failed to parse: %(installer_path)s', {'installer_path': installer_path})
             raise
     return resources

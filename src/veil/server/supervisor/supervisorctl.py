@@ -13,7 +13,7 @@ def supervisorctl(action, *arguments, **kwargs):
 def is_supervisord_running():
     try:
         import supervisor
-    except:
+    except Exception:
         return False
     if not (VEIL_ETC_DIR / 'supervisor.cfg').exists():
         return False

@@ -66,7 +66,7 @@ def query_alipay_payment_status(out_trade_no):
     try:
         response = requests.get(PAYMENT_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
-    except:
+    except Exception:
         LOGGER.exception('alipay payment query exception-thrown: %(params)s', {'params': params})
         raise
     else:
@@ -155,7 +155,7 @@ def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y-%m-%d %H:%M:%S')(paid_at)
-        except:
+        except Exception:
             discarded_reasons.append('invalid gmt_payment or notify_time: {}'.format(paid_at))
     else:
         discarded_reasons.append('no gmt_payment or notify_time')
@@ -194,7 +194,7 @@ def validate_notification_from_alipay(notify_id):
     try:
         response = requests.get(VERIFY_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
-    except:
+    except Exception:
         LOGGER.exception('alipay notify verify exception-thrown: %(params)s', {'params': params})
         error = 'failed to validate alipay notification'
     else:

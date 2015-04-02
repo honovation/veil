@@ -86,7 +86,7 @@ else:
                 else:
                     assert_no_js_errors()
                     raise
-            except:
+            except Exception:
                 assert_no_js_errors()
                 raise
 

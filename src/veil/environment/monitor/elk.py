@@ -53,7 +53,7 @@ def kibana_resource(config):
         while True:
             try:
                 shell_execute('wget -U "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36" -N http://download.elasticsearch.org/kibana/kibana/kibana-latest.zip', cwd=KIBANA_SOURCE_PATH.parent, debug=True)
-            except:  # workaround for wget gives 403 Forbidden
+            except Exception:  # workaround for wget gives 403 Forbidden
                 sleep(3)
             else:
                 new_kibana_md5 = shell_execute('md5sum {}'.format(KIBANA_SOURCE_PATH), capture=True).split()[0]

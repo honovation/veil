@@ -233,7 +233,7 @@ def to_datetime_with_minute_precision_from_iso8601(value):
             minutes = -minutes
         tz = pytz.FixedOffset(hours * 60 + minutes)
         return datetime(int(groups['year']), int(groups['month']), int(groups['day']), int(groups['hour']), int(groups['minute']), tzinfo=tz)
-    except:
+    except Exception:
         raise Invalid(_('不是有效的日期时间'))
 
 

@@ -78,7 +78,7 @@ class FilesystemBucket(Bucket):
                 if temp_path:
                     try:
                         os.remove(temp_path)
-                    except:
+                    except Exception:
                         LOGGER.exception('exception while removing temp file: %(temp_path)s', {'temp_path': temp_path})
 
     def retrieve(self, key):

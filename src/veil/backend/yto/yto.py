@@ -83,7 +83,7 @@ def subscribe_logistics_notify(logistics_id, logistics_order):
     try:
         response = requests.post(config.api_url, data=data, headers=headers, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))
         response.raise_for_status()
-    except:
+    except Exception:
         LOGGER.exception('yto logistics subscribe exception-thrown: %(data)s, %(headers)s', {'data': data, 'headers': headers})
         raise
     else:
@@ -109,7 +109,7 @@ def query_logistics_status(query_order):
     try:
         response = requests.post(config.api_url, data=data, headers=headers, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))
         response.raise_for_status()
-    except:
+    except Exception:
         LOGGER.exception('yto logistics query exception-thrown: %(data)s, %(headers)s', {'data': data, 'headers': headers})
         raise
     else:

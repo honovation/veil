@@ -39,7 +39,7 @@ def handle_exception():
         response.status_code = httplib.FORBIDDEN
         response.write(e.message)
         response.finish()
-    except:
+    except Exception:
         LOGGER.exception('failed to handle http request: %(site)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
             'site': request.host,
             'uri': request.uri,
@@ -50,5 +50,5 @@ def handle_exception():
         response.status_code = httplib.INTERNAL_SERVER_ERROR
         try:
             response.finish()
-        except:
+        except Exception:
             LOGGER.exception('failed to finish the request')

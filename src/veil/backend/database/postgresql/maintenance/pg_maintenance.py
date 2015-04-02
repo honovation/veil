@@ -99,7 +99,7 @@ def wait_for_server_up(purpose):
         try:
             psql(purpose, version, '-c "SELECT 1"', database='postgres', capture=True)
             break
-        except:
+        except Exception:
             import traceback
             traceback.print_exc()
             LOGGER.info('[MIGRATE] wait for postgresql...')

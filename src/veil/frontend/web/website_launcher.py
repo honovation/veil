@@ -82,7 +82,7 @@ def remove_no_longer_used_cookies(purpose, current_domain_names=(), parent_domai
                 clear_cookie(name, domain=None)
             for name in parent_domain_names:
                 clear_cookie(name, domain=parent_domain)
-        except:
+        except Exception:
             LOGGER.exception('failed to clear no-longer-used cookies: %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
                 'uri': request.uri,
                 'referer': request.headers.get('Referer'),

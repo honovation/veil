@@ -150,7 +150,7 @@ class RoutingHTTPHandler(object):
             if not_head_request and data is not None:
                 try:
                     data = post_process_page(route.route_handler, data)
-                except:
+                except Exception:
                     LOGGER.error('failed to post-process route: %(route)s', {'route': route})
                     raise
         if not_head_request and data is not None:

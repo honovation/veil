@@ -179,7 +179,7 @@ def pull_application(host):
         while True:
             try:
                 fabric.api.sudo('git pull --rebase')
-            except:
+            except Exception:
                 sleep(1)
                 continue
             else:
@@ -192,7 +192,7 @@ def pull_framework(host):
         while True:
             try:
                 fabric.api.sudo('git pull --rebase')
-            except:
+            except Exception:
                 sleep(1)
                 continue
             else:
@@ -317,7 +317,7 @@ def veil_host_user_editor_resource(host, config_dir):
 
     try:
         fabric.api.run('getent passwd editor')
-    except:
+    except Exception:
         fabric.api.sudo('adduser editor --gecos editor --disabled-login --shell /usr/sbin/nologin --quiet')
 
     fabric.api.sudo('chown -R editor:editor {}'.format(host.editorial_dir))

@@ -37,7 +37,7 @@ def get_delivery_status(shipper_code, shipping_code, sleep_at_start=0):
         response = requests.get(API_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9),
             max_retries=Retry(total=3, backoff_factor=0.5))
         response.raise_for_status()
-    except:
+    except Exception:
         LOGGER.exception('kuaidi100 query exception-thrown: %(params)s', {'params': params})
     else:
         result = objectify(response.json())

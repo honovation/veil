@@ -27,7 +27,7 @@ class MySQLAdapter(object):
         connect_args = DictObject(host=self.host, port=self.port, database=self.database, user=self.user, password=self.password, autocommit=True)
         try:
             conn = mysql.connector.connect(**connect_args)
-        except:
+        except Exception:
             LOGGER.critical('Cannot connect to database: %(connect_args)s', {'connect_args': connect_args}, exc_info=1)
             try:
                 raise
@@ -35,7 +35,7 @@ class MySQLAdapter(object):
                 if conn is not None:
                     try:
                         conn.close()
-                    except:
+                    except Exception:
                         LOGGER.exception('Cannot close database connection')
         else:
             return conn
@@ -44,7 +44,7 @@ class MySQLAdapter(object):
         try:
             with contextlib.closing(self.conn.cursor()) as cur:
                 cur.execute(sql)
-        except:
+        except Exception:
             LOGGER.warn('failed in verifying database connection', exc_info=1)
             self._reconnect()
 
@@ -55,11 +55,11 @@ class MySQLAdapter(object):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
         try:
             self.close()
-        except:
+        except Exception:
             LOGGER.exception('Cannot close database connection')
         try:
             self.conn = self._get_conn()
-        except:
+        except Exception:
             LOGGER.exception('failed to reconnect')
             return False
         else:
@@ -68,7 +68,7 @@ class MySQLAdapter(object):
     def _reconnect_if_broken_per_lightweight_detection(self):
         try:
             self.conn.ping()
-        except:
+        except Exception:
             LOGGER.warn('Oracle connection ping test failed, reconnect now: %(connection)s', {'connection': self})
             self._get_conn()
 

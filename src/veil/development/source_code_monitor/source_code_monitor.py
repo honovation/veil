@@ -44,7 +44,7 @@ class SourceCodeMonitor(threading.Thread):
                 time.sleep(0.5)
                 if self.detect_change():
                     os._exit(1)
-            except:
+            except Exception:
                 LOGGER.exception('source code monitor died')
 
     def detect_change(self):
@@ -86,7 +86,7 @@ def load_components(components):
     for component in components:
         try:
             __import__(component)
-        except:
+        except Exception:
             LOGGER.exception('failed to load component: %(component)s', {'component': component})
             return False
     after = time.time()

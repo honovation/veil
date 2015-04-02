@@ -54,7 +54,7 @@ class ComponentWalker(object):
     def walk_module(self, module_name, visitor, at_top_level=False):
         try:
             module_loader = find_module_loader_without_import(module_name)
-        except:
+        except Exception:
             raise InvalidComponentException('{} not found, {}'.format(module_name, traceback.format_exc()))
         if not module_loader:
             raise InvalidComponentException('{} might be system builtin'.format(module_name))

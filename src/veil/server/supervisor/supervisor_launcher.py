@@ -67,7 +67,7 @@ def update_dynamic_dependencies():
         return
     try:
         load_all_components() # import module will execute a lot record_dynamic_dependency_provider
-    except:
+    except Exception:
         pass
 
 

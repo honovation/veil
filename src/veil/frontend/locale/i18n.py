@@ -19,7 +19,7 @@ def get_locale(*codes):
     for code in codes:
         try:
             locale = Locale.parse('zh_Hans_CN.UTF-8' if code.lower() in ('zh-cn', 'zh_cn', 'cn') else code.replace('-', '_'))
-        except:
+        except Exception:
             LOGGER.exception('Cannot parse locale from the given locale identifier: %(code)s, %(codes)s', {
                 'code': code,
                 'codes': codes

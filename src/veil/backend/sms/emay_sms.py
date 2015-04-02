@@ -49,7 +49,7 @@ def send_sms(receivers, message, sms_code):
         response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9),
             max_retries=Retry(total=2, read=False, method_whitelist={'POST'}, status_forcelist=[503], backoff_factor=2))
         response.raise_for_status()
-    except:
+    except Exception:
         LOGGER.exception('emay sms send exception-thrown: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
         raise
     else:

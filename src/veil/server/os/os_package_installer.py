@@ -76,7 +76,7 @@ def os_package_resource(name, cmd_run_before_install=None, cmd_run_if_install_fa
             shell_execute(cmd_run_before_install, capture=True)
         try:
             shell_execute('apt-get -q -y install {}={}'.format(name, downloaded_version), capture=True, debug=True)
-        except:
+        except Exception:
             if cmd_run_if_install_fail:
                 shell_execute(cmd_run_if_install_fail, capture=True)
         else:

@@ -24,7 +24,7 @@ def bring_up_log_shipper():
         for shipper in shippers:
             try:
                 shipper.ship()
-            except:
+            except Exception:
                 LOGGER.exception('failed to ship log: %(path)s', {'path': shipper.log_path})
         time.sleep(0.1)
 
@@ -55,7 +55,7 @@ class LogShipper(object):
                 if line:
                     try:
                         self.redis_client.rpush(self.redis_key, line)
-                    except:
+                    except Exception:
                         LOGGER.exception('failed to push log: %(line)s, %(path)s', {
                             'line': line,
                             'path': self.log_path
@@ -63,7 +63,7 @@ class LogShipper(object):
                         self.wait_for_redis_back()
                         try:
                             self.redis_client.rpush(self.redis_key, line)
-                        except:
+                        except Exception:
                             LOGGER.critical('failed to push log again: %(line)s, %(path)s', {
                                 'line': line,
                                 'path': self.log_path
@@ -98,7 +98,7 @@ class LogShipper(object):
                 self.log_file = open(self.log_path, 'r')
                 #TODO: [enhancement] remember the latest file position (file_id, latest_pos) to avoid losing logs when restarting log shipper
                 self.log_file.seek(0, os.SEEK_END)
-            except:
+            except Exception:
                 LOGGER.critical('failed to open log file: %(path)s', {'path': self.log_path}, exc_info=1)
                 self.log_file_id = None
                 self.log_file = None
@@ -117,7 +117,7 @@ class LogShipper(object):
         if self.log_file and not self.log_file.closed:
             try:
                 self.log_file.close()
-            except:
+            except Exception:
                 LOGGER.warn('Cannot close log file: %(path)s', {'path': self.log_path}, exc_info=1)
 
     def wait_for_redis_back(self):
@@ -125,7 +125,7 @@ class LogShipper(object):
             time.sleep(1)
             try:
                 self.redis_client.llen(self.redis_key)
-            except:
+            except Exception:
                 LOGGER.exception('log collector still unavailable')
             else:
                 LOGGER.info('log collector back to available now')

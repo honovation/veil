@@ -15,7 +15,7 @@ def install_translations(locale_provider):
     if not locale:
         try:
             locale = get_browser_locale()
-        except:
+        except Exception:
             request = get_current_http_request()
             LOGGER.exception('failed to get browser locale: %(site)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s, %(accept_language)s\n%(stack_trace)s', {
                 'site': request.host,

@@ -13,6 +13,10 @@ from .component_map import get_root_component
 VEIL_LOGGING_LEVEL_CONFIG = 'VEIL_LOGGING_LEVEL_CONFIG'
 VEIL_LOGGING_EVENT = 'VEIL_LOGGING_EVENT'
 
+logging_levels = None
+configured_root_loggers = set()
+log_context_providers = []
+
 
 def configure_logging(component_name):
     logger = logging.getLogger(component_name)
@@ -20,8 +24,6 @@ def configure_logging(component_name):
     clear_logger_handlers(logger)
     configure_root_component_logger(get_root_component(component_name) or component_name)
 
-
-logging_levels = None
 
 def load_logging_levels():
     global logging_levels
@@ -37,6 +39,7 @@ def load_logging_levels():
             logging_level = getattr(logging, logging_level)
             logging_levels[logger_name] = logging_level
 
+
 def get_logging_level(target):
     load_logging_levels()
     matched_component_names = []
@@ -47,8 +50,6 @@ def get_logging_level(target):
         return logging_levels.get('__default__', logging.DEBUG)
     return logging_levels[max(matched_component_names)]
 
-
-configured_root_loggers = set()
 
 def configure_root_component_logger(root_component_name):
     if root_component_name in configured_root_loggers:
@@ -63,6 +64,7 @@ def configure_root_component_logger(root_component_name):
         machine_handler = logging.StreamHandler(sys.stderr)
         machine_handler.setFormatter(EventFormatter())
         logger.addHandler(machine_handler)
+
 
 def clear_logger_handlers(logger):
     for h in logger.handlers:
@@ -119,17 +121,16 @@ class EventFormatter(logging.Formatter):
         return json.dumps(event)
 
 
-log_context_providers = []
-
 def add_log_context_provider(provider):
     log_context_providers.append(provider)
+
 
 def get_log_context():
     context = {}
     for provider in log_context_providers:
         try:
             context.update(provider())
-        except:
+        except Exception:
             traceback.print_exc()
     return context
 

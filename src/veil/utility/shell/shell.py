@@ -15,7 +15,7 @@ def shell_execute(command_line, capture=False, waits=True, shell=True, debug=Fal
     command_args = command_line if shell else shlex.split(command_line)
     try:
         process = subprocess.Popen(command_args, shell=shell, **kwargs)
-    except:
+    except Exception:
         LOGGER.exception('failed to invoke: %(command_args)s, %(kwargs)s', {'command_args': command_args, 'kwargs': kwargs})
         raise
     if not waits:

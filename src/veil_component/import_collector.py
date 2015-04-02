@@ -6,7 +6,7 @@ import traceback
 def list_imports(source_code, filename=None):
     try:
         tree = ast.parse(source_code, filename)
-    except:
+    except Exception:
         traceback.print_exc()
         return [], []
     import_collector = ImportCollector()

@@ -78,7 +78,7 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
                         redirect_to(login_url)
         except HTTPError:
             raise
-        except:
+        except Exception:
             LOGGER.exception('failed to track user: %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
                 'uri': request.uri,
                 'referer': request.headers.get('Referer'),
@@ -113,7 +113,7 @@ def get_user_session(purpose, browser_code=None):
     if session_value:
         try:
             session_purpose, session_browser_code, session_user_id = session_value.split('|', 2)
-        except:
+        except Exception:
             pass
         else:
             if session_purpose and session_browser_code and session_user_id and session_purpose == purpose \

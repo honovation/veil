@@ -63,7 +63,7 @@ class PostgresqlAdapter(object):
                 if conn is not None:
                     try:
                         conn.close()
-                    except:
+                    except Exception:
                         LOGGER.exception('Cannot close database connection')
         else:
             return conn
@@ -72,7 +72,7 @@ class PostgresqlAdapter(object):
         try:
             with closing(self.conn.cursor(cursor_factory=NormalCursor)) as cur:
                 cur.execute(sql)
-        except:
+        except Exception:
             LOGGER.warn('failed in verifying database connection', exc_info=1)
             self._reconnect()
 
@@ -83,11 +83,11 @@ class PostgresqlAdapter(object):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
         try:
             self.close()
-        except:
+        except Exception:
             LOGGER.exception('Cannot close database connection')
         try:
             self.conn = self._get_conn()
-        except:
+        except Exception:
             LOGGER.exception('failed to reconnect')
             return False
         else:

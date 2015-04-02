@@ -73,7 +73,7 @@ def request_wxmp_access_token():
         response = requests.get(WXMP_ACCESS_TOKEN_AUTHORIZATION_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9),
             max_retries=Retry(total=5, backoff_factor=0.2))
         response.raise_for_status()
-    except:
+    except Exception:
         LOGGER.exception('wxmp request access token exception-thrown')
         raise
     else:
@@ -177,7 +177,7 @@ def query_order_status_(access_token, out_trade_no):
         response = requests.post(WXPAY_ORDER_QUERY_URL, params=params, json=data, headers=headers, timeout=(3.05, 9),
             max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
-    except:
+    except Exception:
         LOGGER.exception('wxpay order query exception-thrown: %(out_trade_no)s, %(data)s', {'out_trade_no': out_trade_no, 'data': data})
         raise
     else:
@@ -221,7 +221,7 @@ def send_deliver_notify_(access_token, out_trade_no, openid, transid, deliver_st
         response = requests.post(WXPAY_DELIVER_NOTIFY_URL, params=params, json=data, headers=headers, timeout=(3.05, 9),
             max_retries=Retry(total=3, read=False, backoff_factor=0.2))
         response.raise_for_status()
-    except:
+    except Exception:
         LOGGER.exception('wxpay deliver notify exception-thrown: %(out_trade_no)s, %(data)s', {'out_trade_no': out_trade_no, 'data': data})
         raise
     else:
@@ -262,7 +262,7 @@ def validate_order_info(order_info):
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y%m%d%H%M%S')(paid_at)
-        except:
+        except Exception:
             errors.append('invalid time_end: {}'.format(paid_at))
     bank_billno = order_info.bank_billno
     return trade_no, paid_total, paid_at, bank_billno, errors
@@ -302,7 +302,7 @@ def validate_payment_notification(arguments):
     if paid_at:
         try:
             paid_at = to_datetime(format='%Y%m%d%H%M%S')(paid_at)
-        except:
+        except Exception:
             discarded_reasons.append('invalid time_end: {}'.format(paid_at))
     else:
         discarded_reasons.append('no time_end')
@@ -320,7 +320,7 @@ def validate_notification_from_wxpay(notify_id):
     try:
         response = requests.get(VERIFY_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
-    except:
+    except Exception:
         LOGGER.exception('wxpay notify verify exception-thrown: %(params)s', {'params': params})
         error = 'failed to validate wxpay notification'
     else:
@@ -342,7 +342,7 @@ def verify_sign(content, sign=None):
 def is_sign_correct(arguments):
     try:
         verify_sign(arguments)
-    except:
+    except Exception:
         LOGGER.exception('wrong sign, maybe a fake wxpay notification')
         return False
     else:
