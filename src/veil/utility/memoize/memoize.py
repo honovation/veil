@@ -6,6 +6,11 @@ from cache import LruCache
 def memoize(maxsize=None, timeout=None):
     if hasattr(maxsize, '__call__'):
         func = maxsize
-        decorator = LruCache()
+        decorator = _LruCache()
         return decorator(func)
-    return LruCache(maxsize, timeout)
+    return _LruCache(maxsize, timeout)
+
+
+class _LruCache(LruCache):
+    def invalidate(self):
+        self.cache.clear()
