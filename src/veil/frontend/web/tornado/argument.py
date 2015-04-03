@@ -24,6 +24,7 @@ from .context import get_current_http_request
 
 LOGGER = logging.getLogger(__name__)
 
+
 @contextlib.contextmanager
 def normalize_arguments():
     request = get_current_http_request()
