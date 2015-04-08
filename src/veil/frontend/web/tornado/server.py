@@ -193,7 +193,7 @@ class HTTPResponse(object):
                 hasher = hashlib.md5()
                 for part in self._write_buffer:
                     hasher.update(part)
-                etag = 'W/"{}"'.format(hasher.hexdigest())
+                etag = '"{}"'.format(hasher.hexdigest())
                 self.set_header('Etag', etag)
                 inm = self.request.headers.get('If-None-Match')
                 if inm and inm.find(etag) != -1:
