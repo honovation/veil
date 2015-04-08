@@ -193,7 +193,7 @@ class HTTPResponse(object):
                 hasher = hashlib.md5()
                 for part in self._write_buffer:
                     hasher.update(part)
-                etag = '"{}"'.format(hasher.hexdigest())
+                etag = 'W/"{}"'.format(hasher.hexdigest())
                 self.set_header('Etag', etag)
                 inm = self.request.headers.get('If-None-Match')
                 if inm and inm.find(etag) != -1:
@@ -222,5 +222,5 @@ class HTTPResponse(object):
 
     def disable_cache(self):
         self.set_header('Pragma', 'no-cache')
-        self.set_header('Cache-Control', 'no-cache')
+        self.set_header('Cache-Control', 'no-cache, must-revalidate')
         self.set_header('Expires', 'Thu, 01 Jan 1970 00:00:01 GMT')  # epoch
