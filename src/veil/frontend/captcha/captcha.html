@@ -13,8 +13,8 @@
 </style>
 <div id="captcha-wrap">
 <div id="captcha-input-holder">
-    <input name="captcha_challenge_code" value="{{ challenge_code }}" type="hidden"/>
-    <input name="captcha_answer" id="captcha_answer" placeholder="图片验证码"/>
+    <input type="hidden" name="captcha_challenge_code" value="{{ challenge_code }}"/>
+    <input id="captcha_answer" type="number" name="captcha_answer" placeholder="图片验证码" min="0" inputmode="numeric" pattern="[0-9]*" />
     <div class="inline" id="captcha-result" style="display: none">
         <i class="cus-cross error"></i>
         <span id="captcha-error-message"></span>
@@ -27,6 +27,7 @@
         $(document).on('click', '#change-captcha', function () {
             $.get('/captcha', {'_': $.now()},function (html) {
                 $('#captcha-wrap').html(html);
+                veil.event.publish('captcha-image-updated');
             });
         });
         $(document).on('focus', '#captcha_answer', function(){

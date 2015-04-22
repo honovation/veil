@@ -95,7 +95,7 @@ def is_mobile(value, return_none_when_invalid=False):
 
 def valid_password(value):
     if PASSWORD_PATTERN.match(value) is None:
-        raise Invalid(_('密码不符合规范'))
+        raise Invalid(_('密码不符合规范, 应为8～16位数字或字母组合'))
     return value
 
 
