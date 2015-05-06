@@ -77,6 +77,12 @@ def list_readable_tables():
     if readable_tables is not None:
         return readable_tables
     readable_tables = list_writable_tables().copy()
+    for component_name in get_component_map():
+        if component_name not in readable_tables:
+            readable_tables[component_name] = set()
+        transitive_dependencies = get_transitive_dependencies(component_name)
+        for dependency in transitive_dependencies:
+            readable_tables[component_name] |= list_writable_tables().get(dependency, set())
     providers, consumers = list_dynamic_dependencies()
     for component_name, deps in consumers.items():
         for dep in deps:
