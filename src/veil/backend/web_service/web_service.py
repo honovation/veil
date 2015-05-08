@@ -55,9 +55,17 @@ class WebService(object):
         return suds_object
 
     def last_sent(self):
+        """
+        TODO: return None now
+        :return: None
+        """
         return self.suds_client.messages.get('tx')
 
     def last_received(self):
+        """
+        TODO: return None now
+        :return: None
+        """
         return self.suds_client.messages.get('rx')
 
     def __getattr__(self, item):
