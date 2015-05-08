@@ -55,10 +55,10 @@ class WebService(object):
         return suds_object
 
     def last_sent(self):
-        return self.suds_client.last_sent()
+        return self.suds_client.messages.get('tx')
 
     def last_received(self):
-        return self.suds_client.last_received()
+        return self.suds_client.messages.get('rx')
 
     def __getattr__(self, item):
         service = getattr(self.suds_client.service, item)
