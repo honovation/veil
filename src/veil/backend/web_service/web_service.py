@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import re
 from suds.client import Client
 from suds.client import WebFault
+from suds.plugin import MessagePlugin
 from suds.sudsobject import Object
 from veil_component import *
 from veil_installer import *
@@ -35,17 +36,41 @@ def require_web_service(purpose):
 RE_NETLOC = re.compile(br'(?<=//)[^/]+(?=/)')
 
 
+class LoggingWebServicePlugin(MessagePlugin):
+
+    def __init__(self):
+        self.last_sent_message = None
+        self.last_received_reply = None
+
+    def sending(self, context):
+        if context.envelope:
+            self.last_sent_message = context.envelope
+
+    def parsed(self, context):
+        if context.reply:
+            self.last_received_reply = context.reply
+
+    def last_sent(self):
+        return self.last_sent_message
+
+    def last_received(self):
+        return self.last_received_reply
+
+
 class WebService(object):
     def __init__(self, url, username=None, password=None, proxy_netloc=None):
-        self.timeout = 180 # default suds transport timeout is 90 seconds
-        faults = True # raise faults raised by server, else return tuple from service method invocation as (httpcode, object).
-        cache_policy = {}
+        # faults=True  raise faults raised by server, else return tuple from service method invocation as (httpcode, object).
+        # timeout=180  default suds transport timeout is 90 seconds
+        # use logging plugin collect last sent/received
+
+        self.logging_plugin = LoggingWebServicePlugin()
+        options = DictObject(timeout=180, faults=True, plugins=[self.logging_plugin])
         if VEIL_ENV_TYPE != 'public':
-            cache_policy['cache'] = None
+            options.cache = None
         if username:
-            self.suds_client = Client(url, username=username, password=password, timeout=self.timeout, faults=faults, **cache_policy)
-        else:
-            self.suds_client = Client(url, timeout=self.timeout, faults=faults, **cache_policy)
+            options.username = username
+            options.password = password
+        self.suds_client = Client(url, **options)
         self.proxy_netloc = str(proxy_netloc) if proxy_netloc else None
 
     def new_object_of_type(self, wsdl_type, returns_dict_object=False):
@@ -55,18 +80,10 @@ class WebService(object):
         return suds_object
 
     def last_sent(self):
-        """
-        TODO: return None now
-        :return: None
-        """
-        return self.suds_client.messages.get('tx')
+        return self.logging_plugin.last_sent()
 
     def last_received(self):
-        """
-        TODO: return None now
-        :return: None
-        """
-        return self.suds_client.messages.get('rx')
+        return self.logging_plugin.last_received()
 
     def __getattr__(self, item):
         service = getattr(self.suds_client.service, item)
