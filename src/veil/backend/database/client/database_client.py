@@ -224,8 +224,10 @@ class Database(object):
         if exclude_columns:
             value_providers = {k: v for k, v in value_providers.items() if k not in exclude_columns}
 
-        if objects is None and not value_providers or objects is not None and not objects:
+        if objects is None and not value_providers:
             return None if returns_id or returns_record else 0
+        if objects is not None and not objects:
+            return [] if returns_id or returns_record else 0
 
         specified_columns = True
         columns = tuple(value_providers)
