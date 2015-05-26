@@ -107,7 +107,11 @@ class ScriptHandlerDecorator(object):
 
         @functools.wraps(script_handler)
         def wrapper(*args, **kwargs):
-            return script_handler(*args, **kwargs)
+            try:
+                return script_handler(*args, **kwargs)
+            except Exception:
+                LOGGER.exception('Exception thrown while executing the script')
+                sys.exit(-1)
 
         level_names = get_current_level_names()
         level = script_handlers

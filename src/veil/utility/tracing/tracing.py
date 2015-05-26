@@ -3,6 +3,7 @@ import logging
 import functools
 from veil.utility.encoding import *
 
+
 def traced(level='INFO', color=None):
     level = getattr(logging, level)
 
