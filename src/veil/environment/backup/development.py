@@ -37,10 +37,10 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
         restored_to_path = VEIL_VAR_DIR / relative_path
     if force_download.upper() == 'TRUE' or not baseline_path.exists():
         download_baseline(veil_env_name, remote_path, baseline_path)
+
     shell_execute('veil down')
     shell_execute('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(baseline_path, baseline_path, restored_to_path), debug=True)
     shell_execute('veil install-server')
-    shell_execute('veil up --daemonize')
 
     purposes = []
     if VEIL_DATA_DIR.startswith(restored_to_path):
@@ -49,6 +49,11 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
     elif restored_to_path.startswith(VEIL_DATA_DIR) and '-postgresql-' in restored_to_path.name:
         purposes.append(restored_to_path.name.split('-postgresql-', 1)[0])
     print('found postgresql purposes: {}'.format(purposes))
+    for purpose in purposes:
+        # set db conf permission
+        config = postgresql_maintenance_config(purpose)
+        shell_execute('chown -f {}:{} *'.format(config.owner, config.owner), cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version))
+    shell_execute('veil up --daemonize')
     for purpose in purposes:
         # set db owner password
         config = postgresql_maintenance_config(purpose)
