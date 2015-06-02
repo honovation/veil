@@ -140,8 +140,9 @@ def _(*args, **kwargs):
 # to supress the warning of pycharm
     return sys.modules['__builtin__']._(*args, **kwargs)
 
+
 def generate_signature(obj):
-    if isinstance(obj, (dict, DictObject)):
+    if isinstance(obj, (DictObject, dict)):
         return frozenset([generate_signature(item) for item in obj.items()])
     if isinstance(obj, (tuple, list)):
         return frozenset([generate_signature(item) for item in obj])

@@ -4,10 +4,17 @@ DEFAULT_PRIMARY_KEYS = ('id',)
 
 
 def objectify(o):
-    if isinstance(o, DictObject):
+    if isinstance(o, Entity):
         return o
+    if isinstance(o, DictObject):
+        primary_keys = o.pop('primary_keys', None)
+        return Entity(o, primary_keys=primary_keys) if primary_keys else o
     elif isinstance(o, dict):
-        return DictObject({k: objectify(v) for k, v in o.items()})
+        primary_keys = o.pop('primary_keys', None)
+        if primary_keys:
+            return Entity({k: objectify(v) for k, v in o.items()}, primary_keys=primary_keys)
+        else:
+            return DictObject({k: objectify(v) for k, v in o.items()})
     elif isinstance(o, (tuple, set, list)):
         return o.__class__(objectify(e) for e in o)
     else:
@@ -17,8 +24,9 @@ def objectify(o):
 def entitify(o, primary_keys=True):
     if isinstance(o, Entity):
         return o
-    elif isinstance(o, (dict, DictObject)):
-        return Entity({k: entitify(v, primary_keys=primary_keys) for k, v in o.items()}, primary_keys=primary_keys)
+    elif isinstance(o, (DictObject, dict)):
+        primary_keys_ = o.pop('primary_keys', primary_keys)
+        return Entity({k: entitify(v, primary_keys=primary_keys) for k, v in o.items()}, primary_keys=primary_keys_)
     elif isinstance(o, (tuple, set, list)):
         return o.__class__(entitify(e, primary_keys=primary_keys) for e in o)
     else:
@@ -79,7 +87,7 @@ class DictObject(dict):
 
 class FrozenDictObject(DictObject):
     def __setattr__(self, name, value):
-        raise Exception('cannot set attribute {} as it is frozen'.format(name))
+        raise Exception('it is frozen')
 
     def __setitem__(self, name, value):
         raise Exception('it is frozen')
@@ -87,7 +95,7 @@ class FrozenDictObject(DictObject):
 
 class Entity(DictObject):
     def __init__(self, seq=None, primary_keys=True, **kwargs):
-        super(Entity, self).__init__(seq, primary_keys=DEFAULT_PRIMARY_KEYS if primary_keys is True else primary_keys, **kwargs)
+        super(Entity, self).__init__(seq, primary_keys=DEFAULT_PRIMARY_KEYS if primary_keys is True else tuple(primary_keys), **kwargs)
         assert self.primary_keys, 'must specify primary_keys'
         if all(getattr(self, primary_key, None) is None for primary_key in self.primary_keys):
             raise Exception('{} does not have any of {}'.format(self, self.primary_keys))
@@ -122,8 +130,10 @@ class Entity(DictObject):
 class FrozenEntity(Entity):
     def __setattr__(self, name, value):
         if name != '_hash':
-            raise Exception('cannot set attribute {} as it is frozen'.format(name))
-        self[name] = value
+            raise Exception('it is frozen')
+        super(FrozenEntity, self).__setattr__(name, value)
 
     def __setitem__(self, name, value):
-        raise Exception('it is frozen')
+        if name != '_hash':
+            raise Exception('it is frozen')
+        super(FrozenEntity, self).__setitem__(name, value)
