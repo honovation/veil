@@ -78,10 +78,10 @@ class DictObject(dict):
 
 
 class FrozenDictObject(DictObject):
-    def __setattr__(self, key, value):
-        raise Exception('it is frozen')
+    def __setattr__(self, name, value):
+        raise Exception('cannot set attribute {} as it is frozen'.format(name))
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, name, value):
         raise Exception('it is frozen')
 
 
@@ -120,8 +120,10 @@ class Entity(DictObject):
 
 
 class FrozenEntity(Entity):
-    def __setattr__(self, key, value):
-        raise Exception('it is frozen')
+    def __setattr__(self, name, value):
+        if name != '_hash':
+            raise Exception('cannot set attribute {} as it is frozen'.format(name))
+        self[name] = value
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, name, value):
         raise Exception('it is frozen')
