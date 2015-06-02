@@ -7,6 +7,7 @@ from unittest.case import TestCase
 from ._json import to_json
 from ._json import from_json
 
+
 class CustomJSONEncoderDecoderTest(TestCase):
     def test(self):
         naive_now = datetime.now()
@@ -49,6 +50,12 @@ class CustomJSONEncoderDecoderTest(TestCase):
 
     def test_decimal(self):
         obj = Decimal('123.4567')
+        encoded = to_json(obj)
+        decoded = from_json(encoded)
+        self.assertEqual(obj, decoded)
+
+    def test_set(self):
+        obj = set([1, 2, 3])
         encoded = to_json(obj)
         decoded = from_json(encoded)
         self.assertEqual(obj, decoded)

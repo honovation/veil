@@ -10,6 +10,7 @@ SUPPORTED_TYPES = {datetime, date, time, Decimal, UUID, set}
 assert len(SUPPORTED_TYPES) == len({c.__name__ for c in SUPPORTED_TYPES})
 SUPPORTED_TYPES_NAME2CLASS = {c.__name__: c for c in SUPPORTED_TYPES}
 
+
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         type_ = type(obj)
@@ -21,7 +22,7 @@ class CustomJSONEncoder(json.JSONEncoder):
             if issubclass(type_, UUID):
                 return {'__type__': type_.__name__, '__value__': obj.hex}
             if issubclass(type_, set):
-                return list(obj)
+                return {'__type__': type_.__name__, '__value__': list(obj)}
         return json.JSONEncoder.default(self, obj)
 
 
@@ -44,6 +45,8 @@ class CustomJSONDecoder(json.JSONDecoder):
                 return Decimal(d.get('__value__'))
             if issubclass(type_, UUID):
                 return UUID(d.get('__value__'))
+            if issubclass(type_, set):
+                return set(d.get('__value__'))
         return d
 
 
