@@ -222,7 +222,7 @@ class PathTemplate(object):
         match = regex.match(path)
         if match is None:
             return None
-        kwargs = {k: None if v is None else unquote(v) for k, v in match.groupdict().items()}
+        kwargs = {k: unquote(v) for k, v in match.groupdict().items() if v}  # ignore empty arguments and keep consistent with normalize_arguments
         return kwargs
 
     def __repr__(self):
