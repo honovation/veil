@@ -12,9 +12,9 @@ def objectify(o):
     elif isinstance(o, dict):
         primary_keys = o.pop('primary_keys', None)
         if primary_keys:
-            return Entity({k: objectify(v) for k, v in o.items()}, primary_keys=primary_keys)
+            return Entity(((k, objectify(v)) for k, v in o.items()), primary_keys=primary_keys)
         else:
-            return DictObject({k: objectify(v) for k, v in o.items()})
+            return DictObject((k, objectify(v)) for k, v in o.items())
     elif isinstance(o, (tuple, set, list)):
         return o.__class__(objectify(e) for e in o)
     else:
@@ -26,7 +26,7 @@ def entitify(o, primary_keys=True):
         return o
     elif isinstance(o, (DictObject, dict)):
         primary_keys_ = o.pop('primary_keys', primary_keys)
-        return Entity({k: entitify(v, primary_keys=primary_keys) for k, v in o.items()}, primary_keys=primary_keys_)
+        return Entity(((k, entitify(v, primary_keys=primary_keys)) for k, v in o.items()), primary_keys=primary_keys_)
     elif isinstance(o, (tuple, set, list)):
         return o.__class__(entitify(e, primary_keys=primary_keys) for e in o)
     else:
@@ -34,40 +34,41 @@ def entitify(o, primary_keys=True):
 
 
 def freeze_dict_object(o):
-    if hasattr(o, 'get') and callable(getattr(o, 'get')) and o.get('_frozen'):
+    if isinstance(o, (FrozenDictObject, FrozenEntity)):
         return o
-    if type(o) is dict:
-        return freeze_dict_object(DictObject(o))
-    if isinstance(o, dict):
-        for v in o.values():
-            freeze_dict_object(v)
-        if isinstance(o, DictObject):
-            o.freeze()
+    elif isinstance(o, Entity):
+        return FrozenEntity((k, freeze_dict_object(v)) for k, v in o.items())
+    elif isinstance(o, DictObject) or type(o) is dict:
+        return FrozenDictObject((k, freeze_dict_object(v)) for k, v in o.items())
+    elif isinstance(o, dict):
+        return o.__class__((k, freeze_dict_object(v)) for k, v in o.items())
     elif isinstance(o, (tuple, set, list)):
-        for v in o:
-            freeze_dict_object(v)
-    return o
+        return o.__class__(freeze_dict_object(e) for e in o)
+    else:
+        return o
 
 
 def unfreeze_dict_object(o):
-    if isinstance(o, DictObject) and not o.get('_frozen'):
+    if isinstance(o, FrozenEntity):
+        return Entity((k, unfreeze_dict_object(v)) for k, v in o.items())
+    elif isinstance(o, FrozenDictObject) or type(o) is dict:
+        return DictObject((k, unfreeze_dict_object(v)) for k, v in o.items())
+    elif isinstance(o, DictObject):
         return o
-    if isinstance(o, dict):
-        for v in o.values():
-            unfreeze_dict_object(v)
-        if type(o) is dict:
-            o = DictObject(o)
-        if isinstance(o, DictObject):
-            o.unfreeze()
+    elif isinstance(o, dict):
+        return o.__class__((k, unfreeze_dict_object(v)) for k, v in o.items())
     elif isinstance(o, (tuple, set, list)):
-        for v in o:
-            unfreeze_dict_object(v)
-    return o
+        return o.__class__(unfreeze_dict_object(e) for e in o)
+    else:
+        return o
 
 
 class DictObject(dict):
     def __init__(self, seq=None, **kwargs):
         super(DictObject, self).__init__(seq or (), **kwargs)
+
+    def __setattr__(self, name, value):
+        self[name] = value
 
     def __getattr__(self, name):
         try:
@@ -75,37 +76,25 @@ class DictObject(dict):
         except KeyError:
             raise AttributeError('"{}" object has no attribute "{}"'.format(self.__class__.__name__, name))
 
-    def freeze(self):
-        self._frozen = True
+    def __delattr__(self, name):
+        try:
+            del self[name]
+        except KeyError:
+            raise AttributeError('"{}" object has no attribute "{}"'.format(self.__class__.__name__, name))
 
-    def unfreeze(self):
-        self._frozen = False
 
+class FrozenDictObject(DictObject):
     def __setattr__(self, name, value):
-        if self.get('_frozen') and name not in {'_frozen', '_hash'}:
-            raise Exception('it is frozen')
-        super(DictObject, self).__setitem__(name, value)
+        raise Exception('it is frozen')
 
     def __setitem__(self, name, value):
-        if self.get('_frozen') and name not in {'_frozen', '_hash'}:
-            raise Exception('it is frozen')
-        super(DictObject, self).__setitem__(name, value)
+        raise Exception('it is frozen')
 
     def __delattr__(self, name):
-        if self.get('_frozen') and name not in {'_frozen', '_hash'}:
-            raise Exception('it is frozen')
-        try:
-            super(DictObject, self).__delitem__(name)
-        except KeyError:
-            raise AttributeError('"{}" object has no attribute "{}"'.format(self.__class__.__name__, name))
+        raise Exception('it is frozen')
 
     def __delitem__(self, name):
-        if self.get('_frozen') and name not in {'_frozen', '_hash'}:
-            raise Exception('it is frozen')
-        try:
-            super(DictObject, self).__delitem__(name)
-        except KeyError:
-            raise AttributeError('"{}" object has no attribute "{}"'.format(self.__class__.__name__, name))
+        raise Exception('it is frozen')
 
 
 class Entity(DictObject):
@@ -140,3 +129,25 @@ class Entity(DictObject):
 
     def __repr__(self):
         return '<{}: {}>'.format(type(self).__name__, ', '.join('{}={}'.format(k, getattr(self, k, None)) for k in self.primary_keys))
+
+
+class FrozenEntity(Entity):
+    def __setattr__(self, name, value):
+        if name != '_hash':
+            raise Exception('it is frozen')
+        super(FrozenEntity, self).__setattr__(name, value)
+
+    def __setitem__(self, name, value):
+        if name != '_hash':
+            raise Exception('it is frozen')
+        super(FrozenEntity, self).__setitem__(name, value)
+
+    def __delattr__(self, name):
+        if name != '_hash':
+            raise Exception('it is frozen')
+        super(FrozenEntity, self).__delattr__(name)
+
+    def __delitem__(self, name):
+        if name != '_hash':
+            raise Exception('it is frozen')
+        super(FrozenEntity, self).__delitem__(name)
