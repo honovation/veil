@@ -2,11 +2,13 @@ from __future__ import unicode_literals, print_function, division
 import sys
 from veil.model.collection import *
 
+
 def merge_multiple_settings(*multiple_settings):
     merged_settings = {}
     for settings in multiple_settings:
         merged_settings = merge_settings(merged_settings, settings)
     return merged_settings
+
 
 def merge_settings(base, updates, overrides=False):
     if base is None:

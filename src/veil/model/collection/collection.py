@@ -34,43 +34,40 @@ def entitify(o, primary_keys=True):
 
 
 def freeze_dict_object(o):
-    if isinstance(o, (FrozenDictObject, FrozenEntity)):
+    if hasattr(o, 'get') and callable(getattr(o, 'get')) and o.get('_frozen'):
         return o
-    elif isinstance(o, Entity):
-        return FrozenEntity({k: freeze_dict_object(v) for k, v in o.items()})
-    elif isinstance(o, DictObject):
-        return FrozenDictObject({k: freeze_dict_object(v) for k, v in o.items()})
-    elif type(o) is dict:
-        return FrozenDictObject({k: freeze_dict_object(v) for k, v in o.items()})
-    elif isinstance(o, dict):
-        return o.__class__({k: freeze_dict_object(v) for k, v in o.items()})
+    if type(o) is dict:
+        return freeze_dict_object(DictObject(o))
+    if isinstance(o, dict):
+        for v in o.values():
+            freeze_dict_object(v)
+        if isinstance(o, DictObject):
+            o.freeze()
     elif isinstance(o, (tuple, set, list)):
-        return o.__class__(freeze_dict_object(e) for e in o)
-    else:
-        return o
+        for v in o:
+            freeze_dict_object(v)
+    return o
 
 
 def unfreeze_dict_object(o):
-    if isinstance(o, FrozenEntity):
-        return Entity({k: unfreeze_dict_object(v) for k, v in o.items()})
-    elif isinstance(o, FrozenDictObject):
-        return DictObject({k: unfreeze_dict_object(v) for k, v in o.items()})
-    elif isinstance(o, DictObject):
+    if isinstance(o, DictObject) and not o.get('_frozen'):
         return o
-    elif isinstance(o, dict):
-        return o.__class__({k: unfreeze_dict_object(v) for k, v in o.items()})
+    if isinstance(o, dict):
+        for v in o.values():
+            unfreeze_dict_object(v)
+        if type(o) is dict:
+            o = DictObject(o)
+        if isinstance(o, DictObject):
+            o.unfreeze()
     elif isinstance(o, (tuple, set, list)):
-        return o.__class__(unfreeze_dict_object(e) for e in o)
-    else:
-        return o
+        for v in o:
+            unfreeze_dict_object(v)
+    return o
 
 
 class DictObject(dict):
     def __init__(self, seq=None, **kwargs):
         super(DictObject, self).__init__(seq or (), **kwargs)
-
-    def __setattr__(self, name, value):
-        self[name] = value
 
     def __getattr__(self, name):
         try:
@@ -78,19 +75,37 @@ class DictObject(dict):
         except KeyError:
             raise AttributeError('"{}" object has no attribute "{}"'.format(self.__class__.__name__, name))
 
+    def freeze(self):
+        self._frozen = True
+
+    def unfreeze(self):
+        self._frozen = False
+
+    def __setattr__(self, name, value):
+        if self.get('_frozen') and name not in {'_frozen', '_hash'}:
+            raise Exception('it is frozen')
+        super(DictObject, self).__setitem__(name, value)
+
+    def __setitem__(self, name, value):
+        if self.get('_frozen') and name not in {'_frozen', '_hash'}:
+            raise Exception('it is frozen')
+        super(DictObject, self).__setitem__(name, value)
+
     def __delattr__(self, name):
+        if self.get('_frozen') and name not in {'_frozen', '_hash'}:
+            raise Exception('it is frozen')
         try:
-            del self[name]
+            super(DictObject, self).__delitem__(name)
         except KeyError:
             raise AttributeError('"{}" object has no attribute "{}"'.format(self.__class__.__name__, name))
 
-
-class FrozenDictObject(DictObject):
-    def __setattr__(self, name, value):
-        raise Exception('it is frozen')
-
-    def __setitem__(self, name, value):
-        raise Exception('it is frozen')
+    def __delitem__(self, name):
+        if self.get('_frozen') and name not in {'_frozen', '_hash'}:
+            raise Exception('it is frozen')
+        try:
+            super(DictObject, self).__delitem__(name)
+        except KeyError:
+            raise AttributeError('"{}" object has no attribute "{}"'.format(self.__class__.__name__, name))
 
 
 class Entity(DictObject):
@@ -125,15 +140,3 @@ class Entity(DictObject):
 
     def __repr__(self):
         return '<{}: {}>'.format(type(self).__name__, ', '.join('{}={}'.format(k, getattr(self, k, None)) for k in self.primary_keys))
-
-
-class FrozenEntity(Entity):
-    def __setattr__(self, name, value):
-        if name != '_hash':
-            raise Exception('it is frozen')
-        super(FrozenEntity, self).__setattr__(name, value)
-
-    def __setitem__(self, name, value):
-        if name != '_hash':
-            raise Exception('it is frozen')
-        super(FrozenEntity, self).__setitem__(name, value)

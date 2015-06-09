@@ -4,9 +4,7 @@ with veil_component.init_component(__name__):
     from .collection import objectify
     from .collection import entitify
     from .collection import DictObject
-    from .collection import FrozenDictObject
     from .collection import Entity
-    from .collection import FrozenEntity
     from .collection import objectify
     from .collection import entitify
     from .collection import freeze_dict_object
@@ -16,9 +14,7 @@ with veil_component.init_component(__name__):
         objectify.__name__,
         entitify.__name__,
         DictObject.__name__,
-        FrozenDictObject.__name__,
         Entity.__name__,
-        FrozenEntity.__name__,
         objectify.__name__,
         entitify.__name__,
         freeze_dict_object.__name__,
