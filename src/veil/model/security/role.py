@@ -3,6 +3,7 @@ from veil.model.collection import *
 
 roles = {}
 
+
 def define_role(role_name):
     if role_name in roles:
         raise Exception('role already defined: {}'.format(role_name))
