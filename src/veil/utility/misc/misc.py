@@ -4,6 +4,7 @@ import hashlib
 import traceback
 from decimal import Decimal, ROUND_HALF_UP, ROUND_FLOOR, ROUND_CEILING
 from datetime import date
+import string
 from veil.utility.encoding import to_unicode
 
 TWO_PLACES = Decimal('0.01')
@@ -114,3 +115,11 @@ def extract_info_from_resident_id(resident_id):
     gender = 1 if int(resident_id[-2]) % 2 else 2
     birthday = date(int(resident_id[6:10]), int(resident_id[10:12]), int(resident_id[12:14]))
     return gender, birthday
+
+
+def remove_special_characters(s, special_characters=None):
+    if not s:
+        return s
+    if special_characters is None:
+        special_characters = string.punctuation
+    return s.translate({ord(c): None for c in special_characters})

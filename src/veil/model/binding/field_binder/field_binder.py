@@ -11,6 +11,7 @@ from dateutil.parser import parse
 from decimal import Decimal, InvalidOperation, ROUND_FLOOR
 import sys
 from veil.utility.clock import *
+from veil.utility.misc import *
 from ..invalid import Invalid
 
 EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9_=%.+-]+@([a-zA-Z0-9_=%+-]+\.)+[a-zA-Z]{2,6}$')
@@ -27,9 +28,7 @@ def anything(value):
 
 def remove_chars(chars='-'):
     def bind(value):
-        if value:
-            value = value.translate({ord(c): None for c in bind.chars})
-        return value
+        return remove_special_characters(value, bind.chars)
     bind.chars = chars
     return bind
 
