@@ -14,6 +14,7 @@ with veil_component.init_component(__name__):
     from .field_binder import is_mobile
     from .field_binder import is_landline
     from .field_binder import is_list
+    from .field_binder import to_list
     from .field_binder import to_integer
     from .field_binder import to_float
     from .field_binder import to_decimal
@@ -43,6 +44,7 @@ with veil_component.init_component(__name__):
         is_mobile.__name__,
         is_landline.__name__,
         is_list.__name__,
+        to_list.__name__,
         to_integer.__name__,
         to_float.__name__,
         to_decimal.__name__,
