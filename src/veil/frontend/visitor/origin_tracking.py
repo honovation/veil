@@ -10,6 +10,7 @@ import logging
 import contextlib
 from urlparse import urlparse
 from veil.utility.encoding import *
+from veil.frontend.template import *
 from veil.frontend.web import *
 
 LOGGER = logging.getLogger(__name__)
@@ -23,8 +24,8 @@ def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_pa
     def f():
         request = get_current_http_request()
         try:
-            parent_domain = get_website_parent_domain(purpose)
-            if request.method.upper() == 'GET' and not is_web_spider(request.headers.get('User-Agent')):
+            request.from_spider = is_web_spider(request.headers.get('User-Agent'))
+            if request.method.upper() == 'GET' and not request.from_spider:
                 referer = request.headers.get('Referer')
                 if referer:
                     referer = to_unicode(referer, strict=False, additional={
@@ -36,7 +37,8 @@ def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_pa
                     host = urlparse(referer).hostname
                     if host:
                         host = host.strip('.')
-                        if not host.endswith(parent_domain) and all(not host.endswith(host_suffix) for host_suffix in exclude_host_suffixes) \
+                        if not host.endswith(get_website_parent_domain(purpose)) \
+                                and all(not host.endswith(host_suffix) for host_suffix in exclude_host_suffixes) \
                                 and all(not request.path.startswith(to_str(path_prefix)) for path_prefix in exclude_path_prefixes):
                             set_visitor_origin(referer, expires_days=cookie_expires_days)
         except Exception:
@@ -83,3 +85,9 @@ def get_visitor_origin(cps_as_int=False, max_age_days=DEFAULT_ORIGIN_COOKIE_EXPI
         LOGGER.warn('invalid visitor origin tracking cookie: %(cookie)s', {'cookie': cookie})
         return None, None, None, None
     return host, referer, cps, cps_detail
+
+
+@template_utility
+def is_requested_from_spider():
+    request = get_current_http_request()
+    return request and request.get('from_spider', False)
