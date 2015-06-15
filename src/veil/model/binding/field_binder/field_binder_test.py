@@ -39,56 +39,8 @@ class FieldBinderTest(TestCase):
     def test_is_landline(self):
         with self.assertRaises(Invalid):
             is_landline('')
-        good_phone = '110'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '8888888'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '88888888'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '8888888-123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '88888888-23435'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '0871-8888888-123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '023-88888888-23435'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '86-0871-8888888-123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '8888888_123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '88888888_23435'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '0871_8888888_123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '023_88888888_23435'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '86_0871_8888888_123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '8888888－123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '88888888－23435'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '0871－8888888－123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '023－88888888－23435'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '86－0871－8888888－123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '8888888—123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '88888888—23435'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '0871—8888888—123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '023—88888888—23435'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '86—0871—8888888—123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '86 0871 8888888 123'
-        self.assertEquals(good_phone, is_landline(good_phone))
-        good_phone = '86.0871.8888888.123'
-        self.assertEquals(good_phone, is_landline(good_phone))
+        for good_phone in ['110', '8888888', '88888888', '8888888-123', '88888888-23435', '0871-8888888-123', '023-88888888-23435', '86-0871-8888888-123', '8888888_123', '023_88888888_23435', '86_0871_8888888_123', '8888888－123', '023－88888888－23435', '86－0871－8888888－123', '86 0871 8888888 123', '86.0871.8888888.123']:
+            self.assertEquals(good_phone, is_landline(good_phone))
 
     def test_validate_date(self):
         date(2007, 07, 30)
@@ -111,7 +63,6 @@ class FieldBinderTest(TestCase):
             to_time()('07.30')
 
     def test_validate_datetime(self):
-        # Creating localtimes is also tricky, and the reason why working with local times is not recommended. Unfortunately, you cannot just pass a ‘tzinfo’ argument when constructing a datetime.
         tz = pytz.timezone('Asia/Shanghai')
         self.assertEquals(
             tz.localize(datetime(2011, 07, 01, 0, 10, 0, )).astimezone(pytz.utc), to_datetime()('2011-07-01 00:10:00'))
@@ -145,7 +96,6 @@ class FieldBinderTest(TestCase):
             clamp(min=0, max=1)(-1)
         with self.assertRaises(Invalid):
             clamp(min=0, max=1)(2)
-        # default [0, 1]
         self.assertEqual(1, clamp(min=0, max=1)(1))
         with self.assertRaises(Invalid):
             clamp(min=0, max=1, include_max=False)(1)
