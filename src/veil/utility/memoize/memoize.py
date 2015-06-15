@@ -3,7 +3,7 @@ from __future__ import unicode_literals, print_function, division
 from cache import LruCache
 
 
-def memorize(maxsize=None, timeout=None):
+def memoize(maxsize=None, timeout=None):
     if hasattr(maxsize, '__call__'):
         func = maxsize
         decorator = _LruCache()
