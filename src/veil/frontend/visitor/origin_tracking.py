@@ -90,4 +90,4 @@ def get_visitor_origin(cps_as_int=False, max_age_days=DEFAULT_ORIGIN_COOKIE_EXPI
 @template_utility
 def is_requested_from_spider():
     request = get_current_http_request()
-    return request and request.get('from_spider', False)
+    return request and getattr(request, 'from_spider', False)
