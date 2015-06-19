@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function, division
-from datetime import timedelta
+from datetime import timedelta, datetime
 from collections import defaultdict
 from croniter.croniter import croniter
 from veil_component import *
-from veil.utility.clock import get_current_timestamp
+from veil.utility.clock import *
 from .job import JobHandlerDecorator
 
 schedules = defaultdict(set)  # schedule => set(job_handler)
@@ -54,7 +54,8 @@ class CroniterSchedule(object):
 
     def get_next_timestamp(self, now=None):
         now = now or get_current_timestamp()
-        return croniter(self.crontab_expression, now).get_next(ret_type=float)
+        ct = croniter(self.crontab_expression, now + DEFAULT_CLIENT_TIMEZONE.utcoffset( datetime.now()).total_seconds())
+        return ct.get_next(ret_type=float) - DEFAULT_CLIENT_TIMEZONE.utcoffset( datetime.now()).total_seconds()
 
     def __repr__(self):
         return repr(self.crontab_expression)

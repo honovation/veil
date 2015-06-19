@@ -3,9 +3,10 @@ import calendar
 from datetime import timedelta, datetime
 import pytz
 from unittest.case import TestCase
-from veil.utility.clock import require_current_time_being
+from veil.utility.clock import *
 from .periodic_job import TimedeltaSchedule
 from .periodic_job import CroniterSchedule
+
 
 class TimedeltaScheduleTest(TestCase):
     def test_zero_timedelta(self):
@@ -22,6 +23,7 @@ class TimedeltaScheduleTest(TestCase):
         with require_current_time_being(dt):
             next_timestamp = TimedeltaSchedule(timedelta(minutes=1)).get_next_timestamp()
             self.assertEqual(dt_timestamp + 60, next_timestamp)
+
 
 class CroniterScheduleTest(TestCase):
     def test_invalid_expression(self):
