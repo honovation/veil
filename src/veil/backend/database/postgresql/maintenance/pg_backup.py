@@ -6,8 +6,14 @@ from veil.utility.shell import *
 from ...postgresql_setting import get_pg_bin_dir
 from ..server.pg_server_installer import postgresql_maintenance_config
 
-#pg_dump -h 10.24.3.10 -p 5432 -U "veil" -w -F tar -b -v -f "/home/dejavu/dump" "xxx"
-#pg_restore -h localhost -p 5432 -U "veil" -w -j nproc -F tar -v -c -d xxx /home/dejavu/dump.tar
+"""
+pg_dump -h 10.24.2.30 -p 5432 -U veil -b -v -d ljmall | gzip > backup.gz
+gunzip -c backup.gz | pg_restore -h localhost -p 5432 -U veil -j nproc -v -c -d ljmall
+
+pg_dump -h 10.24.2.30 -p 5432 -U veil -j `nproc` -F d -b -v -f /home/dejavu/dump -d ljmall
+pg_restore -h localhost -p 5432 -U veil -j `nproc` -F d -v -c -d ljmall /home/dejavu/dump
+"""
+
 
 @script('create-backup')
 def create_backup(purpose, backup_path):
@@ -15,7 +21,7 @@ def create_backup(purpose, backup_path):
     maintenance_config = postgresql_maintenance_config(purpose)
     env = os.environ.copy()
     env['PGPASSWORD'] = config.password
-    shell_execute('{pg_bin_dir}/pg_dump -h {host} -p {port} -U {user} -F tar -b -v -f "{backup_path}" {database}'.format(
+    shell_execute('{pg_bin_dir}/pg_dump -h {host} -p {port} -U {user} -j `nproc` -F d -b -v -f "{backup_path}" -d {database}'.format(
         pg_bin_dir=get_pg_bin_dir(maintenance_config.version),
         host=config.host,
         port=config.port,
@@ -29,7 +35,7 @@ def restore_backup(backup_path, purpose):
     maintenance_config = postgresql_maintenance_config(purpose)
     env = os.environ.copy()
     env['PGPASSWORD'] = maintenance_config.owner_password
-    shell_execute('{pg_bin_dir}/pg_restore -h {host} -p {port} -U {user} -j nproc -F tar -v -c -d {database} "{backup_path}"'.format(
+    shell_execute('{pg_bin_dir}/pg_restore -h {host} -p {port} -U {user} -j `nproc` -F d -v -c -d {database} "{backup_path}"'.format(
         pg_bin_dir=get_pg_bin_dir(maintenance_config.version),
         host=config.host,
         port=config.port,

@@ -52,14 +52,14 @@ def is_scws_installed():
 
 
 @atomic_installer
-def zhparser_resource():
+def zhparser_resource(reinstall=False):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         if is_downloading_while_dry_run():
             download_zhparser()
-        dry_run_result['zhparser'] = '-' if is_zhparser_installed() else 'INSTALL'
+        dry_run_result['zhparser'] = ('REINSTALL' if reinstall else '-') if is_zhparser_installed() else 'INSTALL'
     else:
-        install_zhparser()
+        install_zhparser(reinstall)
 
 
 def download_zhparser():
@@ -71,12 +71,14 @@ def download_zhparser():
     shell_execute('unzip {}'.format(local_path), cwd=DEPENDENCY_INSTALL_DIR)
 
 
-def install_zhparser():
-    if is_zhparser_installed():
+def install_zhparser(reinstall):
+    if not reinstall and is_zhparser_installed():
         if VEIL_ENV_TYPE in {'development', 'test'} and ZHPARSER_RESOURCE_VERSION != get_resource_latest_version(ZHPARSER_RESOURCE_KEY):
             set_resource_latest_version(ZHPARSER_RESOURCE_KEY, ZHPARSER_RESOURCE_VERSION)
         return
     download_zhparser()
+    if reinstall and is_zhparser_installed():
+        shell_execute('SCWS_HOME=/usr/local make clean', cwd=ZHPARSER_HOME)
     shell_execute('SCWS_HOME=/usr/local make && make install', cwd=ZHPARSER_HOME)
     if VEIL_ENV_TYPE in {'development', 'test'}:
         set_resource_latest_version(ZHPARSER_RESOURCE_KEY, ZHPARSER_RESOURCE_VERSION)

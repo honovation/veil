@@ -56,37 +56,34 @@ def postgresql_server_resource(purpose, config):
         file_resource(path=pg_config_dir / 'pg_ident.conf', content=render_config('pg_ident.conf.j2')),
         file_resource(path=pg_config_dir / 'postgresql-maintenance.cfg', content=render_config(
             'postgresql-maintenance.cfg.j2', version=config.version, owner=config.owner, owner_password=config.owner_password)),
-        symbolic_link_resource(path=get_pg_config_dir(purpose), to=pg_config_dir),
         symbolic_link_resource(path=pg_data_dir / 'postgresql.conf', to=pg_config_dir / 'postgresql.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_ident.conf', to=pg_config_dir / 'pg_ident.conf'),
     ])
-    if upgrading:
+    if upgrading or config.enable_chinese_fts:
+        resources.append(os_package_resource(name='postgresql-server-dev-{}'.format(config.version)))
+    if config.enable_chinese_fts:
         resources.extend([
-            os_package_resource(name='postgresql-server-dev-{}'.format(config.version)),
-            postgresql_cluster_upgrading_resource(purpose=purpose, old_version=maintenance_config.version, new_version=config.version,
-                host=config.host, port=config.port, owner=config.owner, owner_password=config.owner_password)
+            scws_resource(),
+            zhparser_resource(reinstall=upgrading)
         ])
+    if upgrading:
+        resources.append(postgresql_cluster_upgrading_resource(purpose=purpose, old_version=maintenance_config.version, new_version=config.version,
+            host=config.host, port=config.port, owner=config.owner, owner_password=config.owner_password))
     resources.extend([
+        symbolic_link_resource(path=get_pg_config_dir(purpose), to=pg_config_dir),
         postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
             owner_password=config.owner_password, user=config.user, password=config.password),
         postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
             owner_password=config.owner_password, user='readonly', password='r1adonly', readonly=True)
     ])
-    if config.enable_chinese_fts:
-        resources.extend([
-            os_package_resource(name='postgresql-server-dev-{}'.format(config.version)),
-            scws_resource(),
-            zhparser_resource()
-        ])
 
     return resources
 
 
 @atomic_installer
 def postgresql_cluster_upgrading_resource(purpose, old_version, new_version, host, port, owner, owner_password):
-    pg_data_dir = get_pg_data_dir(purpose, new_version)
-    installed = pg_data_dir.exists()
+    installed = is_postgresql_cluster_upgraded(purpose, new_version, host, port, owner, owner_password)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         dry_run_result['postgresql_cluster_upgrading?{}'.format(purpose)] = '-' if installed else 'INSTALL'
@@ -101,6 +98,17 @@ def postgresql_cluster_upgrading_resource(purpose, old_version, new_version, hos
     display_postgresql_cluster_post_upgrade_instructions()
 
 
+def is_postgresql_cluster_upgraded(purpose, version, host, port, owner, owner_password):
+    LOGGER.warn('Checking if postgresql cluster upgraded')
+    pg_data_dir = get_pg_data_dir(purpose, version)
+    with postgresql_server_running(version, pg_data_dir, owner):
+        env = os.environ.copy()
+        env['PGPASSWORD'] = owner_password
+        output = shell_execute("{}/psql -h {} -p {} -U {} -d postgres -Atc 'SELECT COUNT(*) FROM pg_database'".format(get_pg_bin_dir(version), host,
+            port, owner), env=env, capture=True, debug=True)
+        return int(output) > 3
+
+
 def upgrade_postgresql_cluster(purpose, old_version, new_version, owner, check_only=True):
     if check_only:
         LOGGER.warn('Checking postgresql server upgrading: %(old_version)s => %(new_version)s', {
@@ -109,7 +117,7 @@ def upgrade_postgresql_cluster(purpose, old_version, new_version, owner, check_o
     else:
         LOGGER.warn('Upgrading postgresql server: %(old_version)s => %(new_version)s', {'old_version': old_version, 'new_version': new_version})
     shell_execute('''
-        su - {pg_data_owner} -c '{new_bin_dir}/pg_upgrade {check_only} -v -j {cpu_cores} -u {pg_data_owner} -b {old_bin_dir} -B {new_bin_dir} -d {old_data_dir} -D {new_data_dir} -o "-c config_file={old_data_dir}/postgresql.conf" -O "-c config_file={new_data_dir}/postgresql.conf"'
+        su - {pg_data_owner} -c '{new_bin_dir}/pg_upgrade {check_only} -v -j {cpu_cores} -U {pg_data_owner} -b {old_bin_dir} -B {new_bin_dir} -d {old_data_dir} -D {new_data_dir} -o "-c config_file={old_data_dir}/postgresql.conf" -O "-c config_file={new_data_dir}/postgresql.conf"'
         '''.format(
         pg_data_owner=owner, check_only='-c' if check_only else '', cpu_cores=shell_execute('nproc', capture=True),
         old_bin_dir=get_pg_bin_dir(old_version), old_data_dir=get_pg_data_dir(purpose, old_version),
@@ -123,8 +131,8 @@ def vacuum_upgraded_postgresql_cluster(purpose, version, host, port, owner, owne
     with postgresql_server_running(version, pg_data_dir, owner):
         env = os.environ.copy()
         env['PGPASSWORD'] = owner_password
-        shell_execute("su {pg_data_owner} -c '{pg_bin_dir}/vacuumdb -h {host} -p {port} -U {pg_data_owner} -a -f -F -z'".format(
-            pg_data_owner=owner, pg_bin_dir=get_pg_bin_dir(version), host=host, port=port), capture=True, env=env)
+        shell_execute('{pg_bin_dir}/vacuumdb -h {host} -p {port} -U {pg_data_owner} -a -f -F -z'.format(pg_bin_dir=get_pg_bin_dir(version),
+            pg_data_owner=owner, host=host, port=port), env=env, capture=True)
 
 
 def confirm_postgresql_cluster_upgrading(old_version, new_version):
@@ -241,6 +249,8 @@ def postgresql_server_running(version, data_directory, owner):
 
 
 _maintenance_config = {}
+
+
 def postgresql_maintenance_config(purpose, must_exist=True):
     if purpose not in _maintenance_config:
         _maintenance_config[purpose] = load_postgresql_maintenance_config(purpose, must_exist)
