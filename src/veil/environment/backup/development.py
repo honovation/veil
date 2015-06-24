@@ -15,9 +15,9 @@ BASELINE_DIR = VEIL_HOME / 'baseline'
 def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=None, host_name=None):
     """
     Examples:
-        sudo -E veil :ljmall-staging/db restore-from-baseline xxx-public TRUE data/xxx-postgresql-9.3
-        sudo -E veil restore-from-baseline xxx-public TRUE data/xxx-postgresql-9.3
-        sudo -E veil restore-from-baseline xxx-public FALSE data/xxx-postgresql-9.3
+        sudo -E veil :ljmall-staging/db restore-from-baseline xxx-public TRUE data/xxx-postgresql-9.4
+        sudo -E veil restore-from-baseline xxx-public TRUE data/xxx-postgresql-9.4
+        sudo -E veil restore-from-baseline xxx-public FALSE data/xxx-postgresql-9.4
     """
     if not host_name:
         for server in list_veil_servers(veil_env_name):
@@ -39,9 +39,9 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
     if force_download.upper() == 'TRUE' or not baseline_path.exists():
         download_baseline(veil_env_name, remote_path, baseline_path)
 
-    shell_execute('veil down')
+    shell_execute('veil down', debug=True)
     shell_execute('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(baseline_path, baseline_path, restored_to_path), debug=True)
-    shell_execute('veil install-server')
+    shell_execute('veil install-server', debug=True)
 
     purposes = []
     if VEIL_DATA_DIR.startswith(restored_to_path):
@@ -53,18 +53,20 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
     for purpose in purposes:
         # set db conf permission
         config = postgresql_maintenance_config(purpose)
-        shell_execute('chown -f {}:{} *'.format(config.owner, config.owner), cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version))
-    shell_execute('veil up --daemonize')
+        shell_execute('chown -f {}:{} *'.format(config.owner, config.owner), cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version),
+            debug=True)
+    shell_execute('veil up --daemonize', debug=True)
     for purpose in purposes:
         # set db owner password
         config = postgresql_maintenance_config(purpose)
-        shell_execute('''sudo -u dejavu psql -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.owner, config.owner_password))
+        shell_execute('''sudo -u dejavu psql -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.owner, config.owner_password),
+            debug=True)
         # set db user password
         config = database_client_config(purpose)
-        shell_execute('''sudo -u dejavu psql -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.user, config.password))
-    shell_execute('veil migrate')
+        shell_execute('''sudo -u dejavu psql -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.user, config.password), debug=True)
+    shell_execute('veil migrate', debug=True)
 
-    shell_execute('veil down')
+    shell_execute('veil down', debug=True)
 
 
 @script('download-baseline')
