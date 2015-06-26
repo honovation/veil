@@ -15,7 +15,7 @@ BASELINE_DIR = VEIL_HOME / 'baseline'
 def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=None, host_name=None):
     """
     Examples:
-        sudo -E veil :ljmall-staging/db restore-from-baseline xxx-public TRUE data/xxx-postgresql-9.4
+        sudo -E veil :xxx-staging/db restore-from-baseline xxx-public TRUE data/xxx-postgresql-9.4
         sudo -E veil restore-from-baseline xxx-public TRUE data/xxx-postgresql-9.4
         sudo -E veil restore-from-baseline xxx-public FALSE data/xxx-postgresql-9.4
     """
