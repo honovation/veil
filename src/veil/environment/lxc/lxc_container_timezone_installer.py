@@ -23,5 +23,7 @@ def lxc_container_timezone_resource(container_name, timezone):
         'container_name': container_name,
         'timezone': timezone
     })
+    if not etc_timezone_path.exists():
+        etc_timezone_path.touch()
     etc_timezone_path.write_text(timezone)
     shell_execute('chroot {} dpkg-reconfigure --frontend noninteractive tzdata'.format(container_rootfs_path), capture=True)
