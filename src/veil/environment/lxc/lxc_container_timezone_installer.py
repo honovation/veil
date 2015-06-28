@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 def lxc_container_timezone_resource(container_name, timezone):
     container_rootfs_path = as_path('/var/lib/lxc/') / container_name / 'rootfs'
     etc_timezone_path = container_rootfs_path / 'etc' / 'timezone'
-    installed = timezone == etc_timezone_path.text()
+    installed = etc_timezone_path.exists() and timezone == etc_timezone_path.text()
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'lxc_container_timezone?container_name={}&timezone={}'.find(container_name, timezone)
