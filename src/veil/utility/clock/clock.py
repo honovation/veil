@@ -53,16 +53,16 @@ def convert_datetime_to_naive_local(dt):
     return datetime.fromtimestamp(convert_datetime_to_timestamp(dt))
 
 
-def convert_datetime_to_client_timezone(dt):
+def convert_datetime_to_client_timezone(dt, tzinfo=DEFAULT_CLIENT_TIMEZONE):
     if is_naive_datetime(dt):
-        return convert_naive_datetime_to_aware(dt, DEFAULT_CLIENT_TIMEZONE)
+        return convert_naive_datetime_to_aware(dt, tzinfo)
     else:
-        return convert_aware_datetime_to_timezone(dt, DEFAULT_CLIENT_TIMEZONE)
+        return convert_aware_datetime_to_timezone(dt, tzinfo)
 
 
-def convert_datetime_to_utc_timezone(dt):
+def convert_datetime_to_utc_timezone(dt, tzinfo=DEFAULT_CLIENT_TIMEZONE):
     if is_naive_datetime(dt):
-        aware_dt = convert_naive_datetime_to_aware(dt, DEFAULT_CLIENT_TIMEZONE)
+        aware_dt = convert_naive_datetime_to_aware(dt, tzinfo=tzinfo)
         return convert_aware_datetime_to_timezone(aware_dt, pytz.utc)
     else:
         return dt if is_utc_datetime(dt) else convert_aware_datetime_to_timezone(dt, pytz.utc)

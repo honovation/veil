@@ -157,10 +157,12 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
     return env
 
 
-def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ssh_user='dejavu', sshd_config=(), iptables_rule_resources=()):
+def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ssh_user='dejavu', sshd_config=(), iptables_rule_resources=(),
+        timezone='Asia/Shanghai'):
     from veil.model.collection import objectify
     internal_ip = '{}.1'.format(lan_range)
     return objectify({
+        'timezone': timezone,
         'lan_range': lan_range,
         'lan_interface': lan_interface,
         'mac_prefix': mac_prefix,
