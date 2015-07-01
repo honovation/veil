@@ -7,6 +7,7 @@ from veil.frontend.template import *
 from veil.utility.clock import *
 from .i18n import get_current_locale, _
 
+
 @template_filter('timedelta')
 def timedelta_filter(delta, granularity='second', add_direction=False):
     if isinstance(delta, basestring):

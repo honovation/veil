@@ -4,9 +4,11 @@ import traceback
 import os.path
 import inspect
 import importlib
+import itertools
 import jinjatag
 from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader, PrefixLoader
+import operator
 from veil.development.test import get_executing_test
 from veil.frontend.cli import get_executing_script_handler
 from veil.utility.encoding import to_unicode
@@ -16,6 +18,16 @@ utilities = {}
 loaders = {'root': FileSystemLoader('/')}
 env = None
 current_template_directories = []
+
+
+def assert_no_env():
+    if env:
+        raise Exception('Environment already created by: {}'.format(env.created_by))
+
+
+def register_template_filter(name, filter):
+    assert_no_env()
+    filters[name] = filter
 
 
 def template_filter(func_or_name):
@@ -30,25 +42,21 @@ def template_filter(func_or_name):
         return decorate
 
 
-def assert_no_env():
-    if env:
-        raise Exception('Environment already created by: {}'.format(env.created_by))
+#TODO: use the built-in groupby filter once the bug is fixed (https://github.com/mitsuhiko/jinja2/issues/250) and remove the below custom filter
+@template_filter('groupby_without_loosing_order')
+def groupby_without_loosing_order(iterable, attribute):
+    return itertools.groupby(iterable, key=operator.attrgetter(attribute))
 
 
-def register_template_filter(name, filter):
+def register_template_utility(name, utility):
     assert_no_env()
-    filters[name] = filter
+    utilities[name] = utility
 
 
 def template_utility(func):
 # syntax sugar for register_template_utility
     register_template_utility(func.__name__, func)
     return func
-
-
-def register_template_utility(name, utility):
-    assert_no_env()
-    utilities[name] = utility
 
 
 def register_template_loader(prefix, loader):
