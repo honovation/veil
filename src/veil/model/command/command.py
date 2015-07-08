@@ -132,7 +132,7 @@ class InvalidCommand(Exception):
     def __str__(self):
         parts = []
         for k, v in self.errors.items():
-            parts.append('{}=[{}]'.format(k, ', '.join(v)))
+            parts.append('{}=[{}]'.format(k, v if isinstance(v, basestring) else ', '.join(v)))
         return ', '.join(parts)
 
 
