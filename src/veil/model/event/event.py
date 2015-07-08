@@ -44,10 +44,11 @@ def unsubscribe_event(event_type, subscriber):
         topic_subscribers.remove(subscriber)
 
 
-def event(event_type): #syntax sugar
-
+def event(*event_types): #syntax sugar
+    assert event_types, 'need specify event type(s)'
     def decorator(subscriber):
-        subscribe_event(event_type, subscriber)
+        for event_type in event_types:
+            subscribe_event(event_type, subscriber)
         return subscriber
 
     return decorator
