@@ -2,7 +2,6 @@ from __future__ import unicode_literals, print_function, division
 from contextlib import closing
 from logging import getLogger
 import psycopg2
-from psycopg2._psycopg import QuotedString, ISQLQuote
 from psycopg2.extensions import ISOLATION_LEVEL_READ_COMMITTED
 from psycopg2.extras import NamedTupleCursor
 from psycopg2.extras import register_uuid
@@ -18,21 +17,11 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 psycopg2.extensions.register_type(register_uuid())
 
 
-class DictObject2Json(object):
-    def __init__(self, adapted):
-        self.adapted = adapted
-
-    def __conform__(self, proto):
-        if proto is ISQLQuote:
-            return self
-
+class CustomJsonAdapter(psycopg2.extras.Json):
     def dumps(self, obj):
         return to_readable_json(obj) if obj.get('readable', True) else to_json(obj)
 
-    def getquoted(self):
-        s = self.dumps(self.adapted)
-        return QuotedString(s).getquoted()
-psycopg2.extensions.register_adapter(DictObject, DictObject2Json)
+psycopg2.extensions.register_adapter(dict, CustomJsonAdapter)
 psycopg2.extras.register_default_json(globally=True, loads=lambda obj: objectify(from_json(obj)))
 
 
