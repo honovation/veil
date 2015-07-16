@@ -23,6 +23,7 @@ class CustomJsonAdapter(psycopg2.extras.Json):
 
 psycopg2.extensions.register_adapter(dict, CustomJsonAdapter)
 psycopg2.extras.register_default_json(globally=True, loads=lambda obj: objectify(from_json(obj)))
+psycopg2.extras.register_default_jsonb(globally=True, loads=lambda obj: objectify(from_json(obj)))
 
 
 class PostgresqlAdapter(object):
