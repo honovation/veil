@@ -10,6 +10,20 @@
 
 $.ajaxSetup({cache: true, headers: {'X-XSRF': $.cookie('_xsrf')}});
 
+$(document).on('click', 'button,input[type="button"],input[type="submit"]', function (e) {
+    var $this = $(this);
+    if($this.data('ignoreDoubleClick')) {
+        e.preventDefault();
+        e.stopPropagation();
+    } else {
+        $this.prop('disabled', true);
+        $this.data('ignoreDoubleClick', setTimeout(function () {
+            $this.prop('disabled', false);
+            $this.data('ignoreDoubleClick', null);
+        }, 500));
+    }
+});
+
 $.fn.serializeObject = function() {
     var o = {value_contained_in_array: true};
     var a = this.serializeArray();
