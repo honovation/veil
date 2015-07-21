@@ -16,9 +16,9 @@ $(document).on('click', 'button,input[type="button"],input[type="submit"]', func
         e.preventDefault();
         e.stopPropagation();
     } else {
-        $this.prop('disabled', true);
+        $this.addClass('disabled');
         $this.data('ignoreDoubleClick', setTimeout(function () {
-            $this.prop('disabled', false);
+            $this.removeClass('disabled');
             $this.data('ignoreDoubleClick', null);
         }, 500));
     }
