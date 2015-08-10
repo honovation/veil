@@ -430,6 +430,21 @@ veil.resource.del = function (options) {
     return $.ajax(_);
 };
 
+veil.alertErrorMessage = function (allErrors, displayAll) {
+    var errors = [];
+    for (var field in allErrors) {
+        if (allErrors.hasOwnProperty(field)) {
+            if (displayAll) {
+                errors.push(field + ': ' + allErrors[field].join(', '));
+            } else {
+                errors.push(allErrors[field][0]);
+                break;
+            }
+        }
+    }
+    veil.alert(errors.join('\n'));
+};
+
 veil.widget = {};
 
 veil.widget.reset = function () {
@@ -593,7 +608,7 @@ veil.widget.refresh = function (widget, options) {
 veil.widget.showErrorMessage = function (widget, allErrors) {
     for (var field in allErrors) {
         if (allErrors.hasOwnProperty(field)) {
-            var errors = (typeof allErrors[field] === 'string') ? [allErrors[field]] : allErrors[field];
+            var errors = allErrors[field];
             errors.reverse();
             $(errors).each(function () {
                 var error = this;

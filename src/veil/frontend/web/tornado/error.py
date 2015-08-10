@@ -2,7 +2,6 @@ from __future__ import unicode_literals, print_function, division
 import contextlib
 import httplib
 from logging import getLogger
-from veil.model.command import *
 from veil.model.security import *
 from .context import get_current_http_request
 from .context import get_current_http_response

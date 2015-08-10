@@ -127,12 +127,12 @@ def command_to_args(command, command_handler):
 
 class InvalidCommand(Exception):
     def __init__(self, errors):
-        self.errors = errors
+        self.errors = {k: [v] if isinstance(v, basestring) else v for k, v in errors.items()}
 
     def __str__(self):
         parts = []
         for k, v in self.errors.items():
-            parts.append('{}=[{}]'.format(k, v if isinstance(v, basestring) else ', '.join(v)))
+            parts.append('{}=[{}]'.format(k, ', '.join(v)))
         return ', '.join(parts)
 
 
