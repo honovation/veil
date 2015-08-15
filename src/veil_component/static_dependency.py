@@ -10,6 +10,7 @@ from .import_collector import list_imports
 
 # static dependency is declared manually assert architecture assertion
 
+
 def list_expected_static_dependencies():
     path = VEIL_HOME / 'DEP-STATIC'
     code = compile(path.text(), path, 'exec')
@@ -20,7 +21,12 @@ def list_expected_static_dependencies():
 
 def check_static_dependency_integrity():
     scan_all_components()
-    check_integrity([], list_expected_static_dependencies())
+    component_map = get_component_map()
+    expected_static_dependencies = list_expected_static_dependencies()
+    for component_name in expected_static_dependencies:
+        if component_name not in component_map:
+            raise Exception('Invalid component in DEP-STATIC: {}'.format(component_name))
+    check_integrity([], expected_static_dependencies)
     for path in (VEIL_HOME / 'src').walk('*.py'):
         module_name = get_module_name(path)
         absolute_imports, relative_imports = list_imports(path.text(), path)
