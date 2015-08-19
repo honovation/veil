@@ -11,6 +11,7 @@ assert LOCAL_TIMEZONE is DEFAULT_CLIENT_TIMEZONE
 
 current_time = None
 
+
 @contextlib.contextmanager
 def require_current_time_being(time):
     assert time.tzinfo, 'must be explicit with time zone'
@@ -70,7 +71,7 @@ def convert_datetime_to_utc_timezone(dt, tzinfo=DEFAULT_CLIENT_TIMEZONE):
 
 def convert_naive_datetime_to_aware(dt, tzinfo=DEFAULT_CLIENT_TIMEZONE):
     assert is_naive_datetime(dt)
-    if hasattr(tzinfo, 'localize'): # pytz
+    if hasattr(tzinfo, 'localize'):  # pytz
         converted = tzinfo.localize(dt)
     else:
         converted = dt.replace(tzinfo=tzinfo)
@@ -82,7 +83,7 @@ def convert_aware_datetime_to_timezone(dt, tzinfo):
     if dt.tzinfo is tzinfo:
         return dt
     converted = dt.astimezone(tzinfo)
-    if hasattr(tzinfo, 'normalize'): # pytz
+    if hasattr(tzinfo, 'normalize'):  # pytz
         converted = tzinfo.normalize(converted)
     return converted
 

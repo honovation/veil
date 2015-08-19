@@ -4,6 +4,7 @@ import json
 from uuid import UUID
 from decimal import Decimal
 from dateutil.parser import parse
+from veil.utility.clock import *
 from veil.utility.encoding import *
 
 SUPPORTED_TYPES = {datetime, date, time, Decimal, UUID, set}
@@ -30,7 +31,8 @@ class CustomJSONDecoder(json.JSONDecoder):
     def __init__(self, **kw):
         json.JSONDecoder.__init__(self, object_hook=self.dict_to_object, **kw)
 
-    def dict_to_object(self, d):
+    @staticmethod
+    def dict_to_object(d):
         type_ = SUPPORTED_TYPES_NAME2CLASS.get(d.get('__type__'))
         if type_ in SUPPORTED_TYPES:
             if issubclass(type_, (datetime, date, time)):
@@ -67,7 +69,7 @@ class CustomReadableJSONEncoder(json.JSONEncoder):
         type_ = type(obj)
         if type_ in SUPPORTED_TYPES:
             if issubclass(type_, datetime):
-                return obj.strftime('%Y-%m-%d %H:%M:%S')
+                return convert_datetime_to_client_timezone(obj).strftime('%Y-%m-%d %H:%M:%S')
             if issubclass(type_, date):
                 return obj.strftime('%Y-%m-%d')
             if issubclass(type_, time):
