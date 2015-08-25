@@ -189,15 +189,9 @@ veil.resource.get = function (options) {
                 }
             },
             403: function() {veil.alert('权限不足');},
-            500: function () {
-                alert('服务内部错误');
-            },
-            502: function(){
-                alert('服务暂时不可用，请稍后重试');
-            },
-            503: function () {
-                alert('服务暂时不可用，请稍后重试');
-            }
+            500: function() {veil.alert('服务内部错误');},
+            502: function() {veil.alert('服务暂时不可用，请稍后重试');},
+            503: function() {veil.alert('服务暂时不可用，请稍后重试');}
         }
     };
     return $.ajax(_);
