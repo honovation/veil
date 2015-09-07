@@ -64,7 +64,7 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
                     refresh_user_session_ttl(session)
 
                 if TAG_NO_LOGIN_REQUIRED not in current_route.tags and not (session and get_logged_in_user_id(purpose, session)):
-                    if request.method.upper() == 'GET':
+                    if request.method == 'GET':
                         login_referer = request.uri
                     else:
                         login_referer = request.headers.get('Referer')

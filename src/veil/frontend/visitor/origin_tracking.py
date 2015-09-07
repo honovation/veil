@@ -25,7 +25,7 @@ def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_pa
         request = get_current_http_request()
         try:
             request.from_spider = is_web_spider(request.headers.get('User-Agent'))
-            if request.method.upper() == 'GET' and not request.from_spider:
+            if request.method == 'GET' and not request.from_spider:
                 referer = request.headers.get('Referer')
                 if referer:
                     referer = to_unicode(referer, strict=False, additional={

@@ -39,7 +39,7 @@ def reset_routes():
 class RouteDecorator(object):
     def __init__(self, method, path_template, website, tags=(), delegates_to=None, **path_template_params):
         assert website
-        self.method = method
+        self.method = method.upper()
         self.path_template = path_template
         self.website = website.lower()
         self.tags = tags
@@ -109,7 +109,7 @@ class RoutingHTTPHandler(object):
 
     def try_route(self, route):
         request = get_current_http_request()
-        if not is_method_matched(route.method.upper(), request.method.upper()):
+        if not is_method_matched(route.method, request.method):
             return False
         path = request.path.rstrip(b'/')
         if not path:
@@ -139,7 +139,7 @@ class RoutingHTTPHandler(object):
         except InvalidCommand as e:
             set_http_status_code(httplib.BAD_REQUEST)
             data = e.errors
-        not_head_request = request.method.upper() != 'HEAD'
+        not_head_request = request.method != 'HEAD'
         responsed_in_json = 'application/json' in response.headers.get('Content-Type', '')
         if responsed_in_json or data is not None and not isinstance(data, basestring) or 'application/json' in request.headers.get('Accept', ''):
             if not responsed_in_json:
