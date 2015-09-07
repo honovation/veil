@@ -39,7 +39,7 @@ def reset_routes():
 class RouteDecorator(object):
     def __init__(self, method, path_template, website, tags=(), delegates_to=None, **path_template_params):
         assert website
-        self.method = method.upper()
+        self.method = method
         self.path_template = path_template
         self.website = website.lower()
         self.tags = tags

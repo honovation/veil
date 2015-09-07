@@ -52,7 +52,6 @@ class HTTPHandler(object):
         self.handler = handler
 
     def __call__(self, request):
-        request.method = request.method.upper()
         http_context = HTTPContext(request, HTTPResponse(request))
         with create_stack_context(require_current_http_context_being, http_context=http_context):
             with handle_exception():
