@@ -17,6 +17,7 @@ from .container_installer import veil_container_resource, get_remote_file_conten
 CURRENT_DIR = as_path(os.path.dirname(__file__))
 hosts_to_install = []
 hosts_configured = []
+sources_list_installed = []
 
 
 @composite_installer
@@ -27,7 +28,7 @@ def veil_hosts_resource(veil_env_name, config_dir):
         fabric.api.env.host_string = host.deploys_via
         if host.base_name not in hosts_to_install:
             resources.extend([
-                veil_host_onetime_config_resource(host=host, config_dir=config_dir),
+                veil_host_onetime_config_resource(host=host),
                 veil_host_config_resource(host=host, config_dir=config_dir),
                 veil_host_application_config_resource(host=host, config_dir=config_dir),
                 veil_host_codebase_resource(host=host)
@@ -89,7 +90,7 @@ def veil_host_iptables_rules_resource(host):
 
 
 @composite_installer
-def veil_host_onetime_config_resource(host, config_dir):
+def veil_host_onetime_config_resource(host):
     initialized = fabric.contrib.files.exists(host.initialized_tag_path)
     if initialized:
         return []
@@ -103,7 +104,7 @@ def veil_host_onetime_config_resource(host, config_dir):
             owner='root', owner_group='root', mode=0440),
         veil_host_file_resource(local_path=CURRENT_DIR / 'ipv4-ip-forward.conf', host=host, remote_path='/etc/sysctl.d/60-lxc-ipv4-ip-forward.conf',
             owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
-        veil_host_config_resource(host=host, config_dir=config_dir),
+        veil_host_sources_list_resource(host=host),
         veil_host_init_resource(host=host)
     ]
     return resources
@@ -240,6 +241,9 @@ def veil_host_init_resource(host):
 
 @atomic_installer
 def veil_host_sources_list_resource(host):
+    if host.base_name in sources_list_installed:
+        return
+
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_host_sources_list?{}'.format(host.env_name)
@@ -251,6 +255,8 @@ def veil_host_sources_list_resource(host):
     fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
         use_sudo=True, backup=False, mode=0644)
     fabric.api.sudo('chown root:root {}'.format(sources_list_path))
+
+    sources_list_installed.append(host.base_name)
 
 
 @atomic_installer
