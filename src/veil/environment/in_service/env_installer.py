@@ -21,6 +21,8 @@ from .server_installer import veil_servers_resource, is_container_running, is_se
 @script('deploy-env')
 @log_elapsed_time
 def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', include_monitor_server='TRUE'):
+    print(cyan('Update config ...'))
+    update_config(config_dir)
     print(cyan('Make local preparation ...'))
     do_local_preparation(veil_env_name)
     print(cyan('Tag deploy ...'))
@@ -318,6 +320,10 @@ def get_deployed_or_patched_at():
         if env_name == VEIL_ENV_NAME:
             deployed_or_patched_at.append(convert_datetime_to_client_timezone(datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S')))
     return max(deployed_or_patched_at) if deployed_or_patched_at else None
+
+
+def update_config(config_dir):
+    shell_execute('git pull --rebase', cwd=config_dir)
 
 
 def update_branch(veil_env_name):
