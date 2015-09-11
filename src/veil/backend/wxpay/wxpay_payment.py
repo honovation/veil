@@ -30,6 +30,58 @@ WXPAY_ORDER_QUERY_URL = 'https://api.weixin.qq.com/pay/orderquery'
 WXPAY_DELIVER_NOTIFY_URL = 'https://api.weixin.qq.com/pay/delivernotify'
 WXMP_ACCESS_TOKEN_AUTHORIZATION_URL = 'https://api.weixin.qq.com/cgi-bin/token'
 VERIFY_URL = 'https://gw.tenpay.com/gateway/simpleverifynotifyid.xml'
+WXPAY_UNIFIEDORDER_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
+
+
+def make_wxpay_unified_order(app_id, app_secret, mch_id, body, out_trade_no, total_fee, spbill_create_ip, notify_url, trade_type,
+                             device_info=None, detail=None, attach=None, fee_type=None, time_start=None, time_expire=None, goods_tag=None, product_id=None,
+                             limit_pay=None, openid=None):
+    time_start_beijing_time_str = convert_datetime_to_client_timezone(time_start).strftime('%Y%m%d%H%M%S')
+    time_expire_beijing_time_str = convert_datetime_to_client_timezone(time_expire).strftime('%Y%m%d%H%M%S')
+    order = DictObject(appid=app_id, mch_id=mch_id, device_info=device_info, nonce_str=uuid4().get_hex(), body=body, detail=detail, attach=attach,
+                       out_trade_no=out_trade_no, fee_type=fee_type, total_fee=unicode(int(total_fee * 100)), spbill_create_ip=spbill_create_ip,
+                       time_start=time_start_beijing_time_str, time_expire=time_expire_beijing_time_str, goods_tag=goods_tag, notify_url=notify_url,
+                       trade_type=trade_type, product_id=product_id, limit_pay=limit_pay, openid=openid)
+    order.sign = sign_md5(order, app_secret)
+    with require_current_template_directory_relative_to():
+        data = to_str(get_template('unified-order.xml').render(order=order))
+    headers = {'Content-Type': 'application/xml'}
+    try:
+        response = requests.post(WXPAY_UNIFIEDORDER_URL, data=data, headers=headers, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
+        response.raise_for_status()
+    except Exception:
+        LOGGER.exception('wxpay unified order exception-thrown: %(out_trade_no)s, %(data)s', {'out_trade_no': out_trade_no, 'data': data})
+        raise
+    else:
+        parsed_response = parse_xml_response(response.content)
+        if parsed_response.return_code != 'SUCCESS':
+            LOGGER.info('wxpay unified order got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
+            raise Exception('wxpay unified order got failed response: {}'.format(parsed_response.return_msg))
+        try:
+            validate_wxpay_unified_response(parsed_response, app_secret)
+        except Exception:
+            LOGGER.info('wxpay unified order got fake response: %(data)s', {'data': data})
+            raise
+        if parsed_response.result_code != 'SUCCESS':
+            LOGGER.info('wxpay unified order got failed result: %(err_code)s, %(err_code_des)s, %(data)s', {
+                'err_code': parsed_response.err_code,
+                'err_code_des': parsed_response.err_code_des,
+                'data': data
+            })
+            raise Exception('wxpay unified order got failed result: {}, {}'.format(parsed_response.err_code, parsed_response.err_code_des))
+        LOGGER.info('wxpay unified order success: %(response)s', {'response': response})
+        return DictObject(nonce_str=parsed_response.nonce_str, trade_type=parsed_response.trade_type, prepay_id=parsed_response.prepay_id,
+                          code_url=parsed_response.get('code_url'))
+
+
+def validate_wxpay_unified_response(parsed_response, app_secret):
+    sign = parsed_response.pop('sign', None)
+    if sign != sign_md5(parsed_response, app_secret):
+        raise Exception('invalid sign')
+
+
+def get_wx_open_sign(data, key):
+    return sign_md5(data, key=key)
 
 
 def get_wxmp_access_token(with_ttl=False, access_token_to_refresh=None):
@@ -349,8 +401,8 @@ def is_sign_correct(arguments):
         return True
 
 
-def sign_md5(params):
-    param_str = '{}&key={}'.format(to_url_params_string(params), wxpay_client_config().partner_key)
+def sign_md5(params, key=None):
+    param_str = '{}&key={}'.format(to_url_params_string(params), key or wxpay_client_config().partner_key)
     return hashlib.md5(param_str.encode('UTF-8')).hexdigest().upper()
 
 

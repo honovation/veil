@@ -1,0 +1,22 @@
+<xml>
+    <appid>{{ order.appid }}</appid>
+    <mch_id>{{ order.mch_id }}</mch_id>
+    <device_info>{{ order.device_info or '' }}</device_info>
+    <nonce_str>{{ order.nonce_str }}</nonce_str>
+    <sign>{{ order.sign }}</sign>
+    <body>{{ order.body }}</body>
+    <detail>{{ order.detail or '' }}</detail>
+    <attach>{{ order.attach or '' }}</attach>
+    <out_trade_no>{{ order.out_trade_no }}</out_trade_no>
+    <fee_type>{{ order.fee_type or '' }}</fee_type>
+    <total_fee>{{ order.total_fee }}</total_fee>
+    <spbill_create_ip>{{ order.spbill_create_ip }}</spbill_create_ip>
+    <time_start>{{ order.time_start or '' }}</time_start>
+    <time_expire>{{ order.time_expire or '' }}</time_expire>
+    <goods_tag>{{ order.goods_tag or '' }}</goods_tag>
+    <notify_url>{{ order.notify_url }}</notify_url>
+    <trade_type>{{ order.trade_type }}</trade_type>
+    <product_id>{{ order.product_id or '' }}</product_id>
+    <limit_pay>{{ order.limit_pay or '' }}</limit_pay>
+    <openid>{{ order.openid or '' }}</openid>
+</xml>
