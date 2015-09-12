@@ -145,6 +145,7 @@ veil.resource = {};
 
 veil.resource.get = function (options) {
     var url = options.url;
+    var cache = options.cache;
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
@@ -174,6 +175,7 @@ veil.resource.get = function (options) {
     var _ = {
         type: 'GET',
         url: url,
+        cache: cache,
         data: data,
         dataType: dataType,
         success: onSuccess,
@@ -199,10 +201,10 @@ veil.resource.get = function (options) {
 
 veil.resource.create = function (options) {
     var url = options.url;
+    var async = options.async;
     var data = options.data;
     var dataFormat = options.dataFormat;
     var dataType = options.dataType;
-    var async = options.async;
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
@@ -226,8 +228,8 @@ veil.resource.create = function (options) {
     var _ = {
         type:'POST',
         url:url,
-        data:data,
         async:async,
+        data:data,
         dataType:dataType,
         success:onSuccess,
         error:onError,
@@ -372,7 +374,6 @@ veil.resource.del = function (options) {
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
-    var onServerError = options.onServerError;
     var widget = options.widget;
     if (widget){
         var widgetParent = widget.parent();
