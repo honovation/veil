@@ -1,10 +1,12 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
+import base64
 from decimal import Decimal, DecimalException
 import logging
 import urllib
 import hashlib
 import lxml.objectify
+import rsa
 from veil.environment import VEIL_ENV_TYPE
 from veil.utility.http import *
 from veil.utility.encoding import *
@@ -26,8 +28,16 @@ NOTIFIED_FROM_PAYMENT_QUERY = 'payment_query'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # alipay require this 7 characters to be returned to them
 
 
-def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, minutes_to_complete_payment,
-        shopper_ip_address):
+def create_alipay_mobile_arguments(out_trade_no, subject, body, total_fee, notify_url, minutes_to_complete_payment):
+    config = alipay_client_config()
+    arguments = DictObject(service='mobile.securitypay.pay', partner=config.partner_id, _input_charset='utf-8', sign_type='RSA',
+                           notify_url=notify_url, out_trade_no=out_trade_no, subject=subject, payment_type=1, seller_id=config.seller_email,
+                           total_fee='{:.2f}'.format(total_fee), body=body, it_b_pay='{}m'.format(minutes_to_complete_payment))
+    arguments.sign = sign_rsa(arguments, config.rsa_private_key)
+    return arguments
+
+
+def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, minutes_to_complete_payment, shopper_ip_address):
     params = {
         'service': 'create_direct_pay_by_user',  #即时到帐
         'partner': alipay_client_config().partner_id,
@@ -55,11 +65,11 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
 
 
 @script('query-status')
-def query_status(out_trade_no):
-    query_alipay_payment_status(out_trade_no)
+def query_status(out_trade_no, is_app=False):
+    query_alipay_payment_status(out_trade_no, is_app=is_app)
 
 
-def query_alipay_payment_status(out_trade_no):
+def query_alipay_payment_status(out_trade_no, is_app=False):
     params = {'service': 'single_trade_query', 'partner': alipay_client_config().partner_id, '_input_charset': 'UTF-8', 'out_trade_no': out_trade_no}
     params['sign'] = sign_md5(params)
     params['sign_type'] = 'MD5'
@@ -73,7 +83,7 @@ def query_alipay_payment_status(out_trade_no):
         arguments = parse_payment_status_response(response.content)
         if arguments.is_success == 'T':
             arguments.trade.update(sign=arguments.sign, sign_type=arguments.sign_type)
-            discarded_reasons = process_alipay_payment_notification(out_trade_no, arguments.trade, NOTIFIED_FROM_PAYMENT_QUERY)
+            discarded_reasons = process_alipay_payment_notification(out_trade_no, arguments.trade, NOTIFIED_FROM_PAYMENT_QUERY, is_app=is_app)
             paid = not bool(discarded_reasons)
         else:
             LOGGER.warn('alipay payment query failed: %(params)s, %(arguments)s', {'params': params, 'arguments': arguments})
@@ -94,9 +104,9 @@ def parse_payment_status_response(response):
     return arguments
 
 
-def process_alipay_payment_notification(out_trade_no, arguments, notified_from):
+def process_alipay_payment_notification(out_trade_no, arguments, notified_from, is_app=False):
     trade_no, buyer_id, paid_total, paid_at, show_url, discarded_reasons = validate_payment_notification(out_trade_no, arguments,
-        NOTIFIED_FROM_PAYMENT_QUERY != notified_from)
+        NOTIFIED_FROM_PAYMENT_QUERY != notified_from, is_app=is_app)
     if discarded_reasons:
         LOGGER.warn('alipay trade notification discarded: %(discarded_reasons)s, %(arguments)s', {
             'discarded_reasons': discarded_reasons,
@@ -117,10 +127,11 @@ def process_alipay_payment_notification(out_trade_no, arguments, notified_from):
         return discarded_reasons
 
 
-def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
+def validate_payment_notification(out_trade_no, arguments, with_notify_id=True, is_app=False):
     discarded_reasons = []
     if VEIL_ENV_TYPE not in {'development', 'test'}:
-        if is_sign_correct(arguments):
+        verify_sign_func = is_sign_correct if not is_app else is_rsa_sign_correct
+        if verify_sign_func(arguments):
             if with_notify_id:
                 notify_id = arguments.get('notify_id')
                 if notify_id:
@@ -163,6 +174,21 @@ def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
     return trade_no, arguments.get('buyer_id'), paid_total, paid_at, show_url, discarded_reasons
 
 
+def is_rsa_sign_correct(arguments):
+    config = alipay_client_config()
+    actual_sign = arguments.get('sign')
+    verify_params = arguments.copy()
+    verify_params.pop('sign', None)
+    with open(config.alipay_public_key) as f:
+        alipay_public_key = rsa.PublicKey.load_pkcs1(f.read())
+    try:
+        rsa.verify(to_url_params_string(verify_params).encode('UTF-8'), base64.b64decode(actual_sign), alipay_public_key)
+    except rsa.VerificationError:
+        return False
+    else:
+        return True
+
+
 def is_sign_correct(arguments):
     actual_sign = arguments.get('sign')
     verify_params = arguments.copy()
@@ -182,6 +208,13 @@ def is_sign_correct(arguments):
 def sign_md5(params):
     param_str = '{}{}'.format(to_url_params_string(params), alipay_client_config().app_key)
     return hashlib.md5(param_str.encode('UTF-8')).hexdigest()
+
+
+def sign_rsa(params, keyfile_path):
+    params_str = to_url_params_string(params)
+    with open(keyfile_path) as f:
+        private_key = rsa.PrivateKey.load_pkcs1(f.read())
+    return base64.b64encode(rsa.sign(params_str.encode('UTF-8'), private_key, 'SHA-1'))
 
 
 def to_url_params_string(params):
