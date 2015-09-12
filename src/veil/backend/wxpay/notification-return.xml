@@ -1,0 +1,4 @@
+<xml>
+  <return_code><![CDATA[{{ return_code }}]]></return_code>
+  <return_msg><![CDATA[{{ return_msg }}]]></return_msg>
+</xml>
