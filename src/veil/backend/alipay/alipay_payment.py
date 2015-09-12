@@ -31,7 +31,7 @@ NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # alipay require this 7 cha
 def create_alipay_mobile_arguments(out_trade_no, subject, body, total_fee, notify_url, minutes_to_complete_payment):
     config = alipay_client_config()
     arguments = DictObject(service='mobile.securitypay.pay', partner=config.partner_id, _input_charset='utf-8', sign_type='RSA',
-                           notify_url=notify_url, out_trade_no=out_trade_no, subject=subject, payment_type=1, seller_id=config.seller_email,
+                           notify_url=notify_url, out_trade_no=out_trade_no, subject=subject, payment_type='1', seller_id=config.seller_email,
                            total_fee='{:.2f}'.format(total_fee), body=body, it_b_pay='{}m'.format(minutes_to_complete_payment))
     arguments.sign = sign_rsa(arguments, config.rsa_private_key)
     return arguments
