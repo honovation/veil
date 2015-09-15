@@ -162,7 +162,7 @@ veil.resource.get = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, {'@':'操作失败'});
+                    veil.widget.showErrorMessage(widget, {'@':['操作失败']});
                 }
             };
         }
@@ -215,7 +215,7 @@ veil.resource.create = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
+                    veil.widget.showErrorMessage(widget, {'@': ['操作失败']});
                 }
             };
         }
@@ -272,7 +272,7 @@ veil.resource.update = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
+                    veil.widget.showErrorMessage(widget, {'@': ['操作失败']});
                 }
             };
         }
@@ -327,7 +327,7 @@ veil.resource.patch = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
+                    veil.widget.showErrorMessage(widget, {'@': ['操作失败']});
                 }
             };
         }
@@ -388,7 +388,7 @@ veil.resource.del = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
+                    veil.widget.showErrorMessage(widget, {'@': ['操作失败']});
                 }
             };
         }
