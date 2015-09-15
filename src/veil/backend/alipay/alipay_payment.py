@@ -180,7 +180,7 @@ def is_rsa_sign_correct(arguments):
     verify_params = arguments.copy()
     verify_params.pop('sign', None)
     with open(config.alipay_public_key) as f:
-        alipay_public_key = rsa.PublicKey.load_pkcs1(f.read())
+        alipay_public_key = rsa.PublicKey.load_pkcs1_openssl_pem(f.read())
     try:
         rsa.verify(to_url_params_string(verify_params).encode('UTF-8'), base64.b64decode(actual_sign), alipay_public_key)
     except rsa.VerificationError:
