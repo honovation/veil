@@ -11,9 +11,9 @@ def alipay_client_resource(partner_id, app_key, seller_email, alipay_public_key,
         content=render_config('alipay-client.cfg.j2', partner_id=partner_id, app_key=app_key, seller_email=seller_email, alipay_public_key=alipay_public_key,
                               rsa_public_key=rsa_public_key, rsa_private_key=rsa_private_key)))
     if VEIL_ENV_TYPE in {'development', 'test'}:
-        resources.append(symbolic_link_resource(path='/etc/ssl/certs/alipay.pub.pem', to=VEIL_HOME / 'alipay_public.pem'))
-        resources.append(symbolic_link_resource(path='/etc/ssl/certs/alipay_app.pub.pem', to=VEIL_HOME / 'alipay_app_public.pem'))
-        resources.append(symbolic_link_resource(path='/etc/ssl/private/alipay_app.pri.pem', to=VEIL_HOME / 'alipay_app_private.pem'))
+        resources.append(symbolic_link_resource(path='/etc/ssl/certs/alipay.pub.pem', to=VEIL_HOME / 'alipay.pub.pem'))
+        resources.append(symbolic_link_resource(path='/etc/ssl/certs/alipay_app.pub.pem', to=VEIL_HOME / 'alipay_app.pub.pem'))
+        resources.append(symbolic_link_resource(path='/etc/ssh/alipay_app.pri.pem', to=VEIL_HOME / 'alipay_app.pri.pem'))
     return resources
 
 
