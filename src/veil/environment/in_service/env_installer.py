@@ -343,6 +343,6 @@ def tag_deploy(veil_env_name):
 
 
 def tag_patch(veil_env_name):
-    tag_name = '{}-{}-{}-patch'.format(veil_env_name, get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
+    tag_name = '{}-patch-{}-{}'.format(veil_env_name, get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S'), get_veil_framework_version())
     shell_execute('git tag {}'.format(tag_name))
     shell_execute('git push origin tag {}'.format(tag_name))
