@@ -214,7 +214,7 @@ def sign_rsa(params, keyfile_path):
     params_str = to_url_params_string(params)
     with open(keyfile_path) as f:
         private_key = rsa.PrivateKey.load_pkcs1(f.read())
-    return base64.b64encode(rsa.sign(params_str.encode('UTF-8'), private_key, 'SHA-1'))
+    return urllib.quote(base64.b64encode(rsa.sign(params_str.encode('UTF-8'), private_key, 'SHA-1')))
 
 
 def to_url_params_string(params):
