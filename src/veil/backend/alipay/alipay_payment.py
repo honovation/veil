@@ -107,7 +107,7 @@ def query_alipay_payment_status(out_trade_no, is_app=False):
         arguments = parse_payment_status_response(response.content)
         if arguments.is_success == 'T':
             arguments.trade.update(sign=arguments.sign, sign_type=arguments.sign_type)
-            discarded_reasons = process_alipay_payment_notification(out_trade_no, arguments.trade, NOTIFIED_FROM_PAYMENT_QUERY, is_app=is_app)
+            discarded_reasons = process_alipay_payment_notification(out_trade_no, arguments.trade, NOTIFIED_FROM_PAYMENT_QUERY)
             paid = not bool(discarded_reasons)
         else:
             LOGGER.warn('alipay payment query failed: %(params)s, %(arguments)s', {'params': params, 'arguments': arguments})
@@ -128,9 +128,9 @@ def parse_payment_status_response(response):
     return arguments
 
 
-def process_alipay_payment_notification(out_trade_no, arguments, notified_from, is_app=False):
+def process_alipay_payment_notification(out_trade_no, arguments, notified_from):
     trade_no, buyer_id, paid_total, paid_at, show_url, discarded_reasons = validate_payment_notification(out_trade_no, arguments,
-        NOTIFIED_FROM_PAYMENT_QUERY != notified_from, is_app=is_app)
+        NOTIFIED_FROM_PAYMENT_QUERY != notified_from)
     if discarded_reasons:
         LOGGER.warn('alipay trade notification discarded: %(discarded_reasons)s, %(arguments)s', {
             'discarded_reasons': discarded_reasons,
@@ -151,10 +151,10 @@ def process_alipay_payment_notification(out_trade_no, arguments, notified_from, 
         return discarded_reasons
 
 
-def validate_payment_notification(out_trade_no, arguments, with_notify_id=True, is_app=False):
+def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
     discarded_reasons = []
     if VEIL_ENV_TYPE not in {'development', 'test'}:
-        verify_sign_func = is_sign_correct if not is_app else is_rsa_sign_correct
+        verify_sign_func = is_sign_correct if arguments.sign_type == 'MD5' else is_rsa_sign_correct
         if verify_sign_func(arguments):
             if with_notify_id:
                 notify_id = arguments.get('notify_id')
