@@ -28,13 +28,16 @@ NOTIFIED_FROM_PAYMENT_QUERY = 'payment_query'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # alipay require this 7 characters to be returned to them
 
 
-def create_alipay_mobile_arguments(out_trade_no, subject, body, total_fee, notify_url, minutes_to_complete_payment):
+def create_alipay_mobile_message(out_trade_no, subject, body, total_fee, notify_url, minutes_to_complete_payment):
     config = alipay_client_config()
-    arguments = DictObject(service='mobile.securitypay.pay', partner=config.partner_id, _input_charset='utf-8', sign_type='RSA',
-                           notify_url=notify_url, out_trade_no=out_trade_no, subject=subject, payment_type='1', seller_id=config.seller_email,
-                           total_fee='{:.2f}'.format(total_fee), body=body, it_b_pay='{}m'.format(minutes_to_complete_payment))
-    arguments.sign = sign_rsa(arguments, config.rsa_private_key)
-    return arguments
+    arguments = [('partner', config.partner_id), ('seller_id', config.seller_email), ('out_trade_no', out_trade_no), ('subject', subject), ('body', body),
+                 ('total_fee', '{:.2f}'.format(total_fee)), ('notify_url', notify_url), ('service', 'mobile.securitypay.pay'), ('payment_type', '1'),
+                 ('_input_charset', 'utf-8'), ('it_b_pay', '{}m'.format(minutes_to_complete_payment))]
+    message = '&'.join(['{}="{}"'.format(k, v) for arg in arguments for k, v in [arg]])
+
+    sign = sign_rsa(message, config.rsa_private_key)
+    message = '{}&sign="{}"&sign_type="RSA"'.format(message, sign)
+    return message
 
 
 def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, minutes_to_complete_payment, shopper_ip_address):
@@ -210,11 +213,10 @@ def sign_md5(params):
     return hashlib.md5(param_str.encode('UTF-8')).hexdigest()
 
 
-def sign_rsa(params, keyfile_path):
-    params_str = to_url_params_string(params)
+def sign_rsa(message, keyfile_path):
     with open(keyfile_path) as f:
         private_key = rsa.PrivateKey.load_pkcs1(f.read())
-    return urllib.quote(base64.b64encode(rsa.sign(params_str.encode('UTF-8'), private_key, 'SHA-1')))
+    return urllib.quote(base64.b64encode(rsa.sign(message.encode('UTF-8'), private_key, 'SHA-1')))
 
 
 def to_url_params_string(params):
