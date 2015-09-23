@@ -40,6 +40,27 @@ def create_alipay_mobile_message(out_trade_no, subject, body, total_fee, notify_
     return message
 
 
+def verify_alipay_sync_notification(message):
+    argument_parts = [e.replace('"', '') for e in message.split('"&')]
+    sign = None
+    arguments = []
+    for part in argument_parts:
+        if part.startswith('sign'):
+            sign = part.split('=')[1]
+        elif part.startswith('sign_type'):
+            continue
+        else:
+            arguments.append(tuple(part.split('=')))
+    message_ = '&'.join(['{}="{}"'.format(k, v) for arg in arguments for k, v in [arg]])
+    config = alipay_client_config()
+    try:
+        verify_rsa(message_.encode('UTF-8'), base64.b64decode(sign), config.alipay_public_key)
+    except:
+        return False
+    else:
+        return True
+
+
 def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, minutes_to_complete_payment, shopper_ip_address):
     params = {
         'service': 'create_direct_pay_by_user',  #即时到帐
@@ -182,14 +203,22 @@ def is_rsa_sign_correct(arguments):
     actual_sign = arguments.get('sign')
     verify_params = arguments.copy()
     verify_params.pop('sign', None)
-    with open(config.alipay_public_key) as f:
-        alipay_public_key = rsa.PublicKey.load_pkcs1_openssl_pem(f.read())
+    verify_params.pop('sign_type', None)
     try:
-        rsa.verify(to_url_params_string(verify_params).encode('UTF-8'), base64.b64decode(actual_sign), alipay_public_key)
-    except rsa.VerificationError:
+        verify_rsa(to_url_params_string(verify_params).encode('UTF-8'), base64.b64decode(actual_sign), config.alipay_public_key)
+    except:
         return False
     else:
         return True
+
+
+def verify_rsa(message, sign, public_key_path):
+    with open(public_key_path) as f:
+        public_key = rsa.PublicKey.load_pkcs1_openssl_pem(f.read())
+    try:
+        rsa.verify(message, sign, public_key)
+    except rsa.VerificationError:
+        raise Exception('verify failed')
 
 
 def is_sign_correct(arguments):
