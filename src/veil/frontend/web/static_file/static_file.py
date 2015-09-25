@@ -80,6 +80,7 @@ def process_stylesheet(page_handler, html):
                 html = '{}{}{}'.format(html[:pos], Markup('\n'.join(link_elements)), html[pos:])
     return html
 
+
 def get_css_type(html):
     if re.search('type=["\']text/less["\']', html, re.I):
         return 'less'

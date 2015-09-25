@@ -205,6 +205,8 @@ def vsee_config(config):
             'master_template_directory': VEIL_HOME / 'src' / 'vsee' / 'website' / purpose,
             'prevents_xsrf': True,
             'recalculates_static_file_hash': True,
+            'process_page_javascript': True,
+            'process_page_stylesheet': True,
             'clears_template_cache': True
         }
     return vsee_config_

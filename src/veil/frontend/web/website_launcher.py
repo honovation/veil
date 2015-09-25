@@ -19,6 +19,7 @@ LOGGER = logging.getLogger(__name__)
 
 additional_context_managers = {}
 
+
 def register_website_context_manager(website, context_manager):
     additional_context_managers.setdefault(website.lower(), []).append(context_manager)
 
@@ -64,6 +65,10 @@ def create_website_http_handler(purpose, config):
         website_context_managers.append(prevent_xsrf)
     if config.recalculates_static_file_hash:
         website_context_managers.append(clear_static_file_hashes)
+    if config.process_page_javascript:
+        register_page_post_processor(process_javascript)
+    if config.process_page_stylesheet:
+        register_page_post_processor(process_stylesheet)
     if config.clears_template_cache:
         website_context_managers.append(clear_template_caches)
     website_context_managers.extend(additional_context_managers.get(purpose, []))

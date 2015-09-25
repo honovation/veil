@@ -24,12 +24,15 @@ def website_config(purpose):
 
 def load_website_config(purpose):
     try:
-        config = load_config_from(VEIL_ETC_DIR / '{}-website.cfg'.format(purpose), 'domain', 'domain_port', 'start_port', 'locale',
-            'master_template_directory', 'prevents_xsrf', 'recalculates_static_file_hash', 'clears_template_cache')
+        config = load_config_from(VEIL_ETC_DIR / '{}-website.cfg'.format(purpose), 'domain', 'domain_port', 'start_port', 'locale', 'master_template_directory',
+                                  'prevents_xsrf', 'recalculates_static_file_hash', 'process_page_javascript', 'process_page_stylesheet',
+                                  'clears_template_cache')
         config.domain_port = int(config.domain_port)
         config.start_port = int(config.start_port)
         config.prevents_xsrf = unicode(True) == config.prevents_xsrf
         config.recalculates_static_file_hash = unicode(True) == config.recalculates_static_file_hash
+        config.process_page_javascript = unicode(True) == config.process_page_javascript
+        config.process_page_stylesheet = unicode(True) == config.process_page_stylesheet
         config.clears_template_cache = unicode(True) == config.clears_template_cache
     except IOError:
         if 'test' != VEIL_ENV_TYPE:

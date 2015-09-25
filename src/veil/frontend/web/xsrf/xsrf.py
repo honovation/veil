@@ -12,6 +12,7 @@ from ..const import HTML_START_TAG_PREFIX
 LOGGER = getLogger(__name__)
 TAG_NO_XSRF_CHECK = 'NO-XSRF'
 
+
 @contextlib.contextmanager
 def prevent_xsrf():
     request = get_current_http_request()

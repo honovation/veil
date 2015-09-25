@@ -5,11 +5,12 @@ from .client import start_website_and_client
 from .routing import *
 from .website_installer import override_website_config
 
+
 class XsrfTest(TestCase):
     def setUp(self):
         super(XsrfTest, self).setUp()
         override_website_config('test', domain='', domain_port=0, start_port=4999, locale='', master_template_directory='', prevents_xsrf=True,
-            recalculates_static_file_hash=True, clears_template_cache=True)
+                                recalculates_static_file_hash=True, process_page_javascript=True, process_page_stylesheet=True, clears_template_cache=True)
 
     def test_form_submission(self):
         @route('POST', '/', website='test')
@@ -32,5 +33,3 @@ class XsrfTest(TestCase):
         with client:
             client.set_cookie('_xsrf', 'abc')
             self.assertIn('yes', client.post('/', headers={'X-XSRF': 'abc'}).read())
-
-
