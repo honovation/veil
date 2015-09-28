@@ -67,6 +67,7 @@ def send_email(sender, recipient, subject, text='', html='', category='', email_
     msg['From'] = from_addr
     msg['To'] = to_addr
     msg['Subject'] = subject
+    email_code = email_code or category
     if category:
         msg["X-SMTPAPI"] = '{{"category" : "{}"}}'.format(category)
     if text:
