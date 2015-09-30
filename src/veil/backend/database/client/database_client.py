@@ -6,6 +6,7 @@ from contextlib import contextmanager, closing
 from functools import wraps
 from logging import getLogger
 import uuid
+from veil.model.collection import *
 from veil_component import *
 from veil_installer import *
 from veil.utility.encoding import *
@@ -18,12 +19,12 @@ from .database_client_installer import database_client_resource
 
 LOGGER = getLogger(__name__)
 
-instances = {} # purpose => adapter instance
-adapter_classes = {} # database type => adapter class
+instances = {}  # purpose => adapter instance
+adapter_classes = {}  # database type => adapter class
 
 
-def register_adapter_class(type, adapter_class):
-    adapter_classes[type] = adapter_class
+def register_adapter_class(type_, adapter_class):
+    adapter_classes[type_] = adapter_class
 
 
 def register_database(purpose, verify_db=False):
@@ -68,10 +69,10 @@ def close_databases():
     instances.clear()
 
 
-def connect(type, host, port, database, user, password, schema):
-    if type not in adapter_classes:
-        raise Exception('unknown database type: {}'.format(type))
-    adapter = adapter_classes[type](host=host, port=port, database=database, user=user, password=password, schema=schema)
+def connect(type_, host, port, database, user, password, schema):
+    if type_ not in adapter_classes:
+        raise Exception('unknown database type: {}'.format(type_))
+    adapter = adapter_classes[type_](host=host, port=port, database=database, user=user, password=password, schema=schema)
     return adapter
 
 
@@ -213,14 +214,14 @@ class Database(object):
         return rows[0][0]
 
     def insert(self, table, objects=None, returns_id=False, returns_record=False, primary_keys=False, should_insert=None, include_attributes=None,
-            exclude_columns=(), **value_providers):
+               exclude_columns=(), **value_providers):
         """
         include_attributes:
             when it is None, add all attributes not in exclude_columns to columns;
             when it is empty tuple, do not add attributes to columns;
             when it is not None and not empty tuple, add include_attributes not in exclude_columns to columns;
         """
-        exclude_columns = exclude_columns or ()
+        value_providers.pop('primary_keys', None)
         if exclude_columns:
             value_providers = {k: v for k, v in value_providers.items() if k not in exclude_columns}
 
@@ -236,7 +237,9 @@ class Database(object):
                 columns += tuple(a for a in include_attributes if a not in exclude_columns and a not in columns)
             elif include_attributes is None:
                 some_object = next(iter(objects))
-                if isinstance(some_object, dict):
+                if isinstance(some_object, Entity):
+                    columns += tuple(k for k in some_object if k not in exclude_columns and k not in columns and k != 'primary_keys')
+                elif isinstance(some_object, dict):
                     columns += tuple(k for k in some_object if k not in exclude_columns and k not in columns)
                 elif not columns:
                     columns = tuple(range(len(some_object)))
@@ -428,7 +431,6 @@ class Database(object):
     @staticmethod
     def _unique_cursor_name():
         return 'C{}'.format(uuid.uuid4().get_hex())
-
 
     def __enter__(self):
         return self
