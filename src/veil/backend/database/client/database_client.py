@@ -52,6 +52,7 @@ def require_database(purpose, component_name=None, verify_db=False):
         config = database_client_config(purpose).copy()
         config.pop('enable_chinese_fts', None)
         __import__(config.pop('driver'))
+        config['type_'] = config.pop('type')
         instances[purpose] = connect(**config)
         assert instances[purpose].autocommit, 'autocommit should no be disabled'
     db = Database(purpose, component_name, instances[purpose])
