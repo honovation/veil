@@ -226,10 +226,14 @@ class Database(object):
         if exclude_columns:
             value_providers = {k: v for k, v in value_providers.items() if k not in exclude_columns}
 
-        if objects is None and not value_providers:
-            raise Exception('value providers not found')
-        if objects is not None and not objects:
-            return [] if returns_id or returns_record else 0
+        if objects is None:
+            if not value_providers:
+                raise Exception('value providers not found')
+        else:
+            if should_insert:
+                objects = [o for o in objects if should_insert(o)]
+            if not objects:
+                return [] if returns_id or returns_record else 0
 
         specified_columns = True
         columns = tuple(value_providers)
@@ -258,8 +262,6 @@ class Database(object):
                     else:
                         value_providers[column] = DictValueProvider(column if specified_columns else columns.index(column))
                 for o in objects:
-                    if should_insert and not should_insert(o):
-                        continue
                     yield [value_providers[column](o) for column in columns]
             else:
                 yield [value_providers[column] for column in columns]
