@@ -134,10 +134,13 @@ def to_integer(value, return_none_when_invalid=False):
     try:
         return int(value)
     except (TypeError, ValueError):
-        if return_none_when_invalid:
-            return None
-        else:
-            raise Invalid(_('不是整数'))
+        try:
+            return long(value)
+        except (TypeError, ValueError):
+            if return_none_when_invalid:
+                return None
+            else:
+                raise Invalid(_('不是整数'))
 
 
 def to_float(value):
