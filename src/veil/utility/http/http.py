@@ -2,10 +2,12 @@
 from __future__ import unicode_literals, print_function, division
 import requests
 from requests.adapters import HTTPAdapter
+from requests.exceptions import ReadTimeout
 from requests.packages.urllib3 import Retry
 
 requests = requests
 Retry = Retry
+ReadTimeout = ReadTimeout
 
 
 def http_request(method, url, **kwargs):

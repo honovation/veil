@@ -19,10 +19,15 @@ PATTERN_FOR_ERROR = re.compile('<error>(\d+?)</error>')
 
 @job('send_transactional_sms', retry_every=10, retry_timeout=90)
 def send_transactional_sms_job(receivers, message, sms_code):
-    send_sms(receivers, message, sms_code)
+    send_sms(receivers, message, sms_code, True)
 
 
-def send_sms(receivers, message, sms_code):
+@job('send_marketing_sms', retry_every=10 * 60, retry_timeout=3 * 60 * 60)
+def send_marketing_sms_job(receivers, message, sms_code):
+    send_sms(receivers, message, sms_code, False)
+
+
+def send_sms(receivers, message, sms_code, transactional):
     LOGGER.debug('attempt to send sms: %(sms_code)s, %(receivers)s, %(message)s', {'sms_code': sms_code, 'receivers': receivers, 'message': message})
     if isinstance(receivers, basestring):
         receivers = [receivers]
@@ -45,10 +50,18 @@ def send_sms(receivers, message, sms_code):
     config = emay_sms_client_config()
     data = {'cdkey': config.cdkey, 'password': config.password, 'phone': receivers, 'message': message}
     try:
-        #retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
+        # retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
         response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9),
-            max_retries=Retry(total=2, read=False, method_whitelist={'POST'}, status_forcelist=[503], backoff_factor=2))
+                                 max_retries=Retry(total=2, read=False, method_whitelist={'POST'}, status_forcelist=[503], backoff_factor=2))
         response.raise_for_status()
+    except ReadTimeout:
+        if transactional:
+            LOGGER.exception('emay sms send ReadTimeout exception for transactional message: %(sms_code)s, %(receivers)s',
+                             {'sms_code': sms_code, 'receivers': receivers})
+            raise
+        else:
+            LOGGER.exception('emay sms send ReadTimeout exception for marketing message: %(sms_code)s, %(receivers)s',
+                             {'sms_code': sms_code, 'receivers': receivers})
     except Exception:
         LOGGER.exception('emay sms send exception-thrown: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
         raise
