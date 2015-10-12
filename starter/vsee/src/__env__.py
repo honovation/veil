@@ -90,10 +90,6 @@ def transactional_email_worker_program(config, count=1):
     return vsee_job_worker_program('transactional_email', ['send_transactional_email'], config, count=count)
 
 
-def marketing_sms_worker_program(config, count=1):
-    return vsee_job_worker_program('marketing_sms', ['send_marketing_sms'], config, count=count)
-
-
 def postgresql_log_rotater_program(purpose):
     return log_rotater_program('{}_postgresql'.format(purpose), '* * * * *', {
         VEIL_LOG_DIR / '{}-postgresql'.format(purpose) / '*.csv': [

@@ -22,6 +22,11 @@ def send_transactional_sms_job(receivers, message, sms_code):
     send_sms(receivers, message, sms_code, True)
 
 
+@job('send_slow_transactional_sms', retry_every=10 * 60, retry_timeout=3 * 60 * 60)
+def send_slow_transactional_sms_job(receivers, message, sms_code):
+    send_sms(receivers, message, sms_code, True)
+
+
 @job('send_marketing_sms', retry_every=10 * 60, retry_timeout=3 * 60 * 60)
 def send_marketing_sms_job(receivers, message, sms_code):
     send_sms(receivers, message, sms_code, False)
