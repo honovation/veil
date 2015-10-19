@@ -28,7 +28,7 @@ NOTIFIED_FROM_PAYMENT_QUERY = 'payment_query'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # alipay require this 7 characters to be returned to them
 
 
-def create_alipay_mobile_message(out_trade_no, subject, body, total_fee, notify_url, minutes_to_complete_payment):
+def make_alipay_order_str(out_trade_no, subject, body, total_fee, notify_url, minutes_to_complete_payment):
     config = alipay_client_config()
     arguments = [('partner', config.partner_id), ('seller_id', config.seller_email), ('out_trade_no', out_trade_no), ('subject', subject), ('body', body),
                  ('total_fee', '{:.2f}'.format(total_fee)), ('notify_url', notify_url), ('service', 'mobile.securitypay.pay'), ('payment_type', '1'),

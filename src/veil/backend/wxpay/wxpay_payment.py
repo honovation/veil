@@ -32,7 +32,7 @@ WXMP_ACCESS_TOKEN_AUTHORIZATION_URL = 'https://api.weixin.qq.com/cgi-bin/token'
 WXPAY_UNIFIEDORDER_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
 
 
-def make_wxpay_unified_order(app_id, api_key, mch_id, body, out_trade_no, total_fee, spbill_create_ip, notify_url, trade_type,
+def make_wxpay_prepay_order(app_id, api_key, mch_id, body, out_trade_no, total_fee, spbill_create_ip, notify_url, trade_type,
                              device_info=None, detail=None, attach=None, fee_type=None, time_start=None, time_expire=None, goods_tag=None, product_id=None,
                              limit_pay=None, openid=None):
     time_start_beijing_time_str = convert_datetime_to_client_timezone(time_start).strftime('%Y%m%d%H%M%S')

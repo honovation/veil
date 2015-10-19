@@ -7,7 +7,7 @@ with veil_component.init_component(__name__):
     from .alipay_payment import create_alipay_payment_url
     from .alipay_payment import process_alipay_payment_notification
     from .alipay_payment import query_alipay_payment_status
-    from .alipay_payment import create_alipay_mobile_message
+    from .alipay_payment import make_alipay_order_str
     from .alipay_payment import verify_alipay_sync_notification
 
     from .alipay_client_installer import alipay_client_resource
@@ -19,7 +19,7 @@ with veil_component.init_component(__name__):
         create_alipay_payment_url.__name__,
         process_alipay_payment_notification.__name__,
         query_alipay_payment_status.__name__,
-        create_alipay_mobile_message.__name__,
+        make_alipay_order_str.__name__,
         verify_alipay_sync_notification.__name__,
 
         alipay_client_resource.__name__,
