@@ -3,7 +3,6 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import re
 from decimal import Decimal
-from veil.frontend.cli import script
 from veil_component import VEIL_ENV_TYPE
 from veil.environment import get_application_sms_whitelist
 from veil.backend.queue import *
