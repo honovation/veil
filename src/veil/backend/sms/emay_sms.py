@@ -2,6 +2,8 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import re
+from decimal import Decimal
+from veil.frontend.cli import script
 from veil_component import VEIL_ENV_TYPE
 from veil.environment import get_application_sms_whitelist
 from veil.backend.queue import *
@@ -11,10 +13,12 @@ from .emay_sms_client_installer import emay_sms_client_config
 LOGGER = logging.getLogger(__name__)
 
 SEND_SMS_URL = 'http://sdkhttp.eucp.b2m.cn/sdkproxy/sendsms.action'
+QUERY_BALANCE_URL = 'http://sdkhttp.eucp.b2m.cn/sdkproxy/querybalance.action'
 MAX_SMS_RECEIVERS = 200
 MAX_SMS_CONTENT_LENGTH = 500  # 500 Chinese or 1000 English chars
 
 PATTERN_FOR_ERROR = re.compile('<error>(\d+?)</error>')
+PATTERN_FOR_MESSAGE = re.compile('<message>(\d+\.?\d)</message>')
 
 
 @job('send_transactional_sms', retry_every=10, retry_timeout=90)
@@ -81,6 +85,33 @@ def send_sms(receivers, message, sms_code, transactional):
             raise Exception('emay sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers))
 
 
+def query_balance():
+    config = emay_sms_client_config()
+    params = {'cdkey': config.cdkey, 'password': config.password}
+    try:
+        response = requests.get(QUERY_BALANCE_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))
+        response.raise_for_status()
+    except Exception:
+        LOGGER.exception('emay query balance exception-thrown')
+        raise
+    else:
+        return_value = get_return_value(response.text)
+        if return_value != 0:
+            LOGGER.error('emay query balance failed: %(response)s', {'response': response.text})
+            raise Exception('emay query balance failed: {}'.format(response.text))
+        else:
+            balance = get_return_message(response.text)
+            if balance is None:
+                LOGGER.error('emay query balance got invalid balance: %(response)s', {'response': response.text})
+                raise Exception('emay query balance got invalid balance: {}'.format(response.text))
+            return int(balance * 10)
+
+
 def get_return_value(xml):
     m = PATTERN_FOR_ERROR.search(xml)
     return int(m.group(1)) if m else None
+
+
+def get_return_message(xml):
+    m = PATTERN_FOR_MESSAGE.search(xml)
+    return Decimal(m.group(1)) if m else None
