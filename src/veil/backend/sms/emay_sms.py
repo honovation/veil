@@ -3,6 +3,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import re
 from decimal import Decimal
+from veil.frontend.cli import *
 from veil_component import VEIL_ENV_TYPE
 from veil.environment import get_application_sms_whitelist
 from veil.backend.queue import *
@@ -104,6 +105,11 @@ def query_balance():
                 LOGGER.error('emay query balance got invalid balance: %(response)s', {'response': response.text})
                 raise Exception('emay query balance got invalid balance: {}'.format(response.text))
             return int(balance * 10)
+
+
+@script('query-balance')
+def query_balance_script():
+    print('sms balance: {}'.format(query_balance()))
 
 
 def get_return_value(xml):
