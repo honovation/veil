@@ -11,6 +11,7 @@ with veil_component.init_component(__name__):
     from .clock import convert_datetime_to_client_timezone
     from .clock import convert_datetime_to_utc_timezone
     from .clock import convert_datetime_to_timestamp
+    from .clock import convert_timestamp_to_utc_datetime
     from .clock import is_naive_datetime
     from .clock import convert_naive_datetime_to_aware
     from .clock import get_relative_delta
@@ -27,6 +28,7 @@ with veil_component.init_component(__name__):
         convert_datetime_to_client_timezone.__name__,
         convert_datetime_to_utc_timezone.__name__,
         convert_datetime_to_timestamp.__name__,
+        convert_timestamp_to_utc_datetime.__name__,
         is_naive_datetime.__name__,
         convert_naive_datetime_to_aware.__name__,
         get_relative_delta.__name__,
