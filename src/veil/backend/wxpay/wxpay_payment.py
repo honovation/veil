@@ -2,7 +2,6 @@
 from __future__ import unicode_literals, print_function, division
 from decimal import Decimal, DecimalException
 import logging
-import urllib
 import hashlib
 from uuid import uuid4
 import lxml.objectify
@@ -32,15 +31,25 @@ WXMP_ACCESS_TOKEN_AUTHORIZATION_URL = 'https://api.weixin.qq.com/cgi-bin/token'
 WXPAY_UNIFIEDORDER_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
 
 
-def make_wxpay_prepay_order(app_id, api_key, mch_id, body, out_trade_no, total_fee, spbill_create_ip, notify_url, trade_type,
-                             device_info=None, detail=None, attach=None, fee_type=None, time_start=None, time_expire=None, goods_tag=None, product_id=None,
-                             limit_pay=None, openid=None):
+def make_wxpay_request(out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):
+    config = wx_open_app_config()
+    trade_type = 'APP'  # TODO: modify it if use JSAPI or others
+    wxpay_prepay_order = create_wxpay_prepay_order(config.app_id, config.api_key, config.mch_id, trade_type, out_trade_no, subject, body, total_fee, notify_url,
+                                                   shopper_ip_address, time_start, time_expire)
+    wxpay_request = DictObject(appid=config.app_id, partnerid=config.mch_id, prepayid=wxpay_prepay_order.prepay_id, package='Sign=WXPay',
+                               noncestr=wxpay_prepay_order.nonce_str, timestamp=str(get_current_timestamp()))
+    wxpay_request.sign = get_wx_open_sign(wxpay_request, config.api_key)
+    return wxpay_request
+
+
+def create_wxpay_prepay_order(app_id, api_key, mch_id, trade_type, out_trade_no, subject, body, total_fee, notify_url, spbill_create_ip, time_start,
+                              time_expire):
     time_start_beijing_time_str = convert_datetime_to_client_timezone(time_start).strftime('%Y%m%d%H%M%S')
     time_expire_beijing_time_str = convert_datetime_to_client_timezone(time_expire).strftime('%Y%m%d%H%M%S')
-    order = DictObject(appid=app_id, mch_id=mch_id, device_info=device_info, nonce_str=uuid4().get_hex(), body=body, detail=detail, attach=attach,
-                       out_trade_no=out_trade_no, fee_type=fee_type, total_fee=unicode(int(total_fee * 100)), spbill_create_ip=spbill_create_ip,
-                       time_start=time_start_beijing_time_str, time_expire=time_expire_beijing_time_str, goods_tag=goods_tag, notify_url=notify_url,
-                       trade_type=trade_type, product_id=product_id, limit_pay=limit_pay, openid=openid)
+    order = DictObject(appid=app_id, mch_id=mch_id, trade_type=trade_type, out_trade_no=out_trade_no, body=subject, detail=body,
+                       total_fee=unicode(int(total_fee * 100)), spbill_create_ip=spbill_create_ip, time_start=time_start_beijing_time_str,
+                       time_expire=time_expire_beijing_time_str, notify_url=notify_url, nonce_str=uuid4().get_hex(), attach=None, goods_tag=None,
+                       product_id=None, fee_type=None, limit_pay=None, device_info=None, openid=None)
     order.sign = sign_md5(order, api_key)
     with require_current_template_directory_relative_to():
         data = to_str(get_template('unified-order.xml').render(order=order))
