@@ -4,6 +4,11 @@ from veil.model.event import *
 from .routing import *
 
 overridden_website_configs = {}
+HTTPS_SCHEME = 'https://'
+HTTP_SCHEME = 'http://'
+HTTPS_STANDARD_PORT = 443
+HTTP_STANDARD_PORT = 80
+
 
 @event(EVENT_NEW_WEBSITE)
 def on_new_website(website):
@@ -51,10 +56,10 @@ def override_website_config(purpose, **overrides):
 def get_website_url_prefix(purpose, ssl=False, with_scheme=True):
     config = website_config(purpose)
     if with_scheme:
-        scheme = 'https://' if ssl else 'http://'
+        scheme = HTTPS_SCHEME if ssl else HTTP_SCHEME
     else:
         scheme = ''
-    if 80 == config.domain_port:
+    if config.domain_port in {HTTP_STANDARD_PORT, HTTPS_STANDARD_PORT}:
         return '{}{}'.format(scheme, config.domain)
     else:
         return '{}{}:{}'.format(scheme, config.domain, config.domain_port)
