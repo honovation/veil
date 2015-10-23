@@ -32,6 +32,8 @@ class EmaySMService(SMService):
         super(EmaySMService, self).__init__(sms_provider_id)
 
     def get_receiver_list(self, receivers):
+        if isinstance(receivers, basestring):
+            receivers = [receivers]
         return [r for r in chunks(receivers, MAX_SMS_RECEIVERS)]
 
     def send(self, receivers, message, sms_code, transactional):

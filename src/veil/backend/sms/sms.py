@@ -49,11 +49,10 @@ def shuffle_current_sms_provider(excluded_provider_ids):
 
 @job('send_transactional_sms', retry_every=10, retry_timeout=90)
 def send_transactional_sms_job(receivers, message, sms_code, last_sms_code=None):
-    if isinstance(receivers, basestring):
-        receivers = [receivers]
     global current_sms_provider
     receiver_list = current_sms_provider.get_receiver_list(receivers)
     if len(receiver_list) == 1:
+        receivers = receiver_list[0]
         send_sms(receivers, message, sms_code, last_sms_code=last_sms_code)
     else:
         for receivers_ in receiver_list:
@@ -70,6 +69,7 @@ def send_slow_transactional_sms_job(receivers, message, sms_code):
     global current_sms_provider
     receiver_list = current_sms_provider.get_receiver_list(receivers)
     if len(receiver_list) == 1:
+        receivers = receiver_list[0]
         send_sms(receivers, message, sms_code)
     else:
         for receivers_ in receiver_list:
@@ -81,6 +81,7 @@ def send_marketing_sms_job(receivers, message, sms_code):
     global current_sms_provider
     receiver_list = current_sms_provider.get_receiver_list(receivers)
     if len(receiver_list) == 1:
+        receivers = receiver_list[0]
         send_sms(receivers, message, sms_code, transactional=False)
     else:
         for receivers_ in receiver_list:

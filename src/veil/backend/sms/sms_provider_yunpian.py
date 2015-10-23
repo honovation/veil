@@ -14,6 +14,8 @@ class YunpianSMService(SMService):
         super(YunpianSMService, self).__init__(sms_provider_id)
 
     def get_receiver_list(self, receivers):
+        if isinstance(receivers, basestring):
+            receivers = [receivers]
         return
 
     def send(self, receivers, message, sms_code, transactional):
