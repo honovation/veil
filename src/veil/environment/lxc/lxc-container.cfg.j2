@@ -24,6 +24,9 @@ lxc.start.order = {{ start_order }} # higher value means starts earlier
 {% if memory_limit %}
 lxc.cgroup.memory.limit_in_bytes = {{ memory_limit }}
 {% endif %}
+{% if cpus %}
+lxc.cgroup.cpuset.cpus = {{ cpus }}
+{% endif %}
 {% if cpu_share %}
 # default to 1024
 lxc.cgroup.cpu.shares = {{ cpu_share }}
