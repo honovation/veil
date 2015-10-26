@@ -4,6 +4,8 @@ import random
 import logging
 from veil.backend.queue import *
 from veil.backend.redis import *
+from veil.environment import get_application_sms_whitelist
+from veil_component import VEIL_ENV_TYPE
 
 LOGGER = logging.getLogger(__name__)
 
@@ -95,6 +97,15 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
         if last_sms_provider_id:
             used_sms_provider_ids.add(int(last_sms_provider_id))
             shuffle_current_sms_provider(used_sms_provider_ids)
+    if 'public' != VEIL_ENV_TYPE:
+        receivers_not_in_whitelist = set(r for r in receivers if r not in get_application_sms_whitelist())
+        if receivers_not_in_whitelist:
+            LOGGER.warn('Ignored sms receivers not in the whitelist under non-public env: %(receivers_not_in_whitelist)s', {
+                'receivers_not_in_whitelist': receivers_not_in_whitelist
+            })
+            receivers -= receivers_not_in_whitelist
+            if not receivers:
+                return
     while True:
         try:
             current_sms_provider.send(receivers, message, sms_code, transactional)

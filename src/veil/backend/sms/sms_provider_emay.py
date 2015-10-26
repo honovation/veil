@@ -5,8 +5,6 @@ import re
 from decimal import Decimal
 from veil.frontend.cli import *
 from veil.utility.misc import *
-from veil_component import VEIL_ENV_TYPE
-from veil.environment import get_application_sms_whitelist
 from veil.utility.http import *
 from .emay_sms_client_installer import emay_sms_client_config
 from .sms import SMService, SendError
@@ -30,6 +28,7 @@ def get_emay_smservice_instance():
 class EmaySMService(SMService):
     def __init__(self, sms_provider_id):
         super(EmaySMService, self).__init__(sms_provider_id)
+        self.config = emay_sms_client_config()
 
     def get_receiver_list(self, receivers):
         if isinstance(receivers, basestring):
@@ -39,21 +38,11 @@ class EmaySMService(SMService):
     def send(self, receivers, message, sms_code, transactional):
         LOGGER.debug('attempt to send sms: %(sms_code)s, %(receivers)s, %(message)s', {'sms_code': sms_code, 'receivers': receivers, 'message': message})
         receivers = set(r.strip() for r in receivers if r.strip())
-        if 'public' != VEIL_ENV_TYPE:
-            receivers_not_in_whitelist = set(r for r in receivers if r not in get_application_sms_whitelist())
-            if receivers_not_in_whitelist:
-                LOGGER.warn('Ignored sms receivers not in the whitelist under non-public env: %(receivers_not_in_whitelist)s', {
-                    'receivers_not_in_whitelist': receivers_not_in_whitelist
-                })
-                receivers -= receivers_not_in_whitelist
-                if not receivers:
-                    return
         if len(message) > MAX_SMS_CONTENT_LENGTH:
             raise Exception('try to send sms with message size over {}'.format(MAX_SMS_CONTENT_LENGTH))
         receivers = ','.join(receivers)
         message = message.encode('UTF-8')
-        config = emay_sms_client_config()
-        data = {'cdkey': config.cdkey, 'password': config.password, 'phone': receivers, 'message': message}
+        data = {'cdkey': self.config.cdkey, 'password': self.config.password, 'phone': receivers, 'message': message}
         try:
             # retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
             response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9),
@@ -81,8 +70,7 @@ class EmaySMService(SMService):
                 raise SendError('emay sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers))
 
     def query_balance(self):
-        config = emay_sms_client_config()
-        params = {'cdkey': config.cdkey, 'password': config.password}
+        params = {'cdkey': self.config.cdkey, 'password': self.config.password}
         try:
             response = requests.get(QUERY_BALANCE_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))
             response.raise_for_status()
