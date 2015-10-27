@@ -15,6 +15,9 @@ redis = register_redis('persist_store')
 _sms_providers = {}
 current_sms_provider = None
 SENT_SMS_RECORD_ALIVE_IN_SECONDS = 60 * 60
+SMS_PROVIDER_BALANCE_THRESHOLD = 2000
+SMS_PROVIDER_BALANCE_ALIVE_IN_SECONDS = 60 * 60 * 12
+SMS_PROVIDER_SENT_QUANTITY_ALIVE_IN_SECONDS = 60 * 60 * 12
 
 
 def sent_sms_redis_key(mobile, sms_code):
@@ -47,6 +50,15 @@ def shuffle_current_sms_provider(excluded_provider_ids):
         return
     global current_sms_provider
     current_sms_provider = random.choice(sms_provider_candidates)
+
+
+@periodic_job('31 6 * * *')
+def check_sms_provider_balance_and_reconciliation_job():
+    error_messages = []
+    for instance in _sms_providers:
+        error_messages.extend(instance.check_balance_and_reconciliation())
+    if error_messages:
+        raise Exception(', '.join(error_messages))
 
 
 @job('send_transactional_sms', retry_every=10, retry_timeout=90)
@@ -116,12 +128,15 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
             if current_sms_provider.sms_provider_id in used_sms_provider_ids:
                 raise Exception('not enough reliable sms providers')
         else:
+            current_sms_provider.add_sent_quantity(len(receivers))
             break
 
 
 class SMService(object):
     def __init__(self, sms_provider_id):
         self._sms_provider_id = sms_provider_id
+        self.balance_key_in_redis = '{}:{}:{}:balance'.format('VEIL', 'SMS', sms_provider_id)
+        self.sent_quantity_key_in_redis = '{}:{}:{}:sent-quantity'.format('VEIL', 'SMS', sms_provider_id)
 
     @property
     def sms_provider_id(self):
@@ -135,6 +150,53 @@ class SMService(object):
 
     def query_balance(self):
         raise NotImplementedError()
+
+    def get_balance_in_redis(self):
+        balance = redis().get(self.balance_key_in_redis)
+        if balance is not None:
+            balance = int(balance)
+        return balance
+
+    def set_balance(self, balance):
+        redis().setex(self.balance_key_in_redis, SMS_PROVIDER_BALANCE_ALIVE_IN_SECONDS, balance)
+
+    def get_sent_quantity_in_redis(self):
+        sent_quantity = redis().get(self.sent_quantity_key_in_redis)
+        if sent_quantity is not None:
+            sent_quantity = int(sent_quantity)
+        return sent_quantity
+
+    def add_sent_quantity(self, quantity):
+        redis().incrby(self.sent_quantity_key_in_redis, quantity)
+        redis().expire(self.sent_quantity_key_in_redis, SMS_PROVIDER_SENT_QUANTITY_ALIVE_IN_SECONDS)
+
+    def reset_balance_and_sent_quantity(self, balance):
+        with redis().pipeline() as pipe:
+            pipe.setex(self.balance_key_in_redis, SMS_PROVIDER_BALANCE_ALIVE_IN_SECONDS, balance)
+            pipe.setex(self.sent_quantity_key_in_redis, SMS_PROVIDER_SENT_QUANTITY_ALIVE_IN_SECONDS, 0)
+            pipe.execute()
+
+    def check_balance_and_reconciliation(self):
+        messages = []
+        balance = self.query_balance()
+        if balance <= SMS_PROVIDER_BALANCE_THRESHOLD:
+            messages.append('sms provider-{} balance is less than threshold: {}/{}'.format(self._sms_provider_id, balance, SMS_PROVIDER_BALANCE_THRESHOLD))
+
+        last_balance = self.get_balance_in_redis()
+        if last_balance is None:
+            self.set_balance(balance)
+            last_balance = balance
+        sent_quantity = self.get_sent_quantity_in_redis()
+        if sent_quantity is None:
+            self.add_sent_quantity(0)
+            sent_quantity = 0
+        provider_sent_quantity = last_balance - balance
+        if provider_sent_quantity != sent_quantity:
+            messages.append('sms provider-{} reconciliation failed: {}/{}'.format(self._sms_provider_id, provider_sent_quantity, sent_quantity))
+
+        self.reset_balance_and_sent_quantity(balance)
+
+        return messages
 
 
 class SendError(Exception):
