@@ -172,11 +172,18 @@ def query_wxpay_payment_status(out_trade_no):
     return paid
 
 
+@script('query-wxpay-order-status')
+def query_wxpay_script(out_trade_no):
+    query_wxpay_payment_status(out_trade_no)
+
+
 def query_order_status_(out_trade_no):
     paid = False
     config = wx_open_app_config()
-    data = DictObject(appid=config.app_id, mch_id=config.mch_id, out_trade_no=out_trade_no, nonce_str=uuid4().get_hex())
-    data.sign = sign_md5(data, key=config.api_key)
+    args = DictObject(appid=config.app_id, mch_id=config.mch_id, out_trade_no=out_trade_no, nonce_str=uuid4().get_hex())
+    args.sign = sign_md5(args, key=config.api_key)
+    with require_current_template_directory_relative_to():
+        data = to_str(get_template('queryorder.xml').render(**args))
     headers = {'Content-Type': 'application/xml'}
     try:
         response = requests.post(WXPAY_ORDER_QUERY_URL, data=data, headers=headers, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
@@ -209,6 +216,7 @@ def query_order_status_(out_trade_no):
                 'response': response.content
             })
         else:
+            LOGGER.debug(parsed_response)
             publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=None,
                 paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=None, bank_billno=bank_billno, show_url=None,
                 notified_from=NOTIFIED_FROM_ORDER_QUERY)

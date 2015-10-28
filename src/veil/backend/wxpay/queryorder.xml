@@ -1,0 +1,8 @@
+<xml>
+   <appid>{{ appid }}</appid>
+   <mch_id>{{ mch_id }}</mch_id>
+    <transaction_id>{{ transaction_id or '' }}</transaction_id>
+    <out_trade_no>{{ out_trade_no or '' }}</out_trade_no>
+    <nonce_str>{{ nonce_str }}</nonce_str>
+   <sign>{{ sign }}</sign>
+</xml>
