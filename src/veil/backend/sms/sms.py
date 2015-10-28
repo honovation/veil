@@ -192,6 +192,11 @@ class SMService(object):
             sent_quantity = 0
         provider_sent_quantity = last_balance - balance
         if provider_sent_quantity != sent_quantity:
+            LOGGER.info('VEIL SMS RECONCILIATION: %(provider_sent_quantity)s, %(sent_quantity)s, %(diff)s', {
+                'provider_sent_quantity': provider_sent_quantity,
+                'sent_quantity': sent_quantity,
+                'diff': provider_sent_quantity - sent_quantity
+            })
             messages.append('sms provider-{} reconciliation failed: {}/{}'.format(self._sms_provider_id, provider_sent_quantity, sent_quantity))
 
         self.reset_balance_and_sent_quantity(balance)
