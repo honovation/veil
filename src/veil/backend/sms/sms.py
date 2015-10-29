@@ -55,7 +55,7 @@ def shuffle_current_sms_provider(excluded_provider_ids):
 @periodic_job('31 6 * * *')
 def check_sms_provider_balance_and_reconciliation_job():
     error_messages = []
-    for instance in _sms_providers:
+    for instance in _sms_providers.values():
         error_messages.extend(instance.check_balance_and_reconciliation())
     if error_messages:
         raise Exception(', '.join(error_messages))
