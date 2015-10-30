@@ -4,6 +4,7 @@ import contextlib
 import os
 from time import sleep
 import uuid
+import logging
 import fabric.api
 import fabric.contrib.files
 from veil_component import as_path
@@ -13,6 +14,7 @@ from veil.utility.misc import *
 from veil_installer import *
 from .container_installer import veil_container_resource, get_remote_file_content
 
+LOGGER = logging.getLogger(__name__)
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
 hosts_to_install = []
@@ -58,12 +60,14 @@ def veil_hosts_codebase_resource(veil_env_name):
 
 def render_iptables_rules_installer_file(host):
     resources = []
+    ssh_ports = set()
     for h in list_veil_hosts(host.env_name):
         if h.base_name != host.base_name:
             continue
         resources.append(iptables_rule_resource(table='nat', rule='POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(h.lan_range, h.lan_range)))
         resources.extend(h.iptables_rule_resources)
-    resources.extend(list_iptables_resources_to_secure_host())
+        ssh_ports.add(host.ssh_port)
+    resources.extend(list_iptables_resources_to_secure_host(ssh_ports))
     return '\n'.join(to_resource_code(resource) for resource in resources)
 
 
