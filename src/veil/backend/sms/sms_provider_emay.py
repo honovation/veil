@@ -28,7 +28,7 @@ def get_emay_smservice_instance():
 class EmaySMService(SMService):
     def __init__(self, sms_provider_id):
         super(EmaySMService, self).__init__(sms_provider_id)
-        self.config = emay_sms_client_config()
+        self.config = None
 
     def get_receiver_list(self, receivers):
         if isinstance(receivers, basestring):
@@ -36,6 +36,8 @@ class EmaySMService(SMService):
         return [r for r in chunks(receivers, MAX_SMS_RECEIVERS)]
 
     def send(self, receivers, message, sms_code, transactional):
+        if not self.config:
+            self.config = emay_sms_client_config()
         LOGGER.debug('attempt to send sms: %(sms_code)s, %(receivers)s, %(message)s', {'sms_code': sms_code, 'receivers': receivers, 'message': message})
         receivers = set(r.strip() for r in receivers if r.strip())
         if len(message) > MAX_SMS_CONTENT_LENGTH:
@@ -70,6 +72,8 @@ class EmaySMService(SMService):
                 raise SendError('emay sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers))
 
     def query_balance(self):
+        if not self.config:
+            self.config = emay_sms_client_config()
         params = {'cdkey': self.config.cdkey, 'password': self.config.password}
         try:
             response = requests.get(QUERY_BALANCE_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))
