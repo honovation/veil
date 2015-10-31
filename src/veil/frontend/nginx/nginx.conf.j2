@@ -119,7 +119,7 @@ http {
     {% for server_name, server_properties in config.servers.items() %}
     server {
         server_name  {{ server_name }};
-        if ($request_method !~ ^(GET|HEAD|POST|PUT|PATCH|DELETE)$ ) {
+        if ($request_method !~ ^(GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS)$ ) {
              return 444;
         }
         error_log {{ config.log_directory }}/{{ server_name }}-error.log;
