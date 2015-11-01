@@ -7,7 +7,7 @@ from veil.frontend.cli import *
 from veil.utility.misc import *
 from veil.utility.http import *
 from .emay_sms_client_installer import emay_sms_client_config
-from .sms import SMService, SendError
+from .sms import SMService, SendError, NotConfigured
 
 LOGGER = logging.getLogger(__name__)
 
@@ -74,6 +74,8 @@ class EmaySMService(SMService):
     def query_balance(self):
         if not self.config:
             self.config = emay_sms_client_config()
+        if not self.config.cdkey:
+            raise NotConfigured()
         params = {'cdkey': self.config.cdkey, 'password': self.config.password}
         try:
             response = requests.get(QUERY_BALANCE_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))

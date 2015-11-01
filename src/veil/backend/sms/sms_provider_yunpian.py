@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import logging
-from .sms import SMService, SendError
+from .sms import SMService, SendError, NotConfigured
 from veil.model.collection import *
 from veil.utility.http import *
 from veil.utility.misc import *
@@ -69,6 +69,8 @@ class YunpianSMService(SMService):
     def query_balance(self):
         if not self.config:
             self.config = yunpian_sms_client_config()
+        if not self.config.apikey:
+            raise NotConfigured()
         data = {'apikey': self.config.apikey}
         try:
             response = requests.post(QUERY_BALANCE_URL, data=data, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))

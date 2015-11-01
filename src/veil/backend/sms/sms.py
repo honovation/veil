@@ -178,7 +178,10 @@ class SMService(object):
 
     def check_balance_and_reconciliation(self):
         messages = []
-        balance = self.query_balance()
+        try:
+            balance = self.query_balance()
+        except NotConfigured:
+            return
         if balance <= SMS_PROVIDER_BALANCE_THRESHOLD:
             messages.append('sms provider-{} balance is less than threshold: {}/{}'.format(self._sms_provider_id, balance, SMS_PROVIDER_BALANCE_THRESHOLD))
 
@@ -205,4 +208,8 @@ class SMService(object):
 
 
 class SendError(Exception):
+    pass
+
+
+class NotConfigured(Exception):
     pass
