@@ -18,6 +18,7 @@ from .alipay_client_installer import alipay_client_config
 LOGGER = logging.getLogger(__name__)
 
 EVENT_ALIPAY_TRADE_PAID = define_event('alipay-trade-paid')  # valid notification
+EVENT_ALIPAY_TRADE_CLOSED = define_event('alipay-trade-closed')
 
 PAYMENT_URL = 'https://mapi.alipay.com/gateway.do'
 VERIFY_URL = PAYMENT_URL
@@ -89,11 +90,11 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
 
 
 @script('query-status')
-def query_status(out_trade_no, is_app=False):
-    query_alipay_payment_status(out_trade_no, is_app=is_app)
+def query_status(out_trade_no):
+    query_alipay_payment_status(out_trade_no)
 
 
-def query_alipay_payment_status(out_trade_no, is_app=False):
+def query_alipay_payment_status(out_trade_no):
     params = {'service': 'single_trade_query', 'partner': alipay_client_config().partner_id, '_input_charset': 'UTF-8', 'out_trade_no': out_trade_no}
     params['sign'] = sign_md5(params)
     params['sign_type'] = 'MD5'
@@ -104,7 +105,7 @@ def query_alipay_payment_status(out_trade_no, is_app=False):
         LOGGER.exception('alipay payment query exception-thrown: %(params)s', {'params': params})
         raise
     else:
-        arguments = parse_payment_status_response(response.content)
+        arguments = parse_alipay_xml_response(response.content)
         if arguments.is_success == 'T':
             arguments.trade.update(sign=arguments.sign, sign_type=arguments.sign_type)
             discarded_reasons = process_alipay_payment_notification(out_trade_no, arguments.trade, NOTIFIED_FROM_PAYMENT_QUERY)
@@ -115,7 +116,7 @@ def query_alipay_payment_status(out_trade_no, is_app=False):
     return paid
 
 
-def parse_payment_status_response(response):
+def parse_alipay_xml_response(response):
     arguments = DictObject(trade=DictObject())
     root = lxml.objectify.fromstring(response)
     for e in root.iterchildren():
@@ -268,3 +269,44 @@ def validate_notification_from_alipay(notify_id):
             LOGGER.warn('alipay notify verify failed: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
             error = 'notification not from alipay'
     return error
+
+
+@script('close-trade')
+def close_alipay_trade_script(out_trade_no):
+    close_alipay_trade(out_trade_no)
+
+
+def close_alipay_trade(out_trade_no):
+    params = {
+        'service': 'close_trade',  #关闭交易
+        'partner': alipay_client_config().partner_id,
+        '_input_charset': 'UTF-8',
+        'out_trade_no': out_trade_no,
+        'trade_role': 'S'
+    }
+    params['sign'] = sign_md5(params)
+    params['sign_type'] = 'MD5'
+    response = None
+    try:
+        response = requests.get(PAYMENT_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
+        response.raise_for_status()
+    except Exception:
+        LOGGER.exception('alipay close trade exception-thrown: %(params)s, %(response)s', {
+            'params': params,
+            'response': response.text if response else ''
+        })
+        raise
+    else:
+        arguments = parse_alipay_xml_response(response.content)
+        if arguments.is_success == 'T':
+            LOGGER.info('alipay trade closed: %(out_trade_no)s, %(response)s', {
+                'out_trade_no': out_trade_no,
+                'response': response.text
+            })
+            publish_event(EVENT_ALIPAY_TRADE_CLOSED, out_trade_no=out_trade_no)
+        else:
+            LOGGER.warn('alipay trade close failed: %(out_trade_no)s, %(params)s, %(error)s', {
+                'out_trade_no': out_trade_no,
+                'params': params,
+                'error': arguments.error
+            })
