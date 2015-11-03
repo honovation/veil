@@ -3,11 +3,11 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import re
 from decimal import Decimal
+from veil.profile.installer import *
 from veil.frontend.cli import *
 from veil.utility.misc import *
 from veil.utility.http import *
-from .emay_sms_client_installer import emay_sms_client_config
-from .sms import SMService, SendError, NotConfigured
+from veil.backend.sms.sms import SMService, SendError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,6 +19,32 @@ MAX_SMS_CONTENT_LENGTH = 500  # 500 Chinese or 1000 English chars
 
 PATTERN_FOR_ERROR = re.compile('<error>(\d+?)</error>')
 PATTERN_FOR_MESSAGE = re.compile('<message>(\d+\.?\d)</message>')
+
+_config = None
+
+
+def register():
+    add_application_sub_resource('emay_sms_client', lambda config: emay_sms_client_resource(**config))
+    return get_emay_smservice_instance()
+
+
+@composite_installer
+def emay_sms_client_resource(cdkey, password):
+    resources = list(BASIC_LAYOUT_RESOURCES)
+    resources.append(file_resource(path=VEIL_ETC_DIR / 'emay-sms-client.cfg',
+        content=render_config('emay-sms-client.cfg.j2', cdkey=cdkey, password=password)))
+    return resources
+
+
+def load_emay_sms_client_config():
+    return load_config_from(VEIL_ETC_DIR / 'emay-sms-client.cfg', 'cdkey', 'password')
+
+
+def emay_sms_client_config():
+    global _config
+    if _config is None:
+        _config = load_emay_sms_client_config()
+    return _config
 
 
 def get_emay_smservice_instance():
@@ -74,8 +100,6 @@ class EmaySMService(SMService):
     def query_balance(self):
         if not self.config:
             self.config = emay_sms_client_config()
-        if not self.config.cdkey:
-            raise NotConfigured()
         params = {'cdkey': self.config.cdkey, 'password': self.config.password}
         try:
             response = requests.get(QUERY_BALANCE_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))

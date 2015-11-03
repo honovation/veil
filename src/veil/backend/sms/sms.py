@@ -209,7 +209,3 @@ class SMService(object):
 
 class SendError(Exception):
     pass
-
-
-class NotConfigured(Exception):
-    pass

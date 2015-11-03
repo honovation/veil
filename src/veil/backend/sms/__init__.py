@@ -1,16 +1,16 @@
+import importlib
+
 import veil_component
 
 with veil_component.init_component(__name__):
-    from .sms_provider_emay import get_emay_smservice_instance
-    from .sms_provider_yunpian import get_yunpian_smservice_instance
     from .sms import send_transactional_sms_job
     from .sms import send_slow_transactional_sms_job
     from .sms import send_marketing_sms_job
     from .sms import set_current_sms_provider
 
-    from .emay_sms_client_installer import emay_sms_client_resource
+    from .sms_provider_emay import emay_sms_client_resource
 
-    from .yunpian_sms_client_installer import yunpian_sms_client_resource
+    from .sms_provider_yunpian import yunpian_sms_client_resource
 
     __all__ = [
         send_transactional_sms_job.__name__,
@@ -23,9 +23,9 @@ with veil_component.init_component(__name__):
     ]
 
     def init():
+        from veil.environment.environment import get_application
         from .sms import register_sms_provider
-
-        register_sms_provider(get_emay_smservice_instance())
-        # register_sms_provider(get_yunpian_smservice_instance())
-
-        set_current_sms_provider()
+        application = get_application()
+        for provider_name in application.ENABLED_SMS_PROVIDERS:
+            provider_module = importlib.import_module('.sms_provider_{}'.format(provider_name).format(name=provider_name), package='veil.backend.sms')
+            register_sms_provider(provider_module.register())

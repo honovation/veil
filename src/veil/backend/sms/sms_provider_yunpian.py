@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import logging
-from .sms import SMService, SendError, NotConfigured
+from veil.profile.installer import *
 from veil.model.collection import *
 from veil.utility.http import *
 from veil.utility.misc import *
-from .yunpian_sms_client_installer import yunpian_sms_client_config
+from .sms import SMService, SendError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,6 +14,31 @@ SEND_SMS_URL = 'http://yunpian.com/v1/sms/send.json'
 QUERY_BALANCE_URL = 'http://yunpian.com/v1/user/get.json'
 MAX_SMS_RECEIVERS = 200
 MAX_SMS_CONTENT_LENGTH = 400
+
+_config = None
+
+
+def register():
+    add_application_sub_resource('yunpian_sms_client', lambda config: yunpian_sms_client_resource(**config))
+    return get_yunpian_smservice_instance()
+
+
+@composite_installer
+def yunpian_sms_client_resource(apikey):
+    resources = list(BASIC_LAYOUT_RESOURCES)
+    resources.append(file_resource(path=VEIL_ETC_DIR / 'yunpian-sms-client.cfg', content=render_config('yunpian-sms-client.cfg.j2', apikey=apikey)))
+    return resources
+
+
+def load_yunpian_sms_client_config():
+    return load_config_from(VEIL_ETC_DIR / 'yunpian-sms-client.cfg', 'apikey')
+
+
+def yunpian_sms_client_config():
+    global _config
+    if _config is None:
+        _config = load_yunpian_sms_client_config()
+    return _config
 
 
 def get_yunpian_smservice_instance():
@@ -69,8 +94,6 @@ class YunpianSMService(SMService):
     def query_balance(self):
         if not self.config:
             self.config = yunpian_sms_client_config()
-        if not self.config.apikey:
-            raise NotConfigured()
         data = {'apikey': self.config.apikey}
         try:
             response = requests.post(QUERY_BALANCE_URL, data=data, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))
