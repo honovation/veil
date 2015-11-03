@@ -1,9 +1,22 @@
 # -*- coding: utf-8 -*-
+"""
+    Region Utility
+    基于中国统计局行政区划代码数据：http://www.stats.gov.cn/tjsj/tjbz/xzqhdm/
+    依赖应用有region表，并有code(PK), name, level, has_child, parent_code, deleted列，如果code不是主键需要有SERIAL主键并且在code上有UNIQUE
+
+    init：初始化region表数据，并使用最新统计局数据，version记录在REGION_VERSION_TABLE中
+    check-update：检查当前数据与最新数据的变化
+    update：更新到最新版本的数据并将原数据备份到REGION_BACKUP_TABLE中
+    rollback-update：回滚备份的数据到REGION_TABLE中
+"""
 from __future__ import unicode_literals, print_function, division
 import logging
 import re
 from datetime import date
+from collections import OrderedDict
 from pyquery import PyQuery as pq
+from veil.utility.encoding import *
+from veil.utility.http import *
 from veil_component import red, green, yellow, blue
 from veil.frontend.cli import *
 from veil.model.collection import *
@@ -16,6 +29,7 @@ LOGGER = logging.getLogger(__name__)
 REGION_TABLE = 'region'
 REGION_VERSION_TABLE = 'region_version'
 REGION_BACKUP_TABLE = 'region_backup'
+HEADERS = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36'}
 CONTENTS_URL = 'http://www.stats.gov.cn/tjsj/tjbz/xzqhdm/'
 
 
@@ -40,10 +54,12 @@ def init_region(purpose):
                 );
         '''.format(REGION_TABLE=REGION_TABLE, REGION_BACKUP_TABLE=REGION_BACKUP_TABLE, REGION_VERSION_TABLE=REGION_VERSION_TABLE))
 
-        latest_gov_region_version = extract_gov_latest_region_version(pq(url=CONTENTS_URL)('ul.center_list_contlist'))
+        response = requests.get(CONTENTS_URL, headers=HEADERS)
+        response.encoding = 'UTF-8'
+        latest_gov_region_version = extract_gov_latest_region_version(pq(response.text)('ul.center_list_contlist'))
         LOGGER.info('latest gov region version: %(latest_gov_region_version)s', {'latest_gov_region_version': latest_gov_region_version})
 
-        add_regions(db, get_gov_latest_region(latest_gov_region_version))
+        add_regions(db, list_gov_latest_region(latest_gov_region_version))
 
         db().insert(REGION_VERSION_TABLE, due_date=latest_gov_region_version.due_date, published_at=latest_gov_region_version.published_at)
 
@@ -60,8 +76,14 @@ def check_region_update(purpose):
         if not latest_db_region_version:
             LOGGER.error('can not check update: can not find region version in db')
             return
-        gov_latest_region_version = extract_gov_latest_region_version(pq(url=CONTENTS_URL)('ul.center_list_contlist'))
-        if gov_latest_region_version.due_date <= latest_db_region_version.due_date or gov_latest_region_version.published_at <= latest_db_region_version.published_at:
+        response = requests.get(CONTENTS_URL, headers=HEADERS)
+        response.encoding = 'UTF-8'
+        gov_latest_region_version = extract_gov_latest_region_version(pq(response.text)('ul.center_list_contlist'))
+        if gov_latest_region_version.published_at <= latest_db_region_version.published_at:
+            LOGGER.debug('local region version: %(l_published_at)s, latest region version: %(r_published_at)s', {
+                'l_published_at': latest_db_region_version.published_at,
+                'r_published_at': gov_latest_region_version.published_at
+            })
             LOGGER.info('no updates')
             return
         LOGGER.info('region version in db: due date: %(due_date)s, published date: %(published_at)s', {
@@ -72,28 +94,28 @@ def check_region_update(purpose):
             'due_date': gov_latest_region_version.due_date,
             'published_at': gov_latest_region_version.published_at
         })
-        gov_latest_region = get_gov_latest_region(gov_latest_region_version)
-        db_latest_region = get_db_latest_region(purpose)
+        latest_regions = list_gov_latest_region(gov_latest_region_version)
+        local_regions = list_local_regions(purpose)
 
-        added_codes, deleted_codes, modified_codes = diff(db_latest_region, gov_latest_region)
+        added_codes, deleted_codes, modified_codes = diff(local_regions, latest_regions)
 
         for code in added_codes:
-            print(green('+ {}: {}'.format(code, gov_latest_region[code])))
+            print(green('+ {}: {}'.format(code, latest_regions[code])))
 
         for code in deleted_codes:
-            print(red('- {}: {}'.format(code, db_latest_region[code].name)))
+            print(red('- {}: {}'.format(code, local_regions[code].name)))
 
         for code in modified_codes:
-            if db_latest_region[code].deleted:
-                print(yellow('[恢复]{}: {} -> {}'.format(code, db_latest_region[code].name, gov_latest_region[code])))
+            if local_regions[code].deleted:
+                print(yellow('[恢复]{}: {} -> {}'.format(code, local_regions[code].name, latest_regions[code])))
             else:
-                print(yellow('{}: {} -> {}'.format(code, db_latest_region[code].name, gov_latest_region[code])))
+                print(yellow('{}: {} -> {}'.format(code, local_regions[code].name, latest_regions[code])))
 
         print(blue('{} added keys'.format(len(added_codes))))
         print(blue('{} deleted keys'.format(len(deleted_codes))))
         print(blue('{} modified keys'.format(len(modified_codes))))
 
-        return added_codes, deleted_codes, modified_codes, gov_latest_region, gov_latest_region_version
+        return added_codes, deleted_codes, modified_codes, latest_regions, gov_latest_region_version
 
     return check_update()
 
@@ -123,8 +145,6 @@ def update_region(purpose):
 
             db().insert(REGION_VERSION_TABLE, due_date=gov_latest_region_version.due_date, published_at=gov_latest_region_version.published_at)
             LOGGER.info('update finished')
-        else:
-            LOGGER.info('no updates')
 
     update()
 
@@ -183,51 +203,142 @@ def extract_gov_latest_region_version(contents):
     )
 
 
-def get_gov_latest_region(latest_region_version):
-    region_content = pq(url='{}{}'.format(CONTENTS_URL if 'gov.cn' not in latest_region_version.url else '', latest_region_version.url))('.xilan_con').text()
-    region_content = region_content[region_content.index('110000'):].split()
-    region_content = dict(tuple(region_content[i: i + 2]) for i in range(0, len(region_content), 2))
-    return region_content
+def list_gov_latest_region(latest_region_version):
+    url = '{}{}'.format(CONTENTS_URL if 'gov.cn' not in latest_region_version.url else '', latest_region_version.url)
+    response = requests.get(url, headers=HEADERS)
+    response.encoding = 'UTF-8'
+    region_content = pq(response.text)('.xilan_con').find('p')
+    region = {}
+    for p in region_content:
+        text = pq(p).text()
+        parts = text.split()
+        if parts[0].isdigit():
+            region[parts[0]] = ''.join(e for e in parts[1:])
+        else:
+            raise Exception('invalid lines: {}'.format(text))
+    return region
 
 
-def get_db_latest_region(purpose):
+def list_local_regions(purpose):
     db = lambda: require_database(purpose)
     return {r.code: r for r in db().list('SELECT * FROM {REGION_TABLE}'.format(REGION_TABLE=REGION_TABLE))}
 
 
-def diff(db_source, site_source):
-    db_codes = set(db_source)
-    site_codes = set(site_source)
-    added_codes = site_codes - db_codes
-    deleted_codes = set(code for code in db_codes - site_codes if not db_source[code].deleted)
-    modified_codes = set(code for code in db_codes & site_codes if (db_source[code].name, db_source[code].deleted) != (site_source[code], False))
+def diff(local_regions, latest_regions):
+    local_codes = set(local_regions)
+    latest_codes = set(latest_regions)
+    added_codes = latest_codes - local_codes
+    deleted_codes = set(code for code in local_codes - latest_codes if not local_regions[code].deleted)
+    modified_codes = set(code for code in local_codes & latest_codes if (local_regions[code].name, local_regions[code].deleted) != (latest_regions[code], False))
 
     return added_codes, deleted_codes, modified_codes
 
 
 def add_regions(db, regions):
-        new_regions = []
-        for code in regions:
+    new_regions = []
+    for code in regions:
+        if code[2:] == '0000':
+            level = 1
+            parent_code = None
+        elif code[4:] == '00':
+            level = 2
+            parent_code = '{}0000'.format(code[:2])
+        else:
+            level = 3
+            parent_code = '{}00'.format(code[:4])
+        new_regions.append(DictObject(code=code, name=regions[code], level=level, parent_code=parent_code))
+    LOGGER.info('number of to-be-inserted regions: %(region_count)s', {'region_count': len(new_regions)})
+    db().insert(REGION_TABLE, new_regions, code=lambda r: r.code, name=lambda r: r.name, level=lambda r: r.level, has_child=False, parent_code=lambda r: r.parent_code)
+    db().execute('''
+        UPDATE {REGION_TABLE} r
+        SET has_child=TRUE
+        WHERE level=1 AND EXISTS(SELECT 1 FROM {REGION_TABLE} WHERE level=2 AND NOT deleted AND parent_code=r.code)
+        '''.format(REGION_TABLE=REGION_TABLE))
+    db().execute('''
+        UPDATE {REGION_TABLE} r
+        SET has_child=TRUE
+        WHERE level=2 AND EXISTS(SELECT 1 FROM {REGION_TABLE} WHERE level=3 AND NOT deleted AND parent_code=r.code)
+        '''.format(REGION_TABLE=REGION_TABLE))
+
+
+@script('fdiff')
+def file_diff_script(file1, file2):
+    """
+    :param file1: old file source
+    :param file2: latest file source
+    :return: nothing, print diff from file1 to file2
+    """
+
+    def to_dict(lines):
+        d = OrderedDict()
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            line = to_unicode(line)
+            code, name = line.split()
             if code[2:] == '0000':
-                level = 1
-                parent_code = None
+                d[code] = DictObject(code=code, name=name, cities=OrderedDict())
             elif code[4:] == '00':
-                level = 2
                 parent_code = '{}0000'.format(code[:2])
+                if parent_code not in d:
+                    print('can not find parent of {} {}'.format(code, name))
+                else:
+                    d[parent_code].cities[code] = DictObject(code=code, name=name, districts=OrderedDict())
             else:
-                level = 3
                 parent_code = '{}00'.format(code[:4])
-            new_regions.append(DictObject(code=code, name=regions[code], level=level, parent_code=parent_code))
-        LOGGER.info('number of to-be-inserted regions: %(region_count)s', {'region_count': len(new_regions)})
-        db().insert(REGION_TABLE, new_regions, code=lambda r: r.code, name=lambda r: r.name, level=lambda r: r.level, has_child=False,
-            parent_code=lambda r: r.parent_code)
-        db().execute('''
-            UPDATE {REGION_TABLE} r
-            SET has_child=TRUE
-            WHERE level=1 AND EXISTS(SELECT 1 FROM {REGION_TABLE} WHERE level=2 AND NOT deleted AND parent_code=r.code)
-            '''.format(REGION_TABLE=REGION_TABLE))
-        db().execute('''
-            UPDATE {REGION_TABLE} r
-            SET has_child=TRUE
-            WHERE level=2 AND EXISTS(SELECT 1 FROM {REGION_TABLE} WHERE level=3 AND NOT deleted AND parent_code=r.code)
-            '''.format(REGION_TABLE=REGION_TABLE))
+                parent_code2 = '{}0000'.format(code[:2])
+                if parent_code2 not in d:
+                    print('can not find parent2 of {} {}'.format(code, name))
+                elif parent_code not in d[parent_code2].cities:
+                    print('can not find parent of {} {}'.format(code, name))
+                else:
+                    d[parent_code2].cities[parent_code].districts[code] = DictObject(code=code, name=name)
+        return d
+
+    with open(file1) as f1:
+        f1_dict = to_dict(f1.readlines())
+
+    with open(file2) as f2:
+        f2_dict = to_dict(f2.readlines())
+
+    def list_changes(old, new):
+        """
+        :param old: {code1: name1, code2:name2, ..., codeN:nameN}
+        :param new: {code1: name1, code2:name2, ..., codeN:nameN}
+        :return: news, renames, deletes
+        """
+        news = []
+        renames = []
+        deletes = []
+        for e in new.values():
+            if e.code not in old:
+                news.append(e)
+            elif e.name != old[e.code].name:
+                e.old_name = old[e.code].name
+                renames.append(e)
+        for e in old.values():
+            if e.code not in new:
+                deletes.append(e)
+        return news, renames, deletes
+
+    for code, province in f2_dict.items():
+        new_cities, rename_cities, delete_cities = list_changes(f1_dict[code].cities, province.cities)
+        if new_cities or rename_cities or delete_cities:
+            for city in new_cities:
+                print(green('{}: +{} {}'.format(province.name, city.code, city.name)))
+            for city in rename_cities:
+                print(yellow('{}: -+{} {}->{}'.format(province.name, city.code, city.old_name, city.name)))
+            for city in delete_cities:
+                print(red('{}: -{} {}'.format(province.name, city.code, city.name)))
+        for city in province.cities.values():
+            f1_city = f1_dict[code].cities.get(city.code)
+            if f1_city:
+                new_districts, rename_districts, delete_districts = list_changes(f1_city.districts, city.districts)
+                if new_districts or rename_districts or delete_districts:
+                    for district in new_districts:
+                        print(green('{}#{}: +{} {}'.format(province.name, city.name, district.code, district.name)))
+                    for district in rename_districts:
+                        print(yellow('{}#{}: -+{} {}->{}'.format(province.name, city.name, district.code, district.old_name, district.name)))
+                    for district in delete_districts:
+                        print(red('{}#{}: -{} {}'.format(province.name, city.name, district.code, district.name)))
