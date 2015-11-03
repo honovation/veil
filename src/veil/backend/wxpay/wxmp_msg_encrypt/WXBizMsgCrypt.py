@@ -14,7 +14,8 @@ from Crypto.Cipher import AES
 import socket
 import lxml
 import ierror
-from veil.model.collection import DictObject
+from veil.model.collection import *
+from veil.utility.encoding import *
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ TEXT_RESPONSE_TEMPLATE = '<xml><ToUserName><![CDATA[%(to_user)s]]></ToUserName><
 
 
 def sign_wxmp_params(*args):
-    args_ = [e for e in args if e]
+    args_ = [to_str(e) for e in args if e]
     args_.sort()
     sha = hashlib.sha1()
     sha.update(''.join(args_))
@@ -76,7 +77,7 @@ class Prpcrypt(object):
 
     def encrypt(self, text, app_id):
         # 16位随机字符串添加到明文开头
-        text = self.get_random_str() + struct.pack('I', socket.htonl(len(text))) + text + app_id
+        text = to_str(self.get_random_str()) + struct.pack('I', socket.htonl(len(text))) + to_str(text) + to_str(app_id)
         # 使用自定义的填充方式对明文进行补位填充
         text = padding_to_pkcs7(text)
         # 加密
