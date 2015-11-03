@@ -77,7 +77,8 @@ class Prpcrypt(object):
 
     def encrypt(self, text, app_id):
         # 16位随机字符串添加到明文开头
-        text = to_str(self.get_random_str()) + struct.pack('I', socket.htonl(len(text))) + to_str(text) + to_str(app_id)
+        text = to_str(text)
+        text = to_str(self.get_random_str()) + struct.pack('I', socket.htonl(len(text))) + text + to_str(app_id)
         # 使用自定义的填充方式对明文进行补位填充
         text = padding_to_pkcs7(text)
         # 加密
