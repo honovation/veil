@@ -25,7 +25,7 @@ TEXT_RESPONSE_TEMPLATE = '<xml><ToUserName><![CDATA[%(to_user)s]]></ToUserName><
 
 
 def sign_wxmp_params(*args):
-    args_ = [e for e in args]
+    args_ = [e for e in args if e]
     args_.sort()
     sha = hashlib.sha1()
     sha.update(''.join(args_))
@@ -133,11 +133,9 @@ class WXBizMsgCrypt(object):
         self.token = token
         self.app_id = app_id
 
-    def encrypt_msg(self, msg, nonce, timestamp=None):
+    def encrypt_msg(self, msg, nonce, timestamp):
         pc = Prpcrypt(self.key)
         ret, encrypt = pc.encrypt(msg, self.app_id)
-        if timestamp is None:
-            timestamp = str(int(time.time()))
         signature = sign_wxmp_params(self.token, timestamp, nonce, encrypt)
         return render_wxmp_text_encrypted_response(encrypt, signature, timestamp, nonce)
 
