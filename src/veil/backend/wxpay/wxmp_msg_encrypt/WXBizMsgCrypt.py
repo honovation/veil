@@ -20,14 +20,7 @@ LOGGER = logging.getLogger(__name__)
 
 SUPPORT_ENCRYPT_METHODS = {'aes'}
 KEY_LENGTH = 32
-AES_TEXT_RESPONSE_TEMPLATE = '''
-    <xml>
-    <Encrypt><![CDATA[%(encrypt)s]]></Encrypt>
-    <MsgSignature><![CDATA[%(signature)s]]></MsgSignature>
-    <TimeStamp>%(timestamp)s</TimeStamp>
-    <Nonce><![CDATA[%(nonce)s]]></Nonce>
-    </xml>
-    '''
+AES_TEXT_RESPONSE_TEMPLATE = '<xml><Encrypt><![CDATA[%(encrypt)s]]></Encrypt><MsgSignature><![CDATA[%(signature)s]]></MsgSignature><TimeStamp>%(timestamp)s</TimeStamp><Nonce><![CDATA[%(nonce)s]]></Nonce></xml>'
 
 
 def sign_sha1(token, timestamp, nonce, encrypt):
@@ -35,7 +28,7 @@ def sign_sha1(token, timestamp, nonce, encrypt):
     args.sort()
     sha = hashlib.sha1()
     sha.update(''.join(args))
-    return ierror.WXBizMsgCrypt_OK, sha.hexdigest()
+    return sha.hexdigest()
 
 
 def parse_xml(xmltext):
@@ -148,7 +141,7 @@ class WXBizMsgCrypt(object):
             parsed_msg = parse_xml(msg)
         except Exception as e:
             raise Exception('bad xml format: {}'.format(e.message))
-        ret, signature = sign_sha1(self.token, timestamp, nonce, parsed_msg.Encrypt)
+        signature = sign_sha1(self.token, timestamp, nonce, parsed_msg.Encrypt)
         if signature != msg_signature:
             LOGGER.warn('signature mismatch: %(expected_sign)s, %(actual_sign)s', {'expected_sign': signature, 'actual_sign': msg_signature})
             raise Exception('signature mismatch')
