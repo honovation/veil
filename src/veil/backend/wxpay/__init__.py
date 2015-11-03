@@ -20,6 +20,7 @@ with veil_component.init_component(__name__):
     from .wxmp_msg_encrypt import WXBizMsgCrypt
     from .wxmp_msg_encrypt import parse_wechat_plain_msg
     from .wxmp_msg_encrypt import sign_wxmp_params
+    from .wxmp_msg_encrypt import render_wxmp_text_response
 
     __all__ = [
         'EVENT_WXPAY_TRADE_PAID',
@@ -41,4 +42,5 @@ with veil_component.init_component(__name__):
         WXBizMsgCrypt.__name__,
         parse_wechat_plain_msg.__name__,
         sign_wxmp_params.__name__,
+        render_wxmp_text_response.__name__,
     ]

@@ -21,6 +21,7 @@ LOGGER = logging.getLogger(__name__)
 SUPPORT_ENCRYPT_METHODS = {'aes'}
 KEY_LENGTH = 32
 AES_TEXT_RESPONSE_TEMPLATE = '<xml><Encrypt><![CDATA[%(encrypt)s]]></Encrypt><MsgSignature><![CDATA[%(signature)s]]></MsgSignature><TimeStamp>%(timestamp)s</TimeStamp><Nonce><![CDATA[%(nonce)s]]></Nonce></xml>'
+TEXT_RESPONSE_TEMPLATE = '<xml><ToUserName><![CDATA[%(to_user)s]]></ToUserName><FromUserName><![CDATA[%(from_user)s]]></FromUserName><CreateTime>%(timestamp)s</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[%(content)s]]></Content></xml>'
 
 
 def sign_wxmp_params(*args):
@@ -40,10 +41,14 @@ def parse_xml(xmltext):
     return arguments
 
 
-def render_xml(encrypt, signature, timestamp, nonce):
+def render_wxmp_text_encrypted_response(encrypt, signature, timestamp, nonce):
     resp_dict = {'encrypt': encrypt, 'signature': signature, 'timestamp': timestamp, 'nonce': nonce}
     resp_xml = AES_TEXT_RESPONSE_TEMPLATE % resp_dict
     return resp_xml
+
+
+def render_wxmp_text_response(to_user, from_user, timestamp, content):
+    return TEXT_RESPONSE_TEMPLATE % {'to_user': to_user, 'from_user': from_user, 'timestamp': timestamp, 'content': content}
 
 
 def padding_to_pkcs7(text):
@@ -134,7 +139,7 @@ class WXBizMsgCrypt(object):
         if timestamp is None:
             timestamp = str(int(time.time()))
         signature = sign_wxmp_params(self.token, timestamp, nonce, encrypt)
-        return render_xml(encrypt, signature, timestamp, nonce)
+        return render_wxmp_text_encrypted_response(encrypt, signature, timestamp, nonce)
 
     def decrypt_msg(self, msg, msg_signature, timestamp, nonce):
         try:
