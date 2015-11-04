@@ -61,6 +61,8 @@ def init_region(purpose):
 
         add_regions(db, list_gov_latest_region(latest_gov_region_version))
 
+        validate_regions(db)
+
         db().insert(REGION_VERSION_TABLE, due_date=latest_gov_region_version.due_date, published_at=latest_gov_region_version.published_at)
 
     init()
@@ -120,6 +122,47 @@ def check_region_update(purpose):
     return check_update()
 
 
+def validate_regions(db):
+    invalid_regions = db().list_scalar('''
+        SELECT code
+            FROM {REGION_TABLE}
+            WHERE level NOT IN (1, 2, 3) OR level=1 AND parent_code IS NOT NULL OR level!=1 AND parent_code IS NULL
+        UNION
+        SELECT c.code
+            FROM {REGION_TABLE} c
+                INNER JOIN region p ON p.code=c.parent_code
+            WHERE c.level!=p.level+1
+    '''.format(REGION_TABLE=REGION_TABLE))
+    if invalid_regions:
+        raise Exception('invalid regions with wrong level: {}'.format(invalid_regions))
+    invalid_regions = db().list_scalar('''
+        SELECT r.code
+        FROM {REGION_TABLE} r
+        WHERE r.has_child AND NOT EXISTS (SELECT 1 FROM {REGION_TABLE} c WHERE c.parent_code=r.code)
+            OR NOT r.has_child AND EXISTS (SELECT 1 FROM {REGION_TABLE} c WHERE c.parent_code=r.code)
+    '''.format(REGION_TABLE=REGION_TABLE))
+    if invalid_regions:
+        raise Exception('invalid regions with wrong has_child: {}'.format(invalid_regions))
+    invalid_regions = db().list_scalar('''
+        SELECT code
+            FROM {REGION_TABLE}
+            WHERE LENGTH(code)!=6 OR level=1 AND code!=(SUBSTRING(code,  1, 2)||'0000') OR level=2 AND code!=(SUBSTRING(code,  1, 4)||'00')
+        UNION
+        SELECT c.code
+            FROM {REGION_TABLE} c
+                INNER JOIN region p ON p.code=c.parent_code
+            WHERE c.code NOT LIKE CASE c.level WHEN 2 THEN SUBSTRING(p.code, 1, LENGTH(p.code)-4)||'__00' ELSE SUBSTRING(p.code, 1, LENGTH(p.code)-2)||'__' END
+    '''.format(REGION_TABLE=REGION_TABLE))
+    if invalid_regions:
+        raise Exception('invalid regions with wrong codes: {}'.format(invalid_regions))
+
+
+@script('validate')
+def validate_regions_script(purpose):
+    db = lambda: require_database(purpose)
+    validate_regions(db)
+
+
 @script('update')
 def update_region(purpose):
     db = lambda: require_database(purpose)
@@ -144,6 +187,9 @@ def update_region(purpose):
             )
 
             db().insert(REGION_VERSION_TABLE, due_date=gov_latest_region_version.due_date, published_at=gov_latest_region_version.published_at)
+
+            validate_regions(db)
+
             LOGGER.info('update finished')
 
     update()
@@ -251,13 +297,7 @@ def add_regions(db, regions):
     db().insert(REGION_TABLE, new_regions, code=lambda r: r.code, name=lambda r: r.name, level=lambda r: r.level, has_child=False, parent_code=lambda r: r.parent_code)
     db().execute('''
         UPDATE {REGION_TABLE} r
-        SET has_child=TRUE
-        WHERE level=1 AND EXISTS(SELECT 1 FROM {REGION_TABLE} WHERE level=2 AND NOT deleted AND parent_code=r.code)
-        '''.format(REGION_TABLE=REGION_TABLE))
-    db().execute('''
-        UPDATE {REGION_TABLE} r
-        SET has_child=TRUE
-        WHERE level=2 AND EXISTS(SELECT 1 FROM {REGION_TABLE} WHERE level=3 AND NOT deleted AND parent_code=r.code)
+        SET has_child=EXISTS(SELECT 1 FROM {REGION_TABLE} WHERE NOT deleted AND parent_code=r.code)
         '''.format(REGION_TABLE=REGION_TABLE))
 
 
