@@ -182,14 +182,14 @@ class SMService(object):
         if balance <= SMS_PROVIDER_BALANCE_THRESHOLD:
             messages.append('sms provider-{} balance is less than threshold: {}/{}'.format(self._sms_provider_id, balance, SMS_PROVIDER_BALANCE_THRESHOLD))
 
-        last_balance = self.get_balance_in_redis()
-        if last_balance is None:
-            self.set_balance(balance)
-            last_balance = balance
         sent_quantity = self.get_sent_quantity_in_redis()
         if sent_quantity is None:
             self.add_sent_quantity(0)
             sent_quantity = 0
+        last_balance = self.get_balance_in_redis()
+        if last_balance is None:
+            self.set_balance(balance)
+            last_balance = balance
         provider_sent_quantity = last_balance - balance
         if provider_sent_quantity != sent_quantity:
             LOGGER.info('VEIL SMS RECONCILIATION: %(provider_sent_quantity)s, %(sent_quantity)s, %(diff)s', {
