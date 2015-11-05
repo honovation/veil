@@ -105,7 +105,7 @@ def query_alipay_payment_status(out_trade_no):
         LOGGER.exception('alipay payment query exception-thrown: %(params)s', {'params': params})
         raise
     else:
-        arguments = parse_alipay_xml_response(response.content)
+        arguments = parse_payment_status_response(response.content)
         if arguments.is_success == 'T':
             arguments.trade.update(sign=arguments.sign, sign_type=arguments.sign_type)
             discarded_reasons = process_alipay_payment_notification(out_trade_no, arguments.trade, NOTIFIED_FROM_PAYMENT_QUERY)
@@ -116,7 +116,7 @@ def query_alipay_payment_status(out_trade_no):
     return paid
 
 
-def parse_alipay_xml_response(response):
+def parse_payment_status_response(response):
     arguments = DictObject(trade=DictObject())
     root = lxml.objectify.fromstring(response)
     for e in root.iterchildren():
@@ -281,7 +281,7 @@ def close_alipay_trade(out_trade_no):
         'service': 'close_trade',  #关闭交易
         'partner': alipay_client_config().partner_id,
         '_input_charset': 'UTF-8',
-        'out_trade_no': out_trade_no,
+        'out_order_no': out_trade_no,
         'trade_role': 'S'
     }
     params['sign'] = sign_md5(params)
@@ -297,7 +297,7 @@ def close_alipay_trade(out_trade_no):
         })
         raise
     else:
-        arguments = parse_alipay_xml_response(response.content)
+        arguments = lxml.objectify.fromstring(response.content)
         if arguments.is_success == 'T':
             LOGGER.info('alipay trade closed: %(out_trade_no)s, %(response)s', {
                 'out_trade_no': out_trade_no,
