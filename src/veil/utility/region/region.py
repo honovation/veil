@@ -196,8 +196,8 @@ def rollback(purpose):
         try:
             LOGGER.info('deleting regions not in backup')
             deleted_count = db().execute(
-                'DELETE FROM {REGION_TABLE} WHERE code IN (SELECT code FROM {REGION_TABLE} EXCEPT SELECT code FROM {REGION_BACKUP_TABLE})'.format(
-                    REGION_TABLE=REGION_TABLE, REGION_BACKUP_TABLE=REGION_BACKUP_TABLE))
+                'DELETE FROM {REGION_TABLE} WHERE code NOT IN (SELECT code FROM {REGION_BACKUP_TABLE})'.format(REGION_TABLE=REGION_TABLE,
+                                                                                                               REGION_BACKUP_TABLE=REGION_BACKUP_TABLE))
         except Exception:
             LOGGER.error('cannot delete rows in %(REGION_TABLE)s but not in backup table', {'REGION_TABLE': REGION_TABLE})
             raise
