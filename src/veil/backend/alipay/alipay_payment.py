@@ -29,11 +29,11 @@ NOTIFIED_FROM_PAYMENT_QUERY = 'payment_query'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # alipay require this 7 characters to be returned to them
 
 
-def make_alipay_order_str(out_trade_no, subject, body, total_fee, notify_url, minutes_to_complete_payment):
+def make_alipay_order_str(out_trade_no, subject, body, total_fee, notify_url, minutes_to_expire):
     config = alipay_client_config()
     arguments = [('partner', config.partner_id), ('seller_id', config.seller_email), ('out_trade_no', out_trade_no), ('subject', subject), ('body', body),
                  ('total_fee', '{:.2f}'.format(total_fee)), ('notify_url', notify_url), ('service', 'mobile.securitypay.pay'), ('payment_type', '1'),
-                 ('_input_charset', 'utf-8'), ('it_b_pay', '{}m'.format(minutes_to_complete_payment))]
+                 ('_input_charset', 'utf-8'), ('it_b_pay', '{}m'.format(minutes_to_expire))]
     message = '&'.join(['{}="{}"'.format(k, v) for arg in arguments for k, v in [arg]])
 
     sign = sign_rsa(message, config.rsa_private_key)
@@ -62,25 +62,11 @@ def verify_alipay_sync_notification(message):
         return True
 
 
-def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, minutes_to_complete_payment, shopper_ip_address):
-    params = {
-        'service': 'create_direct_pay_by_user',  #即时到帐
-        'partner': alipay_client_config().partner_id,
-        '_input_charset': 'UTF-8',
-        'out_trade_no': out_trade_no,
-        'subject': subject,
-        'payment_type': '1',
-        'seller_email': alipay_client_config().seller_email,
-        'total_fee': '{:.2f}'.format(total_fee),
-        'body': body,
-        'show_url': show_url,
-        'return_url': return_url,
-        'notify_url': notify_url,
-        'paymethod': 'directPay',
-        'exter_invoke_ip': shopper_ip_address,  # 防钓鱼IP地址检查 (支付宝端设置已取消，这是我们期望的)
-        'extra_common_param': show_url,
-        'it_b_pay': '{}m'.format(minutes_to_complete_payment),  # 未付款交易的超时时间
-    }
+def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, minutes_to_expire, shopper_ip_address):
+    params = dict(service='create_direct_pay_by_user', partner=alipay_client_config().partner_id, _input_charset='UTF-8', out_trade_no=out_trade_no,
+                  subject=subject, payment_type='1', seller_email=alipay_client_config().seller_email, total_fee='{:.2f}'.format(total_fee), body=body,
+                  show_url=show_url, return_url=return_url, notify_url=notify_url, paymethod='directPay', exter_invoke_ip=shopper_ip_address,
+                  extra_common_param=show_url, it_b_pay='{}m'.format(minutes_to_expire))
     params['sign'] = sign_md5(params)
     params['sign_type'] = 'MD5'
     # urllib.urlencode does not handle unicode well
@@ -95,7 +81,7 @@ def query_status(out_trade_no):
 
 
 def query_alipay_payment_status(out_trade_no):
-    params = {'service': 'single_trade_query', 'partner': alipay_client_config().partner_id, '_input_charset': 'UTF-8', 'out_trade_no': out_trade_no}
+    params = dict(service='single_trade_query', partner=alipay_client_config().partner_id, _input_charset='UTF-8', out_trade_no=out_trade_no)
     params['sign'] = sign_md5(params)
     params['sign_type'] = 'MD5'
     try:
@@ -143,7 +129,7 @@ def process_alipay_payment_notification(out_trade_no, arguments, notified_from):
             set_http_status_code(httplib.BAD_REQUEST)
             return '<br/>'.join(discarded_reasons)
     publish_event(EVENT_ALIPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
-        paid_total=paid_total, paid_at=paid_at, show_url=show_url, notified_from=notified_from)
+                  paid_total=paid_total, paid_at=paid_at, show_url=show_url, notified_from=notified_from)
     if NOTIFIED_FROM_RETURN_URL == notified_from:
         redirect_to(show_url or '/')
     elif NOTIFIED_FROM_NOTIFY_URL == notified_from:
@@ -277,13 +263,7 @@ def close_alipay_trade_script(out_trade_no):
 
 
 def close_alipay_trade(out_trade_no):
-    params = {
-        'service': 'close_trade',  #关闭交易
-        'partner': alipay_client_config().partner_id,
-        '_input_charset': 'UTF-8',
-        'out_order_no': out_trade_no,
-        'trade_role': 'S'
-    }
+    params = dict(service='close_trade', partner=alipay_client_config().partner_id, _input_charset='UTF-8', out_order_no=out_trade_no, trade_role='S')
     params['sign'] = sign_md5(params)
     params['sign_type'] = 'MD5'
     response = None

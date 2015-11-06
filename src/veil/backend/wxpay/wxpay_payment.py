@@ -107,8 +107,8 @@ def process_wxpay_payment_notification(request_body, notified_from):
         return_code = SUCCESSFULLY_MARK
         return_msg = 'OK'
         publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
-            paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
-            notified_from=notified_from)
+                      paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
+                      notified_from=notified_from)
     with require_current_template_directory_relative_to():
         return get_template('notification-return.xml').render(return_code=return_code, return_msg=return_msg)
 
@@ -152,7 +152,7 @@ def request_wxmp_access_token():
     params = dict(grant_type='client_credential', appid=config.app_id, secret=config.app_secret)
     try:
         response = requests.get(WXMP_ACCESS_TOKEN_AUTHORIZATION_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9),
-            max_retries=Retry(total=5, backoff_factor=0.2))
+                                max_retries=Retry(total=5, backoff_factor=0.2))
         response.raise_for_status()
     except Exception:
         LOGGER.exception('wxmp request access token exception-thrown')
@@ -218,8 +218,8 @@ def query_order_status_(out_trade_no):
         else:
             LOGGER.debug(parsed_response)
             publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=None,
-                paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=None, bank_billno=bank_billno, show_url=None,
-                notified_from=NOTIFIED_FROM_ORDER_QUERY)
+                          paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=None, bank_billno=bank_billno, show_url=None,
+                          notified_from=NOTIFIED_FROM_ORDER_QUERY)
             paid = True
     return paid
 

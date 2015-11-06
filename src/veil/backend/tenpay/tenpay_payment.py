@@ -27,29 +27,14 @@ NOTIFIED_FROM_PAYMENT_QUERY = 'payment_query'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # tenpay require this 7 characters to be returned to them
 
 
-def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, time_start, time_expire, shopper_ip_address,
-        bank_type):
+def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, time_start, time_expire, shopper_ip_address, bank_type):
     bank_type = bank_type or 'DEFAULT'
     time_start_beijing_time_str = convert_datetime_to_client_timezone(time_start).strftime('%Y%m%d%H%M%S')
     time_expire_beijing_time_str = convert_datetime_to_client_timezone(time_expire).strftime('%Y%m%d%H%M%S')
-    params = {
-        'sign_type': 'MD5',
-        'input_charset': 'UTF-8',
-        'bank_type': bank_type,
-        'body': body,
-        'subject': subject,
-        'attach': show_url,
-        'return_url': return_url,
-        'notify_url': notify_url,
-        'partner': tenpay_client_config().partner_id,
-        'out_trade_no': out_trade_no,
-        'total_fee': unicode(int(total_fee * 100)),  # unit: cent
-        'fee_type': '1',
-        'spbill_create_ip': shopper_ip_address,  # 防钓鱼IP地址检查
-        'time_start': time_start_beijing_time_str,  # 交易起始时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
-        'time_expire': time_expire_beijing_time_str,  # 交易结束时间，时区为GMT+8 beijing，格式为yyyymmddhhmmss
-        'trade_mode': '1'  # 交易模式：即时到账
-    }
+    params = dict(sign_type='MD5', input_charset='UTF-8', bank_type=bank_type, body=body, subject=subject, attach=show_url, return_url=return_url,
+                  notify_url=notify_url, partner=tenpay_client_config().partner_id, out_trade_no=out_trade_no, total_fee=unicode(int(total_fee * 100)),
+                  fee_type='1', spbill_create_ip=shopper_ip_address, time_start=time_start_beijing_time_str, time_expire=time_expire_beijing_time_str,
+                  trade_mode='1')
     params['sign'] = sign_md5(params)
     # urllib.urlencode does not handle unicode well
     params = {to_str(k): to_str(v) for k, v in params.items()}
@@ -83,8 +68,8 @@ def query_tenpay_payment_status(out_trade_no):
 
 
 def process_tenpay_payment_notification(out_trade_no, arguments, notified_from):
-    trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_payment_notification(out_trade_no,
-        arguments, NOTIFIED_FROM_PAYMENT_QUERY != notified_from)
+    trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_payment_notification(out_trade_no, arguments,
+                                                                                                                                 NOTIFIED_FROM_PAYMENT_QUERY != notified_from)
     if discarded_reasons:
         LOGGER.warn('tenpay payment notification discarded: %(discarded_reasons)s, %(arguments)s', {
             'discarded_reasons': discarded_reasons,
@@ -96,8 +81,8 @@ def process_tenpay_payment_notification(out_trade_no, arguments, notified_from):
             set_http_status_code(httplib.BAD_REQUEST)
             return '<br/>'.join(discarded_reasons)
     publish_event(EVENT_TENPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
-        paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
-        notified_from=notified_from)
+                  paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
+                  notified_from=notified_from)
     if NOTIFIED_FROM_RETURN_URL == notified_from:
         redirect_to(show_url or '/')
     elif NOTIFIED_FROM_NOTIFY_URL == notified_from:
