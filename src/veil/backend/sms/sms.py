@@ -128,7 +128,7 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
             if current_sms_provider.sms_provider_id in used_sms_provider_ids:
                 raise Exception('not enough reliable sms providers')
         else:
-            current_sms_provider.add_sent_quantity(len(receivers))
+            current_sms_provider.add_sent_quantity(current_sms_provider.get_minimal_message_quantity(message) * len(receivers))
             break
 
 
@@ -149,6 +149,9 @@ class SMService(object):
         raise NotImplementedError()
 
     def query_balance(self):
+        raise NotImplementedError()
+
+    def get_minimal_message_quantity(self, message):
         raise NotImplementedError()
 
     def get_balance_in_redis(self):

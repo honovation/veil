@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import logging
+from math import ceil
 from veil.profile.installer import *
 from veil.model.collection import *
 from veil.utility.http import *
@@ -14,6 +15,8 @@ SEND_SMS_URL = 'http://yunpian.com/v1/sms/send.json'
 QUERY_BALANCE_URL = 'http://yunpian.com/v1/user/get.json'
 MAX_SMS_RECEIVERS = 200
 MAX_SMS_CONTENT_LENGTH = 400
+MAX_LENGTH_PER_MESSAGE = 70
+OVER_MAX_LENGTH_MESSAGE_LENGTH_PER_MESSAGE = 67
 
 _config = None
 
@@ -112,3 +115,9 @@ class YunpianSMService(SMService):
                     LOGGER.error('yunpian query balance got invalid balance: %(response)s', {'response': response.text})
                     raise Exception('yunpian query balance got invalid balance: {}'.format(response.text))
                 return balance
+
+    def get_minimal_message_quantity(self, message):
+        message_length = len(message)
+        if message_length < MAX_LENGTH_PER_MESSAGE:
+            return 1
+        return int(ceil(message_length/OVER_MAX_LENGTH_MESSAGE_LENGTH_PER_MESSAGE))

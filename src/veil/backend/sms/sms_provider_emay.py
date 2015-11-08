@@ -3,6 +3,9 @@ from __future__ import unicode_literals, print_function, division
 import logging
 import re
 from decimal import Decimal
+
+from math import ceil
+
 from veil.profile.installer import *
 from veil.frontend.cli import *
 from veil.utility.misc import *
@@ -16,6 +19,8 @@ SEND_SMS_URL = 'http://sdkhttp.eucp.b2m.cn/sdkproxy/sendsms.action'
 QUERY_BALANCE_URL = 'http://sdkhttp.eucp.b2m.cn/sdkproxy/querybalance.action'
 MAX_SMS_RECEIVERS = 200
 MAX_SMS_CONTENT_LENGTH = 500  # 500 Chinese or 1000 English chars
+MAX_LENGTH_PER_MESSAGE = 70
+OVER_MAX_LENGTH_MESSAGE_LENGTH_PER_MESSAGE = MAX_LENGTH_PER_MESSAGE
 
 PATTERN_FOR_ERROR = re.compile('<error>(\d+?)</error>')
 PATTERN_FOR_MESSAGE = re.compile('<message>(\d+\.?\d)</message>')
@@ -118,6 +123,12 @@ class EmaySMService(SMService):
                     LOGGER.error('emay query balance got invalid balance: %(response)s', {'response': response.text})
                     raise Exception('emay query balance got invalid balance: {}'.format(response.text))
                 return int(balance * 10)
+
+    def get_minimal_message_quantity(self, message):
+        message_length = len(message)
+        if message_length < MAX_LENGTH_PER_MESSAGE:
+            return 1
+        return int(ceil(message_length/OVER_MAX_LENGTH_MESSAGE_LENGTH_PER_MESSAGE))
 
 
 @script('query-balance')
