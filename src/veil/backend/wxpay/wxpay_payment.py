@@ -26,9 +26,10 @@ NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 SUCCESSFULLY_MARK = 'SUCCESS'  # wxpay require this 7 characters to be returned to them
 FAILED_MARK = 'FAIL'
 WXPAY_BANK_TYPE = 'WX'
-WXPAY_ORDER_QUERY_URL = 'https://api.mch.weixin.qq.com/pay/orderquery'
 WXMP_ACCESS_TOKEN_AUTHORIZATION_URL = 'https://api.weixin.qq.com/cgi-bin/token'
+WXPAY_ORDER_QUERY_URL = 'https://api.mch.weixin.qq.com/pay/orderquery'
 WXPAY_UNIFIEDORDER_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
+WXPAY_CLOSE_TRADE_URL = 'https://api.mch.weixin.qq.com/pay/closeorder'
 
 
 def make_wxpay_request(out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):
@@ -80,6 +81,49 @@ def create_wxpay_prepay_order(app_id, api_key, mch_id, trade_type, out_trade_no,
         LOGGER.info('wxpay unified order success: %(response)s', {'response': response})
         return DictObject(nonce_str=parsed_response.nonce_str, trade_type=parsed_response.trade_type, prepay_id=parsed_response.prepay_id,
                           code_url=parsed_response.get('code_url'))
+
+
+@script('close-trade')
+def close_wxpay_trade_script(out_trade_no):
+    close_wxpay_trade(out_trade_no)
+
+
+def close_wxpay_trade(out_trade_no):
+    config = wx_open_app_config()
+    kwargs = DictObject(appid=config.app_id, mch_id=config.mch_id, nonce_str=uuid4().get_hex(), out_trade_no=out_trade_no)
+    kwargs.sign = sign_md5(kwargs, config.api_key)
+    with require_current_template_directory_relative_to():
+        data = to_str(get_template('close-trade.xml').render(**kwargs))
+    headers = {'Content-Type': 'application/xml'}
+    response = None
+    try:
+        response = requests.post(WXPAY_CLOSE_TRADE_URL, data=data, headers=headers, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
+        response.raise_for_status()
+    except Exception:
+        LOGGER.exception('wxpay close trade exception-thrown: %(out_trade_no)s, %(data)s', {
+            'out_trade_no': out_trade_no,
+            'data': data,
+            'response': response.text if response else ''
+        })
+        raise
+    else:
+        parsed_response = parse_xml_response(response.content)
+        if parsed_response.return_code != SUCCESSFULLY_MARK:
+            LOGGER.info('wxpay close trade got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
+            raise Exception('wxpay close trade got failed response: {}'.format(parsed_response.return_msg))
+        try:
+            validate_wxpay_response(parsed_response, config.api_key)
+        except Exception:
+            LOGGER.info('wxpay close trade got fake response: %(data)s, %(response)s', {'data': data, 'response': response.text})
+            raise
+        if parsed_response.result_code != SUCCESSFULLY_MARK:
+            LOGGER.info('wxpay close trade got failed result: %(err_code)s, %(err_code_des)s, %(data)s, %(response)s', {
+                'err_code': parsed_response.err_code,
+                'err_code_des': parsed_response.err_code_des,
+                'data': data,
+                'response': response.text
+            })
+        LOGGER.info('wxpay close trade success: %(out_trade_no)s, %(response)s', {'out_trade_no': out_trade_no, 'response': response.text})
 
 
 def validate_wxpay_response(parsed_response, app_secret):
@@ -183,7 +227,7 @@ def query_order_status_(out_trade_no):
     args = DictObject(appid=config.app_id, mch_id=config.mch_id, out_trade_no=out_trade_no, nonce_str=uuid4().get_hex())
     args.sign = sign_md5(args, key=config.api_key)
     with require_current_template_directory_relative_to():
-        data = to_str(get_template('queryorder.xml').render(**args))
+        data = to_str(get_template('query-order.xml').render(**args))
     headers = {'Content-Type': 'application/xml'}
     try:
         response = requests.post(WXPAY_ORDER_QUERY_URL, data=data, headers=headers, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))

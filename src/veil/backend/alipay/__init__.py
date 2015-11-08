@@ -2,7 +2,6 @@ import veil_component
 
 with veil_component.init_component(__name__):
     from .alipay_payment import EVENT_ALIPAY_TRADE_PAID
-    from .alipay_payment import EVENT_ALIPAY_TRADE_CLOSED
     from .alipay_payment import NOTIFIED_FROM_RETURN_URL
     from .alipay_payment import NOTIFIED_FROM_NOTIFY_URL
     from .alipay_payment import create_alipay_payment_url
@@ -16,7 +15,6 @@ with veil_component.init_component(__name__):
 
     __all__ = [
         'EVENT_ALIPAY_TRADE_PAID',
-        'EVENT_ALIPAY_TRADE_CLOSED',
         'NOTIFIED_FROM_RETURN_URL',
         'NOTIFIED_FROM_NOTIFY_URL',
         create_alipay_payment_url.__name__,

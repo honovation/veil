@@ -18,7 +18,6 @@ from .alipay_client_installer import alipay_client_config
 LOGGER = logging.getLogger(__name__)
 
 EVENT_ALIPAY_TRADE_PAID = define_event('alipay-trade-paid')  # valid notification
-EVENT_ALIPAY_TRADE_CLOSED = define_event('alipay-trade-closed')
 
 PAYMENT_URL = 'https://mapi.alipay.com/gateway.do'
 VERIFY_URL = PAYMENT_URL
@@ -283,7 +282,6 @@ def close_alipay_trade(out_trade_no):
                 'out_trade_no': out_trade_no,
                 'response': response.text
             })
-            publish_event(EVENT_ALIPAY_TRADE_CLOSED, out_trade_no=out_trade_no)
         else:
             LOGGER.warn('alipay trade close failed: %(out_trade_no)s, %(params)s, %(error)s', {
                 'out_trade_no': out_trade_no,
