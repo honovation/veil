@@ -316,3 +316,94 @@ def validate_regions(db):
     '''.format(REGION_TABLE=REGION_TABLE))
     if invalid_regions:
         raise Exception('invalid regions with wrong codes: {}'.format(invalid_regions))
+
+
+def list_region_name_patterns(region_name):
+    patterns = [region_name]
+
+    if len(region_name) <= 2:
+        return patterns
+
+    if region_name.endswith('省'):
+        patterns.append(region_name.replace('省', ''))
+    elif region_name.endswith('市'):
+        patterns.append(region_name.replace('市', ''))
+    elif region_name.endswith('维吾尔自治区'):
+        patterns.append(region_name.replace('维吾尔自治区', ''))
+    elif region_name.endswith('蒙古族藏族自治州'):
+        patterns.append(region_name.replace('蒙古族藏族自治州', ''))
+    elif region_name.endswith('藏族自治州'):
+        patterns.append(region_name.replace('藏族自治州', ''))
+    elif region_name.endswith('壮族自治区'):
+        patterns.append(region_name.replace('壮族自治区', ''))
+    elif region_name.endswith('回族自治区'):
+        patterns.append(region_name.replace('回族自治区', ''))
+    elif region_name.endswith('自治区'):
+        patterns.append(region_name.replace('自治区', ''))
+    elif region_name.endswith('地区'):
+        patterns.append(region_name.replace('地区', ''))
+    elif region_name.endswith('新区'):
+        patterns.append(region_name.replace('新区', ''))
+    elif region_name.endswith('矿区'):
+        patterns.append(region_name.replace('矿区', ''))
+    elif region_name.endswith('区'):
+        patterns.append(region_name.replace('区', ''))
+    elif region_name.endswith('乡'):
+        patterns.append(region_name.replace('乡', ''))
+    elif region_name.endswith('自治县'):
+        patterns.append(region_name.replace('自治县', ''))
+    elif region_name.endswith('县'):
+        patterns.append(region_name.replace('县', ''))
+
+    return patterns
+
+
+def parse_address(purpose, address):
+    """
+    :param purpose: db purpose
+    :param address: full address composed with province,city,district,detail
+    :return: {province: object, city: object, district: object, detail: string}
+    """
+    db = lambda: require_database(purpose)
+    provinces = db().list('SELECT * FROM region WHERE level=1 AND NOT deleted')
+    original_address = address
+
+    province = None
+    for province_ in provinces:
+        for pattern in list_region_name_patterns(province_.name):
+            if address.startswith(pattern):
+                province = province_
+                address = address.replace(pattern, '').strip()
+                break
+        if province:
+            break
+    if not province:
+        LOGGER.info('can not find province: %(address)s', {'address': original_address})
+    city = None
+    cities_in_province = db().list('SELECT * FROM {REGION_TABLE} WHERE level=2 AND parent_code=%(province_code)s'.format(REGION_TABLE=REGION_TABLE),
+                                   province_code=province.code)
+    for city_ in cities_in_province:
+        for pattern in list_region_name_patterns(city_.name):
+            if address.startswith(pattern):
+                city = city_
+                address = address.replace(pattern, '').strip()
+                break
+        if city:
+            break
+    district = None
+    districts_in_province = db().list('SELECT * FROM {REGION_TABLE} WHERE level=3 AND SUBSTR(code, 1, 2)=%(province_code_prefix)s'.format(REGION_TABLE=REGION_TABLE),
+                                   province_code_prefix=province.code[:2])
+    for district_ in districts_in_province:
+        for pattern in list_region_name_patterns(district_.name):
+            if address.startswith(pattern):
+                district = district_
+                address = address.replace(pattern, '').strip()
+                break
+        if district:
+            break
+    if not district and not city:
+        LOGGER.info('can not find city and district: %(address)s', {'address': original_address})
+    elif district and not city:
+        city = db().get('SELECT * FROM {REGION_TABLE} WHERE code=%(code)s'.format(REGION_TABLE=REGION_TABLE), code=district.parent_code)
+
+    return DictObject(province=province, city=city, district=district, address_detail=address)

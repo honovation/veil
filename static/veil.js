@@ -370,6 +370,7 @@ veil.resource.patch = function (options) {
 
 veil.resource.del = function (options) {
     var url = options.url;
+    var data = options.data;
     var dataType = options.dataType;
     var onSuccess = options.onSuccess;
     var onError = options.onError;
@@ -401,6 +402,7 @@ veil.resource.del = function (options) {
     var _ = {
         type:'DELETE',
         url:url,
+        data: data,
         dataType: dataType,
         success:onSuccess,
         error:onError,
