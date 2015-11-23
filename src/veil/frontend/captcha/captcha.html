@@ -33,14 +33,5 @@
         $(document).on('focus', '#captcha_answer', function(){
             $('#captcha-result').hide();
         });
-        $(document).on('blur', '#captcha_answer', function(){
-            var $captchaResult = $('#captcha-result');
-            if(!$(this).val()) {
-                $captchaResult.find('span').text('未填写验证码');
-                $captchaResult.show();
-            } else {
-                $captchaResult.hide();
-            }
-        });
     });
 </script>
