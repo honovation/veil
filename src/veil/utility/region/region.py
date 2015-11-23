@@ -318,92 +318,60 @@ def validate_regions(db):
         raise Exception('invalid regions with wrong codes: {}'.format(invalid_regions))
 
 
-def list_region_name_patterns(region_name):
-    patterns = [region_name]
+REGION_LEVEL2SUFFIX = {
+    1: ('省', '市', '壮族自治区', '维吾尔自治区', '回族自治区', '自治区'),
+    2: ('市', '地区', '蒙古族藏族自治州', '藏族自治州', '朝鲜族自治州', '土家族苗族自治州', '藏族羌族自治州', '哈尼族彝族自治州', '彝族自治州', '布依族苗族自治州',
+        '苗族侗族自治州', '傣族自治州', '白族自治州', '傣族景颇族自治州', '傈僳族自治州', '回族自治州', '蒙古自治州', '柯尔克孜自治州', '哈萨克自治州'),
+    3: ('市', '新区', '矿区', '区', '彝族回族自治县', '回族自治县', '满族自治县', '满族蒙古族自治县', '蒙古族自治县', '蒙古自治县', '朝鲜族自治县', '畲族自治县',
+        '土家族自治县', '土家族苗族自治县', '仡佬族苗族自治县', '布依族苗族自治县', '苗族布依族自治县', '彝族回族苗族自治县', '彝族苗族自治县', '苗族自治县', '瑶族自治县',
+        '苗族侗族自治县', '侗族自治县', '各族自治县', '仫佬族自治县', '毛南族自治县', '黎族苗族自治县', '黎族自治县', '羌族自治县', '回族彝族自治县', '傣族彝族自治县',
+        '哈尼族彝族自治县', '彝族自治县', '藏族自治县', '水族自治县', '哈尼族自治县', '彝族傣族自治县', '拉祜族佤族布朗族傣族自治县', '纳西族自治县', '彝族哈尼族拉祜族自治县',
+        '拉祜族自治县', '哈尼族彝族傣族自治县', '傣族拉祜族佤族自治县', '傣族佤族自治县', '苗族瑶族傣族自治县', '佤族自治县', '独龙族怒族自治县', '白族普米族自治县',
+        '傈僳族自治县', '裕固族自治县', '哈萨克族自治县', '哈萨克自治县', '东乡族自治县', '保安族东乡族撒拉族自治县', '回族土族自治县', '土族自治县', '撒拉族自治县',
+        '塔吉克自治县', '锡伯自治县', '县')
+}
 
-    if len(region_name) <= 2:
-        return patterns
 
-    if region_name.endswith('省'):
-        patterns.append(region_name.replace('省', ''))
-    elif region_name.endswith('市'):
-        patterns.append(region_name.replace('市', ''))
-    elif region_name.endswith('维吾尔自治区'):
-        patterns.append(region_name.replace('维吾尔自治区', ''))
-    elif region_name.endswith('蒙古族藏族自治州'):
-        patterns.append(region_name.replace('蒙古族藏族自治州', ''))
-    elif region_name.endswith('藏族自治州'):
-        patterns.append(region_name.replace('藏族自治州', ''))
-    elif region_name.endswith('壮族自治区'):
-        patterns.append(region_name.replace('壮族自治区', ''))
-    elif region_name.endswith('回族自治区'):
-        patterns.append(region_name.replace('回族自治区', ''))
-    elif region_name.endswith('自治区'):
-        patterns.append(region_name.replace('自治区', ''))
-    elif region_name.endswith('地区'):
-        patterns.append(region_name.replace('地区', ''))
-    elif region_name.endswith('新区'):
-        patterns.append(region_name.replace('新区', ''))
-    elif region_name.endswith('矿区'):
-        patterns.append(region_name.replace('矿区', ''))
-    elif region_name.endswith('区'):
-        patterns.append(region_name.replace('区', ''))
-    elif region_name.endswith('乡'):
-        patterns.append(region_name.replace('乡', ''))
-    elif region_name.endswith('自治县'):
-        patterns.append(region_name.replace('自治县', ''))
-    elif region_name.endswith('县'):
-        patterns.append(region_name.replace('县', ''))
-
+def list_region_name_patterns(region):
+    patterns = [region.name]
+    name_len = len(region.name)
+    if name_len > 2:
+        suffix = next((s for s in REGION_LEVEL2SUFFIX[region.level] if name_len >= len(s) + 2 and region.name.endswith(s)), None)
+        patterns.append(region.name[:-len(suffix)])
     return patterns
 
 
-def parse_address(purpose, address):
-    """
-    :param purpose: db purpose
-    :param address: full address composed with province,city,district,detail
-    :return: {province: object, city: object, district: object, detail: string}
-    """
-    db = lambda: require_database(purpose)
-    provinces = db().list('SELECT * FROM region WHERE level=1 AND NOT deleted')
-    original_address = address
+def parse_address(db, full_address):
+    original_full_address = full_address
 
-    province = None
-    for province_ in provinces:
-        for pattern in list_region_name_patterns(province_.name):
-            if address.startswith(pattern):
-                province = province_
-                address = address.replace(pattern, '').strip()
-                break
-        if province:
-            break
+    provinces = db().list('SELECT * FROM {REGION_TABLE} WHERE level=1'.format(REGION_TABLE=REGION_TABLE))
+    province, pattern = next(
+        ((province, pattern) for province in provinces for pattern in list_region_name_patterns(province.name) if full_address.startswith(pattern)),
+        (None, None))
+    if pattern:
+        full_address = full_address[len(pattern):].strip()
     if not province:
-        LOGGER.info('can not find province: %(address)s', {'address': original_address})
-    city = None
-    cities_in_province = db().list('SELECT * FROM {REGION_TABLE} WHERE level=2 AND parent_code=%(province_code)s'.format(REGION_TABLE=REGION_TABLE),
-                                   province_code=province.code)
-    for city_ in cities_in_province:
-        for pattern in list_region_name_patterns(city_.name):
-            if address.startswith(pattern):
-                city = city_
-                address = address.replace(pattern, '').strip()
-                break
-        if city:
-            break
-    district = None
-    districts_in_province = db().list('SELECT * FROM {REGION_TABLE} WHERE level=3 AND SUBSTR(code, 1, 2)=%(province_code_prefix)s'.format(REGION_TABLE=REGION_TABLE),
-                                   province_code_prefix=province.code[:2])
-    for district_ in districts_in_province:
-        for pattern in list_region_name_patterns(district_.name):
-            if address.startswith(pattern):
-                district = district_
-                address = address.replace(pattern, '').strip()
-                break
-        if district:
-            break
-    if not district and not city:
-        LOGGER.info('can not find city and district: %(address)s', {'address': original_address})
-    elif district and not city:
-        city = db().get('SELECT * FROM {REGION_TABLE} WHERE code=%(code)s'.format(REGION_TABLE=REGION_TABLE), code=district.parent_code)
+        LOGGER.info('can not parse province: %(full_address)s', {'full_address': original_full_address})
+        return DictObject(province=None, city=None, district=None, address_detail=full_address)
 
-    return DictObject(province=province, city=city, district=district, address_detail=address)
+    cities = db().list('SELECT * FROM {REGION_TABLE} WHERE level=2 AND code LIKE %(pattern)s'.format(REGION_TABLE=REGION_TABLE),
+                       pattern='{}%'.format(province.code[:2]))
+    city, pattern = next(((city, pattern) for city in cities for pattern in list_region_name_patterns(city.name) if full_address.startswith(pattern)),
+                         (None, None))
+    if pattern:
+        full_address = full_address[len(pattern):].strip()
+    districts = db().list('SELECT * FROM {REGION_TABLE} WHERE level=3 AND code LIKE %(pattern)s'.format(REGION_TABLE=REGION_TABLE),
+                          pattern='{}%'.format(city.code[:4] if city else province.code[:2]))
+    district, pattern = next(
+        ((district, pattern) for district in districts for pattern in list_region_name_patterns(district.name) if full_address.startswith(pattern)),
+        (None, None))
+    if pattern:
+        if not city:
+            city = db().get('SELECT * FROM {REGION_TABLE} WHERE code=%(code)s'.format(REGION_TABLE=REGION_TABLE), code=district.parent_code)
+        full_address = full_address[len(pattern):].strip()
+    if not city:
+        LOGGER.info('can not parse city: %(full_address)s', {'full_address': original_full_address})
+    elif not district:
+        LOGGER.info('can not parse district: %(full_address)s', {'full_address': original_full_address})
+
+    return DictObject(province=province, city=city, district=district, address_detail=full_address)
