@@ -337,7 +337,8 @@ def list_region_name_patterns(region):
     name_len = len(region.name)
     if name_len > 2:
         suffix = next((s for s in REGION_LEVEL2SUFFIX[region.level] if name_len >= len(s) + 2 and region.name.endswith(s)), None)
-        patterns.append(region.name[:-len(suffix)])
+        if suffix:
+            patterns.append(region.name[:-len(suffix)])
     return patterns
 
 
@@ -346,8 +347,7 @@ def parse_address(db, full_address):
 
     provinces = db().list('SELECT * FROM {REGION_TABLE} WHERE level=1'.format(REGION_TABLE=REGION_TABLE))
     province, pattern = next(
-        ((province, pattern) for province in provinces for pattern in list_region_name_patterns(province.name) if full_address.startswith(pattern)),
-        (None, None))
+        ((province, pattern) for province in provinces for pattern in list_region_name_patterns(province) if full_address.startswith(pattern)), (None, None))
     if pattern:
         full_address = full_address[len(pattern):].strip()
     if not province:
@@ -356,15 +356,13 @@ def parse_address(db, full_address):
 
     cities = db().list('SELECT * FROM {REGION_TABLE} WHERE level=2 AND code LIKE %(pattern)s'.format(REGION_TABLE=REGION_TABLE),
                        pattern='{}%'.format(province.code[:2]))
-    city, pattern = next(((city, pattern) for city in cities for pattern in list_region_name_patterns(city.name) if full_address.startswith(pattern)),
-                         (None, None))
+    city, pattern = next(((city, pattern) for city in cities for pattern in list_region_name_patterns(city) if full_address.startswith(pattern)), (None, None))
     if pattern:
         full_address = full_address[len(pattern):].strip()
     districts = db().list('SELECT * FROM {REGION_TABLE} WHERE level=3 AND code LIKE %(pattern)s'.format(REGION_TABLE=REGION_TABLE),
                           pattern='{}%'.format(city.code[:4] if city else province.code[:2]))
     district, pattern = next(
-        ((district, pattern) for district in districts for pattern in list_region_name_patterns(district.name) if full_address.startswith(pattern)),
-        (None, None))
+        ((district, pattern) for district in districts for pattern in list_region_name_patterns(district) if full_address.startswith(pattern)), (None, None))
     if pattern:
         if not city:
             city = db().get('SELECT * FROM {REGION_TABLE} WHERE code=%(code)s'.format(REGION_TABLE=REGION_TABLE), code=district.parent_code)
