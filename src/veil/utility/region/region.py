@@ -319,7 +319,7 @@ def validate_regions(db):
 
 
 REGION_LEVEL2SUFFIX = {
-    1: ('省', '市', '壮族自治区', '维吾尔自治区', '回族自治区', '自治区'),
+    1: ('省', '市', '壮族自治区', '维吾尔自治区', '回族自治区', '自治区', '特别行政区'),
     2: ('市', '地区', '蒙古族藏族自治州', '藏族自治州', '朝鲜族自治州', '土家族苗族自治州', '藏族羌族自治州', '哈尼族彝族自治州', '彝族自治州', '布依族苗族自治州',
         '苗族侗族自治州', '傣族自治州', '白族自治州', '傣族景颇族自治州', '傈僳族自治州', '回族自治州', '蒙古自治州', '柯尔克孜自治州', '哈萨克自治州'),
     3: ('市', '新区', '矿区', '区', '彝族回族自治县', '回族自治县', '满族自治县', '满族蒙古族自治县', '蒙古族自治县', '蒙古自治县', '朝鲜族自治县', '畲族自治县',
@@ -351,7 +351,7 @@ def parse_address(db, full_address):
     if pattern:
         full_address = full_address[len(pattern):].strip()
     if not province:
-        LOGGER.info('can not parse province: %(full_address)s', {'full_address': original_full_address})
+        LOGGER.debug('can not parse province: %(full_address)s', {'full_address': original_full_address})
         return DictObject(province=None, city=None, district=None, address_detail=full_address)
 
     cities = db().list('SELECT * FROM {REGION_TABLE} WHERE level=2 AND code LIKE %(pattern)s'.format(REGION_TABLE=REGION_TABLE),
@@ -368,8 +368,8 @@ def parse_address(db, full_address):
             city = db().get('SELECT * FROM {REGION_TABLE} WHERE code=%(code)s'.format(REGION_TABLE=REGION_TABLE), code=district.parent_code)
         full_address = full_address[len(pattern):].strip()
     if not city:
-        LOGGER.info('can not parse city: %(full_address)s', {'full_address': original_full_address})
+        LOGGER.debug('can not parse city: %(full_address)s', {'full_address': original_full_address})
     elif not district:
-        LOGGER.info('can not parse district: %(full_address)s', {'full_address': original_full_address})
+        LOGGER.debug('can not parse district: %(full_address)s', {'full_address': original_full_address})
 
     return DictObject(province=province, city=city, district=district, address_detail=full_address)

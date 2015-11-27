@@ -8,6 +8,7 @@ mockable_functions = {}
 mock_functions = {}
 enabled = True
 
+
 def enable_mock():
     global enabled
     enabled = True
@@ -41,7 +42,7 @@ def execute_mock_function(mockable_function, args, kwargs):
         try:
             return mock_func(mockable_function, *args, **kwargs)
         except NotImplementedError:
-            pass # it is ok to only mock for certain known input
+            pass  # it is ok to only mock for certain known input
     raise NotImplementedError('did not specify how to mock {} with args: {} and kwargs: {}'.format(mockable_function, args, kwargs))
 
 

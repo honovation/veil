@@ -10,6 +10,7 @@ from veil_component import as_path, load_all_components
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
 
+
 def check_correctness():
     package_names = ['veil']
     all_components = load_all_components() # load all so sys.modules contains module to be tested

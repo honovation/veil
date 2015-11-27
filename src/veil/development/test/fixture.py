@@ -4,9 +4,10 @@ from veil.model.collection import *
 from .case import test_hook
 from .case import get_executing_test
 
-fixtures = {} # fixture_name => normally just the id of database record
-fixture_providers = {} # fixture_name => the provider function
-fixture_types = {} # type => reloaders
+fixtures = {}  # fixture_name => normally just the id of database record
+fixture_providers = {}  # fixture_name => the provider function
+fixture_types = {}  # type => reloaders
+
 
 @test_hook
 def reset_fixtures():
