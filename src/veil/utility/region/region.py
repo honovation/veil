@@ -342,7 +342,7 @@ def list_region_name_patterns(region):
     return patterns
 
 
-def parse_address(db, full_address):
+def parse_full_address(db, full_address):
     original_full_address = full_address
 
     provinces = db().list('SELECT * FROM {REGION_TABLE} WHERE level=1'.format(REGION_TABLE=REGION_TABLE))
