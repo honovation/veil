@@ -1,0 +1,25 @@
+{
+  "name": "veil",
+  "authors": [
+    "veil"
+  ],
+  "description": "veil web framework js helpers",
+  "main": "static/veil.js",
+  "dependencies": {
+    "jquery": ">=1.8",
+    "js-cookie": ">=2.0.4"
+  },
+  "moduleType": [],
+  "keywords": [
+    "veil"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/honovation/veil",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

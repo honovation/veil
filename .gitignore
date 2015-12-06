@@ -1,3 +1,4 @@
 *.pyc
 .idea/*
 env/*
+bower_components/*
