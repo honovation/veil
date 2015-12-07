@@ -9,6 +9,7 @@ LOGGER = logging.getLogger(__name__)
 ETC_APT = as_path('/etc/apt')
 POSTGRESQL_APT_REPOSITORY_NAME = 'pgdg'
 ELK_APT_REPOSITORY_NAME = 'elk'
+NODEJS_APT_REPOSITORY_NAME = 'node_4.x'
 
 
 @atomic_installer
@@ -59,6 +60,21 @@ def elk_apt_repository_resource(elasticsearch_major_version, logstash_major_vers
     shell_execute('wget -q -O - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | apt-key add -', capture=True)
     shell_execute('printf "deb http://packages.elasticsearch.org/elasticsearch/{}/debian stable main\ndeb http://packages.elasticsearch.org/logstash/{}/debian stable main" > /etc/apt/sources.list.d/{}.list'.format(
         elasticsearch_major_version, logstash_major_version, ELK_APT_REPOSITORY_NAME), capture=True)
+    set_apt_get_update_executed(False)
+
+
+@atomic_installer
+def nodejs_apt_repository_resource():
+    installed = is_os_package_repository_installed(NODEJS_APT_REPOSITORY_NAME)
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        dry_run_result['nodejs_apt_repository?name={}'.format(NODEJS_APT_REPOSITORY_NAME)] = '-' if installed else 'INSTALL'
+        return
+    if installed:
+        return
+    LOGGER.info('installing Nodejs apt repository ...')
+    shell_execute('wget -q -O - https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -', capture=True)
+    shell_execute('printf "deb https://deb.nodesource.com/{NODEJS_APT_REPOSITORY_NAME} trusty main\ndeb-src https://deb.nodesource.com/{NODEJS_APT_REPOSITORY_NAME} trusty main" > /etc/apt/sources.list.d/nodesource.list'.format(NODEJS_APT_REPOSITORY_NAME=NODEJS_APT_REPOSITORY_NAME), capture=True)
     set_apt_get_update_executed(False)
 
 
