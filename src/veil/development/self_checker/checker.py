@@ -2,6 +2,8 @@ from __future__ import unicode_literals, print_function, division
 import discipline_coach
 import logging
 import os
+
+from veil.environment.environment import get_application
 from veil_component import check_static_dependency_integrity
 from veil_component import check_static_dependency_cycle
 from veil.environment import VEIL_HOME, VEIL_FRAMEWORK_HOME
@@ -28,6 +30,7 @@ SELF_CHECKERS = {
     'html': check_html,
 }
 
+
 @script('self-check')
 @log_elapsed_time
 def self_check():
@@ -40,9 +43,11 @@ def self_check():
     shell_execute('sudo veil :test down')
     shell_execute('sudo veil install-server')
     shell_execute('sudo veil :test install-server')
-    shell_execute('npm install -d --registry=https://registry.npm.taobao.org')
-    shell_execute('npm run preinstall -d')
-    shell_execute('gulp build')
+    application = get_application()
+    if hasattr(application, 'USE_GULP_BUILD') and application.USE_GULP_BUILD:
+        shell_execute('npm install -d --registry=https://registry.npm.taobao.org')
+        shell_execute('npm run preinstall -d')
+        shell_execute('gulp build')
     shell_execute('sudo veil :test up --daemonize')
     shell_execute('veil quick-check')
 

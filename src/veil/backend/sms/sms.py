@@ -115,6 +115,7 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
             LOGGER.warn('Ignored sms receivers not in the whitelist under non-public env: %(receivers_not_in_whitelist)s', {
                 'receivers_not_in_whitelist': receivers_not_in_whitelist
             })
+            receivers = set(receivers)
             receivers -= receivers_not_in_whitelist
             if not receivers:
                 return
