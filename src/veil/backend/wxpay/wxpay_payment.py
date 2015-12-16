@@ -25,6 +25,7 @@ NOTIFIED_FROM_ORDER_QUERY = 'order_query'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 SUCCESSFULLY_MARK = 'SUCCESS'  # wxpay require this 7 characters to be returned to them
 FAILED_MARK = 'FAIL'
+ORDER_PAID_MARK = 'ORDERPAID'
 WXPAY_BANK_TYPE = 'WX'
 WXMP_ACCESS_TOKEN_AUTHORIZATION_URL = 'https://api.weixin.qq.com/cgi-bin/token'
 WXPAY_ORDER_QUERY_URL = 'https://api.mch.weixin.qq.com/pay/orderquery'
@@ -72,6 +73,8 @@ def create_wxpay_prepay_order(app_id, api_key, mch_id, trade_type, out_trade_no,
             LOGGER.info('wxpay unified order got fake response: %(data)s', {'data': data})
             raise
         if parsed_response.result_code != SUCCESSFULLY_MARK:
+            if parsed_response.result_code == ORDER_PAID_MARK:
+                raise WXPayException('订单已支付完成')
             LOGGER.info('wxpay unified order got failed result: %(err_code)s, %(err_code_des)s, %(data)s', {
                 'err_code': parsed_response.err_code,
                 'err_code_des': parsed_response.err_code_des,
@@ -375,4 +378,8 @@ def parse_xml_response(response):
 
 
 class InvalidWXAccessToken(Exception):
+    pass
+
+
+class WXPayException(Exception):
     pass
