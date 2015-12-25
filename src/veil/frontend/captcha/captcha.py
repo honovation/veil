@@ -26,6 +26,7 @@ CAPTCHA_ANSWER_ALIVE_TIME = timedelta(minutes=CAPTCHA_ANSWER_ALIVE_MINUTES)
 def register_captcha(website):
     import_widget(captcha_widget)
     route('GET', '/captcha', website=website, tags=(TAG_NO_LOGIN_REQUIRED,))(captcha_widget)
+    route('GET', '/captcha.json', website=website, tags=(TAG_NO_LOGIN_REQUIRED,))(get_captcha_json)
     return captcha_protected
 
 
@@ -33,6 +34,11 @@ def register_captcha(website):
 def captcha_widget():
     challenge_code, captcha_image_url = generate_captcha()
     return get_template('captcha.html').render(challenge_code=challenge_code, captcha_image_url=captcha_image_url)
+
+
+def get_captcha_json():
+    challenge_code, captcha_image_url = generate_captcha()
+    return dict(challenge_code=challenge_code, captcha_image_url=captcha_image_url)
 
 
 def generate_captcha():
