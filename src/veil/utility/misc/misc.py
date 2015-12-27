@@ -123,3 +123,7 @@ def remove_special_characters(s, special_characters=None):
     if special_characters is None:
         special_characters = string.punctuation
     return s.translate({ord(c): None for c in special_characters})
+
+
+def render_mobile_to_public(mobile):
+    return '{}****{}'.format(mobile[:3], mobile[-4:])

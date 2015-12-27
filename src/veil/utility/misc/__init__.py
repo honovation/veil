@@ -16,6 +16,7 @@ with veil_component.init_component(__name__):
     from .misc import extract_info_from_resident_id
     from .misc import remove_special_characters
     from .misc import TWO_PLACES
+    from .misc import render_mobile_to_public
 
     __all__ = [
         unique.__name__,
@@ -33,4 +34,5 @@ with veil_component.init_component(__name__):
         extract_info_from_resident_id.__name__,
         remove_special_characters.__name__,
         'TWO_PLACES',
+        render_mobile_to_public.__name__,
     ]
