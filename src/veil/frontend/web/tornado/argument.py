@@ -13,13 +13,12 @@ remove arguments with blank values
 from __future__ import unicode_literals, print_function, division
 import logging
 import contextlib
-import httplib
 import re
 import traceback
 from veil.model.collection import *
+from veil.model.command import *
 from veil.utility.encoding import *
 from veil.utility.json import *
-from .error import HTTPError
 from .context import get_current_http_request
 
 LOGGER = logging.getLogger(__name__)
@@ -79,7 +78,7 @@ def get_http_argument(field, default=None, request=None, list_field=False, optio
             'arguments': request.arguments,
             'stack_trace': b''.join(traceback.format_stack())
         })
-        raise HTTPError(httplib.BAD_REQUEST, '{} not found in http arguments'.format(field))
+        raise InvalidCommand({field: 'not provided'})
     values = request.arguments[field]
     if to_type:
         if list_field:
