@@ -172,7 +172,7 @@ veil.resource.get = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, {'@':['操作失败']});
+                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
                 }
             };
         }
@@ -219,7 +219,7 @@ veil.resource.create = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, {'@': ['操作失败']});
+                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
                 }
             };
         }
@@ -270,7 +270,7 @@ veil.resource.update = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, {'@': ['操作失败']});
+                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
                 }
             };
         }
@@ -319,7 +319,7 @@ veil.resource.patch = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, {'@': ['操作失败']});
+                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
                 }
             };
         }
@@ -375,7 +375,7 @@ veil.resource.del = function (options) {
         if (!onError){
             onError = function (xhr) {
                 if (xhr.status != 400 && xhr.status != 401 && xhr.status != 403) {
-                    veil.widget.showErrorMessage(widget, {'@': ['操作失败']});
+                    veil.widget.showErrorMessage(widget, {'@': '操作失败'});
                 }
             };
         }
@@ -411,9 +411,9 @@ veil.alertErrorMessage = function (allErrors, displayAll) {
     for (var field in allErrors) {
         if (allErrors.hasOwnProperty(field)) {
             if (displayAll) {
-                errors.push(field + ': ' + allErrors[field].join(', '));
+                errors.push(field + ': ' + allErrors[field]);
             } else {
-                errors.push(allErrors[field][0]);
+                errors.push(allErrors[field]);
                 break;
             }
         }
@@ -584,18 +584,14 @@ veil.widget.refresh = function (widget, options) {
 veil.widget.showErrorMessage = function (widget, allErrors) {
     for (var field in allErrors) {
         if (allErrors.hasOwnProperty(field)) {
-            var errors = allErrors[field];
-            errors.reverse();
-            $(errors).each(function () {
-                var error = this;
-                if (field === '@'){
-                    widget.prepend('<span class="error-message label label-warning summary-error-message"><i class="icon-info-sign"></i>' + error + '</span>');
-                } else {
-                    var $field = widget.find('[name=' + field + ']:first');
-                    var $error = $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>' + error + '</span>');
-                    $error.insertAfter( $field );
-                }
-            });
+            var error = allErrors[field];
+            if (field === '@'){
+                widget.prepend('<span class="error-message label label-warning summary-error-message"><i class="icon-info-sign"></i>' + error + '</span>');
+            } else {
+                var $field = widget.find('[name=' + field + ']:first');
+                var $error = $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>' + error + '</span>');
+                $error.insertAfter( $field );
+            }
         }
     }
 };

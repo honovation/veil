@@ -5,6 +5,7 @@ from .binder_maker import each
 from .field_binder import clamp_length, not_empty
 from .invalid import Invalid
 
+
 class BinderMakerTest(TestCase):
     def setUp(self):
         super(BinderMakerTest, self).setUp()

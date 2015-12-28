@@ -1,3 +1,6 @@
+"""
+Some ideas borrowed from https://github.com/smulloni/validino
+"""
 import veil_component
 
 with veil_component.init_component(__name__):

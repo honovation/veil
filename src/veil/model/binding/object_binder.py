@@ -1,5 +1,4 @@
 from __future__ import unicode_literals, print_function, division
-import itertools
 import sys
 from veil.model.binding.binder_maker import compose, each
 from veil.model.binding.invalid import Invalid
@@ -11,31 +10,29 @@ class ObjectBinder(object):
         self.allow_missing = allow_missing
         self.allow_extra = allow_extra
 
-
     def __call__(self, data):
         self.assert_no_extra_no_missing(data)
         result = {}
-        all_errors = {}
+        all_field2error = {}
 
-        for fields_names in sorted(self.fields_binders.keys(), lambda a, b: cmp(len(a), len(b))):
+        for fields_names in sorted(self.fields_binders, lambda a, b: cmp(len(a), len(b))):
             binder = self.fields_binders[fields_names]
-            if any(field_name in all_errors for field_name in fields_names):
+            if any(field_name in all_field2error for field_name in fields_names):
                 continue
             fields_data = tuple(result.get(field_name, data.get(field_name)) for field_name in fields_names)
             try:
                 updated_fields_data = binder(fields_data)
             except Invalid as e:
-                updated_fields_data = tuple(itertools.repeat(None, len(fields_data)))
                 if e.current_error:
                     for field_name in fields_names:
-                        all_errors.setdefault(field_name, []).append(e.current_error)
+                        all_field2error[field_name] = e.current_error
                 else:
-                    for field_name, field_errors in e.fields_errors.items():
-                        all_errors.setdefault(field_name, []).extend(field_errors)
-            result.update(dict(zip(fields_names, updated_fields_data)))
+                    all_field2error.update(e.field2error)
+            if not all_field2error:
+                result.update(dict(zip(fields_names, updated_fields_data)))
 
-        if all_errors:
-            raise Invalid(**all_errors)
+        if all_field2error:
+            raise Invalid(**all_field2error)
         return result
 
     def assert_no_extra_no_missing(self, data):
@@ -60,11 +57,13 @@ def normalize_sub_binders(sub_binders):
             binder = compose(*binders)
         else:
             binder = binder_or_binders
-        if isinstance(field_or_fields, (list, tuple)):
+        if isinstance(field_or_fields, tuple):
             fields = field_or_fields
+        elif isinstance(field_or_fields, list):
+            fields = tuple(field_or_fields)
         else:
             field = field_or_fields
-            fields = tuple([field])
+            fields = (field,)
             binder = each(binder)  # unbox the tuple passed in as single value
         fields_binders[fields] = binder
     return fields_binders
@@ -75,5 +74,5 @@ def get_expected_field_names(fields_binders):
 
 
 def _(*args, **kwargs):
-# to supress the warning of pycharm
+    # noinspection PyProtectedMember
     return sys.modules['__builtin__']._(*args, **kwargs)

@@ -19,16 +19,21 @@ class StrictCommandHandlerTest(TestCase):
             strict_handler(None, 'b')
 
     def test_pass_extra_positional_arguments(self):
-        with self.assertRaises(InvalidCommand):
+        with self.assertRaises(Exception):
             strict_handler('a', 'b', 'c')
 
     def test_pass_extra_keyword_arguments(self):
-        with self.assertRaises(InvalidCommand):
+        with self.assertRaises(Exception):
             strict_handler('a', 'b', extra='c')
 
     def test_pass_too_few_arguments(self):
         with self.assertRaises(InvalidCommand):
             strict_handler('a')
+
+
+@command
+def strict_handler(field1=not_empty, field2=not_empty):
+    return field1, field2
 
 
 class LooseCommandHandlerTest(TestCase):
@@ -58,6 +63,11 @@ class LooseCommandHandlerTest(TestCase):
         self.assertEqual({}, kwargs)
 
 
+@command
+def loose_handler(field1=not_empty, field2=anything, *args, **kwargs):
+    return field1, field2, args, kwargs
+
+
 class ComplexCommandHandlerTest(TestCase):
     def setUp(self):
         super(ComplexCommandHandlerTest, self).setUp()
@@ -71,6 +81,22 @@ class ComplexCommandHandlerTest(TestCase):
     def test_one_field_two_binders_handler(self):
         self.assertEqual(0, one_field_two_binders_handler(None))
         self.assertEqual(1, one_field_two_binders_handler('1'))
+
+
+def accept_one_and_one_only(values):
+    if (1, 1) == values:
+        return values
+    raise Invalid('I do not like them')
+
+
+@command({('field1', 'field2'): accept_one_and_one_only})
+def two_fields_one_binder_handler(field1=anything, field2=anything):
+    return field1, field2
+
+
+@command
+def one_field_two_binders_handler(field=(optional(to_integer), optional(default=0))):
+    return field
 
 
 class InvalidCommandHandlerTest(TestCase):
@@ -91,32 +117,6 @@ class RaiseCommandErrorTest(TestCase):
     def test(self):
         with self.assertRaises(DummyException):
             raises_command_error_handler('abc')
-
-
-@command
-def strict_handler(field1=not_empty, field2=not_empty):
-    return field1, field2
-
-
-@command
-def loose_handler(field1=not_empty, field2=anything, *args, **kwargs):
-    return field1, field2, args, kwargs
-
-
-def accept_one_and_one_only(values):
-    if (1, 1) == values:
-        return values
-    raise Invalid('I do not like them')
-
-
-@command({('field1', 'field2'): accept_one_and_one_only})
-def two_fields_one_binder_handler(field1=anything, field2=anything):
-    return field1, field2
-
-
-@command
-def one_field_two_binders_handler(field=(optional(to_integer), optional(default=0))):
-    return field
 
 
 @command
