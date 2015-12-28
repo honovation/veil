@@ -42,6 +42,15 @@ $.fn.serializeObject = function() {
 
 var veil = veil || {};
 
+veil.defaultAuthenticationErrorHandler = function(jqXHR) {
+    var loginUrl = jqXHR.getResponseHeader('WWW-Authenticate');
+    if (window.location.pathname === loginUrl) {
+        $('input[name=username]').focus().select();
+    } else {
+        window.location.href = loginUrl + window.location.hash;
+    }
+};
+
 veil.log = function(message) {
     if ("undefined" !== typeof console) {
         console.log(message);
@@ -149,6 +158,7 @@ veil.resource.get = function (options) {
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
+    var onAuthenticationError = options.onAuthenticationError || veil.defaultAuthenticationErrorHandler;
     var dataType = options.dataType;
     var data = options.data;
     var widget = options.widget;
@@ -182,14 +192,7 @@ veil.resource.get = function (options) {
         error: onError,
         statusCode: {
             400: onValidationError,
-            401: function(jqXHR){
-                var loginUrl = jqXHR.getResponseHeader('WWW-Authenticate');
-                if (window.location.pathname === loginUrl){
-                    $('input[name=username]').focus().select();
-                } else {
-                    window.location.href = loginUrl + window.location.hash;
-                }
-            },
+            401: onAuthenticationError,
             403: function() {veil.alert('权限不足');},
             500: function() {veil.alert('服务内部错误');},
             502: function() {veil.alert('服务暂时不可用，请稍后重试');},
@@ -208,6 +211,7 @@ veil.resource.create = function (options) {
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
+    var onAuthenticationError = options.onAuthenticationError || veil.defaultAuthenticationErrorHandler;
     var onComplete = options.onComplete;
     var widget = options.widget;
     if (widget){
@@ -236,14 +240,7 @@ veil.resource.create = function (options) {
         complete:onComplete,
         statusCode:{
             400: onValidationError,
-            401: function(jqXHR){
-                var loginUrl = jqXHR.getResponseHeader('WWW-Authenticate');
-                if (window.location.pathname === loginUrl){
-                    $('input[name=username]').focus().select();
-                } else {
-                    window.location.href = loginUrl + window.location.hash;
-                }
-            },
+            401: onAuthenticationError,
             403: function() {veil.alert('权限不足');},
             404: function() {veil.alert('未找到')},
             500: function() {veil.alert('服务内部错误');},
@@ -266,6 +263,7 @@ veil.resource.update = function (options) {
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
+    var onAuthenticationError = options.onAuthenticationError || veil.defaultAuthenticationErrorHandler;
     var widget = options.widget;
     if (widget){
         veil.widget.clearErrorMessages(widget);
@@ -291,14 +289,7 @@ veil.resource.update = function (options) {
         error: onError,
         statusCode: {
             400: onValidationError,
-            401: function(jqXHR){
-                var loginUrl = jqXHR.getResponseHeader('WWW-Authenticate');
-                if (window.location.pathname === loginUrl){
-                    $('input[name=username]').focus().select();
-                } else {
-                    window.location.href = loginUrl + window.location.hash;
-                }
-            },
+            401: onAuthenticationError,
             403: function() {veil.alert('权限不足');},
             404: function() {veil.alert('未找到')},
             500: function() {veil.alert('服务内部错误');},
@@ -321,6 +312,7 @@ veil.resource.patch = function (options) {
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
+    var onAuthenticationError = options.onAuthenticationError || veil.defaultAuthenticationErrorHandler;
     var widget = options.widget;
     if (widget){
         veil.widget.clearErrorMessages(widget);
@@ -346,14 +338,7 @@ veil.resource.patch = function (options) {
         error: onError,
         statusCode: {
             400: onValidationError,
-            401: function(jqXHR){
-                var loginUrl = jqXHR.getResponseHeader('WWW-Authenticate');
-                if (window.location.pathname === loginUrl){
-                    $('input[name=username]').focus().select();
-                } else {
-                    window.location.href = loginUrl + window.location.hash;
-                }
-            },
+            401: onAuthenticationError,
             403: function() {veil.alert('权限不足');},
             404: function() {veil.alert('未找到')},
             500: function() {veil.alert('服务内部错误');},
@@ -375,6 +360,7 @@ veil.resource.del = function (options) {
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
+    var onAuthenticationError = options.onAuthenticationError || veil.defaultAuthenticationErrorHandler;
     var widget = options.widget;
     if (widget){
         var widgetParent = widget.parent();
@@ -408,14 +394,7 @@ veil.resource.del = function (options) {
         error:onError,
         statusCode:{
             400: onValidationError,
-            401: function(jqXHR){
-                var loginUrl = jqXHR.getResponseHeader('WWW-Authenticate');
-                if (window.location.pathname === loginUrl){
-                    $('input[name=username]').focus().select();
-                } else {
-                    window.location.href = loginUrl + window.location.hash;
-                }
-            },
+            401: onAuthenticationError,
             403: function() {veil.alert('权限不足');},
             404: function() {veil.alert('未找到')},
             500: function() {veil.alert('服务内部错误');},
