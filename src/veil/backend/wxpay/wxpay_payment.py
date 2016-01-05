@@ -21,6 +21,8 @@ EVENT_WXPAY_DELIVER_NOTIFY_SENT = define_event('wxpay-deliver-notify-sent')
 
 WXMP_ACCESS_TOKEN_KEY = 'wxmp-access-token'
 
+WXPAY_TRADE_TYPE_APP = 'APP'
+WXPAY_TRADE_TYPE_JSAPI = 'JSAPI'
 NOTIFIED_FROM_ORDER_QUERY = 'order_query'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 SUCCESSFULLY_MARK = 'SUCCESS'  # wxpay require this 7 characters to be returned to them
@@ -33,9 +35,13 @@ WXPAY_UNIFIEDORDER_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
 WXPAY_CLOSE_TRADE_URL = 'https://api.mch.weixin.qq.com/pay/closeorder'
 
 
-def make_wxpay_request(out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):
-    config = wx_open_app_config()
-    trade_type = 'APP'  # TODO: modify it if use JSAPI or others
+def make_wxpay_request(out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address, trade_type='APP'):
+    if trade_type == WXPAY_TRADE_TYPE_APP:
+        config = wx_open_app_config()
+    elif trade_type == WXPAY_TRADE_TYPE_JSAPI:
+        config = wxpay_client_config()
+    else:
+        raise Exception('do not support other trade type')
     wxpay_prepay_order = create_wxpay_prepay_order(config.app_id, config.api_key, config.mch_id, trade_type, out_trade_no, subject, body, total_fee, notify_url,
                                                    shopper_ip_address, time_start, time_expire)
     wxpay_request = DictObject(appid=config.app_id, partnerid=config.mch_id, prepayid=wxpay_prepay_order.prepay_id, package='Sign=WXPay',

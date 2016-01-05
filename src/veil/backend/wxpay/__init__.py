@@ -12,6 +12,8 @@ with veil_component.init_component(__name__):
     from .wxpay_payment import SUCCESSFULLY_MARK
     from .wxpay_payment import close_wxpay_trade
     from .wxpay_payment import WXPayException
+    from .wxpay_payment import WXPAY_TRADE_TYPE_APP
+    from .wxpay_payment import WXPAY_TRADE_TYPE_JSAPI
 
     from .wxpay_client_installer import wxpay_client_resource
     from .wxpay_client_installer import wxpay_client_config
@@ -36,6 +38,8 @@ with veil_component.init_component(__name__):
         'SUCCESSFULLY_MARK',
         close_wxpay_trade.__name__,
         WXPayException.__name__,
+        'WXPAY_TRADE_TYPE_APP',
+        'WXPAY_TRADE_TYPE_JSAPI',
 
         wxpay_client_resource.__name__,
         wxpay_client_config.__name__,
