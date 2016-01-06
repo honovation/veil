@@ -6,18 +6,15 @@ add_application_sub_resource('wx_open_app', lambda config: wx_open_app_resource(
 
 
 @composite_installer
-def wxpay_client_resource(app_id, app_secret, partner_id, partner_key, pay_sign_key, **kwargs):
+def wxpay_client_resource(app_id, app_secret, mch_id, api_key):
     resources = list(BASIC_LAYOUT_RESOURCES)
-    others = kwargs
     resources.append(
-        file_resource(path=VEIL_ETC_DIR / 'wxpay-client.cfg', content=render_config('wxpay-client.cfg.j2', app_id=app_id, app_secret=app_secret,
-                                                                                    partner_id=partner_id, partner_key=partner_key, pay_sign_key=pay_sign_key,
-                                                                                    others=others)))
+        file_resource(path=VEIL_ETC_DIR / 'wxpay-client.cfg', content=render_config('wxpay-client.cfg.j2', app_id=app_id, app_secret=app_secret, mch_id=mch_id, api_key=api_key)))
     return resources
 
 
 def load_wxpay_client_config():
-    return load_config_from(VEIL_ETC_DIR / 'wxpay-client.cfg', 'app_id', 'partner_id', 'partner_key', 'pay_sign_key')
+    return load_config_from(VEIL_ETC_DIR / 'wxpay-client.cfg', 'app_id', 'api_key', 'mch_id')
 
 
 _wxpay_config = None

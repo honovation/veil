@@ -35,14 +35,9 @@ WXPAY_UNIFIEDORDER_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
 WXPAY_CLOSE_TRADE_URL = 'https://api.mch.weixin.qq.com/pay/closeorder'
 
 
-def make_wxpay_request(out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address, trade_type='APP'):
-    if trade_type == WXPAY_TRADE_TYPE_APP:
-        config = wx_open_app_config()
-    elif trade_type == WXPAY_TRADE_TYPE_JSAPI:
-        config = wxpay_client_config()
-    else:
-        raise Exception('do not support other trade type')
-    wxpay_prepay_order = create_wxpay_prepay_order(config.app_id, config.api_key, config.mch_id, trade_type, out_trade_no, subject, body, total_fee, notify_url,
+def make_wxpay_request_for_app(out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):
+    config = wx_open_app_config()
+    wxpay_prepay_order = create_wxpay_prepay_order(config.app_id, config.api_key, config.mch_id, WXPAY_TRADE_TYPE_APP, out_trade_no, subject, body, total_fee, notify_url,
                                                    shopper_ip_address, time_start, time_expire)
     wxpay_request = DictObject(appid=config.app_id, partnerid=config.mch_id, prepayid=wxpay_prepay_order.prepay_id, package='Sign=WXPay',
                                noncestr=wxpay_prepay_order.nonce_str, timestamp=str(get_current_timestamp()))
@@ -50,14 +45,24 @@ def make_wxpay_request(out_trade_no, subject, body, total_fee, notify_url, time_
     return wxpay_request
 
 
+def make_wxpay_request_for_mp(out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address, openid):
+    config = wxpay_client_config()
+    wxpay_prepay_order = create_wxpay_prepay_order(config.app_id, config.api_key, config.mch_id, WXPAY_TRADE_TYPE_JSAPI, out_trade_no, subject, body, total_fee, notify_url,
+                                                   shopper_ip_address, time_start, time_expire, openid=openid)
+    wxpay_request = DictObject(appId=config.app_id, timeStamp=str(get_current_timestamp()), nonceStr=uuid4().get_hex(),
+                               package='prepay_id={}'.format(wxpay_prepay_order.prepay_id), signType='MD5')
+    wxpay_request.paySign = get_wx_open_sign(wxpay_request, config.api_key)
+    return wxpay_request
+
+
 def create_wxpay_prepay_order(app_id, api_key, mch_id, trade_type, out_trade_no, subject, body, total_fee, notify_url, spbill_create_ip, time_start,
-                              time_expire):
+                              time_expire, openid=None):
     time_start_beijing_time_str = convert_datetime_to_client_timezone(time_start).strftime('%Y%m%d%H%M%S')
     time_expire_beijing_time_str = convert_datetime_to_client_timezone(time_expire).strftime('%Y%m%d%H%M%S')
     order = DictObject(appid=app_id, mch_id=mch_id, trade_type=trade_type, out_trade_no=out_trade_no, body=subject, detail=body,
                        total_fee=unicode(int(total_fee * 100)), spbill_create_ip=spbill_create_ip, time_start=time_start_beijing_time_str,
                        time_expire=time_expire_beijing_time_str, notify_url=notify_url, nonce_str=uuid4().get_hex(), attach=None, goods_tag=None,
-                       product_id=None, fee_type=None, limit_pay=None, device_info=None, openid=None)
+                       product_id=None, fee_type=None, limit_pay=None, device_info=None, openid=openid)
     order.sign = sign_md5(order, api_key)
     with require_current_template_directory_relative_to():
         data = to_str(get_template('unified-order.xml').render(order=order))
