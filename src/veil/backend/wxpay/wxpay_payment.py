@@ -226,20 +226,31 @@ def request_wxmp_access_token():
 
 
 def query_wxpay_payment_status(out_trade_no):
-    paid = query_order_status_(out_trade_no)
+    config = wx_open_app_config()
+    paid = query_order_status_(config.app_id, config.mch_id, config.api_key, out_trade_no)
     return paid
 
 
-@script('query-wxpay-order-status')
+def query_wxmp_payment_status(out_trade_no):
+    config = wxpay_client_config()
+    paid = query_order_status_(config.app_id, config.mch_id, config.api_key, out_trade_no)
+    return paid
+
+
+@script('query-wxopen-order-status')
 def query_wxpay_script(out_trade_no):
     query_wxpay_payment_status(out_trade_no)
 
 
-def query_order_status_(out_trade_no):
+@script('query-wxmp-order-status')
+def query_wxpay_script(out_trade_no):
+    query_wxmp_payment_status(out_trade_no)
+
+
+def query_order_status_(app_id, mch_id, api_key, out_trade_no):
     paid = False
-    config = wx_open_app_config()
-    args = DictObject(appid=config.app_id, mch_id=config.mch_id, out_trade_no=out_trade_no, nonce_str=uuid4().get_hex())
-    args.sign = sign_md5(args, key=config.api_key)
+    args = DictObject(appid=app_id, mch_id=mch_id, out_trade_no=out_trade_no, nonce_str=uuid4().get_hex())
+    args.sign = sign_md5(args, key=api_key)
     with require_current_template_directory_relative_to():
         data = to_str(get_template('query-order.xml').render(**args))
     headers = {'Content-Type': 'application/xml'}
@@ -255,7 +266,7 @@ def query_order_status_(out_trade_no):
             LOGGER.info('wxpay query order status got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
             raise Exception('wxpay query order status got failed response: {}'.format(parsed_response.return_msg))
         try:
-            validate_wxpay_response(parsed_response, config.api_key)
+            validate_wxpay_response(parsed_response, api_key)
         except Exception:
             LOGGER.info('wxpay query order status got fake response: %(data)s', {'data': data})
             raise
