@@ -1,5 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import sys
+from collections import OrderedDict
+
 from veil.model.binding.binder_maker import compose, each
 from veil.model.binding.invalid import Invalid
 
@@ -28,7 +30,7 @@ class ObjectBinder(object):
                         all_field2error[field_name] = e.current_error
                 else:
                     all_field2error.update(e.field2error)
-            if not all_field2error:
+            else:
                 result.update(dict(zip(fields_names, updated_fields_data)))
 
         if all_field2error:
@@ -50,7 +52,7 @@ class ObjectBinder(object):
 
 
 def normalize_sub_binders(sub_binders):
-    fields_binders = {}
+    fields_binders = OrderedDict()
     for field_or_fields, binder_or_binders in sub_binders.items():
         if isinstance(binder_or_binders, (list, tuple)):
             binders = binder_or_binders

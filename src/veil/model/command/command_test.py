@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 import __builtin__
 from veil.development.test import TestCase
@@ -82,9 +83,14 @@ class ComplexCommandHandlerTest(TestCase):
         self.assertEqual(0, one_field_two_binders_handler(None))
         self.assertEqual(1, one_field_two_binders_handler('1'))
 
+    def test_complex_handler(self):
+        complex_handler('10', '1', '1')
+        with self.assertRaises(InvalidCommand):  # 单个field的值如果通过binder的验证，其值应该被保存下来用作组合验证时使用
+            complex_handler('a', '1', '1')
+
 
 def accept_one_and_one_only(values):
-    if (1, 1) == values:
+    if sum(values) == 2 and (1, 1) == values:
         return values
     raise Invalid('I do not like them')
 
@@ -92,6 +98,11 @@ def accept_one_and_one_only(values):
 @command({('field1', 'field2'): accept_one_and_one_only})
 def two_fields_one_binder_handler(field1=anything, field2=anything):
     return field1, field2
+
+
+@command({('field2', 'field3'): accept_one_and_one_only})
+def complex_handler(field1=to_integer, field2=(not_empty, to_integer), field3=(not_empty, to_integer)):
+    return field1, field2, field3
 
 
 @command

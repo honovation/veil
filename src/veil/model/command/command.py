@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import functools
 import logging
+from collections import OrderedDict
 from inspect import getargspec, isfunction
 import sys
 from veil.model.binding import *
@@ -48,8 +49,9 @@ def create_command_binder(command_handler, extra_command_fields_binders):
         binders.insert(0, anything)
     if len(binders) < len(args_names):
         binders = ([None] * (len(args_names) - len(binders))) + binders
-    command_fields_binders = {'args': anything, 'kwargs': anything}
-    command_fields_binders.update(dict(zip(args_names, binders)))
+    command_fields_binders = OrderedDict([('args', anything), ('kwargs', anything)])
+    for arg_name, arg_binders in zip(args_names, binders):
+        command_fields_binders[arg_name] = arg_binders
     command_fields_binders.update(extra_command_fields_binders)
     fields_without_binders = [field for field, binder in command_fields_binders.items() if not binder]
     if fields_without_binders:
