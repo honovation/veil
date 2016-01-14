@@ -70,14 +70,7 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
     params['sign_type'] = 'MD5'
     # urllib.urlencode does not handle unicode well
     params = {to_str(k): to_str(v) for k, v in params.items()}
-    try:
-        query = urllib.urlencode(params)
-    except UnicodeDecodeError as e:
-        LOGGER.info('generate alipay payment url got unicode decode error: %(params)s, %(message)s', {
-            'params': params,
-            'message': e.message
-        })
-        query = urllib.urlencode(params)
+    query = urllib.urlencode(params)
     return '{}?{}'.format(PAYMENT_URL, query)
 
 
