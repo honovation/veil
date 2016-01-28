@@ -23,6 +23,7 @@ import contextlib
 import uuid
 from veil.backend.redis import *
 from veil.model.collection import *
+from veil.utility.user_agent import *
 from veil.frontend.nginx import *
 from veil.frontend.web import *
 
@@ -38,9 +39,9 @@ config = {}  # one process services at most one website, i.e. a specific purpose
 
 
 def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSION_TTL, is_session_ttl_enabled=SESSION_TTL_ENABLED,
-        session_cookie_on_parent_domain=False, cookie_expires_days=DEFAULT_COOKIE_EXPIRES_DAYS):
+                         session_cookie_on_parent_domain=False, cookie_expires_days=DEFAULT_COOKIE_EXPIRES_DAYS):
     config[purpose] = DictObject(login_url=login_url, session_ttl=session_ttl, is_session_ttl_enabled=is_session_ttl_enabled,
-        session_cookie_on_parent_domain=session_cookie_on_parent_domain, cookie_expires_days=cookie_expires_days)
+                                 session_cookie_on_parent_domain=session_cookie_on_parent_domain, cookie_expires_days=cookie_expires_days)
 
     @contextlib.contextmanager
     def f():
@@ -96,7 +97,7 @@ def get_browser_code():
 
 def set_browser_code(purpose, browser_code):
     set_cookie(name=VEIL_BROWSER_CODE_COOKIE_NAME, value=browser_code, expires_days=config[purpose].cookie_expires_days,
-        domain=get_website_parent_domain(purpose))
+               domain=get_website_parent_domain(purpose))
 
 
 def get_latest_user_id(purpose, max_age_days=None):

@@ -10,6 +10,7 @@ import logging
 import contextlib
 from urlparse import urlparse
 from veil.utility.encoding import *
+from veil.utility.user_agent import *
 from veil.frontend.template import *
 from veil.frontend.web import *
 
@@ -18,8 +19,7 @@ VEIL_VISITOR_ORIGIN_COOKIE_NAME = 'vo'
 DEFAULT_ORIGIN_COOKIE_EXPIRES_DAYS = 30
 
 
-def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_path_prefixes=(),
-        cookie_expires_days=DEFAULT_ORIGIN_COOKIE_EXPIRES_DAYS):
+def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_path_prefixes=(), cookie_expires_days=DEFAULT_ORIGIN_COOKIE_EXPIRES_DAYS):
     @contextlib.contextmanager
     def f():
         request = get_current_http_request()

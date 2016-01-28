@@ -59,8 +59,6 @@ with veil_component.init_component(__name__):
     from .xsrf import xsrf_token
     from .xsrf import TAG_NO_XSRF_CHECK
 
-    from .web_spider import is_web_spider
-
     __all__ = [
         'HTML_START_TAG_PREFIX',
         'HEAD_END_TAG',
@@ -120,8 +118,6 @@ with veil_component.init_component(__name__):
 
         xsrf_token.__name__,
         'TAG_NO_XSRF_CHECK',
-
-        is_web_spider.__name__,
     ]
 
     def init():
