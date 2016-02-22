@@ -36,7 +36,8 @@ def elasticsearch_resource(config):
         file_resource(path=VEIL_ETC_DIR / 'elasticsearch.yml', content=render_config('elasticsearch.yml.j2', log_dir=VEIL_LOG_DIR,
             data_dir=VEIL_VAR_DIR, elasticsearch_cluster=VEIL_ENV_NAME, **config)),
         file_resource(path=VEIL_ETC_DIR / 'logging.yml', content=render_config('logging.yml')),
-        file_resource(path='/etc/security/limits.d/90-elasticsearch-limits.conf', content=render_config('90-elasticsearch-limits.conf'))
+        file_resource(path='/etc/security/limits.d/90-elasticsearch-limits.conf', content=render_config('90-elasticsearch-limits.conf')),
+        file_resource(path='/etc/pam.d/common-session', content=render_config('common-session')),
     ])
     return resources
 
