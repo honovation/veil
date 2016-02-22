@@ -126,7 +126,7 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
             LOGGER.error(e.message)
             used_sms_provider_ids.add(current_sms_provider.sms_provider_id)
             shuffle_current_sms_provider(used_sms_provider_ids)
-            if current_sms_provider.sms_provider_id in used_sms_provider_ids:
+            if len(_sms_providers) > 1 and current_sms_provider.sms_provider_id in used_sms_provider_ids:
                 raise Exception('not enough reliable sms providers')
         else:
             current_sms_provider.add_sent_quantity(current_sms_provider.get_minimal_message_quantity(message) * len(receivers))
