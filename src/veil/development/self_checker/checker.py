@@ -44,10 +44,9 @@ def self_check():
     shell_execute('sudo veil install-server')
     shell_execute('sudo veil :test install-server')
     application = get_application()
-    if hasattr(application, 'USE_GULP_BUILD') and application.USE_GULP_BUILD:
+    if hasattr(application, 'USE_NPM_BUILD') and application.USE_NPM_BUILD:
         shell_execute('npm install -d --registry=https://registry.npm.taobao.org')
-        shell_execute('npm run preinstall -d')
-        shell_execute('gulp build')
+        shell_execute('npm run build')
     shell_execute('sudo veil :test up --daemonize')
     shell_execute('veil quick-check')
 
