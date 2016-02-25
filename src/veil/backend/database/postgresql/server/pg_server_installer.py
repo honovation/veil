@@ -13,7 +13,7 @@ def postgresql_server_resource(purpose, config):
     maintenance_config = postgresql_maintenance_config(purpose, must_exist=False)
     if maintenance_config and maintenance_config.version != config.version:
         assert maintenance_config.version < config.version, 'cannot downgrade postgresql server from {} to {}'.format(maintenance_config.version,
-            config.version)
+                                                                                                                      config.version)
         upgrading = True
         LOGGER.warn('Start to install new-version postgresql server: %(old_version)s => %(new_version)s', {
             'old_version': maintenance_config.version,
@@ -45,7 +45,6 @@ def postgresql_server_resource(purpose, config):
                 'work_mem': config.work_mem,
                 'maintenance_work_mem': config.maintenance_work_mem,
                 'effective_io_concurrency': config.effective_io_concurrency,
-                'checkpoint_segments': config.checkpoint_segments,
                 'checkpoint_completion_target': config.checkpoint_completion_target,
                 'effective_cache_size': config.effective_cache_size,
                 'log_min_duration_statement': config.log_min_duration_statement,
@@ -53,8 +52,8 @@ def postgresql_server_resource(purpose, config):
             })),
         file_resource(path=pg_config_dir / 'pg_hba.conf', content=render_config('pg_hba.conf.j2', host=config.host)),
         file_resource(path=pg_config_dir / 'pg_ident.conf', content=render_config('pg_ident.conf.j2')),
-        file_resource(path=pg_config_dir / 'postgresql-maintenance.cfg', content=render_config(
-            'postgresql-maintenance.cfg.j2', version=config.version, owner=config.owner, owner_password=config.owner_password)),
+        file_resource(path=pg_config_dir / 'postgresql-maintenance.cfg',
+                      content=render_config('postgresql-maintenance.cfg.j2', version=config.version, owner=config.owner, owner_password=config.owner_password)),
         symbolic_link_resource(path=pg_data_dir / 'postgresql.conf', to=pg_config_dir / 'postgresql.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_ident.conf', to=pg_config_dir / 'pg_ident.conf'),
@@ -68,13 +67,13 @@ def postgresql_server_resource(purpose, config):
         ])
     if upgrading:
         resources.append(postgresql_cluster_upgrading_resource(purpose=purpose, old_version=maintenance_config.version, new_version=config.version,
-            host=config.host, port=config.port, owner=config.owner, owner_password=config.owner_password))
+                                                               host=config.host, port=config.port, owner=config.owner, owner_password=config.owner_password))
     resources.extend([
         symbolic_link_resource(path=get_pg_config_dir(purpose), to=pg_config_dir),
         postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
-            owner_password=config.owner_password, user=config.user, password=config.password),
+                                 owner_password=config.owner_password, user=config.user, password=config.password),
         postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
-            owner_password=config.owner_password, user='readonly', password='r1adonly', readonly=True)
+                                 owner_password=config.owner_password, user='readonly', password='r1adonly', readonly=True)
     ])
 
     return resources
@@ -103,8 +102,9 @@ def is_postgresql_cluster_upgraded(purpose, version, host, port, owner, owner_pa
     with postgresql_server_running(version, pg_data_dir, owner):
         env = os.environ.copy()
         env['PGPASSWORD'] = owner_password
-        output = shell_execute("{}/psql -h {} -p {} -U {} -d postgres -Atc 'SELECT COUNT(*) FROM pg_database'".format(get_pg_bin_dir(version), host,
-            port, owner), env=env, capture=True, debug=True)
+        output = shell_execute(
+            "{}/psql -h {} -p {} -U {} -d postgres -Atc 'SELECT COUNT(*) FROM pg_database'".format(get_pg_bin_dir(version), host, port, owner), env=env,
+            capture=True, debug=True)
         return int(output) > 3
 
 
@@ -130,8 +130,8 @@ def vacuum_upgraded_postgresql_cluster(purpose, version, host, port, owner, owne
     with postgresql_server_running(version, pg_data_dir, owner):
         env = os.environ.copy()
         env['PGPASSWORD'] = owner_password
-        shell_execute('{pg_bin_dir}/vacuumdb -h {host} -p {port} -U {pg_data_owner} -a -f -F -z'.format(pg_bin_dir=get_pg_bin_dir(version),
-            pg_data_owner=owner, host=host, port=port), env=env, capture=True)
+        shell_execute('{pg_bin_dir}/vacuumdb -h {host} -p {port} -U {pg_data_owner} -a -f -F -z'.format(pg_bin_dir=get_pg_bin_dir(version), pg_data_owner=owner,
+                                                                                                        host=host, port=port), env=env, capture=True)
 
 
 def confirm_postgresql_cluster_upgrading(old_version, new_version):
@@ -148,7 +148,7 @@ def confirm_postgresql_cluster_upgrading(old_version, new_version):
 
 def display_postgresql_cluster_post_upgrade_instructions():
     print('!!! IMPORTANT !!!')
-    print('''Please do the following post-Upgrade processing:
+    print('''Please do the following post-Upgrade processing (check https://github.com/honovation/ljmall/issues/1173 for detail):
         1.Verify the application
         2.Delete old cluster: config and data directories
         3.Remove the installation of the old-version postgresql server

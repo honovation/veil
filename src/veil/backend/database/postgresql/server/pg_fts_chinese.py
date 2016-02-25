@@ -2,7 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 
-#TODO: upgrade mechanism for scws & zhparser, and record scws & zhparser versions
+# TODO: upgrade mechanism for scws & zhparser, and record scws & zhparser versions
 SCWS_RESOURCE_VERSION = '1.2.2'
 SCWS_RESOURCE_KEY = 'veil.backend.database.postgresql.pg_fts_chinese_scws_resource'
 SCWS_PACKAGE_NAME = 'scws-{}.tar.bz2'.format(SCWS_RESOURCE_VERSION)
