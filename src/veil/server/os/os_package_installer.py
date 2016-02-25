@@ -106,6 +106,7 @@ def download_os_package(name, version=None):
 
 apt_get_update_executed = False
 
+
 def set_apt_get_update_executed(value):
     global apt_get_update_executed
     apt_get_update_executed = value

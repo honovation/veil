@@ -54,7 +54,7 @@ class CroniterSchedule(object):
 
     def get_next_timestamp(self, now=None):
         now = now or get_current_timestamp()
-        #TODO: remove croniter hack here and in Timer class when croniter is fixed
+        # TODO: remove croniter hack here and in Timer class when croniter is fixed
         ct = croniter(self.crontab_expression, now + DEFAULT_CLIENT_TIMEZONE.utcoffset(datetime.now()).total_seconds())
         return ct.get_next(ret_type=float) - DEFAULT_CLIENT_TIMEZONE.utcoffset(datetime.now()).total_seconds()
 

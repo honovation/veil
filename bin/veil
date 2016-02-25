@@ -57,9 +57,10 @@ function veil_init {
             fi
             PYPI_INDEX_URL='http://mirrors.aliyun.com/pypi/simple/'  # the official url "https://pypi.python.org/simple/" is blocked
             PYPI_INDEX_HOST='mirrors.aliyun.com'
-            sudo pip install --upgrade "pip>=6.0.6"
-            sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "setuptools>=11.0"
-            sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "virtualenv>=12.0.5"
+            sudo pip install --upgrade "pip>=8.0.2"
+            sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "setuptools>=20.1.1"
+            sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "wheel>=0.29.0"
+            sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "virtualenv>=14.0.6"
         fi
         virtualenv env
         echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth

@@ -293,11 +293,11 @@ def start_env(veil_env_name):
 
 
 @script('upgrade-env-pip')
-def upgrade_env_pip(veil_env_name, setuptools_version, pip_version):
+def upgrade_env_pip(veil_env_name, setuptools_version, wheel_version, pip_version):
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
         with fabric.api.settings(host_string=host.deploys_via):
             with fabric.api.cd(host.veil_home):
-                fabric.api.sudo('veil :{} upgrade-pip {} {}'.format(host.env_name, setuptools_version, pip_version))
+                fabric.api.sudo('veil :{} upgrade-pip {} {} {}'.format(host.env_name, setuptools_version, wheel_version, pip_version))
 
 
 def get_deployed_or_patched_at():
