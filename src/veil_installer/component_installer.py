@@ -6,6 +6,7 @@ from .installer import composite_installer, parse_resource
 
 LOGGER = logging.getLogger(__name__)
 
+
 @composite_installer
 def component_resource(name):
     component_name = name
@@ -33,7 +34,7 @@ def installer_resource(name):
                 lines = f.readlines()
             for line in lines:
                 line = line.strip()
-                if not line:
+                if not line or line.startswith('#'):
                     continue
                 resources.append(parse_resource(line))
         except Exception:
