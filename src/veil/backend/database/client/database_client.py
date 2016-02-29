@@ -215,7 +215,7 @@ class Database(object):
         return rows[0][0]
 
     def insert(self, table, objects=None, returns_id=False, returns_record=False, primary_keys=False, should_insert=None, include_attributes=None,
-               exclude_columns=(), **value_providers):
+               exclude_columns=(), conflict_target='', conflict_action='', **value_providers):
         """
         include_attributes:
             when it is None, add all attributes not in exclude_columns to columns;
@@ -267,6 +267,8 @@ class Database(object):
                 yield [value_providers[column] for column in columns]
 
         fragments = ['INSERT INTO ', table]
+        if conflict_target or conflict_action:
+            fragments.append(' AS C')  # means "CURRENT"
         if specified_columns:
             fragments.append(' ({})'.format(', '.join(columns)))
         fragments.append(' VALUES ')
@@ -292,6 +294,8 @@ class Database(object):
             fragments.append(')')
         if not args:  # not values to insert
             return None if returns_id or returns_record else 0
+        if conflict_target or conflict_action:
+            fragments.append(' ON CONFLICT {} {}'.format(conflict_target, conflict_action))
         if returns_id:
             fragments.append(' RETURNING id')
             return self.list_scalar(''.join(fragments), **args) if objects else self.get_scalar(''.join(fragments), **args)
