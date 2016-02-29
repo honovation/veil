@@ -53,17 +53,18 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
     for purpose in purposes:
         # set db conf permission
         config = postgresql_maintenance_config(purpose)
-        shell_execute('chown -f {}:{} *'.format(config.owner, config.owner), cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version),
-            debug=True)
+        shell_execute('chown -f {}:{} *'.format(config.owner, config.owner), cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version), debug=True)
     shell_execute('veil up --daemonize', debug=True)
     for purpose in purposes:
-        # set db owner password
         config = postgresql_maintenance_config(purpose)
-        shell_execute('''sudo -u dejavu psql -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.owner, config.owner_password),
+        config.update(database_client_config(purpose))
+        # set db owner password
+        shell_execute(
+            '''sudo -u dejavu psql -p {} -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.owner, config.owner_password),
             debug=True)
         # set db user password
-        config = database_client_config(purpose)
-        shell_execute('''sudo -u dejavu psql -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.user, config.password), debug=True)
+        shell_execute('''sudo -u dejavu psql -p {} -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.user, config.password),
+                      debug=True)
     shell_execute('veil migrate', debug=True)
 
     shell_execute('veil down', debug=True)

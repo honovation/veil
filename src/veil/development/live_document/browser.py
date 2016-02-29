@@ -99,7 +99,7 @@ else:
             }
             ''')
         if page_name != current_page_name:
-            #TODO: known issue Chrome/Chromium version 34+ execute javascript slow? wait 1 second and execute again
+            # TODO: known issue Chrome/Chromium version 34+ execute javascript slow? wait 1 second and execute again
             time.sleep(0.5)
             current_page_name = require_webdriver().execute_script('''
                 if (window.veil && veil.doc && veil.doc.currentPage) {
