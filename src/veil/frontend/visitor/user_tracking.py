@@ -47,9 +47,8 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
     def f():
         request = get_current_http_request()
         current_route = get_current_http_context().route
-        user_agent_str = request.headers.get('User-Agent')
         try:
-            if user_agent_str and is_web_spider(user_agent_str):
+            if is_web_spider(request.headers.get('User-Agent')):
                 if TAG_NO_LOGIN_REQUIRED not in current_route.tags:
                     set_http_status_code(httplib.FORBIDDEN)
                     end_http_request_processing()

@@ -4,8 +4,12 @@ from user_agents import parse
 
 
 def is_mobile_device(user_agent):
+    if user_agent is None:
+        user_agent = ''
     return parse(user_agent).is_mobile
 
 
 def is_web_spider(user_agent):
+    if user_agent is None:
+        user_agent = ''
     return parse(user_agent).is_bot
