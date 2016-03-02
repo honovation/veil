@@ -30,7 +30,7 @@ from veil.frontend.web import *
 LOGGER = logging.getLogger(__name__)
 redis = register_redis('persist_store')
 
-VEIL_SECURED_USER_CODE_COOKIE_NAME_PREFIX = '{}S'.format(VEIL_USER_CODE_COOKIE_NAME)
+VEIL_SECURED_USER_CODE_COOKIE_DEFAULT_NAME = '{}S'.format(VEIL_USER_CODE_COOKIE_NAME)
 DEFAULT_COOKIE_EXPIRES_DAYS = 360
 DEFAULT_SESSION_TTL = timedelta(minutes=30)
 SESSION_TTL_ENABLED = lambda: True
@@ -38,14 +38,13 @@ SESSION_TTL_ENABLED = lambda: True
 config = {}  # one process services at most one website, i.e. a specific purpose
 
 
-def get_secured_user_code_cookie_name(purpose):
-    return '{}.{}'.format(VEIL_SECURED_USER_CODE_COOKIE_NAME_PREFIX, purpose)
-
-
 def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSION_TTL, is_session_ttl_enabled=SESSION_TTL_ENABLED,
-                         session_cookie_on_parent_domain=False, cookie_expires_days=DEFAULT_COOKIE_EXPIRES_DAYS):
+                         session_cookie_on_parent_domain=False, cookie_expires_days=DEFAULT_COOKIE_EXPIRES_DAYS,
+                         secured_user_code_cookie_name=VEIL_SECURED_USER_CODE_COOKIE_DEFAULT_NAME, secured_user_code_cookie_on_parent_domain=False):
     config[purpose] = DictObject(login_url=login_url, session_ttl=session_ttl, is_session_ttl_enabled=is_session_ttl_enabled,
-                                 session_cookie_on_parent_domain=session_cookie_on_parent_domain, cookie_expires_days=cookie_expires_days)
+                                 session_cookie_on_parent_domain=session_cookie_on_parent_domain, cookie_expires_days=cookie_expires_days,
+                                 secured_user_code_cookie_name=secured_user_code_cookie_name,
+                                 secured_user_code_cookie_on_parent_domain=secured_user_code_cookie_on_parent_domain)
 
     @contextlib.contextmanager
     def f():
@@ -105,12 +104,14 @@ def set_browser_code(purpose, browser_code):
 
 
 def get_latest_user_id(purpose, max_age_days=None):
-    return get_secure_cookie(get_secured_user_code_cookie_name(purpose), max_age_days=max_age_days or config[purpose].cookie_expires_days)
+    purpose_config = config[purpose]
+    return get_secure_cookie(purpose_config.secured_user_code_cookie_name, max_age_days=max_age_days or purpose_config.cookie_expires_days)
 
 
 def set_latest_user_id(purpose, user_id):
-    set_secure_cookie(name=get_secured_user_code_cookie_name(purpose), value=user_id, expires_days=config[purpose].cookie_expires_days,
-                      domain=get_website_parent_domain(purpose))
+    purpose_config = config[purpose]
+    set_secure_cookie(name=purpose_config.secured_user_code_cookie_name, value=user_id, expires_days=config[purpose].cookie_expires_days,
+                      domain=get_website_parent_domain(purpose) if purpose_config.secured_user_code_cookie_on_parent_domain else None)
     set_cookie(name=VEIL_USER_CODE_COOKIE_NAME, value=user_id, expires_days=config[purpose].cookie_expires_days, domain=None)
 
 
