@@ -141,6 +141,10 @@ http {
                     {% endfor %}
                 }
                 {% endfor %}
+            {% elif 'additional_listens' == key %}
+                {% for listen in value %}
+                    listen {{ listen }}
+                {% endfor %}
             {% elif 'upstreams' == key %}
                 {# skip this #}
             {% elif 'error_page_dir' == key %}
