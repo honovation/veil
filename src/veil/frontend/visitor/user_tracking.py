@@ -30,12 +30,16 @@ from veil.frontend.web import *
 LOGGER = logging.getLogger(__name__)
 redis = register_redis('persist_store')
 
-VEIL_SECURED_USER_CODE_COOKIE_NAME = '{}S'.format(VEIL_USER_CODE_COOKIE_NAME)
+VEIL_SECURED_USER_CODE_COOKIE_NAME_PREFIX = '{}S'.format(VEIL_USER_CODE_COOKIE_NAME)
 DEFAULT_COOKIE_EXPIRES_DAYS = 360
 DEFAULT_SESSION_TTL = timedelta(minutes=30)
 SESSION_TTL_ENABLED = lambda: True
 
 config = {}  # one process services at most one website, i.e. a specific purpose
+
+
+def get_secured_user_code_cookie_name(purpose):
+    return '{}.{}'.format(VEIL_SECURED_USER_CODE_COOKIE_NAME_PREFIX, purpose)
 
 
 def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSION_TTL, is_session_ttl_enabled=SESSION_TTL_ENABLED,
@@ -101,11 +105,12 @@ def set_browser_code(purpose, browser_code):
 
 
 def get_latest_user_id(purpose, max_age_days=None):
-    return get_secure_cookie(VEIL_SECURED_USER_CODE_COOKIE_NAME, max_age_days=max_age_days or config[purpose].cookie_expires_days)
+    return get_secure_cookie(get_secured_user_code_cookie_name(purpose), max_age_days=max_age_days or config[purpose].cookie_expires_days)
 
 
 def set_latest_user_id(purpose, user_id):
-    set_secure_cookie(name=VEIL_SECURED_USER_CODE_COOKIE_NAME, value=user_id, expires_days=config[purpose].cookie_expires_days, domain=None)
+    set_secure_cookie(name=get_secured_user_code_cookie_name(purpose), value=user_id, expires_days=config[purpose].cookie_expires_days,
+                      domain=get_website_parent_domain(purpose))
     set_cookie(name=VEIL_USER_CODE_COOKIE_NAME, value=user_id, expires_days=config[purpose].cookie_expires_days, domain=None)
 
 
