@@ -111,9 +111,7 @@ class RoutingHTTPHandler(object):
         request = get_current_http_request()
         if not is_method_matched(route.method, request.method):
             return False
-        path = request.path.rstrip(b'/')
-        if not path:
-            path = '/'
+        path = request.path or '/'
         path_arguments = route.path_template.match(path)
         if path_arguments is None:
             return False
