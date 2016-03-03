@@ -37,15 +37,18 @@ def website_upstreams(purpose, start_port, process_count):
     } for i in range(process_count)]}
 
 
-def website_locations(purpose, has_bunker=False, is_api_only=False, intranet_cidr=None, max_upload_file_size='1m', extra_headers=(), extra_locations=None,
+def website_locations(purpose, has_bunker=False, is_api_only=False, intranet_cidr_list=None, max_upload_file_size='1m', extra_headers=(), extra_locations=None,
                       valid_referer_domains=None):
     if is_api_only:
         common_setting = '''
             proxy_pass http://{}-tornado;
             {}
             '''.format(purpose, '\n'.join(extra_headers))
-        if intranet_cidr:
-            intranet_only = 'allow {}; deny all;'.format(intranet_cidr)
+        if intranet_cidr_list:
+            intranet_only = '''
+                {}
+                deny all;
+                '''.format('\n'.join('allow {};'.format(intranet_cidr) for intranet_cidr in intranet_cidr_list))
             locations = {
                 '^~ /pn/': {
                     '_': '''
