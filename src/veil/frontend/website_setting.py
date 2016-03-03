@@ -49,6 +49,7 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, intranet_cid
             locations = {
                 '^~ /pn/': {
                     '_': '''
+                        if ($scheme = "http") {{ return 403; }}
                         {}
                         '''.format(common_setting)
                 },
