@@ -38,113 +38,111 @@ def website_upstreams(purpose, start_port, process_count):
 
 
 def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_file_size='1m', extra_headers=(), extra_locations=None,
-                      valid_referer_domains=None):
-    extra_locations = extra_locations or {}
+        valid_referer_domains=None):
     if is_api_only:
-        locations = {'/': {
+        return {'/': {
             '_': '''
                 proxy_pass http://{}-tornado;
                 {}
                 '''.format(purpose, '\n'.join(extra_headers))
         }}
-        if '/' in extra_locations and '_' in extra_locations['/']:
-            locations['/']['_'] = '{}{}'.format(extra_locations['/'].pop('_'), locations['/']['_'])
+
+    extra_headers = '''
+        add_header X-Frame-Options SAMEORIGIN;
+        add_header X-UA-Compatible "IE=Edge,chrome=1";
+        add_header X-XSS-Protection "1; mode=block";
+        {}
+        '''.format('\n'.join(extra_headers))
+    if valid_referer_domains:
+        stop_referring = '''
+            valid_referers none blocked {};
+            if ($invalid_referer) {{
+                return 403;
+            }}
+            '''.format(valid_referer_domains)
     else:
-        extra_headers = '''
-            add_header X-Frame-Options SAMEORIGIN;
-            add_header X-UA-Compatible "IE=Edge,chrome=1";
-            add_header X-XSS-Protection "1; mode=block";
-            {}
-            '''.format('\n'.join(extra_headers))
-        if valid_referer_domains:
-            stop_referring = '''
-                valid_referers none blocked {};
-                if ($invalid_referer) {{
-                    return 403;
-                }}
-                '''.format(valid_referer_domains)
-        else:
-            stop_referring = ''
-        if not has_bunker:
-            extra_locations.update({
-                '= /favicon.ico': {
-                    '_': '''
-                        access_log off; log_not_found off;
-                        expires 1M;
-                        ''',
-                    'alias': VEIL_HOME / 'static' / purpose / 'favicon.ico'
-                },
-                '= /robots.txt': {
-                    '_': '''
-                        access_log off; log_not_found off;
-                        expires 1h;
-                        ''',
-                    'alias': VEIL_HOME / 'static' / purpose / 'robots.txt'
-                },
-                '~ ^/static/images/(logo.*\.gif)$': {
-                    '_': '''
-                        set $logo_file $1;
-                        alias {}/static/images/$logo_file;
-                        access_log off;
-                        expires max;
-                        if ($query_string !~ "v=.+") {{
-                            expires 4h;
-                        }}
-                        '''.format(VEIL_HOME)
-                },
-                '/static/': {
-                    '_': '''
-                        {}
-                        alias {}/static/;
-                        access_log off;
-                        expires max;
-                        if ($query_string !~ "v=.+") {{
-                            expires 4h;
-                        }}
-                        '''.format(stop_referring, VEIL_HOME)
-                }
-            })
-        locations = {
-            '= /': {
+        stop_referring = ''
+    extra_locations = extra_locations or {}
+    if not has_bunker:
+        extra_locations.update({
+            '= /favicon.ico': {
                 '_': '''
-                    proxy_pass http://{}-tornado;
-                    {}
-                    '''.format(purpose, extra_headers)
+                    access_log off; log_not_found off;
+                    expires 1M;
+                    ''',
+                'alias': VEIL_HOME / 'static' / purpose / 'favicon.ico'
             },
-            '^~ /fupload/': {
+            '= /robots.txt': {
                 '_': '''
-                    client_max_body_size {};
-                    client_body_temp_path {} 1;
-                    client_body_in_file_only clean;
-                    proxy_set_header X-UPLOAD-FILE-PATH $request_body_file;
-                    proxy_set_body off;
-                    proxy_pass http://{}-tornado;
-                    {}
-                '''.format(max_upload_file_size, VEIL_BUCKET_UPLOADED_FILES_DIR, purpose, extra_headers)
+                    access_log off; log_not_found off;
+                    expires 1h;
+                    ''',
+                'alias': VEIL_HOME / 'static' / purpose / 'robots.txt'
             },
-            '^~ /fupload-/': {
+            '~ ^/static/images/(logo.*\.gif)$': {
                 '_': '''
-                    client_max_body_size {};
-                    proxy_pass http://{}-tornado;
-                    {}
-                    '''.format(max_upload_file_size, purpose, extra_headers)
-            },
-            '/': {
-                '_': '''
-                    proxy_pass http://{}-tornado;
-                    {}
-                    '''.format(purpose, extra_headers)
-            },
-            # inline static files
-            # /static/v-xx-xx/a-b.js
-            '~ ^/static/v-(.*)-(.*)/': {
-                '_': '''
-                    {}
-                    alias {}/$1/$2;
+                    set $logo_file $1;
+                    alias {}/static/images/$logo_file;
                     access_log off;
                     expires max;
-                    '''.format(stop_referring, VEIL_BUCKET_INLINE_STATIC_FILES_DIR)
+                    if ($query_string !~ "v=.+") {{
+                        expires 4h;
+                    }}
+                    '''.format(VEIL_HOME)
+            },
+            '/static/': {
+                '_': '''
+                    {}
+                    alias {}/static/;
+                    access_log off;
+                    expires max;
+                    if ($query_string !~ "v=.+") {{
+                        expires 4h;
+                    }}
+                    '''.format(stop_referring, VEIL_HOME)
             }
+        })
+    locations = {
+        '= /': {
+            '_': '''
+                proxy_pass http://{}-tornado;
+                {}
+                '''.format(purpose, extra_headers)
+        },
+        '^~ /fupload/': {
+            '_': '''
+                client_max_body_size {};
+                client_body_temp_path {} 1;
+                client_body_in_file_only clean;
+                proxy_set_header X-UPLOAD-FILE-PATH $request_body_file;
+                proxy_set_body off;
+                proxy_pass http://{}-tornado;
+                {}
+            '''.format(max_upload_file_size, VEIL_BUCKET_UPLOADED_FILES_DIR, purpose, extra_headers)
+        },
+        '^~ /fupload-/': {
+            '_': '''
+                client_max_body_size {};
+                proxy_pass http://{}-tornado;
+                {}
+                '''.format(max_upload_file_size, purpose, extra_headers)
+        },
+        '/': {
+            '_': '''
+                proxy_pass http://{}-tornado;
+                {}
+                '''.format(purpose, extra_headers)
+        },
+        # inline static files
+        # /static/v-xx-xx/a-b.js
+        '~ ^/static/v-(.*)-(.*)/': {
+            '_': '''
+                {}
+                alias {}/$1/$2;
+                access_log off;
+                expires max;
+                '''.format(stop_referring, VEIL_BUCKET_INLINE_STATIC_FILES_DIR)
         }
+    }
     locations.update(extra_locations)
     return locations
