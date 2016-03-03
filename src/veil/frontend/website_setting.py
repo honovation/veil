@@ -37,15 +37,37 @@ def website_upstreams(purpose, start_port, process_count):
     } for i in range(process_count)]}
 
 
-def website_locations(purpose, has_bunker=False, is_api_only=False, max_upload_file_size='1m', extra_headers=(), extra_locations=None,
-        valid_referer_domains=None):
+def website_locations(purpose, has_bunker=False, is_api_only=False, intranet_cidr=None, max_upload_file_size='1m', extra_headers=(), extra_locations=None,
+                      valid_referer_domains=None):
     if is_api_only:
-        return {'/': {
-            '_': '''
-                proxy_pass http://{}-tornado;
-                {}
-                '''.format(purpose, '\n'.join(extra_headers))
-        }}
+        common_setting = '''
+            proxy_pass http://{}-tornado;
+            {}
+            '''.format(purpose, '\n'.join(extra_headers))
+        if intranet_cidr:
+            intranet_only = 'allow {}; deny all;'.format(intranet_cidr)
+            locations = {
+                '^~ /pn/': {
+                    '_': '''
+                        {}
+                        '''.format(common_setting)
+                },
+                '/': {
+                    '_': '''
+                        {}
+                        {}
+                        '''.format(intranet_only, common_setting)
+                }
+            }
+        else:
+            locations = {
+                '/': {
+                    '_': '''
+                        {}
+                        '''.format(common_setting)
+                }
+            }
+        return locations
 
     extra_headers = '''
         add_header X-Frame-Options SAMEORIGIN;
