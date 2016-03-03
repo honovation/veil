@@ -112,6 +112,8 @@ def create_cookie(cookies, name, value, domain=None, expires=None, path='/', exp
     cookies[name] = value
     cookie = cookies[name]
     if domain:
+        if domain[0] != '.':
+            domain = '.{}'.format(domain)
         cookie['domain'] = domain
     if not expires and (expires_days is not None or expires_minutes is not None):
         expires = datetime.utcnow() + timedelta(days=expires_days or 0, minutes=expires_minutes or 0)
