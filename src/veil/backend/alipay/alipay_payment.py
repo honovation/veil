@@ -9,7 +9,6 @@ import lxml.objectify
 import rsa
 from veil.environment import VEIL_ENV_TYPE
 from veil.utility.http import *
-from veil.utility.encoding import *
 from veil.frontend.cli import *
 from veil.profile.model import *
 from veil.profile.web import *
@@ -68,10 +67,7 @@ def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
                   extra_common_param=show_url, it_b_pay='{}m'.format(minutes_to_expire))
     params['sign'] = sign_md5(params)
     params['sign_type'] = 'MD5'
-    # urllib.urlencode does not handle unicode well
-    params = {to_str(k): to_str(v) for k, v in params.items()}
-    query = urllib.urlencode(params)
-    return '{}?{}'.format(PAYMENT_URL, query)
+    return '{}?{}'.format(PAYMENT_URL, urlencode(params))
 
 
 @script('query-status')

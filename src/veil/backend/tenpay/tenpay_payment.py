@@ -2,12 +2,10 @@
 from __future__ import unicode_literals, print_function, division
 from decimal import Decimal, DecimalException
 import logging
-import urllib
 import hashlib
 import lxml.objectify
 from veil.environment import VEIL_ENV_TYPE
 from veil.utility.http import *
-from veil.utility.encoding import *
 from veil.frontend.cli import *
 from veil.profile.model import *
 from veil.profile.web import *
@@ -36,10 +34,7 @@ def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, 
                   fee_type='1', spbill_create_ip=shopper_ip_address, time_start=time_start_beijing_time_str, time_expire=time_expire_beijing_time_str,
                   trade_mode='1')
     params['sign'] = sign_md5(params)
-    # urllib.urlencode does not handle unicode well
-    params = {to_str(k): to_str(v) for k, v in params.items()}
-    query = urllib.urlencode(params)
-    return '{}?{}'.format(PAYMENT_URL, query)
+    return '{}?{}'.format(PAYMENT_URL, urlencode(params))
 
 
 @script('query-status')

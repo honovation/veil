@@ -1,10 +1,11 @@
 from __future__ import unicode_literals, print_function, division
 import cookielib
 import httplib
-import urllib
 import urllib2
 from .website_launcher import start_test_website
 from .tornado import *
+from veil.utility.http import *
+
 
 def start_website_and_client(website):
     http_server = start_test_website(website)
@@ -27,7 +28,7 @@ class WebClient(object):
     def post(self, path, form=None, headers=None, expects=httplib.OK):
         form = form or {}
         headers = headers or {}
-        request = urllib2.Request(self.to_url(path), data=urllib.urlencode(form), headers=headers)
+        request = urllib2.Request(self.to_url(path), data=urlencode(form), headers=headers)
         response = self.opener.open(request)
         assert expects == response.code, 'status code: {}'.format(response.code)
         return response

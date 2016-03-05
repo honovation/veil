@@ -5,10 +5,12 @@ with veil_component.init_component(__name__):
     from http import Retry
     from http import RequestException
     from http import ReadTimeout
+    from http import urlencode
 
     __all__ = [
         requests.__name__,
         Retry.__name__,
         RequestException.__name__,
         ReadTimeout.__name__,
+        urlencode.__name__,
     ]
