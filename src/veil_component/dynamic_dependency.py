@@ -9,6 +9,7 @@ is_recording = False
 dynamic_dependencies = None
 loaded_providers = set()
 
+
 def start_recording_dynamic_dependencies():
     global is_recording
     is_recording = True

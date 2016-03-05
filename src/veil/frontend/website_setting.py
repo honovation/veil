@@ -9,12 +9,11 @@ def website_programs(purpose, logging_levels, application_config, start_port, pr
         component_resource(name='veil.profile.web'),
         application_resource(component_names=list_website_components(purpose), config=application_config)
     ]
-    additional_args = []
     programs = {}
     for i in range(process_count):
         programs = merge_settings(programs, {
             '{}_tornado{}'.format(purpose, i + 1): {
-                'execute_command': 'veil frontend web up {} {} {}'.format(purpose, start_port + i, ' '.join(additional_args)),
+                'execute_command': 'veil frontend web up {} {}'.format(purpose, start_port + i),
                 'environment_variables': {'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path, 'VEIL_LOGGING_EVENT': 'True'},
                 'priority': 300,
                 'redirect_stderr': False,

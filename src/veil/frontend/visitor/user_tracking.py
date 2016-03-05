@@ -76,10 +76,10 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
                         remember_user_login_referer(purpose, login_referer, browser_code)
                     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                         set_http_status_code(httplib.UNAUTHORIZED)
-                        get_current_http_response().set_header('WWW-Authenticate', login_url)
+                        get_current_http_response().set_header('WWW-Authenticate', config[purpose].login_url)
                         end_http_request_processing()
                     else:
-                        redirect_to(login_url)
+                        redirect_to(config[purpose].login_url)
         except HTTPError:
             raise
         except Exception:
@@ -92,6 +92,19 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
         yield
 
     return f
+
+
+def enable_access_to_external_cookie(purpose, name, max_age_days):
+    """
+    A use case: op places order on behalf of shopper
+        When an op log on website op, record a cookie on parent domain.
+        Website shopper process need be enabled with access to op cookie so that it could check the op cookie to get the current op
+    :param purpose:
+    :param name:
+    :param max_age_days:
+    :return:
+    """
+    config.setdefault(purpose, DictObject()).update(dict(secured_user_code_cookie_name=name, cookie_expires_days=max_age_days))
 
 
 def get_browser_code():
@@ -109,9 +122,8 @@ def get_latest_user_id(purpose, max_age_days=None):
 
 
 def set_latest_user_id(purpose, user_id):
-    purpose_config = config[purpose]
-    set_secure_cookie(name=purpose_config.secured_user_code_cookie_name, value=user_id, expires_days=config[purpose].cookie_expires_days,
-                      domain=get_website_parent_domain(purpose) if purpose_config.secured_user_code_cookie_on_parent_domain else None)
+    domain = get_website_parent_domain(purpose) if config[purpose].secured_user_code_cookie_on_parent_domain else None
+    set_secure_cookie(name=config[purpose].secured_user_code_cookie_name, value=user_id, expires_days=config[purpose].cookie_expires_days, domain=domain)
     set_cookie(name=VEIL_USER_CODE_COOKIE_NAME, value=user_id, expires_days=config[purpose].cookie_expires_days, domain=None)
 
 
@@ -151,8 +163,7 @@ def get_logged_in_user_id(purpose, session=None, is_session_ttl_enabled=None):
     """
     a special case is to get the user of website B from website A
     """
-    assert not session or session.purpose == purpose
-    assert purpose in config or is_session_ttl_enabled is not None
+    assert purpose in config and (not session or session.purpose == purpose)
     session = session or get_user_session(purpose)
     if not session:
         return None
