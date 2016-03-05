@@ -163,7 +163,7 @@ def get_logged_in_user_id(purpose, session=None, is_session_ttl_enabled=None):
     """
     a special case is to get the user of website B from website A
     """
-    if not get_current_http_request():
+    if not get_current_http_request(optional=True):
         return None
     assert purpose in config and (not session or session.purpose == purpose)
     session = session or get_user_session(purpose)
