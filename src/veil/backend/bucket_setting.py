@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 
+
 def bucket_location(base_directory, valid_referer_domains=None):
     if valid_referer_domains:
         stop_referring = '''
