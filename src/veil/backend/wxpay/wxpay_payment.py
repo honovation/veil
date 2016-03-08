@@ -37,21 +37,20 @@ WXPAY_CLOSE_TRADE_URL = 'https://api.mch.weixin.qq.com/pay/closeorder'
 
 def make_wxpay_request_for_app(out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):
     config = wx_open_app_config()
-    wxpay_prepay_order = create_wxpay_prepay_order(config.app_id, config.api_key, config.mch_id, WXPAY_TRADE_TYPE_APP, out_trade_no, subject, body, total_fee, notify_url,
-                                                   shopper_ip_address, time_start, time_expire)
+    wxpay_prepay_order = create_wxpay_prepay_order(config.app_id, config.api_key, config.mch_id, WXPAY_TRADE_TYPE_APP, out_trade_no, subject, body, total_fee,
+                                                   notify_url, shopper_ip_address, time_start, time_expire)
     wxpay_request = DictObject(appid=config.app_id, partnerid=config.mch_id, prepayid=wxpay_prepay_order.prepay_id, package='Sign=WXPay',
                                noncestr=wxpay_prepay_order.nonce_str, timestamp=str(get_current_timestamp()))
     wxpay_request.sign = get_wx_open_sign(wxpay_request, config.api_key)
     return wxpay_request
 
 
-def make_wxpay_request_for_mp(out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address, openid):
-    config = wxpay_client_config()
-    wxpay_prepay_order = create_wxpay_prepay_order(config.app_id, config.api_key, config.mch_id, WXPAY_TRADE_TYPE_JSAPI, out_trade_no, subject, body, total_fee, notify_url,
-                                                   shopper_ip_address, time_start, time_expire, openid=openid)
-    wxpay_request = DictObject(appId=config.app_id, timeStamp=str(get_current_timestamp()), nonceStr=uuid4().get_hex(),
+def make_wxpay_request_for_mp(wxmp_config, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address, openid):
+    wxpay_prepay_order = create_wxpay_prepay_order(wxmp_config.app_id, wxmp_config.api_key, wxmp_config.mch_id, WXPAY_TRADE_TYPE_JSAPI, out_trade_no, subject,
+                                                   body, total_fee, notify_url, shopper_ip_address, time_start, time_expire, openid=openid)
+    wxpay_request = DictObject(appId=wxmp_config.app_id, timeStamp=str(get_current_timestamp()), nonceStr=uuid4().get_hex(),
                                package='prepay_id={}'.format(wxpay_prepay_order.prepay_id), signType='MD5')
-    wxpay_request.paySign = get_wx_open_sign(wxpay_request, config.api_key)
+    wxpay_request.paySign = get_wx_open_sign(wxpay_request, wxmp_config.api_key)
     return wxpay_request
 
 
@@ -206,6 +205,7 @@ def refresh_wxmp_access_token(access_token_to_refresh):
 
 
 def request_wxmp_access_token():
+    # TODO: support multiple wxmp
     config = wxpay_client_config()
     params = dict(grant_type='client_credential', appid=config.app_id, secret=config.app_secret)
     try:
@@ -231,20 +231,14 @@ def query_wxpay_payment_status(out_trade_no):
     return paid
 
 
-def query_wxmp_payment_status(out_trade_no):
-    config = wxpay_client_config()
-    paid = query_order_status_(config.app_id, config.mch_id, config.api_key, out_trade_no)
+def query_wxmp_payment_status(wxmp_config, out_trade_no):
+    paid = query_order_status_(wxmp_config.app_id, wxmp_config.mch_id, wxmp_config.api_key, out_trade_no)
     return paid
 
 
 @script('query-wxopen-order-status')
 def query_wxpay_script(out_trade_no):
     query_wxpay_payment_status(out_trade_no)
-
-
-@script('query-wxmp-order-status')
-def query_wxpay_script(out_trade_no):
-    query_wxmp_payment_status(out_trade_no)
 
 
 def query_order_status_(app_id, mch_id, api_key, out_trade_no):
