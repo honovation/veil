@@ -159,6 +159,8 @@ http {
                             }
                     {% endfor %}
                 {% endif %}
+            {% elif '_' == key %}
+                {{ value }}
             {% else %}
                 {{ key }} {{ value }};
             {% endif %}
