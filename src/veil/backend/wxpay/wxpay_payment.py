@@ -8,18 +8,13 @@ import lxml.objectify
 from veil.environment import VEIL_ENV_TYPE
 from veil.utility.http import *
 from veil.utility.encoding import *
-from veil.frontend.cli import *
 from veil.profile.model import *
 from veil.profile.web import *
-from .wxpay_client_installer import wxpay_client_config, wx_open_app_config
 
 LOGGER = logging.getLogger(__name__)
-redis = register_redis('persist_store')
 
 EVENT_WXPAY_TRADE_PAID = define_event('wxpay-trade-paid')  # valid notification
 EVENT_WXPAY_DELIVER_NOTIFY_SENT = define_event('wxpay-deliver-notify-sent')
-
-WXMP_ACCESS_TOKEN_KEY = 'wxmp-access-token'
 
 WXPAY_TRADE_TYPE_APP = 'APP'
 WXPAY_TRADE_TYPE_JSAPI = 'JSAPI'
@@ -29,38 +24,36 @@ SUCCESSFULLY_MARK = 'SUCCESS'  # wxpay require this 7 characters to be returned 
 FAILED_MARK = 'FAIL'
 ORDER_PAID_MARK = 'ORDERPAID'
 WXPAY_BANK_TYPE = 'WX'
-WXMP_ACCESS_TOKEN_AUTHORIZATION_URL = 'https://api.weixin.qq.com/cgi-bin/token'
 WXPAY_ORDER_QUERY_URL = 'https://api.mch.weixin.qq.com/pay/orderquery'
 WXPAY_UNIFIEDORDER_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
 WXPAY_CLOSE_TRADE_URL = 'https://api.mch.weixin.qq.com/pay/closeorder'
 
 
-def make_wxpay_request_for_app(out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):
-    config = wx_open_app_config()
-    wxpay_prepay_order = create_wxpay_prepay_order(config.app_id, config.api_key, config.mch_id, WXPAY_TRADE_TYPE_APP, out_trade_no, subject, body, total_fee,
-                                                   notify_url, shopper_ip_address, time_start, time_expire)
-    wxpay_request = DictObject(appid=config.app_id, partnerid=config.mch_id, prepayid=wxpay_prepay_order.prepay_id, package='Sign=WXPay',
+def make_wxpay_request_for_app(wxop_app_code, app_id, mch_id, api_key, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):
+    wxpay_prepay_order = create_prepay_order(wxop_app_code, app_id, mch_id, api_key, WXPAY_TRADE_TYPE_APP, out_trade_no, subject, body, total_fee, notify_url,
+                                             shopper_ip_address, time_start, time_expire)
+    wxpay_request = DictObject(appid=app_id, partnerid=mch_id, prepayid=wxpay_prepay_order.prepay_id, package='Sign=WXPay',
                                noncestr=wxpay_prepay_order.nonce_str, timestamp=str(get_current_timestamp()))
-    wxpay_request.sign = get_wx_open_sign(wxpay_request, config.api_key)
+    wxpay_request.sign = sign_md5(wxpay_request, api_key)
     return wxpay_request
 
 
-def make_wxpay_request_for_mp(wxmp_config, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address, openid):
-    wxpay_prepay_order = create_wxpay_prepay_order(wxmp_config.app_id, wxmp_config.api_key, wxmp_config.mch_id, WXPAY_TRADE_TYPE_JSAPI, out_trade_no, subject,
-                                                   body, total_fee, notify_url, shopper_ip_address, time_start, time_expire, openid=openid)
-    wxpay_request = DictObject(appId=wxmp_config.app_id, timeStamp=str(get_current_timestamp()), nonceStr=uuid4().get_hex(),
+def make_wxpay_request_for_mp(wxop_app_code, app_id, mch_id, api_key, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address, openid):
+    wxpay_prepay_order = create_prepay_order(wxop_app_code, app_id, mch_id, api_key, WXPAY_TRADE_TYPE_JSAPI, out_trade_no, subject, body, total_fee, notify_url,
+                                             shopper_ip_address, time_start, time_expire, openid=openid)
+    wxpay_request = DictObject(appId=app_id, timeStamp=str(get_current_timestamp()), nonceStr=uuid4().get_hex(),
                                package='prepay_id={}'.format(wxpay_prepay_order.prepay_id), signType='MD5')
-    wxpay_request.paySign = get_wx_open_sign(wxpay_request, wxmp_config.api_key)
+    wxpay_request.paySign = sign_md5(wxpay_request, api_key)
     return wxpay_request
 
 
-def create_wxpay_prepay_order(app_id, api_key, mch_id, trade_type, out_trade_no, subject, body, total_fee, notify_url, spbill_create_ip, time_start,
-                              time_expire, openid=None):
+def create_prepay_order(wxop_app_code, app_id, mch_id, api_key, trade_type, out_trade_no, subject, body, total_fee, notify_url, spbill_create_ip, time_start,
+                        time_expire, openid=None):
     time_start_beijing_time_str = convert_datetime_to_client_timezone(time_start).strftime('%Y%m%d%H%M%S')
     time_expire_beijing_time_str = convert_datetime_to_client_timezone(time_expire).strftime('%Y%m%d%H%M%S')
     order = DictObject(appid=app_id, mch_id=mch_id, trade_type=trade_type, out_trade_no=out_trade_no, body=subject, detail=body,
                        total_fee=unicode(int(total_fee * 100)), spbill_create_ip=spbill_create_ip, time_start=time_start_beijing_time_str,
-                       time_expire=time_expire_beijing_time_str, notify_url=notify_url, nonce_str=uuid4().get_hex(), attach=None, goods_tag=None,
+                       time_expire=time_expire_beijing_time_str, notify_url=notify_url, nonce_str=uuid4().get_hex(), attach=wxop_app_code, goods_tag=None,
                        product_id=None, fee_type=None, limit_pay=None, device_info=None, openid=openid)
     order.sign = sign_md5(order, api_key)
     with require_current_template_directory_relative_to():
@@ -78,7 +71,7 @@ def create_wxpay_prepay_order(app_id, api_key, mch_id, trade_type, out_trade_no,
             LOGGER.info('wxpay unified order got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
             raise Exception('wxpay unified order got failed response: {}'.format(parsed_response.return_msg))
         try:
-            validate_wxpay_response(parsed_response, api_key)
+            verify_wxpay_response(parsed_response, api_key)
         except Exception:
             LOGGER.info('wxpay unified order got fake response: %(data)s', {'data': data})
             raise
@@ -96,15 +89,9 @@ def create_wxpay_prepay_order(app_id, api_key, mch_id, trade_type, out_trade_no,
                           code_url=parsed_response.get('code_url'))
 
 
-@script('close-trade')
-def close_wxpay_trade_script(out_trade_no):
-    close_wxpay_trade(out_trade_no)
-
-
-def close_wxpay_trade(out_trade_no):
-    config = wx_open_app_config()
-    kwargs = DictObject(appid=config.app_id, mch_id=config.mch_id, nonce_str=uuid4().get_hex(), out_trade_no=out_trade_no)
-    kwargs.sign = sign_md5(kwargs, config.api_key)
+def close_order(app_id, mch_id, api_key, out_trade_no):
+    kwargs = DictObject(appid=app_id, mch_id=mch_id, nonce_str=uuid4().get_hex(), out_trade_no=out_trade_no)
+    kwargs.sign = sign_md5(kwargs, api_key)
     with require_current_template_directory_relative_to():
         data = to_str(get_template('close-trade.xml').render(**kwargs))
     headers = {'Content-Type': 'application/xml'}
@@ -125,7 +112,7 @@ def close_wxpay_trade(out_trade_no):
             LOGGER.info('wxpay close trade got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
             raise Exception('wxpay close trade got failed response: {}'.format(parsed_response.return_msg))
         try:
-            validate_wxpay_response(parsed_response, config.api_key)
+            verify_wxpay_response(parsed_response, api_key)
         except Exception:
             LOGGER.info('wxpay close trade got fake response: %(data)s, %(response)s', {'data': data, 'response': response.text})
             raise
@@ -139,19 +126,14 @@ def close_wxpay_trade(out_trade_no):
         LOGGER.info('wxpay close trade success: %(out_trade_no)s, %(response)s', {'out_trade_no': out_trade_no, 'response': response.text})
 
 
-def validate_wxpay_response(parsed_response, app_secret):
+def verify_wxpay_response(parsed_response, api_key):
     sign = parsed_response.pop('sign', None)
-    if sign != sign_md5(parsed_response, app_secret):
+    if sign != sign_md5(parsed_response, api_key):
         raise Exception('invalid sign')
 
 
-def get_wx_open_sign(data, key):
-    return sign_md5(data, key=key)
-
-
-def process_wxpay_payment_notification(request_body, notified_from):
-    arguments = parse_xml_response(request_body)
-    out_trade_no, trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_payment_notification(arguments)
+def process_wxpay_payment_notification(app_id, mch_id, api_key, arguments, notified_from):
+    out_trade_no, trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_payment_notification(app_id, mch_id, api_key, arguments)
     if discarded_reasons:
         LOGGER.warn('wxpay payment notification discarded: %(discarded_reasons)s, %(arguments)s', {
             'discarded_reasons': discarded_reasons,
@@ -170,81 +152,10 @@ def process_wxpay_payment_notification(request_body, notified_from):
         return get_template('notification-return.xml').render(return_code=return_code, return_msg=return_msg)
 
 
-def get_wxmp_access_token(with_ttl=False, access_token_to_refresh=None):
-    if VEIL_ENV_TYPE not in {'public', 'staging'}:
-        raise Exception('cannot get wx access token under environment: {}'.format(VEIL_ENV_TYPE))
-    if not access_token_to_refresh:
-        with redis().pipeline() as pipe:
-            pipe.get(WXMP_ACCESS_TOKEN_KEY)
-            pipe.ttl(WXMP_ACCESS_TOKEN_KEY)
-            access_token, ttl = pipe.execute()
-    if access_token_to_refresh or not access_token or ttl <= 0:
-        access_token, ttl = refresh_wxmp_access_token(access_token_to_refresh or access_token)
-    return DictObject(access_token=access_token, expires_in=ttl) if with_ttl else access_token
-
-
-@script('refresh-access-token')
-def refresh_wxmp_access_token_(access_token_to_refresh=None):
-    access_token, ttl = refresh_wxmp_access_token(access_token_to_refresh)
-    LOGGER.info('wxmp access token refreshed: %(access_token)s, %(ttl)s, %(access_token_to_refresh)s', {
-        'access_token': access_token, 'ttl': ttl, 'access_token_to_refresh': access_token_to_refresh
-    })
-
-
-def refresh_wxmp_access_token(access_token_to_refresh):
-    with redis().lock('lock:refresh-wxmp-access-token', timeout=2 * 60):
-        with redis().pipeline() as pipe:
-            pipe.get(WXMP_ACCESS_TOKEN_KEY)
-            pipe.ttl(WXMP_ACCESS_TOKEN_KEY)
-            access_token, ttl = pipe.execute()
-        if not access_token or ttl <= 0 or access_token == access_token_to_refresh:
-            access_token, expires_in = request_wxmp_access_token()
-            ttl = expires_in - 300
-            redis().setex(WXMP_ACCESS_TOKEN_KEY, ttl, access_token)
-    return access_token, ttl
-
-
-def request_wxmp_access_token():
-    # TODO: support multiple wxmp
-    config = wxpay_client_config()
-    params = dict(grant_type='client_credential', appid=config.app_id, secret=config.app_secret)
-    try:
-        response = requests.get(WXMP_ACCESS_TOKEN_AUTHORIZATION_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9),
-                                max_retries=Retry(total=5, backoff_factor=0.2))
-        response.raise_for_status()
-    except Exception:
-        LOGGER.exception('wxmp request access token exception-thrown')
-        raise
-    else:
-        result = objectify(response.json())
-        if hasattr(result, 'access_token'):
-            LOGGER.info('wxmp request access token succeeded: %(result)s, %(appid)s', {'result': result, 'appid': params['appid']})
-            return result.access_token, result.expires_in
-        else:
-            LOGGER.error('wxmp request access token failed: %(result)s', {'result': result})
-            raise Exception('wxmp request access token failed: {}'.format(result))
-
-
-def query_wxpay_payment_status(out_trade_no):
-    config = wx_open_app_config()
-    paid = query_order_status_(config.app_id, config.mch_id, config.api_key, out_trade_no)
-    return paid
-
-
-def query_wxmp_payment_status(wxmp_config, out_trade_no):
-    paid = query_order_status_(wxmp_config.app_id, wxmp_config.mch_id, wxmp_config.api_key, out_trade_no)
-    return paid
-
-
-@script('query-wxopen-order-status')
-def query_wxpay_script(out_trade_no):
-    query_wxpay_payment_status(out_trade_no)
-
-
-def query_order_status_(app_id, mch_id, api_key, out_trade_no):
+def query_order_status(app_id, mch_id, api_key, out_trade_no):
     paid = False
     args = DictObject(appid=app_id, mch_id=mch_id, out_trade_no=out_trade_no, nonce_str=uuid4().get_hex())
-    args.sign = sign_md5(args, key=api_key)
+    args.sign = sign_md5(args, api_key)
     with require_current_template_directory_relative_to():
         data = to_str(get_template('query-order.xml').render(**args))
     headers = {'Content-Type': 'application/xml'}
@@ -260,7 +171,7 @@ def query_order_status_(app_id, mch_id, api_key, out_trade_no):
             LOGGER.info('wxpay query order status got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
             raise Exception('wxpay query order status got failed response: {}'.format(parsed_response.return_msg))
         try:
-            validate_wxpay_response(parsed_response, api_key)
+            verify_wxpay_response(parsed_response, api_key)
         except Exception:
             LOGGER.info('wxpay query order status got fake response: %(data)s', {'data': data})
             raise
@@ -312,15 +223,14 @@ def validate_order_info(arguments):
     return trade_no, paid_total, paid_at, bank_billno, errors
 
 
-def validate_payment_notification(arguments):
+def validate_payment_notification(app_id, mch_id, api_key, arguments):
     discarded_reasons = []
-    config = wx_open_app_config()
     if VEIL_ENV_TYPE not in {'development', 'test'}:
-        if not is_sign_correct(arguments):
+        if not is_sign_correct(arguments, api_key):
             discarded_reasons.append('sign is incorrect')
-    if config.mch_id != arguments.get('mch_id'):
+    if mch_id != arguments.get('mch_id'):
         discarded_reasons.append('mch_id mismatched')
-    if config.app_id != arguments.get('appid'):
+    if app_id != arguments.get('appid'):
         discarded_reasons.append('app_id mismatched')
     if arguments.get('result_code') != SUCCESSFULLY_MARK:
         LOGGER.info('wxpay got failed notification: %(err_code)s, %(err_code_des)s', {'err_code': arguments.err_code, 'err_code_des': arguments.err_code_des})
@@ -347,41 +257,22 @@ def validate_payment_notification(arguments):
             discarded_reasons.append('invalid time_end: {}'.format(paid_at))
     else:
         discarded_reasons.append('no time_end')
-    show_url = arguments.get('attach')
     buyer_alias = arguments.get('openid')
     bank_code = arguments.get('bank_type')
     bank_billno = None
-    return out_trade_no, trade_no, buyer_alias, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons
+    return out_trade_no, trade_no, buyer_alias, paid_total, paid_at, bank_code, bank_billno, None, discarded_reasons
 
 
-def verify_sign(content, sign=None):
-    sign = sign or content.pop('sign', None)
-    if not sign or sign.upper() != sign_md5(content):
-        raise Exception('failed to verify sign: sign={}, content={}'.format(sign, content))
-
-
-def is_sign_correct(arguments):
-    try:
-        verify_sign(arguments)
-    except Exception:
-        LOGGER.exception('wrong sign, maybe a fake wxpay notification')
+def is_sign_correct(arguments, key):
+    sign = arguments.pop('sign', None)
+    if not sign or sign.upper() != sign_md5(arguments, key):
         return False
-    else:
-        return True
+    return True
 
 
-def sign_md5(params, key=None):
-    param_str = '{}&key={}'.format(to_url_params_string(params), key or wxpay_client_config().partner_key)
+def sign_md5(params, key):
+    param_str = '{}&key={}'.format('&'.join('{}={}'.format(key, params[key]) for key in sorted(params) if params[key]), key)
     return hashlib.md5(param_str.encode('UTF-8')).hexdigest().upper()
-
-
-def sign_sha1(params):
-    param_str = to_url_params_string(params)
-    return hashlib.sha1(param_str.encode('UTF-8')).hexdigest()
-
-
-def to_url_params_string(params):
-    return '&'.join('{}={}'.format(key, params[key]) for key in sorted(params) if params[key])
 
 
 def parse_xml_response(response):
