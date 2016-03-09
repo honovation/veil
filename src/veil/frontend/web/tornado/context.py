@@ -18,6 +18,10 @@ def get_current_http_request(optional=False):
     return context.request if context else None
 
 
+def is_ajax_request(request):
+    return request and request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+
 def get_current_http_response(optional=False):
     context = get_current_http_context(optional=optional)
     return context.response if context else None
