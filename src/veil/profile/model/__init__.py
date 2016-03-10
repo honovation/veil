@@ -8,6 +8,10 @@ with veil_component.init_component(__name__):
     from veil.model.security import *
     from veil.utility.clock import *
     from veil.utility.json import *
+    from veil.utility.numencode import *
+    from veil.utility.encoding import *
+    from veil.utility.hash import *
+    from veil.utility.misc import *
     from veil.backend.database.client import *
     from veil.backend.redis import *
     from veil.backend.queue import *
