@@ -10,7 +10,7 @@ import logging
 import contextlib
 from urlparse import urlparse
 from veil.utility.encoding import *
-from veil.utility.user_agent import *
+from veil.utility.web import *
 from veil.frontend.template import *
 from veil.frontend.web import *
 

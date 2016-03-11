@@ -23,7 +23,7 @@ import contextlib
 import uuid
 from veil.backend.redis import *
 from veil.model.collection import *
-from veil.utility.user_agent import *
+from veil.utility.web import *
 from veil.frontend.nginx import *
 from veil.frontend.web import *
 

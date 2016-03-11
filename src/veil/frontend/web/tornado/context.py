@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+
 import contextlib
 
 http_contexts = []
@@ -16,10 +17,6 @@ def get_current_http_context(optional=False):
 def get_current_http_request(optional=False):
     context = get_current_http_context(optional=optional)
     return context.request if context else None
-
-
-def is_ajax_request(request):
-    return request and request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
 
 def get_current_http_response(optional=False):

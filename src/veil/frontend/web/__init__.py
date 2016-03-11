@@ -34,7 +34,6 @@ with veil_component.init_component(__name__):
     from .tornado import get_current_http_context
     from .tornado import get_current_http_request
     from .tornado import get_current_http_response
-    from .tornado import is_ajax_request
     from .tornado import start_http_server
     from .tornado import start_test_http_server
     from .tornado import create_stack_context
@@ -95,7 +94,6 @@ with veil_component.init_component(__name__):
         get_current_http_context.__name__,
         get_current_http_request.__name__,
         get_current_http_response.__name__,
-        is_ajax_request.__name__,
         start_http_server.__name__,
         start_test_http_server.__name__,
         create_stack_context.__name__,
