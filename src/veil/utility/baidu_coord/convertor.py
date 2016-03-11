@@ -41,4 +41,4 @@ def convert_to_baidu_coord(coords, ak, sn=None, from_type=1, to_type=5, output=J
                     parsed_output[e.tag] = e.text
         if parsed_output.status != 0:
             raise Exception('invalid output status when call convert to baidu coord: {}'.format(response.content))
-        return parsed_output
+        return parsed_output.result

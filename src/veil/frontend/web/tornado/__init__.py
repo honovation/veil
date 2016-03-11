@@ -6,7 +6,6 @@ with veil_component.init_component(__name__):
     from .context import get_current_http_context
     from .context import get_current_http_request
     from .context import get_current_http_response
-    from veil.utility.web.web import is_ajax_request
     from .server import start_http_server
     from .server import start_test_http_server
     from .server import create_stack_context
@@ -35,7 +34,6 @@ with veil_component.init_component(__name__):
         get_current_http_context.__name__,
         get_current_http_request.__name__,
         get_current_http_response.__name__,
-        is_ajax_request.__name__,
         # from http_server
         start_http_server.__name__,
         start_test_http_server.__name__,
