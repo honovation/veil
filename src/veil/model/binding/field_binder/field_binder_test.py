@@ -42,6 +42,13 @@ class FieldBinderTest(TestCase):
         for good_phone in ['110', '8888888', '88888888', '8888888-123', '88888888-23435', '0871-8888888-123', '023-88888888-23435', '86-0871-8888888-123', '8888888_123', '023_88888888_23435', '86_0871_8888888_123', '8888888－123', '023－88888888－23435', '86－0871－8888888－123', '86 0871 8888888 123', '86.0871.8888888.123']:
             self.assertEquals(good_phone, is_landline(good_phone))
 
+    def test_is_url(self):
+        for bad_url in ['', 'www baidu.com', 'www.baidu.c', 'localhost', 'http://localhost/']:
+            with self.assertRaises(Invalid):
+                is_url(bad_url)
+        for good_url in ['www.baidu.com', 'www.baidu.com/', 'www.baidu.com/s', 'http://www.baidu.com', 'http://www.baidu.com/', 'http://www.baidu.com/s', '192.168.1.1', 'http://192.168.1.1']:
+            self.assertEquals(good_url, is_url(good_url))
+
     def test_validate_date(self):
         date(2007, 07, 30)
         converted = to_date()('2007-7-30')

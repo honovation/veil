@@ -20,6 +20,7 @@ with veil_component.init_component(__name__):
     from .field_binder import is_email
     from .field_binder import is_mobile
     from .field_binder import is_landline
+    from .field_binder import is_url
     from .field_binder import is_list
     from .field_binder import to_list
     from .field_binder import to_integer
@@ -57,6 +58,7 @@ with veil_component.init_component(__name__):
         is_email.__name__,
         is_mobile.__name__,
         is_landline.__name__,
+        is_url.__name__,
         is_list.__name__,
         to_list.__name__,
         to_integer.__name__,
