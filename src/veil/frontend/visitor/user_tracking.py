@@ -51,8 +51,10 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
         request = get_current_http_request()
         request.tracking_code = get_browser_code()
         current_route = get_current_http_context().route
+        user_agent = request.headers.get('User-Agent')
+        referer = request.headers.get('Referer')
         try:
-            if is_web_spider(request.headers.get('User-Agent')):
+            if is_web_spider(user_agent):
                 if TAG_NO_LOGIN_REQUIRED not in current_route.tags:
                     set_http_status_code(httplib.FORBIDDEN)
                     end_http_request_processing()
@@ -73,10 +75,10 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
                     if request.method == 'GET':
                         login_referer = request.uri
                     else:
-                        login_referer = request.headers.get('Referer')
+                        login_referer = referer
                     if login_referer:
                         remember_user_login_referer(purpose, login_referer, request.tracking_code)
-                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    if is_ajax_request(request):
                         set_http_status_code(httplib.UNAUTHORIZED)
                         get_current_http_response().set_header('WWW-Authenticate', config[purpose].login_url)
                         end_http_request_processing()
@@ -87,9 +89,9 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
         except Exception:
             LOGGER.exception('failed to track user: %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
                 'uri': request.uri,
-                'referer': request.headers.get('Referer'),
+                'referer': referer,
                 'remote_ip': request.remote_ip,
-                'user_agent': request.headers.get('User-Agent')
+                'user_agent': user_agent
             })
         yield
 
