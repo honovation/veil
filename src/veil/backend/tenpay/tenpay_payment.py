@@ -65,25 +65,26 @@ def query_tenpay_payment_status(out_trade_no):
 
 
 def process_tenpay_payment_notification(out_trade_no, arguments, notified_from):
+    with_notify_id = NOTIFIED_FROM_PAYMENT_QUERY != notified_from
     trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_payment_notification(out_trade_no, arguments,
-                                                                                                                                 NOTIFIED_FROM_PAYMENT_QUERY != notified_from)
+                                                                                                                                 with_notify_id)
     if discarded_reasons:
         LOGGER.warn('tenpay payment notification discarded: %(discarded_reasons)s, %(arguments)s', {
             'discarded_reasons': discarded_reasons,
             'arguments': arguments
         })
-        if NOTIFIED_FROM_PAYMENT_QUERY == notified_from:
-            return discarded_reasons
-        else:
-            set_http_status_code(httplib.BAD_REQUEST)
-            return '<br/>'.join(discarded_reasons)
-    publish_event(EVENT_TENPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
-                  paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
-                  notified_from=notified_from)
+    else:
+        publish_event(EVENT_TENPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
+                      paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
+                      notified_from=notified_from)
     if NOTIFIED_FROM_RETURN_URL == notified_from:
         redirect_to(show_url or '/')
     elif NOTIFIED_FROM_NOTIFY_URL == notified_from:
-        return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
+        if discarded_reasons:
+            set_http_status_code(httplib.BAD_REQUEST)
+            return '<br/>'.join(discarded_reasons)
+        else:
+            return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
     else:
         return discarded_reasons
 
