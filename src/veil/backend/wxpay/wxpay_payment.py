@@ -1,13 +1,14 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
-from decimal import Decimal, DecimalException
-import logging
+
 import hashlib
+import logging
+from decimal import Decimal, DecimalException
 from uuid import uuid4
+
 import lxml.objectify
+
 from veil.environment import VEIL_ENV_TYPE
-from veil.utility.http import *
-from veil.utility.encoding import *
 from veil.profile.model import *
 from veil.profile.web import *
 

@@ -3,11 +3,9 @@ from __future__ import unicode_literals, print_function, division
 
 import logging
 
-from veil.frontend.cli import script
-from veil.utility.http import *
 from veil.profile.model import *
+from veil.utility.http import *
 from veil_component import VEIL_ENV_TYPE
-
 from .access_token import get_wxmp_access_token
 
 redis = register_redis('persist_store')
