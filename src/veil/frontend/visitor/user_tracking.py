@@ -38,7 +38,7 @@ SESSION_TTL_ENABLED = lambda: True
 config = {}  # one process services at most one website, i.e. a specific purpose
 
 
-def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSION_TTL, is_session_ttl_enabled=SESSION_TTL_ENABLED,
+def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_ttl=DEFAULT_SESSION_TTL, is_session_ttl_enabled=SESSION_TTL_ENABLED,
                          session_cookie_on_parent_domain=False, cookie_expires_days=DEFAULT_COOKIE_EXPIRES_DAYS,
                          secured_user_code_cookie_name=VEIL_SECURED_USER_CODE_COOKIE_DEFAULT_NAME, secured_user_code_cookie_on_parent_domain=False):
     config[purpose] = DictObject(login_url=login_url, session_ttl=session_ttl, is_session_ttl_enabled=is_session_ttl_enabled,
@@ -63,6 +63,9 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
                     request.tracking_code = uuid.uuid4().get_hex()
                 set_browser_code(purpose, request.tracking_code)
 
+                if try_sign_in:
+                    try_sign_in()
+
                 latest_user_id = get_latest_user_id(purpose)
                 if latest_user_id:
                     set_latest_user_id(purpose, latest_user_id)
@@ -72,7 +75,7 @@ def enable_user_tracking(purpose, login_url='/login', session_ttl=DEFAULT_SESSIO
                     refresh_user_session_ttl(session)
 
                 if TAG_NO_LOGIN_REQUIRED not in current_route.tags and not (session and get_logged_in_user_id(purpose, session)):
-                    if request.method == 'GET':
+                    if request.method in {'GET', 'HEAD'}:
                         login_referer = request.uri
                     else:
                         login_referer = referer
