@@ -9,6 +9,8 @@
     check-for-update：检查当前region表数据与最新统计局数据的差异
     migrate：更新到统计局最新版本的数据并将原数据备份到REGION_BACKUP_TABLE中
     rollback：回滚备份的数据到REGION_TABLE中
+
+    TODO: another source of data http://www.mca.gov.cn/article/sj/tjbz/a/
 """
 from __future__ import unicode_literals, print_function, division
 import logging
