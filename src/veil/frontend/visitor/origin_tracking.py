@@ -23,16 +23,17 @@ def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_pa
     @contextlib.contextmanager
     def f():
         request = get_current_http_request()
+        user_agent = request.headers.get('User-Agent')
+        request.is_web_spider = is_web_spider(user_agent)
+        referer = request.headers.get('Referer')
         try:
-            request.from_spider = is_web_spider(request.headers.get('User-Agent'))
-            if request.method == 'GET' and not request.from_spider:
-                referer = request.headers.get('Referer')
+            if not request.is_web_spider and request.method == 'GET':
                 if referer:
                     referer = to_unicode(referer, strict=False, additional={
                         'uri': request.uri,
                         'referer': referer,
                         'remote_ip': request.remote_ip,
-                        'user_agent': request.headers.get('User-Agent')
+                        'user_agent': user_agent
                     })
                     host = urlparse(referer).hostname
                     if host:
@@ -44,9 +45,9 @@ def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_pa
         except Exception:
             LOGGER.exception('failed to track visitor origin: %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
                 'uri': request.uri,
-                'referer': request.headers.get('Referer'),
+                'referer': referer,
                 'remote_ip': request.remote_ip,
-                'user_agent': request.headers.get('User-Agent')
+                'user_agent': user_agent
             })
         finally:
             yield
@@ -90,4 +91,4 @@ def get_visitor_origin(cps_as_int=False, max_age_days=DEFAULT_ORIGIN_COOKIE_EXPI
 @template_utility
 def is_requested_from_spider():
     request = get_current_http_request()
-    return request and getattr(request, 'from_spider', False)
+    return request and getattr(request, 'is_web_spider', False)
