@@ -5,7 +5,7 @@ from user_agents import parse
 
 from veil.utility.memoize import *
 
-WEIXIN_USER_AGENT_MARK = 'MicroMessenger'
+WEIXIN_USER_AGENT_MARK = b'MicroMessenger'
 
 
 @memoize(maxsize=2 ** 15, timeout=60 * 20)
@@ -22,7 +22,7 @@ def is_web_spider(user_agent):
 
 
 def is_ajax_request(request):
-    return request and request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    return request and request.headers.get('X-Requested-With') == b'XMLHttpRequest'
 
 
 def is_weixin_request(request):

@@ -6,6 +6,7 @@ from veil.utility.encoding import *
 from .context import get_current_http_response
 from .error import end_http_request_processing
 
+
 def redirect_to(url, permanent=False, response=None):
     response = response or get_current_http_response()
     if response.headers_written:
