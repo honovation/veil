@@ -10,7 +10,6 @@ import logging
 import contextlib
 from urlparse import urlparse
 from veil.utility.encoding import *
-from veil.utility.web import *
 from veil.frontend.template import *
 from veil.frontend.web import *
 
@@ -23,17 +22,15 @@ def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_pa
     @contextlib.contextmanager
     def f():
         request = get_current_http_request()
-        user_agent = request.headers.get('User-Agent')
-        request.is_web_spider = is_web_spider(user_agent)
         referer = request.headers.get('Referer')
         try:
-            if not request.is_web_spider and request.method == 'GET':
+            if not request.user_agent.is_bot and request.method == 'GET':
                 if referer:
                     referer = to_unicode(referer, strict=False, additional={
                         'uri': request.uri,
                         'referer': referer,
                         'remote_ip': request.remote_ip,
-                        'user_agent': user_agent
+                        'user_agent': request.user_agent.ua_string
                     })
                     host = urlparse(referer).hostname
                     if host:
@@ -47,7 +44,7 @@ def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_pa
                 'uri': request.uri,
                 'referer': referer,
                 'remote_ip': request.remote_ip,
-                'user_agent': user_agent
+                'user_agent': request.user_agent.ua_string
             })
         finally:
             yield
@@ -91,4 +88,4 @@ def get_visitor_origin(cps_as_int=False, max_age_days=DEFAULT_ORIGIN_COOKIE_EXPI
 @template_utility
 def is_requested_from_spider():
     request = get_current_http_request()
-    return request and getattr(request, 'is_web_spider', False)
+    return request and request.user_agent.is_bot

@@ -22,7 +22,7 @@ def install_translations(locale_provider):
                 'uri': request.uri,
                 'referer': request.headers.get('Referer'),
                 'remote_ip': request.remote_ip,
-                'user_agent': request.headers.get('User-Agent'),
+                'user_agent': request.user_agent.ua_string,
                 'accept_language': request.headers.get('Accept-Language'),
                 'stack_trace': b''.join(traceback.format_stack())
             })

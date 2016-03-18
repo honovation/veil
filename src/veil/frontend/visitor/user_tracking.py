@@ -23,7 +23,6 @@ import contextlib
 import uuid
 from veil.backend.redis import *
 from veil.model.collection import *
-from veil.utility.web import *
 from veil.frontend.nginx import *
 from veil.frontend.web import *
 
@@ -50,12 +49,10 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
     def f():
         request = get_current_http_request()
         request.tracking_code = get_browser_code()
-        user_agent = request.headers.get('User-Agent')
-        request.is_web_spider = is_web_spider(user_agent)
         referer = request.headers.get('Referer')
         current_route = get_current_http_context().route
         try:
-            if request.is_web_spider:
+            if request.user_agent.is_bot:
                 if TAG_NO_LOGIN_REQUIRED not in current_route.tags:
                     set_http_status_code(httplib.FORBIDDEN)
                     end_http_request_processing()
@@ -82,7 +79,7 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
                         login_referer = referer
                     if login_referer:
                         remember_user_login_referer(purpose, login_referer, request.tracking_code)
-                    if is_ajax_request(request):
+                    if request.is_ajax:
                         set_http_status_code(httplib.UNAUTHORIZED)
                         get_current_http_response().set_header('WWW-Authenticate', config[purpose].login_url)
                         end_http_request_processing()
@@ -95,7 +92,7 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
                 'uri': request.uri,
                 'referer': referer,
                 'remote_ip': request.remote_ip,
-                'user_agent': user_agent
+                'user_agent': request.user_agent.ua_string
             })
         yield
 

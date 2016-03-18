@@ -77,7 +77,7 @@ def validate_captcha(challenge_code, captcha_answer):
                 'uri': request.uri,
                 'referer': request.headers.get('Referer'),
                 'remote_ip': request.remote_ip,
-                'user_agent': request.headers.get('User-Agent')
+                'user_agent': request.user_agent.ua_string
             })
         return {}
     else:
@@ -89,7 +89,7 @@ def validate_captcha(challenge_code, captcha_answer):
             'uri': request.uri,
             'referer': request.headers.get('Referer'),
             'remote_ip': request.remote_ip,
-            'user_agent': request.headers.get('User-Agent')
+            'user_agent': request.user_agent.ua_string
         })
         return {'captcha_answer': ['验证码{}，请重新填入正确的计算结果'.format('错误' if real_answer else '过期')]}
 
