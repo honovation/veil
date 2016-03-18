@@ -18,6 +18,8 @@ MAX_SMS_CONTENT_LENGTH = 400
 MAX_LENGTH_PER_MESSAGE = 70
 OVER_MAX_LENGTH_MESSAGE_LENGTH_PER_MESSAGE = 67
 
+OVER_RATE_LIMIT_CODES = {8, 9, 17, 22}
+
 _config = None
 
 
@@ -92,7 +94,8 @@ class YunpianSMService(SMService):
                 LOGGER.error('yunpian sms send failed: %(sms_code)s, %(response)s, %(receivers)s', {
                     'sms_code': sms_code, 'response': response.text, 'receivers': receivers
                 })
-                raise SendError('yunpian sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers))
+                if result.code not in OVER_RATE_LIMIT_CODES:
+                    raise SendError('yunpian sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers))
 
     def query_balance(self):
         if not self.config:
