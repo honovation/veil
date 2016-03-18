@@ -89,6 +89,7 @@ class YunpianSMService(SMService):
         else:
             result = objectify(response.json())
             if result.code == 0:
+                self.add_sent_quantity(self.get_minimal_message_quantity(message) * len(receivers))
                 LOGGER.info('yunpian sms send succeeded: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
             else:
                 LOGGER.error('yunpian sms send failed: %(sms_code)s, %(response)s, %(receivers)s', {
