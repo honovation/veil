@@ -3,7 +3,7 @@ import logging
 import re
 import imp
 from pkg_resources import safe_name, safe_version, parse_version, to_filename
-from veil.environment import VEIL_ENV_TYPE, PYPI_ARCHIVE_DIR, get_current_veil_server
+from veil.environment import VEIL_ENV_TYPE, PYPI_ARCHIVE_DIR, get_current_veil_server, get_current_veil_env
 from veil.utility.shell import *
 from veil_installer import *
 from veil.frontend.cli import *
@@ -242,12 +242,12 @@ def install_python_package(name, version, url=None, **kwargs):
 
 @script('upgrade-pip')
 def upgrade_pip(setuptools_version, wheel_version, pip_version):
-    server = get_current_veil_server()
-    shell_execute('pip install -i {} --trusted-host {} --upgrade pip=={}'.format(server.pypi_index_url, server.pypi_index_host, pip_version), capture=True,
+    env = get_current_veil_env()
+    shell_execute('pip install -i {} --trusted-host {} --upgrade pip=={}'.format(env.pypi_index_url, env.pypi_index_host, pip_version), capture=True,
                   debug=True)
-    shell_execute('pip install -i {} --trusted-host {} --upgrade setuptools=={}'.format(server.pypi_index_url, server.pypi_index_host, setuptools_version),
+    shell_execute('pip install -i {} --trusted-host {} --upgrade setuptools=={}'.format(env.pypi_index_url, env.pypi_index_host, setuptools_version),
                   capture=True, debug=True)
-    shell_execute('pip install -i {} --trusted-host {} --upgrade wheel=={}'.format(server.pypi_index_url, server.pypi_index_host, wheel_version), capture=True,
+    shell_execute('pip install -i {} --trusted-host {} --upgrade wheel=={}'.format(env.pypi_index_url, env.pypi_index_host, wheel_version), capture=True,
                   debug=True)
 
 
