@@ -53,20 +53,24 @@ def generate_captcha():
     return challenge_code, bucket().get_url(bucket_key)
 
 
+def validate_captcha():
+    challenge_code = get_http_argument('captcha_challenge_code', optional=True)
+    delete_http_argument('captcha_challenge_code')
+    captcha_answer = get_http_argument('captcha_answer', optional=True)
+    delete_http_argument('captcha_answer')
+    return validate(challenge_code, captcha_answer)
+
+
 def captcha_protected(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        challenge_code = get_http_argument('captcha_challenge_code', optional=True)
-        delete_http_argument('captcha_challenge_code')
-        captcha_answer = get_http_argument('captcha_answer', optional=True)
-        delete_http_argument('captcha_answer')
-        kwargs['captcha_errors'] = validate_captcha(challenge_code, captcha_answer)
+        kwargs['captcha_errors'] = validate_captcha()
         return func(*args, **kwargs)
 
     return wrapper
 
 
-def validate_captcha(challenge_code, captcha_answer):
+def validate(challenge_code, captcha_answer):
     request = get_current_http_request()
     real_answer = redis().get(captcha_redis_key(challenge_code))
     if 'test' == VEIL_ENV_TYPE or (captcha_answer and real_answer == captcha_answer):
