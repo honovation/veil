@@ -6,13 +6,17 @@ import re
 import os
 import cx_Oracle
 from cx_Oracle import OperationalError
+
 from veil.utility.encoding import *
 from veil.model.collection import *
+from veil.backend.database.client import *
 
 LOGGER = logging.getLogger(__name__)
 
 
 class OracleAdapter(object):
+    type = DATABASE_TYPE_ORACLE
+
     def __init__(self, host, port, database, user, password, schema):
         self.host = host
         self.port = port

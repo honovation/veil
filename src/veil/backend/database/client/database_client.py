@@ -19,6 +19,11 @@ from .database_client_installer import database_client_resource
 
 LOGGER = getLogger(__name__)
 
+DATABASE_TYPE_POSTGRESQL = 'postgresql'
+DATABASE_TYPE_MYSQL = 'mysql'
+DATABASE_TYPE_ORACLE = 'oracle'
+DATABASE_TYPE_DB2 = 'db2'
+
 instances = {}  # purpose => adapter instance
 adapter_classes = {}  # database type => adapter class
 
@@ -155,6 +160,8 @@ class Database(object):
             LOGGER.exception('Cannot close database connection')
 
     def exists(self, sql, **kwargs):
+        if self.conn.type == DATABASE_TYPE_ORACLE:
+            return self.get_scalar('SELECT 1 FROM DUAL WHERE EXISTS ({})'.format(sql), **kwargs) is not None
         return self.get_scalar('SELECT EXISTS ({})'.format(sql), **kwargs)
 
     def execute(self, sql, **kwargs):

@@ -5,14 +5,17 @@ import logging
 import re
 import mysql.connector
 from mysql.connector.errors import OperationalError
-from mysql.connector.conversion import MySQLConverter
+
 from veil.utility.encoding import *
 from veil.model.collection import *
+from veil.backend.database.client import *
 
 LOGGER = logging.getLogger(__name__)
 
 
 class MySQLAdapter(object):
+    type = DATABASE_TYPE_MYSQL
+
     def __init__(self, host, port, database, user, password, schema):
         self.host = host
         self.port = port

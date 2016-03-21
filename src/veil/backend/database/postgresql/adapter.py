@@ -7,8 +7,10 @@ from psycopg2.extras import NamedTupleCursor
 from psycopg2.extras import register_uuid
 from psycopg2.extensions import cursor as NormalCursor
 from psycopg2 import OperationalError
+
 from veil.model.collection import *
 from veil.utility.json import *
+from veil.backend.database.client import *
 
 LOGGER = getLogger(__name__)
 
@@ -18,8 +20,12 @@ psycopg2.extensions.register_type(register_uuid())
 
 
 class CustomJsonAdapter(psycopg2.extras.Json):
+    def __init__(self, adapted, dumps=None):
+        super(CustomJsonAdapter, self).__init__(adapted, dumps)
+
     def dumps(self, obj):
         return to_readable_json(obj) if obj.get('readable', True) else to_json(obj)
+
 
 psycopg2.extensions.register_adapter(dict, CustomJsonAdapter)
 psycopg2.extras.register_default_json(globally=True, loads=lambda obj: objectify(from_json(obj)))
@@ -27,6 +33,8 @@ psycopg2.extras.register_default_jsonb(globally=True, loads=lambda obj: objectif
 
 
 class PostgresqlAdapter(object):
+    type = DATABASE_TYPE_POSTGRESQL
+
     def __init__(self, host, port, database, user, password, schema):
         self.host = host
         self.port = port
