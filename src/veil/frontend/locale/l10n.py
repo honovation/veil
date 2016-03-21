@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 from datetime import datetime, timedelta
-import pytz
 import babel.dates
 from veil.frontend.template import *
 from veil.utility.clock import *

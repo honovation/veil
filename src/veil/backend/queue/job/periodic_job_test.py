@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import calendar
 from datetime import timedelta, datetime
-import pytz
 from unittest.case import TestCase
 from veil.utility.clock import *
 from .periodic_job import TimedeltaSchedule

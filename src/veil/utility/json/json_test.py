@@ -1,9 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 from datetime import datetime
 from decimal import Decimal
-import pytz
 from uuid import uuid4
 from unittest.case import TestCase
+from veil.utility.clock import *
 from ._json import to_json
 from ._json import from_json
 

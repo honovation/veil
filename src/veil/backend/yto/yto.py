@@ -4,7 +4,6 @@ import logging
 import base64
 import re
 from hashlib import md5
-from dateutil.parser import parse
 import lxml.objectify
 from veil.model.collection import *
 from veil.utility.http import *
@@ -38,9 +37,9 @@ def verify_logistics_notify(notify_data, sign):
 def parse_logistics_notify(notify_data):
     root = lxml.objectify.fromstring(notify_data)
     accepted_at = convert_datetime_to_client_timezone(parse(root.acceptTime.text))
-    notification = DictObject(logistics_id=root.txLogisticID.text, client_id=root.clientID.text, accepted_at=accepted_at,
-        info_type=root.infoType.text, info_content=root.infoContent.text, status=root.infoContent.text, brief=STATUS2LABEL.get(root.infoContent.text),
-        is_delivered=False, is_signed=False, is_rejected=False)
+    notification = DictObject(logistics_id=root.txLogisticID.text, client_id=root.clientID.text, accepted_at=accepted_at, info_type=root.infoType.text,
+                              info_content=root.infoContent.text, status=root.infoContent.text, brief=STATUS2LABEL.get(root.infoContent.text),
+                              is_delivered=False, is_signed=False, is_rejected=False)
     if notification.info_type == 'STATUS':
         element_remark = root.find('remark')
         notification.remark = element_remark.text if element_remark else None
@@ -120,7 +119,7 @@ def query_logistics_status(query_order):
             if step.name.text and '退' in step.name.text:
                 logistics_status.rejected_at = step_created_at
             logistics_status.steps.append(DictObject(brief='{} {} {}'.format(step.remark.text or '', step.acceptAddress.text or '', step.name.text or ''),
-                created_at=step_created_at))
+                                                     created_at=step_created_at))
         if query_result.orders.order.orderStatus.text == STATUS_SIGNED and logistics_status.rejected_at is None:
             logistics_status.signed_at = logistics_status.steps[-1].created_at
         return logistics_status

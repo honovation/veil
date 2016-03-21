@@ -6,8 +6,6 @@ otherwise throw Invalid exception
 from __future__ import unicode_literals, print_function, division
 import re
 from datetime import datetime, date, time
-import pytz
-from dateutil.parser import parse
 from decimal import Decimal, InvalidOperation, ROUND_FLOOR
 import sys
 from veil.utility.clock import *

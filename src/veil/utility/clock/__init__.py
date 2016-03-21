@@ -16,6 +16,10 @@ with veil_component.init_component(__name__):
     from .clock import convert_naive_datetime_to_aware
     from .clock import get_relative_delta
 
+    from .clock import parse
+    from .clock import relativedelta
+    from .clock import pytz
+
     __all__ = [
         # from clock
         'DEFAULT_CLIENT_TIMEZONE',
@@ -32,4 +36,8 @@ with veil_component.init_component(__name__):
         is_naive_datetime.__name__,
         convert_naive_datetime_to_aware.__name__,
         get_relative_delta.__name__,
+
+        parse.__name__,
+        relativedelta.__name__,
+        pytz.__name__,
     ]
