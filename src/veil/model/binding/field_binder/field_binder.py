@@ -62,16 +62,6 @@ def is_list(value):
     raise Invalid(_('值不为列表'))
 
 
-def to_list(seq, to_type=None, return_none_when_invalid=False):
-    try:
-        return [e if to_type is None else to_type(e) for e in seq]
-    except (TypeError, ValueError):
-        if return_none_when_invalid:
-            return None
-        else:
-            raise Invalid(_('值不合法'))
-
-
 def to_list(to_type=None):
     def bind(seq, return_none_when_invalid=False):
         try:
