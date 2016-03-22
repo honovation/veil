@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import logging
+from decimal import Decimal
+from math import sqrt, pow, sin, cos, atan2
 
 import lxml.objectify
 from veil.model.collection import *
@@ -11,6 +13,7 @@ API_URL = 'http://api.map.baidu.com/geoconv/v1/'
 COORDS_COUNT_LIMIT = 100
 JSON_OUTPUT = 'json'
 XML_OUTPUT = 'xml'
+X_PI = Decimal('3.14159265358979324') * Decimal('3000.0') / Decimal('180.0')
 
 LOGGER = logging.getLogger(__name__)
 
@@ -42,3 +45,16 @@ def convert_to_baidu_coord(coords, ak, sn=None, from_type=1, to_type=5, output=J
         if parsed_output.status != 0:
             raise Exception('invalid output status when call convert to baidu coord: {}'.format(response.content))
         return parsed_output.result
+
+
+def convert_baidu_coord_to_cgj02(coords):
+    decrypted_coords = []
+    for coord in coords:
+        bd_lon = coord[0]
+        bd_lat = coord[1]
+        x = bd_lon - Decimal('0.0065')
+        y = bd_lat - Decimal('0.006')
+        z = Decimal(sqrt(pow(x, 2) + pow(y, 2))) - Decimal('0.00002') * Decimal(sin(y * X_PI))
+        theta = Decimal(atan2(y, x)) - Decimal('0.000003') * Decimal(cos(x * X_PI))
+        decrypted_coords.append((Decimal(z * Decimal(cos(theta))), Decimal(z * Decimal(sin(theta)))))
+    return decrypted_coords
