@@ -164,7 +164,7 @@ else:
             os.chdir(old_cwd)
 
     def get_url(purpose, path):
-        url_prefix = get_website_url_prefix(purpose)
+        url_prefix = get_website_url(purpose)
         return '{}{}'.format(url_prefix, path)
 
 

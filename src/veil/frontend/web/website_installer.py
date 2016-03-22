@@ -53,7 +53,7 @@ def override_website_config(purpose, **overrides):
     overridden_website_configs.setdefault(purpose, {}).update(overrides)
 
 
-def get_website_url_prefix(purpose, ssl=False, with_scheme=True):
+def get_website_url(purpose, ssl=False, with_scheme=True):
     config = website_config(purpose)
     if with_scheme:
         scheme = HTTPS_SCHEME if ssl else HTTP_SCHEME

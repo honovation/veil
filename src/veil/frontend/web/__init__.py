@@ -9,7 +9,7 @@ with veil_component.init_component(__name__):
     from .website_launcher import start_test_website
     from .website_launcher import register_website_context_manager
     from .website_launcher import remove_no_longer_used_cookies
-    from .website_installer import get_website_url_prefix
+    from .website_installer import get_website_url
     from .website_installer import get_website_domain
     from .website_installer import get_website_parent_domain
     from .website_installer import website_resource
@@ -69,7 +69,7 @@ with veil_component.init_component(__name__):
         register_website_context_manager.__name__,
         remove_no_longer_used_cookies.__name__,
 
-        get_website_url_prefix.__name__,
+        get_website_url.__name__,
         get_website_domain.__name__,
         get_website_parent_domain.__name__,
         website_resource.__name__,
