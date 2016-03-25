@@ -97,8 +97,9 @@ def get_routes(website):
 
 
 class RoutingHTTPHandler(object):
-    def __init__(self, routes, context_managers):
-        self.routes = routes
+    def __init__(self, website, context_managers):
+        self.website = website
+        self.routes = get_routes(website)
         self.context_managers = context_managers
 
     def __call__(self):

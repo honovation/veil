@@ -72,7 +72,7 @@ def create_website_http_handler(purpose, config):
     if config.clears_template_cache:
         website_context_managers.append(clear_template_caches)
     website_context_managers.extend(additional_context_managers.get(purpose, []))
-    return RoutingHTTPHandler(get_routes(purpose), website_context_managers)
+    return RoutingHTTPHandler(purpose, website_context_managers)
 
 
 def remove_no_longer_used_cookies(purpose, current_domain_names=(), parent_domain_names=()):

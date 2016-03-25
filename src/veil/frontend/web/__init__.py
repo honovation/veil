@@ -22,7 +22,6 @@ with veil_component.init_component(__name__):
     from .routing import public_route
     from .routing import is_public_route
     from .routing import RoutingHTTPHandler
-    from .routing import get_routes
     from .routing import register_page_post_processor
     from .routing import TAG_NO_POST_PROCESS
     from .routing import TAG_NO_LOGIN_REQUIRED
@@ -82,7 +81,6 @@ with veil_component.init_component(__name__):
         public_route.__name__,
         is_public_route.__name__,
         RoutingHTTPHandler.__name__,
-        get_routes.__name__,
         register_page_post_processor.__name__,
         'TAG_NO_POST_PROCESS',
         'TAG_NO_LOGIN_REQUIRED',
