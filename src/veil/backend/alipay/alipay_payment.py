@@ -62,6 +62,25 @@ def verify_alipay_sync_notification(message):
         return True
 
 
+def create_alipay_wap_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, minutes_to_expire):
+    params = dict(service='alipay.wap.create.direct.pay.by.user',
+                  partner=alipay_client_config().partner_id,
+                  _input_charset='UTF-8',
+                  notify_url=notify_url,
+                  return_url=return_url,
+                  out_trade_no=out_trade_no,
+                  subject=subject,
+                  total_fee='{:.2f}'.format(total_fee),
+                  seller_id=alipay_client_config().partner_id,
+                  payment_type='1',
+                  show_url=show_url,
+                  body=body,
+                  it_b_pay='{}m'.format(minutes_to_expire))
+    params['sign'] = sign_md5(params)
+    params['sign_type'] = 'MD5'
+    return '{}?{}'.format(PAYMENT_URL, urlencode(params))
+
+
 def create_alipay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, minutes_to_expire, shopper_ip_address):
     params = dict(service='create_direct_pay_by_user', partner=alipay_client_config().partner_id, _input_charset='UTF-8', out_trade_no=out_trade_no,
                   subject=subject, payment_type='1', seller_email=alipay_client_config().seller_email, total_fee='{:.2f}'.format(total_fee), body=body,
@@ -124,7 +143,7 @@ def process_alipay_payment_notification(out_trade_no, arguments, notified_from):
         publish_event(EVENT_ALIPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
                       paid_total=paid_total, paid_at=paid_at, show_url=show_url, notified_from=notified_from)
     if NOTIFIED_FROM_RETURN_URL == notified_from:
-        redirect_to(show_url or '/')
+        return show_url
     elif NOTIFIED_FROM_NOTIFY_URL == notified_from:
         if discarded_reasons:
             set_http_status_code(httplib.BAD_REQUEST)
@@ -160,7 +179,9 @@ def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
     trade_no = arguments.get('trade_no')
     if not trade_no:
         discarded_reasons.append('no trade_no')
-    if alipay_client_config().seller_email != arguments.get('seller_email'):
+    if alipay_client_config().partner_id != arguments.seller_id:
+        discarded_reasons.append('seller id mismatched')
+    if arguments.get('seller_email') and alipay_client_config().seller_email != arguments.seller_email:
         discarded_reasons.append('seller email mismatched')
     paid_total = arguments.get('total_fee')
     if paid_total:

@@ -5,6 +5,7 @@ with veil_component.init_component(__name__):
     from .alipay_payment import NOTIFIED_FROM_RETURN_URL
     from .alipay_payment import NOTIFIED_FROM_NOTIFY_URL
     from .alipay_payment import create_alipay_payment_url
+    from .alipay_payment import create_alipay_wap_payment_url
     from .alipay_payment import process_alipay_payment_notification
     from .alipay_payment import query_alipay_payment_status
     from .alipay_payment import make_alipay_order_str
@@ -18,6 +19,7 @@ with veil_component.init_component(__name__):
         'NOTIFIED_FROM_RETURN_URL',
         'NOTIFIED_FROM_NOTIFY_URL',
         create_alipay_payment_url.__name__,
+        create_alipay_wap_payment_url.__name__,
         process_alipay_payment_notification.__name__,
         query_alipay_payment_status.__name__,
         make_alipay_order_str.__name__,
