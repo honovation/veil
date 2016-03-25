@@ -85,7 +85,7 @@ def create_prepay_order(wxop_app_code, app_id, mch_id, api_key, trade_type, out_
                 'data': data
             })
             raise Exception('wxpay unified order got failed result: {}, {}'.format(parsed_response.err_code, parsed_response.err_code_des))
-        LOGGER.info('wxpay unified order success: %(response)s', {'response': response})
+        LOGGER.info('wxpay unified order success: %(response)s', {'response': response.content})
         return DictObject(nonce_str=parsed_response.nonce_str, trade_type=parsed_response.trade_type, prepay_id=parsed_response.prepay_id,
                           code_url=parsed_response.get('code_url'))
 
