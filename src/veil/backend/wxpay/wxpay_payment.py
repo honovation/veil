@@ -19,6 +19,7 @@ EVENT_WXPAY_DELIVER_NOTIFY_SENT = define_event('wxpay-deliver-notify-sent')
 
 WXPAY_TRADE_TYPE_APP = 'APP'
 WXPAY_TRADE_TYPE_JSAPI = 'JSAPI'
+WXPAY_TRADE_TYPE_NATIVE = 'NATIVE'
 NOTIFIED_FROM_ORDER_QUERY = 'order_query'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 SUCCESSFULLY_MARK = 'SUCCESS'  # wxpay require this 7 characters to be returned to them
@@ -28,6 +29,12 @@ WXPAY_BANK_TYPE = 'WX'
 WXPAY_ORDER_QUERY_URL = 'https://api.mch.weixin.qq.com/pay/orderquery'
 WXPAY_UNIFIEDORDER_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
 WXPAY_CLOSE_TRADE_URL = 'https://api.mch.weixin.qq.com/pay/closeorder'
+
+
+def make_wxpay_request_for_native(wxop_app_code, app_id, mch_id, api_key, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):
+    wxpay_prepay_order = create_prepay_order(wxop_app_code, app_id, mch_id, api_key, WXPAY_TRADE_TYPE_NATIVE, out_trade_no, subject, body, total_fee, notify_url,
+                                             shopper_ip_address, time_start, time_expire)
+    return wxpay_prepay_order.code_url
 
 
 def make_wxpay_request_for_app(wxop_app_code, app_id, mch_id, api_key, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):

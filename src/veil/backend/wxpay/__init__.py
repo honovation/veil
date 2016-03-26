@@ -8,6 +8,7 @@ with veil_component.init_component(__name__):
     from .wxpay_payment import query_order_status
     from .wxpay_payment import make_wxpay_request_for_app
     from .wxpay_payment import make_wxpay_request_for_mp
+    from .wxpay_payment import make_wxpay_request_for_native
     from .wxpay_payment import SUCCESSFULLY_MARK
     from .wxpay_payment import close_order
     from .wxpay_payment import parse_xml_response
@@ -34,6 +35,7 @@ with veil_component.init_component(__name__):
         query_order_status.__name__,
         make_wxpay_request_for_app.__name__,
         make_wxpay_request_for_mp.__name__,
+        make_wxpay_request_for_native.__name__,
         'SUCCESSFULLY_MARK',
         close_order.__name__,
         parse_xml_response.__name__,
