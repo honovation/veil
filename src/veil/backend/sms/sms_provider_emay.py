@@ -95,7 +95,6 @@ class EmaySMService(SMService):
         else:
             return_value = get_return_value(response.text)
             if return_value == 0:
-                self.add_sent_quantity(self.get_minimal_message_quantity(message) * len(receivers))
                 LOGGER.info('emay sms send succeeded: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
             else:
                 LOGGER.error('emay sms send failed: %(sms_code)s, %(response)s, %(receivers)s', {

@@ -131,6 +131,7 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
                     raise Exception('not enough reliable sms providers')
                 raise Exception('send sms got error')
         else:
+            current_sms_provider.add_sent_quantity(current_sms_provider.get_minimal_message_quantity(message) * len(receivers))
             break
 
 
