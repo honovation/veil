@@ -164,8 +164,8 @@ else:
             os.chdir(old_cwd)
 
     def get_url(purpose, path):
-        url_prefix = get_website_url(purpose)
-        return '{}{}'.format(url_prefix, path)
+        website_url = get_website_url(purpose)
+        return '{}{}'.format(website_url, path)
 
 
 @jinjatag.simple_block()

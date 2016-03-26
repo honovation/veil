@@ -3,6 +3,7 @@ from veil.profile.installer import *
 from veil.model.event import *
 from .routing import *
 
+_config = {}
 overridden_website_configs = {}
 HTTPS_SCHEME = 'https://'
 HTTP_SCHEME = 'http://'
@@ -22,7 +23,6 @@ def website_resource(purpose, config):
     return resources
 
 
-_config = {}
 def website_config(purpose):
     return _config.setdefault(purpose, load_website_config(purpose))
 

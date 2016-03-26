@@ -1,18 +1,23 @@
 from __future__ import unicode_literals, print_function, division
-import functools
-import re
+
 import contextlib
+import functools
 import httplib
+import re
 from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
-from veil.utility.json import *
+from user_agents import parse
+
 from veil.development.test import *
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
-from veil.model.event import *
 from veil.model.command import *
+from veil.model.event import *
+from veil.utility.json import *
+from veil.utility.memoize import *
 import veil_component
+
 from .page_post_processor import post_process_page
 
 LOGGER = getLogger(__name__)
@@ -98,7 +103,6 @@ def get_routes(website):
 
 class RoutingHTTPHandler(object):
     def __init__(self, website, context_managers):
-        self.website = website
         self.routes = get_routes(website)
         self.context_managers = context_managers
 
@@ -116,16 +120,21 @@ class RoutingHTTPHandler(object):
         path_arguments = route.path_template.match(path)
         if path_arguments is None:
             return False
-        assert getattr(get_current_http_context(), 'route', None) is None
+        http_context = get_current_http_context()
+        assert getattr(http_context, 'route', None) is None
+        request = http_context.request
+        request.user_agent = parse_user_agent(request.headers.get('User-Agent'))
+        request.is_ajax = request.headers.get('X-Requested-With') == b'XMLHttpRequest'
+        request.website_url = '{}://{}'.format(request.protocol, request.host)
         try:
-            get_current_http_context().route = route
+            http_context.route = route
             if self.context_managers:
                 with nest_context_managers(*self.context_managers):
                     self.execute_route(route, path_arguments)
             else:
                 self.execute_route(route, path_arguments)
         finally:
-            get_current_http_context().route = None
+            http_context.route = None
         return True
 
     def execute_route(self, route, path_arguments):
@@ -226,3 +235,10 @@ class PathTemplate(object):
 
     def __repr__(self):
         return '{} {}'.format(self.template, self.template_params)
+
+
+@memoize(maxsize=2 ** 15, timeout=60 * 20)
+def parse_user_agent(user_agent):
+    ua = parse(user_agent or '')
+    ua.is_from_weixin = b'MicroMessenger' in ua.ua_string
+    return ua

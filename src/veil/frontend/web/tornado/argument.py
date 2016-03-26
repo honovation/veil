@@ -36,7 +36,7 @@ def normalize_arguments():
                     'uri': request.uri,
                     'referer': request.headers.get('Referer'),
                     'remote_ip': request.remote_ip,
-                    'user_agent': request.user_agent.ua_string
+                    'user_agent': request.headers.get('User-Agent')
                 })
             v = re.sub(r'[\x00-\x08\x0e-\x1f]', ' ', v)
             v = v.strip()

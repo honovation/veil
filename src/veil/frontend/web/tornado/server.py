@@ -15,11 +15,9 @@ import tornado
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.stack_context import StackContext
-from user_agents import parse
 
 from veil.development.test import *
 from veil.utility.encoding import to_str
-from veil.utility.memoize import *
 from .argument import normalize_arguments
 from .argument import tunnel_put_and_delete
 from .context import HTTPContext
@@ -57,8 +55,6 @@ class HTTPHandler(object):
         self.handler = handler
 
     def __call__(self, request):
-        request.user_agent = parse_user_agent(request.headers.get('User-Agent'))
-        request.is_ajax = request.headers.get('X-Requested-With') == b'XMLHttpRequest'
         http_context = HTTPContext(request, HTTPResponse(request))
         with create_stack_context(require_current_http_context_being, http_context=http_context):
             with handle_exception():
@@ -66,13 +62,6 @@ class HTTPHandler(object):
                     with tunnel_put_and_delete():
                         self.handler()
         LOGGER.debug('handled request: %(request)s', {'request': unicode(request)})
-
-
-@memoize(maxsize=2 ** 15, timeout=60 * 20)
-def parse_user_agent(user_agent):
-    ua = parse(user_agent or '')
-    ua.is_from_weixin = b'MicroMessenger' in ua.ua_string
-    return ua
 
 
 def create_stack_context(context_manager, *args, **kwargs):
