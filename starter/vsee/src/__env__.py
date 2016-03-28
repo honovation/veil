@@ -177,7 +177,7 @@ def vsee_config(config):
             'host': config['{}_redis_host'.format(purpose)],
             'port': config['{}_redis_port'.format(purpose)]
         }
-    person_website_authority = config.person_website_domain if 80 == config.person_website_domain_port else '{}:{}'.format(
+    person_website_authority = config.person_website_domain if config.person_website_domain_port in (80, 443) else '{}:{}'.format(
         config.person_website_domain, config.person_website_domain_port)
     for purpose in PERSON_WEBSITE_BUCKETS:
         vsee_config_['{}_bucket'.format(purpose)] = {
@@ -200,6 +200,7 @@ def vsee_config(config):
         vsee_config_['{}_website'.format(purpose)] = {
             'domain': config['{}_website_domain'.format(purpose)],
             'domain_port': config['{}_website_domain_port'.format(purpose)],
+            'domain_scheme': 'https' if config['{}_website_domain_port'.format(purpose)] == 443 else 'http',
             'start_port': config['{}_website_start_port'.format(purpose)],
             'locale': 'zh_Hans_CN.UTF-8',
             'master_template_directory': VEIL_HOME / 'src' / 'vsee' / 'website' / purpose,

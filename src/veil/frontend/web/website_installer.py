@@ -5,10 +5,9 @@ from .routing import *
 
 _config = {}
 overridden_website_configs = {}
-HTTPS_SCHEME = 'https://'
-HTTP_SCHEME = 'http://'
-HTTPS_STANDARD_PORT = 443
+
 HTTP_STANDARD_PORT = 80
+HTTPS_STANDARD_PORT = 443
 
 
 @event(EVENT_NEW_WEBSITE)
@@ -29,9 +28,9 @@ def website_config(purpose):
 
 def load_website_config(purpose):
     try:
-        config = load_config_from(VEIL_ETC_DIR / '{}-website.cfg'.format(purpose), 'domain', 'domain_port', 'start_port', 'locale', 'master_template_directory',
-                                  'prevents_xsrf', 'recalculates_static_file_hash', 'process_page_javascript', 'process_page_stylesheet',
-                                  'clears_template_cache')
+        config = load_config_from(VEIL_ETC_DIR / '{}-website.cfg'.format(purpose), 'domain', 'domain_port', 'domain_scheme', 'start_port', 'locale',
+                                  'master_template_directory', 'prevents_xsrf', 'recalculates_static_file_hash', 'process_page_javascript',
+                                  'process_page_stylesheet', 'clears_template_cache')
         config.domain_port = int(config.domain_port)
         config.start_port = int(config.start_port)
         config.prevents_xsrf = unicode(True) == config.prevents_xsrf
@@ -53,16 +52,13 @@ def override_website_config(purpose, **overrides):
     overridden_website_configs.setdefault(purpose, {}).update(overrides)
 
 
-def get_website_url(purpose, ssl=False, with_scheme=True):
+def get_website_url(purpose, scheme=None):
     config = website_config(purpose)
-    if with_scheme:
-        scheme = HTTPS_SCHEME if ssl else HTTP_SCHEME
-    else:
-        scheme = ''
+    scheme = scheme or config.domain_scheme
     if config.domain_port in {HTTP_STANDARD_PORT, HTTPS_STANDARD_PORT}:
-        return '{}{}'.format(scheme, config.domain)
+        return '{}://{}'.format(scheme, config.domain)
     else:
-        return '{}{}:{}'.format(scheme, config.domain, config.domain_port)
+        return '{}://{}:{}'.format(scheme, config.domain, config.domain_port)
 
 
 def get_website_domain(purpose):
