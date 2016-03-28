@@ -52,13 +52,12 @@ def override_website_config(purpose, **overrides):
     overridden_website_configs.setdefault(purpose, {}).update(overrides)
 
 
-def get_website_url(purpose, scheme=None):
+def get_website_url(purpose):
     config = website_config(purpose)
-    scheme = scheme or config.domain_scheme
     if config.domain_port in {HTTP_STANDARD_PORT, HTTPS_STANDARD_PORT}:
-        return '{}://{}'.format(scheme, config.domain)
+        return '{}://{}'.format(config.domain_scheme, config.domain)
     else:
-        return '{}://{}:{}'.format(scheme, config.domain, config.domain_port)
+        return '{}://{}:{}'.format(config.domain_scheme, config.domain, config.domain_port)
 
 
 def get_website_domain(purpose):
