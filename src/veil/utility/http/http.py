@@ -30,7 +30,12 @@ requests.request = http_request
 requests.api.request = http_request
 
 
-def urlencode(params, doseq=0):
+def urlencode(query, doseq=0):
     # urllib.urlencode does not handle unicode well
-    params = {to_str(k): to_str(v) for k, v in params.items()}
-    return urllib.urlencode(params, doseq)
+    query = {to_str(k): to_str(v) for k, v in query.items()}
+    return urllib.urlencode(query, doseq)
+
+
+def quote_plus(s, safe=b''):
+    # urllib.quote_plus does not handle unicode well
+    return urllib.quote_plus(to_str(s), safe)
