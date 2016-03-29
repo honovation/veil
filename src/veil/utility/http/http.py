@@ -39,3 +39,8 @@ def urlencode(query, doseq=0):
 def quote_plus(s, safe=b''):
     # urllib.quote_plus does not handle unicode well
     return urllib.quote_plus(to_str(s), safe)
+
+
+def quote(s, safe=b'/'):
+    # urllib.quote does not handle unicode well
+    return urllib.quote(to_str(s), safe)
