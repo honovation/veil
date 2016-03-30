@@ -2,10 +2,14 @@
 from __future__ import unicode_literals, print_function, division
 from unittest.case import TestCase
 from veil.model.collection import *
-from .region import list_region_name_patterns
+from .region import list_candidate_region_names, list_region_name_patterns
 
 
 class RegionTest(TestCase):
+    def test_list_candidate_names(self):
+        self.assertListEqual(list_candidate_region_names('北京', 1), ['北京维吾尔自治区', '北京壮族自治区', '北京回族自治区', '北京特别行政区', '北京自治区', '北京省', '北京市'])
+        self.assertListEqual(list_candidate_region_names('北京市', 1), ['北京市', '北京维吾尔自治区', '北京壮族自治区', '北京回族自治区', '北京特别行政区', '北京自治区', '北京省'])
+
     def test_list_region_name_patterns(self):
         region = DictObject(code='110000', name='北京市', level=1)
         self.assertListEqual(list_region_name_patterns(region), ['北京市', '北京'])

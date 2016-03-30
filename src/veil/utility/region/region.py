@@ -333,6 +333,19 @@ REGION_LEVEL2SUFFIX = {
         '傈僳族自治县', '裕固族自治县', '哈萨克族自治县', '哈萨克自治县', '东乡族自治县', '保安族东乡族撒拉族自治县', '回族土族自治县', '土族自治县', '撒拉族自治县',
         '塔吉克自治县', '锡伯自治县', '县')
 }
+for k, v in REGION_LEVEL2SUFFIX.items():
+    REGION_LEVEL2SUFFIX[k] = sorted(v, key=len, reverse=True)
+
+
+def list_candidate_region_names(name, level):
+    main = get_main_region_name(name, level)
+    candidates = ['{}{}'.format(main, s) for s in REGION_LEVEL2SUFFIX[level]]
+    return sorted(candidates, key=lambda c: c != name)
+
+
+def get_main_region_name(name, level):
+    matched_suffix = next((s for s in REGION_LEVEL2SUFFIX[level] if name.endswith(s)), None)
+    return name[:-len(matched_suffix)] if matched_suffix else name
 
 
 def list_region_name_patterns(region):
