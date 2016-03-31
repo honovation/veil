@@ -124,6 +124,7 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
             current_sms_provider.send(receivers, message, sms_code, transactional)
         except SendError as e:
             LOGGER.error(e.message)
+            receivers = e.get_send_failed_mobiles() or receivers
             used_sms_provider_ids.add(current_sms_provider.sms_provider_id)
             shuffle_current_sms_provider(used_sms_provider_ids)
             if current_sms_provider.sms_provider_id in used_sms_provider_ids:
@@ -211,4 +212,9 @@ class SMService(object):
 
 
 class SendError(Exception):
-    pass
+    def __init__(self, message, mobiles):
+        super(SendError, self).__init__(message, mobiles)
+        self.mobiles = mobiles
+
+    def get_send_failed_mobiles(self):
+        return self.mobiles

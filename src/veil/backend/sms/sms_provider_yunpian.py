@@ -11,9 +11,9 @@ from .sms import SMService, SendError
 LOGGER = logging.getLogger(__name__)
 
 SMS_PROVIDER_ID = 2
-SEND_SMS_URL = 'http://yunpian.com/v1/sms/send.json'
-QUERY_BALANCE_URL = 'http://yunpian.com/v1/user/get.json'
-MAX_SMS_RECEIVERS = 200
+SEND_SMS_URL = 'https://sms.yunpian.com/v2/sms/batch_send.json'
+QUERY_BALANCE_URL = 'https://sms.yunpian.com/v2/user/get.json'
+MAX_SMS_RECEIVERS = 1000
 MAX_SMS_CONTENT_LENGTH = 400
 MAX_LENGTH_PER_MESSAGE = 70
 OVER_MAX_LENGTH_MESSAGE_LENGTH_PER_MESSAGE = 67
@@ -84,18 +84,20 @@ class YunpianSMService(SMService):
                 LOGGER.exception('yunpian sms send ReadTimeout exception for marketing message: %(sms_code)s, %(receivers)s',
                                  {'sms_code': sms_code, 'receivers': receivers})
         except Exception as e:
-            LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
-            raise SendError(e.message)
+            LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receivers)s, %(message)s', {
+                'sms_code': sms_code, 'receivers': receivers, 'message': e.message
+            })
+            raise
         else:
             result = objectify(response.json())
-            if result.code == 0:
+            if all(r.code == 0 for r in result.data):
                 LOGGER.info('yunpian sms send succeeded: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
             else:
                 LOGGER.error('yunpian sms send failed: %(sms_code)s, %(response)s, %(receivers)s', {
                     'sms_code': sms_code, 'response': response.text, 'receivers': receivers
                 })
-                if result.code not in OVER_RATE_LIMIT_CODES:
-                    raise SendError('yunpian sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers))
+                send_failed_with_unknown_error_mobiles = set(r.mobile for r in result.data if r.code not in OVER_RATE_LIMIT_CODES)
+                raise SendError('yunpian sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers), send_failed_with_unknown_error_mobiles)
 
     def query_balance(self):
         if not self.config:
@@ -109,15 +111,11 @@ class YunpianSMService(SMService):
             raise
         else:
             result = objectify(response.json())
-            if result.code != 0:
-                LOGGER.error('yunpian query balance failed: %(response)s', {'response': response.text})
-                raise Exception('yunpian query balance failed: {}'.format(response.text))
-            else:
-                balance = result.user.balance
-                if balance is None:
-                    LOGGER.error('yunpian query balance got invalid balance: %(response)s', {'response': response.text})
-                    raise Exception('yunpian query balance got invalid balance: {}'.format(response.text))
-                return balance
+            balance = result.balance
+            if balance is None:
+                LOGGER.error('yunpian query balance got invalid balance: %(response)s', {'response': response.text})
+                raise Exception('yunpian query balance got invalid balance: {}'.format(response.text))
+            return balance
 
     def get_minimal_message_quantity(self, message):
         message_length = len(message)

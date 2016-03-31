@@ -90,8 +90,12 @@ class EmaySMService(SMService):
                 LOGGER.exception('emay sms send ReadTimeout exception for marketing message: %(sms_code)s, %(receivers)s',
                                  {'sms_code': sms_code, 'receivers': receivers})
         except Exception as e:
-            LOGGER.exception('emay sms send exception-thrown: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
-            raise SendError(e.message)
+            LOGGER.exception('emay sms send exception-thrown: %(sms_code)s, %(receivers)s, %(message)s', {
+                'sms_code': sms_code,
+                'receivers': receivers,
+                'message': e.message
+            })
+            raise
         else:
             return_value = get_return_value(response.text)
             if return_value == 0:
@@ -100,7 +104,8 @@ class EmaySMService(SMService):
                 LOGGER.error('emay sms send failed: %(sms_code)s, %(response)s, %(receivers)s', {
                     'sms_code': sms_code, 'response': response.text, 'receivers': receivers
                 })
-                raise SendError('emay sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers))
+                # TODO: need verify latest interface for multiple receiver and partial failed
+                raise SendError('emay sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers), receivers.split(','))
 
     def query_balance(self):
         if not self.config:
