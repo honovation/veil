@@ -47,7 +47,7 @@ veil.defaultAuthenticationErrorHandler = function(jqXHR) {
     if (window.location.pathname === loginUrl) {
         $('input[name=username]').focus().select();
     } else {
-        window.location.href = loginUrl + window.location.hash;
+        window.location.href = loginUrl + encodeURIComponent(window.location.hash);
     }
 };
 
