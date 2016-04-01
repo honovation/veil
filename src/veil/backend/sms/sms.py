@@ -102,6 +102,31 @@ def send_marketing_sms_job(receivers, message, sms_code):
             queue().enqueue(send_marketing_sms_job, receivers=receivers_, message=message, sms_code=sms_code)
 
 
+@job('send_transactional_sms', retry_every=10, retry_timeout=90)
+def send_voice_validation_code_job(receiver, code, sms_code, last_sms_code=None):
+    used_sms_provider_ids = set()
+    if last_sms_code:
+        last_sms_provider_id = redis().get(sent_sms_redis_key(receiver, last_sms_code))
+        if last_sms_provider_id:
+            used_sms_provider_ids.add(int(last_sms_provider_id))
+            shuffle_current_sms_provider(used_sms_provider_ids)
+    while True:
+        try:
+            current_sms_provider.send_voice(receiver, code, sms_code)
+        except SendError as e:
+            LOGGER.error(e.message)
+            receiver = e.get_send_failed_mobiles() or receiver
+            used_sms_provider_ids.add(current_sms_provider.sms_provider_id)
+            shuffle_current_sms_provider(used_sms_provider_ids)
+            if current_sms_provider.sms_provider_id in used_sms_provider_ids:
+                if len(_sms_providers) > 1:
+                    raise Exception('not enough reliable sms providers')
+                raise Exception('send voice got error')
+        else:
+            current_sms_provider.add_sent_quantity(1)
+            break
+
+
 def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=True):
     used_sms_provider_ids = set()
     if last_sms_code:
@@ -137,8 +162,9 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
 
 
 class SMService(object):
-    def __init__(self, sms_provider_id):
+    def __init__(self, sms_provider_id, support_voice=False):
         self._sms_provider_id = sms_provider_id
+        self.support_voice = support_voice
         self.balance_key_in_redis = '{}:{}:{}:balance'.format('VEIL', 'SMS', sms_provider_id)
         self.sent_quantity_key_in_redis = '{}:{}:{}:sent-quantity'.format('VEIL', 'SMS', sms_provider_id)
 
@@ -150,6 +176,9 @@ class SMService(object):
         raise NotImplementedError()
 
     def send(self, receivers, message, sms_code, transactional):
+        raise NotImplementedError()
+
+    def send_voice(self, receiver, code, sms_code):
         raise NotImplementedError()
 
     def query_balance(self):

@@ -12,6 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 SMS_PROVIDER_ID = 2
 SEND_SMS_URL = 'https://sms.yunpian.com/v2/sms/batch_send.json'
+SEND_VOICE_URL = 'https://voice.yunpian.com/v2/voice/send.json'
 QUERY_BALANCE_URL = 'https://sms.yunpian.com/v2/user/get.json'
 MAX_SMS_RECEIVERS = 1000
 MAX_SMS_CONTENT_LENGTH = 400
@@ -52,7 +53,7 @@ def get_yunpian_smservice_instance():
 
 class YunpianSMService(SMService):
     def __init__(self, sms_provider_id):
-        super(YunpianSMService, self).__init__(sms_provider_id)
+        super(YunpianSMService, self).__init__(sms_provider_id, support_voice=True)
         self.config = None
 
     def get_receiver_list(self, receivers):
@@ -98,6 +99,35 @@ class YunpianSMService(SMService):
                 })
                 send_failed_with_unknown_error_mobiles = set(r.mobile for r in result.data if r.code not in OVER_RATE_LIMIT_CODES)
                 raise SendError('yunpian sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers), send_failed_with_unknown_error_mobiles)
+
+    def send_voice(self, receiver, code, sms_code):
+        if not self.config:
+            self.config = yunpian_sms_client_config()
+        LOGGER.debug('attempt to send voice: %(sms_code)s, %(receiver)s, %(message)s', {'sms_code': sms_code, 'receiver': receiver, 'code': code})
+        data = {'apikey': self.config.apikey, 'mobile': receiver, 'code': code}
+        try:
+            # retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
+            response = requests.post(SEND_VOICE_URL, data=data, timeout=(3.05, 9), headers={'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'},
+                                     max_retries=Retry(total=2, read=False, method_whitelist={'POST'}, status_forcelist={502, 503, 504}, backoff_factor=2))
+            response.raise_for_status()
+        except ReadTimeout:
+                LOGGER.exception('yunpian voice send ReadTimeout exception for transactional message: %(sms_code)s, %(receiver)s',
+                                 {'sms_code': sms_code, 'receiver': receiver})
+                raise
+        except Exception as e:
+            LOGGER.exception('yunpian voice send exception-thrown: %(sms_code)s, %(receiver)s, %(message)s', {
+                'sms_code': sms_code, 'receiver': receiver, 'message': e.message
+            })
+            raise
+        else:
+            result = objectify(response.json())
+            if result.count == 1:
+                LOGGER.info('yunpian voice send succeeded: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receiver': receiver})
+            else:
+                LOGGER.error('yunpian voice send failed: %(sms_code)s, %(response)s, %(receiver)s', {
+                    'sms_code': sms_code, 'response': response.text, 'receiver': receiver
+                })
+                raise SendError('yunpian sms send failed: {}, {}, {}'.format(sms_code, response.text, receiver), receiver)
 
     def query_balance(self):
         if not self.config:
