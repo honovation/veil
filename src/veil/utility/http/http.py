@@ -32,7 +32,7 @@ requests.api.request = http_request
 
 def urlencode(query, doseq=0):
     # urllib.urlencode does not handle unicode well
-    query = {to_str(k): to_str(v) for k, v in query.items()}
+    query = {to_str(k): [to_str(e) for e in v] if hasattr(v, '__iter__') else to_str(v) for k, v in query.items()}
     return urllib.urlencode(query, doseq)
 
 
@@ -44,3 +44,10 @@ def quote_plus(s, safe=b''):
 def quote(s, safe=b'/'):
     # urllib.quote does not handle unicode well
     return urllib.quote(to_str(s), safe)
+
+
+def remove_from_query_string(qs, *keys):
+    if not qs or not keys:
+        return qs
+    key_set = set(keys)
+    return '&'.join(p for p in qs.split('&') if p.split('=', 1)[0] not in key_set)
