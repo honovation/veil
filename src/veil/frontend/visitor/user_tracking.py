@@ -25,6 +25,7 @@ from veil.backend.redis import *
 from veil.model.collection import *
 from veil.frontend.nginx import *
 from veil.frontend.web import *
+from veil.utility.http import *
 
 LOGGER = logging.getLogger(__name__)
 redis = register_redis('persist_store')
@@ -74,17 +75,18 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
 
                 if TAG_NO_LOGIN_REQUIRED not in current_route.tags and not (session and get_logged_in_user_id(purpose, session)):
                     if request.method in {'GET', 'HEAD'}:
-                        login_referer = request.uri
+                        return_url = request.uri
                     else:
-                        login_referer = referer
-                    if login_referer:
-                        remember_user_login_referer(purpose, login_referer, request.tracking_code)
+                        return_url = referer
+                    if not return_url:
+                        return_url = '/'
+                    current_login_url = '{}{}ru={}'.format(config[purpose].login_url, '&' if '?' in config[purpose].login_url else '?', quote_plus(return_url))
                     if request.is_ajax:
                         set_http_status_code(httplib.UNAUTHORIZED)
-                        get_current_http_response().set_header('WWW-Authenticate', config[purpose].login_url)
+                        get_current_http_response().set_header('WWW-Authenticate', current_login_url)
                         end_http_request_processing()
                     else:
-                        redirect_to(config[purpose].login_url)
+                        redirect_to(current_login_url)
         except HTTPError:
             raise
         except Exception:
@@ -205,26 +207,5 @@ def remove_logged_in_user_ids(purpose):
     return count
 
 
-def remember_user_login_referer(purpose, login_referer, browser_code=None):
-    browser_code = browser_code or get_browser_code()
-    if browser_code:
-        redis().setex(login_referer_key(purpose, browser_code), config[purpose].session_ttl, login_referer)
-
-
-def get_user_login_referer(purpose, browser_code=None):
-    browser_code = browser_code or get_browser_code()
-    return redis().get(login_referer_key(purpose, browser_code)) if browser_code else None
-
-
-def remove_user_login_referer(purpose, browser_code=None):
-    browser_code = browser_code or get_browser_code()
-    if browser_code:
-        redis().delete(login_referer_key(purpose, browser_code))
-
-
 def logged_in_user_id_key(session):
     return 'lu:{}:{}'.format(session.purpose, session.browser_code)
-
-
-def login_referer_key(purpose, browser_code):
-    return 'lr:{}:{}'.format(purpose, browser_code)

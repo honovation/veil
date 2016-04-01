@@ -9,9 +9,6 @@ with veil_component.init_component(__name__):
     from .user_tracking import get_logged_in_user_id
     from .user_tracking import remove_logged_in_user_id
     from .user_tracking import remove_logged_in_user_ids
-    from .user_tracking import get_user_login_referer
-    from .user_tracking import remember_user_login_referer
-    from .user_tracking import remove_user_login_referer
     from .origin_tracking import enable_visitor_origin_tracking
     from .origin_tracking import set_visitor_origin
     from .origin_tracking import get_visitor_origin
@@ -25,9 +22,6 @@ with veil_component.init_component(__name__):
         get_logged_in_user_id.__name__,
         remove_logged_in_user_id.__name__,
         remove_logged_in_user_ids.__name__,
-        get_user_login_referer.__name__,
-        remember_user_login_referer.__name__,
-        remove_user_login_referer.__name__,
         enable_visitor_origin_tracking.__name__,
         set_visitor_origin.__name__,
         get_visitor_origin.__name__,

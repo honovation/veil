@@ -17,9 +17,5 @@ from __future__ import unicode_literals, print_function, division
 # def logged_in_user_id_key(session):
 #     return 'lu:{}:{}'.format(session.purpose, session.browser_code)
 
-# user tracking in veil
-# def login_referer_key(purpose, browser_code):
-#     return 'lr:{}:{}'.format(purpose, browser_code)
-
 
 # person
