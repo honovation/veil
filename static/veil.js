@@ -45,7 +45,7 @@ var veil = veil || {};
 veil.defaultAuthenticationErrorHandler = function(jqXHR) {
     var loginUrl = jqXHR.getResponseHeader('WWW-Authenticate');
     if (window.location.pathname === loginUrl) {
-        $('input[name=username]').focus().select();
+        $('form input[type=text],[type=email],[type=number],[type=tel]').filter(':enabled:visible:not([readonly]):first').focus().select();
     } else {
         window.location.href = loginUrl + encodeURIComponent(window.location.hash);
     }
