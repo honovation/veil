@@ -66,7 +66,7 @@ class EmaySMService(SMService):
             receivers = [receivers]
         return [r for r in chunks(receivers, MAX_SMS_RECEIVERS)]
 
-    def send(self, receivers, message, sms_code, transactional):
+    def send(self, receivers, message, sms_code, transactional, promotional=False):
         if not self.config:
             self.config = emay_sms_client_config()
         LOGGER.debug('attempt to send sms: %(sms_code)s, %(receivers)s, %(message)s', {'sms_code': sms_code, 'receivers': receivers, 'message': message})

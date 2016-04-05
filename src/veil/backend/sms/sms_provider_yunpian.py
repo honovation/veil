@@ -30,9 +30,10 @@ def register():
 
 
 @composite_installer
-def yunpian_sms_client_resource(apikey):
+def yunpian_sms_client_resource(apikey, promotion_apikey=None):
     resources = list(BASIC_LAYOUT_RESOURCES)
-    resources.append(file_resource(path=VEIL_ETC_DIR / 'yunpian-sms-client.cfg', content=render_config('yunpian-sms-client.cfg.j2', apikey=apikey)))
+    resources.append(file_resource(path=VEIL_ETC_DIR / 'yunpian-sms-client.cfg',
+                                   content=render_config('yunpian-sms-client.cfg.j2', apikey=apikey, promotion_apikey=promotion_apikey)))
     return resources
 
 
@@ -61,16 +62,17 @@ class YunpianSMService(SMService):
             receivers = [receivers]
         return [r for r in chunks(receivers, MAX_SMS_RECEIVERS)]
 
-    def send(self, receivers, message, sms_code, transactional):
+    def send(self, receivers, message, sms_code, transactional, promotional=False):
         if not self.config:
             self.config = yunpian_sms_client_config()
+        api_key = self.config.apikey if not promotional else self.config.promotion_apikey
         LOGGER.debug('attempt to send sms: %(sms_code)s, %(receivers)s, %(message)s', {'sms_code': sms_code, 'receivers': receivers, 'message': message})
         receivers = set(r.strip() for r in receivers if r.strip())
         if len(message) > MAX_SMS_CONTENT_LENGTH:
             raise Exception('try to send sms with message size over {}'.format(MAX_SMS_CONTENT_LENGTH))
         receivers = ','.join(receivers)
         message = message.encode('UTF-8')
-        data = {'apikey': self.config.apikey, 'mobile': receivers, 'text': message}
+        data = {'apikey': api_key, 'mobile': receivers, 'text': message}
         try:
             # retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
             response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9), headers={'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'},
