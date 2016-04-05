@@ -19,7 +19,13 @@ MAX_SMS_CONTENT_LENGTH = 400
 MAX_LENGTH_PER_MESSAGE = 70
 OVER_MAX_LENGTH_MESSAGE_LENGTH_PER_MESSAGE = 67
 
-OVER_RATE_LIMIT_CODES = {8, 9, 17, 22}
+IGNORE_CODES = {
+    8,   # 同一手机号30秒内重复提交相同的内容
+    9,   # 同一手机号5分钟内重复提交相同的内容超过3次
+    10,  # 手机号黑名单过滤
+    17,  # 24小时内同一手机号发送次数超过限制
+    22   # 1小时内同一手机号发送次数超过限制
+}
 
 _config = None
 
@@ -99,7 +105,7 @@ class YunpianSMService(SMService):
                 LOGGER.error('yunpian sms send failed: %(sms_code)s, %(response)s, %(receivers)s', {
                     'sms_code': sms_code, 'response': response.text, 'receivers': receivers
                 })
-                send_failed_with_unknown_error_mobiles = set(r.mobile for r in result.data if r.code not in OVER_RATE_LIMIT_CODES)
+                send_failed_with_unknown_error_mobiles = set(r.mobile for r in result.data if r.code not in IGNORE_CODES)
                 raise SendError('yunpian sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers), send_failed_with_unknown_error_mobiles)
 
     def send_voice(self, receiver, code, sms_code):
