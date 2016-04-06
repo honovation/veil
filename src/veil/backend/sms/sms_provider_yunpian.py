@@ -79,6 +79,7 @@ class YunpianSMService(SMService):
         receivers = ','.join(receivers)
         message = message.encode('UTF-8')
         data = {'apikey': api_key, 'mobile': receivers, 'text': message}
+        response = None
         try:
             # retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
             response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9), headers={'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'},
@@ -93,8 +94,8 @@ class YunpianSMService(SMService):
                 LOGGER.exception('yunpian sms send ReadTimeout exception for marketing message: %(sms_code)s, %(receivers)s',
                                  {'sms_code': sms_code, 'receivers': receivers})
         except Exception as e:
-            LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receivers)s, %(message)s', {
-                'sms_code': sms_code, 'receivers': receivers, 'message': e.message
+            LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receivers)s, %(message)s, %(response)s', {
+                'sms_code': sms_code, 'receivers': receivers, 'message': e.message, 'response': response.text if response else ''
             })
             raise
         else:
@@ -106,13 +107,14 @@ class YunpianSMService(SMService):
                     'sms_code': sms_code, 'response': response.text, 'receivers': receivers
                 })
                 send_failed_with_unknown_error_mobiles = set(r.mobile for r in result.data if r.code not in IGNORE_CODES)
-                raise SendError('yunpian sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers), send_failed_with_unknown_error_mobiles)
+                raise SendError('yunpian sms send failed: {}, {}'.format(sms_code, receivers), send_failed_with_unknown_error_mobiles)
 
     def send_voice(self, receiver, code, sms_code):
         if not self.config:
             self.config = yunpian_sms_client_config()
         LOGGER.debug('attempt to send voice: %(sms_code)s, %(receiver)s, %(message)s', {'sms_code': sms_code, 'receiver': receiver, 'code': code})
         data = {'apikey': self.config.apikey, 'mobile': receiver, 'code': code}
+        response = None
         try:
             # retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
             response = requests.post(SEND_VOICE_URL, data=data, timeout=(3.05, 9), headers={'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'},
@@ -123,8 +125,8 @@ class YunpianSMService(SMService):
                                  {'sms_code': sms_code, 'receiver': receiver})
                 raise
         except Exception as e:
-            LOGGER.exception('yunpian voice send exception-thrown: %(sms_code)s, %(receiver)s, %(message)s', {
-                'sms_code': sms_code, 'receiver': receiver, 'message': e.message
+            LOGGER.exception('yunpian voice send exception-thrown: %(sms_code)s, %(receiver)s, %(message)s, %(response)s', {
+                'sms_code': sms_code, 'receiver': receiver, 'message': e.message, 'response': response.text if response else ''
             })
             raise
         else:
@@ -135,24 +137,25 @@ class YunpianSMService(SMService):
                 LOGGER.error('yunpian voice send failed: %(sms_code)s, %(response)s, %(receiver)s', {
                     'sms_code': sms_code, 'response': response.text, 'receiver': receiver
                 })
-                raise SendError('yunpian sms send failed: {}, {}, {}'.format(sms_code, response.text, receiver), receiver)
+                raise SendError('yunpian sms send failed: {}, {}'.format(sms_code, receiver), receiver)
 
     def query_balance(self):
         if not self.config:
             self.config = yunpian_sms_client_config()
         data = {'apikey': self.config.apikey}
+        response = None
         try:
             response = requests.post(QUERY_BALANCE_URL, data=data, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))
             response.raise_for_status()
         except Exception:
-            LOGGER.exception('yunpian query balance exception-thrown')
+            LOGGER.exception('yunpian query balance exception-thrown: %(response)s', {'response': response.text if response else ''})
             raise
         else:
             result = objectify(response.json())
             balance = result.balance
             if balance is None:
                 LOGGER.error('yunpian query balance got invalid balance: %(response)s', {'response': response.text})
-                raise Exception('yunpian query balance got invalid balance: {}'.format(response.text))
+                raise Exception('yunpian query balance got invalid balance')
             return balance
 
     def get_minimal_message_quantity(self, message):
