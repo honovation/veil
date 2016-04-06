@@ -97,6 +97,10 @@ class YunpianSMService(SMService):
             LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receivers)s, %(message)s, %(response)s', {
                 'sms_code': sms_code, 'receivers': receivers, 'message': e.message, 'response': response.text if response is not None else ''
             })
+            if response is not None and response.status_code == 400:
+                result = objectify(response.json())
+                if result.code in IGNORE_CODES:
+                    return
             raise
         else:
             result = objectify(response.json())
