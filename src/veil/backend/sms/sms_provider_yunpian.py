@@ -26,6 +26,12 @@ IGNORE_CODES = {
     17,  # 24小时内同一手机号发送次数超过限制
     22   # 1小时内同一手机号发送次数超过限制
 }
+RETRY_CODES = {
+    -5,   # 访问频率超限
+    -50,  # 未知异常
+    -51,  # 系统繁忙
+    -53   # 提交短信失败
+}
 
 _config = None
 
@@ -110,8 +116,8 @@ class YunpianSMService(SMService):
                 LOGGER.error('yunpian sms send failed: %(sms_code)s, %(response)s, %(receivers)s', {
                     'sms_code': sms_code, 'response': response.text, 'receivers': receivers
                 })
-                send_failed_with_unknown_error_mobiles = set(r.mobile for r in result.data if r.code not in IGNORE_CODES)
-                raise SendError('yunpian sms send failed: {}, {}'.format(sms_code, receivers), send_failed_with_unknown_error_mobiles)
+                retry_mobiles = set(r.mobile for r in result.data if r.code in RETRY_CODES)
+                raise SendError('yunpian sms send failed: {}, {}'.format(sms_code, receivers), retry_mobiles)
 
     def send_voice(self, receiver, code, sms_code):
         if not self.config:
