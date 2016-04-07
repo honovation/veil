@@ -47,6 +47,8 @@ def self_check():
     if hasattr(application, 'USE_NPM_BUILD') and application.USE_NPM_BUILD:
         shell_execute('npm install --registry=https://registry.npm.taobao.org')
         shell_execute('npm run build')
+        shell_execute('npm run mobile-css')
+        shell_execute('npm run mobile-app')
     shell_execute('sudo veil :test up --daemonize')
     shell_execute('veil quick-check')
 
