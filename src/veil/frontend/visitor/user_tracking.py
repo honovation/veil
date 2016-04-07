@@ -59,27 +59,28 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
             else:
                 if not request.tracking_code:
                     request.tracking_code = uuid.uuid4().get_hex()
-                set_browser_code(purpose, request.tracking_code)
+                set_browser_code(request.website, request.tracking_code)
 
                 if try_sign_in:
                     try_sign_in()
 
-                latest_user_id = get_latest_user_id(purpose)
+                latest_user_id = get_latest_user_id(request.website)
                 if latest_user_id:
-                    set_latest_user_id(purpose, latest_user_id)
+                    set_latest_user_id(request.website, latest_user_id)
 
-                session = get_user_session(purpose, request.tracking_code)
+                session = get_user_session(request.website, request.tracking_code)
                 if session:
                     refresh_user_session_ttl(session)
 
-                if TAG_NO_LOGIN_REQUIRED not in request.route.tags and not (session and get_logged_in_user_id(purpose, session)):
+                if TAG_NO_LOGIN_REQUIRED not in request.route.tags and not (session and get_logged_in_user_id(request.website, session)):
                     if request.method in {'GET', 'HEAD'}:
                         return_url = request.uri
                     else:
                         return_url = referer
                     if not return_url:
                         return_url = '/'
-                    current_login_url = '{}{}ru={}'.format(config[purpose].login_url, '&' if '?' in config[purpose].login_url else '?', quote_plus(return_url))
+                    current_login_url = '{}{}ru={}'.format(config[request.website].login_url, '&' if '?' in config[request.website].login_url else '?',
+                                                           quote_plus(return_url))
                     if request.is_ajax:
                         set_http_status_code(httplib.UNAUTHORIZED)
                         get_current_http_response().set_header('WWW-Authenticate', current_login_url)
@@ -122,7 +123,9 @@ def set_browser_code(purpose, browser_code):
                domain=get_website_parent_domain(purpose))
 
 
-def get_latest_user_id(purpose, max_age_days=None):
+def get_latest_user_id(purpose=None, max_age_days=None):
+    if purpose is None:
+        purpose = get_current_http_request().website
     purpose_config = config[purpose]
     return get_secure_cookie(purpose_config.secured_user_code_cookie_name, max_age_days=max_age_days or purpose_config.cookie_expires_days)
 
@@ -165,12 +168,12 @@ def refresh_user_session_ttl(session):
         redis().expire(logged_in_user_id_key(session), config[session.purpose].session_ttl)
 
 
-def get_logged_in_user_id(purpose, session=None, is_session_ttl_enabled=None):
+def get_logged_in_user_id(purpose=None, session=None, is_session_ttl_enabled=None):
     """
     a special case is to get the user of website B from website A
     """
-    if not get_current_http_request(optional=True):
-        return None
+    if purpose is None:
+        purpose = get_current_http_request().website
     assert purpose in config and (not session or session.purpose == purpose)
     session = session or get_user_session(purpose)
     if not session:
@@ -183,7 +186,8 @@ def get_logged_in_user_id(purpose, session=None, is_session_ttl_enabled=None):
     return session.user_id
 
 
-def remember_logged_in_user_id(purpose, user_id, browser_code=None):
+def remember_logged_in_user_id(user_id, browser_code=None):
+    purpose = get_current_http_request().website
     user_id = unicode(user_id)
     session = set_user_session(purpose, browser_code or get_browser_code(), user_id)
     if config[purpose].is_session_ttl_enabled():
@@ -192,7 +196,9 @@ def remember_logged_in_user_id(purpose, user_id, browser_code=None):
         set_latest_user_id(purpose, user_id)
 
 
-def remove_logged_in_user_id(purpose, session=None, browser_code=None):
+def remove_logged_in_user_id(purpose=None, session=None, browser_code=None):
+    if purpose is None:
+        purpose = get_current_http_request().website
     if config[purpose].is_session_ttl_enabled():
         session = session or get_user_session(purpose, browser_code)
         if session:

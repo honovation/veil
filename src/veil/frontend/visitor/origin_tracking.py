@@ -18,7 +18,7 @@ VEIL_VISITOR_ORIGIN_COOKIE_NAME = 'vo'
 DEFAULT_ORIGIN_COOKIE_EXPIRES_DAYS = 30
 
 
-def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_path_prefixes=(), cookie_expires_days=DEFAULT_ORIGIN_COOKIE_EXPIRES_DAYS):
+def enable_visitor_origin_tracking(exclude_host_suffixes=(), exclude_path_prefixes=(), cookie_expires_days=DEFAULT_ORIGIN_COOKIE_EXPIRES_DAYS):
     @contextlib.contextmanager
     def f():
         request = get_current_http_request()
@@ -35,7 +35,7 @@ def enable_visitor_origin_tracking(purpose, exclude_host_suffixes=(), exclude_pa
                     host = urlparse(referer).hostname
                     if host:
                         host = host.strip('.')
-                        if not host.endswith(get_website_parent_domain(purpose)) \
+                        if not host.endswith(get_website_parent_domain(request.website)) \
                                 and all(not host.endswith(host_suffix) for host_suffix in exclude_host_suffixes) \
                                 and all(not request.path.startswith(to_str(path_prefix)) for path_prefix in exclude_path_prefixes):
                             set_visitor_origin(referer, expires_days=cookie_expires_days)

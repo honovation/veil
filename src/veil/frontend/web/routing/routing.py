@@ -103,6 +103,7 @@ def get_routes(website):
 
 class RoutingHTTPHandler(object):
     def __init__(self, website, context_managers):
+        self.website = website
         self.routes = get_routes(website)
         self.context_managers = context_managers
 
@@ -121,11 +122,12 @@ class RoutingHTTPHandler(object):
         if path_arguments is None:
             return False
         request = get_current_http_request()
-        assert getattr(request, 'route', None) is None
+        assert getattr(request, 'website', None) is None and getattr(request, 'route', None) is None
         request.user_agent = parse_user_agent(request.headers.get('User-Agent'))
         request.is_ajax = request.headers.get('X-Requested-With') == b'XMLHttpRequest'
         request.website_url = '{}://{}'.format(request.protocol, request.host)
         try:
+            request.website = self.website
             request.route = route
             if self.context_managers:
                 with nest_context_managers(*self.context_managers):
@@ -134,6 +136,7 @@ class RoutingHTTPHandler(object):
                 self.execute_route(route, path_arguments)
         finally:
             request.route = None
+            request.website = None
         return True
 
     def execute_route(self, route, path_arguments):
