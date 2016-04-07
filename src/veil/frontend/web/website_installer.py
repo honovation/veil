@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 from veil.model.event import *
+from veil.utility.memoize import *
 from .routing import *
 
 _config = {}
@@ -52,6 +53,7 @@ def override_website_config(purpose, **overrides):
     overridden_website_configs.setdefault(purpose, {}).update(overrides)
 
 
+@memoize
 def get_website_url(purpose):
     config = website_config(purpose)
     if config.domain_port in {HTTP_STANDARD_PORT, HTTPS_STANDARD_PORT}:
@@ -60,10 +62,12 @@ def get_website_url(purpose):
         return '{}://{}:{}'.format(config.domain_scheme, config.domain, config.domain_port)
 
 
+@memoize
 def get_website_domain(purpose):
     return website_config(purpose).domain
 
 
+@memoize
 def get_website_parent_domain(purpose):
     parts = get_website_domain(purpose).split('.')[1:]
     if parts[0].lower() in {'dev', 'test', 'staging', 'uat', 'prod'}:
