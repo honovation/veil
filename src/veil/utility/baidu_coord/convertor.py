@@ -31,7 +31,7 @@ def convert_to_baidu_coord(coords, ak, sn=None, from_type=1, to_type=5, output=J
     except Exception:
         LOGGER.info('got exception when call convert to baidu coord: %(params)s, %(result)s', {
             'params': params,
-            'result': response.content if response is not None else ''
+            'result': response.content if response else ''
         })
     else:
         if output == JSON_OUTPUT:

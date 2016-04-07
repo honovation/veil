@@ -291,7 +291,7 @@ def close_alipay_trade(out_trade_no):
     except Exception:
         LOGGER.exception('alipay close trade exception-thrown: %(params)s, %(response)s', {
             'params': params,
-            'response': response.text if response is not None else ''
+            'response': response.text if response else ''
         })
         raise
     else:

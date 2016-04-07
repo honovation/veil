@@ -111,7 +111,7 @@ def close_order(app_id, mch_id, api_key, out_trade_no):
         LOGGER.exception('wxpay close trade exception-thrown: %(out_trade_no)s, %(data)s', {
             'out_trade_no': out_trade_no,
             'data': data,
-            'response': response.text if response is not None else ''
+            'response': response.text if response else ''
         })
         raise
     else:

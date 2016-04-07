@@ -28,6 +28,9 @@ def http_request(method, url, **kwargs):
 
 requests.request = http_request
 requests.api.request = http_request
+# TODO: remove the below two statements after requests v3 is released
+delattr(requests.Response, '__bool__')
+delattr(requests.Response, '__nonzero__')
 
 
 def urlencode(query, doseq=0):

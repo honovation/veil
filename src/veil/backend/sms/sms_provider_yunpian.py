@@ -101,9 +101,9 @@ class YunpianSMService(SMService):
                                  {'sms_code': sms_code, 'receivers': receivers})
         except Exception as e:
             LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receivers)s, %(message)s, %(response)s', {
-                'sms_code': sms_code, 'receivers': receivers, 'message': e.message, 'response': response.text if response is not None else ''
+                'sms_code': sms_code, 'receivers': receivers, 'message': e.message, 'response': response.text if response else ''
             })
-            if response is not None and response.status_code == 400:
+            if response and response.status_code == 400:
                 result = objectify(response.json())
                 if result.code in IGNORE_CODES:
                     return
@@ -136,7 +136,7 @@ class YunpianSMService(SMService):
                 raise
         except Exception as e:
             LOGGER.exception('yunpian voice send exception-thrown: %(sms_code)s, %(receiver)s, %(message)s, %(response)s', {
-                'sms_code': sms_code, 'receiver': receiver, 'message': e.message, 'response': response.text if response is not None else ''
+                'sms_code': sms_code, 'receiver': receiver, 'message': e.message, 'response': response.text if response else ''
             })
             raise
         else:
@@ -158,7 +158,7 @@ class YunpianSMService(SMService):
             response = requests.post(QUERY_BALANCE_URL, data=data, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))
             response.raise_for_status()
         except Exception:
-            LOGGER.exception('yunpian query balance exception-thrown: %(response)s', {'response': response.text if response is not None else ''})
+            LOGGER.exception('yunpian query balance exception-thrown: %(response)s', {'response': response.text if response else ''})
             raise
         else:
             result = objectify(response.json())
