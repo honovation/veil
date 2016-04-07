@@ -120,21 +120,20 @@ class RoutingHTTPHandler(object):
         path_arguments = route.path_template.match(path)
         if path_arguments is None:
             return False
-        http_context = get_current_http_context()
-        assert getattr(http_context, 'route', None) is None
-        request = http_context.request
+        request = get_current_http_request()
+        assert getattr(request, 'route', None) is None
         request.user_agent = parse_user_agent(request.headers.get('User-Agent'))
         request.is_ajax = request.headers.get('X-Requested-With') == b'XMLHttpRequest'
         request.website_url = '{}://{}'.format(request.protocol, request.host)
         try:
-            http_context.route = route
+            request.route = route
             if self.context_managers:
                 with nest_context_managers(*self.context_managers):
                     self.execute_route(route, path_arguments)
             else:
                 self.execute_route(route, path_arguments)
         finally:
-            http_context.route = None
+            request.route = None
         return True
 
     def execute_route(self, route, path_arguments):

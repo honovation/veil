@@ -2,10 +2,11 @@ from __future__ import unicode_literals, print_function, division
 from veil.development.test import *
 from veil.frontend.web.tornado import *
 
-original_page_post_processors = None
+original_page_post_processors = []
 page_post_processors = []
 
 TAG_NO_POST_PROCESS = 'no-post-process'
+
 
 @test_hook
 def remember_original_page_post_processors():
@@ -30,7 +31,7 @@ def register_page_post_processor(page_post_processor, insert_to_head=False):
 
 
 def post_process_page(route_handler, data):
-    if TAG_NO_POST_PROCESS in get_current_http_context().route.tags:
+    if TAG_NO_POST_PROCESS in get_current_http_request().route.tags:
         return data
     for page_post_processor in page_post_processors:
         data = page_post_processor(route_handler, data)

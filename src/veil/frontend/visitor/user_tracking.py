@@ -51,10 +51,9 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
         request = get_current_http_request()
         request.tracking_code = get_browser_code()
         referer = request.headers.get('Referer')
-        current_route = get_current_http_context().route
         try:
             if request.user_agent.is_bot:
-                if TAG_NO_LOGIN_REQUIRED not in current_route.tags:
+                if TAG_NO_LOGIN_REQUIRED not in request.route.tags:
                     set_http_status_code(httplib.FORBIDDEN)
                     end_http_request_processing()
             else:
@@ -73,7 +72,7 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
                 if session:
                     refresh_user_session_ttl(session)
 
-                if TAG_NO_LOGIN_REQUIRED not in current_route.tags and not (session and get_logged_in_user_id(purpose, session)):
+                if TAG_NO_LOGIN_REQUIRED not in request.route.tags and not (session and get_logged_in_user_id(purpose, session)):
                     if request.method in {'GET', 'HEAD'}:
                         return_url = request.uri
                     else:
