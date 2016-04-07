@@ -115,7 +115,9 @@ def send_voice_validation_code_job(receiver, code, sms_code, last_sms_code=None)
         try:
             current_sms_provider.send_voice(receiver, code, sms_code)
         except SendError as e:
-            receiver = e.get_send_failed_mobiles() or receiver
+            if not e.get_send_failed_mobiles():
+                return
+            receiver = e.get_send_failed_mobiles()
             used_sms_provider_ids.add(current_sms_provider.sms_provider_id)
             shuffle_current_sms_provider(used_sms_provider_ids)
             if current_sms_provider.sms_provider_id in used_sms_provider_ids:
@@ -148,7 +150,9 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
         try:
             current_sms_provider.send(receivers, message, sms_code, transactional, promotional=promotional)
         except SendError as e:
-            receivers = e.get_send_failed_mobiles() or receivers
+            if not e.get_send_failed_mobiles():
+                return
+            receivers = e.get_send_failed_mobiles()
             used_sms_provider_ids.add(current_sms_provider.sms_provider_id)
             shuffle_current_sms_provider(used_sms_provider_ids)
             if current_sms_provider.sms_provider_id in used_sms_provider_ids:
