@@ -3,7 +3,6 @@ import veil_component
 with veil_component.init_component(__name__):
     from .user_tracking import enable_user_tracking
     from .user_tracking import enable_access_to_external_cookie
-    from .user_tracking import get_browser_code
     from .user_tracking import get_latest_user_id
     from .user_tracking import remember_logged_in_user_id
     from .user_tracking import get_logged_in_user_id
@@ -16,7 +15,6 @@ with veil_component.init_component(__name__):
     __all__ = [
         enable_user_tracking.__name__,
         enable_access_to_external_cookie.__name__,
-        get_browser_code.__name__,
         get_latest_user_id.__name__,
         remember_logged_in_user_id.__name__,
         get_logged_in_user_id.__name__,
