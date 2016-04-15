@@ -53,7 +53,6 @@ def set_xsrf_cookie_for_page(route_handler, data):
     return data
 
 
-@template_utility
 def xsrf_token(request=None):
     request = request or get_current_http_request()
     assert request._xsrf_token is not None
