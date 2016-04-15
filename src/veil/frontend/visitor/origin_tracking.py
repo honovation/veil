@@ -10,7 +10,6 @@ import logging
 import contextlib
 from urlparse import urlparse
 from veil.utility.encoding import *
-from veil.frontend.template import *
 from veil.frontend.web import *
 
 LOGGER = logging.getLogger(__name__)
@@ -83,9 +82,3 @@ def get_visitor_origin(cps_as_int=False, max_age_days=DEFAULT_ORIGIN_COOKIE_EXPI
         LOGGER.warn('invalid visitor origin tracking cookie: %(cookie)s', {'cookie': cookie})
         return None, None, None, None
     return host, referer, cps, cps_detail
-
-
-@template_utility
-def is_requested_from_spider():
-    request = get_current_http_request()
-    return request and request.user_agent.is_bot

@@ -244,3 +244,9 @@ def parse_user_agent(user_agent):
     ua = parse(user_agent or '')
     ua.is_from_weixin = b'MicroMessenger' in ua.ua_string
     return ua
+
+
+@template_utility
+def is_requested_from_spider():
+    request = get_current_http_request()
+    return request and request.user_agent.is_bot
