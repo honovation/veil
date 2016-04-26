@@ -7,6 +7,8 @@ import json
 import time
 import socket
 import traceback
+
+from .environment import VEIL_ENV_TYPE
 from .colors import red, green
 from .component_map import get_root_component
 
@@ -19,6 +21,10 @@ log_context_providers = []
 
 
 def configure_logging(component_name):
+    if '.' in component_name:
+        root_package = component_name.split('.', 1)[0]
+        if root_package and root_package not in configured_root_loggers:
+            configure_logging(root_package)
     logger = logging.getLogger(component_name)
     logger.setLevel(get_logging_level(component_name))
     clear_logger_handlers(logger)
@@ -47,7 +53,7 @@ def get_logging_level(target):
         if target == component_name or target.startswith('{}.'.format(component_name)):
             matched_component_names.append(component_name)
     if not matched_component_names:
-        return logging_levels.get('__default__', logging.DEBUG)
+        return logging_levels.get('__default__', logging.DEBUG if VEIL_ENV_TYPE in {'development', 'test'} else logging.INFO)
     return logging_levels[max(matched_component_names)]
 
 
