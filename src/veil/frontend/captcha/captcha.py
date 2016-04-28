@@ -79,7 +79,7 @@ def validate(challenge_code, captcha_answer):
                 'site': request.host,
                 'function': 'captcha',
                 'uri': request.uri,
-                'referer': request.headers.get('Referer'),
+                'referer': request.referrer.raw,
                 'remote_ip': request.remote_ip,
                 'user_agent': request.user_agent.ua_string
             })
@@ -91,7 +91,7 @@ def validate(challenge_code, captcha_answer):
             'user_answer': captcha_answer,
             'real_answer': real_answer,
             'uri': request.uri,
-            'referer': request.headers.get('Referer'),
+            'referer': request.referrer.raw,
             'remote_ip': request.remote_ip,
             'user_agent': request.user_agent.ua_string
         })

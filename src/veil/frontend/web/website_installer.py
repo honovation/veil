@@ -2,7 +2,8 @@ from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 from veil.model.event import *
 from veil.utility.memoize import *
-from .routing import *
+
+EVENT_NEW_WEBSITE = define_event('new-website')
 
 _config = {}
 overridden_website_configs = {}

@@ -7,21 +7,25 @@ import re
 from inspect import isfunction
 from logging import getLogger
 from urllib import unquote
+from urlparse import urlparse
 from user_agents import parse
 
 from veil.development.test import *
 from veil.frontend.template import *
 from veil.frontend.web.tornado import *
 from veil.model.command import *
+from veil.model.collection import *
 from veil.model.event import *
+from veil.utility.encoding import *
 from veil.utility.json import *
 from veil.utility.memoize import *
 import veil_component
 
+from ..website_installer import EVENT_NEW_WEBSITE, get_website_parent_domain
+
 from .page_post_processor import post_process_page
 
 LOGGER = getLogger(__name__)
-EVENT_NEW_WEBSITE = define_event('new-website')
 TAG_NO_LOGIN_REQUIRED = 'PUBLIC'
 original_routes = {}
 routes = {}
@@ -108,26 +112,26 @@ class RoutingHTTPHandler(object):
         self.context_managers = context_managers
 
     def __call__(self):
+        request = get_current_http_request()
+        request.website = self.website
+        request.user_agent = parse_user_agent(request.headers.get('User-Agent'))
+        request.is_ajax = request.headers.get('X-Requested-With') == b'XMLHttpRequest'
+        request.website_url = '{}://{}'.format(request.protocol, request.host)
+        record_request_referrer(request)
         for route in self.routes:
-            if self.try_route(route):
+            if self.try_route(request, route):
                 return
         raise HTTPError(httplib.NOT_FOUND)
 
-    def try_route(self, route):
-        request = get_current_http_request()
+    def try_route(self, request, route):
         if not is_method_matched(route.method, request.method):
             return False
         path = request.path or '/'
         path_arguments = route.path_template.match(path)
         if path_arguments is None:
             return False
-        request = get_current_http_request()
-        assert getattr(request, 'website', None) is None and getattr(request, 'route', None) is None
-        request.user_agent = parse_user_agent(request.headers.get('User-Agent'))
-        request.is_ajax = request.headers.get('X-Requested-With') == b'XMLHttpRequest'
-        request.website_url = '{}://{}'.format(request.protocol, request.host)
+        assert getattr(request, 'route', None) is None
         try:
-            request.website = self.website
             request.route = route
             if self.context_managers:
                 with nest_context_managers(*self.context_managers):
@@ -136,10 +140,10 @@ class RoutingHTTPHandler(object):
                 self.execute_route(route, path_arguments)
         finally:
             request.route = None
-            request.website = None
         return True
 
-    def execute_route(self, route, path_arguments):
+    @staticmethod
+    def execute_route(route, path_arguments):
         request = get_current_http_request()
         response = get_current_http_response()
         for name, value in path_arguments.items():
@@ -244,6 +248,21 @@ def parse_user_agent(user_agent):
     ua = parse(user_agent or '')
     ua.is_from_weixin = b'MicroMessenger' in ua.ua_string
     return ua
+
+
+def record_request_referrer(request):
+    request.referrer = DictObject(raw=request.headers.get('Referer'), text='', host='', from_internal=False)
+    if request.referrer.raw:
+        request.referrer.text = to_unicode(request.referrer.raw, strict=False, additional={
+            'uri': request.uri,
+            'referer': request.referrer.raw,
+            'remote_ip': request.remote_ip,
+            'user_agent': request.user_agent.ua_string
+        })
+        request.referrer.host = urlparse(request.referrer.text).hostname
+        if request.referrer.host:
+            request.referrer.host = request.referrer.host.strip('.')
+            request.referrer.from_internal = request.referrer.host.endswith(get_website_parent_domain(request.website))
 
 
 @template_utility

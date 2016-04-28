@@ -7,7 +7,6 @@ Associate the origin with business behaviors such as user registration, orders e
 from __future__ import unicode_literals, print_function, division
 import logging
 import contextlib
-from urlparse import urlparse
 from veil.utility.encoding import *
 from veil.frontend.web import *
 
@@ -23,32 +22,19 @@ def enable_visitor_origin_tracking(exclude_host_suffixes=(), exclude_path_prefix
     @contextlib.contextmanager
     def f():
         request = get_current_http_request()
-        referrer = request.headers.get('Referer')
         try:
             if not request.user_agent.is_bot and request.method == 'GET':
                 vtm_channel = get_http_argument('vtm_channel', optional=True)
                 vtm_term = get_http_argument('vtm_term', optional=True) if vtm_channel else None
-                record_referrer = False
-                if referrer:
-                    referrer = to_unicode(referrer, strict=False, additional={
-                        'uri': request.uri,
-                        'referer': referrer,
-                        'remote_ip': request.remote_ip,
-                        'user_agent': request.user_agent.ua_string
-                    })
-                    host = urlparse(referrer).hostname
-                    if host:
-                        host = host.strip('.')
-                        if not host.endswith(get_website_parent_domain(request.website)) \
-                                and all(not host.endswith(host_suffix) for host_suffix in exclude_host_suffixes) \
-                                and all(not request.path.startswith(path_prefix) for path_prefix in exclude_path_prefixes):
-                            record_referrer = True
+                record_referrer = request.referrer.host and not request.referrer.from_internal \
+                    and all(not request.referrer.host.endswith(host_suffix) for host_suffix in exclude_host_suffixes) \
+                    and all(not request.path.startswith(path_prefix) for path_prefix in exclude_path_prefixes)
                 if vtm_channel or record_referrer:
-                    set_visitor_origin(vtm_channel, vtm_term, referrer if record_referrer else None, expires_days=cookie_expires_days)
+                    set_visitor_origin(vtm_channel, vtm_term, request.referrer.text if record_referrer else None, expires_days=cookie_expires_days)
         except Exception:
             LOGGER.exception('failed to track visitor origin: %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
                 'uri': request.uri,
-                'referer': referrer,
+                'referer': request.referrer.raw,
                 'remote_ip': request.remote_ip,
                 'user_agent': request.user_agent.ua_string
             })

@@ -20,7 +20,7 @@ def install_translations(locale_provider):
             LOGGER.exception('failed to get browser locale: %(site)s, %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s, %(accept_language)s\n%(stack_trace)s', {
                 'site': request.host,
                 'uri': request.uri,
-                'referer': request.headers.get('Referer'),
+                'referer': request.referrer.raw,
                 'remote_ip': request.remote_ip,
                 'user_agent': request.user_agent.ua_string,
                 'accept_language': request.headers.get('Accept-Language'),

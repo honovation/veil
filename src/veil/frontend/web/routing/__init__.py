@@ -7,7 +7,6 @@ with veil_component.init_component(__name__):
     from .routing import public_route
     from .routing import is_public_route
     from .routing import RoutingHTTPHandler
-    from .routing import EVENT_NEW_WEBSITE
     from .routing import TAG_NO_LOGIN_REQUIRED
     from .routing import publish_new_website_event
     from .page_post_processor import register_page_post_processor
@@ -21,7 +20,6 @@ with veil_component.init_component(__name__):
         public_route.__name__,
         is_public_route.__name__,
         RoutingHTTPHandler.__name__,
-        'EVENT_NEW_WEBSITE',
         'TAG_NO_LOGIN_REQUIRED',
         publish_new_website_event.__name__,
         # from page_post_processor

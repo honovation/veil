@@ -50,7 +50,6 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
     def f():
         request = get_current_http_request()
         request.tracking_code = get_browser_code()
-        referer = request.headers.get('Referer')
         try:
             if request.user_agent.is_bot:
                 if TAG_NO_LOGIN_REQUIRED not in request.route.tags:
@@ -76,7 +75,7 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
                     if request.method in {'GET', 'HEAD'}:
                         return_url = request.uri
                     else:
-                        return_url = referer
+                        return_url = request.referrer.raw
                     if not return_url:
                         return_url = '/'
                     current_login_url = '{}{}ru={}'.format(config[request.website].login_url, '&' if '?' in config[request.website].login_url else '?',
@@ -92,7 +91,7 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
         except Exception:
             LOGGER.exception('failed to track user: %(uri)s, %(referer)s, %(remote_ip)s, %(user_agent)s', {
                 'uri': request.uri,
-                'referer': referer,
+                'referer': request.referrer.raw,
                 'remote_ip': request.remote_ip,
                 'user_agent': request.user_agent.ua_string
             })
