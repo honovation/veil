@@ -46,6 +46,8 @@ with veil_component.init_component(__name__):
     from .tornado import clear_cookie
     from .tornado import get_cookies
     from .tornado import clear_cookies
+    from .tornado import set_flash_message
+    from .tornado import clear_and_return_flash_message
     from .tornado import redirect_to
     from .tornado import get_http_argument
     from .tornado import get_http_arguments
@@ -105,6 +107,8 @@ with veil_component.init_component(__name__):
         clear_cookie.__name__,
         get_cookies.__name__,
         clear_cookies.__name__,
+        set_flash_message.__name__,
+        clear_and_return_flash_message.__name__,
         redirect_to.__name__,
         get_http_argument.__name__,
         get_http_arguments.__name__,
