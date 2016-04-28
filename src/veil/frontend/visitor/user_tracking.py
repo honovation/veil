@@ -75,7 +75,7 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
                     if request.method in {'GET', 'HEAD'}:
                         return_url = request.uri
                     else:
-                        return_url = request.referrer.raw
+                        return_url = request.referrer.raw if request.referrer.from_internal else '/'
                     if not return_url:
                         return_url = '/'
                     current_login_url = '{}{}ru={}'.format(config[request.website].login_url, '&' if '?' in config[request.website].login_url else '?',
