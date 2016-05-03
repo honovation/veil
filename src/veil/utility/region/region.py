@@ -321,6 +321,7 @@ def validate_regions(db):
         raise Exception('invalid regions with wrong codes: {}'.format(invalid_regions))
 
 
+REGION_NAMES_IGNORABLE_FROM_ADDRESS = ('市辖区', '县', '省直辖县级行政区划', '自治区直辖县级行政区划')
 REGION_LEVEL2SUFFIX = {
     1: ('省', '市', '壮族自治区', '维吾尔自治区', '回族自治区', '自治区', '特别行政区'),
     2: ('市', '新区', '地区', '蒙古族藏族自治州', '藏族自治州', '朝鲜族自治州', '土家族苗族自治州', '藏族羌族自治州', '哈尼族彝族自治州', '彝族自治州', '布依族苗族自治州',
