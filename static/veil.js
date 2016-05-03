@@ -154,6 +154,7 @@ veil.resource = {};
 
 veil.resource.get = function (options) {
     var url = options.url;
+    var async = options.async;
     var cache = options.cache;
     var onSuccess = options.onSuccess;
     var onError = options.onError;
@@ -185,6 +186,7 @@ veil.resource.get = function (options) {
     var _ = {
         type: 'GET',
         url: url,
+        async: async,
         cache: cache,
         data: data,
         dataType: dataType,
