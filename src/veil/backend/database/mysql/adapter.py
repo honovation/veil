@@ -24,6 +24,7 @@ class MySQLAdapter(object):
         self.password = password
         self.schema = schema
         self.conn = self._get_conn()
+        assert self.autocommit, 'autocommit should be enabled by default'
 
     def _get_conn(self):
         conn = None
@@ -103,7 +104,7 @@ class MySQLAdapter(object):
 
     def __repr__(self):
         return 'Oracle adapter {} with connection parameters {}'.format(self.__class__.__name__,
-            dict(host=self.host, port=self.port, database=self.database, user=self.user))
+                                                                        dict(host=self.host, port=self.port, database=self.database, user=self.user))
 
 
 class NamedParameterCursor(object):

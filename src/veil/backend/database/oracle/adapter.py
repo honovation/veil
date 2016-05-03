@@ -25,6 +25,7 @@ class OracleAdapter(object):
         self.password = password
         self.schema = schema
         self.conn = self._get_conn()
+        assert self.autocommit, 'autocommit should be enabled by default'
 
     def _get_conn(self):
         os.environ['NLS_LANG'] = 'AMERICAN_CHINA.UTF8'
@@ -36,9 +37,8 @@ class OracleAdapter(object):
             if self.schema:
                 conn.current_schema = str(self.schema)  # TODO: current_schema requires str, complains against unicode, may be fixed in new release
         except:
-            LOGGER.critical('Cannot connect to database: %(connection_string)s, %(schema)s', {
-                'connection_string': connection_string, 'schema': self.schema
-            }, exc_info=1)
+            LOGGER.critical('Cannot connect to database: %(connection_string)s, %(schema)s', {'connection_string': connection_string, 'schema': self.schema},
+                            exc_info=1)
             try:
                 raise
             finally:
@@ -110,7 +110,7 @@ class OracleAdapter(object):
 
     def __repr__(self):
         return 'Oracle adapter {} with connection parameters {}'.format(self.__class__.__name__,
-            dict(host=self.host, port=self.port, database=self.database, user=self.user))
+                                                                        dict(host=self.host, port=self.port, database=self.database, user=self.user))
 
 
 class NamedParameterCursor(object):

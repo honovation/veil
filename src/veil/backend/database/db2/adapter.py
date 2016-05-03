@@ -22,6 +22,7 @@ class DB2Adapter(object):
         self.password = password
         self.schema = schema
         self.conn = self._get_conn()
+        assert self.autocommit, 'autocommit should be enabled by default'
 
     def _get_conn(self):
         conn = None
@@ -55,7 +56,7 @@ class DB2Adapter(object):
 
     def reconnect_if_broken_per_exception(self, e):
         if isinstance(e, OperationalError) or isinstance(e, Error) and "SystemError('error return without exception set',)" in unicode(e):
-        # ibm-db driver bug: should raise OperationalError this case
+            # ibm-db driver bug: should raise OperationalError this case
             return self._reconnect()
         else:
             return False
@@ -110,7 +111,7 @@ class DB2Adapter(object):
 
     def __repr__(self):
         return 'DB2 adapter {} with connection parameters {}'.format(self.__class__.__name__,
-            dict(host=self.host, port=self.port, database=self.database, user=self.user))
+                                                                     dict(host=self.host, port=self.port, database=self.database, user=self.user))
 
 
 class NamedParameterCursor(object):

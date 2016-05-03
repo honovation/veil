@@ -43,6 +43,7 @@ class PostgresqlAdapter(object):
         self.password = password
         self.schema = schema
         self.conn = self._get_conn()
+        assert self.autocommit, 'autocommit should be enabled by default'
 
     def _get_conn(self):
         conn = None
@@ -54,7 +55,7 @@ class PostgresqlAdapter(object):
                     c.execute('SET search_path TO {}'.format(self.schema))
         except:
             LOGGER.critical('Cannot connect to database: %(adapter_with_connection_parameters)s', {'adapter_with_connection_parameters': repr(self)},
-                exc_info=1)
+                            exc_info=1)
             try:
                 raise
             finally:
@@ -127,7 +128,7 @@ class PostgresqlAdapter(object):
 
     def __repr__(self):
         return 'Postgresql adapter {} with connection parameters {}'.format(self.__class__.__name__,
-            dict(host=self.host, port=self.port, database=self.database, user=self.user))
+                                                                            dict(host=self.host, port=self.port, database=self.database, user=self.user))
 
 
 class ReturningDictObjectCursor(object):
