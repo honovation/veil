@@ -59,7 +59,7 @@ def require_database(purpose, component_name=None, verify_db=False):
         __import__(config.pop('driver'))
         config['type_'] = config.pop('type')
         instances[purpose] = connect(**config)
-        assert instances[purpose].autocommit, 'autocommit should no be disabled'
+        assert instances[purpose].autocommit, 'autocommit should be enabled by default'
     db = Database(purpose, component_name, instances[purpose])
     executing_test = get_executing_test(optional=True)
     if executing_test:
@@ -108,9 +108,16 @@ def transactional(database_provider):
     def wrap_with_transaction_context(method):
         @wraps(method)
         def wrapper(*args, **kwargs):
-            with require_transaction_context(database_provider()):
+            db = database_provider()
+            if db.autocommit:
+                while True:
+                    try:
+                        with require_transaction_context(db):
+                            return method(*args, **kwargs)
+                    except ReconnectedWithinTransactionException:
+                        continue
+            else:
                 return method(*args, **kwargs)
-
         return wrapper
 
     return wrap_with_transaction_context
@@ -340,12 +347,14 @@ class Database(object):
                         raise
                     else:
                         reconnected = self.conn.reconnect_if_broken_per_exception(e)
-                        if not reconnected or within_transaction_context:
+                        if not reconnected:
                             LOGGER.exception('failed to execute statement: sql is %(sql)s and kwargs are %(kwargs)s', {
                                 'sql': sql,
                                 'kwargs': kwargs
                             })
                             raise
+                        elif within_transaction_context:
+                            raise ReconnectedWithinTransactionException()
                 else:
                     return cursor.rowcount
 
@@ -366,12 +375,14 @@ class Database(object):
                         raise
                     else:
                         reconnected = self.conn.reconnect_if_broken_per_exception(e)
-                        if not reconnected or within_transaction_context:
+                        if not reconnected:
                             LOGGER.exception('failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s', {
                                 'sql': sql,
                                 'seq_of_parameters': seq_of_parameters
                             })
                             raise
+                        elif within_transaction_context:
+                            raise ReconnectedWithinTransactionException()
                 else:
                     return cursor.rowcount
 
@@ -392,12 +403,14 @@ class Database(object):
                         raise
                     else:
                         reconnected = self.conn.reconnect_if_broken_per_exception(e)
-                        if not reconnected or within_transaction_context:
+                        if not reconnected:
                             LOGGER.exception('failed to execute query: sql is %(sql)s and kwargs are %(kwargs)s', {
                                 'sql': sql,
                                 'kwargs': kwargs
                             })
                             raise
+                        elif within_transaction_context:
+                            raise ReconnectedWithinTransactionException()
                 else:
                     return cursor.fetchall()
 
@@ -433,12 +446,14 @@ class Database(object):
                     raise
                 else:
                     reconnected = self.conn.reconnect_if_broken_per_exception(e)
-                    if not reconnected or within_transaction_context:
+                    if not reconnected:
                         LOGGER.exception('failed to query large result set: sql is %(sql)s and kwargs are %(kwargs)s', {
                             'sql': sql,
                             'kwargs': kwargs
                         })
                         raise
+                    elif within_transaction_context:
+                        raise ReconnectedWithinTransactionException()
             else:
                 break
 
@@ -493,3 +508,7 @@ def close_all_connections():
             instance.close()
         except Exception:
             LOGGER.exception('Cannot close database connection')
+
+
+class ReconnectedWithinTransactionException(Exception):
+    pass
