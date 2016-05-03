@@ -339,24 +339,29 @@ for k, v in REGION_LEVEL2SUFFIX.items():
     REGION_LEVEL2SUFFIX[k] = sorted(v, key=len, reverse=True)
 
 
+def get_main_region_name(name, level):
+    if name in REGION_NAMES_IGNORABLE_FROM_ADDRESS:
+        return name
+    name_len = len(name)
+    if name_len <= 2:
+        return name
+    matched_suffix = next((s for s in REGION_LEVEL2SUFFIX[level] if name_len >= len(s) + 2 and name.endswith(s)), None)
+    return name[:-len(matched_suffix)] if matched_suffix else name
+
+
 def list_candidate_region_names(name, level):
+    if name in REGION_NAMES_IGNORABLE_FROM_ADDRESS:
+        return [name]
     main = get_main_region_name(name, level)
     candidates = ['{}{}'.format(main, s) for s in REGION_LEVEL2SUFFIX[level]]
     return sorted(candidates, key=lambda c: c != name)
 
 
-def get_main_region_name(name, level):
-    matched_suffix = next((s for s in REGION_LEVEL2SUFFIX[level] if name.endswith(s)), None)
-    return name[:-len(matched_suffix)] if matched_suffix else name
-
-
 def list_region_name_patterns(region):
     patterns = [region.name]
-    name_len = len(region.name)
-    if name_len > 2:
-        suffix = next((s for s in REGION_LEVEL2SUFFIX[region.level] if name_len >= len(s) + 2 and region.name.endswith(s)), None)
-        if suffix:
-            patterns.append(region.name[:-len(suffix)])
+    main = get_main_region_name(region.name, region.level)
+    if main != region.name:
+        patterns.append(main)
     return patterns
 
 
