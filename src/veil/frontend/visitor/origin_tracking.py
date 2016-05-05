@@ -23,7 +23,7 @@ def enable_visitor_origin_tracking(exclude_host_suffixes=(), exclude_path_prefix
     def f():
         request = get_current_http_request()
         try:
-            if not request.user_agent.is_bot and request.method == 'GET':
+            if not request.user_agent.is_bot and not request.is_ajax and request.method == 'GET':
                 vtm_channel = get_http_argument('vtm_channel', optional=True)
                 vtm_term = get_http_argument('vtm_term', optional=True) if vtm_channel else None
                 record_referrer = request.referrer.host and not request.referrer.from_internal \

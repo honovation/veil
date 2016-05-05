@@ -72,11 +72,11 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
                     refresh_user_session_ttl(session)
 
                 if TAG_NO_LOGIN_REQUIRED not in request.route.tags and not (session and get_logged_in_user_id(request.website, session)):
-                    if request.method in {'GET', 'HEAD'} and not request.is_ajax:
+                    if not request.is_ajax and request.method in {'GET', 'HEAD'}:
                         return_url = request.uri
+                    elif request.referrer.from_internal:
+                        return_url = request.referrer.raw
                     else:
-                        return_url = request.referrer.raw if request.referrer.from_internal else '/'
-                    if not return_url:
                         return_url = '/'
                     current_login_url = '{}{}ru={}'.format(config[request.website].login_url, '&' if '?' in config[request.website].login_url else '?',
                                                            quote_plus(return_url))
