@@ -156,6 +156,9 @@ veil.resource.get = function (options) {
     var url = options.url;
     var async = options.async;
     var cache = options.cache;
+    if (cache !== false && url.indexOf('_v_ajax=1') === -1) {
+        url += (url.indexOf('?') === -1 ? '?' : '&') + '_v_ajax=1';
+    }
     var onSuccess = options.onSuccess;
     var onError = options.onError;
     var onValidationError = options.onValidationError;
