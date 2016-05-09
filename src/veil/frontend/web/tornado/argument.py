@@ -23,12 +23,17 @@ from .context import get_current_http_request
 
 LOGGER = logging.getLogger(__name__)
 
+SHOULD_BE_DELETED_ARGUMENT_PREFIX = b'_v_'
+
 
 @contextlib.contextmanager
 def normalize_arguments():
     request = get_current_http_request()
     arguments = request.arguments
     for field in arguments.keys():
+        if field.startswith(SHOULD_BE_DELETED_ARGUMENT_PREFIX):
+            del arguments[field]
+            continue
         value = []
         for v in arguments[field]:
             v = to_unicode(v, strict=False, additional={
