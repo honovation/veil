@@ -4,6 +4,7 @@ import contextlib
 import logging
 import re
 import os
+import decimal
 import cx_Oracle
 from cx_Oracle import OperationalError
 
@@ -33,6 +34,7 @@ class OracleAdapter(object):
         connection_string = '{}/{}@{}'.format(self.user, self.password, cx_Oracle.makedsn(self.host, self.port, self.database))
         try:
             conn = cx_Oracle.connect(connection_string)
+            conn.outputtypehandler = OracleAdapter.output_type_handler
             conn.autocommit = True
             if self.schema:
                 conn.current_schema = str(self.schema)  # TODO: current_schema requires str, complains against unicode, may be fixed in new release
@@ -81,6 +83,12 @@ class OracleAdapter(object):
         except Exception:
             LOGGER.warn('Oracle connection ping test failed, reconnect now: %(connection)s', {'connection': self})
             self._get_conn()
+
+    @staticmethod
+    def output_type_handler(cursor, name, defaultType, size, precision, scale):
+        # copy from http://www.oracle.com/technetwork/articles/tuininga-cx-oracle-084866.html
+        if defaultType == cx_Oracle.NUMBER and scale > 0:
+            return cursor.var(str, 100, cursor.arraysize, outconverter=decimal.Decimal)
 
     @property
     def autocommit(self):
