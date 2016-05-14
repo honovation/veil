@@ -20,9 +20,10 @@ from .database_client_installer import database_client_resource
 LOGGER = getLogger(__name__)
 
 DATABASE_TYPE_POSTGRESQL = 'postgresql'
-DATABASE_TYPE_MYSQL = 'mysql'
 DATABASE_TYPE_ORACLE = 'oracle'
 DATABASE_TYPE_DB2 = 'db2'
+DATABASE_TYPE_MSSQL = 'mssql'
+DATABASE_TYPE_MYSQL = 'mysql'
 
 instances = {}  # purpose => adapter instance
 adapter_classes = {}  # database type => adapter class

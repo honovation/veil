@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from unittest.case import TestCase
 from .adapter import NamedParameterCursor
 
+
 class NamedParameterCursorTest(TestCase):
     def test(self):
         cursor = NamedParameterCursor(self)

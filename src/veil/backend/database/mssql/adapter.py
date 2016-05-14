@@ -3,8 +3,7 @@ from __future__ import unicode_literals, print_function, division
 import contextlib
 import logging
 import re
-import mysql.connector
-from mysql.connector.errors import OperationalError
+import pymssql
 
 from veil.utility.encoding import *
 from veil.model.collection import *
@@ -13,8 +12,8 @@ from veil.backend.database.client import *
 LOGGER = logging.getLogger(__name__)
 
 
-class MySQLAdapter(object):
-    type = DATABASE_TYPE_MYSQL
+class MSSQLAdapter(object):
+    type = DATABASE_TYPE_MSSQL
 
     def __init__(self, host, port, database, user, password, schema):
         self.host = host
@@ -28,9 +27,9 @@ class MySQLAdapter(object):
 
     def _get_conn(self):
         conn = None
-        connect_args = DictObject(host=self.host, port=self.port, database=self.database, user=self.user, password=self.password, autocommit=True)
+        connect_args = DictObject(server=self.host, port=self.port, database=self.database, user=self.user, password=self.password, autocommit=True)
         try:
-            conn = mysql.connector.connect(**connect_args)
+            conn = pymssql.connect(**connect_args)
         except Exception:
             LOGGER.critical('Cannot connect to database: %(connect_args)s', {'connect_args': connect_args}, exc_info=1)
             try:
@@ -53,7 +52,7 @@ class MySQLAdapter(object):
             self._reconnect()
 
     def reconnect_if_broken_per_exception(self, e):
-        return self._reconnect() if isinstance(e, OperationalError) else False
+        return self._reconnect() if isinstance(e, pymssql.OperationalError) else False
 
     def _reconnect(self):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
@@ -71,9 +70,11 @@ class MySQLAdapter(object):
 
     def _reconnect_if_broken_per_lightweight_detection(self):
         try:
-            self.conn.ping()
+            connected = self.conn._conn and self.conn._conn.connected
         except Exception:
-            LOGGER.warn('MySQL connection ping test failed, reconnect now: %(connection)s', {'connection': self})
+            connected = False
+        if not connected:
+            LOGGER.warn('MsSQL connection ping test failed, reconnect now: %(connection)s', {'connection': self})
             self._get_conn()
 
     @property
@@ -95,7 +96,7 @@ class MySQLAdapter(object):
 
     def cursor(self, returns_dict_object=True, primary_keys=False, **kwargs):
         self._reconnect_if_broken_per_lightweight_detection()
-        cursor = self.conn.cursor(dictionary=True, **kwargs)
+        cursor = self.conn.cursor(as_dict=returns_dict_object, **kwargs)
         cursor = NamedParameterCursor(cursor)
         if returns_dict_object:
             return ReturningDictObjectCursor(cursor, primary_keys)
@@ -103,7 +104,7 @@ class MySQLAdapter(object):
             return cursor
 
     def __repr__(self):
-        return 'MySQL adapter {} with connection parameters {}'.format(self.__class__.__name__,
+        return 'MSSQL adapter {} with connection parameters {}'.format(self.__class__.__name__,
                                                                        dict(host=self.host, port=self.port, database=self.database, user=self.user))
 
 
