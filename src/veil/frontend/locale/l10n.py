@@ -46,10 +46,6 @@ def date_filter(value, format='yyyy-MM-dd', delta=0):
 
 @template_filter('datetime')
 def datetime_filter(value, format='yyyy-MM-dd HH:mm:ss'):
-    return format_datetime(value, format)
-
-
-def format_datetime(value, format='yyyy-MM-dd HH:mm:ss'):
     if isinstance(value, basestring):
         return value
     if value and is_naive_datetime(value):

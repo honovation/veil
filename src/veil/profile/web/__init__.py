@@ -5,7 +5,6 @@ with veil_component.init_component(__name__):
     from veil.frontend.template import *
     from veil.model.command import *
     from veil.model.security import *
-    from veil.frontend.locale import *
     from veil.frontend.web import *
     from veil.frontend.visitor import *
     from veil.utility.http import *
