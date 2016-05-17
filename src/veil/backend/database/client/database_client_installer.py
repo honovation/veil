@@ -1,6 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 
+_config = {}
+
+
 @composite_installer
 def database_client_resource(purpose, config):
     resources = list(BASIC_LAYOUT_RESOURCES)
@@ -12,12 +15,12 @@ def database_client_resource(purpose, config):
 
 def load_database_client_config(purpose):
     config = load_config_from(VEIL_ETC_DIR / '{}-database-client.cfg'.format(purpose.replace('_', '-')), 'driver', 'type', 'host', 'port', 'database', 'user',
-                              'password', 'schema')
+                              'password')
     config.port = int(config.port)
+    config.schema = config.get('schema')
     config.enable_chinese_fts = config.get('enable_chinese_fts', '0') == '1'
     return config
 
 
-_config = {}
 def database_client_config(purpose):
     return _config.setdefault(purpose, load_database_client_config(purpose))
