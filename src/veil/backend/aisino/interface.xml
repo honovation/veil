@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<interface xmlns="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.chinatax.gov.cn/tirip/dataspec/interfaces.xsd" version="DZFP1.0">
+    <globalInfo>
+        <terminalCode>{{ terminal_code }}</terminalCode>
+        <appId>{{ app_id }}</appId>
+        <version>{{ version }}</version>
+        <interfaceCode>{{ interface_name }}</interfaceCode>
+        <userName>{{ username }}</userName>
+        <passWord>{{ password }}</passWord>
+        <taxpayerId>{{ tax_payer.id }}</taxpayerId>
+        <authorizationCode>{{ tax_payer.auth_code }}</authorizationCode>
+        <requestCode>{{ request_code }}</requestCode>
+        <requestTime>{{ request_time }}</requestTime>
+        <responseCode>{{ response_code }}</responseCode>
+        <dataExchangeId>{{ data_exchange_id }}</dataExchangeId>
+    </globalInfo>
+    <returnStateInfo>
+        <returnCode/>
+        <returnMessage/>
+    </returnStateInfo>
+    <Data>
+        <dataDescription>
+            <zipCode>{{ 1 if is_compressed else 0 }}</zipCode>
+            <encryptCode>{{ encrypt_code }}</encryptCode>
+            <codeType>{{ encrypt_code_type }}</codeType>
+        </dataDescription>
+        <content><![CDATA[{{ interface_content |safe }}]]></content>
+    </Data>
+</interface>

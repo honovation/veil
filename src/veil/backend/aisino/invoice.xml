@@ -1,0 +1,83 @@
+<REQUEST_FPKJXX class="REQUEST_FPKJXX">
+    <FPKJXX_FPTXX class="FPKJXX_FPTXX">
+        <FPQQLSH>{{ request_seq }}</FPQQLSH>
+        <DSPTBM>{{ ebp_code }}</DSPTBM>
+        <NSRSBH>{{ tax_payer.id }}</NSRSBH>
+        <NSRMC><![CDATA[{{ tax_payer.name }}]]></NSRMC>
+        <NSRDZDAH/>
+        <SWJG_DM/>
+        <DKBZ>{{ flag_dk }}</DKBZ>
+        <PYDM>{{ sample_code }}</PYDM>
+        <KPXM>{{ invoice_content }}</KPXM>
+        <BMB_BBH>{{ encode_table_version }}</BMB_BBH>
+        <XHF_NSRSBH>{{ tax_payer.id }}</XHF_NSRSBH>
+        <XHFMC><![CDATA[{{ tax_payer.name }}]]></XHFMC>
+        <XHF_DZ><![CDATA[{{ tax_payer.address }}]]></XHF_DZ>
+        <XHF_DH><![CDATA[{{ tax_payer.telephone }}]]></XHF_DH>
+        <XHF_YHZH>{{ tax_payer.bank_account_no or '' }}</XHF_YHZH>
+        <GHFMC><![CDATA[{{ buyer.name }}]]></GHFMC>
+        <GHF_NSRSBH>{{ buyer.id or '' }}</GHF_NSRSBH>
+        <GHF_SF/>
+        <GHF_DZ/>
+        <GHF_GDDH/>
+        <GHF_SJ>{{ buyer.mobile }}</GHF_SJ>
+        <GHF_EMAIL/>
+        <GHFQYLX>{{ buyer.type }}</GHFQYLX>
+        <GHF_YHZH>{{ buyer.bank_account_no }}</GHF_YHZH>
+        <HY_DM/>
+        <HY_MC/>
+        <KPY><![CDATA[{{ operator_name }}]]></KPY>
+        <SKY/>
+        <FHR/>
+        <KPRQ/>
+        <KPLX>{{ type_code }}</KPLX>
+        <YFP_DM>{{ ref_invoice_code or '' }}</YFP_DM>
+        <YFP_HM>{{ ref_invoice_no or '' }}</YFP_HM>
+        <CZDM>{{ operation_code }}</CZDM>
+        <QD_BZ>{{ flag_list }}</QD_BZ>
+        <QDXMMC><![CDATA[{{ list_item_name or '' }}]]></QDXMMC>
+        <CHYY><![CDATA[{{ red_invoice_reason or '' }}]]></CHYY>
+        <TSCHBZ>{{ flag_special_red or '' }}</TSCHBZ>
+        <KPHJJE>{{ total }}</KPHJJE>
+        <HJBHSJE>{{ without_tax_total }}</HJBHSJE>
+        <HJSE>{{ tax_total }}</HJSE>
+        <BZ><![CDATA[{{ comment or '' }}]]></BZ>
+        <BYZD1/>
+        <BYZD2/>
+        <BYZD3/>
+        <BYZD4/>
+        <BYZD5/>
+    </FPKJXX_FPTXX>
+    <FPKJXX_XMXXS class="FPKJXX_XMXX;" size="1">
+        <FPKJXX_XMXX>
+            <XMMC><![CDATA[{{ items[0].name }}]]></XMMC>
+            <XMDW>件</XMDW>
+            <GGXH/>
+            <XMSL>{{ items[0].quantity }}</XMSL>
+            <HSBZ>{{ 1 if items[0].with_tax else 0 }}</HSBZ>
+            <XMDJ>{{ items[0].price }}</XMDJ>
+            <FPHXZ>{{ items[0].type }}</FPHXZ>
+            <SPBM>{{ items[0].code or '' }}</SPBM>
+            <ZXBM/>
+            <YHZCBS>{{ 1 if items[0].with_promotion else 0 }}</YHZCBS>
+            <LSLBS/>
+            <ZZSTSGL/>
+            <XMJE>{{ items[0].total }}</XMJE>
+            <SL>{{ items[0].tax_rate }}</SL>
+            <SE>{{ items[0].tax_total }}</SE>
+            <BYZD1/>
+            <BYZD2/>
+            <BYZD3/>
+            <BYZD4/>
+            <BYZD5/>
+        </FPKJXX_XMXX>
+    </FPKJXX_XMXXS>
+    <FPKJXX_DDXX class="FPKJXX_DDXX">
+        <DDH>{{ request_seq }}</DDH>
+        <THDH>{{ request_seq if type_code == INVOICE_TYPE_CODE_RED else '' }}</THDH>
+        <DDDATE/>
+    </FPKJXX_DDXX>
+    <FPKJXX_DDMXXXS class="FPKJXX_DDMXXX;" size="1"/>
+    <FPKJXX_ZFXX class="FPKJXX_ZFXX"/>
+    <FPKJXX_WLXX class="FPKJXX_WLXX"/>
+</REQUEST_FPKJXX>

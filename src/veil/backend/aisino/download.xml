@@ -1,0 +1,7 @@
+<REQUEST_FPXXXZ_NEW class="REQUEST_FPXXXZ_NEW">
+    <FPQQLSH>{{ request_seq }}</FPQQLSH>
+    <DSPTBM>{{ ebp_code }}</DSPTBM>
+    <NSRSBH>{{ tax_payer.id }}</NSRSBH>
+    <DDH>{{ request_seq }}</DDH>
+    <PDF_XZFS>{{ download_method }}</PDF_XZFS>
+</REQUEST_FPXXXZ_NEW>
