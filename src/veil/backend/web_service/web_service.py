@@ -48,7 +48,7 @@ class LoggingWebServicePlugin(MessagePlugin):
 
     def parsed(self, context):
         if context.reply:
-            self.last_received_reply = context.reply
+            self.last_received_reply = context.reply.str()
 
     def last_sent(self):
         return self.last_sent_message
