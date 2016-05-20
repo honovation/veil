@@ -7,6 +7,8 @@ from veil.server.os import *
 from veil.utility.setting import *
 from veil_installer import *
 
+from .aisino import REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE
+
 _config = None
 
 add_application_sub_resource('aisino_invoice', lambda config: aisino_invoice_resource(**config))
@@ -16,6 +18,7 @@ add_application_sub_resource('aisino_invoice', lambda config: aisino_invoice_res
 def aisino_invoice_resource(payer_id, payer_name, payer_auth_code, payer_address, payer_telephone, payer_bank_account_no, ebp_code, registration_no,
                             operator_name):
     resources = list(BASIC_LAYOUT_RESOURCES)
+    resources.append(directory_resource(path=REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE, owner=CURRENT_USER, group=CURRENT_USER_GROUP))
     resources.append(file_resource(path=VEIL_ETC_DIR / 'aision_invoice.cfg', content=render_config('aision_invoice.cfg.j2',
                                                                                                    payer_id=payer_id,
                                                                                                    payer_name=payer_name,

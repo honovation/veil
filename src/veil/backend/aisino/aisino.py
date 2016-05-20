@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
+
 import zlib
 import logging
 from cStringIO import StringIO
@@ -10,6 +11,7 @@ from base64 import b64encode, b64decode
 from decimal import Decimal
 
 from veil.backend.web_service import *
+from veil.environment import VEIL_BUCKET_LOG_DIR
 from veil.frontend.template import *
 from veil.model.collection import *
 from veil.utility.clock import *
@@ -19,6 +21,8 @@ from veil.utility.xml import *
 from veil_component import VEIL_ENV_TYPE
 
 LOGGER = logging.getLogger(__name__)
+
+REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE = VEIL_BUCKET_LOG_DIR / 'aisino'
 
 if VEIL_ENV_TYPE == 'public':
     url = ''
@@ -100,7 +104,13 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
                                                               encrypt_code=encrypt_code, encrypt_code_type=encrypt_code_type,
                                                               interface_content=b64encode(to_str(interface_content)))
     ws = WebService(url)
-    response = ws.eiInterface(interface_data)
+    try:
+        response = ws.eiInterface(interface_data)
+    except Exception as e:
+        LOGGER.info('failed request invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
+        raise
+    finally:
+        record_request_and_response(ws, 'FPKJ', request_seq)
     response_obj = parse_xml(to_str(response))
     response_obj.returnStateInfo.is_success = response_obj.returnStateInfo.returnCode == RESPONSE_SUCCESS_MARK
     return response_obj.returnStateInfo
@@ -141,9 +151,14 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
                                                               encrypt_code=encrypt_code, encrypt_code_type=encrypt_code_type,
                                                               interface_content=b64encode(to_str(interface_content)))
     ws = WebService(url)
-    response = ws.eiInterface(interface_data)
+    try:
+        response = ws.eiInterface(interface_data)
+    except Exception as e:
+        LOGGER.info('failed request invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
+        raise
+    finally:
+        record_request_and_response(ws, 'FPXZ' if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD else 'FPCX', request_seq)
     response_obj = parse_xml(to_str(response))
-    LOGGER.info(response_obj)
 
     if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD:
         decode_content_data(response_obj.Data)
@@ -231,3 +246,15 @@ class InvoiceItem(DictObject):
         self.tax_total = round_money_ceiling(self.total * self.tax_rate)
         self.with_tax = with_tax
         self.with_promotion = with_promotion
+
+
+def record_request_and_response(ws, interface_name, request_seq):
+    current_time_string = get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S')
+    log_file_dir = REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE / current_time_string[:4] / current_time_string[4:6]
+    log_file_dir.makedirs()
+    request_log_file_name = '{}-{}-{}-req.xml'.format(current_time_string, request_seq, interface_name)
+    response_log_file_name = '{}-{}-{}-rsp.xml'.format(current_time_string, request_seq, interface_name)
+    with open(log_file_dir / request_log_file_name, mode='wb+') as f:
+        f.write(ws.last_sent())
+    with open(log_file_dir / response_log_file_name, mode='wb+') as f:
+        f.write(ws.last_received())
