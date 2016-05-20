@@ -194,11 +194,17 @@ class InvoiceBuyer(DictObject):
         super(InvoiceBuyer, self).__init__()
         self.type = type
         self.id = id
-        self.name = '个人({})'.format(name) if self.type == INVOICE_BUYER_TYPE_PERSONAL else name
+        if self.type == INVOICE_BUYER_TYPE_PERSONAL:
+            if name:
+                self.name = '个人({})'.format(name)
+            else:
+                self.name = '个人'
+        else:
+            self.name = name
         self.mobile = mobile
         self.telephone = telephone
         self.address = address
-        self.bank_account = bank_account_no
+        self.bank_account_no = bank_account_no
 
 
 class InvoiceTaxPayer(DictObject):
