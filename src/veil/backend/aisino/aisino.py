@@ -151,6 +151,7 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
     with require_current_template_directory_relative_to():
         interface_content = get_template('download.xml').render(request_seq=request_seq, ebp_code=ebp_code, tax_payer=tax_payer,
                                                                 download_method=download_method)
+    interface_content = b64encode(get_compressed_content(get_ca_encrypted_content(to_str(interface_content))))
     with require_current_template_directory_relative_to():
         interface_data = get_template('interface.xml').render(terminal_code=terminal_code, app_id=app_id, version=version, response_code=response_code,
                                                               interface_name=INVOICE_INTERFACE_NAME_FOR_DOWNLOAD, username=username,
@@ -159,7 +160,7 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
                                                               request_time=get_request_time(), ebp_code=ebp_code,
                                                               data_exchange_id=generate_data_exchange_id(ebp_code), is_compressed=False,
                                                               encrypt_code=encrypt_code, encrypt_code_type=encrypt_code_type,
-                                                              interface_content=b64encode(to_str(interface_content)))
+                                                              interface_content=interface_content)
     ws = WebService(url)
     try:
         response = ws.eiInterface(interface_data)
@@ -210,7 +211,7 @@ def parse_content_data(data):
 
 def as_request_seq(request_id):
     # TODO : remove test seq generator code
-    return 'LJBBTEST' + str(request_id).zfill(REQUEST_SEQ_LENGTH-len('LJBBTEST'))
+    return 'LJBBTEST' + str(randint(0, 999)).zfill(3) + str(request_id).zfill(REQUEST_SEQ_LENGTH-len('LJBBTEST') - 3)
     return str(request_id).zfill(REQUEST_SEQ_LENGTH)
 
 
