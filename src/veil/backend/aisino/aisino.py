@@ -162,31 +162,32 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
                                                               password=generate_request_password(registration_no),
                                                               tax_payer=tax_payer, request_code=ebp_code,
                                                               request_time=get_request_time(), ebp_code=ebp_code,
-                                                              data_exchange_id=generate_data_exchange_id(ebp_code), is_compressed=False,
+                                                              data_exchange_id=generate_data_exchange_id(ebp_code), is_compressed=True,
                                                               encrypt_code=encrypt_code, encrypt_code_type=encrypt_code_type,
                                                               interface_content=interface_content)
     ws = WebService(url)
     try:
         response = ws.eiInterface(interface_data)
     except Exception as e:
-        LOGGER.info('failed request invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
+        LOGGER.info('failed request download invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
         raise
     finally:
         record_request_and_response(ws, 'FPXZ' if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD else 'FPCX', request_seq)
     response_obj = parse_xml(to_str(response))
-
-    if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD:
-        decode_content_data(response_obj.Data)
-        uncompress_content_data(response_obj.Data)
-        decrypt_content_data(response_obj.Data)
-        parse_content_data(response_obj.Data)
 
     if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD and response_obj.returnStateInfo.returnCode == RESPONSE_SUCCESS_MARK:
         response_obj.is_success = True
     elif download_method == DOWNLOAD_METHOD_FOR_QUERY and response_obj.returnStateInfo.returnCode == RESPONSE_QUERY_SUCCESS_MARK:
         response_obj.is_success = True
     else:
+        # download/query error or not create invoice before.
         response_obj.is_success = False
+
+    if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD:
+        decode_content_data(response_obj.Data)
+        uncompress_content_data(response_obj.Data)
+        decrypt_content_data(response_obj.Data)
+        parse_content_data(response_obj.Data)
 
     return response_obj
 
@@ -215,7 +216,7 @@ def parse_content_data(data):
 
 def as_request_seq(request_id):
     # TODO : remove test seq generator code
-    return 'LJBBTEST' + str(randint(0, 999)).zfill(3) + str(request_id).zfill(REQUEST_SEQ_LENGTH-len('LJBBTEST') - 3)
+    return 'LJBBTEST' + str(md5(str(request_id)).hexdigest()[:3]) + str(request_id).zfill(REQUEST_SEQ_LENGTH-len('LJBBTEST') - 3)
     return str(request_id).zfill(REQUEST_SEQ_LENGTH)
 
 
