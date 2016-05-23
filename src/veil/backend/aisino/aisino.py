@@ -205,7 +205,7 @@ def as_request_seq(request_id):
 
 
 class InvoiceBuyer(DictObject):
-    def __init__(self, type, id, name, mobile, telephone, address, bank_account_no):
+    def __init__(self, type, id, name, mobile, telephone, address, bank_name, bank_account_no):
         super(InvoiceBuyer, self).__init__()
         self.type = type
         self.id = id
@@ -219,17 +219,19 @@ class InvoiceBuyer(DictObject):
         self.mobile = mobile
         self.telephone = telephone
         self.address = address
+        self.bank_name = bank_name
         self.bank_account_no = bank_account_no
 
 
 class InvoiceTaxPayer(DictObject):
-    def __init__(self, id, name, auth_code, address, telephone, bank_account_no):
+    def __init__(self, id, name, auth_code, address, telephone, bank_name, bank_account_no):
         super(InvoiceTaxPayer, self).__init__()
         self.id = id
         self.name = name
         self.auth_code = auth_code
         self.address = address
         self.telephone = telephone
+        self.bank_name = bank_name
         self.bank_account_no = bank_account_no
 
 
