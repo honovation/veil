@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 
 import zlib
+import gzip
 import logging
 from cStringIO import StringIO
 from random import randint
@@ -101,7 +102,7 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
                                                               password=generate_request_password(registration_no),
                                                               tax_payer=tax_payer, request_code=ebp_code,
                                                               request_time=get_request_time(), ebp_code=ebp_code,
-                                                              data_exchange_id=generate_data_exchange_id(ebp_code), is_compressed=False,
+                                                              data_exchange_id=generate_data_exchange_id(ebp_code), is_compressed=True,
                                                               encrypt_code=encrypt_code, encrypt_code_type=encrypt_code_type,
                                                               interface_content=interface_content)
     ws = WebService(url)
@@ -131,7 +132,10 @@ def get_ca_encrypted_content(raw_content):
 
 
 def get_compressed_content(content):
-    return zlib.compress(content)
+    buf = StringIO()
+    with gzip.GzipFile(mode='wb', fileobj=buf) as f:
+        f.write(content)
+    return buf.getvalue()
 
 
 def generate_request_password(registration_no):
