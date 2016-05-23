@@ -94,6 +94,7 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
                                                                flag_dk=flag_dk, red_invoice_reason=red_invoice_reason, flag_special_red=flag_special_red,
                                                                INVOICE_TYPE_CODE_RED=INVOICE_TYPE_CODE_RED, operation_code=operation_code, flag_list=flag_list,
                                                                list_item_name=list_item_name)
+    interface_content = b64encode(get_compressed_content(get_ca_encrypted_content(to_str(interface_content))))
     with require_current_template_directory_relative_to():
         interface_data = get_template('interface.xml').render(terminal_code=terminal_code, app_id=app_id, version=version, response_code=response_code,
                                                               interface_name=INVOICE_INTERFACE_NAME_FOR_INVOICE, username=username,
@@ -102,7 +103,7 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
                                                               request_time=get_request_time(), ebp_code=ebp_code,
                                                               data_exchange_id=generate_data_exchange_id(ebp_code), is_compressed=False,
                                                               encrypt_code=encrypt_code, encrypt_code_type=encrypt_code_type,
-                                                              interface_content=b64encode(to_str(interface_content)))
+                                                              interface_content=interface_content)
     ws = WebService(url)
     try:
         response = ws.eiInterface(interface_data)
@@ -122,6 +123,15 @@ def decrypt_content_data(data):
     if data.dataDescription.encryptCode == CONTENT_DATA_ENCRYPT_CODE_CA:
         # decrypt by CA
         data.content = ''
+
+
+def get_ca_encrypted_content(raw_content):
+    # TODO: waiting for shared library
+    return raw_content
+
+
+def get_compressed_content(content):
+    return zlib.compress(content)
 
 
 def generate_request_password(registration_no):
