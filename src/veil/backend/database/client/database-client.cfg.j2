@@ -11,3 +11,6 @@ schema={{ config.schema }}
 {% if config.get('enable_chinese_fts') %}
 enable_chinese_fts=1
 {% endif %}
+{% if config.get('enable_modules') %}
+enable_modules={{ config.enable_modules |join(',') }}
+{% endif %}

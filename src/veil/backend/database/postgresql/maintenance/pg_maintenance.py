@@ -41,6 +41,7 @@ def drop_database(purpose):
 def migrate(purpose):
     wait_for_server_up(purpose)
     create_database_if_not_exists(purpose)
+    enable_database_modules(purpose)
     enable_database_chinese_fts(purpose)
     versions = load_versions(purpose)
     db = lambda: require_database(purpose)
@@ -134,6 +135,20 @@ def create_database_if_not_exists(purpose):
         '''), capture=True)
 
 
+@script('enable-database-modules')
+def enable_database_modules(purpose):
+    config = database_client_config(purpose)
+    if not config.enable_modules:
+        return
+    maintenance_config = postgresql_maintenance_config(purpose)
+    env = os.environ.copy()
+    env['PGPASSWORD'] = maintenance_config.owner_password
+    commands = ''.join('CREATE EXTENSION IF NOT EXISTS {};'.format(module) for module in config.enable_modules)
+    shell_execute(
+        '{}/psql -h {} -p {} -U {} -d {} -c "{}"'.format(get_pg_bin_dir(maintenance_config.version), config.host, config.port, maintenance_config.owner,
+                                                         config.database, commands), env=env, debug=True)
+
+
 @script('enable-database-chinese-fts')
 def enable_database_chinese_fts(purpose):
     config = database_client_config(purpose)
@@ -154,7 +169,7 @@ def enable_database_chinese_fts(purpose):
         COMMIT;
         '''.format(ext_name='zhparser', ext_config_name='zhparser_config', token_types='n,v,a,i,e,l', dictionary_name='simple')
     shell_execute('{}/psql -h {} -p {} -U {} -d {} -c "{}"'.format(get_pg_bin_dir(maintenance_config.version), config.host, config.port,
-        maintenance_config.owner, config.database, commands), env=env, debug=True)
+                                                                   maintenance_config.owner, config.database, commands), env=env, debug=True)
 
 
 def database_chinese_fts_enabled(version, host, port, owner, database, env):

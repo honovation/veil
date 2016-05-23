@@ -19,6 +19,7 @@ def load_database_client_config(purpose):
     config.port = int(config.port)
     config.schema = config.get('schema')
     config.enable_chinese_fts = config.get('enable_chinese_fts', '0') == '1'
+    config.enable_modules = config['enable_modules'].split(',') if 'enable_modules' in config else []
     return config
 
 
