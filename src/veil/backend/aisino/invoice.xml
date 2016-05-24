@@ -23,7 +23,7 @@
         <GHF_SJ>{{ buyer.mobile }}</GHF_SJ>
         <GHF_EMAIL/>
         <GHFQYLX>{{ buyer.type }}</GHFQYLX>
-        <GHF_YHZH>{{ '{} {}'.format(buyer.bank_name or '', buyer.bank_account_no or '') }}</GHF_YHZH>
+        <GHF_YHZH>{{ buyer.bank_name or '' }} {{ buyer.bank_account_no or '' }}</GHF_YHZH>
         <HY_DM/>
         <HY_MC/>
         <KPY><![CDATA[{{ operator_name }}]]></KPY>
