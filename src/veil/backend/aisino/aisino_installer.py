@@ -9,10 +9,11 @@ from veil.utility.setting import *
 from veil.utility.shell import *
 from veil_installer import *
 
-from .aisino import REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE
+from .aisino import REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE, AISINO_SHARED_LIBRARY_NAME
 
 AISINO_SHARED_LIBRARY_CONF_PATH = '/etc/ld.so.conf.d/aisino.conf'
 AISINO_SHARED_LIBRARY_PATH = DEPENDENCY_DIR / 'aisino'
+
 RESOURCE_KEY = 'veil.backend.aisino.aisino_invoice_resource'
 RESOURCE_VERSION = '1'
 
@@ -59,7 +60,7 @@ def install_aisino_shared_library():
     dest_path = DEPENDENCY_DIR / 'aisino'
     if not dest_path.exists():
         dest_path.mkdir()
-    destination = dest_path / 'libSOFJni_x64.so.1'
+    destination = dest_path / AISINO_SHARED_LIBRARY_NAME
     if not os.path.exists(destination):
         shell_execute('wget -c {} -O {}'.format(url, destination))
     if is_shared_library_installed():

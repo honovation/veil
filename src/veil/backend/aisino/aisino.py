@@ -4,6 +4,7 @@ from __future__ import unicode_literals, print_function, division
 import zlib
 import gzip
 import logging
+import ctypes
 from cStringIO import StringIO
 from random import randint
 from hashlib import md5
@@ -23,12 +24,15 @@ from veil_component import VEIL_ENV_TYPE
 
 LOGGER = logging.getLogger(__name__)
 
+AISINO_SHARED_LIBRARY_NAME = 'libSOFJni_x64.so.1'
 REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE = VEIL_BUCKET_LOG_DIR / 'aisino'
 
 if VEIL_ENV_TYPE == 'public':
     url = ''
 else:
     url = 'http://ei-test.51fapiao.cn:20080/51TransferServicePro_zzs/webservice/eInvWS?wsdl'
+
+encrypt_and_decrypt_lib = ctypes.cdll.LoadLibrary(AISINO_SHARED_LIBRARY_NAME)
 
 INVOICE_INTERFACE_NAME_FOR_INVOICE = 'ECXML.FPKJ.BC.E_INV'
 INVOICE_INTERFACE_NAME_FOR_DOWNLOAD = 'ECXML.FPXZ.CX.E_INV'
@@ -122,12 +126,14 @@ def decrypt_content_data(data):
     if data.dataDescription.encryptCode not in SUPPORTED_ENCRYPT_CODES:
         raise Exception('not support encrypt code: {}'.format(data.dataDescription.encryptCode))
     if data.dataDescription.encryptCode == CONTENT_DATA_ENCRYPT_CODE_CA:
-        # decrypt by CA
+        # TODO: waiting for shared library
+        # data.content = encrypt_and_decrypt_lib.decrypt()
         data.content = ''
 
 
 def get_ca_encrypted_content(raw_content):
     # TODO: waiting for shared library
+    # return encrypt_and_decrypt_lib.encrypt()
     return raw_content
 
 
