@@ -32,8 +32,6 @@ if VEIL_ENV_TYPE == 'public':
 else:
     url = 'http://ei-test.51fapiao.cn:20080/51TransferServicePro_zzs/webservice/eInvWS?wsdl'
 
-encrypt_and_decrypt_lib = ctypes.cdll.LoadLibrary(AISINO_SHARED_LIBRARY_NAME)
-
 INVOICE_INTERFACE_NAME_FOR_INVOICE = 'ECXML.FPKJ.BC.E_INV'
 INVOICE_INTERFACE_NAME_FOR_DOWNLOAD = 'ECXML.FPXZ.CX.E_INV'
 INVOICE_APP_ID_NORMAL = 'DZFP'
@@ -64,6 +62,15 @@ DOWNLOAD_METHOD_FOR_QUERY = '0'
 DOWNLOAD_METHOD_FOR_DOWNLOAD = '1'
 RED_INVOICE_FLAG_NORMAL = '0'
 RED_INVOICE_FLAG_SPECIAL = '1'
+
+_encrypt_and_decrypt_lib = None
+
+
+def encrypt_and_decrypt_lib():
+    global _encrypt_and_decrypt_lib
+    if _encrypt_and_decrypt_lib is None:
+        _encrypt_and_decrypt_lib = ctypes.cdll.LoadLibrary(AISINO_SHARED_LIBRARY_NAME)
+    return _encrypt_and_decrypt_lib
 
 
 def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax_payer, operator_name, invoice_content, total, items,
@@ -127,13 +134,13 @@ def decrypt_content_data(data):
         raise Exception('not support encrypt code: {}'.format(data.dataDescription.encryptCode))
     if data.dataDescription.encryptCode == CONTENT_DATA_ENCRYPT_CODE_CA:
         # TODO: waiting for shared library
-        # data.content = encrypt_and_decrypt_lib.decrypt()
+        # data.content = encrypt_and_decrypt_lib().decrypt()
         data.content = ''
 
 
 def get_ca_encrypted_content(raw_content):
     # TODO: waiting for shared library
-    # return encrypt_and_decrypt_lib.encrypt()
+    # return encrypt_and_decrypt_lib().encrypt()
     return raw_content
 
 
