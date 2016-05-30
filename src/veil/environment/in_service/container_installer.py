@@ -122,7 +122,7 @@ def veil_container_init_resource(server):
 
     fabric.api.sudo('chroot {} apt-get -q update'.format(container_rootfs_path))
     fabric.api.sudo('chroot {} apt-get -q -y purge ntpdate ntp whoopsie network-manager'.format(container_rootfs_path))
-    fabric.api.sudo('chroot {} apt-get -q -y install unattended-upgrades update-notifier-common iptables git language-pack-en unzip wget python python-dev python-pip python-virtualenv'.format(container_rootfs_path))
+    fabric.api.sudo('chroot {} apt-get -q -y install apt-transport-https unattended-upgrades update-notifier-common iptables git language-pack-en unzip wget python python-dev python-pip python-virtualenv'.format(container_rootfs_path))
     fabric.api.sudo('chroot {} pip install --upgrade "pip>=8.1.1"'.format(container_rootfs_path))
     fabric.api.sudo('chroot {} pip install -i {} --trusted-host {} --upgrade "setuptools>=20.3.1"'.format(container_rootfs_path, server.pypi_index_url, server.pypi_index_host))
     fabric.api.sudo('chroot {} pip install -i {} --trusted-host {} --upgrade "wheel>=0.29.0"'.format(container_rootfs_path, server.pypi_index_url, server.pypi_index_host))
