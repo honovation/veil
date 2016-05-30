@@ -43,7 +43,7 @@ def veil_hosts_resource(veil_env_name, config_dir):
             resources.extend([
                 veil_host_directory_resource(host=host, remote_path=host.etc_dir / server.name, owner='root', owner_group='root', mode=0755),
                 veil_host_directory_resource(host=host, remote_path=host.log_dir / server.name, owner=host.ssh_user, owner_group=host.ssh_user_group,
-                    mode=0755),
+                                             mode=0755),
                 veil_container_resource(host=host, server=server, config_dir=config_dir)
             ])
     return resources
@@ -100,14 +100,14 @@ def veil_host_onetime_config_resource(host):
         return []
 
     resources = [
-        veil_host_file_resource(local_path=CURRENT_DIR / 'iptablesload', host=host, remote_path='/etc/network/if-pre-up.d/iptablesload',
-            owner='root', owner_group='root', mode=0755),
-        veil_host_file_resource(local_path=CURRENT_DIR / 'iptablessave', host=host, remote_path='/etc/network/if-post-down.d/iptablessave',
-            owner='root', owner_group='root', mode=0755),
-        veil_host_file_resource(local_path=CURRENT_DIR / 'sudoers.d.ssh-auth-sock', host=host, remote_path='/etc/sudoers.d/ssh-auth-sock',
-            owner='root', owner_group='root', mode=0440),
+        veil_host_file_resource(local_path=CURRENT_DIR / 'iptablesload', host=host, remote_path='/etc/network/if-pre-up.d/iptablesload', owner='root',
+                                owner_group='root', mode=0755),
+        veil_host_file_resource(local_path=CURRENT_DIR / 'iptablessave', host=host, remote_path='/etc/network/if-post-down.d/iptablessave', owner='root',
+                                owner_group='root', mode=0755),
+        veil_host_file_resource(local_path=CURRENT_DIR / 'sudoers.d.ssh-auth-sock', host=host, remote_path='/etc/sudoers.d/ssh-auth-sock', owner='root',
+                                owner_group='root', mode=0440),
         veil_host_file_resource(local_path=CURRENT_DIR / 'ipv4-ip-forward.conf', host=host, remote_path='/etc/sysctl.d/60-lxc-ipv4-ip-forward.conf',
-            owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
+                                owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
         veil_host_sources_list_resource(host=host),
         veil_host_init_resource(host=host)
     ]
@@ -121,19 +121,22 @@ def veil_host_config_resource(host, config_dir):
 
     env_config_dir = config_dir / host.env_name
     resources = [
-        veil_host_directory_resource(host=host, remote_path='/home/{}/.ssh'.format(host.ssh_user), owner=host.ssh_user,
-            owner_group=host.ssh_user_group, mode=0700),
+        veil_host_directory_resource(host=host, remote_path='/home/{}/.ssh'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group,
+                                     mode=0700),
         veil_host_file_resource(local_path=env_config_dir / '.ssh' / 'authorized_keys', host=host,
-            remote_path='/home/{}/.ssh/authorized_keys'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0600),
-        veil_host_file_resource(local_path=CURRENT_DIR / 'apt-config', host=host, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config',
-            owner='root', owner_group='root', mode=0644),
+                                remote_path='/home/{}/.ssh/authorized_keys'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group,
+                                mode=0600),
+        veil_host_file_resource(local_path=CURRENT_DIR / 'apt-config', host=host, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config', owner='root',
+                                owner_group='root', mode=0644),
         veil_host_sources_list_resource(host=host)
     ]
-    if '@guard' in get_veil_env(host.env_name).servers:
+
+    servers = get_veil_env(host.env_name).servers
+    if '@guard' in servers:
         resources.extend([
             veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0700),
-            veil_host_file_resource(local_path=env_config_dir / '.ssh-@guard' / 'id_rsa.pub', host=host, remote_path='/root/.ssh/authorized_keys',
-                owner='root', owner_group='root', mode=0600)
+            veil_host_file_resource(local_path=env_config_dir / '.ssh-@guard' / 'id_rsa.pub', host=host, remote_path='/root/.ssh/authorized_keys', owner='root',
+                                    owner_group='root', mode=0600)
         ])
 
     hosts_configured.append(host.base_name)
@@ -146,8 +149,8 @@ def veil_host_application_config_resource(host, config_dir):
     if not (env_config_dir / '.config').exists():
         return []
     return [
-        veil_host_file_resource(local_path=env_config_dir / '.config', host=host, remote_path=host.code_dir / '.config',
-            owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0600)
+        veil_host_file_resource(local_path=env_config_dir / '.config', host=host, remote_path=host.code_dir / '.config', owner=host.ssh_user,
+                                owner_group=host.ssh_user_group, mode=0600)
     ]
 
 
@@ -231,8 +234,9 @@ def veil_host_init_resource(host):
     # enable time sync on lxc hosts, and which is shared among lxc guests
     fabric.api.sudo(
         '''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
-    fabric.api.sudo('mkdir -p -m 0755 {}'.format(' '.join([DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.code_dir, host.etc_dir,
-        host.editorial_dir, host.buckets_dir, host.data_dir, host.log_dir])))
+    fabric.api.sudo('mkdir -p -m 0755 {}'.format(' '.join(
+        [DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.code_dir, host.etc_dir, host.editorial_dir, host.buckets_dir, host.data_dir,
+         host.log_dir])))
     fabric.api.sudo('chown {}:{} {} {}'.format(host.ssh_user, host.ssh_user_group, host.buckets_dir, host.data_dir))
     fabric.api.sudo('pip install --upgrade "pip>=8.1.1"')
     fabric.api.sudo('pip install -i {} --trusted-host {} --upgrade "setuptools>=20.3.1"'.format(host.pypi_index_url, host.pypi_index_host))
@@ -257,8 +261,8 @@ def veil_host_sources_list_resource(host):
     sources_list_path = '/etc/apt/sources.list'
     fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=sources_list_path))
     context = dict(mirror=host.apt_url, codename=fabric.api.run('lsb_release -cs'))
-    fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR,
-        use_sudo=True, backup=False, mode=0644)
+    fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR, use_sudo=True,
+                                         backup=False, mode=0644)
     fabric.api.sudo('chown root:root {}'.format(sources_list_path))
 
     sources_list_installed.append(host.base_name)
@@ -274,11 +278,12 @@ def veil_lxc_config_resource(host):
 
     lxc_config_path = '/etc/default/lxc'
     fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=lxc_config_path))
-    fabric.contrib.files.upload_template('lxc.j2', lxc_config_path, context=dict(mirror=host.apt_url), use_jinja=True, template_dir=CURRENT_DIR,
-        use_sudo=True, backup=False, mode=0644)
+    fabric.contrib.files.upload_template('lxc.j2', lxc_config_path, context=dict(mirror=host.apt_url), use_jinja=True, template_dir=CURRENT_DIR, use_sudo=True,
+                                         backup=False, mode=0644)
     fabric.api.sudo('chown root:root {}'.format(lxc_config_path))
-    install_resource(veil_host_file_resource(local_path=CURRENT_DIR / 'lxc-net', host=host, remote_path='/etc/default/lxc-net',
-        owner='root', owner_group='root', mode=0644, keep_origin=True))
+    install_resource(
+        veil_host_file_resource(local_path=CURRENT_DIR / 'lxc-net', host=host, remote_path='/etc/default/lxc-net', owner='root', owner_group='root', mode=0644,
+                                keep_origin=True))
 
 
 @atomic_installer
@@ -338,5 +343,5 @@ def veil_host_user_editor_resource(host, config_dir):
     fabric.api.sudo('chown -R editor:editor /home/editor/.ssh')
 
     fabric.contrib.files.append('/etc/ssh/sshd_config',
-        ['Match User editor', 'ChrootDirectory {}'.format(host.editorial_dir.parent), 'ForceCommand internal-sftp'], use_sudo=True)
+                                ['Match User editor', 'ChrootDirectory {}'.format(host.editorial_dir.parent), 'ForceCommand internal-sftp'], use_sudo=True)
     fabric.api.sudo('service ssh reload')

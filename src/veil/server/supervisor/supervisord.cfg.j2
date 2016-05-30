@@ -23,7 +23,7 @@ logfile_backups={{ config.logging.get('backups_count', 10) }}
 pidfile={{ config.pid_file }}
 nodaemon=false
 {% if 'elasticsearch' in config.programs %}
-minfds=32768
+minfds=65536
 {% endif %}
 
 ; the below section must remain in the config file for RPC

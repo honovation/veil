@@ -1,15 +1,31 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from veil_component import as_path, CURRENT_OS
+from veil_component import as_path
 from veil_installer import *
 from veil.utility.shell import *
 from .os_package_installer import os_package_resource, set_apt_get_update_executed
 
 LOGGER = logging.getLogger(__name__)
 ETC_APT = as_path('/etc/apt')
-POSTGRESQL_APT_REPOSITORY_NAME = 'pgdg'
-ELK_APT_REPOSITORY_NAME = 'elk'
-NODEJS_APT_REPOSITORY_NAME = 'node_4.x'
+
+
+@atomic_installer
+def apt_repository_resource(name, key_url, definition, version=None):
+    install_apt_repository_resource(name, key_url, definition, version)
+
+
+def install_apt_repository_resource(name, key_url, definition, version=None):
+    installed = is_os_package_repository_installed(name, version)
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        dry_run_result['apt_repository?{}{}'.format(name)] = '-' if installed else 'INSTALL'
+        return
+    if installed:
+        return
+    LOGGER.info('installing apt repository: %(name)s, %(version)s ...', {'name': name, 'version': version})
+    shell_execute('wget -q -O - {} | apt-key add -'.format(key_url), capture=True)
+    shell_execute('echo "{}" | tee /etc/apt/sources.list.d/{}.list'.format(definition, name), capture=True)
+    set_apt_get_update_executed(False)
 
 
 @atomic_installer
@@ -26,55 +42,6 @@ def os_ppa_repository_resource(name):
         return
     LOGGER.info('installing os package repository: %(name)s ...', {'name': name})
     shell_execute('add-apt-repository ppa:{} -y'.format(name), capture=True)
-    set_apt_get_update_executed(False)
-
-
-@atomic_installer
-def postgresql_apt_repository_resource():
-    installed = is_os_package_repository_installed(POSTGRESQL_APT_REPOSITORY_NAME)
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        dry_run_result['postgresql_apt_repository?{}'.format(POSTGRESQL_APT_REPOSITORY_NAME)] = '-' if installed else 'INSTALL'
-        return
-    if installed:
-        return
-    LOGGER.info('installing postgresql apt repository: %(name)s ...', {'name': POSTGRESQL_APT_REPOSITORY_NAME})
-    shell_execute('echo "deb http://apt.postgresql.org/pub/repos/apt/ {os_codename}-{name} main" > /etc/apt/sources.list.d/{name}.list'.format(
-        os_codename=CURRENT_OS.codename, name=POSTGRESQL_APT_REPOSITORY_NAME), capture=True)
-    shell_execute('wget -q -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -', capture=True)
-    set_apt_get_update_executed(False)
-
-
-@atomic_installer
-def elk_apt_repository_resource(elasticsearch_major_version, logstash_major_version):
-    installed = is_os_package_repository_installed(ELK_APT_REPOSITORY_NAME, elasticsearch_major_version) and is_os_package_repository_installed(ELK_APT_REPOSITORY_NAME, logstash_major_version)
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        dry_run_result['elk_apt_repository?name={}&elasticsearch_major_version={}&logstash_major_version={}'.format(ELK_APT_REPOSITORY_NAME, elasticsearch_major_version, logstash_major_version)] = '-' if installed else 'INSTALL'
-        return
-    if installed:
-        return
-    LOGGER.info('installing ELK apt repository: %(elasticsearch_major_version)s, %(logstash_major_version)s ...', {
-        'elasticsearch_major_version': elasticsearch_major_version, 'logstash_major_version': logstash_major_version
-    })
-    shell_execute('wget -q -O - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | apt-key add -', capture=True)
-    shell_execute('printf "deb http://packages.elasticsearch.org/elasticsearch/{}/debian stable main\ndeb http://packages.elasticsearch.org/logstash/{}/debian stable main" > /etc/apt/sources.list.d/{}.list'.format(
-        elasticsearch_major_version, logstash_major_version, ELK_APT_REPOSITORY_NAME), capture=True)
-    set_apt_get_update_executed(False)
-
-
-@atomic_installer
-def nodejs_apt_repository_resource():
-    installed = is_os_package_repository_installed(NODEJS_APT_REPOSITORY_NAME)
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        dry_run_result['nodejs_apt_repository?name={}'.format(NODEJS_APT_REPOSITORY_NAME)] = '-' if installed else 'INSTALL'
-        return
-    if installed:
-        return
-    LOGGER.info('installing Nodejs apt repository ...')
-    shell_execute('wget -q -O - https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -', capture=True)
-    shell_execute('printf "deb https://deb.nodesource.com/{NODEJS_APT_REPOSITORY_NAME} trusty main\ndeb-src https://deb.nodesource.com/{NODEJS_APT_REPOSITORY_NAME} trusty main" > /etc/apt/sources.list.d/nodesource.list'.format(NODEJS_APT_REPOSITORY_NAME=NODEJS_APT_REPOSITORY_NAME), capture=True)
     set_apt_get_update_executed(False)
 
 

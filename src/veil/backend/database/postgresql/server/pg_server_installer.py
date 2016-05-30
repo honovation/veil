@@ -24,10 +24,11 @@ def postgresql_server_resource(purpose, config):
     pg_config_dir = get_pg_config_dir(purpose, config.version)
     resources = list(BASIC_LAYOUT_RESOURCES)
     resources.extend([
-        postgresql_apt_repository_resource(),
+        apt_repository_resource(name='pgdg', key_url='https://www.postgresql.org/media/keys/ACCC4CF8.asc',
+                                definition='deb http://apt.postgresql.org/pub/repos/apt/ {}-pgdg main'.format(CURRENT_OS.codename)),
         os_package_resource(name='postgresql-{}'.format(config.version))])
     resources.extend([
-        os_service_resource(state='not_installed', name='postgresql'),
+        os_service_auto_starting_resource(name='postgresql', state='not_installed'),
         postgresql_cluster_resource(purpose=purpose, version=config.version, owner=config.owner, owner_password=config.owner_password),
         directory_resource(path=pg_config_dir),
         file_resource(
@@ -130,8 +131,9 @@ def vacuum_upgraded_postgresql_cluster(purpose, version, host, port, owner, owne
     with postgresql_server_running(version, pg_data_dir, owner):
         env = os.environ.copy()
         env['PGPASSWORD'] = owner_password
-        shell_execute('{pg_bin_dir}/vacuumdb -h {host} -p {port} -U {pg_data_owner} -a -f -F -z'.format(pg_bin_dir=get_pg_bin_dir(version), pg_data_owner=owner,
-                                                                                                        host=host, port=port), env=env, capture=True)
+        shell_execute('{pg_bin_dir}/vacuumdb -h {host} -p {port} -U {pg_data_owner} -j `nproc` -a -f -F -z'.format(pg_bin_dir=get_pg_bin_dir(version),
+                                                                                                                   pg_data_owner=owner, host=host, port=port),
+                      env=env, capture=True)
 
 
 def confirm_postgresql_cluster_upgrading(old_version, new_version):

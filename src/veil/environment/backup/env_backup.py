@@ -77,8 +77,7 @@ def fetch_host_backup(host, timestamp):
 
 
 def delete_old_backups():
-    shell_execute('find . -maxdepth 1 -mindepth 1 -type d -ctime +{} -exec rm -r {{}} +'.format(KEEP_BACKUP_FOR_DAYS), cwd=VEIL_BACKUP_ROOT,
-        debug=True)
+    shell_execute('find . -maxdepth 1 -mindepth 1 -type d -ctime +{} -exec rm -r {{}} +'.format(KEEP_BACKUP_FOR_DAYS), cwd=VEIL_BACKUP_ROOT, debug=True)
 
 
 def rsync_to_backup_mirror():

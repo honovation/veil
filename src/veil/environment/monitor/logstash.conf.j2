@@ -1,60 +1,58 @@
 input {
     redis {
-        "host" => "{{ log_buffer_redis_host }}"
-        "port" => "{{ log_buffer_redis_port }}"
-        "key" => "json_event"
-        "data_type" => "list"
-        "codec" => "json"
+        host => "{{ log_buffer_redis_host }}"
+        port => {{ log_buffer_redis_port }}
+        key => "json_event"
+        data_type => "list"
+        codec => "json"
     }
     redis {
-        "host" => "{{ log_buffer_redis_host }}"
-        "port" => "{{ log_buffer_redis_port }}"
-        "key" => "postgresql"
-        "data_type" => "list"
-        "codec" => "plain"
-        "add_field" => {"@type" => "postgresql"}
+        host => "{{ log_buffer_redis_host }}"
+        port => {{ log_buffer_redis_port }}
+        key => "postgresql"
+        data_type => "list"
+        codec => "plain"
+        add_field => {"@type" => "postgresql"}
     }
 }
 filter {
     if [@type] == "postgresql" {
         multiline {
-            "pattern" => "^20"
-            "negate" => true
-            "what" => "previous"
+            pattern => "^20"
+            negate => true
+            what => "previous"
         }
         csv {
-            "columns" => ["log_time","user_name","database_name","process_id","connection_from","session_id",
+            columns => ["log_time","user_name","database_name","process_id","connection_from","session_id",
                 "session_line_num","command_tag","session_start_time","virtual_transaction_id","transaction_id",
                 "error_severity","sql_state_code","message","detail","hint","internal_query","internal_query_pos",
                 "context","query","query_pos","location","application_name"]
         }
         date {
-            "match" => ["log_time", "yyyy-MM-dd HH:mm:ss.SSS 'CST'"]
+            match => ["log_time", "yyyy-MM-dd HH:mm:ss.SSS 'CST'"]
         }
         mutate {
-            "add_field" => ["@title", "POSTGRESQL %{error_severity} <%{process_id}-%%{session_id}> %{message}"]
+            add_field => {"@title" => "POSTGRESQL %{error_severity} <%{process_id}-%%{session_id}> %{message}"}
         }
     }
     if [@type] == "nginx" {
         mutate {
-            "add_field" => ["@title", "NGINX %{[@fields][status]} <%{[@fields][browser_code]}-%{[@fields][user_code]}> %{[@fields][request]}"]
+            add_field => {"@title" => "NGINX %{[@fields][status]} <%{[@fields][browser_code]}-%{[@fields][user_code]}> %{[@fields][request]}"}
         }
     }
     if [@type] == "veil" {
         mutate {
-            "add_field" => ["@title", "VEIL %{[@fields][level]} <%{[@fields][browser_code]}-%{[@fields][user_code]}> %{[@fields][event]}"]
+            add_field => {"@title" => "VEIL %{[@fields][level]} <%{[@fields][browser_code]}-%{[@fields][user_code]}> %{[@fields][event]}"}
         }
     }
 }
 output {
     stdout {
-        "codec" => "rubydebug"
+        codec => rubydebug
     }
     if "_jsonparsefailure" not in [tags] {
         elasticsearch {
-            "cluster" => "{{ elasticsearch_cluster }}"
-            "host" => "{{ elasticsearch_host }}"
-            "port" => "{{ elasticsearch_transport_port }}"
+            host => ["{{ elasticsearch_host }}:{{ elasticsearch_port }}"]
         }
     }
 }
