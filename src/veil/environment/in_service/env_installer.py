@@ -20,7 +20,7 @@ from .server_installer import veil_servers_resource, is_container_running, is_se
 
 @script('deploy-env')
 @log_elapsed_time
-def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', include_monitor_server='TRUE'):
+def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', include_monitor_server='TRUE', start_after_deploy='TRUE'):
     print(cyan('Update config ...'))
     update_config(config_dir)
     print(cyan('Make local preparation ...'))
@@ -52,7 +52,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
         print(cyan('Make rollback backup -- exclude code dir, include data dir ...'))
         make_rollback_backup(veil_env_name, exclude_code_dir=True, exclude_data_dir=False)
         print(cyan('Deploy round-1 servers {} ...'.format(first_round_server_names[::-1])))
-        install_resource(veil_servers_resource(servers=first_round_servers[::-1], action='DEPLOY'))
+        install_resource(veil_servers_resource(servers=first_round_servers[::-1], action='DEPLOY', start_after_deploy=start_after_deploy == 'TRUE'))
         elapsed_seconds_to_deploy_first_round_servers = time.time() - start_time
         print(cyan('\nElapsed time for deploying round-1 servers: {} seconds\n'.format(elapsed_seconds_to_deploy_first_round_servers)))
     else:
@@ -64,7 +64,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
         print(cyan('Stop round-2 servers {} ...'.format(second_round_server_names)))
         stop_servers(second_round_servers)
         print(cyan('Deploy round-2 servers {} ...'.format(second_round_server_names[::-1])))
-        install_resource(veil_servers_resource(servers=second_round_servers[::-1], action='DEPLOY'))
+        install_resource(veil_servers_resource(servers=second_round_servers[::-1], action='DEPLOY', start_after_deploy=start_after_deploy == 'TRUE'))
     else:
         print(cyan('No round-2 servers to deploy'))
 

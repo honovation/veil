@@ -7,12 +7,12 @@ from veil_installer import *
 
 
 @composite_installer
-def veil_servers_resource(servers, action):
-    return [veil_server_resource(server=server, action=action) for server in servers]
+def veil_servers_resource(servers, action, start_after_deploy=True):
+    return [veil_server_resource(server=server, action=action, start_after_deploy=start_after_deploy) for server in servers]
 
 
 @atomic_installer
-def veil_server_resource(server, action='PATCH'):
+def veil_server_resource(server, action='PATCH', start_after_deploy=True):
     if action not in ('DEPLOY', 'PATCH'):
         raise Exception('unknown action: {}'.format(action))
 
@@ -29,6 +29,8 @@ def veil_server_resource(server, action='PATCH'):
             print(cyan('{} server {} ...'.format(action, server.name)))
             if 'DEPLOY' == action:
                 fabric.api.sudo('{}/bin/veil :{} deploy'.format(server.veil_framework_home, server.fullname))
+                if not start_after_deploy:
+                    fabric.api.sudo('{}/bin/veil :{} down'.format(server.veil_framework_home, server.fullname))
                 fabric.api.sudo('touch {}'.format(server.deployed_tag_path))
             else:  # PATCH
                 fabric.api.sudo('{}/bin/veil :{} patch'.format(server.veil_framework_home, server.fullname))
