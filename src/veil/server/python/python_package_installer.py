@@ -149,8 +149,12 @@ def get_installed_package_remote_latest_version(name):
     if outdated_package_name2latest_version is None:
         outdated_package_name2latest_version = {}
         server = get_current_veil_server()
-        for line in shell_execute('pip list -i {} --trusted-host {} -l -o | grep Latest:'.format(server.pypi_index_url, server.pypi_index_host), capture=True,
-                                  debug=True).splitlines():
+        if name == 'tornado':
+            lines = shell_execute('pip list -l -o | grep Latest:', capture=True, debug=True).splitlines()
+        else:
+            lines = shell_execute('pip list -i {} --trusted-host {} -l -o | grep Latest:'.format(server.pypi_index_url, server.pypi_index_host), capture=True,
+                                  debug=True).splitlines()
+        for line in lines:
             match = RE_OUTDATED_PACKAGE.match(line)
             outdated_package_name2latest_version[match.group(1)] = match.group(2)
     return outdated_package_name2latest_version.get(name)
@@ -169,9 +173,13 @@ def download_python_package(name, version=None, url=None, **kwargs):
                     'pip download -i {} --trusted-host {} --timeout 30 -d {} {}'.format(server.pypi_index_url, server.pypi_index_host, PYPI_ARCHIVE_DIR, url),
                     capture=True, debug=True, **kwargs)
             else:
-                shell_execute('pip download -i {} --trusted-host {} --timeout 30 -d {} {name_term}'.format(server.pypi_index_url, server.pypi_index_host,
-                                                                                                           PYPI_ARCHIVE_DIR, name_term=name_term), capture=True,
-                              debug=True, **kwargs)
+                if name == 'tornado':
+                    shell_execute('pip download --timeout 30 -d {} {name_term}'.format(PYPI_ARCHIVE_DIR, name_term=name_term), capture=True, debug=True,
+                                  **kwargs)
+                else:
+                    shell_execute('pip download -i {} --trusted-host {} --timeout 30 -d {} {name_term}'.format(server.pypi_index_url, server.pypi_index_host,
+                                                                                                               PYPI_ARCHIVE_DIR, name_term=name_term),
+                                  capture=True, debug=True, **kwargs)
         except Exception:
             if tries >= max_tries:
                 raise
@@ -222,8 +230,12 @@ def install_python_package_remotely(name, version, url, **kwargs):
                 shell_execute('pip install -i {} --trusted-host {} --timeout 30 {}'.format(server.pypi_index_url, server.pypi_index_host, url), capture=True,
                               debug=True, **kwargs)
             else:
-                shell_execute('pip install -i {} --trusted-host {} --timeout 30 {}=={}'.format(server.pypi_index_url, server.pypi_index_host, name, version),
-                              capture=True, debug=True, **kwargs)
+                if name == 'tornado':
+                    shell_execute('pip install --timeout 30 {}=={}'.format(name, version), capture=True, debug=True, **kwargs)
+                else:
+                    shell_execute(
+                        'pip install -i {} --trusted-host {} --timeout 30 {}=={}'.format(server.pypi_index_url, server.pypi_index_host, name, version),
+                        capture=True, debug=True, **kwargs)
         except Exception:
             if tries >= max_tries:
                 raise
