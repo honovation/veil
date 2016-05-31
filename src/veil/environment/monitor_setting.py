@@ -11,21 +11,14 @@ def monitor_programs(config):
         {'elasticsearch': {
             'environment_variables': {'ES_HEAP_SIZE': config.es_heap_size},
             'run_in_directory': '/usr/share/elasticsearch',
-            'execute_command': '/usr/share/elasticsearch/bin/elasticsearch -Des.default.config=/etc/elasticsearch/elasticsearch.yml -Des.default.path.home=/usr/share/elasticsearch -Des.default.path.conf=/etc/elasticsearch -Des.default.path.logs=/var/log/elasticsearch -Des.default.path.data=/var/lib/elasticsearch -Des.default.path.work=/tmp/elasticsearch',
+            'execute_command': '/usr/share/elasticsearch/bin/elasticsearch -Des.default.path.home=/usr/share/elasticsearch -Des.default.path.conf=/etc/elasticsearch -Des.default.path.logs=/var/log/elasticsearch -Des.default.path.data=/var/lib/elasticsearch -Des.default.path.work=/tmp/elasticsearch',
             'run_as': 'elasticsearch',
             'resources': [('veil.environment.monitor.elk_resource', {'config': config})]
         }},
-        {'logstash-agent': {
+        {'logstash': {
             'environment_variables': {'LS_HEAP_SIZE': config.ls_heap_size},
             'run_in_directory': '/var/lib/logstash',
-            'execute_command': '/opt/logstash/bin/logstash agent -f /etc/logstash/conf.d',
-            'run_as': 'logstash',
-            'resources': [('veil.environment.monitor.elk_resource', {'config': config})]
-        }},
-        {'logstash-web': {
-            'environment_variables': {'LS_HEAP_SIZE': config.ls_heap_size},
-            'run_in_directory': '/var/lib/logstash',
-            'execute_command': '/opt/logstash/bin/logstash web',
+            'execute_command': '/opt/logstash/bin/logstash agent -f /etc/logstash/conf.d --allow-unsafe-shutdown',
             'run_as': 'logstash',
             'resources': [('veil.environment.monitor.elk_resource', {'config': config})]
         }},
