@@ -52,7 +52,6 @@ output {
     }
     if "_jsonparsefailure" not in [tags] {
         elasticsearch {
-            host => ["{{ elasticsearch_host }}:{{ elasticsearch_port }}"]
         }
     }
 }
