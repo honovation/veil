@@ -236,13 +236,13 @@ def purge_left_overs(veil_env_name):
 
 
 @script('restart-env')
-def restart_env(veil_env_name):
+def restart_env(veil_env_name, *exclude_server_names):
     """
     Bring down veil servers in sorted server names order
     Bring up veil servers in reversed sorted server names order
     """
     stop_env(veil_env_name)
-    start_env(veil_env_name)
+    start_env(veil_env_name, *exclude_server_names)
 
 
 @script('stop-env')
@@ -272,11 +272,13 @@ def stop_servers(servers, stop_container=False):
 
 
 @script('start-env')
-def start_env(veil_env_name):
+def start_env(veil_env_name, *exclude_server_names):
     """
     Bring up veil servers in reversed sorted server names order
     """
     for server in reversed(list_veil_servers(veil_env_name)):
+        if server.name in exclude_server_names:
+            continue
         host = get_veil_host(server.env_name, server.host_name)
         with fabric.api.settings(host_string=host.deploys_via):
             if not fabric.contrib.files.exists(server.deployed_tag_path):
