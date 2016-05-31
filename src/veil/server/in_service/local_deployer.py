@@ -11,14 +11,15 @@ LOGGER = logging.getLogger(__name__)
 
 
 @script('deploy')
-def deploy():
+def deploy(start_after_deploy='TRUE'):
     check_no_changes_not_committed()
     check_no_commits_not_pushed()
     shell_execute('veil install veil_installer.component_resource?veil.server.supervisor')
     shell_execute('veil down')
     shell_execute('veil install-server')
-    shell_execute('veil up --daemonize')
-    shell_execute('veil migrate')
+    if start_after_deploy == 'TRUE':
+        shell_execute('veil up --daemonize')
+        shell_execute('veil migrate')
     check_no_changes_not_committed()
     check_no_commits_not_pushed()
 

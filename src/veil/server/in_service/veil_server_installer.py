@@ -3,6 +3,7 @@ from veil_installer import *
 from veil.environment import *
 from veil.server.supervisor import supervisor_resource
 
+
 @composite_installer
 def veil_server_resource():
     server = get_current_veil_server()

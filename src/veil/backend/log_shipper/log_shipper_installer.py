@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 from ..log_shipper_setting import LOG_SHIPPER_CONF_PATH
 
+
 @composite_installer
 def log_shipper_resource(config):
     resources = list(BASIC_LAYOUT_RESOURCES)

@@ -28,9 +28,7 @@ def veil_server_resource(server, action='PATCH', start_after_deploy=True):
         with fabric.api.cd(server.veil_home):
             print(cyan('{} server {} ...'.format(action, server.name)))
             if 'DEPLOY' == action:
-                fabric.api.sudo('{}/bin/veil :{} deploy'.format(server.veil_framework_home, server.fullname))
-                if not start_after_deploy:
-                    fabric.api.sudo('{}/bin/veil :{} down'.format(server.veil_framework_home, server.fullname))
+                fabric.api.sudo('{}/bin/veil :{} deploy {}'.format(server.veil_framework_home, server.fullname, 'TRUE' if start_after_deploy else 'FALSE'))
                 fabric.api.sudo('touch {}'.format(server.deployed_tag_path))
             else:  # PATCH
                 fabric.api.sudo('{}/bin/veil :{} patch'.format(server.veil_framework_home, server.fullname))
