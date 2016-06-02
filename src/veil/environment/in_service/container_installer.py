@@ -104,6 +104,10 @@ def veil_container_config_resource(server, config_dir):
         resources.append(
             veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssh/{}'.format(local_path.name), owner=server.ssh_user,
                                          owner_group=server.ssh_user_group, mode=0400))
+    for local_path in server_config_dir.files('*.pfx'):
+        resources.append(
+            veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssh/{}'.format(local_path.name), owner=server.ssh_user,
+                                         owner_group=server.ssh_user_group, mode=0400))
     return resources
 
 
