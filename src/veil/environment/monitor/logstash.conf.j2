@@ -32,7 +32,7 @@ filter {
             match => ["log_time", "yyyy-MM-dd HH:mm:ss.SSS 'CST'"]
         }
         mutate {
-            add_field => {"@title" => "POSTGRESQL %{error_severity} <%{process_id}-%%{session_id}> %{message}"}
+            add_field => {"@title" => "POSTGRESQL %{error_severity} <%{process_id}-%{session_id}> %{message}"}
         }
     }
     if [@type] == "nginx" {
@@ -41,8 +41,14 @@ filter {
         }
     }
     if [@type] == "veil" {
-        mutate {
-            add_field => {"@title" => "VEIL %{[@fields][level]} <%{[@fields][browser_code]}-%{[@fields][user_code]}> %{[@fields][event]}"}
+        if [browser_code] in [@fields] {
+            mutate {
+                add_field => {"@title" => "VEIL %{[@fields][level]} <%{[@fields][browser_code]}-%{[@fields][user_code]}> %{[@fields][event]}"}
+            }
+        } else {
+            mutate {
+                add_field => {"@title" => "VEIL %{[@fields][level]} <-> %{[@fields][event]}"}
+            }
         }
     }
 }
