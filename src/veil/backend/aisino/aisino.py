@@ -4,7 +4,6 @@ from __future__ import unicode_literals, print_function, division
 import zlib
 import gzip
 import logging
-import ctypes
 from cStringIO import StringIO
 from random import randint
 from hashlib import md5
@@ -13,18 +12,21 @@ from base64 import b64encode, b64decode
 from decimal import Decimal
 
 from veil.backend.web_service import *
-from veil.environment import VEIL_BUCKET_LOG_DIR
+from veil.environment import VEIL_BUCKET_LOG_DIR, DEPENDENCY_DIR
 from veil.frontend.template import *
 from veil.model.collection import *
 from veil.utility.clock import *
 from veil.utility.encoding import *
 from veil.utility.misc import *
+from veil.utility.shell import *
 from veil.utility.xml import *
 from veil_component import VEIL_ENV_TYPE
 
 LOGGER = logging.getLogger(__name__)
 
-AISINO_SHARED_LIBRARY_NAME = 'libSOFJni_x64.so.1'
+AISINO_JAR_FILE_NAME = 'aisino.jar'
+AISINO_JAR_PATH = DEPENDENCY_DIR / 'aisino'
+AISINO_JAR_FILE_PATH = AISINO_JAR_PATH / AISINO_JAR_FILE_NAME
 REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE = VEIL_BUCKET_LOG_DIR / 'aisino'
 
 if VEIL_ENV_TYPE == 'public':
@@ -63,21 +65,12 @@ DOWNLOAD_METHOD_FOR_DOWNLOAD = '1'
 RED_INVOICE_FLAG_NORMAL = '0'
 RED_INVOICE_FLAG_SPECIAL = '1'
 
-_encrypt_and_decrypt_lib = None
-
-
-def encrypt_and_decrypt_lib():
-    global _encrypt_and_decrypt_lib
-    if _encrypt_and_decrypt_lib is None:
-        _encrypt_and_decrypt_lib = ctypes.cdll.LoadLibrary(AISINO_SHARED_LIBRARY_NAME)
-    return _encrypt_and_decrypt_lib
-
 
 def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax_payer, operator_name, invoice_content, total, items,
                     ref_invoice_code=None, ref_invoice_no=None, comment=None, operation_code=INVOICE_OPERATION_CODE_NORMAL,
                     flag_special_red=None, red_invoice_reason=None,
-                    terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', response_code=144, encrypt_code=2, encrypt_code_type='CA', sample_code='000001',
-                    encode_table_version='1.0', flag_dk=0, flag_list=0, list_item_name=None, without_tax_total=0, tax_total=0):
+                    terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', response_code=144, encrypt_code='2', encrypt_code_type='CA', is_compressed=True,
+                    sample_code='000001', encode_table_version='1.0', flag_dk=0, flag_list=0, list_item_name=None, without_tax_total=0, tax_total=0):
 
     type_code = INVOICE_TYPE_CODE_NORMAL if total > 0 else INVOICE_TYPE_CODE_RED
 
@@ -106,14 +99,17 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
                                                                flag_dk=flag_dk, red_invoice_reason=red_invoice_reason, flag_special_red=flag_special_red,
                                                                INVOICE_TYPE_CODE_RED=INVOICE_TYPE_CODE_RED, operation_code=operation_code, flag_list=flag_list,
                                                                list_item_name=list_item_name)
-    interface_content = b64encode(get_compressed_content(get_ca_encrypted_content(to_str(interface_content))))
+    interface_content = get_ca_encrypted_content(to_str(interface_content)) if encrypt_code == CONTENT_DATA_ENCRYPT_CODE_CA else to_str(interface_content)
+    if is_compressed:
+        interface_content = get_compressed_content(interface_content)
+    interface_content = b64encode(interface_content)
     with require_current_template_directory_relative_to():
         interface_data = get_template('interface.xml').render(terminal_code=terminal_code, app_id=app_id, version=version, response_code=response_code,
                                                               interface_name=INVOICE_INTERFACE_NAME_FOR_INVOICE, username=username,
                                                               password=generate_request_password(registration_no),
                                                               tax_payer=tax_payer, request_code=ebp_code,
                                                               request_time=get_request_time(), ebp_code=ebp_code,
-                                                              data_exchange_id=generate_data_exchange_id(ebp_code), is_compressed=True,
+                                                              data_exchange_id=generate_data_exchange_id(ebp_code), is_compressed=is_compressed,
                                                               encrypt_code=encrypt_code, encrypt_code_type=encrypt_code_type,
                                                               interface_content=interface_content)
     ws = WebService(url)
@@ -133,15 +129,13 @@ def decrypt_content_data(data):
     if data.dataDescription.encryptCode not in SUPPORTED_ENCRYPT_CODES:
         raise Exception('not support encrypt code: {}'.format(data.dataDescription.encryptCode))
     if data.dataDescription.encryptCode == CONTENT_DATA_ENCRYPT_CODE_CA:
-        # TODO: waiting for shared library
-        # data.content = encrypt_and_decrypt_lib().decrypt()
-        data.content = ''
+        process = shell_execute('java -jar {} decrypt'.format(AISINO_JAR_FILE_PATH), capture=True, waits=False)
+        data.content = process.communicate(input=to_str(data.content))[0].strip()
 
 
 def get_ca_encrypted_content(raw_content):
-    # TODO: waiting for shared library
-    # return encrypt_and_decrypt_lib().encrypt()
-    return raw_content
+    process = shell_execute('java -jar {} encrypt'.format(AISINO_JAR_FILE_PATH), capture=True, waits=False)
+    return process.communicate(input=raw_content)[0].strip()
 
 
 def get_compressed_content(content):
@@ -164,18 +158,23 @@ def get_request_time():
 
 
 def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer, download_method=DOWNLOAD_METHOD_FOR_DOWNLOAD,
-                     terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', response_code=144, encrypt_code=2, encrypt_code_type='CA'):
+                     terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', response_code=144, encrypt_code='2', encrypt_code_type='CA',
+                     is_compressed=True):
     with require_current_template_directory_relative_to():
         interface_content = get_template('download.xml').render(request_seq=request_seq, ebp_code=ebp_code, tax_payer=tax_payer,
                                                                 download_method=download_method)
-    interface_content = b64encode(get_compressed_content(get_ca_encrypted_content(to_str(interface_content))))
+
+    interface_content = get_ca_encrypted_content(to_str(interface_content)) if encrypt_code == CONTENT_DATA_ENCRYPT_CODE_CA else to_str(interface_content)
+    if is_compressed:
+        interface_content = get_compressed_content(interface_content)
+    interface_content = b64encode(interface_content)
     with require_current_template_directory_relative_to():
         interface_data = get_template('interface.xml').render(terminal_code=terminal_code, app_id=app_id, version=version, response_code=response_code,
                                                               interface_name=INVOICE_INTERFACE_NAME_FOR_DOWNLOAD, username=username,
                                                               password=generate_request_password(registration_no),
                                                               tax_payer=tax_payer, request_code=ebp_code,
                                                               request_time=get_request_time(), ebp_code=ebp_code,
-                                                              data_exchange_id=generate_data_exchange_id(ebp_code), is_compressed=True,
+                                                              data_exchange_id=generate_data_exchange_id(ebp_code), is_compressed=is_compressed,
                                                               encrypt_code=encrypt_code, encrypt_code_type=encrypt_code_type,
                                                               interface_content=interface_content)
     ws = WebService(url)
@@ -206,10 +205,10 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
 
 
 def query_invoice(request_seq, ebp_code, registration_no, username, tax_payer,
-                  terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', response_code=144, encrypt_code=2, encrypt_code_type='CA'):
+                  terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', response_code=144, encrypt_code='2', encrypt_code_type='CA', is_compressed=True):
     return download_invoice(request_seq, ebp_code, registration_no, username, tax_payer, download_method=DOWNLOAD_METHOD_FOR_QUERY,
                             terminal_code=terminal_code, app_id=app_id, version=version, response_code=response_code, encrypt_code=encrypt_code,
-                            encrypt_code_type=encrypt_code_type)
+                            encrypt_code_type=encrypt_code_type, is_compressed=is_compressed)
 
 
 def uncompress_content_data(data):
@@ -272,7 +271,7 @@ class InvoiceItem(DictObject):
         self.name = name
         self.quantity = quantity
         self.total = Decimal(total)
-        self.price = self.total / self.quantity
+        self.price = (self.total / self.quantity).quantize(Decimal('0.00000001'))
         self.tax_rate = tax_rate
         self.tax_total = round_money_ceiling(self.total * self.tax_rate)
         self.with_tax = with_tax
