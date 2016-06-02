@@ -8,6 +8,7 @@ from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
 
+
 @atomic_installer
 def directory_resource(path, owner='root', group='root', mode=0755, recursive=False):
     args = dict(path=path, owner=owner, group=group, mode=mode, recursive=recursive)

@@ -6,8 +6,9 @@ from .environment import DEPENDENCY_DIR
 from .environment import DEPENDENCY_INSTALL_DIR
 from .environment import PYPI_ARCHIVE_DIR
 
-from .environment import VEIL_ENV_TYPE
 from .environment import VEIL_ENV_NAME
+from .environment import VEIL_ENV_BASE_NAME
+from .environment import VEIL_ENV_TYPE
 from .environment import CURRENT_OS
 from .environment import SECURITY_CONFIG_FILE
 from .environment import CURRENT_USER

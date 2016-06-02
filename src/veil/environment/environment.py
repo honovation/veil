@@ -48,15 +48,17 @@ BASIC_LAYOUT_RESOURCES = [
     directory_resource(path=VEIL_LOG_DIR.parent),
     directory_resource(path=VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
 ]
+if VEIL_ENV_BASE_NAME != VEIL_ENV_NAME:
+    BASIC_LAYOUT_RESOURCES.insert(1, symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV_BASE_NAME, to=VEIL_ENV_DIR))
 
 
-def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, pypi_index_url=PYPI_INDEX_URL, deployment_memo=None, config={}):
+def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, pypi_index_url=PYPI_INDEX_URL, deployment_memo=None, config=None):
     server_names = servers.keys()
     if sorted_server_names:
-        assert set(sorted_server_names) == set(server_names), 'ENV {}: inconsistency between sorted_server_names {} and server_names {}'.format(name,
-            sorted_server_names, server_names)
-        assert '@monitor' not in sorted_server_names or '@monitor' == sorted_server_names[-1], 'ENV {}: @monitor should be the last one in {}'.format(
-            name, sorted_server_names)
+        assert set(sorted_server_names) == set(server_names), \
+            'ENV {}: inconsistency between sorted_server_names {} and server_names {}'.format(name, sorted_server_names, server_names)
+        assert '@monitor' not in sorted_server_names or '@monitor' == sorted_server_names[-1], \
+            'ENV {}: @monitor should be the last one in {}'.format(name, sorted_server_names)
     else:
         sorted_server_names = sorted(server_names)
 
@@ -64,7 +66,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
     env = objectify({
         'name': name, 'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names,
         'apt_url': apt_url, 'pypi_index_host': urlparse(pypi_index_url).hostname, 'pypi_index_url': pypi_index_url,
-        'deployment_memo': deployment_memo, 'config': config
+        'deployment_memo': deployment_memo, 'config': config or {}
     })
     env.env_dir = OPT_DIR / env.name
     env.veil_home = VEIL_HOME if env.name in {'development', 'test'} else env.env_dir / 'code' / 'app'
@@ -159,7 +161,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
 
 
 def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ssh_user='dejavu', sshd_config=(), iptables_rule_resources=(),
-        timezone='Asia/Shanghai'):
+              timezone='Asia/Shanghai'):
     from veil.model.collection import objectify
     internal_ip = '{}.1'.format(lan_range)
     return objectify({
@@ -178,8 +180,8 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
     })
 
 
-def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None,
-        mount_editorial_dir=False, mount_buckets_dir=False, mount_data_dir=False, memory_limit=None, cpu_share=None, cpus=None, ssh_port=None):
+def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None, mount_editorial_dir=False,
+                mount_buckets_dir=False, mount_data_dir=False, memory_limit=None, cpu_share=None, cpus=None, ssh_port=None):
     from veil.model.collection import objectify
     if backup_mirror:
         backup_mirror = objectify(backup_mirror)
