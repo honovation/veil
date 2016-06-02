@@ -24,9 +24,11 @@ from veil_component import VEIL_ENV_TYPE
 
 LOGGER = logging.getLogger(__name__)
 
-AISINO_JAR_FILE_NAME = 'aisino.jar'
-AISINO_JAR_PATH = DEPENDENCY_DIR / 'aisino'
-AISINO_JAR_FILE_PATH = AISINO_JAR_PATH / AISINO_JAR_FILE_NAME
+AISINO_LIBRARY_CONFIG_FILE_NAME = 'pkcs7.properties'
+AISINO_JAR_FILE_NAME = 'aisino-1.2.jar'
+AISINO_LIBRARY_PATH = DEPENDENCY_DIR / 'aisino'
+AISINO_JAR_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_JAR_FILE_NAME
+AISINO_LIBRARY_CONFIG_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_LIBRARY_CONFIG_FILE_NAME
 REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE = VEIL_BUCKET_LOG_DIR / 'aisino'
 
 if VEIL_ENV_TYPE == 'public':
@@ -129,12 +131,12 @@ def decrypt_content_data(data):
     if data.dataDescription.encryptCode not in SUPPORTED_ENCRYPT_CODES:
         raise Exception('not support encrypt code: {}'.format(data.dataDescription.encryptCode))
     if data.dataDescription.encryptCode == CONTENT_DATA_ENCRYPT_CODE_CA:
-        process = shell_execute('java -jar {} decrypt'.format(AISINO_JAR_FILE_PATH), capture=True, waits=False)
-        data.content = process.communicate(input=to_str(data.content))[0].strip()
+        process = shell_execute('java -jar {} {} decrypt'.format(AISINO_JAR_FILE_PATH, AISINO_LIBRARY_CONFIG_FILE_PATH), capture=True, waits=False)
+        data.content = process.communicate(input=data.content)[0].strip()
 
 
 def get_ca_encrypted_content(raw_content):
-    process = shell_execute('java -jar {} encrypt'.format(AISINO_JAR_FILE_PATH), capture=True, waits=False)
+    process = shell_execute('java -jar {} {} encrypt'.format(AISINO_JAR_FILE_PATH, AISINO_LIBRARY_CONFIG_FILE_PATH), capture=True, waits=False)
     return process.communicate(input=raw_content)[0].strip()
 
 
@@ -273,7 +275,7 @@ class InvoiceItem(DictObject):
         self.total = Decimal(total)
         self.price = (self.total / self.quantity).quantize(Decimal('0.00000001'))
         self.tax_rate = tax_rate
-        self.tax_total = round_money_ceiling(self.total * self.tax_rate)
+        self.tax_total = round_money_half_up(self.tax_rate * (self.total/(1 + tax_rate)))
         self.with_tax = with_tax
         self.with_promotion = with_promotion
 

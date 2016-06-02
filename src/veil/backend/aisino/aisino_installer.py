@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
-import os
 
 from veil.environment import *
 from veil.server.config import *
@@ -9,8 +8,12 @@ from veil.utility.setting import *
 from veil.utility.shell import *
 from veil_installer import *
 
-from .aisino import REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE, AISINO_JAR_FILE_NAME, AISINO_JAR_PATH, AISINO_JAR_FILE_PATH
+from .aisino import REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE, AISINO_JAR_FILE_NAME, AISINO_LIBRARY_PATH, AISINO_JAR_FILE_PATH, AISINO_LIBRARY_CONFIG_FILE_PATH
 
+AISINO_JNI_FILE_NAME = 'libSOFJni_x64.so'
+AISINO_JNI_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_JNI_FILE_NAME
+AISINO_PLATFORM_CER_FILE_NAME = '51fapiao.cer'
+AISINO_PLATFORM_CER_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_PLATFORM_CER_FILE_NAME
 RESOURCE_KEY = 'veil.backend.aisino.aisino_invoice_resource'
 RESOURCE_VERSION = '1.0'
 
@@ -22,9 +25,13 @@ add_application_sub_resource('aisino_invoice', lambda config: aisino_invoice_res
 
 @composite_installer
 def aisino_invoice_resource(payer_id, payer_name, payer_auth_code, payer_address, payer_telephone, payer_bank_name, payer_bank_account_no, ebp_code,
-                            registration_no, operator_name):
+                            registration_no, operator_name, client_pfx, client_pfx_key):
     resources = list(BASIC_LAYOUT_RESOURCES)
-    install_aisino_jar()
+    install_aisino_library()
+    config_file_content = render_config('pkcs7.properties.j2', client_pfx=client_pfx, client_pfx_key=client_pfx_key,
+                                        platform_cer=AISINO_PLATFORM_CER_FILE_PATH, jni_library=AISINO_JNI_FILE_PATH)
+    if not AISINO_LIBRARY_CONFIG_FILE_PATH.exists() or AISINO_LIBRARY_CONFIG_FILE_PATH.bytes()!= config_file_content:
+        resources.append(file_resource(path=AISINO_LIBRARY_CONFIG_FILE_PATH, content=config_file_content))
     resources.append(directory_resource(path=REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE, owner=CURRENT_USER, group=CURRENT_USER_GROUP))
     resources.append(file_resource(path=VEIL_ETC_DIR / 'aision_invoice.cfg', content=render_config('aision_invoice.cfg.j2',
                                                                                                    payer_id=payer_id,
@@ -52,12 +59,34 @@ def aisino_invoice_config():
     return _config
 
 
-def install_aisino_jar():
-    url = '{}/{}'.format(DEPENDENCY_URL, AISINO_JAR_FILE_NAME)
-    dest_path = AISINO_JAR_PATH
+def install_aisino_library():
+    if AISINO_JAR_FILE_PATH.exists() and AISINO_JNI_FILE_PATH.exists() and AISINO_PLATFORM_CER_FILE_PATH.exists():
+        if VEIL_ENV_TYPE in {'development', 'test'} and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
+            set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
+        return
+    dest_path = AISINO_LIBRARY_PATH
     if not dest_path.exists():
         dest_path.mkdir()
-    if not os.path.exists(AISINO_JAR_FILE_PATH):
-        shell_execute('wget -c {} -O {}'.format(url, AISINO_JAR_FILE_PATH))
+    install_aisino_platform_cer()
+    install_aisino_jni_library()
+    install_aisino_jar()
     if VEIL_ENV_TYPE in {'development', 'test'}:
         set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
+
+
+def install_aisino_jni_library():
+    url = '{}/{}'.format(DEPENDENCY_SSL_URL, AISINO_JNI_FILE_NAME)
+    if not AISINO_JNI_FILE_PATH.exists():
+        shell_execute('wget --no-check-certificate -c {} -O {}'.format(url, AISINO_JNI_FILE_PATH))
+
+
+def install_aisino_jar():
+    url = '{}/{}'.format(DEPENDENCY_SSL_URL, AISINO_JAR_FILE_NAME)
+    if not AISINO_JAR_FILE_PATH.exists():
+        shell_execute('wget --no-check-certificate -c {} -O {}'.format(url, AISINO_JAR_FILE_PATH))
+
+
+def install_aisino_platform_cer():
+    url = '{}/{}'.format(DEPENDENCY_SSL_URL, AISINO_PLATFORM_CER_FILE_NAME)
+    if not AISINO_PLATFORM_CER_FILE_PATH.exists():
+        shell_execute('wget --no-check-certificate -c {} -O {}'.format(url, AISINO_PLATFORM_CER_FILE_PATH))
