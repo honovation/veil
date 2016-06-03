@@ -18,7 +18,7 @@ def elk_resource(config):
         os_package_resource(name='elasticsearch'),
         os_service_auto_starting_resource(name='elasticsearch', state='not_installed'),
         file_resource(path='/etc/elasticsearch/elasticsearch.yml', keep_origin=True,
-                      content=render_config('elasticsearch.yml.j2', elasticsearch_cluster=VEIL_ENV_BASE_NAME, **config)),
+                      content=render_config('elasticsearch.yml.j2', elasticsearch_cluster=VEIL_ENV_NAME, **config)),
 
         os_package_resource(name='logstash'),
         os_service_auto_starting_resource(name='logstash', state='not_installed'),

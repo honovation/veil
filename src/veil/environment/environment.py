@@ -18,7 +18,7 @@ DEPENDENCY_DIR = SHARE_DIR / 'dependency'
 DEPENDENCY_INSTALL_DIR = SHARE_DIR / 'dependency-install'
 PYPI_ARCHIVE_DIR = SHARE_DIR / 'pypi'
 
-VEIL_ENV_DIR = (VEIL_HOME if VEIL_ENV_TYPE in {'development', 'test'} else OPT_DIR) / VEIL_ENV_NAME
+VEIL_ENV_DIR = (VEIL_HOME if VEIL_ENV_TYPE in {'development', 'test'} else OPT_DIR) / VEIL_ENV_BASE_NAME
 VEIL_ETC_DIR = VEIL_ENV_DIR / 'etc' / VEIL_SERVER_NAME
 VEIL_VAR_DIR = VEIL_ENV_DIR / 'var'
 VEIL_EDITORIAL_DIR = VEIL_VAR_DIR / 'editor-rootfs' / 'editorial'
@@ -49,7 +49,7 @@ BASIC_LAYOUT_RESOURCES = [
     directory_resource(path=VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
 ]
 if VEIL_ENV_BASE_NAME != VEIL_ENV_NAME:
-    BASIC_LAYOUT_RESOURCES.insert(1, symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV_BASE_NAME, to=VEIL_ENV_DIR))
+    BASIC_LAYOUT_RESOURCES.insert(1, symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV_NAME, to=VEIL_ENV_DIR))
 
 
 def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, pypi_index_url=PYPI_INDEX_URL, deployment_memo=None, config=None):
