@@ -69,10 +69,10 @@ RED_INVOICE_FLAG_SPECIAL = '1'
 
 
 def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax_payer, operator_name, invoice_content, total, items,
-                    ref_invoice_code=None, ref_invoice_no=None, comment=None, operation_code=INVOICE_OPERATION_CODE_NORMAL,
-                    flag_special_red=None, red_invoice_reason=None,
-                    terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', response_code=144, encrypt_code='2', encrypt_code_type='CA', is_compressed=True,
-                    sample_code='000001', encode_table_version='1.0', flag_dk=0, flag_list=0, list_item_name=None, without_tax_total=0, tax_total=0):
+                    ref_invoice_code=None, ref_invoice_no=None, comment=None, operation_code=INVOICE_OPERATION_CODE_NORMAL, flag_special_red=None,
+                    red_invoice_reason=None, terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', response_code=144, encrypt_code='2',
+                    encrypt_code_type='CA', is_compressed=True, sample_code='000001', encode_table_version='1.0', flag_dk=0, flag_list=0, list_item_name=None,
+                    without_tax_total=0, tax_total=0):
 
     type_code = INVOICE_TYPE_CODE_NORMAL if total > 0 else INVOICE_TYPE_CODE_RED
 
