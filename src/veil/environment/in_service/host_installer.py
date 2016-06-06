@@ -241,7 +241,6 @@ def veil_host_init_resource(host):
     fabric.api.sudo('touch {}'.format(host.initialized_tag_path))
 
 
-@composite_installer
 def init_veil_host_basic_layout(host):
     fabric.api.sudo('mkdir -p -m 0755 {}'.format(' '.join([
         host.opt_dir, host.share_dir, DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.env_dir, host.code_dir, host.veil_home,
