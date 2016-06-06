@@ -7,6 +7,7 @@ with veil_component.init_component(__name__):
 
     from .os_package_repository_installer import apt_repository_resource
     from .os_package_repository_installer import os_ppa_repository_resource
+    from .os_package_repository_installer import install_apt_repository_resource
 
     from .os_package_installer import os_package_resource
 
@@ -14,7 +15,7 @@ with veil_component.init_component(__name__):
 
     from .java_installer import oracle_java_resource
 
-    from .nodejs_installer import nodejs_apt_repository_resource
+    from .nodejs_apt_repository_installer import nodejs_apt_repository_resource
 
     __all__ = [
         directory_resource.__name__,
@@ -23,6 +24,7 @@ with veil_component.init_component(__name__):
 
         apt_repository_resource.__name__,
         os_ppa_repository_resource.__name__,
+        install_apt_repository_resource.__name__,
 
         os_package_resource.__name__,
 

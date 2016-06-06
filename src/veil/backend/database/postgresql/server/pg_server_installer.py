@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import sys
 from veil.profile.installer import *
 from ...postgresql_setting import get_pg_config_dir, get_pg_data_dir, get_pg_bin_dir
+from ..postgresql_apt_repository_installer import postgresql_apt_repository_resource
 from .pg_fts_chinese import scws_resource, zhparser_resource
 
 LOGGER = logging.getLogger(__name__)
@@ -23,8 +24,7 @@ def postgresql_server_resource(purpose, config):
     pg_data_dir = get_pg_data_dir(purpose, config.version)
     pg_config_dir = get_pg_config_dir(purpose, config.version)
     resources = [
-        apt_repository_resource(name='pgdg', key_url='https://www.postgresql.org/media/keys/ACCC4CF8.asc',
-                                definition='deb http://apt.postgresql.org/pub/repos/apt/ {}-pgdg main'.format(CURRENT_OS.codename)),
+        postgresql_apt_repository_resource(),
         os_package_resource(name='postgresql-{}'.format(config.version)),
         os_service_auto_starting_resource(name='postgresql', state='not_installed'),
         postgresql_cluster_resource(purpose=purpose, version=config.version, owner=config.owner, owner_password=config.owner_password),
