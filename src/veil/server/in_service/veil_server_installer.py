@@ -1,17 +1,15 @@
 from __future__ import unicode_literals, print_function, division
 from veil_installer import *
 from veil.environment import *
-from veil.server.supervisor import supervisor_resource
+from veil.server.supervisor import *
 
 
 @composite_installer
 def veil_server_resource():
     server = get_current_veil_server()
-    resources = [supervisor_resource(
-        programs=to_supervisor_programs(server.programs),
-        program_groups=to_supervisor_program_groups(server.programs),
-        inet_http_server_port=server.supervisor_http_port
-    )]
+    resources = list(BASIC_LAYOUT_RESOURCES)
+    resources.append(supervisor_resource(programs=to_supervisor_programs(server.programs), program_groups=to_supervisor_program_groups(server.programs),
+                                         inet_http_server_port=server.supervisor_http_port))
     for program in server.programs.values():
         resources.extend(program.get('resources', []))
     resources.extend(server.get('resources', []))

@@ -35,10 +35,7 @@ def register():
 
 @composite_installer
 def emay_sms_client_resource(cdkey, password):
-    resources = list(BASIC_LAYOUT_RESOURCES)
-    resources.append(file_resource(path=VEIL_ETC_DIR / 'emay-sms-client.cfg',
-        content=render_config('emay-sms-client.cfg.j2', cdkey=cdkey, password=password)))
-    return resources
+    return [file_resource(path=VEIL_ETC_DIR / 'emay-sms-client.cfg', content=render_config('emay-sms-client.cfg.j2', cdkey=cdkey, password=password))]
 
 
 def load_emay_sms_client_config():

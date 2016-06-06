@@ -7,7 +7,6 @@ from .environment import DEPENDENCY_INSTALL_DIR
 from .environment import PYPI_ARCHIVE_DIR
 
 from .environment import VEIL_ENV_NAME
-from .environment import VEIL_ENV_BASE_NAME
 from .environment import VEIL_ENV_TYPE
 from .environment import CURRENT_OS
 from .environment import SECURITY_CONFIG_FILE
@@ -18,17 +17,17 @@ from .environment import VEIL_HOME
 from .environment import VEIL_FRAMEWORK_HOME
 from .environment import VEIL_ETC_DIR
 from .environment import VEIL_VAR_DIR
-from .environment import VEIL_EDITORIAL_DIR
 from .environment import VEIL_BUCKETS_DIR
 from .environment import VEIL_BUCKET_LOG_DIR
-from .environment import VEIL_BUCKET_INLINE_STATIC_FILES_DIR
-from .environment import VEIL_BUCKET_CAPTCHA_IMAGE_DIR
-from .environment import VEIL_BUCKET_UPLOADED_FILES_DIR
 from .environment import VEIL_DATA_DIR
 from .environment import VEIL_LOG_DIR
 from .environment import BASIC_LAYOUT_RESOURCES
 
 from .environment import VEIL_BACKUP_ROOT
+
+from .environment import VEIL_EDITORIAL_DIR
+from .environment import VEIL_BUCKET_INLINE_STATIC_FILES_DIR
+from .environment import VEIL_BUCKET_UPLOADED_FILES_DIR
 
 from .environment import VEIL_FRAMEWORK_CODEBASE
 from .environment import get_application_codebase

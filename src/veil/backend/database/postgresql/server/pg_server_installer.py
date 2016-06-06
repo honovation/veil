@@ -22,12 +22,10 @@ def postgresql_server_resource(purpose, config):
 
     pg_data_dir = get_pg_data_dir(purpose, config.version)
     pg_config_dir = get_pg_config_dir(purpose, config.version)
-    resources = list(BASIC_LAYOUT_RESOURCES)
-    resources.extend([
+    resources = [
         apt_repository_resource(name='pgdg', key_url='https://www.postgresql.org/media/keys/ACCC4CF8.asc',
                                 definition='deb http://apt.postgresql.org/pub/repos/apt/ {}-pgdg main'.format(CURRENT_OS.codename)),
-        os_package_resource(name='postgresql-{}'.format(config.version))])
-    resources.extend([
+        os_package_resource(name='postgresql-{}'.format(config.version)),
         os_service_auto_starting_resource(name='postgresql', state='not_installed'),
         postgresql_cluster_resource(purpose=purpose, version=config.version, owner=config.owner, owner_password=config.owner_password),
         directory_resource(path=pg_config_dir),
@@ -58,7 +56,7 @@ def postgresql_server_resource(purpose, config):
         symbolic_link_resource(path=pg_data_dir / 'postgresql.conf', to=pg_config_dir / 'postgresql.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_ident.conf', to=pg_config_dir / 'pg_ident.conf'),
-    ])
+    ]
     if upgrading or config.enable_chinese_fts:
         resources.append(os_package_resource(name='postgresql-server-dev-{}'.format(config.version)))
     if config.enable_chinese_fts:

@@ -19,9 +19,7 @@ def on_new_website(website):
 
 @composite_installer
 def website_resource(purpose, config):
-    resources = list(BASIC_LAYOUT_RESOURCES)
-    resources.append(file_resource(path=VEIL_ETC_DIR / '{}-website.cfg'.format(purpose), content=render_config('website.cfg.j2', config=config)))
-    return resources
+    return [file_resource(path=VEIL_ETC_DIR / '{}-website.cfg'.format(purpose), content=render_config('website.cfg.j2', config=config))]
 
 
 def website_config(purpose):

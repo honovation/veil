@@ -26,24 +26,21 @@ add_application_sub_resource('aisino_invoice', lambda config: aisino_invoice_res
 @composite_installer
 def aisino_invoice_resource(payer_id, payer_name, payer_auth_code, payer_address, payer_telephone, payer_bank_name, payer_bank_account_no, ebp_code,
                             registration_no, operator_name, client_pfx, client_pfx_key):
-    resources = list(BASIC_LAYOUT_RESOURCES)
     install_aisino_library()
     config_file_content = render_config('pkcs7.properties.j2', client_pfx=client_pfx, client_pfx_key=client_pfx_key,
                                         platform_cer=AISINO_PLATFORM_CER_FILE_PATH, jni_library=AISINO_JNI_FILE_PATH)
-    if not AISINO_LIBRARY_CONFIG_FILE_PATH.exists() or AISINO_LIBRARY_CONFIG_FILE_PATH.bytes()!= config_file_content:
-        resources.append(file_resource(path=AISINO_LIBRARY_CONFIG_FILE_PATH, content=config_file_content))
-    resources.append(directory_resource(path=REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE, owner=CURRENT_USER, group=CURRENT_USER_GROUP))
-    resources.append(file_resource(path=VEIL_ETC_DIR / 'aision_invoice.cfg', content=render_config('aision_invoice.cfg.j2',
-                                                                                                   payer_id=payer_id,
-                                                                                                   payer_name=payer_name,
-                                                                                                   payer_auth_code=payer_auth_code,
-                                                                                                   payer_address=payer_address,
-                                                                                                   payer_telephone=payer_telephone,
-                                                                                                   payer_bank_name=payer_bank_name,
-                                                                                                   payer_bank_account_no=payer_bank_account_no,
-                                                                                                   ebp_code=ebp_code,
-                                                                                                   registration_no=registration_no,
-                                                                                                   operator_name=operator_name)))
+    if AISINO_LIBRARY_CONFIG_FILE_PATH.exists() and AISINO_LIBRARY_CONFIG_FILE_PATH.bytes() == config_file_content:
+        resources = []
+    else:
+        resources = [file_resource(path=AISINO_LIBRARY_CONFIG_FILE_PATH, content=config_file_content)]
+    resources.extend([
+        directory_resource(path=REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+        file_resource(path=VEIL_ETC_DIR / 'aision_invoice.cfg',
+                      content=render_config('aision_invoice.cfg.j2', payer_id=payer_id, payer_name=payer_name, payer_auth_code=payer_auth_code,
+                                            payer_address=payer_address, payer_telephone=payer_telephone, payer_bank_name=payer_bank_name,
+                                            payer_bank_account_no=payer_bank_account_no, ebp_code=ebp_code, registration_no=registration_no,
+                                            operator_name=operator_name))
+    ])
     return resources
 
 

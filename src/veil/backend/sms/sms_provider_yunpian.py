@@ -43,10 +43,10 @@ def register():
 
 @composite_installer
 def yunpian_sms_client_resource(apikey, promotion_apikey=None):
-    resources = list(BASIC_LAYOUT_RESOURCES)
-    resources.append(file_resource(path=VEIL_ETC_DIR / 'yunpian-sms-client.cfg',
-                                   content=render_config('yunpian-sms-client.cfg.j2', apikey=apikey, promotion_apikey=promotion_apikey)))
-    return resources
+    return [
+        file_resource(path=VEIL_ETC_DIR / 'yunpian-sms-client.cfg',
+                      content=render_config('yunpian-sms-client.cfg.j2', apikey=apikey, promotion_apikey=promotion_apikey))
+    ]
 
 
 def load_yunpian_sms_client_config():

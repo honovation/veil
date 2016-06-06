@@ -2,16 +2,13 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 
-LOGGER = logging.getLogger(__name__)
-
 
 @composite_installer
 def elk_resource(config):
-    resources = list(BASIC_LAYOUT_RESOURCES)
     repository_definition = '\n'.join(('deb https://packages.elastic.co/elasticsearch/2.x/debian stable main',
                                        'deb https://packages.elastic.co/logstash/2.3/debian stable main',
                                        'deb http://packages.elastic.co/kibana/4.5/debian stable main'))
-    resources.extend([
+    return [
         oracle_java_resource(),
         apt_repository_resource(name='elk', key_url='https://packages.elastic.co/GPG-KEY-elasticsearch', definition=repository_definition),
 
@@ -27,5 +24,4 @@ def elk_resource(config):
 
         os_package_resource(name='kibana'),
         os_service_auto_starting_resource(name='kibana', state='not_installed'),
-    ])
-    return resources
+    ]

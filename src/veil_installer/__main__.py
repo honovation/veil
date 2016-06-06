@@ -16,8 +16,7 @@ if '__main__' == __name__:
     argument_parser.add_argument('resource', type=str, help='<installer_name>?<installer_arg1>&<installer_arg2>...')
     argument_parser.add_argument('--upgrade', help='check latest version and upgrade if found new version', action='store_true')
     argument_parser.add_argument('--dry-run', help='list the resources required and installed or not', action='store_true')
-    argument_parser.add_argument('--download-only', help='download necessary files, but do not install them, and it implies dry-run',
-        action='store_true')
+    argument_parser.add_argument('--download-only', help='download necessary files, but do not install them, and it implies dry-run', action='store_true')
     args = argument_parser.parse_args(sys.argv[1:])
 
     if veil_component.VEIL_ENV_TYPE in {'development', 'test'}:

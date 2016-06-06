@@ -5,7 +5,6 @@ with veil_component.init_component(__name__):
 
     from .supervisor_installer import supervisor_resource
 
-
     __all__ = [
         supervisorctl.__name__,
 

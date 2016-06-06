@@ -20,15 +20,15 @@ PYPI_ARCHIVE_DIR = SHARE_DIR / 'pypi'
 
 VEIL_ENV_DIR = (VEIL_HOME if VEIL_ENV_TYPE in {'development', 'test'} else OPT_DIR) / VEIL_ENV_NAME
 VEIL_ETC_DIR = VEIL_ENV_DIR / 'etc' / VEIL_SERVER_NAME
+VEIL_LOG_DIR = VEIL_ENV_DIR / 'log' / VEIL_SERVER_NAME
 VEIL_VAR_DIR = VEIL_ENV_DIR / 'var'
-VEIL_EDITORIAL_DIR = VEIL_VAR_DIR / 'editor-rootfs' / 'editorial'
 VEIL_BUCKETS_DIR = VEIL_VAR_DIR / 'buckets'
 VEIL_BUCKET_LOG_DIR = VEIL_BUCKETS_DIR / 'log'
-VEIL_BUCKET_INLINE_STATIC_FILES_DIR = VEIL_BUCKETS_DIR / 'inline-static-files'
-VEIL_BUCKET_CAPTCHA_IMAGE_DIR = VEIL_BUCKETS_DIR / 'captcha-image'
-VEIL_BUCKET_UPLOADED_FILES_DIR = VEIL_BUCKETS_DIR / 'uploaded-files'
 VEIL_DATA_DIR = VEIL_VAR_DIR / 'data'
-VEIL_LOG_DIR = VEIL_ENV_DIR / 'log' / VEIL_SERVER_NAME
+
+VEIL_EDITORIAL_DIR = VEIL_VAR_DIR / 'editor-rootfs' / 'editorial'
+VEIL_BUCKET_INLINE_STATIC_FILES_DIR = VEIL_BUCKETS_DIR / 'inline-static-files'
+VEIL_BUCKET_UPLOADED_FILES_DIR = VEIL_BUCKETS_DIR / 'uploaded-files'
 
 VEIL_BACKUP_ROOT = as_path('/backup')
 
@@ -37,19 +37,22 @@ CURRENT_USER_GROUP = CURRENT_USER
 
 SECURITY_CONFIG_FILE = (VEIL_HOME if VEIL_ENV_TYPE in {'development', 'test'} else VEIL_HOME.parent) / '.config'
 
-BASIC_LAYOUT_RESOURCES = [
-    directory_resource(path=VEIL_ENV_DIR),
-    directory_resource(path=VEIL_ETC_DIR.parent),
-    directory_resource(path=VEIL_ETC_DIR),
-    directory_resource(path=VEIL_VAR_DIR),
-    directory_resource(path=VEIL_BUCKETS_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-    directory_resource(path=VEIL_BUCKET_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-    directory_resource(path=VEIL_DATA_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-    directory_resource(path=VEIL_LOG_DIR.parent),
-    directory_resource(path=VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-]
-if VEIL_ENV_BASE_NAME != VEIL_ENV_NAME:
-    BASIC_LAYOUT_RESOURCES.insert(1, symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV_BASE_NAME, to=VEIL_ENV_DIR))
+if VEIL_ENV_TYPE in {'development', 'test'}:
+    BASIC_LAYOUT_RESOURCES = [
+            directory_resource(path=VEIL_ENV_DIR),
+            directory_resource(path=VEIL_ETC_DIR.parent),
+            directory_resource(path=VEIL_ETC_DIR),
+            directory_resource(path=VEIL_LOG_DIR.parent),
+            directory_resource(path=VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+            directory_resource(path=VEIL_VAR_DIR),
+            directory_resource(path=VEIL_BUCKETS_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+            directory_resource(path=VEIL_BUCKET_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+            directory_resource(path=VEIL_DATA_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+        ]
+elif VEIL_ENV_BASE_NAME != VEIL_ENV_NAME:
+    BASIC_LAYOUT_RESOURCES = [symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV_BASE_NAME, to=VEIL_ENV_DIR)]
+else:
+    BASIC_LAYOUT_RESOURCES = []
 
 
 def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, pypi_index_url=PYPI_INDEX_URL, deployment_memo=None, config=None):
@@ -68,11 +71,13 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         'apt_url': apt_url, 'pypi_index_host': urlparse(pypi_index_url).hostname, 'pypi_index_url': pypi_index_url,
         'deployment_memo': deployment_memo, 'config': config or {}
     })
+    env.base_name = veil_env_base_name(env.name)
     env.env_dir = OPT_DIR / env.name
     env.veil_home = VEIL_HOME if env.name in {'development', 'test'} else env.env_dir / 'code' / 'app'
     env.server_list = []
     for server_name, server in env.servers.items():
         server.env_name = env.name
+        server.env_base_name = env.base_name
         server.name = server_name
         server.fullname = '{}/{}'.format(server.env_name, server.name)
         server.start_order = 1000 + 10 * sorted_server_names.index(server.name) if sorted_server_names else 0
@@ -93,6 +98,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
     env.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))
     for host_name, host in env.hosts.items():
         host.env_name = env.name
+        host.env_base_name = env.base_name
         host.name = host_name
         # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.env_name, host.base_name))
         host.base_name = host.name.split('/', 1)[0]  # e.g. ljhost-90/1 => ljhost-90
@@ -108,6 +114,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         host.var_dir = host.env_dir / 'var'
         host.editorial_dir = host.var_dir / 'editor-rootfs' / 'editorial'
         host.buckets_dir = host.var_dir / 'buckets'
+        host.bucket_log_dir = host.buckets_dir / 'log'
         host.bucket_inline_static_files_dir = host.buckets_dir / 'inline-static-files'
         host.bucket_captcha_image_dir = host.buckets_dir / 'captcha-image'
         host.bucket_uploaded_files_dir = host.buckets_dir / 'uploaded-files'

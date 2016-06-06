@@ -18,7 +18,6 @@ LOGGER = logging.getLogger(__name__)
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
 hosts_to_install = []
-hosts_configured = []
 sources_list_installed = []
 
 
@@ -41,9 +40,8 @@ def veil_hosts_resource(veil_env_name, config_dir):
             hosts_to_install.append(host.base_name)
         for server in host.server_list:
             resources.extend([
-                veil_host_directory_resource(host=host, remote_path=host.etc_dir / server.name, owner='root', owner_group='root', mode=0755),
-                veil_host_directory_resource(host=host, remote_path=host.log_dir / server.name, owner=host.ssh_user, owner_group=host.ssh_user_group,
-                                             mode=0755),
+                veil_host_directory_resource(host=host, remote_path=server.etc_dir),
+                veil_host_directory_resource(host=host, remote_path=server.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
                 veil_container_resource(host=host, server=server, config_dir=config_dir)
             ])
     return resources
@@ -116,9 +114,6 @@ def veil_host_onetime_config_resource(host):
 
 @composite_installer
 def veil_host_config_resource(host, config_dir):
-    if host.base_name in hosts_configured:
-        return []
-
     env_config_dir = config_dir / host.env_name
     resources = [
         veil_host_directory_resource(host=host, remote_path='/home/{}/.ssh'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group,
@@ -139,7 +134,6 @@ def veil_host_config_resource(host, config_dir):
                                     owner_group='root', mode=0600)
         ])
 
-    hosts_configured.append(host.base_name)
     return resources
 
 
@@ -234,10 +228,9 @@ def veil_host_init_resource(host):
     # enable time sync on lxc hosts, and which is shared among lxc guests
     fabric.api.sudo(
         '''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
-    fabric.api.sudo('mkdir -p -m 0755 {}'.format(' '.join(
-        [DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.code_dir, host.etc_dir, host.editorial_dir, host.buckets_dir, host.data_dir,
-         host.log_dir])))
-    fabric.api.sudo('chown {}:{} {} {}'.format(host.ssh_user, host.ssh_user_group, host.buckets_dir, host.data_dir))
+
+    init_veil_host_basic_layout(host)
+
     fabric.api.sudo('pip install --upgrade "pip>=8.1.1"')
     fabric.api.sudo('pip install -i {} --trusted-host {} --upgrade "setuptools>=20.3.1"'.format(host.pypi_index_url, host.pypi_index_host))
     fabric.api.sudo('pip install -i {} --trusted-host {} --upgrade "wheel>=0.29.0"'.format(host.pypi_index_url, host.pypi_index_host))
@@ -246,6 +239,16 @@ def veil_host_init_resource(host):
     install_resource(veil_lxc_config_resource(host=host))
 
     fabric.api.sudo('touch {}'.format(host.initialized_tag_path))
+
+
+@composite_installer
+def init_veil_host_basic_layout(host):
+    fabric.api.sudo('mkdir -p -m 0755 {}'.format(' '.join([
+        host.opt_dir, host.share_dir, DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.env_dir, host.code_dir, host.veil_home,
+        host.veil_framework_home, host.etc_dir, host.log_dir, host.var_dir, host.editorial_dir, host.buckets_dir, host.bucket_log_dir, host.data_dir
+    ])))
+    fabric.api.sudo('chown {}:{} {} {} {}'.format(host.ssh_user, host.ssh_user_group, host.buckets_dir, host.bucket_log_dir, host.data_dir))
+    fabric.api.sudo('ln -s {} {}'.format(host.env_dir, host.env_dir.parent / host.env_base_name))
 
 
 @atomic_installer
@@ -287,7 +290,7 @@ def veil_lxc_config_resource(host):
 
 
 @atomic_installer
-def veil_host_directory_resource(host, remote_path, owner, owner_group, mode):
+def veil_host_directory_resource(host, remote_path, owner='root', owner_group='root', mode=0755):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_host_directory?{}&path={}'.format(host.env_name, remote_path)
