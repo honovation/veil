@@ -157,18 +157,21 @@ def process_alipay_payment_notification(out_trade_no, arguments, notified_from):
 def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
     discarded_reasons = []
     if VEIL_ENV_TYPE not in {'development', 'test'}:
-        verify_sign_func = is_sign_correct if arguments.sign_type == 'MD5' else is_rsa_sign_correct
-        if verify_sign_func(arguments):
-            if with_notify_id:
-                notify_id = arguments.get('notify_id')
-                if notify_id:
-                    error = validate_notification_from_alipay(notify_id)
-                    if error:
-                        discarded_reasons.append(error)
-                else:
-                    discarded_reasons.append('no notify_id')
+        if not arguments.get('sign_type'):
+            discarded_reasons.append('no sign_type')
         else:
-            discarded_reasons.append('sign is incorrect')
+            verify_sign_func = is_sign_correct if arguments.sign_type == 'MD5' else is_rsa_sign_correct
+            if verify_sign_func(arguments):
+                if with_notify_id:
+                    notify_id = arguments.get('notify_id')
+                    if notify_id:
+                        error = validate_notification_from_alipay(notify_id)
+                        if error:
+                            discarded_reasons.append(error)
+                    else:
+                        discarded_reasons.append('no notify_id')
+            else:
+                discarded_reasons.append('sign is incorrect')
     if arguments.get('trade_status') not in {'TRADE_SUCCESS', 'TRADE_FINISHED'}:
         discarded_reasons.append('trade not succeeded')
     out_trade_no_ = arguments.get('out_trade_no')
