@@ -7,11 +7,12 @@ with veil_component.init_component(__name__):
 
     from .os_package_repository_installer import apt_repository_resource
     from .os_package_repository_installer import os_ppa_repository_resource
-    from .os_package_repository_installer import install_apt_repository_resource
 
     from .os_package_installer import os_package_resource
 
     from .os_service_installer import os_service_auto_starting_resource
+
+    from .postgresql_apt_repository_installer import postgresql_apt_repository_resource
 
     from .java_installer import oracle_java_resource
 
@@ -24,11 +25,12 @@ with veil_component.init_component(__name__):
 
         apt_repository_resource.__name__,
         os_ppa_repository_resource.__name__,
-        install_apt_repository_resource.__name__,
 
         os_package_resource.__name__,
 
         os_service_auto_starting_resource.__name__,
+
+        postgresql_apt_repository_resource.__name__,
 
         oracle_java_resource.__name__,
 

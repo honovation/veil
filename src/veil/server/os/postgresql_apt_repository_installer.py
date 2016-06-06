@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil_component import CURRENT_OS
 from veil_installer import *
-from veil.server.os import *
+from .os_package_repository_installer import install_apt_repository_resource
 
 
 @atomic_installer

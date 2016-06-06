@@ -2,7 +2,6 @@ from __future__ import unicode_literals, print_function, division
 import sys
 from veil.profile.installer import *
 from ...postgresql_setting import get_pg_config_dir, get_pg_data_dir, get_pg_bin_dir
-from ..postgresql_apt_repository_installer import postgresql_apt_repository_resource
 from .pg_fts_chinese import scws_resource, zhparser_resource
 
 LOGGER = logging.getLogger(__name__)
