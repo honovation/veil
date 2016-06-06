@@ -7,4 +7,4 @@ from .os_package_repository_installer import install_apt_repository_resource
 @atomic_installer
 def postgresql_apt_repository_resource():
     install_apt_repository_resource('pgdg', 'https://www.postgresql.org/media/keys/ACCC4CF8.asc',
-                                    'deb http://apt.postgresql.org/pub/repos/apt/{}-pgdg main'.format(CURRENT_OS.codename))
+                                    'deb http://apt.postgresql.org/pub/repos/apt/ {}-pgdg main'.format(CURRENT_OS.codename))
