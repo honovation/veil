@@ -243,8 +243,8 @@ def veil_host_init_resource(host):
 
 def init_veil_host_basic_layout(host):
     fabric.api.sudo('mkdir -p -m 0755 {}'.format(' '.join([
-        host.opt_dir, host.share_dir, DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.env_dir, host.code_dir, host.veil_home,
-        host.veil_framework_home, host.etc_dir, host.log_dir, host.var_dir, host.editorial_dir, host.buckets_dir, host.bucket_log_dir, host.data_dir
+        host.opt_dir, host.share_dir, DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.env_dir, host.code_dir, host.etc_dir, host.log_dir,
+        host.var_dir, host.editorial_dir, host.buckets_dir, host.bucket_log_dir, host.data_dir
     ])))
     fabric.api.sudo('chown {}:{} {} {} {}'.format(host.ssh_user, host.ssh_user_group, host.buckets_dir, host.bucket_log_dir, host.data_dir))
     fabric.api.sudo('ln -s {} {}'.format(host.env_dir, host.env_dir.parent / host.env_base_name))
