@@ -79,6 +79,7 @@ def os_package_resource(name, cmd_run_before_install=None, cmd_run_if_install_fa
         except Exception:
             if cmd_run_if_install_fail:
                 shell_execute(cmd_run_if_install_fail, capture=True)
+            raise
         else:
             if cmd_run_after_install:
                 shell_execute(cmd_run_after_install, capture=True)
