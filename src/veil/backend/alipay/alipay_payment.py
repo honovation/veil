@@ -182,7 +182,7 @@ def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
     trade_no = arguments.get('trade_no')
     if not trade_no:
         discarded_reasons.append('no trade_no')
-    if alipay_client_config().partner_id != arguments.seller_id:
+    if alipay_client_config().partner_id != arguments.get('seller_id'):
         discarded_reasons.append('seller id mismatched')
     if arguments.get('seller_email') and alipay_client_config().seller_email != arguments.seller_email:
         discarded_reasons.append('seller email mismatched')
