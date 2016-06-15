@@ -595,7 +595,11 @@ veil.widget.showErrorMessage = function (widget, allErrors) {
             } else {
                 var $field = widget.find('[name=' + field + ']:first');
                 var $error = $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>' + error + '</span>');
-                $error.insertAfter( $field );
+                if ($field.parent().hasClass('input-group')) {
+                    $error.insertAfter($field.parent());
+                } else {
+                    $error.insertAfter( $field );
+                }
             }
         }
     }
