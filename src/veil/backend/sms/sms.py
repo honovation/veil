@@ -147,21 +147,21 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
             if not receivers:
                 return
     while True:
-        try:
-            current_sms_provider.send(receivers, message, sms_code, transactional, promotional=promotional)
-        except SendError as e:
-            if not e.get_send_failed_mobiles():
-                return
-            receivers = e.get_send_failed_mobiles()
+        sent_receivers, need_retry_receivers = current_sms_provider.send(receivers, message, sms_code, transactional, promotional=promotional)
+        if sent_receivers:
+            current_sms_provider.add_sent_quantity(current_sms_provider.get_minimal_message_quantity(message) * len(sent_receivers))
+        if not need_retry_receivers:
+            break
+        elif transactional:
+            raise Exception('yunpian sms send transactional failed: {}'.format(need_retry_receivers))
+        else:
+            receivers = need_retry_receivers
             used_sms_provider_ids.add(current_sms_provider.sms_provider_id)
             shuffle_current_sms_provider(used_sms_provider_ids)
             if current_sms_provider.sms_provider_id in used_sms_provider_ids:
                 if len(_sms_providers) > 1:
                     raise Exception('not enough reliable sms providers')
                 raise Exception('send sms got error')
-        else:
-            current_sms_provider.add_sent_quantity(current_sms_provider.get_minimal_message_quantity(message) * len(receivers))
-            break
 
 
 class SMService(object):
