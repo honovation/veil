@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import sys
 from veil.model.collection import *
+from veil.utility.encoding import *
 
 
 def merge_multiple_settings(*multiple_settings):
@@ -40,6 +41,7 @@ def load_config_from(path, *required_keys):
     with open(path) as f:
         lines = f.readlines()
     for line in lines:
+        line = to_unicode(line)
         line = line.strip()
         if line and not line.startswith('#'):
             key, value = [x.strip() for x in line.split('=', 1)]

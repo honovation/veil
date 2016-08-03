@@ -70,7 +70,7 @@ def install_file(is_dry_run, path, content, owner='root', group='root', mode=064
             old_content = fp.read()
         if old_content:
             old_content = old_content.strip()
-        if content.strip() != old_content:
+        if to_str(content).strip() != old_content:
             actions.append('UPDATE')
             write = not is_dry_run
             reason = "contents don't match"
