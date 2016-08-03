@@ -14,7 +14,7 @@
         <XHFMC><![CDATA[{{ tax_payer.name }}]]></XHFMC>
         <XHF_DZ><![CDATA[{{ tax_payer.address or '' }}]]></XHF_DZ>
         <XHF_DH><![CDATA[{{ tax_payer.telephone or '' }}]]></XHF_DH>
-        <XHF_YHZH>{{ '{} {}'.format(tax_payer.bank_name or '', tax_payer.bank_account_no or '') }}</XHF_YHZH>
+        <XHF_YHZH>{{ tax_payer.bank_name or '' }} {{ tax_payer.bank_account_no or '' }}</XHF_YHZH>
         <GHFMC><![CDATA[{{ buyer.name }}]]></GHFMC>
         <GHF_NSRSBH>{{ buyer.id or '' }}</GHF_NSRSBH>
         <GHF_SF/>
