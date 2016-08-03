@@ -3,6 +3,8 @@ import os
 import logging
 import grp
 import pwd
+
+from veil.utility.encoding import *
 from veil_installer import *
 from veil.utility.shell import *
 
@@ -81,7 +83,7 @@ def install_file(is_dry_run, path, content, owner='root', group='root', mode=064
             shell_execute('cp -pn {path} {path}.origin'.format(path=path), capture=True)
         with open(path, 'wb') as fp:
             LOGGER.info('Writing file: %(path)s because %(reason)s', {'path': path, 'reason': reason})
-            fp.write(content)
+            fp.write(to_str(content))
     if path_exists:
         actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
     if write and cmd_run_after_updated:
