@@ -8,11 +8,9 @@ from cStringIO import StringIO
 from random import randint
 from hashlib import md5
 from base64 import b64encode, b64decode
-
 from decimal import Decimal
 
 from veil.backend.web_service import *
-from veil.environment import VEIL_BUCKET_LOG_DIR, DEPENDENCY_DIR
 from veil.frontend.template import *
 from veil.model.collection import *
 from veil.utility.clock import *
@@ -22,14 +20,10 @@ from veil.utility.shell import *
 from veil.utility.xml import *
 from veil_component import VEIL_ENV_TYPE
 
+from .aisino_installer import AISINO_JAR_FILE_PATH, AISINO_LIBRARY_CONFIG_FILE_PATH, aisino_invoice_config, REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE
+
 LOGGER = logging.getLogger(__name__)
 
-AISINO_LIBRARY_CONFIG_FILE_NAME = 'pkcs7.properties'
-AISINO_JAR_FILE_NAME = 'aisino-1.2.jar'
-AISINO_LIBRARY_PATH = DEPENDENCY_DIR / 'aisino'
-AISINO_JAR_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_JAR_FILE_NAME
-AISINO_LIBRARY_CONFIG_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_LIBRARY_CONFIG_FILE_NAME
-REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE = VEIL_BUCKET_LOG_DIR / 'aisino'
 
 if VEIL_ENV_TYPE == 'public':
     url = 'http://ei.51fapiao.cn:10080/51TransferServicePro_zzs/webservice/eInvWS?wsdl'
@@ -229,7 +223,8 @@ def parse_content_data(data):
 
 
 def as_request_seq(request_id):
-    return str(request_id).zfill(REQUEST_SEQ_LENGTH)
+    config = aisino_invoice_config()
+    return config.seq_prefix + str(md5(str(request_id)).hexdigest()[:3]) + str(request_id).zfill(REQUEST_SEQ_LENGTH-len(config.seq_prefix) - 3)
 
 
 class InvoiceBuyer(DictObject):
