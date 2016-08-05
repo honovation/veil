@@ -78,7 +78,7 @@ def process_tenpay_payment_notification(out_trade_no, arguments, notified_from):
                       paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
                       notified_from=notified_from)
     if NOTIFIED_FROM_RETURN_URL == notified_from:
-        redirect_to(show_url or '/')
+        return show_url
     elif NOTIFIED_FROM_NOTIFY_URL == notified_from:
         if discarded_reasons:
             set_http_status_code(httplib.BAD_REQUEST)
