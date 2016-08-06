@@ -75,7 +75,8 @@ def create_alipay_wap_payment_url(out_trade_no, subject, body, total_fee, show_u
                   payment_type='1',
                   show_url=show_url,
                   body=body,
-                  it_b_pay='{}m'.format(minutes_to_expire))
+                  it_b_pay='{}m'.format(minutes_to_expire),
+                  app_pay='Y')
     params['sign'] = sign_md5(params)
     params['sign_type'] = 'MD5'
     return '{}?{}'.format(PAYMENT_URL, urlencode(params))
