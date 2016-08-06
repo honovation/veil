@@ -46,7 +46,7 @@ def install_directory(is_dry_run, path, owner='root', group='root', mode=0755, r
 
 @atomic_installer
 def file_resource(path, content, owner='root', group='root', mode=0644, keep_origin=False, cmd_run_after_updated=None):
-    args = dict(path=path, content=content, owner=owner, group=group, mode=mode, keep_origin=keep_origin, cmd_run_after_updated=cmd_run_after_updated)
+    args = dict(path=path, content=to_str(content), owner=owner, group=group, mode=mode, keep_origin=keep_origin, cmd_run_after_updated=cmd_run_after_updated)
     dry_run_result = get_dry_run_result()
     if dry_run_result is None:
         install_file(is_dry_run=False, **args)
@@ -70,7 +70,7 @@ def install_file(is_dry_run, path, content, owner='root', group='root', mode=064
             old_content = fp.read()
         if old_content:
             old_content = old_content.strip()
-        if to_str(content).strip() != old_content:
+        if content.strip() != old_content:
             actions.append('UPDATE')
             write = not is_dry_run
             reason = "contents don't match"
@@ -83,7 +83,7 @@ def install_file(is_dry_run, path, content, owner='root', group='root', mode=064
             shell_execute('cp -pn {path} {path}.origin'.format(path=path), capture=True)
         with open(path, 'wb') as fp:
             LOGGER.info('Writing file: %(path)s because %(reason)s', {'path': path, 'reason': reason})
-            fp.write(to_str(content))
+            fp.write(content)
     if path_exists:
         actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
     if write and cmd_run_after_updated:
