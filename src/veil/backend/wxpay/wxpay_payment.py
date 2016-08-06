@@ -31,14 +31,14 @@ WXPAY_UNIFIEDORDER_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
 WXPAY_CLOSE_TRADE_URL = 'https://api.mch.weixin.qq.com/pay/closeorder'
 
 
-def make_wxpay_request_for_native(wxop_app_code, app_id, mch_id, api_key, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):
-    wxpay_prepay_order = create_prepay_order(wxop_app_code, app_id, mch_id, api_key, WXPAY_TRADE_TYPE_NATIVE, out_trade_no, subject, body, total_fee, notify_url,
+def make_wxpay_request_for_native(app_id, mch_id, api_key, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):
+    wxpay_prepay_order = create_prepay_order(app_id, mch_id, api_key, WXPAY_TRADE_TYPE_NATIVE, out_trade_no, subject, body, total_fee, notify_url,
                                              shopper_ip_address, time_start, time_expire)
     return wxpay_prepay_order.code_url
 
 
-def make_wxpay_request_for_app(wxop_app_code, app_id, mch_id, api_key, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):
-    wxpay_prepay_order = create_prepay_order(wxop_app_code, app_id, mch_id, api_key, WXPAY_TRADE_TYPE_APP, out_trade_no, subject, body, total_fee, notify_url,
+def make_wxpay_request_for_app(app_id, mch_id, api_key, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address):
+    wxpay_prepay_order = create_prepay_order(app_id, mch_id, api_key, WXPAY_TRADE_TYPE_APP, out_trade_no, subject, body, total_fee, notify_url,
                                              shopper_ip_address, time_start, time_expire)
     wxpay_request = DictObject(appid=app_id, partnerid=mch_id, prepayid=wxpay_prepay_order.prepay_id, package='Sign=WXPay',
                                noncestr=wxpay_prepay_order.nonce_str, timestamp=str(get_current_timestamp()))
@@ -46,8 +46,8 @@ def make_wxpay_request_for_app(wxop_app_code, app_id, mch_id, api_key, out_trade
     return wxpay_request
 
 
-def make_wxpay_request_for_mp(wxop_app_code, app_id, mch_id, api_key, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address, openid):
-    wxpay_prepay_order = create_prepay_order(wxop_app_code, app_id, mch_id, api_key, WXPAY_TRADE_TYPE_JSAPI, out_trade_no, subject, body, total_fee, notify_url,
+def make_wxpay_request_for_mp(app_id, mch_id, api_key, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address, openid):
+    wxpay_prepay_order = create_prepay_order(app_id, mch_id, api_key, WXPAY_TRADE_TYPE_JSAPI, out_trade_no, subject, body, total_fee, notify_url,
                                              shopper_ip_address, time_start, time_expire, openid=openid)
     wxpay_request = DictObject(appId=app_id, timeStamp=str(get_current_timestamp()), nonceStr=uuid4().get_hex(),
                                package='prepay_id={}'.format(wxpay_prepay_order.prepay_id), signType='MD5')
@@ -55,14 +55,14 @@ def make_wxpay_request_for_mp(wxop_app_code, app_id, mch_id, api_key, out_trade_
     return wxpay_request
 
 
-def create_prepay_order(wxop_app_code, app_id, mch_id, api_key, trade_type, out_trade_no, subject, body, total_fee, notify_url, spbill_create_ip, time_start,
+def create_prepay_order(app_id, mch_id, api_key, trade_type, out_trade_no, subject, body, total_fee, notify_url, spbill_create_ip, time_start,
                         time_expire, openid=None):
     time_start_beijing_time_str = convert_datetime_to_client_timezone(time_start).strftime('%Y%m%d%H%M%S')
     time_expire_beijing_time_str = convert_datetime_to_client_timezone(time_expire).strftime('%Y%m%d%H%M%S')
     order = DictObject(appid=app_id, mch_id=mch_id, trade_type=trade_type, out_trade_no=out_trade_no, body=subject, detail=body,
                        total_fee=unicode(int(total_fee * 100)), spbill_create_ip=spbill_create_ip, time_start=time_start_beijing_time_str,
-                       time_expire=time_expire_beijing_time_str, notify_url=notify_url, nonce_str=uuid4().get_hex(), attach=wxop_app_code, goods_tag=None,
-                       product_id=None, fee_type=None, limit_pay=None, device_info=None, openid=openid)
+                       time_expire=time_expire_beijing_time_str, notify_url=notify_url, nonce_str=uuid4().get_hex(), goods_tag=None, product_id=None,
+                       fee_type=None, limit_pay=None, device_info=None, openid=openid)
     order.sign = sign_md5(order, api_key)
     with require_current_template_directory_relative_to():
         data = to_str(get_template('unified-order.xml').render(order=order))
