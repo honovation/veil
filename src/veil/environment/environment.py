@@ -199,7 +199,7 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
         'programs': programs,
         'resources': resources,
         'supervisor_http_port': supervisor_http_port,
-        'name_servers': name_servers or ['114.114.114.114', '114.114.115.115', '8.8.8.8', '8.8.4.4'],
+        'name_servers': name_servers or ['119.29.29.29', '182.254.116.116', '8.8.8.8', '8.8.4.4'],
         'backup_mirror': backup_mirror,
         'mount_editorial_dir': mount_editorial_dir,
         'mount_buckets_dir': mount_buckets_dir,
