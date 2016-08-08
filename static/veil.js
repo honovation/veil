@@ -302,6 +302,17 @@ veil.resource.update = function (options) {
             503: function() {veil.alert('服务暂时不可用，请稍后重试');}
         }
     };
+
+    // TODO: remove this code after 2017.08.01
+    if (navigator.appVersion.indexOf('MQQBrowser') !== -1) {
+        var qqBrowser = navigator.appVersion.match(/\sMQQBrowser\/\d\.*\d/);
+        if (qqBrowser) {
+            if (parseFloat(qqBrowser[0].split('/')[1]) < 5.8) {
+                $.extend(_, {type: 'POST', url: _.url + '?_method=PUT'});
+            }
+        }
+    }
+
     if(dataFormat === 'json') {
         _.data = JSON.stringify(_.data || {});
         _.contentType = 'application/json; charset=utf-8';
@@ -351,7 +362,18 @@ veil.resource.patch = function (options) {
             503: function() {veil.alert('服务暂时不可用，请稍后重试');}
         }
     };
-    if(dataFormat === 'json') {
+
+    // TODO: remove this code after 2017.08.01
+    if (navigator.appVersion.indexOf('MQQBrowser') !== -1) {
+        var qqBrowser = navigator.appVersion.match(/\sMQQBrowser\/\d\.*\d/);
+        if (qqBrowser) {
+            if (parseFloat(qqBrowser[0].split('/')[1]) < 5.8) {
+                $.extend(_, {type: 'POST', url: _.url + '?_method=PATCH'});
+            }
+        }
+    }
+
+    if (dataFormat === 'json') {
         _.data = JSON.stringify(_.data || {});
         _.contentType = 'application/json; charset=utf-8';
     }

@@ -19,7 +19,7 @@ from tornado.stack_context import StackContext
 from veil.development.test import *
 from veil.utility.encoding import to_str
 from .argument import normalize_arguments
-from .argument import tunnel_put_and_delete
+from .argument import tunnel_put_and_patch_and_delete
 from .context import HTTPContext
 from .context import get_current_http_response
 from .context import require_current_http_context_being
@@ -59,7 +59,7 @@ class HTTPHandler(object):
         with create_stack_context(require_current_http_context_being, http_context=http_context):
             with handle_exception():
                 with normalize_arguments():
-                    with tunnel_put_and_delete():
+                    with tunnel_put_and_patch_and_delete():
                         self.handler()
         LOGGER.debug('handled request: %(request)s', {'request': unicode(request)})
 
