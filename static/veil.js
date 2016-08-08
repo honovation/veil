@@ -307,7 +307,8 @@ veil.resource.update = function (options) {
     var qqBrowser = navigator.appVersion.match(/\sMQQBrowser\/\d\.*\d/);
     if (qqBrowser) {
         if (parseFloat(qqBrowser[0].split('/')[1]) < 5.8) {
-            $.extend(_, {type: 'POST', url: _.url + '?_method=PUT'});
+            $.extend(_, {type: 'POST'});
+            _.data._method = 'PUT';
         }
     }
 
@@ -365,7 +366,8 @@ veil.resource.patch = function (options) {
     var qqBrowser = navigator.appVersion.match(/\sMQQBrowser\/\d\.*\d/);
     if (qqBrowser) {
         if (parseFloat(qqBrowser[0].split('/')[1]) < 5.8) {
-            $.extend(_, {type: 'POST', url: _.url + '?_method=PATCH'});
+            $.extend(_, {type: 'POST'});
+            _.data._method = 'PATCH';
         }
     }
 
