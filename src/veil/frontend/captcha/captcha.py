@@ -113,4 +113,7 @@ def clean_up_captcha_images_job():
         return
     if not bucket().base_directory.exists():
         return
-    shell_execute('find {} -type f -mmin +{} -delete'.format(bucket().base_directory, CAPTCHA_ANSWER_ALIVE_MINUTES * 2), capture=True)
+    try:
+        shell_execute('find {} -type f -mmin +{} -delete'.format(bucket().base_directory, CAPTCHA_ANSWER_ALIVE_MINUTES * 2), capture=True)
+    except Exception as e:
+        LOGGER.info('clean up captcha images got exception: %(message)s', {'message': e.message})
