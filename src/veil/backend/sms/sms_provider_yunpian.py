@@ -33,6 +33,9 @@ RETRY_CODES = {
     -51,  # 系统繁忙
     -53   # 提交短信失败
 }
+BAD_REQUEST_LOG_IGNORE_CODES = {
+    10,  # 手机号黑名单过滤
+}
 
 _config = None
 
@@ -95,19 +98,33 @@ class YunpianSMService(SMService):
                 LOGGER.exception('yunpian sms send ReadTimeout exception: %(sms_code)s, %(receiver)s', {'sms_code': sms_code, 'receiver': receiver})
                 need_retry_receivers.add(receiver)
             except Exception as e:
-                LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receiver)s, %(message)s, %(response)s', {
-                    'sms_code': sms_code,
-                    'receiver': receiver,
-                    'message': e.message,
-                    'response': response.text if response else ''
-                })
                 if response:
                     if response.status_code == 400:
                         result = objectify(response.json())
+                        if result.code not in BAD_REQUEST_LOG_IGNORE_CODES:
+                            LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receiver)s, %(message)s, %(response)s', {
+                                'sms_code': sms_code,
+                                'receiver': receiver,
+                                'message': e.message,
+                                'response': response.text
+                            })
                         if result.code in RETRY_CODES:
                             need_retry_receivers.add(receiver)
+                    else:
+                        LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receiver)s, %(message)s, %(response)s', {
+                            'sms_code': sms_code,
+                            'receiver': receiver,
+                            'message': e.message,
+                            'response': response.text
+                        })
                 else:
                     need_retry_receivers.add(receiver)
+
+                    LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receiver)s, %(message)s', {
+                        'sms_code': sms_code,
+                        'receiver': receiver,
+                        'message': e.message
+                    })
             else:
                 result = objectify(response.json())
                 if result.code == 0:
