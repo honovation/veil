@@ -232,13 +232,7 @@ class InvoiceBuyer(DictObject):
         super(InvoiceBuyer, self).__init__()
         self.type = type
         self.id = id
-        if self.type == INVOICE_BUYER_TYPE_PERSONAL:
-            if name:
-                self.name = '个人({})'.format(name)
-            else:
-                self.name = '个人'
-        else:
-            self.name = name
+        self.name = name
         self.mobile = mobile
         self.telephone = telephone
         self.address = address
