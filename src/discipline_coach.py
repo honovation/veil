@@ -50,7 +50,8 @@ def calculate_git_status_hash():
 
 def get_git_dir_version(git_dir='.'):
     base_version = shell_execute('git log -n 1 --pretty=format:%H', capture=True, cwd=git_dir)
-    out = shell_execute('git status --porcelain', capture=True, cwd=git_dir)
+    out = shell_execute('cp {index_path} {other_index_path} && GIT_INDEX_FILE={other_index_path} git status --porcelain'.format(
+        index_path='{}/.git/index'.format(git_dir), other_index_path='{}/.git/other-index'.format(git_dir)), capture=True, cwd=git_dir)
     modified_files = []
     deleted_files = []
     for line in out.splitlines():
