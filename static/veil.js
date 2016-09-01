@@ -614,7 +614,7 @@ veil.widget.showErrorMessage = function (widget, allErrors) {
                 widget.prepend('<span class="error-message label label-warning summary-error-message"><i class="icon-info-sign"></i>' + error + '</span>');
             } else {
                 var $field = widget.find('[name=' + field + ']:first');
-                if ($field.get(0)) {
+                if ($field.length) {
                     var $error = $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>' + error + '</span>');
                     if ($field.parent().hasClass('input-group')) {
                         $error.insertAfter($field.parent());
