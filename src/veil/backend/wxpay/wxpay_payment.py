@@ -25,6 +25,7 @@ NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 SUCCESSFULLY_MARK = 'SUCCESS'  # wxpay require this 7 characters to be returned to them
 FAILED_MARK = 'FAIL'
 ORDER_PAID_MARK = 'ORDERPAID'
+SYSTEMERROR_MARK = 'SYSTEMERROR'
 WXPAY_BANK_TYPE = 'WX'
 WXPAY_ORDER_QUERY_URL = 'https://api.mch.weixin.qq.com/pay/orderquery'
 WXPAY_UNIFIEDORDER_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
@@ -84,14 +85,18 @@ def create_prepay_order(app_id, mch_id, api_key, trade_type, out_trade_no, subje
             LOGGER.info('wxpay unified order got fake response: %(data)s', {'data': data})
             raise
         if parsed_response.result_code != SUCCESSFULLY_MARK:
-            if parsed_response.result_code == ORDER_PAID_MARK:
-                raise WXPayException('订单已支付完成')
             LOGGER.info('wxpay unified order got failed result: %(err_code)s, %(err_code_des)s, %(data)s', {
                 'err_code': parsed_response.err_code,
                 'err_code_des': parsed_response.err_code_des,
                 'data': data
             })
-            raise Exception('wxpay unified order got failed result: {}, {}'.format(parsed_response.err_code, parsed_response.err_code_des))
+            if parsed_response.result_code == ORDER_PAID_MARK:
+                raise WXPayException('订单已支付完成')
+            if parsed_response.result_code == SYSTEMERROR_MARK:
+                raise WXPayException(parsed_response.err_code_des)
+            if parsed_response.err_code_des:
+                raise WXPayException(parsed_response.err_code_des)
+            raise WXPayException('支付遇到错误，请稍后重试')
         LOGGER.info('wxpay unified order success: %(response)s', {'response': response.content})
         return DictObject(nonce_str=parsed_response.nonce_str, trade_type=parsed_response.trade_type, prepay_id=parsed_response.prepay_id,
                           code_url=parsed_response.get('code_url'))
