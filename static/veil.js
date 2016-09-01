@@ -610,15 +610,19 @@ veil.widget.showErrorMessage = function (widget, allErrors) {
     for (var field in allErrors) {
         if (allErrors.hasOwnProperty(field)) {
             var error = allErrors[field];
-            if (field === '@'){
+            if (field === '@') {
                 widget.prepend('<span class="error-message label label-warning summary-error-message"><i class="icon-info-sign"></i>' + error + '</span>');
             } else {
                 var $field = widget.find('[name=' + field + ']:first');
-                var $error = $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>' + error + '</span>');
-                if ($field.parent().hasClass('input-group')) {
-                    $error.insertAfter($field.parent());
+                if ($field.get(0)) {
+                    var $error = $('<span class="error-message label label-warning"><i class="icon-info-sign"></i>' + error + '</span>');
+                    if ($field.parent().hasClass('input-group')) {
+                        $error.insertAfter($field.parent());
+                    } else {
+                        $error.insertAfter($field);
+                    }
                 } else {
-                    $error.insertAfter( $field );
+                    widget.prepend('<span class="error-message label label-warning summary-error-message"><i class="icon-info-sign"></i>' + error + '</span>');
                 }
             }
         }
