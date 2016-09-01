@@ -35,8 +35,18 @@ class SourceCodeMonitor(threading.Thread):
     def __init__(self):
         super(SourceCodeMonitor, self).__init__()
         self.daemon = True
-        self.init_app_base_version, self.init_app_changes = discipline_coach.get_git_dir_version(VEIL_HOME)
-        self.init_framework_base_version, self.init_framework_changes = discipline_coach.get_git_dir_version(VEIL_FRAMEWORK_HOME)
+        self.init_app_base_version = None
+        self.init_app_changes = None
+        self.init_framework_base_version = None
+        self.init_framework_changes = None
+        try:
+            self.init_app_base_version, self.init_app_changes = discipline_coach.get_git_dir_version(VEIL_HOME)
+        except Exception:
+            pass
+        try:
+            self.init_framework_base_version, self.init_framework_changes = discipline_coach.get_git_dir_version(VEIL_FRAMEWORK_HOME)
+        except Exception:
+            pass
 
     def run(self):
         while True:
@@ -48,25 +58,55 @@ class SourceCodeMonitor(threading.Thread):
                 LOGGER.exception('source code monitor died')
 
     def detect_change(self):
-        current_app_base_version, current_app_changes = discipline_coach.get_git_dir_version(VEIL_HOME)
-        if current_app_base_version != self.init_app_base_version:
-            LOGGER.info('application base version changed: reload now')
-            return True
-        if is_python_source_code_changed(self.init_app_changes, current_app_changes):
-            LOGGER.info('application python source code changed: reload now')
-            return True
-        current_framework_base_version, current_framework_changes = discipline_coach.get_git_dir_version(VEIL_FRAMEWORK_HOME)
-        if current_framework_base_version != self.init_framework_base_version:
-            LOGGER.info('framework base version changed: reload now')
-            return True
-        if is_python_source_code_changed(self.init_framework_changes, current_framework_changes):
-            LOGGER.info('framework python source code changed: reload now')
-            return True
-        self.init_app_base_version = current_app_base_version
-        self.init_app_changes = current_app_changes
-        self.init_framework_base_version = current_framework_base_version
-        self.init_framework_changes = current_framework_changes
-        return False
+        return self.detect_app_change() or self.detect_framework_change()
+
+    def detect_framework_change(self):
+        while 1:
+            try:
+                current_framework_base_version, current_framework_changes = discipline_coach.get_git_dir_version(VEIL_FRAMEWORK_HOME)
+            except Exception:
+                pass
+            else:
+                if self.init_framework_base_version:
+                    if self.init_framework_base_version != current_framework_base_version:
+                        LOGGER.info('framework base version changed: reload now')
+                        self.init_framework_base_version = current_framework_base_version
+                        return True
+                else:
+                    self.init_framework_base_version = current_framework_base_version
+
+                if self.init_framework_changes:
+                    if is_python_source_code_changed(self.init_framework_changes, current_framework_changes):
+                        LOGGER.info('framework python source code changed: reload now')
+                        self.init_framework_changes = current_framework_changes
+                        return True
+                else:
+                    self.init_framework_changes = current_framework_changes
+                return False
+
+    def detect_app_change(self):
+        while 1:
+            try:
+                current_app_base_version, current_app_changes = discipline_coach.get_git_dir_version(VEIL_HOME)
+            except Exception:
+                pass
+            else:
+                if self.init_app_base_version:
+                    if self.init_app_base_version != current_app_base_version:
+                        LOGGER.info('application base version changed: reload now')
+                        self.init_app_base_version = current_app_base_version
+                        return True
+                else:
+                    self.init_app_base_version = current_app_base_version
+
+                if self.init_app_changes:
+                    if is_python_source_code_changed(self.init_app_changes, current_app_changes):
+                        LOGGER.info('application python source code changed: reload now')
+                        self.init_app_changes = current_app_changes
+                        return True
+                else:
+                    self.init_app_changes = current_app_changes
+                return False
 
 
 def is_python_source_code_changed(init_changes, current_changes):

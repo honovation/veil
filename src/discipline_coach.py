@@ -8,13 +8,16 @@ from __future__ import unicode_literals, print_function, division
 import sys
 import os
 import re
+import logging
 from veil_component import red
 from veil.utility.encoding import *
 from veil.utility.misc import *
 from veil.utility.shell import *
 
+LOGGER = logging.getLogger('veil.discipline_coach')
+
 FORBIDDEN_COMMIT_BRANCH_PREFIX = 'env-'
-RE_MODIFIED = re.compile('^(?:M|A|\?\?|AM)(\s+)(?P<name>.*)')
+RE_MODIFIED = re.compile('^(?:M|A|\?\?|AM|MM|\sM)(\s+)(?P<name>.*)')
 RE_DELETED = re.compile('^(?:D)(\s+)(?P<name>.*)')
 
 
@@ -41,20 +44,22 @@ def is_self_check_passed():
 
 
 def calculate_git_status_hash():
-    base_version, changes = get_git_dir_version()
-    hashes = [base_version]
-    for f, version in changes.items():
-        hashes.append('{} {}'.format(f, version))
-    return to_str('\n'.join(sorted(hashes)))
+    while 1:
+        try:
+            base_version, changes = get_git_dir_version()
+        except ShellExecutionError:
+            pass
+        else:
+            hashes = [base_version]
+            for f, version in changes.items():
+                hashes.append('{} {}'.format(f, version))
+            return to_str('\n'.join(sorted(hashes)))
 
 
 def get_git_dir_version(git_dir='.'):
     base_version = shell_execute('git log -n 1 --pretty=format:%H', capture=True, cwd=git_dir)
-    try:
-        out = shell_execute('cp {index_path} {other_index_path} && GIT_INDEX_FILE={other_index_path} git status --porcelain'.format(
-            index_path='{}/.git/index'.format(git_dir), other_index_path='{}/.git/other-index'.format(git_dir)), capture=True, cwd=git_dir)
-    except ShellExecutionError:
-        return base_version, {}
+    out = shell_execute('cp {index_path} {other_index_path} && GIT_INDEX_FILE={other_index_path} git status --porcelain'.format(
+        index_path='{}/.git/index'.format(git_dir), other_index_path='{}/.git/other-index'.format(git_dir)), capture=True, cwd=git_dir)
     modified_files = []
     deleted_files = []
     for line in out.splitlines():
@@ -66,7 +71,7 @@ def get_git_dir_version(git_dir='.'):
             deleted_files.append(to_unicode(match.group('name')))
     changes = {}
     for path in modified_files:
-        if os.path.isfile(path):
+        if os.path.isfile(os.path.join(git_dir, path)):
             with open(os.path.join(git_dir, path)) as f:
                 changes[path] = calculate_file_md5_hash(f)
     for path in deleted_files:
