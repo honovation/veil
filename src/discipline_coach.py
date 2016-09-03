@@ -1,7 +1,7 @@
 #! env/bin/python
 # -*- coding: UTF-8 -*-
 """
-will be linked to $VEIL_HOME/.git/hooks/pre-commit
+will be linked to $VEIL_HOME/.git/hooks/pre-commit by $VEIL_FRAMEWORK_HOME/bin/veil-init
 """
 
 from __future__ import unicode_literals, print_function, division
@@ -14,7 +14,7 @@ from veil.utility.encoding import *
 from veil.utility.misc import *
 from veil.utility.shell import *
 
-LOGGER = logging.getLogger('veil.discipline_coach')
+LOGGER = logging.getLogger(__name__)
 
 FORBIDDEN_COMMIT_BRANCH_PREFIX = 'env-'
 RE_MODIFIED = re.compile('^(?:M|A|\?\?|AM|MM|\sM)(\s+)(?P<name>.*)')

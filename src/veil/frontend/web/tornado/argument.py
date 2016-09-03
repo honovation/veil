@@ -132,8 +132,7 @@ def get_http_files(request=None, list_fields=(), **kwargs):
 @contextlib.contextmanager
 def tunnel_put_and_patch_and_delete():
     request = get_current_http_request()
-    tunnelled_method = get_http_argument('_method', optional=True)
+    tunnelled_method = request.arguments.pop('_method', None)
     if 'POST' == request.method and tunnelled_method:
         request.method = tunnelled_method
-    request.arguments.pop('_method', None)
     yield
