@@ -24,8 +24,14 @@ def assert_no_env():
 
 
 def register_template_filter(name, filter):
-    assert_no_env()
     filters[name] = filter
+    _register_env_template_filter(name, filter)
+
+
+def _register_env_template_filter(name, filter):
+    if not env:
+        return
+    env.filters[name] = filter
 
 
 # syntax sugar for register_template_filter
@@ -41,7 +47,6 @@ def template_filter(func_or_name):
 
 
 def register_template_utility(name, utility):
-    assert_no_env()
     utilities[name] = utility
 
 
