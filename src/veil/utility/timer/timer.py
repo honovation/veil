@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import functools
 import logging
-from datetime import datetime
 import time
 from croniter.croniter import croniter
 from veil.utility.clock import *
@@ -26,9 +25,7 @@ class Timer(object):
             })
             while True:
                 now = get_current_timestamp()
-                #TODO: remove croniter hack when croniter is fixed
-                ct = croniter(self.crontab_expression, now + DEFAULT_CLIENT_TIMEZONE.utcoffset(datetime.now()).total_seconds())
-                next_run = ct.get_next(ret_type=float) - DEFAULT_CLIENT_TIMEZONE.utcoffset(datetime.now()).total_seconds()
+                next_run = croniter(self.crontab_expression, now).get_next()
                 delta = next_run - now
                 LOGGER.info('timer sleep: wake up after %(delta)s seconds', {
                     'delta': delta

@@ -55,11 +55,6 @@ def get_visitor_origin(max_age_days=DEFAULT_ORIGIN_COOKIE_EXPIRES_DAYS):
         return None, None, None
     try:
         vtm_channel, vtm_term, referrer = cookie.split('|', 2)
-        if vtm_channel:  # TODO: remove after 2016-05-25
-            try:
-                int(vtm_channel)
-            except Exception:
-                return None, None, None
     except Exception:
         LOGGER.warn('invalid visitor origin tracking cookie: %(cookie)s', {'cookie': cookie})
         return None, None, None
