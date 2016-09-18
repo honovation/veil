@@ -37,7 +37,7 @@ class JobHandlerDecorator(object):
 
 def perform(job_handler, payload):
     try:
-        publish_event(EVENT_PROCESS_SETUP, loads_event_handlers=False)
+        publish_event(EVENT_PROCESS_SETUP)
         # restore datetime as utc timezone
         for key, value in payload.items():
             if isinstance(value, datetime):

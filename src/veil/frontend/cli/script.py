@@ -29,7 +29,7 @@ def execute_script(*argv):
     argv = [to_unicode(arg) for arg in argv]
     import_script_handlers(argv)
     # after components loaded, so necessary event handlers installed
-    publish_event(EVENT_PROCESS_SETUP, loads_event_handlers=False)
+    publish_event(EVENT_PROCESS_SETUP)
     level = script_handlers
     execute_script_at_level(level, argv)
 
