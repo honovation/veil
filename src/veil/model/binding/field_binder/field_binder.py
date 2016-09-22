@@ -307,5 +307,5 @@ def not_duplicate(value):
 
 
 def _(*args, **kwargs):
-# to supress the warning of pycharm
+    # to supress the warning of pycharm
     return sys.modules['__builtin__']._(*args, **kwargs)

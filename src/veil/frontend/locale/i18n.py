@@ -14,6 +14,7 @@ from veil.server.process import *
 LOGGER = getLogger(__name__)
 LOCALE_DIR = VEIL_HOME / 'locale'
 
+
 def get_locale(*codes):
     locale = None
     for code in codes:
@@ -64,8 +65,9 @@ def get_default_locale():
 
 
 def _(*args, **kwargs):
-# to supress the warning of pycharm
+    # to supress the warning of pycharm
     return sys.modules['__builtin__']._(*args, **kwargs)
+
 
 @event(EVENT_PROCESS_SETUP)
 @test_hook
