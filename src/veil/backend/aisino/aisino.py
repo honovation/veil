@@ -226,7 +226,8 @@ def decode_content_data(data):
 def parse_content_data(data):
     data.content = parse_xml(data.content)
     data.without_file_content = {k: v for k, v in data.content.items() if k != 'PDF_FILE'}
-    data.content.PDF_FILE = StringIO(b64decode(data.content.PDF_FILE))
+    if data.content.get('PDF_FILE'):
+        data.content.PDF_FILE = StringIO(b64decode(data.content.PDF_FILE))
 
 
 def as_request_seq(request_id):
