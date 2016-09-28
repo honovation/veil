@@ -195,11 +195,12 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
             response_obj.is_success = False
 
         if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD:
-            decode_content_data(response_obj.Data)
-            uncompress_content_data(response_obj.Data)
-            decrypt_content_data(response_obj.Data)
-            parse_content_data(response_obj.Data)
-            record_response = response_obj.Data.content
+            if response_obj.Data.content:
+                decode_content_data(response_obj.Data)
+                uncompress_content_data(response_obj.Data)
+                decrypt_content_data(response_obj.Data)
+                parse_content_data(response_obj.Data)
+            record_response = response_obj
         else:
             record_response = response
     finally:
