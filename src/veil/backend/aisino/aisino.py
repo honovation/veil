@@ -110,14 +110,17 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
                                                               encrypt_code=encrypt_code, encrypt_code_type=encrypt_code_type,
                                                               interface_content=interface_content)
     ws = WebService(url)
+    response = None
     try:
         response = ws.eiInterface(interface_data)
     except Exception as e:
         LOGGER.info('failed request invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
         raise
-    response_obj = parse_xml(to_str(response))
-    response_obj.returnStateInfo.is_success = response_obj.returnStateInfo.returnCode == RESPONSE_SUCCESS_MARK
-    record_request_and_response(record_request, response, 'FPKJ', request_seq)
+    else:
+        response_obj = parse_xml(to_str(response))
+        response_obj.returnStateInfo.is_success = response_obj.returnStateInfo.returnCode == RESPONSE_SUCCESS_MARK
+    finally:
+        record_request_and_response(record_request, response, 'FPKJ', request_seq)
     return response_obj.returnStateInfo
 
 
@@ -174,30 +177,33 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
                                                               encrypt_code=encrypt_code, encrypt_code_type=encrypt_code_type,
                                                               interface_content=interface_content)
     ws = WebService(url)
+    record_response = None
     try:
         response = ws.eiInterface(interface_data)
     except Exception as e:
         LOGGER.info('failed request download invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
         raise
-    response_obj = parse_xml(to_str(response))
-
-    if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD and response_obj.returnStateInfo.returnCode == RESPONSE_SUCCESS_MARK:
-        response_obj.is_success = True
-    elif download_method == DOWNLOAD_METHOD_FOR_QUERY and response_obj.returnStateInfo.returnCode == RESPONSE_QUERY_SUCCESS_MARK:
-        response_obj.is_success = True
     else:
-        # download/query error or not create invoice before.
-        response_obj.is_success = False
+        response_obj = parse_xml(to_str(response))
 
-    if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD:
-        decode_content_data(response_obj.Data)
-        uncompress_content_data(response_obj.Data)
-        decrypt_content_data(response_obj.Data)
-        parse_content_data(response_obj.Data)
-        record_response = response_obj.Data.content
-    else:
-        record_response = response
-    record_request_and_response(record_request, record_response, 'FPXZ' if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD else 'FPCX', request_seq)
+        if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD and response_obj.returnStateInfo.returnCode == RESPONSE_SUCCESS_MARK:
+            response_obj.is_success = True
+        elif download_method == DOWNLOAD_METHOD_FOR_QUERY and response_obj.returnStateInfo.returnCode == RESPONSE_QUERY_SUCCESS_MARK:
+            response_obj.is_success = True
+        else:
+            # download/query error or not create invoice before.
+            response_obj.is_success = False
+
+        if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD:
+            decode_content_data(response_obj.Data)
+            uncompress_content_data(response_obj.Data)
+            decrypt_content_data(response_obj.Data)
+            parse_content_data(response_obj.Data)
+            record_response = response_obj.Data.content
+        else:
+            record_response = response
+    finally:
+        record_request_and_response(record_request, record_response, 'FPXZ' if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD else 'FPCX', request_seq)
     return response_obj
 
 
