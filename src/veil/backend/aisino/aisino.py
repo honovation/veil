@@ -95,6 +95,7 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
                                                                flag_dk=flag_dk, red_invoice_reason=red_invoice_reason, flag_special_red=flag_special_red,
                                                                INVOICE_TYPE_CODE_RED=INVOICE_TYPE_CODE_RED, operation_code=operation_code, flag_list=flag_list,
                                                                list_item_name=list_item_name)
+    record_request = interface_content
     interface_content = get_ca_encrypted_content(to_str(interface_content)) if encrypt_code == CONTENT_DATA_ENCRYPT_CODE_CA else to_str(interface_content)
     if is_compressed:
         interface_content = get_compressed_content(interface_content)
@@ -114,10 +115,9 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
     except Exception as e:
         LOGGER.info('failed request invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
         raise
-    finally:
-        record_request_and_response(ws, 'FPKJ', request_seq)
     response_obj = parse_xml(to_str(response))
     response_obj.returnStateInfo.is_success = response_obj.returnStateInfo.returnCode == RESPONSE_SUCCESS_MARK
+    record_request_and_response(record_request, response, 'FPKJ', request_seq)
     return response_obj.returnStateInfo
 
 
@@ -159,7 +159,7 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
     with require_current_template_directory_relative_to():
         interface_content = get_template('download.xml').render(request_seq=request_seq, ebp_code=ebp_code, tax_payer=tax_payer,
                                                                 download_method=download_method)
-
+    record_request = interface_content
     interface_content = get_ca_encrypted_content(to_str(interface_content)) if encrypt_code == CONTENT_DATA_ENCRYPT_CODE_CA else to_str(interface_content)
     if is_compressed:
         interface_content = get_compressed_content(interface_content)
@@ -179,8 +179,6 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
     except Exception as e:
         LOGGER.info('failed request download invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
         raise
-    finally:
-        record_request_and_response(ws, 'FPXZ' if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD else 'FPCX', request_seq)
     response_obj = parse_xml(to_str(response))
 
     if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD and response_obj.returnStateInfo.returnCode == RESPONSE_SUCCESS_MARK:
@@ -196,7 +194,10 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
         uncompress_content_data(response_obj.Data)
         decrypt_content_data(response_obj.Data)
         parse_content_data(response_obj.Data)
-
+        record_response = response_obj.Data.content
+    else:
+        record_response = response
+    record_request_and_response(record_request, record_response, 'FPXZ' if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD else 'FPCX', request_seq)
     return response_obj
 
 
@@ -267,13 +268,13 @@ class InvoiceItem(DictObject):
         self.with_promotion = with_promotion
 
 
-def record_request_and_response(ws, interface_name, request_seq):
+def record_request_and_response(req, rsp, interface_name, request_seq):
     current_time_string = get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S')
     log_file_dir = REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE / current_time_string[:4] / current_time_string[4:6]
     log_file_dir.makedirs()
     request_log_file_name = '{}-{}-{}-req.xml'.format(current_time_string, request_seq, interface_name)
     response_log_file_name = '{}-{}-{}-rsp.xml'.format(current_time_string, request_seq, interface_name)
     with open(log_file_dir / request_log_file_name, mode='wb+') as f:
-        f.write(ws.last_sent())
+        f.write(to_str(req))
     with open(log_file_dir / response_log_file_name, mode='wb+') as f:
-        f.write(ws.last_received())
+        f.write(to_str(rsp))
