@@ -66,7 +66,7 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
                     ref_invoice_code=None, ref_invoice_no=None, comment=None, operation_code=INVOICE_OPERATION_CODE_NORMAL, flag_special_red=None,
                     red_invoice_reason=None, terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', encrypt_code='2',
                     encrypt_code_type='CA', is_compressed=True, sample_code='000001', encode_table_version='1.0', flag_dk=0, flag_list=0, list_item_name=None,
-                    without_tax_total=0, tax_total=0):
+                    without_tax_total=0, tax_total=0, encoding='UTF-8'):
 
     type_code = INVOICE_TYPE_CODE_NORMAL if total > 0 else INVOICE_TYPE_CODE_RED
 
@@ -96,7 +96,7 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
                                                                INVOICE_TYPE_CODE_RED=INVOICE_TYPE_CODE_RED, operation_code=operation_code, flag_list=flag_list,
                                                                list_item_name=list_item_name)
     record_request = interface_content
-    interface_content = get_ca_encrypted_content(to_str(interface_content)) if encrypt_code == CONTENT_DATA_ENCRYPT_CODE_CA else to_str(interface_content)
+    interface_content = get_ca_encrypted_content(interface_content.encode(encoding)) if encrypt_code == CONTENT_DATA_ENCRYPT_CODE_CA else to_str(interface_content)
     if is_compressed:
         interface_content = get_compressed_content(interface_content)
     interface_content = b64encode(interface_content)
@@ -121,6 +121,7 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
         response_obj.returnStateInfo.is_success = response_obj.returnStateInfo.returnCode == RESPONSE_SUCCESS_MARK
     finally:
         record_request_and_response(record_request, response, 'FPKJ', request_seq)
+        record_request_and_response(interface_data, response, 'FPKJ-encrypted', request_seq)
     return response_obj.returnStateInfo
 
 
