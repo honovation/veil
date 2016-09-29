@@ -25,6 +25,6 @@
             <encryptCode>{{ encrypt_code }}</encryptCode>
             <codeType>{{ encrypt_code_type }}</codeType>
         </dataDescription>
-        <content>{{ interface_content |safe }}</content>
+        <content><![CDATA[{{ interface_content |safe }}]]></content>
     </Data>
 </interface>
