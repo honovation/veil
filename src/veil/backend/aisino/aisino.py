@@ -178,7 +178,7 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
                                                               encrypt_code=encrypt_code, encrypt_code_type=encrypt_code_type,
                                                               interface_content=interface_content)
     ws = WebService(url)
-    record_response = None
+    response = None
     try:
         response = ws.eiInterface(interface_data)
     except Exception as e:
@@ -201,11 +201,8 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
                 uncompress_content_data(response_obj.Data)
                 decrypt_content_data(response_obj.Data)
                 parse_content_data(response_obj.Data)
-            record_response = response_obj
-        else:
-            record_response = response
     finally:
-        record_request_and_response(record_request, record_response, 'FPXZ' if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD else 'FPCX', request_seq)
+        record_request_and_response(record_request, response, 'FPXZ' if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD else 'FPCX', request_seq)
     return response_obj
 
 
