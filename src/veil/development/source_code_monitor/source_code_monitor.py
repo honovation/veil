@@ -116,8 +116,6 @@ def is_python_source_code_changed(init_changes, current_changes):
     for path, version in diff_change_set:
         if '.py' in path:
             return True
-    if diff_change_set:
-        LOGGER.info('file changed, but not python source code')
     return False
 
 
