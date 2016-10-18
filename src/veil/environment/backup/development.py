@@ -40,7 +40,7 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
         download_baseline(veil_env_name, remote_path, baseline_path)
 
     shell_execute('veil down', debug=True)
-    shell_execute('rsync -avh --delete --link-dest={}/ {}/ {}/'.format(baseline_path, baseline_path, restored_to_path), debug=True)
+    shell_execute('rsync -avh --delete {}/ {}/'.format(baseline_path, restored_to_path), debug=True)
     shell_execute('veil install-server', debug=True)
 
     purposes = []
