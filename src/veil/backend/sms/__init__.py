@@ -7,7 +7,6 @@ with veil_component.init_component(__name__):
     from .sms import send_voice_validation_code_job
     from .sms import send_slow_transactional_sms_job
     from .sms import send_marketing_sms_job
-    from .sms import set_current_sms_provider
 
     from .sms_provider_emay import emay_sms_client_resource
 
@@ -31,5 +30,5 @@ with veil_component.init_component(__name__):
         if not hasattr(application, 'ENABLED_SMS_PROVIDERS'):
             return
         for provider_name in application.ENABLED_SMS_PROVIDERS:
-            provider_module = importlib.import_module('.sms_provider_{}'.format(provider_name).format(name=provider_name), package='veil.backend.sms')
-            register_sms_provider(provider_module.register())
+            provider_module = importlib.import_module('.sms_provider_{}'.format(provider_name), package=__name__)
+            register_sms_provider(provider_module)

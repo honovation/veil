@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
-import logging
 import re
 from decimal import Decimal
-
 from math import ceil
-
 from veil.profile.installer import *
-from veil.frontend.cli import *
-from veil.utility.misc import *
+from veil.utility.encoding import *
 from veil.utility.http import *
 from veil.backend.sms.sms import SMService, SendError
 
@@ -30,7 +26,7 @@ _config = None
 
 def register():
     add_application_sub_resource('emay_sms_client', lambda config: emay_sms_client_resource(**config))
-    return get_emay_smservice_instance()
+    return EmaySMService(SMS_PROVIDER_ID)
 
 
 @composite_installer
@@ -49,32 +45,20 @@ def emay_sms_client_config():
     return _config
 
 
-def get_emay_smservice_instance():
-    return EmaySMService(SMS_PROVIDER_ID)
-
-
 class EmaySMService(SMService):
     def __init__(self, sms_provider_id):
-        super(EmaySMService, self).__init__(sms_provider_id)
-        self.config = None
-
-    def get_receiver_list(self, receivers):
-        if isinstance(receivers, basestring):
-            receivers = [receivers]
-        return [r for r in chunks(receivers, MAX_SMS_RECEIVERS)]
+        super(EmaySMService, self).__init__(sms_provider_id, MAX_SMS_RECEIVERS)
+        self.config = emay_sms_client_config()
 
     def send(self, receivers, message, sms_code, transactional, promotional=False):
-        if not self.config:
-            self.config = emay_sms_client_config()
         LOGGER.debug('attempt to send sms: %(sms_code)s, %(receivers)s, %(message)s', {'sms_code': sms_code, 'receivers': receivers, 'message': message})
         receivers = set(r.strip() for r in receivers if r.strip())
         if len(message) > MAX_SMS_CONTENT_LENGTH:
             raise Exception('try to send sms with message size over {}'.format(MAX_SMS_CONTENT_LENGTH))
         receivers = ','.join(receivers)
-        message = message.encode('UTF-8')
+        message = to_str(message)
         data = {'cdkey': self.config.cdkey, 'password': self.config.password, 'phone': receivers, 'message': message}
         try:
-            # retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
             response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9),
                                      max_retries=Retry(total=2, read=False, method_whitelist={'POST'}, status_forcelist={502, 503, 504}, backoff_factor=2))
             response.raise_for_status()
@@ -131,11 +115,6 @@ class EmaySMService(SMService):
         if message_length < MAX_LENGTH_PER_MESSAGE:
             return 1
         return int(ceil(message_length/OVER_MAX_LENGTH_MESSAGE_LENGTH_PER_MESSAGE))
-
-
-@script('query-balance')
-def query_balance_script():
-    print('sms balance: {}'.format(get_emay_smservice_instance().query_balance()))
 
 
 def get_return_value(xml):

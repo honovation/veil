@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
-import logging
 from math import ceil
 from veil.profile.installer import *
 from veil.model.collection import *
+from veil.utility.encoding import *
 from veil.utility.http import *
-from veil.utility.misc import *
 from .sms import SMService, SendError
 
 LOGGER = logging.getLogger(__name__)
@@ -42,7 +41,7 @@ _config = None
 
 def register():
     add_application_sub_resource('yunpian_sms_client', lambda config: yunpian_sms_client_resource(**config))
-    return get_yunpian_smservice_instance()
+    return YunpianSMService(SMS_PROVIDER_ID)
 
 
 @composite_installer
@@ -64,32 +63,20 @@ def yunpian_sms_client_config():
     return _config
 
 
-def get_yunpian_smservice_instance():
-    return YunpianSMService(SMS_PROVIDER_ID)
-
-
 class YunpianSMService(SMService):
     def __init__(self, sms_provider_id):
-        super(YunpianSMService, self).__init__(sms_provider_id, support_voice=True)
-        self.config = None
-
-    def get_receiver_list(self, receivers):
-        if isinstance(receivers, basestring):
-            receivers = [receivers]
-        return [r for r in chunks(receivers, MAX_SMS_RECEIVERS)]
+        super(YunpianSMService, self).__init__(sms_provider_id, MAX_SMS_RECEIVERS, support_voice=True)
+        self.config = yunpian_sms_client_config()
 
     def single_send(self, receivers, message, sms_code, promotional=False):
-        if not self.config:
-            self.config = yunpian_sms_client_config()
         api_key = self.config.apikey if not promotional else self.config.promotion_apikey
-        message = message.encode('UTF-8')
+        message = to_str(message)
         need_retry_receivers = set()
         sent_receivers = set()
         for receiver in receivers:
             data = {'apikey': api_key, 'mobile': receiver, 'text': message}
             response = None
             try:
-                # retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
                 response = requests.post(SINGLE_SEND_SMS_URL, data=data, timeout=(3.05, 9),
                                          headers={'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'},
                                          max_retries=Retry(total=2, read=False, method_whitelist={'POST'}, status_forcelist={502, 503, 504}, backoff_factor=2))
@@ -102,7 +89,7 @@ class YunpianSMService(SMService):
                     if response.status_code == 400:
                         result = objectify(response.json())
                         if result.code not in BAD_REQUEST_LOG_IGNORE_CODES:
-                            LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receiver)s, %(message)s, %(response)s', {
+                            LOGGER.exception('yunpian sms send exception-thrown 400: %(sms_code)s, %(receiver)s, %(message)s, %(response)s', {
                                 'sms_code': sms_code,
                                 'receiver': receiver,
                                 'message': e.message,
@@ -111,7 +98,8 @@ class YunpianSMService(SMService):
                         if result.code in RETRY_CODES:
                             need_retry_receivers.add(receiver)
                     else:
-                        LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receiver)s, %(message)s, %(response)s', {
+                        LOGGER.exception('yunpian sms send exception-thrown not 400: %(sms_code)s, %(receiver)s, %(message)s, %(response)s', {
+                            'status_code': response.status_code,
                             'sms_code': sms_code,
                             'receiver': receiver,
                             'message': e.message,
@@ -120,7 +108,7 @@ class YunpianSMService(SMService):
                 else:
                     need_retry_receivers.add(receiver)
 
-                    LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receiver)s, %(message)s', {
+                    LOGGER.exception('yunpian sms send exception-thrown no response: %(sms_code)s, %(receiver)s, %(message)s', {
                         'sms_code': sms_code,
                         'receiver': receiver,
                         'message': e.message
