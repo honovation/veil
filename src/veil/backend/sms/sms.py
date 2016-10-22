@@ -170,7 +170,7 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
 def get_receiver_list(receivers, max_receiver_count):
     if isinstance(receivers, basestring):
         receivers = [receivers]
-    receivers = set(receivers)
+    receivers = list(set(receivers))
     return [r for r in chunks(receivers, max_receiver_count)]
 
 
