@@ -65,15 +65,14 @@ def send_transactional_sms_job(receivers, message, sms_code, last_sms_code=None,
     receiver_list = get_receiver_list(receivers, sms_provider.max_receiver_count)
     if len(receiver_list) == 1:
         receivers = receiver_list[0]
-        send_sms(receivers, message, sms_code, last_sms_code=last_sms_code, promotional=promotional)
+        send_sms(receivers, message, sms_code, last_sms_code=last_sms_code)
         with redis().pipeline() as pipe:
             for receiver in receivers:
                 pipe.setex(sent_sms_redis_key(receiver, sms_code), SENT_SMS_RECORD_ALIVE_IN_SECONDS, sms_provider.sms_provider_id)
             pipe.execute()
     else:
         for receivers_ in receiver_list:
-            queue().enqueue(send_transactional_sms_job, receivers=receivers_, message=message, sms_code=sms_code, last_sms_code=last_sms_code,
-                            promotional=promotional)
+            queue().enqueue(send_transactional_sms_job, receivers=receivers_, message=message, sms_code=sms_code, last_sms_code=last_sms_code)
 
 
 @job('send_slow_transactional_sms', retry_every=10 * 60, retry_timeout=3 * 60 * 60)
@@ -82,10 +81,10 @@ def send_slow_transactional_sms_job(receivers, message, sms_code, promotional=Fa
     receiver_list = get_receiver_list(receivers, sms_provider.max_receiver_count)
     if len(receiver_list) == 1:
         receivers = receiver_list[0]
-        send_sms(receivers, message, sms_code, promotional=promotional)
+        send_sms(receivers, message, sms_code)
     else:
         for receivers_ in receiver_list:
-            queue().enqueue(send_slow_transactional_sms_job, receivers=receivers_, message=message, sms_code=sms_code, promotional=promotional)
+            queue().enqueue(send_slow_transactional_sms_job, receivers=receivers_, message=message, sms_code=sms_code)
 
 
 @job('send_marketing_sms', retry_every=10 * 60, retry_timeout=3 * 60 * 60)
@@ -94,21 +93,24 @@ def send_marketing_sms_job(receivers, message, sms_code, promotional=False):
     receiver_list = get_receiver_list(receivers, sms_provider.max_receiver_count)
     if len(receiver_list) == 1:
         receivers = receiver_list[0]
-        send_sms(receivers, message, sms_code, transactional=False, promotional=promotional)
+        send_sms(receivers, message, sms_code, transactional=False)
     else:
         for receivers_ in receiver_list:
-            queue().enqueue(send_marketing_sms_job, receivers=receivers_, message=message, sms_code=sms_code, promotional=promotional)
+            queue().enqueue(send_marketing_sms_job, receivers=receivers_, message=message, sms_code=sms_code)
 
 
 @job('send_transactional_sms', retry_every=10, retry_timeout=90)
 def send_voice_validation_code_job(receiver, code, sms_code, last_sms_code=None):
     used_sms_provider_ids = set()
+    sms_provider = None
     if last_sms_code:
         last_sms_provider_id = redis().get(sent_sms_redis_key(receiver, last_sms_code))
         if last_sms_provider_id:
             used_sms_provider_ids.add(int(last_sms_provider_id))
-            shuffle_current_sms_provider(used_sms_provider_ids)
-    sms_provider = get_current_sms_provider()
+            sms_provider = shuffle_current_sms_provider(used_sms_provider_ids)
+            if not sms_provider:
+                Exception('not enough reliable sms voice providers')
+    sms_provider = sms_provider or get_current_sms_provider()
     while True:
         if not sms_provider.support_voice:
             used_sms_provider_ids.add(sms_provider.sms_provider_id)
@@ -126,19 +128,22 @@ def send_voice_validation_code_job(receiver, code, sms_code, last_sms_code=None)
             used_sms_provider_ids.add(current_sms_provider.sms_provider_id)
             sms_provider = shuffle_current_sms_provider(used_sms_provider_ids)
             if not sms_provider:
-                raise Exception('not enough reliable sms providers')
+                raise Exception('not enough reliable sms voice providers')
         else:
             current_sms_provider.add_sent_quantity(1)
             break
 
 
-def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=True, promotional=False):
+def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=True):
     used_sms_provider_ids = set()
+    sms_provider = None
     if last_sms_code:
         last_sms_provider_id = redis().get(sent_sms_redis_key(receivers[0], last_sms_code))
         if last_sms_provider_id:
             used_sms_provider_ids.add(int(last_sms_provider_id))
-            shuffle_current_sms_provider(used_sms_provider_ids)
+            sms_provider = shuffle_current_sms_provider(used_sms_provider_ids)
+            if not sms_provider:
+                raise Exception('not enough reliable sms providers')
     if 'public' != VEIL_ENV_TYPE:
         receivers_not_in_whitelist = set(r for r in receivers if r not in get_application_sms_whitelist())
         if receivers_not_in_whitelist:
@@ -149,9 +154,9 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
             receivers -= receivers_not_in_whitelist
             if not receivers:
                 return
-    sms_provider = get_current_sms_provider()
+    sms_provider = sms_provider or get_current_sms_provider()
     while True:
-        sent_receivers, need_retry_receivers = sms_provider.send(receivers, message, sms_code, transactional, promotional=promotional)
+        sent_receivers, need_retry_receivers = sms_provider.send(receivers, message, sms_code, transactional)
         if sent_receivers:
             sms_provider.add_sent_quantity(sms_provider.get_minimal_message_quantity(message) * len(sent_receivers))
 
@@ -190,7 +195,7 @@ class SMService(object):
     def max_receiver_count(self):
         return self._max_receiver_count
 
-    def send(self, receivers, message, sms_code, transactional, promotional=False):
+    def send(self, receivers, message, sms_code, transactional):
         raise NotImplementedError()
 
     def send_voice(self, receiver, code, sms_code):

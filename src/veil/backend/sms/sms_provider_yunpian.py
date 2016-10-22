@@ -68,8 +68,12 @@ class YunpianSMService(SMService):
         super(YunpianSMService, self).__init__(sms_provider_id, MAX_SMS_RECEIVERS, support_voice=True)
         self.config = yunpian_sms_client_config()
 
-    def single_send(self, receivers, message, sms_code, promotional=False):
-        api_key = self.config.apikey if not promotional else self.config.promotion_apikey
+    @staticmethod
+    def is_validation_code_message(message):
+        return '验证码' in message and '内有效' in message
+
+    def single_send(self, receivers, message, sms_code):
+        api_key = self.config.apikey if YunpianSMService.is_validation_code_message(message) else self.config.promotion_apikey
         message = to_str(message)
         need_retry_receivers = set()
         sent_receivers = set()
@@ -126,14 +130,14 @@ class YunpianSMService(SMService):
                         need_retry_receivers.add(receiver)
         return sent_receivers, need_retry_receivers
 
-    def send(self, receivers, message, sms_code, transactional, promotional=False):
-        return self.single_send(receivers, message, sms_code, promotional=promotional)
+    def send(self, receivers, message, sms_code, transactional):
+        return self.single_send(receivers, message, sms_code)
 
     # TODO: need modify
-    def batch_send(self, receivers, message, sms_code, transactional, promotional=False):
+    def batch_send(self, receivers, message, sms_code, transactional):
         if not self.config:
             self.config = yunpian_sms_client_config()
-        api_key = self.config.apikey if not promotional else self.config.promotion_apikey
+        api_key = self.config.apikey if YunpianSMService.is_validation_code_message(message) else self.config.promotion_apikey
         receivers = set(r.strip() for r in receivers if r.strip())
         if len(message) > MAX_SMS_CONTENT_LENGTH:
             raise Exception('try to send sms with message size over {}'.format(MAX_SMS_CONTENT_LENGTH))
@@ -142,7 +146,6 @@ class YunpianSMService(SMService):
         data = {'apikey': api_key, 'mobile': receivers, 'text': message}
         response = None
         try:
-            # retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
             response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9), headers={'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'},
                                      max_retries=Retry(total=2, read=False, method_whitelist={'POST'}, status_forcelist={502, 503, 504}, backoff_factor=2))
             response.raise_for_status()
