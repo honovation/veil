@@ -129,12 +129,12 @@ def decrypt_content_data(data):
     if data.dataDescription.encryptCode not in SUPPORTED_ENCRYPT_CODES:
         raise Exception('not support encrypt code: {}'.format(data.dataDescription.encryptCode))
     if data.dataDescription.encryptCode == CONTENT_DATA_ENCRYPT_CODE_CA:
-        process = shell_execute('java -jar {} {} decrypt'.format(AISINO_JAR_FILE_PATH, AISINO_LIBRARY_CONFIG_FILE_PATH), capture=True, waits=False)
+        process = shell_execute('java -Dfile.encoding=UTF-8 -jar {} {} decrypt'.format(AISINO_JAR_FILE_PATH, AISINO_LIBRARY_CONFIG_FILE_PATH), capture=True, waits=False)
         data.content = process.communicate(input=data.content)[0].strip()
 
 
 def get_ca_encrypted_content(raw_content):
-    process = shell_execute('java -jar {} {} encrypt'.format(AISINO_JAR_FILE_PATH, AISINO_LIBRARY_CONFIG_FILE_PATH), capture=True, waits=False)
+    process = shell_execute('java -Dfile.encoding=UTF-8 -jar {} {} encrypt'.format(AISINO_JAR_FILE_PATH, AISINO_LIBRARY_CONFIG_FILE_PATH), capture=True, waits=False)
     return process.communicate(input=raw_content)[0].strip()
 
 
