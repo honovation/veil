@@ -224,6 +224,6 @@ class HTTPResponse(object):
         return '\r\n'.join(lines) + '\r\n\r\n'
 
     def disable_cache(self):
+        self.set_header('Cache-Control', 'no-cache, no-store, must-revalidate"')
         self.set_header('Pragma', 'no-cache')
-        self.set_header('Cache-Control', 'no-cache, must-revalidate')
         self.set_header('Expires', 'Thu, 01 Jan 1970 00:00:01 GMT')  # epoch
