@@ -59,44 +59,64 @@ def check_sms_provider_balance_and_reconciliation_job():
         raise Exception(', '.join(error_messages))
 
 
+def send_validation_code_via_sms(receivers, message, sms_code, last_sms_code=None):
+    send_sms(receivers, message, sms_code, transactional=True, promotional=False, last_sms_code=last_sms_code)
+
+
+def send_validation_code_via_voice(receiver, code, sms_code, last_sms_code=None):
+    queue().enqueue(send_voice_validation_code_job, receiver=receiver, code=code, sms_code=sms_code, last_sms_code=last_sms_code)
+
+
+def send_sms(receivers, message, sms_code, transactional=False, promotional=True, last_sms_code=None):
+    if transactional:
+        if promotional:
+            queue().enqueue(send_slow_transactional_sms_job, receivers=receivers, message=message, sms_code=sms_code, promotional=promotional)
+        else:
+            queue().enqueue(send_transactional_sms_job, receivers=receivers, message=message, sms_code=sms_code, promotional=promotional,
+                            last_sms_code=last_sms_code)
+    else:
+        queue().enqueue(send_marketing_sms_job, receivers=receivers, message=message, sms_code=sms_code, promotional=promotional)
+
+
 @job('send_transactional_sms', retry_every=10, retry_timeout=90)
-def send_transactional_sms_job(receivers, message, sms_code, last_sms_code=None, promotional=False):
+def send_transactional_sms_job(receivers, message, sms_code, promotional, last_sms_code=None):
     sms_provider = get_current_sms_provider()
     receiver_list = get_receiver_list(receivers, sms_provider.max_receiver_count)
     if len(receiver_list) == 1:
         receivers = receiver_list[0]
-        send_sms(receivers, message, sms_code, last_sms_code=last_sms_code)
+        send(receivers, message, sms_code, last_sms_code=last_sms_code, promotional=promotional)
         with redis().pipeline() as pipe:
             for receiver in receivers:
                 pipe.setex(sent_sms_redis_key(receiver, sms_code), SENT_SMS_RECORD_ALIVE_IN_SECONDS, sms_provider.sms_provider_id)
             pipe.execute()
     else:
         for receivers_ in receiver_list:
-            queue().enqueue(send_transactional_sms_job, receivers=receivers_, message=message, sms_code=sms_code, last_sms_code=last_sms_code)
+            queue().enqueue(send_transactional_sms_job, receivers=receivers_, message=message, sms_code=sms_code, promotional=promotional,
+                            last_sms_code=last_sms_code)
 
 
 @job('send_slow_transactional_sms', retry_every=10 * 60, retry_timeout=3 * 60 * 60)
-def send_slow_transactional_sms_job(receivers, message, sms_code, promotional=False):
+def send_slow_transactional_sms_job(receivers, message, sms_code, promotional):
     sms_provider = get_current_sms_provider()
     receiver_list = get_receiver_list(receivers, sms_provider.max_receiver_count)
     if len(receiver_list) == 1:
         receivers = receiver_list[0]
-        send_sms(receivers, message, sms_code)
+        send(receivers, message, sms_code, promotional=promotional)
     else:
         for receivers_ in receiver_list:
-            queue().enqueue(send_slow_transactional_sms_job, receivers=receivers_, message=message, sms_code=sms_code)
+            queue().enqueue(send_slow_transactional_sms_job, receivers=receivers_, message=message, sms_code=sms_code, promotional=promotional)
 
 
 @job('send_marketing_sms', retry_every=10 * 60, retry_timeout=3 * 60 * 60)
-def send_marketing_sms_job(receivers, message, sms_code, promotional=False):
+def send_marketing_sms_job(receivers, message, sms_code, promotional):
     sms_provider = get_current_sms_provider()
     receiver_list = get_receiver_list(receivers, sms_provider.max_receiver_count)
     if len(receiver_list) == 1:
         receivers = receiver_list[0]
-        send_sms(receivers, message, sms_code, transactional=False)
+        send(receivers, message, sms_code, transactional=False, promotional=promotional)
     else:
         for receivers_ in receiver_list:
-            queue().enqueue(send_marketing_sms_job, receivers=receivers_, message=message, sms_code=sms_code)
+            queue().enqueue(send_marketing_sms_job, receivers=receivers_, message=message, sms_code=sms_code, promotional=promotional)
 
 
 @job('send_transactional_sms', retry_every=10, retry_timeout=90)
@@ -134,7 +154,7 @@ def send_voice_validation_code_job(receiver, code, sms_code, last_sms_code=None)
             break
 
 
-def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=True):
+def send(receivers, message, sms_code, last_sms_code=None, transactional=True, promotional=True):
     used_sms_provider_ids = set()
     sms_provider = None
     if last_sms_code:
@@ -156,7 +176,7 @@ def send_sms(receivers, message, sms_code, last_sms_code=None, transactional=Tru
                 return
     sms_provider = sms_provider or get_current_sms_provider()
     while True:
-        sent_receivers, need_retry_receivers = sms_provider.send(receivers, message, sms_code, transactional)
+        sent_receivers, need_retry_receivers = sms_provider.send(receivers, message, sms_code, transactional, promotional)
         if sent_receivers:
             sms_provider.add_sent_quantity(sms_provider.get_minimal_message_quantity(message) * len(sent_receivers))
 
@@ -195,7 +215,7 @@ class SMService(object):
     def max_receiver_count(self):
         return self._max_receiver_count
 
-    def send(self, receivers, message, sms_code, transactional):
+    def send(self, receivers, message, sms_code, transactional, promotional):
         raise NotImplementedError()
 
     def send_voice(self, receiver, code, sms_code):

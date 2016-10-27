@@ -68,12 +68,8 @@ class YunpianSMService(SMService):
         super(YunpianSMService, self).__init__(sms_provider_id, MAX_SMS_RECEIVERS, support_voice=True)
         self.config = yunpian_sms_client_config()
 
-    @staticmethod
-    def is_validation_code_message(message):
-        return '验证码' in message and '内有效' in message
-
-    def single_send(self, receivers, message, sms_code):
-        api_key = self.config.apikey if YunpianSMService.is_validation_code_message(message) else self.config.promotion_apikey
+    def single_send(self, receivers, message, sms_code, promotional=True):
+        api_key = self.config.apikey if not promotional else self.config.promotion_apikey
         message = to_str(message)
         need_retry_receivers = set()
         sent_receivers = set()
@@ -130,14 +126,14 @@ class YunpianSMService(SMService):
                         need_retry_receivers.add(receiver)
         return sent_receivers, need_retry_receivers
 
-    def send(self, receivers, message, sms_code, transactional):
-        return self.single_send(receivers, message, sms_code)
+    def send(self, receivers, message, sms_code, transactional, promotional):
+        return self.single_send(receivers, message, sms_code, promotional=promotional)
 
     # TODO: need modify
-    def batch_send(self, receivers, message, sms_code, transactional):
+    def batch_send(self, receivers, message, sms_code, transactional, promotional=True):
         if not self.config:
             self.config = yunpian_sms_client_config()
-        api_key = self.config.apikey if YunpianSMService.is_validation_code_message(message) else self.config.promotion_apikey
+        api_key = self.config.apikey if not promotional else self.config.promotion_apikey
         receivers = set(r.strip() for r in receivers if r.strip())
         if len(message) > MAX_SMS_CONTENT_LENGTH:
             raise Exception('try to send sms with message size over {}'.format(MAX_SMS_CONTENT_LENGTH))
