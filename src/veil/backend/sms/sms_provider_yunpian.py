@@ -174,7 +174,7 @@ class YunpianSMService(SMService):
 
     def send_voice(self, receiver, code, sms_code):
         config = yunpian_sms_client_config()
-        LOGGER.debug('attempt to send voice: %(sms_code)s, %(receiver)s, %(message)s', {'sms_code': sms_code, 'receiver': receiver, 'code': code})
+        LOGGER.debug('attempt to send voice: %(sms_code)s, %(receiver)s, %(code)s', {'sms_code': sms_code, 'receiver': receiver, 'code': code})
         data = {'apikey': config.apikey, 'mobile': receiver, 'code': code}
         response = None
         try:
@@ -194,7 +194,7 @@ class YunpianSMService(SMService):
         else:
             result = objectify(response.json())
             if result.count == 1:
-                LOGGER.info('yunpian voice send succeeded: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receiver': receiver})
+                LOGGER.info('yunpian voice send succeeded: %(sms_code)s, %(receiver)s', {'sms_code': sms_code, 'receiver': receiver})
             else:
                 LOGGER.error('yunpian voice send failed: %(sms_code)s, %(response)s, %(receiver)s', {
                     'sms_code': sms_code, 'response': response.text, 'receiver': receiver

@@ -11,6 +11,8 @@ with veil_component.init_component(__name__):
 
     from .sms_provider_yunpian import yunpian_sms_client_resource
 
+    from .sms_provider_yuntongxun import yuntongxun_sms_client_resource
+
     __all__ = [
         send_validation_code_via_sms.__name__,
         send_validation_code_via_voice.__name__,
@@ -19,6 +21,8 @@ with veil_component.init_component(__name__):
         emay_sms_client_resource.__name__,
 
         yunpian_sms_client_resource.__name__,
+
+        yuntongxun_sms_client_resource.__name__,
     ]
 
     def init():
