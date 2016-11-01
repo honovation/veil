@@ -5,6 +5,8 @@ import logging
 from veil.backend.queue import *
 from veil.backend.redis import *
 from veil.environment import get_application_sms_whitelist
+from veil.model.collection import *
+from veil.utility.json import *
 from veil.utility.misc import *
 from veil_component import VEIL_ENV_TYPE
 
@@ -71,53 +73,55 @@ def send_sms(receivers, sms_code, transactional=False, promotional=True, last_sm
     assert message is not None or template is not None, 'message or template must be provided'
     if transactional:
         if promotional:
-            queue().enqueue(send_slow_transactional_sms_job, receivers=receivers, message=message, sms_code=sms_code, promotional=promotional)
+            queue().enqueue(send_slow_transactional_sms_job, receivers=receivers, sms_code=sms_code, promotional=promotional, message=message,
+                            template=to_json(template))
         else:
-            queue().enqueue(send_transactional_sms_job, receivers=receivers, message=message, sms_code=sms_code, promotional=promotional,
-                            last_sms_code=last_sms_code)
+            queue().enqueue(send_transactional_sms_job, receivers=receivers, sms_code=sms_code, promotional=promotional, last_sms_code=last_sms_code,
+                            message=message, template=to_json(template))
     else:
-        queue().enqueue(send_marketing_sms_job, receivers=receivers, message=message, sms_code=sms_code, promotional=promotional)
+        queue().enqueue(send_marketing_sms_job, receivers=receivers, sms_code=sms_code, promotional=promotional, message=message, template=to_json(template))
 
 
 @job('send_transactional_sms', retry_every=10, retry_timeout=90)
-def send_transactional_sms_job(receivers, message, sms_code, promotional, last_sms_code=None):
+def send_transactional_sms_job(receivers, sms_code, promotional, last_sms_code=None, message=None, template=None):
     sms_provider = get_current_sms_provider()
     receiver_list = get_receiver_list(receivers, sms_provider.max_receiver_count)
     if len(receiver_list) == 1:
         receivers = receiver_list[0]
-        send(receivers, message, sms_code, last_sms_code=last_sms_code, promotional=promotional)
+        send(receivers, sms_code, last_sms_code=last_sms_code, promotional=promotional, message=message, template=template)
         with redis().pipeline() as pipe:
             for receiver in receivers:
                 pipe.setex(sent_sms_redis_key(receiver, sms_code), SENT_SMS_RECORD_ALIVE_IN_SECONDS, sms_provider.sms_provider_id)
             pipe.execute()
     else:
         for receivers_ in receiver_list:
-            queue().enqueue(send_transactional_sms_job, receivers=receivers_, message=message, sms_code=sms_code, promotional=promotional,
-                            last_sms_code=last_sms_code)
+            queue().enqueue(send_transactional_sms_job, receivers=receivers_, sms_code=sms_code, promotional=promotional, last_sms_code=last_sms_code,
+                            message=message, template=template)
 
 
 @job('send_slow_transactional_sms', retry_every=10 * 60, retry_timeout=3 * 60 * 60)
-def send_slow_transactional_sms_job(receivers, message, sms_code, promotional):
+def send_slow_transactional_sms_job(receivers, sms_code, promotional, message=None, template=None):
     sms_provider = get_current_sms_provider()
     receiver_list = get_receiver_list(receivers, sms_provider.max_receiver_count)
     if len(receiver_list) == 1:
         receivers = receiver_list[0]
-        send(receivers, message, sms_code, promotional=promotional)
+        send(receivers, sms_code, promotional=promotional, message=message, template=template)
     else:
         for receivers_ in receiver_list:
-            queue().enqueue(send_slow_transactional_sms_job, receivers=receivers_, message=message, sms_code=sms_code, promotional=promotional)
+            queue().enqueue(send_slow_transactional_sms_job, receivers=receivers_, sms_code=sms_code, promotional=promotional, message=message,
+                            template=template)
 
 
 @job('send_marketing_sms', retry_every=10 * 60, retry_timeout=3 * 60 * 60)
-def send_marketing_sms_job(receivers, message, sms_code, promotional):
+def send_marketing_sms_job(receivers, sms_code, promotional, message=None, template=None):
     sms_provider = get_current_sms_provider()
     receiver_list = get_receiver_list(receivers, sms_provider.max_receiver_count)
     if len(receiver_list) == 1:
         receivers = receiver_list[0]
-        send(receivers, message, sms_code, transactional=False, promotional=promotional)
+        send(receivers, sms_code, transactional=False, promotional=promotional, message=message, template=template)
     else:
         for receivers_ in receiver_list:
-            queue().enqueue(send_marketing_sms_job, receivers=receivers_, message=message, sms_code=sms_code, promotional=promotional)
+            queue().enqueue(send_marketing_sms_job, receivers=receivers_, sms_code=sms_code, promotional=promotional, message=message, template=template)
 
 
 @job('send_transactional_sms', retry_every=10, retry_timeout=90)
@@ -155,7 +159,7 @@ def send_voice_validation_code_job(receiver, code, sms_code, last_sms_code=None)
             break
 
 
-def send(receivers, message, sms_code, last_sms_code=None, transactional=True, promotional=True):
+def send(receivers, sms_code, last_sms_code=None, transactional=True, promotional=True, message=None, template=None):
     used_sms_provider_ids = set()
     sms_provider = None
     if last_sms_code:
@@ -177,7 +181,8 @@ def send(receivers, message, sms_code, last_sms_code=None, transactional=True, p
                 return
     sms_provider = sms_provider or get_current_sms_provider()
     while True:
-        sent_receivers, need_retry_receivers = sms_provider.send(receivers, message, sms_code, transactional, promotional)
+        sent_receivers, need_retry_receivers = sms_provider.send(receivers, sms_code, transactional, promotional, message=message,
+                                                                 template=objectify(from_json(template)))
         if sent_receivers:
             sms_provider.add_sent_quantity(sms_provider.get_minimal_message_quantity(message) * len(sent_receivers))
 
