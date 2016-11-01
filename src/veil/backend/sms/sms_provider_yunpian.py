@@ -66,10 +66,10 @@ def yunpian_sms_client_config():
 class YunpianSMService(SMService):
     def __init__(self, sms_provider_id):
         super(YunpianSMService, self).__init__(sms_provider_id, MAX_SMS_RECEIVERS, support_voice=True)
-        self.config = yunpian_sms_client_config()
 
     def single_send(self, receivers, message, sms_code, promotional=True):
-        api_key = self.config.apikey if not promotional else self.config.promotion_apikey
+        config = yunpian_sms_client_config()
+        api_key = config.apikey if not promotional else config.promotion_apikey
         message = to_str(message)
         need_retry_receivers = set()
         sent_receivers = set()
@@ -131,9 +131,8 @@ class YunpianSMService(SMService):
 
     # TODO: need modify
     def batch_send(self, receivers, message, sms_code, transactional, promotional=True):
-        if not self.config:
-            self.config = yunpian_sms_client_config()
-        api_key = self.config.apikey if not promotional else self.config.promotion_apikey
+        config = yunpian_sms_client_config()
+        api_key = config.apikey if not promotional else config.promotion_apikey
         receivers = set(r.strip() for r in receivers if r.strip())
         if len(message) > MAX_SMS_CONTENT_LENGTH:
             raise Exception('try to send sms with message size over {}'.format(MAX_SMS_CONTENT_LENGTH))
@@ -174,10 +173,9 @@ class YunpianSMService(SMService):
                 raise SendError('yunpian sms send failed: {}, {}'.format(sms_code, receivers), retry_mobiles)
 
     def send_voice(self, receiver, code, sms_code):
-        if not self.config:
-            self.config = yunpian_sms_client_config()
+        config = yunpian_sms_client_config()
         LOGGER.debug('attempt to send voice: %(sms_code)s, %(receiver)s, %(message)s', {'sms_code': sms_code, 'receiver': receiver, 'code': code})
-        data = {'apikey': self.config.apikey, 'mobile': receiver, 'code': code}
+        data = {'apikey': config.apikey, 'mobile': receiver, 'code': code}
         response = None
         try:
             # retry at most 2 times upon connection timeout or 500 errors, back-off 2 seconds (avoid IP blocking due to too frequent queries)
@@ -204,9 +202,8 @@ class YunpianSMService(SMService):
                 raise SendError('yunpian sms send failed: {}, {}'.format(sms_code, receiver), receiver)
 
     def query_balance(self):
-        if not self.config:
-            self.config = yunpian_sms_client_config()
-        data = {'apikey': self.config.apikey}
+        config = yunpian_sms_client_config()
+        data = {'apikey': config.apikey}
         response = None
         try:
             response = requests.post(QUERY_BALANCE_URL, data=data, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))

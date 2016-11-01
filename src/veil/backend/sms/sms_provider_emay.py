@@ -48,7 +48,6 @@ def emay_sms_client_config():
 class EmaySMService(SMService):
     def __init__(self, sms_provider_id):
         super(EmaySMService, self).__init__(sms_provider_id, MAX_SMS_RECEIVERS)
-        self.config = emay_sms_client_config()
 
     def send(self, receivers, message, sms_code, transactional, promotional=True):
         LOGGER.debug('attempt to send sms: %(sms_code)s, %(receivers)s, %(message)s', {'sms_code': sms_code, 'receivers': receivers, 'message': message})
@@ -57,7 +56,8 @@ class EmaySMService(SMService):
             raise Exception('try to send sms with message size over {}'.format(MAX_SMS_CONTENT_LENGTH))
         receivers = ','.join(receivers)
         message = to_str(message)
-        data = {'cdkey': self.config.cdkey, 'password': self.config.password, 'phone': receivers, 'message': message}
+        config = emay_sms_client_config()
+        data = {'cdkey': config.cdkey, 'password': config.password, 'phone': receivers, 'message': message}
         try:
             response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9),
                                      max_retries=Retry(total=2, read=False, method_whitelist={'POST'}, status_forcelist={502, 503, 504}, backoff_factor=2))
@@ -89,9 +89,8 @@ class EmaySMService(SMService):
                 raise SendError('emay sms send failed: {}, {}, {}'.format(sms_code, response.text, receivers), receivers.split(','))
 
     def query_balance(self):
-        if not self.config:
-            self.config = emay_sms_client_config()
-        params = {'cdkey': self.config.cdkey, 'password': self.config.password}
+        config = emay_sms_client_config()
+        params = {'cdkey': config.cdkey, 'password': config.password}
         try:
             response = requests.get(QUERY_BALANCE_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))
             response.raise_for_status()
