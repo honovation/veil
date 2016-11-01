@@ -51,7 +51,7 @@
     <FPKJXX_XMXXS class="FPKJXX_XMXX;" size="1">
         <FPKJXX_XMXX>
             <XMMC><![CDATA[{{ items[0].name }}]]></XMMC>
-            <XMDW><![CDATA[件]]></XMDW>
+            <XMDW/>
             <GGXH/>
             <XMSL>{{ items[0].quantity }}</XMSL>
             <HSBZ>{{ 1 if items[0].with_tax else 0 }}</HSBZ>
