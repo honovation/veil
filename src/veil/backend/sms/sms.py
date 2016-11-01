@@ -59,15 +59,16 @@ def check_sms_provider_balance_and_reconciliation_job():
         raise Exception(', '.join(error_messages))
 
 
-def send_validation_code_via_sms(receivers, message, sms_code, last_sms_code=None):
-    send_sms(receivers, message, sms_code, transactional=True, promotional=False, last_sms_code=last_sms_code)
+def send_validation_code_via_sms(receivers, sms_code, last_sms_code=None, message=None, template=None):
+    send_sms(receivers, sms_code, transactional=True, promotional=False, last_sms_code=last_sms_code, message=message, template=template)
 
 
 def send_validation_code_via_voice(receiver, code, sms_code, last_sms_code=None):
     queue().enqueue(send_voice_validation_code_job, receiver=receiver, code=code, sms_code=sms_code, last_sms_code=last_sms_code)
 
 
-def send_sms(receivers, message, sms_code, transactional=False, promotional=True, last_sms_code=None):
+def send_sms(receivers, sms_code, transactional=False, promotional=True, last_sms_code=None, message=None, template=None):
+    assert message is not None or template is not None, 'message or template must be provided'
     if transactional:
         if promotional:
             queue().enqueue(send_slow_transactional_sms_job, receivers=receivers, message=message, sms_code=sms_code, promotional=promotional)
@@ -215,7 +216,7 @@ class SMService(object):
     def max_receiver_count(self):
         return self._max_receiver_count
 
-    def send(self, receivers, message, sms_code, transactional, promotional):
+    def send(self, receivers, sms_code, transactional, promotional, message=None, template=None):
         raise NotImplementedError()
 
     def send_voice(self, receiver, code, sms_code):

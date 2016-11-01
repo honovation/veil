@@ -126,7 +126,7 @@ class YunpianSMService(SMService):
                         need_retry_receivers.add(receiver)
         return sent_receivers, need_retry_receivers
 
-    def send(self, receivers, message, sms_code, transactional, promotional):
+    def send(self, receivers, sms_code, transactional, promotional, message=None, template=None):
         return self.single_send(receivers, message, sms_code, promotional=promotional)
 
     # TODO: need modify

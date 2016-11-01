@@ -49,7 +49,7 @@ class EmaySMService(SMService):
     def __init__(self, sms_provider_id):
         super(EmaySMService, self).__init__(sms_provider_id, MAX_SMS_RECEIVERS)
 
-    def send(self, receivers, message, sms_code, transactional, promotional=True):
+    def send(self, receivers, sms_code, transactional, promotional=True, message=None, template=None):
         LOGGER.debug('attempt to send sms: %(sms_code)s, %(receivers)s, %(message)s', {'sms_code': sms_code, 'receivers': receivers, 'message': message})
         receivers = set(r.strip() for r in receivers if r.strip())
         if len(message) > MAX_SMS_CONTENT_LENGTH:
