@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 import random
 import logging
+from collections import OrderedDict
 from veil.backend.queue import *
 from veil.backend.redis import *
 from veil.environment import get_application_sms_whitelist
@@ -15,8 +16,9 @@ LOGGER = logging.getLogger(__name__)
 queue = register_queue()
 redis = register_redis('persist_store')
 
-_sms_providers = {}
-current_sms_provider = None
+_sms_providers = OrderedDict()
+CURRENT_SMS_PROVIDER_ID_KEY = 'VEIL:SMS:CURRENT-SMS-PROVIDER-ID'
+CURRENT_SMS_PROVIDER_ALIVE_TIME_IN_SECONDS = 10 * 60
 SENT_SMS_RECORD_ALIVE_IN_SECONDS = 60 * 60
 SMS_PROVIDER_BALANCE_THRESHOLD = 2000
 SMS_PROVIDER_BALANCE_ALIVE_IN_SECONDS = 60 * 60 * 36
@@ -28,28 +30,29 @@ def sent_sms_redis_key(mobile, sms_code):
 
 
 def get_current_sms_provider():
-    global current_sms_provider
-    if not current_sms_provider:
-        raise Exception('no current sms provider')
-    return current_sms_provider
+    if not _sms_providers:
+        raise Exception('no sms provider')
+    current_sms_provider_id = redis().get(CURRENT_SMS_PROVIDER_ID_KEY)
+    if not current_sms_provider_id:
+        current_sms_provider_id = _sms_providers.keys()[0]
+        redis().setex(CURRENT_SMS_PROVIDER_ID_KEY, CURRENT_SMS_PROVIDER_ALIVE_TIME_IN_SECONDS, current_sms_provider_id)
+    sms_provider = _sms_providers[int(current_sms_provider_id)]
+    return sms_provider
 
 
 def register_sms_provider(sms_provider_module):
     sms_provider = sms_provider_module.register()
     if sms_provider.sms_provider_id not in _sms_providers:
         _sms_providers[sms_provider.sms_provider_id] = sms_provider
-        global current_sms_provider
-        if not current_sms_provider:
-            current_sms_provider = sms_provider
 
 
 def shuffle_current_sms_provider(excluded_provider_ids):
     sms_provider_candidates = [sp for sp in _sms_providers.values() if sp.sms_provider_id not in excluded_provider_ids]
     if not sms_provider_candidates:
-        return
-    global current_sms_provider
-    current_sms_provider = random.choice(sms_provider_candidates)
-    return current_sms_provider
+        raise Exception('not enough sms/voice provider to switch')
+    sms_provider = random.choice(sms_provider_candidates)
+    redis().setex(CURRENT_SMS_PROVIDER_ID_KEY, CURRENT_SMS_PROVIDER_ALIVE_TIME_IN_SECONDS, sms_provider.sms_provider_id)
+    return sms_provider
 
 
 @periodic_job('31 6 * * *')
@@ -133,15 +136,11 @@ def send_voice_validation_code_job(receiver, code, sms_code, last_sms_code=None)
         if last_sms_provider_id:
             used_sms_provider_ids.add(int(last_sms_provider_id))
             sms_provider = shuffle_current_sms_provider(used_sms_provider_ids)
-            if not sms_provider:
-                Exception('not enough reliable sms voice providers')
     sms_provider = sms_provider or get_current_sms_provider()
     while True:
         if not sms_provider.support_voice:
             used_sms_provider_ids.add(sms_provider.sms_provider_id)
             sms_provider = shuffle_current_sms_provider(used_sms_provider_ids)
-            if not sms_provider:
-                raise Exception('not enough reliable sms voice providers')
             continue
         try:
             sms_provider.send_voice(receiver, code, sms_code)
@@ -150,12 +149,10 @@ def send_voice_validation_code_job(receiver, code, sms_code, last_sms_code=None)
             if not retry_receivers:
                 return
             receiver = retry_receivers
-            used_sms_provider_ids.add(current_sms_provider.sms_provider_id)
+            used_sms_provider_ids.add(sms_provider.sms_provider_id)
             sms_provider = shuffle_current_sms_provider(used_sms_provider_ids)
-            if not sms_provider:
-                raise Exception('not enough reliable sms voice providers')
         else:
-            current_sms_provider.add_sent_quantity(1)
+            sms_provider.add_sent_quantity(1)
             break
 
 
@@ -167,8 +164,6 @@ def send(receivers, sms_code, last_sms_code=None, transactional=True, promotiona
         if last_sms_provider_id:
             used_sms_provider_ids.add(int(last_sms_provider_id))
             sms_provider = shuffle_current_sms_provider(used_sms_provider_ids)
-            if not sms_provider:
-                raise Exception('not enough reliable sms providers')
     if 'public' != VEIL_ENV_TYPE:
         receivers_not_in_whitelist = set(r for r in receivers if r not in get_application_sms_whitelist())
         if receivers_not_in_whitelist:
@@ -194,8 +189,6 @@ def send(receivers, sms_code, last_sms_code=None, transactional=True, promotiona
             receivers = need_retry_receivers
             used_sms_provider_ids.add(sms_provider.sms_provider_id)
             sms_provider = shuffle_current_sms_provider(used_sms_provider_ids)
-            if not sms_provider:
-                raise Exception('not enough reliable sms providers')
 
 
 def get_receiver_list(receivers, max_receiver_count):
@@ -206,10 +199,11 @@ def get_receiver_list(receivers, max_receiver_count):
 
 
 class SMService(object):
-    def __init__(self, sms_provider_id, max_receiver_count, support_voice=False):
+    def __init__(self, sms_provider_id, max_receiver_count, support_voice=False, support_query_balance=True):
         self._sms_provider_id = sms_provider_id
         self._max_receiver_count = max_receiver_count
         self.support_voice = support_voice
+        self.support_query_balance = support_query_balance
         self.balance_key_in_redis = 'VEIL:SMS:{}:balance'.format(sms_provider_id)
         self.sent_quantity_key_in_redis = 'VEIL:SMS:{}:sent-quantity'.format(sms_provider_id)
 
@@ -260,9 +254,17 @@ class SMService(object):
 
     def check_balance_and_reconciliation(self):
         messages = []
+        if not self.support_query_balance:
+            sent_quantity = self.get_sent_quantity_in_redis()
+            LOGGER.info('sms provider sent quantity: %(sms_provider_id)s, %(sent_quantity)s', {
+                'sms_provider_id': self.sms_provider_id,
+                'sent_quantity': sent_quantity
+            })
+            self.reset_balance_and_sent_quantity(0)
+            return messages
         balance = self.query_balance()
         if balance <= SMS_PROVIDER_BALANCE_THRESHOLD:
-            messages.append('sms provider-{} balance is less than threshold: {}/{}'.format(self._sms_provider_id, balance, SMS_PROVIDER_BALANCE_THRESHOLD))
+            messages.append('sms provider-{} balance is less than threshold: {}/{}'.format(self.sms_provider_id, balance, SMS_PROVIDER_BALANCE_THRESHOLD))
 
         sent_quantity = self.get_sent_quantity_in_redis()
         if sent_quantity is None:
@@ -279,7 +281,7 @@ class SMService(object):
                 'sent_quantity': sent_quantity,
                 'diff': provider_sent_quantity - sent_quantity
             })
-            messages.append('sms provider-{} reconciliation failed: {}/{}'.format(self._sms_provider_id, provider_sent_quantity, sent_quantity))
+            messages.append('sms provider-{} reconciliation failed: {}/{}'.format(self.sms_provider_id, provider_sent_quantity, sent_quantity))
 
         self.reset_balance_and_sent_quantity(balance)
 

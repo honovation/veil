@@ -76,7 +76,7 @@ def generate_request_headers():
 
 class YuntongxunSMService(SMService):
     def __init__(self, sms_provider_id):
-        super(YuntongxunSMService, self).__init__(sms_provider_id, MAX_SMS_RECEIVERS, support_voice=True)
+        super(YuntongxunSMService, self).__init__(sms_provider_id, MAX_SMS_RECEIVERS, support_voice=True, support_query_balance=False)
 
     def send(self, receivers, sms_code, transactional, promotional, message=None, template=None):
         config = yuntongxun_sms_client_config()
@@ -149,28 +149,7 @@ class YuntongxunSMService(SMService):
                     LOGGER.info('yuntongxun voice send succeeded: %(sms_code)s, %(receiver)s', {'sms_code': sms_code, 'receiver': receiver})
 
     def query_balance(self):
-        config = yuntongxun_sms_client_config()
-        response = None
-        try:
-            response = requests.get(QUERY_BALANCE_URL_TPL.format(config.account_sid), headers=generate_request_headers(),
-                                    params={'sig': generate_sig()}, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))
-            response.raise_for_status()
-        except Exception:
-            LOGGER.exception('yuntongxun query balance exception-thrown: %(response)s', {'response': response.text if response else ''})
-            raise
-        else:
-            LOGGER.debug(response.content)
-            try:
-                result = objectify(response.json())
-            except Exception:
-                LOGGER.error('yuntongxun query balance got bad format response: %(response)s', {'response': response.text})
-                raise
-            else:
-                if result.statusCode != REQUEST_SUCCESS_MARK:
-                    LOGGER.error('yuntongxun query balance got failed response: %(response)s', {'response': response.text})
-                    raise Exception('yuntongxun query balance got failed response')
-                balance = int(result.Account.balance)
-            return balance
+        return None
 
     def get_minimal_message_quantity(self, message):
         return 1
