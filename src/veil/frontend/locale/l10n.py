@@ -58,6 +58,60 @@ def datetime_filter(value, format='yyyy-MM-dd HH:mm:ss'):
         return babel.dates.format_datetime(datetime=value, format=format, tzinfo=DEFAULT_CLIENT_TIMEZONE, locale=get_current_locale())
 
 
+@template_filter('datetime_range')
+def render_datetime_range(datetime_range, include_start=True, include_end=False):
+    start_time, end_time = datetime_range
+    start_time = convert_datetime_to_client_timezone(start_time)
+    end_time = convert_datetime_to_client_timezone(end_time)
+    start_time_precision = get_time_precision(start_time)
+    end_time_precision = get_time_precision(end_time)
+    time_precision = min(start_time_precision, end_time_precision)
+    if not include_start and start_time_precision == time_precision:
+        start_time = adjust_datetime(start_time, start_time_precision, 1)
+    if not include_end and end_time_precision == time_precision:
+        end_time = adjust_datetime(end_time, end_time_precision, -1)
+    if time_precision == 0:
+        time_format = ' %H:%M:%S'
+    elif time_precision == 1:
+        time_format = ' %H:%M'
+    elif time_precision == 2:
+        time_format = ' %H点'
+    else:
+        time_format = ''
+    if start_time == end_time:
+        if time_precision == 3:
+            return start_time.strftime('%m-%d')
+        else:
+            return start_time.strftime(time_format)
+    if start_time.year != end_time.year:
+        time_format = '%Y-%m-%d{}'.format(time_format)
+    else:
+        time_format = '%m-%d{}'.format(time_format)
+    return '{}～{}'.format(start_time.strftime(time_format), end_time.strftime(time_format))
+
+
+def adjust_datetime(dt, time_precision, delta):
+    if time_precision == 0:
+        return dt + timedelta(seconds=delta)
+    elif time_precision == 1:
+        return dt + timedelta(minutes=delta)
+    elif time_precision == 2:
+        return dt + timedelta(hours=delta)
+    elif time_precision == 3:
+        return dt + timedelta(days=delta)
+
+
+def get_time_precision(dt):
+    if dt.second != 0:
+        return 0
+    elif dt.minute != 0:
+        return 1
+    elif dt.hour != 0:
+        return 2
+    else:
+        return 3
+
+
 def parse_epoch_datetime(text):
     if text:
         return datetime.utcfromtimestamp(float(text)).replace(tzinfo=pytz.utc)
