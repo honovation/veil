@@ -9,7 +9,7 @@ def supervisor_resource(programs, inet_http_server_port=None, program_groups=Non
     inet_http_server_config = {
         'inet_http_server': {
             'host': '*', # it will not cause security risk as the container itself does not have public ip
-            'port': inet_http_server_port or (9091 if 'test' == VEIL_ENV_TYPE else 9090)
+            'port': inet_http_server_port or (9091 if VEIL_ENV.is_test else 9090)
         }
     }
     logging_config = {

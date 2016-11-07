@@ -77,7 +77,7 @@ def veil_container_onetime_config_resource(server):
 
 @composite_installer
 def veil_container_config_resource(server, config_dir):
-    env_config_dir = config_dir / server.env_name
+    env_config_dir = config_dir / server.VEIL_ENV.name
     server_config_dir = env_config_dir / 'servers' / server.name
     resources = [
         veil_server_boot_script_resource(server=server),

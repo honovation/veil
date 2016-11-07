@@ -5,7 +5,7 @@ import time
 import threading
 import discipline_coach
 import os
-from veil.environment import VEIL_ENV_TYPE, VEIL_HOME, VEIL_FRAMEWORK_HOME
+from veil_component import VEIL_ENV, VEIL_HOME, VEIL_FRAMEWORK_HOME
 from veil.frontend.website_setting import list_website_components
 
 LOGGER = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ def source_code_monitored(func):
         purpose = args[0]
         components = list_website_components(purpose)
         LOGGER.info('load components: %(components)s', {'components': components})
-        if 'development' == VEIL_ENV_TYPE:
+        if VEIL_ENV.is_dev:
             if load_components(components):
                 SourceCodeMonitor().start()
                 return func(*args)

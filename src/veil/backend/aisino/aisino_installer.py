@@ -63,7 +63,7 @@ def aisino_invoice_config():
 
 def install_aisino_library():
     if AISINO_JAR_FILE_PATH.exists() and AISINO_JNI_FILE_PATH.exists() and AISINO_PLATFORM_CER_FILE_PATH.exists():
-        if VEIL_ENV_TYPE in {'development', 'test'} and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
+        if (VEIL_ENV.is_dev or VEIL_ENV.is_test) and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
             set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return
     dest_path = AISINO_LIBRARY_PATH
@@ -72,7 +72,7 @@ def install_aisino_library():
     install_aisino_platform_cer()
     install_aisino_jni_library()
     install_aisino_jar()
-    if VEIL_ENV_TYPE in {'development', 'test'}:
+    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
 
 

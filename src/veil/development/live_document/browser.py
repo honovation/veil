@@ -6,7 +6,7 @@ import os
 import jinjatag
 import atexit
 import time
-from veil.environment import VEIL_ENV_TYPE
+from veil_component import VEIL_ENV
 from veil.frontend.web import *
 from veil.development.test import *
 from .live_document import require_current_context_being
@@ -17,7 +17,7 @@ LOGGER = logging.getLogger(__name__)
 current_http_server = None
 webdriver = None
 
-if 'test' != VEIL_ENV_TYPE:
+if not VEIL_ENV.is_test:
     def open_browser_page(website_purpose, path, page_name):
         pass
 
@@ -170,7 +170,7 @@ else:
 
 @jinjatag.simple_block()
 def doc(body):
-    if 'test' == VEIL_ENV_TYPE:
+    if VEIL_ENV.is_test:
         return '<script type="text/javascript" src="{}"></script>\n{}'.format(static_url('veil-doc.js'), body)
     else:
         return ''

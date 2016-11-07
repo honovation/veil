@@ -2,6 +2,7 @@ import veil_component
 
 with veil_component.init_component(__name__):
     import httplib
+    from veil_component import VEIL_ENV
     from veil.frontend.template import *
     from veil.model.command import *
     from veil.model.security import *

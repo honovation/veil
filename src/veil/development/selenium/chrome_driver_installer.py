@@ -25,7 +25,7 @@ def chrome_driver_resource():
         dry_run_result['chrome_driver'] = '-' if installed else 'INSTALL'
         return
     if installed:
-        if VEIL_ENV_TYPE in {'development', 'test'} and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
+        if (VEIL_ENV.is_dev or VEIL_ENV.is_test) and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
             set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return
     url = '{}/chromedriver/{}/chromedriver_linux64.zip'.format(DEPENDENCY_URL, RESOURCE_VERSION)
@@ -37,5 +37,5 @@ def chrome_driver_resource():
     shell_execute('mv {} {}-{}'.format(CHROMEDRIVER_PATH, CHROMEDRIVER_PATH, RESOURCE_VERSION))
     shell_execute('chown {}:{} {}-{}'.format(os.environ.get('SUDO_UID'), os.environ.get('SUDO_GID'), CHROMEDRIVER_PATH, RESOURCE_VERSION))
     shell_execute('ln -sf {}-{} {}'.format(CHROMEDRIVER_PATH, RESOURCE_VERSION, CHROMEDRIVER_PATH))
-    if VEIL_ENV_TYPE in {'development', 'test'}:
+    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)

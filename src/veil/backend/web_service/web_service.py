@@ -65,7 +65,7 @@ class WebService(object):
 
         self.logging_plugin = LoggingWebServicePlugin()
         options = DictObject(timeout=180, faults=True, plugins=[self.logging_plugin])
-        if VEIL_ENV_TYPE != 'public':
+        if not VEIL_ENV.is_prod:
             options.cache = None
         if username:
             options.username = username

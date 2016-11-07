@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import time
 import os
 import logging
-from veil.environment import VEIL_ENV_TYPE
+from veil_component import VEIL_ENV
 from redis.client import StrictRedis
 from veil.frontend.cli import *
 from veil.model.event import event
@@ -33,7 +33,7 @@ def bring_up_log_shipper():
 @event(EVENT_PROCESS_TEARDOWN)
 def close_shipper_log_files():
     for shipper in shippers:
-        if 'test' != VEIL_ENV_TYPE:
+        if not VEIL_ENV.is_test:
             LOGGER.debug('close shipper log file at exit: %(path)s', {'path': shipper.log_path})
         shipper.close_log_file()
 

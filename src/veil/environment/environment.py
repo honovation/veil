@@ -18,7 +18,7 @@ DEPENDENCY_DIR = SHARE_DIR / 'dependency'
 DEPENDENCY_INSTALL_DIR = SHARE_DIR / 'dependency-install'
 PYPI_ARCHIVE_DIR = SHARE_DIR / 'pypi'
 
-VEIL_ENV_DIR = (VEIL_HOME if VEIL_ENV_TYPE in {'development', 'test'} else OPT_DIR) / VEIL_ENV_NAME
+VEIL_ENV_DIR = (VEIL_HOME if VEIL_ENV.is_dev or VEIL_ENV.is_test else OPT_DIR) / VEIL_ENV.name
 VEIL_ETC_DIR = VEIL_ENV_DIR / 'etc' / VEIL_SERVER_NAME
 VEIL_LOG_DIR = VEIL_ENV_DIR / 'log' / VEIL_SERVER_NAME
 VEIL_VAR_DIR = VEIL_ENV_DIR / 'var'
@@ -35,9 +35,9 @@ VEIL_BACKUP_ROOT = as_path('/backup')
 CURRENT_USER = os.getenv('SUDO_USER') or getpass.getuser()
 CURRENT_USER_GROUP = CURRENT_USER
 
-SECURITY_CONFIG_FILE = (VEIL_HOME if VEIL_ENV_TYPE in {'development', 'test'} else VEIL_HOME.parent) / '.config'
+SECURITY_CONFIG_FILE = (VEIL_HOME if VEIL_ENV.is_dev or VEIL_ENV.is_test else VEIL_HOME.parent) / '.config'
 
-if VEIL_ENV_TYPE in {'development', 'test'}:
+if VEIL_ENV.is_dev or VEIL_ENV.is_test:
     BASIC_LAYOUT_RESOURCES = [
             directory_resource(path=VEIL_ENV_DIR),
             directory_resource(path=VEIL_ETC_DIR.parent),
@@ -49,8 +49,8 @@ if VEIL_ENV_TYPE in {'development', 'test'}:
             directory_resource(path=VEIL_BUCKET_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
             directory_resource(path=VEIL_DATA_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         ]
-elif VEIL_ENV_BASE_NAME != VEIL_ENV_NAME:
-    BASIC_LAYOUT_RESOURCES = [symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV_BASE_NAME, to=VEIL_ENV_DIR)]
+elif VEIL_ENV.name != VEIL_ENV.base_name:
+    BASIC_LAYOUT_RESOURCES = [symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV.base_name, to=VEIL_ENV_DIR)]
 else:
     BASIC_LAYOUT_RESOURCES = []
 
@@ -71,15 +71,14 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         'apt_url': apt_url, 'pypi_index_host': urlparse(pypi_index_url).hostname, 'pypi_index_url': pypi_index_url,
         'deployment_memo': deployment_memo, 'config': config or {}
     })
-    env.base_name = veil_env_base_name(env.name)
+    env.VEIL_ENV = VeilEnv(env.name)
     env.env_dir = OPT_DIR / env.name
-    env.veil_home = VEIL_HOME if env.name in {'development', 'test'} else env.env_dir / 'code' / 'app'
+    env.veil_home = VEIL_HOME if env.VEIL_ENV.is_dev or env.VEIL_ENV.is_test else env.env_dir / 'code' / 'app'
     env.server_list = []
     for server_name, server in env.servers.items():
-        server.env_name = env.name
-        server.env_base_name = env.base_name
+        server.VEIL_ENV = env.VEIL_ENV
         server.name = server_name
-        server.fullname = '{}/{}'.format(server.env_name, server.name)
+        server.fullname = '{}/{}'.format(server.VEIL_ENV.name, server.name)
         server.start_order = 1000 + 10 * sorted_server_names.index(server.name) if sorted_server_names else 0
         server.apt_url = env.apt_url
         server.pypi_index_host = env.pypi_index_host
@@ -87,7 +86,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         server.veil_home = env.veil_home
         server.code_dir = server.veil_home.parent
         server.veil_framework_home = server.code_dir / 'veil'
-        server.container_name = '{}-{}'.format(server.env_name, server.name)
+        server.container_name = '{}-{}'.format(server.VEIL_ENV.name, server.name)
         server.container_installer_path = SHARE_DIR / 'veil-container-INSTALLER-{}'.format(server.container_name)
         server.installed_container_installer_path = '{}.installed'.format(server.container_installer_path)
         server.container_initialized_tag_path = SHARE_DIR / 'veil-container-{}.initialized'.format(server.container_name)
@@ -97,10 +96,9 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         env.server_list.append(server)
     env.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))
     for host_name, host in env.hosts.items():
-        host.env_name = env.name
-        host.env_base_name = env.base_name
+        host.VEIL_ENV = env.VEIL_ENV
         host.name = host_name
-        # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.env_name, host.base_name))
+        # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.VEIL_ENV.name, host.base_name))
         host.base_name = host.name.split('/', 1)[0]  # e.g. ljhost-90/1 => ljhost-90
         host.apt_url = env.apt_url
         host.pypi_index_host = env.pypi_index_host
@@ -120,13 +118,13 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         host.bucket_uploaded_files_dir = host.buckets_dir / 'uploaded-files'
         host.data_dir = host.var_dir / 'data'
         host.veil_home = env.veil_home
-        host.veil_application_branch = 'env-{}'.format(host.env_name)
+        host.veil_application_branch = 'env-{}'.format(host.VEIL_ENV.name)
         host.code_dir = host.veil_home.parent
         host.veil_framework_home = host.code_dir / 'veil'
-        host.iptables_rules_installer_path = SHARE_DIR / 'veil-host-iptables-rules-INSTALLER-{}'.format(host.env_name)
+        host.iptables_rules_installer_path = SHARE_DIR / 'veil-host-iptables-rules-INSTALLER-{}'.format(host.VEIL_ENV.name)
         host.installed_iptables_rules_installer_path = '{}.installed'.format(host.iptables_rules_installer_path)
-        host.initialized_tag_path = SHARE_DIR / 'veil-host-{}.initialized'.format(host.env_name)
-        host.rollbackable_tag_path = SHARE_DIR / 'veil-host-{}.rollbackable'.format(host.env_name)
+        host.initialized_tag_path = SHARE_DIR / 'veil-host-{}.initialized'.format(host.VEIL_ENV.name)
+        host.rollbackable_tag_path = SHARE_DIR / 'veil-host-{}.rollbackable'.format(host.VEIL_ENV.name)
         host.with_user_editor = False
         host.server_list = []
         for server_name, server in env.servers.items():
@@ -225,7 +223,7 @@ def get_veil_server(veil_env_name, veil_server_name):
 
 
 def get_current_veil_server():
-    return get_veil_server(VEIL_ENV_NAME, VEIL_SERVER_NAME)
+    return get_veil_server(VEIL_ENV.name, VEIL_SERVER_NAME)
 
 
 def list_veil_hosts(veil_env_name):
@@ -241,7 +239,7 @@ def get_veil_env(veil_env_name):
 
 
 def get_current_veil_env():
-    return get_veil_env(VEIL_ENV_NAME)
+    return get_veil_env(VEIL_ENV.name)
 
 
 def get_veil_env_deployment_memo(veil_env_name):
@@ -275,8 +273,8 @@ _application_version = None
 
 
 def get_application_version():
-    if VEIL_ENV_TYPE in {'development', 'test'}:
-        return VEIL_ENV_TYPE
+    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
+        return VEIL_ENV.type
     global _application_version
     from veil.utility.shell import shell_execute
     if not _application_version:

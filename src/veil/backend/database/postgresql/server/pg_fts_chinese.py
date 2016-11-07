@@ -38,12 +38,12 @@ def download_scws():
 
 def install_scws():
     if is_scws_installed():
-        if VEIL_ENV_TYPE in {'development', 'test'} and SCWS_RESOURCE_VERSION != get_resource_latest_version(SCWS_RESOURCE_KEY):
+        if (VEIL_ENV.is_dev or VEIL_ENV.is_test) and SCWS_RESOURCE_VERSION != get_resource_latest_version(SCWS_RESOURCE_KEY):
             set_resource_latest_version(SCWS_RESOURCE_KEY, SCWS_RESOURCE_VERSION)
         return
     download_scws()
     shell_execute('./configure;make install', cwd=SCWS_HOME)
-    if VEIL_ENV_TYPE in {'development', 'test'}:
+    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         set_resource_latest_version(SCWS_RESOURCE_KEY, SCWS_RESOURCE_VERSION)
 
 
@@ -73,14 +73,14 @@ def download_zhparser():
 
 def install_zhparser(reinstall):
     if not reinstall and is_zhparser_installed():
-        if VEIL_ENV_TYPE in {'development', 'test'} and ZHPARSER_RESOURCE_VERSION != get_resource_latest_version(ZHPARSER_RESOURCE_KEY):
+        if (VEIL_ENV.is_dev or VEIL_ENV.is_test) and ZHPARSER_RESOURCE_VERSION != get_resource_latest_version(ZHPARSER_RESOURCE_KEY):
             set_resource_latest_version(ZHPARSER_RESOURCE_KEY, ZHPARSER_RESOURCE_VERSION)
         return
     download_zhparser()
     if reinstall and is_zhparser_installed():
         shell_execute('SCWS_HOME=/usr/local make clean', cwd=ZHPARSER_HOME)
     shell_execute('SCWS_HOME=/usr/local make && make install', cwd=ZHPARSER_HOME)
-    if VEIL_ENV_TYPE in {'development', 'test'}:
+    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         set_resource_latest_version(ZHPARSER_RESOURCE_KEY, ZHPARSER_RESOURCE_VERSION)
 
 

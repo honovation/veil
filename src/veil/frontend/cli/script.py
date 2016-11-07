@@ -24,7 +24,7 @@ def is_script_defined(*argv):
 
 
 def execute_script(*argv):
-    if VEIL_ENV_TYPE in {'development', 'test'}:
+    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         start_recording_dynamic_dependencies()
     argv = [to_unicode(arg) for arg in argv]
     import_script_handlers(argv)

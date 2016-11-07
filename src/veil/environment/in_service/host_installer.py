@@ -59,7 +59,7 @@ def veil_hosts_codebase_resource(veil_env_name):
 def render_iptables_rules_installer_file(host):
     resources = []
     ssh_ports = set()
-    for h in list_veil_hosts(host.env_name):
+    for h in list_veil_hosts(host.VEIL_ENV.name):
         if h.base_name != host.base_name:
             continue
         resources.append(iptables_rule_resource(table='nat', rule='POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(h.lan_range, h.lan_range)))
@@ -79,7 +79,7 @@ def veil_host_iptables_rules_resource(host):
         action = 'INSTALL'
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'veil_host_iptables_rules?{}'.format(host.env_name)
+        key = 'veil_host_iptables_rules?{}'.format(host.VEIL_ENV.name)
         dry_run_result[key] = action or '-'
         return
     if not action:
@@ -87,7 +87,7 @@ def veil_host_iptables_rules_resource(host):
     with contextlib.closing(StringIO(installer_file_content)) as f:
         fabric.api.put(f, host.iptables_rules_installer_path, use_sudo=True, mode=0600)
     with fabric.api.cd(host.veil_home):
-        fabric.api.sudo('veil :{} install veil_installer.installer_resource?{}'.format(host.env_name, host.iptables_rules_installer_path))
+        fabric.api.sudo('veil :{} install veil_installer.installer_resource?{}'.format(host.VEIL_ENV.name, host.iptables_rules_installer_path))
     fabric.api.sudo('mv -f {} {}'.format(host.iptables_rules_installer_path, host.installed_iptables_rules_installer_path))
 
 
@@ -114,7 +114,7 @@ def veil_host_onetime_config_resource(host):
 
 @composite_installer
 def veil_host_config_resource(host, config_dir):
-    env_config_dir = config_dir / host.env_name
+    env_config_dir = config_dir / host.VEIL_ENV.name
     resources = [
         veil_host_directory_resource(host=host, remote_path='/home/{}/.ssh'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group,
                                      mode=0700),
@@ -126,7 +126,7 @@ def veil_host_config_resource(host, config_dir):
         veil_host_sources_list_resource(host=host)
     ]
 
-    servers = get_veil_env(host.env_name).servers
+    servers = get_veil_env(host.VEIL_ENV.name).servers
     if '@guard' in servers:
         resources.extend([
             veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0700),
@@ -139,7 +139,7 @@ def veil_host_config_resource(host, config_dir):
 
 @composite_installer
 def veil_host_application_config_resource(host, config_dir):
-    env_config_dir = config_dir / host.env_name
+    env_config_dir = config_dir / host.VEIL_ENV.name
     if not (env_config_dir / '.config').exists():
         return []
     return [
@@ -152,7 +152,7 @@ def veil_host_application_config_resource(host, config_dir):
 def veil_host_codebase_resource(host):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'veil_host_codebase?{}'.format(host.env_name)
+        key = 'veil_host_codebase?{}'.format(host.VEIL_ENV.name)
         dry_run_result[key] = 'INSTALL'
         return
     with fabric.api.settings(forward_agent=True):
@@ -203,7 +203,7 @@ def pull_framework(host):
 
 def init_application(host):
     with fabric.api.cd(host.veil_home):
-        fabric.api.sudo('{}/bin/veil :{} init'.format(host.veil_framework_home, host.env_name))
+        fabric.api.sudo('{}/bin/veil :{} init'.format(host.veil_framework_home, host.VEIL_ENV.name))
 
 
 def read_veil_framework_version(host):
@@ -214,7 +214,7 @@ def read_veil_framework_version(host):
 def veil_host_init_resource(host):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'veil_host_init?{}'.format(host.env_name)
+        key = 'veil_host_init?{}'.format(host.VEIL_ENV.name)
         dry_run_result[key] = 'INSTALL'
         return
 
@@ -247,7 +247,7 @@ def init_veil_host_basic_layout(host):
         host.var_dir, host.editorial_dir, host.buckets_dir, host.bucket_log_dir, host.data_dir
     ])))
     fabric.api.sudo('chown {}:{} {} {} {}'.format(host.ssh_user, host.ssh_user_group, host.buckets_dir, host.bucket_log_dir, host.data_dir))
-    fabric.api.sudo('ln -s {} {}'.format(host.env_dir, host.env_dir.parent / host.env_base_name))
+    fabric.api.sudo('ln -s {} {}'.format(host.env_dir, host.env_dir.parent / host.VEIL_ENV.base_name))
 
 
 @atomic_installer
@@ -257,7 +257,7 @@ def veil_host_sources_list_resource(host):
 
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'veil_host_sources_list?{}'.format(host.env_name)
+        key = 'veil_host_sources_list?{}'.format(host.VEIL_ENV.name)
         dry_run_result[key] = 'INSTALL'
         return
     sources_list_path = '/etc/apt/sources.list'
@@ -274,7 +274,7 @@ def veil_host_sources_list_resource(host):
 def veil_lxc_config_resource(host):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'veil_lxc_config?{}'.format(host.env_name)
+        key = 'veil_lxc_config?{}'.format(host.VEIL_ENV.name)
         dry_run_result[key] = 'INSTALL'
         return
 
@@ -292,7 +292,7 @@ def veil_lxc_config_resource(host):
 def veil_host_directory_resource(host, remote_path, owner='root', owner_group='root', mode=0755):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'veil_host_directory?{}&path={}'.format(host.env_name, remote_path)
+        key = 'veil_host_directory?{}&path={}'.format(host.VEIL_ENV.name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
     fabric.api.sudo('mkdir -p {}'.format(remote_path))
@@ -304,7 +304,7 @@ def veil_host_directory_resource(host, remote_path, owner='root', owner_group='r
 def veil_host_file_resource(local_path, host, remote_path, owner, owner_group, mode, keep_origin=False, set_owner_first=False, cmd=None):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'veil_host_file?{}&path={}'.format(host.env_name, remote_path)
+        key = 'veil_host_file?{}&path={}'.format(host.VEIL_ENV.name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
     if keep_origin:
@@ -326,7 +326,7 @@ def veil_host_user_editor_resource(host, config_dir):
     installed = fabric.contrib.files.contains('/etc/ssh/sshd_config', 'Match User editor')
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
-        key = 'veil_host_user_editor?{}'.format(host.env_name)
+        key = 'veil_host_user_editor?{}'.format(host.VEIL_ENV.name)
         dry_run_result[key] = '-' if installed else 'INSTALL'
         return
 
@@ -341,7 +341,7 @@ def veil_host_user_editor_resource(host, config_dir):
     fabric.api.sudo('chown -R editor:editor {}'.format(host.editorial_dir))
 
     fabric.api.sudo('mkdir -p -m 0700 /home/editor/.ssh')
-    fabric.api.put(config_dir / host.env_name / '.ssh-editor' / 'id_rsa.pub', '/home/editor/.ssh/authorized_keys', use_sudo=True, mode=0600)
+    fabric.api.put(config_dir / host.VEIL_ENV.name / '.ssh-editor' / 'id_rsa.pub', '/home/editor/.ssh/authorized_keys', use_sudo=True, mode=0600)
     fabric.api.sudo('chown -R editor:editor /home/editor/.ssh')
 
     # do not add any config after Match User unless you know what you write

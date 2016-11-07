@@ -42,11 +42,11 @@ def is_db2_clidriver_installed():
 
 def install_db2_clidriver():
     if is_db2_clidriver_installed():
-        if VEIL_ENV_TYPE in {'development', 'test'} and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
+        if (VEIL_ENV.is_dev or VEIL_ENV.is_test) and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
             set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return
     download_db2_clidriver()
     install_resource(file_resource(path=DB2_DRIVER_CONF_PATH, content=DB2_DRIVER_CONF_CONTENT))
     shell_execute('ldconfig')
-    if VEIL_ENV_TYPE in {'development', 'test'}:
+    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)

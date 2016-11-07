@@ -3,7 +3,7 @@ import logging
 import sys
 import time
 import os
-from veil.environment import VEIL_ENV_TYPE
+from veil_component import VEIL_ENV
 from veil.utility.clock import *
 from veil.utility.shell import *
 from veil.frontend.cli import *
@@ -18,9 +18,9 @@ LOGGER = logging.getLogger(__name__)
 
 @script('drop-database')
 def drop_database(purpose):
-    if VEIL_ENV_TYPE not in {'development', 'test'}:
+    if not (VEIL_ENV.is_dev or VEIL_ENV.is_test):
         raise Exception('not allow to drop database other than development or test')
-    if 'development' == VEIL_ENV_TYPE:
+    if VEIL_ENV.is_dev:
         supervisorctl('restart', '{}_postgresql'.format(purpose))
         wait_for_server_up(purpose)
     config = database_client_config(purpose)

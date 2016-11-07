@@ -5,7 +5,6 @@ import logging
 
 from veil.utility.http import *
 from veil.profile.model import *
-from veil_component import VEIL_ENV_TYPE
 
 redis = register_redis('persist_store')
 
@@ -16,8 +15,8 @@ WXMP_ACCESS_TOKEN_AUTHORIZATION_URL = 'https://api.weixin.qq.com/cgi-bin/token'
 
 
 def get_wxmp_access_token(wxop_app_code, app_id, app_secret, with_ttl=False, access_token_to_refresh=None):
-    if VEIL_ENV_TYPE not in {'public', 'development'}:
-        raise Exception('cannot get wx access token under environment: {}'.format(VEIL_ENV_TYPE))
+    if not (VEIL_ENV.is_prod or VEIL_ENV.is_dev):
+        raise Exception('cannot get wx access token under environment: {}'.format(VEIL_ENV))
     if not access_token_to_refresh:
         with redis().pipeline() as pipe:
             pipe.get(WXMP_ACCESS_TOKEN_KEY_TPL.format(wxop_app_code))

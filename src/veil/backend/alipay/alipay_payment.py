@@ -10,7 +10,6 @@ from decimal import Decimal, DecimalException
 import lxml.objectify
 import rsa
 
-from veil.environment import VEIL_ENV_TYPE
 from veil.frontend.cli import *
 from veil.profile.model import *
 from veil.profile.web import *
@@ -157,7 +156,7 @@ def process_alipay_payment_notification(out_trade_no, arguments, notified_from):
 
 def validate_payment_notification(out_trade_no, arguments, with_notify_id=True):
     discarded_reasons = []
-    if VEIL_ENV_TYPE not in {'development', 'test'}:
+    if not (VEIL_ENV.is_dev or VEIL_ENV.is_test):
         if not arguments.get('sign_type'):
             discarded_reasons.append('no sign_type')
         else:

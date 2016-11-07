@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import functools
 import uuid
-from veil.environment import VEIL_ENV_TYPE
+from veil_component import VEIL_ENV
 from .case import get_executing_test
 
 mockable_functions = {}
@@ -20,7 +20,7 @@ def disable_mock():
 
 
 def mockable(func):
-    if 'test' == VEIL_ENV_TYPE:
+    if VEIL_ENV.is_test:
         mockable_code = uuid.uuid4().get_hex()
         func.__dict__['mockable_code'] = mockable_code
         mockable_functions[mockable_code] = func

@@ -8,7 +8,6 @@ from uuid import uuid4
 
 import lxml.objectify
 
-from veil.environment import VEIL_ENV_TYPE
 from veil.profile.model import *
 from veil.profile.web import *
 
@@ -238,7 +237,7 @@ def validate_order_info(arguments):
 
 def validate_payment_notification(app_id, mch_id, api_key, arguments):
     discarded_reasons = []
-    if VEIL_ENV_TYPE not in {'development', 'test'}:
+    if not (VEIL_ENV.is_dev or VEIL_ENV.is_test):
         if not is_sign_correct(arguments, api_key):
             discarded_reasons.append('sign is incorrect')
     if mch_id != arguments.get('mch_id'):

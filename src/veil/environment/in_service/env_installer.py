@@ -259,7 +259,7 @@ def stop_env(veil_env_name, include_guard_server=True, include_monitor_server=Tr
 
 def stop_servers(servers, stop_container=False):
     for server in servers:
-        host = get_veil_host(server.env_name, server.host_name)
+        host = get_veil_host(server.VEIL_ENV.name, server.host_name)
         with fabric.api.settings(host_string=host.deploys_via):
             if not is_container_running(server):
                 continue
@@ -279,7 +279,7 @@ def start_env(veil_env_name, *exclude_server_names):
     for server in reversed(list_veil_servers(veil_env_name)):
         if server.name in exclude_server_names:
             continue
-        host = get_veil_host(server.env_name, server.host_name)
+        host = get_veil_host(server.VEIL_ENV.name, server.host_name)
         with fabric.api.settings(host_string=host.deploys_via):
             if not fabric.contrib.files.exists(server.deployed_tag_path):
                 print(yellow('Skipped starting server {} as it is not successfully deployed'.format(server.container_name)))
@@ -299,7 +299,7 @@ def upgrade_env_pip(veil_env_name, setuptools_version, wheel_version, pip_versio
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
         with fabric.api.settings(host_string=host.deploys_via):
             with fabric.api.cd(host.veil_home):
-                fabric.api.sudo('veil :{} upgrade-pip {} {} {}'.format(host.env_name, setuptools_version, wheel_version, pip_version))
+                fabric.api.sudo('veil :{} upgrade-pip {} {} {}'.format(host.VEIL_ENV.name, setuptools_version, wheel_version, pip_version))
 
 
 def get_deployed_or_patched_at():
@@ -319,7 +319,7 @@ def get_deployed_or_patched_at():
         if tag.endswith('-patch'):
             tag = tag[:-len('-patch')]
         env_name, formatted_deployed_at, _ = tag.rsplit('-', 2)
-        if env_name == VEIL_ENV_NAME:
+        if env_name == VEIL_ENV.name:
             deployed_or_patched_at.append(convert_datetime_to_client_timezone(datetime.strptime(formatted_deployed_at, '%Y%m%d%H%M%S')))
     return max(deployed_or_patched_at) if deployed_or_patched_at else None
 

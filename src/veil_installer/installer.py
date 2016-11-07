@@ -5,7 +5,6 @@ import inspect
 import importlib
 import contextlib
 import veil_component
-from veil_component import VEIL_ENV_TYPE
 
 LOGGER = logging.getLogger(__name__)
 installed_resource_codes = set()
@@ -63,8 +62,8 @@ def application_resource(component_names, config):
                     raise
         resources = []
         for section, resource_provider in application_sub_resources.items():
-            if VEIL_ENV_TYPE == 'test' and section not in config:
-                LOGGER.warn('no configuration for application resource: %(env)s, %(section)s', {'env': VEIL_ENV_TYPE, 'section': section})
+            if veil_component.VEIL_ENV.is_test and section not in config:
+                LOGGER.warn('no configuration for application resource: %(env)s, %(section)s', {'env': veil_component.VEIL_ENV, 'section': section})
                 continue
             resources.append(resource_provider(config[section]))
         return resources

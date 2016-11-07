@@ -10,6 +10,7 @@ from hashlib import md5
 from base64 import b64encode, b64decode
 from decimal import Decimal
 
+from veil_component import VEIL_ENV
 from veil.backend.web_service import *
 from veil.frontend.template import *
 from veil.model.collection import *
@@ -18,14 +19,13 @@ from veil.utility.encoding import *
 from veil.utility.misc import *
 from veil.utility.shell import *
 from veil.utility.xml import *
-from veil_component import VEIL_ENV_TYPE
 
 from .aisino_installer import AISINO_JAR_FILE_PATH, AISINO_LIBRARY_CONFIG_FILE_PATH, aisino_invoice_config, REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE
 
 LOGGER = logging.getLogger(__name__)
 
 
-if VEIL_ENV_TYPE == 'public':
+if VEIL_ENV.is_prod:
     url = 'http://ei.51fapiao.cn:10080/51TransferServicePro_zzs/webservice/eInvWS?wsdl'
 else:
     url = 'http://ei-test.51fapiao.cn:20080/51TransferServicePro_zzs/webservice/eInvWS?wsdl'

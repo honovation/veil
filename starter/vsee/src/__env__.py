@@ -28,10 +28,10 @@ LOGGING_LEVEL_CONFIG = objectify({
     'delayed_job_scheduler': 'info',
     'job_worker': 'info', # just control how pyres do the logging, our code still controlled by LOGGING_LEVEL_CONFIG.vsee
     'vsee_postgresql': {
-        'log_min_duration_statement': 0 if VEIL_ENV_TYPE == 'development' else 300
+        'log_min_duration_statement': 0 if VEIL_ENV.is_dev else 300
     },
     'vsee': {
-        '__default__': 'DEBUG' if VEIL_ENV_TYPE in {'development', 'test'} else 'INFO',
+        '__default__': 'DEBUG' if VEIL_ENV.is_dev or VEIL_ENV.is_test else 'INFO',
 #        'vsee.feature': 'DEBUG',
     }
 })
@@ -102,7 +102,7 @@ def postgresql_log_rotater_program(purpose):
 
 
 def log_rotated_postgresql_program(purpose, *args, **kwargs):
-    if VEIL_ENV_TYPE != 'development':
+    if not VEIL_ENV.is_dev:
         kwargs['log_filename'] = 'postgresql.log' # will disable the builtin log rotation
     return merge_multiple_settings(postgresql_program(purpose, *args, **kwargs), postgresql_log_rotater_program(purpose))
 
@@ -129,7 +129,7 @@ def person_website_programs(config):
 
 
 def person_website_nginx_server(config, extra_locations=None):
-    locations = website_locations('person', VEIL_ENV_TYPE in {'public', 'staging'}, max_upload_file_size=PERSON_WEBSITE_MAX_UPLOAD_FILE_SIZE)
+    locations = website_locations('person', VEIL_ENV.is_prod or VEIL_ENV.is_staging, max_upload_file_size=PERSON_WEBSITE_MAX_UPLOAD_FILE_SIZE)
     locations = merge_multiple_settings(locations, extra_locations or {}, website_bucket_locations(PERSON_WEBSITE_BUCKETS))
     return nginx_server(config.person_website_domain, config.person_website_domain_port, locations=locations,
         upstreams=website_upstreams('person', config.person_website_start_port, config.person_website_process_count),

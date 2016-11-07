@@ -39,10 +39,10 @@ def load_website_config(purpose):
         config.process_page_stylesheet = unicode(True) == config.process_page_stylesheet
         config.clears_template_cache = unicode(True) == config.clears_template_cache
     except IOError:
-        if 'test' != VEIL_ENV_TYPE:
+        if not VEIL_ENV.is_test:
             raise
         config = DictObject()
-    if 'test' == VEIL_ENV_TYPE:
+    if VEIL_ENV.is_test:
         config.update(overridden_website_configs.get(purpose, {}))
     return config
 

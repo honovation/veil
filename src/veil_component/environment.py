@@ -6,8 +6,40 @@ from collections import namedtuple
 from .path import as_path
 
 
-def veil_env_base_name(env_name):
-    return env_name.rsplit('--', 1)[0]
+class VeilEnv(object):
+    def __init__(self, name):
+        super(VeilEnv, self).__init__()
+        self.name = name
+        self.base_name = self.name.rsplit('--', 1)[0]
+        self.type = self.base_name.rsplit('-', 1)[-1]
+
+    @property
+    def is_dev(self):
+        return self.type in ('dev', 'development')
+
+    @property
+    def is_test(self):
+        return self.type == 'test'
+
+    @property
+    def is_staging(self):
+        return self.type == 'staging'
+
+    @property
+    def is_prod(self):
+        return self.type in ('prod', 'production', 'public')
+
+    def __eq__(self, other):
+        if not isinstance(other, VeilEnv):
+            return False
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __repr__(self):
+        return 'VEIL ENVIRONMENT <{}>'.format(self.name)
+
 
 VEIL_FRAMEWORK_HOME = getenv('VEIL_FRAMEWORK_HOME')
 VEIL_FRAMEWORK_HOME = as_path(VEIL_FRAMEWORK_HOME) if VEIL_FRAMEWORK_HOME else None
@@ -21,8 +53,7 @@ if '/' in VEIL_SERVER_NAME:
     VEIL_ENV_NAME, VEIL_SERVER_NAME = VEIL_SERVER_NAME.rsplit('/', 1)
 else:
     VEIL_ENV_NAME, VEIL_SERVER_NAME = VEIL_SERVER_NAME, '@'
-VEIL_ENV_BASE_NAME = veil_env_base_name(VEIL_ENV_NAME)
-VEIL_ENV_TYPE = VEIL_ENV_BASE_NAME.rsplit('-', 1)[-1]  # development, test, staging, public (i.e. production)
+VEIL_ENV = VeilEnv(VEIL_ENV_NAME)
 
 CURRENT_OS = namedtuple('VeilOS', 'distname, version, codename')(*platform.linux_distribution())
 assert CURRENT_OS.distname == 'Ubuntu' and CURRENT_OS.codename in ('trusty',)

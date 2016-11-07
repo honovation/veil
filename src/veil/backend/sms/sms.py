@@ -3,13 +3,13 @@ from __future__ import unicode_literals, print_function, division
 import random
 import logging
 from collections import OrderedDict
+from veil_component import VEIL_ENV
+from veil.environment import get_application_sms_whitelist
 from veil.backend.queue import *
 from veil.backend.redis import *
-from veil.environment import get_application_sms_whitelist
 from veil.model.collection import *
 from veil.utility.json import *
 from veil.utility.misc import *
-from veil_component import VEIL_ENV_TYPE
 
 LOGGER = logging.getLogger(__name__)
 
@@ -164,7 +164,7 @@ def send(receivers, sms_code, last_sms_code=None, transactional=True, promotiona
         if last_sms_provider_id:
             used_sms_provider_ids.add(int(last_sms_provider_id))
             sms_provider = shuffle_current_sms_provider(used_sms_provider_ids)
-    if 'public' != VEIL_ENV_TYPE:
+    if not VEIL_ENV.is_prod:
         receivers_not_in_whitelist = set(r for r in receivers if r not in get_application_sms_whitelist())
         if receivers_not_in_whitelist:
             LOGGER.warn('Ignored sms receivers not in the whitelist under non-public env: %(receivers_not_in_whitelist)s', {

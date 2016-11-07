@@ -37,7 +37,7 @@ def veil_server_resource(server, action='PATCH', start_after_deploy=True):
 
 def is_container_running(server, not_on_host=False):
     if not_on_host:
-        host = get_veil_host(server.env_name, server.host_name)
+        host = get_veil_host(server.VEIL_ENV.name, server.host_name)
         with fabric.api.settings(host_string=host.deploys_via):
             ret = fabric.api.sudo('lxc-info -n {} -s'.format(server.container_name), warn_only=True)
     else:
@@ -47,7 +47,7 @@ def is_container_running(server, not_on_host=False):
 
 def is_server_running(server, not_on_host=False):
     if not_on_host:
-        host = get_veil_host(server.env_name, server.host_name)
+        host = get_veil_host(server.VEIL_ENV.name, server.host_name)
         with fabric.api.settings(host_string=host.deploys_via):
             ret = fabric.api.run('ps -ef | grep supervisord | grep -e {} | grep -v grep'.format(server.etc_dir), warn_only=True)
     else:

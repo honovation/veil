@@ -502,7 +502,7 @@ class DictValueProvider(object):
 @event(EVENT_PROCESS_TEARDOWN)
 def close_all_connections():
     for purpose, instance in instances.items():
-        if 'test' != VEIL_ENV_TYPE:
+        if not VEIL_ENV.is_test:
             LOGGER.debug('close connection at exit: %(purpose)s', {'purpose': purpose})
         try:
             instance.close()

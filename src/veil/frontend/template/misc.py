@@ -20,4 +20,4 @@ def render_quote_plus(value):
 
 @template_utility
 def get_veil_env_type():
-    return VEIL_ENV_TYPE
+    return VEIL_ENV.type

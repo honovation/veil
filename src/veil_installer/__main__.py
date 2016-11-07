@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function, division
-import veil_component
+from veil_component import VEIL_ENV, start_recording_dynamic_dependencies
 
 if '__main__' == __name__:
     import sys
@@ -19,8 +19,8 @@ if '__main__' == __name__:
     argument_parser.add_argument('--download-only', help='download necessary files, but do not install them, and it implies dry-run', action='store_true')
     args = argument_parser.parse_args(sys.argv[1:])
 
-    if veil_component.VEIL_ENV_TYPE in {'development', 'test'}:
-        veil_component.start_recording_dynamic_dependencies()
+    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
+        start_recording_dynamic_dependencies()
 
     resource = parse_resource(args.resource)
     if args.upgrade:
