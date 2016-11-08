@@ -1,10 +1,14 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
+
 from datetime import datetime, timedelta
+
 import babel.dates
+
 from veil.frontend.template import *
 from veil.utility.clock import *
-from .i18n import get_current_locale, _
+from veil.utility.encoding import *
+from .i18n import get_current_locale
 
 
 @template_filter('timedelta')
@@ -78,16 +82,24 @@ def render_datetime_range(datetime_range, include_start=True, include_end=False)
         time_format = ' %H点'
     else:
         time_format = ''
+    current_time = get_current_time_in_client_timezone()
     if start_time == end_time:
         if time_precision == 3:
-            return start_time.strftime('%m-%d')
+            if start_time.year == current_time.year:
+                return start_time.strftime('%m-%d')
+            return start_time.strftime('%Y-%m-%d')
         else:
-            return start_time.strftime(time_format)
-    if start_time.year != end_time.year:
-        time_format = '%Y-%m-%d{}'.format(time_format)
-    else:
+            if start_time.date() == current_time.date():
+                return start_time.strftime(time_format)
+            if start_time.year != current_time.year:
+                return start_time.strftime('%Y-%m-%d{}'.format(time_format))
+            return start_time.strftime('%m-%d{}'.format(time_format))
+    if start_time.year == current_time.year and start_time.year == end_time.year:
         time_format = '%m-%d{}'.format(time_format)
-    return '{}～{}'.format(start_time.strftime(time_format), end_time.strftime(time_format))
+    else:
+        time_format = '%Y-%m-%d{}'.format(time_format)
+    time_format = to_str(time_format)
+    return to_unicode(to_str('{}～{}').format(start_time.strftime(time_format), end_time.strftime(time_format)))
 
 
 def adjust_datetime(dt, time_precision, delta):
