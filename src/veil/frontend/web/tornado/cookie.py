@@ -47,17 +47,17 @@ def get_secure_cookie(name, value=None, default=None, max_age_days=31, request=N
         return default
 
 
-def set_secure_cookie(response=None, name=None, value=None, expires_days=30, **kwargs):
+def set_secure_cookie(response=None, name=None, value=None, expires_days=None, expires_minutes=None, **kwargs):
     response = response or get_current_http_response()
-    create_secure_cookie(response.cookies, name, value, expires_days, **kwargs)
+    create_secure_cookie(response.cookies, name, value, expires_days, expires_minutes, **kwargs)
 
 
-def create_secure_cookie(cookies, name, value, expires_days, **kwargs):
+def create_secure_cookie(cookies, name, value, expires_days, expires_minutes, **kwargs):
     timestamp = str(int(time.time()))
     value = base64.b64encode(to_str(value))
     signature = get_hmac(name, value, timestamp, strong=False)
     value = '|'.join((value, timestamp, signature))
-    return create_cookie(cookies, name=name, value=value, expires_days=expires_days, **kwargs)
+    return create_cookie(cookies, name=name, value=value, expires_days=expires_days, expires_minutes=expires_minutes, **kwargs)
 
 
 def get_cookies(request=None):
@@ -115,8 +115,11 @@ def create_cookie(cookies, name, value, domain=None, expires=None, path='/', exp
         if domain[0] != '.':
             domain = '.{}'.format(domain)
         cookie['domain'] = domain
-    if not expires and (expires_days is not None or expires_minutes is not None):
-        expires = datetime.utcnow() + timedelta(days=expires_days or 0, minutes=expires_minutes or 0)
+    if not expires:
+        if expires_days is not None:
+            expires = datetime.utcnow() + timedelta(days=expires_days)
+        elif expires_minutes is not None:
+            expires = datetime.utcnow() + timedelta(minutes=expires_minutes)
     if expires:
         timestamp = calendar.timegm(expires.utctimetuple())
         cookie['expires'] = email.utils.formatdate(timestamp, localtime=False, usegmt=True)
