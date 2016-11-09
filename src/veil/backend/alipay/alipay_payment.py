@@ -13,7 +13,7 @@ import rsa
 from veil.frontend.cli import *
 from veil.profile.model import *
 from veil.profile.web import *
-from veil.utility.xml import parse_xml
+from veil.utility.xml import *
 from .alipay_client_installer import alipay_client_config
 
 LOGGER = logging.getLogger(__name__)
@@ -372,7 +372,7 @@ def refund(refund_date, seq_no, refund_data_list, notify_url, dback_notify_url):
         raise
     else:
         LOGGER.debug(response.text)
-        result = parse_xml(response.text)
+        result = parse_xml(response.content)
         if result.is_success == ALIPAY_REFUND_RESPONSE_SUCCESS_MARK:
             return batch_no
         elif result.is_success == ALIPAY_REFUND_RESPONSE_FAIL_MARK:
