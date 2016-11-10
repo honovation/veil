@@ -15,15 +15,30 @@ from .tenpay_client_installer import tenpay_client_config
 LOGGER = logging.getLogger(__name__)
 
 EVENT_TENPAY_TRADE_PAID = define_event('tenpay-trade-paid')  # valid notification
+EVENT_TENPAY_REFUND_NOTIFIED = define_event('tenpay-refund-notified')
 
 PAYMENT_URL = 'https://gw.tenpay.com/gateway/pay.htm'
 VERIFY_URL = 'https://gw.tenpay.com/gateway/simpleverifynotifyid.xml'
 PAYMENT_QUERY_URL = 'https://gw.tenpay.com/gateway/normalorderquery.xml'
+REFUND_URL = 'https://api.mch.tenpay.com/refundapi/gateway/refund.xml'
+REFUND_QUERY_URL = 'https://gw.tenpay.com/gateway/normalrefundquery.xml'
 
 NOTIFIED_FROM_RETURN_URL = 'return_url'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 NOTIFIED_FROM_PAYMENT_QUERY = 'payment_query'
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # tenpay require this 7 characters to be returned to them
+TENPAY_REFUND_STATUS_SUCCESS_MARKS = {'4', '10'}
+TENPAY_REFUND_STATUS_FAIL_MARKS = {'3', '5', '6'}
+TENPAY_REFUND_STATUS_PROCESSING_SUBMITTED_TO_BANK = '9'
+TENPAY_REFUND_STATUS_PROCESSING_MARKS = {'8', TENPAY_REFUND_STATUS_PROCESSING_SUBMITTED_TO_BANK, '11'}
+TENPAY_REFUND_STATUS_NEED_RETRY_MARKS = {'1', '2'}
+TENPAY_REFUND_STATUS_MANUAL = '7'
+TENPAY_REFUND_CHANNEL_TENPAY = '0'
+TENPAY_REFUND_CHANNEL_BANK = '1'
+TENPAY_REFUND_CHANNELS = {
+    TENPAY_REFUND_CHANNEL_TENPAY: '退到财付通',
+    TENPAY_REFUND_CHANNEL_BANK: '退到银行'
+}
 
 
 def create_tenpay_payment_url(out_trade_no, subject, body, total_fee, show_url, return_url, notify_url, time_start, time_expire, shopper_ip_address, bank_type):
@@ -188,3 +203,199 @@ def parse_xml_response(response):
         if e.text:
             arguments[e.tag] = e.text
     return arguments
+
+
+def refund(out_trade_no, out_refund_no, total_fee, refund_fee, notify_url):
+    """
+    tenpay refund
+
+    :param out_trade_no: 原交易外部订单号
+    :param out_refund_no: 外部退款单号
+    :param total_fee: 原交易金额
+    :param refund_fee: 退款金额
+    :param notify_url: 异步通知URL
+    :return:
+        DictObject(request_success=False, reason=...)
+        DictObject(request_success=True, success=True/False, out_trade_no: 原交易外部订单号, out_refund_no: 外部退款单号, refund_id: 退款id,
+            refund_status_text:退款状态（成功/失败/处理中/需人工处理）, refund_fee: 退款金额, refund_channel_text: 退款去向（财付通/银行卡）,
+            recv_user_id: 接收退款的财付通账号, reccv_user_name: 接收退款的姓名)
+    """
+    config = tenpay_client_config()
+    partner_id = config.partner_id
+    op_user_id = config.refund_op_user_id
+    op_user_passwd = hashlib.md5(config.refund_op_user_password).hexdigest()
+    params = DictObject(sign_type='MD5',
+                        input_charset='UTF-8',
+                        service_version='1.1',
+                        partner=partner_id,
+                        out_trade_no=out_trade_no,
+                        out_refund_no=out_refund_no,
+                        total_fee=unicode(int(total_fee * 100)),
+                        refund_fee=unicode(int(refund_fee * 100)),
+                        op_user_id=op_user_id,
+                        op_user_passwd=op_user_passwd,
+                        notify_url=notify_url)
+    params.sign = sign_md5(params)
+    response = None
+    try:
+        response = requests.get(REFUND_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
+        response.raise_for_status()
+    except Exception:
+        LOGGER.exception('request tenpay refund got exception: %(params)s, %(response)s', {'params': params, 'response': response.text if response else ''})
+        return DictObject(request_success=False, reason=response.text if response else '')
+    else:
+        result = parse_xml_response(response.content)
+        assert result.input_charset == 'UTF-8', 'assume tenpay use same input charset as request'
+        assert result.sign_type == 'MD5', 'assume tenpay use same sign type as request'
+        if not is_sign_correct(result):
+            LOGGER.error('request tenpay refund got fake response: %(params)s, %(response)s', {'params': params, 'response': response.text})
+            return DictObject(request_success=False, reason='sign is incorrect')
+        if result.retcode != '0':
+            LOGGER.error('request tenpay refund got failed response: %(params)s, %(response)s', {'params': params, 'response': response.text})
+            return DictObject(request_success=False, reason=result.retmsg)
+
+        reason = None
+        if result.partner != partner_id:
+            reason = 'partner mismatch'
+        elif result.out_trade_no != out_trade_no:
+            reason = 'out trade no mismatch'
+        elif result.out_refund_no != out_refund_no:
+            reason = 'out refund no mismatch'
+        elif result.refund_fee != str(refund_fee * 100):
+            reason = 'refund fee mismatch'
+        if reason:
+            return DictObject(request_success=False, reason=reason)
+
+        if result.refund_status in TENPAY_REFUND_STATUS_NEED_RETRY_MARKS:
+            return DictObject(request_success=False, reason='请重试')
+
+        ret_data = DictObject(request_success=True, out_trade_no=out_trade_no, out_refund_no=out_refund_no, refund_id=result.refund_id, refund_fee=refund_fee,
+                              refund_channel_text=TENPAY_REFUND_CHANNELS[result.refund_channel], recv_user_id=result.get('recv_user_id'),
+                              reccv_user_name=result.get('reccv_user_name'))
+        success = result.refund_status in TENPAY_REFUND_STATUS_SUCCESS_MARKS
+        if success:
+            ret_data.success = True
+            ret_data.refund_status_text = '退款成功'
+        else:
+            ret_data.success = False
+            if result.refund_status in TENPAY_REFUND_STATUS_FAIL_MARKS:
+                ret_data.refund_status_text = '退款失败'
+            elif result.refund_status in TENPAY_REFUND_STATUS_PROCESSING_MARKS:
+                ret_data.refund_status_text = '退款处理中'
+                if result.refund_status == TENPAY_REFUND_STATUS_PROCESSING_SUBMITTED_TO_BANK:
+                    ret_data.refund_status_text = '退款处理中：已提交退款请求给银行'
+            elif result.refund_status == TENPAY_REFUND_STATUS_MANUAL:
+                ret_data.refund_status_text = '转入代发，需人工退款'
+            else:
+                raise Exception('unknown refund status')
+        return ret_data
+
+
+def process_refund_notification(arguments):
+    """
+    tenpay refund asynchronous notification handler
+
+    只有退款成功/需人工处理/已提交请求给银行才可以收到通知
+
+    :param arguments: all arguments submitted to notify_url
+    :return:
+        success / fail
+        publish event if success, arguments are same as refund
+    """
+    if not is_sign_correct(arguments):
+        return 'sign is incorrect'
+    if arguments.partner != tenpay_client_config().partner_id:
+        return 'partner id mismatch'
+    ret_data = DictObject(out_trade_no=arguments.out_trade_no, out_refund_no=arguments.out_refund_no, refund_id=arguments.refund_id,
+                          refund_fee=Decimal(arguments.refund_fee) / 100, refund_channel_text=TENPAY_REFUND_CHANNELS[arguments.refund_channel],
+                          recv_user_id=arguments.get('recv_user_id'), reccv_user_name=arguments.get('reccv_user_name'))
+    success = arguments.refund_status in TENPAY_REFUND_STATUS_SUCCESS_MARKS
+    if success:
+        ret_data.success = True
+        ret_data.refund_status_text = '退款成功'
+    else:
+        ret_data.success = False
+        if arguments.refund_status in TENPAY_REFUND_STATUS_FAIL_MARKS:
+            ret_data.refund_status_text = '退款失败'
+        elif arguments.refund_status in TENPAY_REFUND_STATUS_PROCESSING_MARKS:
+            ret_data.refund_status_text = '退款处理中'
+            if arguments.refund_status == TENPAY_REFUND_STATUS_PROCESSING_SUBMITTED_TO_BANK:
+                ret_data.refund_status_text = '退款处理中：已提交退款请求给银行'
+        elif arguments.refund_status == TENPAY_REFUND_STATUS_MANUAL:
+            ret_data.refund_status_text = '转入代发，需人工退款'
+    publish_event(EVENT_TENPAY_REFUND_NOTIFIED, refund_result=ret_data)
+    return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
+
+
+def query_refund_status(out_trade_no):
+    """
+    query refund status
+
+    :param out_trade_no: 原交易外部订单号
+    :return:
+        DictObject(request_success=False, reason=...)
+        DictObject(request_success=True, out_trade_no: 原交易外部订单号, refunds=[DictObject(out_refund_no: 外部退款单号, refund_id: 退款id,
+            refund_status_text:退款状态（成功/失败/处理中/需人工处理）, refund_fee: 退款金额, refund_channel_text: 退款去向（财付通/银行卡）,
+            recv_user_id: 接收退款的财付通账号, reccv_user_name: 接收退款的姓名, refund_time_begin: 申请退款时间, refund_time_last_modify: 退款最后修改时间), ...])
+    """
+    params = DictObject(sign_type='MD5', input_charset='UTF-8', service_version='1.1', partner=tenpay_client_config().partner_id, out_trade_no=out_trade_no)
+    params.sign = sign_md5(params)
+    response = None
+    try:
+        response = requests.get(REFUND_QUERY_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
+        response.raise_for_status()
+    except Exception:
+        LOGGER.exception('query tenpay refund status got exception: %(params)s, %(response)s', {
+            'params': params,
+            'response': response.text if response else ''
+        })
+        return DictObject(request_success=False, reason=response.text if response else '')
+    else:
+        result = parse_xml_response(response.content)
+        assert result.input_charset == 'UTF-8', 'assume tenpay use same input charset as request'
+        assert result.sign_type == 'MD5', 'assume tenpay use same sign type as request'
+        if not is_sign_correct(result):
+            LOGGER.error('query tenpay refund status got fake response: %(params)s, %(response)s', {'params': params, 'response': response.text})
+            return DictObject(request_success=False, reason='sign is incorrect')
+        if result.retcode != '0':
+            LOGGER.error('query tenpay refund status got failed response: %(params)s, %(response)s', {'params': params, 'response': response.text})
+            return DictObject(request_success=False, reason=result.retmsg)
+        refunds = []
+        for i in range(result.refund_count):
+            _refund_status = result.get('refund_status_{}'.format(i))
+            if _refund_status in TENPAY_REFUND_STATUS_NEED_RETRY_MARKS:
+                continue
+            success = _refund_status in TENPAY_REFUND_STATUS_SUCCESS_MARKS
+            if success:
+                refund_status_text = '退款成功'
+            else:
+                if _refund_status in TENPAY_REFUND_STATUS_FAIL_MARKS:
+                    refund_status_text = '退款失败'
+                elif _refund_status in TENPAY_REFUND_STATUS_PROCESSING_MARKS:
+                    refund_status_text = '退款处理中'
+                    if _refund_status == TENPAY_REFUND_STATUS_PROCESSING_SUBMITTED_TO_BANK:
+                        refund_status_text = '退款处理中：已提交退款请求给银行'
+                elif _refund_status == TENPAY_REFUND_STATUS_MANUAL:
+                    refund_status_text = '转入代发，需人工退款'
+                else:
+                    raise Exception('unknown refund status')
+            refund_time_begin = result.get('refund_time_begin_{}'.format(i))
+            if refund_time_begin:
+                refund_time_begin = to_datetime(format='%Y%m%d%H%M%S')(refund_time_begin)
+            refund_time_last_modify = result.get('refund_time_{}'.format(i))
+            if refund_time_last_modify:
+                refund_time_last_modify = to_datetime(format='%Y%m%d%H%M%S')(refund_time_last_modify)
+            refunds.append(DictObject(
+                success=success,
+                refund_status_text=refund_status_text,
+                out_trade_no=out_trade_no,
+                out_refund_no=result.get('out_refund_no_{}'.format(i)),
+                refund_id=result.get('refund_id_{}'.format(i)),
+                refund_fee=Decimal(result.get('refund_fee_{}'.format(i))) / 100,
+                refund_channel_text=TENPAY_REFUND_CHANNELS[result.get('refund_channel_{}'.format(i))],
+                recv_user_id=result.get('recv_user_id_{}'.format(i)),
+                reccv_user_name=result.get('reccv_user_name_{}'.format(i)),
+                refund_time_begin=refund_time_begin,
+                refund_time_last_modify=refund_time_last_modify
+            ))
+        return DictObject(request_success=True, out_trade_no=out_trade_no, refunds=refunds)
