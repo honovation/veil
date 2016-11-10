@@ -331,7 +331,7 @@ def refund(app_id, mch_id, api_key, out_trade_no, out_refund_no, total_fee, refu
             refund_fee: 申请退款金额, settlement_refund_fee: 扣除非充值的代金券后实际退款金额)
     """
     refund_request = DictObject(appid=app_id, mch_id=mch_id, nonce_str=uuid4().get_hex(), out_trade_no=out_trade_no, out_refund_no=out_refund_no,
-                                total_fee=total_fee, refund_fee=refund_fee, op_user_id=mch_id)
+                                total_fee=unicode(int(total_fee * 100)), refund_fee=unicode(int(refund_fee * 100)), op_user_id=mch_id)
     refund_request.sign = sign_md5(refund_request, api_key)
     with require_current_template_directory_relative_to():
         data = to_str(get_template('refund.xml').render(refund_request=refund_request))
@@ -368,8 +368,9 @@ def refund(app_id, mch_id, api_key, out_trade_no, out_refund_no, total_fee, refu
             return DictObject(success=False, reason=parsed_response.err_code_des)
         LOGGER.info('request wxpay refund success: %(response)s', {'response': response.text})
         return DictObject(success=True, out_trade_no=parsed_response.out_trade_no, out_refund_no=parsed_response.out_refund_no,
-                          refund_id=parsed_response.refund_id, refund_channel=parsed_response.refund_channel, refund_fee=parsed_response.refund_fee,
-                          settlement_refund_fee=parsed_response.settlement_refund_fee)
+                          refund_id=parsed_response.refund_id, refund_channel=parsed_response.refund_channel,
+                          refund_fee=Decimal(parsed_response.refund_fee) / 100,
+                          settlement_refund_fee=Decimal(parsed_response.settlement_refund_fee) / 100)
 
 
 def query_refund_status(app_id, mch_id, api_key, out_trade_no):
@@ -430,8 +431,8 @@ def query_refund_status(app_id, mch_id, api_key, out_trade_no):
             refund_status.append(DictObject(out_refund_no=parsed_response.get('out_refund_no_{}'.format(i)),
                                             refund_id=parsed_response.get('refund_id_{}'.format(i)),
                                             refund_channel=parsed_response.get('refund_channel_{}'.format(i)),
-                                            refund_fee=parsed_response.get('refund_fee_{}'.format(i)),
-                                            settlement_refund_fee=parsed_response.get('settlement_refund_fee_{}'.format(i)),
+                                            refund_fee=Decimal(parsed_response.get('refund_fee_{}'.format(i))) / 100,
+                                            settlement_refund_fee=Decimal(parsed_response.get('settlement_refund_fee_{}'.format(i))) / 100,
                                             refund_status=refund_status,
                                             refund_status_text=refund_status_text,
                                             refund_recv_accout=parsed_response.get('refund_recv_accout_{}'.format(i))
