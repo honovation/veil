@@ -9,7 +9,7 @@ FLASH_COOKIE_NAME = 'vfm'
 
 
 def set_flash_message(message):
-    set_secure_cookie(name=FLASH_COOKIE_NAME, value=message)
+    set_secure_cookie(name=FLASH_COOKIE_NAME, value=message, expires_days=None)
 
 
 @template_utility
