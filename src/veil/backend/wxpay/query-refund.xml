@@ -1,0 +1,9 @@
+<xml>
+   <appid>{{ query_request.appid }}</appid>
+   <mch_id>{{ query_request.mch_id }}</mch_id>
+   <nonce_str>{{ query_request.nonce_str }}</nonce_str>
+   <out_refund_no>{{ query_request.out_refund_no or '' }}</out_refund_no>
+   <out_trade_no>{{ query_request.out_trade_no or '' }}</out_trade_no>
+   <refund_id>{{ query_request.refund_id or '' }}</refund_id>
+   <sign>{{ query_request.sign }}</sign>
+</xml>

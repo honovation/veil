@@ -1,0 +1,11 @@
+<xml>
+   <appid>{{ refund_request.appid }}</appid>
+   <mch_id>{{ refund_request.mch_id }}</mch_id>
+   <nonce_str>{{ refund_request.nonce_str }}</nonce_str>
+   <op_user_id>{{ refund_request.op_user_id }}</op_user_id>
+   <out_refund_no>{{ refund_request.out_refund_no }}</out_refund_no>
+   <out_trade_no>{{ refund_request.out_trade_no }}</out_trade_no>
+   <refund_fee>{{ refund_request.refund_fee }}</refund_fee>
+   <total_fee>{{ refund_request.total_fee }}</total_fee>
+   <sign>{{ refund_request.sign }}</sign>
+</xml>
