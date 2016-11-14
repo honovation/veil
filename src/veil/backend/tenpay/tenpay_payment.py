@@ -189,9 +189,9 @@ def validate_notification_from_tenpay(notify_id):
     else:
         arguments = parse_xml_response(response.content)
         if is_sign_correct(arguments) and '0' == arguments.get('retcode'):
-            LOGGER.debug('tenpay notify verify succeeded: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
+            LOGGER.debug('tenpay notify verify succeeded: %(response)s, %(verify_url)s', {'response': response.content, 'verify_url': response.url})
         else:
-            LOGGER.warn('tenpay notify verify failed: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
+            LOGGER.warn('tenpay notify verify failed: %(response)s, %(verify_url)s', {'response': response.content, 'verify_url': response.url})
             error = 'notification not from tenpay'
     return error
 
@@ -241,17 +241,17 @@ def refund(out_trade_no, out_refund_no, total_fee, refund_fee, notify_url):
         response = requests.get(REFUND_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
     except Exception:
-        LOGGER.exception('request tenpay refund got exception: %(params)s, %(response)s', {'params': params, 'response': response.text if response else ''})
-        return DictObject(request_success=False, reason=response.text if response else '')
+        LOGGER.exception('request tenpay refund got exception: %(params)s, %(response)s', {'params': params, 'response': response.content if response else ''})
+        return DictObject(request_success=False, reason=response.content if response else '')
     else:
         result = parse_xml_response(response.content)
         assert result.input_charset == 'UTF-8', 'assume tenpay use same input charset as request'
         assert result.sign_type == 'MD5', 'assume tenpay use same sign type as request'
         if not is_sign_correct(result):
-            LOGGER.error('request tenpay refund got fake response: %(params)s, %(response)s', {'params': params, 'response': response.text})
+            LOGGER.error('request tenpay refund got fake response: %(params)s, %(response)s', {'params': params, 'response': response.content})
             return DictObject(request_success=False, reason='sign is incorrect')
         if result.retcode != '0':
-            LOGGER.error('request tenpay refund got failed response: %(params)s, %(response)s', {'params': params, 'response': response.text})
+            LOGGER.error('request tenpay refund got failed response: %(params)s, %(response)s', {'params': params, 'response': response.content})
             return DictObject(request_success=False, reason=result.retmsg)
 
         reason = None
@@ -347,18 +347,18 @@ def query_refund_status(out_trade_no):
     except Exception:
         LOGGER.exception('query tenpay refund status got exception: %(params)s, %(response)s', {
             'params': params,
-            'response': response.text if response else ''
+            'response': response.content if response else ''
         })
-        return DictObject(request_success=False, reason=response.text if response else '')
+        return DictObject(request_success=False, reason=response.content if response else '')
     else:
         result = parse_xml_response(response.content)
         assert result.input_charset == 'UTF-8', 'assume tenpay use same input charset as request'
         assert result.sign_type == 'MD5', 'assume tenpay use same sign type as request'
         if not is_sign_correct(result):
-            LOGGER.error('query tenpay refund status got fake response: %(params)s, %(response)s', {'params': params, 'response': response.text})
+            LOGGER.error('query tenpay refund status got fake response: %(params)s, %(response)s', {'params': params, 'response': response.content})
             return DictObject(request_success=False, reason='sign is incorrect')
         if result.retcode != '0':
-            LOGGER.error('query tenpay refund status got failed response: %(params)s, %(response)s', {'params': params, 'response': response.text})
+            LOGGER.error('query tenpay refund status got failed response: %(params)s, %(response)s', {'params': params, 'response': response.content})
             return DictObject(request_success=False, reason=result.retmsg)
         refunds = []
         for i in range(result.refund_count):

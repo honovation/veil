@@ -285,10 +285,10 @@ def validate_notification_from_alipay(notify_id):
         LOGGER.exception('alipay notify verify exception-thrown: %(params)s', {'params': params})
         error = 'failed to validate alipay notification'
     else:
-        if 'true' == response.text:
-            LOGGER.debug('alipay notify verify succeeded: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
+        if str('true') == response.content:
+            LOGGER.debug('alipay notify verify succeeded: %(response)s, %(verify_url)s', {'response': response.content, 'verify_url': response.url})
         else:
-            LOGGER.warn('alipay notify verify failed: %(response)s, %(verify_url)s', {'response': response.text, 'verify_url': response.url})
+            LOGGER.warn('alipay notify verify failed: %(response)s, %(verify_url)s', {'response': response.content, 'verify_url': response.url})
             error = 'notification not from alipay'
     return error
 
@@ -309,7 +309,7 @@ def close_alipay_trade(out_trade_no):
     except Exception:
         LOGGER.exception('alipay close trade exception-thrown: %(params)s, %(response)s', {
             'params': params,
-            'response': response.text if response else ''
+            'response': response.content if response else ''
         })
         raise
     else:
@@ -317,7 +317,7 @@ def close_alipay_trade(out_trade_no):
         if arguments.is_success == 'T':
             LOGGER.info('alipay trade closed: %(out_trade_no)s, %(response)s', {
                 'out_trade_no': out_trade_no,
-                'response': response.text
+                'response': response.content
             })
         else:
             LOGGER.warn('alipay trade close failed: %(out_trade_no)s, %(params)s, %(error)s', {
@@ -368,10 +368,10 @@ def refund(refund_date, seq_no, refund_data_list, notify_url, dback_notify_url):
         response = requests.get(REFUND_URL, data=data, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
     except Exception:
-        LOGGER.exception('request alipay refund got exception: %(response)s, %(data)s', {'response': response.text if response else '', 'data': data})
+        LOGGER.exception('request alipay refund got exception: %(response)s, %(data)s', {'response': response.content if response else '', 'data': data})
         raise
     else:
-        LOGGER.debug(response.text)
+        LOGGER.debug(response.content)
         result = parse_xml(response.content)
         if result.is_success == ALIPAY_REFUND_RESPONSE_SUCCESS_MARK:
             return batch_no
