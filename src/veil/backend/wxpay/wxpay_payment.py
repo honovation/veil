@@ -10,6 +10,7 @@ import lxml.objectify
 
 from veil.profile.model import *
 from veil.profile.web import *
+from .wxpay_client_installer import wxpay_client_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -133,7 +134,7 @@ def close_order(app_id, mch_id, api_key, out_trade_no):
         LOGGER.exception('wxpay close trade exception-thrown: %(out_trade_no)s, %(data)s', {
             'out_trade_no': out_trade_no,
             'data': data,
-            'response': response.text if response else ''
+            'response': response.content if response else ''
         })
         raise
     else:
@@ -144,16 +145,16 @@ def close_order(app_id, mch_id, api_key, out_trade_no):
         try:
             verify_wxpay_response(parsed_response, api_key)
         except Exception:
-            LOGGER.info('wxpay close trade got fake response: %(data)s, %(response)s', {'data': data, 'response': response.text})
+            LOGGER.info('wxpay close trade got fake response: %(data)s, %(response)s', {'data': data, 'response': response.content})
             raise
         if parsed_response.result_code != SUCCESSFULLY_MARK:
             LOGGER.info('wxpay close trade got failed result: %(err_code)s, %(err_code_des)s, %(data)s, %(response)s', {
                 'err_code': parsed_response.err_code,
                 'err_code_des': parsed_response.err_code_des,
                 'data': data,
-                'response': response.text
+                'response': response.content
             })
-        LOGGER.info('wxpay close trade success: %(out_trade_no)s, %(response)s', {'out_trade_no': out_trade_no, 'response': response.text})
+        LOGGER.info('wxpay close trade success: %(out_trade_no)s, %(response)s', {'out_trade_no': out_trade_no, 'response': response.content})
 
 
 def verify_wxpay_response(parsed_response, api_key):
@@ -314,7 +315,7 @@ def parse_xml_response(response):
     return arguments
 
 
-def refund(app_id, mch_id, api_key, out_trade_no, out_refund_no, total_fee, refund_fee):
+def refund(out_trade_no, out_refund_no, total_fee, refund_fee):
     """
     wxpay refund
 
@@ -327,25 +328,27 @@ def refund(app_id, mch_id, api_key, out_trade_no, out_refund_no, total_fee, refu
     :param refund_fee: 退款金额（分）
     :return:
         DictObject(success=False [,reason=...])
-        DictObject(success=True, out_trade_no: 商户订单号, out_refund_no: 商户退款单号, refund_id: 退款id, refund_channel: 退款去向（原支付卡/余额）,
-            refund_fee: 申请退款金额, settlement_refund_fee: 扣除非充值的代金券后实际退款金额)
+        DictObject(success=True, out_trade_no: 商户订单号, out_refund_no: 商户退款单号, refund_id: 退款id, refund_channel_text: 退款去向（原支付卡/余额）,
+            refund_fee: 申请退款金额, settlement_refund_fee: 扣除非充值的代金券后实际退款金额（APP微信退款接口无该字段，这里保留该字段，值与refund_fee一致）)
     """
-    refund_request = DictObject(appid=app_id, mch_id=mch_id, nonce_str=uuid4().get_hex(), out_trade_no=out_trade_no, out_refund_no=out_refund_no,
-                                total_fee=unicode(int(total_fee * 100)), refund_fee=unicode(int(refund_fee * 100)), op_user_id=mch_id)
-    refund_request.sign = sign_md5(refund_request, api_key)
+    config = wxpay_client_config()
+    refund_request = DictObject(appid=config.app_id, mch_id=config.mch_id, nonce_str=uuid4().get_hex(), out_trade_no=out_trade_no, out_refund_no=out_refund_no,
+                                total_fee=unicode(int(total_fee * 100)), refund_fee=unicode(int(refund_fee * 100)), op_user_id=config.mch_id)
+    refund_request.sign = sign_md5(refund_request, config.api_key)
     with require_current_template_directory_relative_to():
         data = to_str(get_template('refund.xml').render(refund_request=refund_request))
     headers = {'Content-Type': 'application/xml'}
     response = None
     try:
-        response = requests.post(WXPAY_REFUND_URL, data=data, headers=headers, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
+        response = requests.post(WXPAY_REFUND_URL, data=data, headers=headers, cert=(config.api_client_cert, config.api_client_key), timeout=(3.05, 9),
+                                 max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
     except Exception:
         LOGGER.exception('request wxpay refund got exception: %(out_trade_no)s, %(out_refund_no)s, %(data)s, %(response)s', {
             'out_trade_no': out_trade_no,
             'out_refund_no': out_refund_no,
             'data': data,
-            'response': response.text if response else ''
+            'response': response.content if response else ''
         })
         raise
     else:
@@ -354,26 +357,36 @@ def refund(app_id, mch_id, api_key, out_trade_no, out_refund_no, total_fee, refu
             LOGGER.error('request wxpay refund got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
             return DictObject(success=False, reason=parsed_response.return_msg)
         try:
-            verify_wxpay_response(parsed_response, api_key)
+            verify_wxpay_response(parsed_response, config.api_key)
         except Exception:
-            LOGGER.error('request wxpay refund got fake response: %(data)s, %(response)s', {'data': data, 'response': response.text})
+            LOGGER.error('request wxpay refund got fake response: %(data)s, %(response)s', {'data': data, 'response': response.content})
             return DictObject(success=False, reason='sign is incorrect')
         if parsed_response.result_code != SUCCESSFULLY_MARK:
             LOGGER.error('request wxpay refund got failed result: %(err_code)s, %(err_code_des)s, %(data)s, %(response)s', {
                 'err_code': parsed_response.err_code,
                 'err_code_des': parsed_response.err_code_des,
                 'data': data,
-                'response': response.text
+                'response': response.content
             })
             return DictObject(success=False, reason=parsed_response.err_code_des)
-        LOGGER.info('request wxpay refund success: %(response)s', {'response': response.text})
+
+        _refund_fee = Decimal(parsed_response.refund_fee) / 100
+        settlement_refund_fee = parsed_response.get('settlement_refund_fee')
+        if settlement_refund_fee:
+            settlement_refund_fee = Decimal(settlement_refund_fee) / 100
+        else:
+            settlement_refund_fee = _refund_fee
+        refund_channel_text = None
+        refund_channel = parsed_response.get('refund_channel')
+        if refund_channel:
+            refund_channel_text = WXPAY_REFUND_CHANNELS[refund_channel]
+        LOGGER.info('request wxpay refund success: %(response)s', {'response': response.content})
         return DictObject(success=True, out_trade_no=parsed_response.out_trade_no, out_refund_no=parsed_response.out_refund_no,
-                          refund_id=parsed_response.refund_id, refund_channel=parsed_response.refund_channel,
-                          refund_fee=Decimal(parsed_response.refund_fee) / 100,
-                          settlement_refund_fee=Decimal(parsed_response.settlement_refund_fee) / 100)
+                          refund_id=parsed_response.refund_id, refund_channel_text=refund_channel_text, refund_fee=_refund_fee,
+                          settlement_refund_fee=settlement_refund_fee)
 
 
-def query_refund_status(app_id, mch_id, api_key, out_trade_no):
+def query_refund_status(out_trade_no):
     """
     query wxpay refund status
 
@@ -384,11 +397,12 @@ def query_refund_status(app_id, mch_id, api_key, out_trade_no):
     :return:
         DictObject(success=False [,reason=...])
         DictObject(success=True, out_trade_no: 原交易外部订单号, refund_status=[DictObject(out_refund_no: 外部退款单号, refund_id: 退款id,
-            refund_channel: 退款去向（原支付卡/余额）, refund_fee: 申请退款金额, settlement_refund_fee: 扣除非充值的代金券后实际退款金额, refund_status: 退款状态,
+            refund_channel_text: 退款去向（原支付卡/余额）, refund_fee: 申请退款金额, settlement_refund_fee: 扣除非充值的代金券后实际退款金额, refund_status: 退款状态,
             refund_status_text: 退款状态文字（成功/失败/处理中/转代发）, refund_recv_accout: 退款入账账户(某张卡/用户零钱)), ...])
     """
-    query_request = DictObject(appid=app_id, mch_id=mch_id, nonce_str=uuid4().get_hex(), out_trade_no=out_trade_no)
-    query_request.sign = sign_md5(query_request, api_key)
+    config = wxpay_client_config()
+    query_request = DictObject(appid=config.app_id, mch_id=config.mch_id, nonce_str=uuid4().get_hex(), out_trade_no=out_trade_no)
+    query_request.sign = sign_md5(query_request, config.api_key)
     with require_current_template_directory_relative_to():
         data = to_str(get_template('query-refund.xml').render(query_request=query_request))
     headers = {'Content-Type': 'application/xml'}
@@ -400,43 +414,49 @@ def query_refund_status(app_id, mch_id, api_key, out_trade_no):
         LOGGER.exception('query wxpay refund status got exception: %(out_trade_no)s, %(data)s, %(response)s', {
             'out_trade_no': out_trade_no,
             'data': data,
-            'response': response.text if response else ''
+            'response': response.content if response else ''
         })
         raise
     else:
-        LOGGER.debug(response.text)
+        LOGGER.debug(response.content)
         parsed_response = parse_xml_response(response.content)
         if parsed_response.return_code != SUCCESSFULLY_MARK:
             LOGGER.error('query wxpay refund status got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
             return DictObject(success=False, reason=parsed_response.return_msg)
         try:
-            verify_wxpay_response(parsed_response, api_key)
+            verify_wxpay_response(parsed_response, config.api_key)
         except Exception:
-            LOGGER.error('query wxpay refund status got fake response: %(data)s, %(response)s', {'data': data, 'response': response.text})
+            LOGGER.error('query wxpay refund status got fake response: %(data)s, %(response)s', {'data': data, 'response': response.content})
             return DictObject(success=False, reason='sign is incorrect')
         if parsed_response.result_code != SUCCESSFULLY_MARK:
             LOGGER.error('query wxpay refund status got failed result: %(err_code)s, %(err_code_des)s, %(data)s, %(response)s', {
                 'err_code': parsed_response.err_code,
                 'err_code_des': parsed_response.err_code_des,
                 'data': data,
-                'response': response.text
+                'response': response.content
             })
             return DictObject(success=False, reason=parsed_response.err_code_des)
-        LOGGER.info('query wxpay refund status success: %(response)s', {'response': response.text})
-        assert parsed_response.get('refund_id_0'), 'index not start from zero'
+        LOGGER.info('query wxpay refund status success: %(response)s', {'response': response.content})
         refund_status = []
-        for i in range(parsed_response.refund_count):
-            refund_status = parsed_response.get('refund_status_{}'.format(i))
-            refund_status_text = WXPAY_REFUND_STATUS[refund_status]
+        for i in range(int(parsed_response.refund_count)):
+            refund_status_text = WXPAY_REFUND_STATUS[parsed_response.get('refund_status_{}'.format(i))]
+            refund_channel_text = None
+            refund_channel = parsed_response.get('refund_channel_{}'.format(i))
+            if refund_channel:
+                refund_channel_text = WXPAY_REFUND_CHANNELS[refund_channel]
+            refund_fee = Decimal(parsed_response.get('refund_fee_{}'.format(i))) / 100
+            settlement_refund_fee = parsed_response.get('settlement_refund_fee_{}'.format(i))
+            if settlement_refund_fee:
+                settlement_refund_fee = Decimal(settlement_refund_fee) / 100
+            else:
+                settlement_refund_fee = refund_fee
             refund_status.append(DictObject(out_refund_no=parsed_response.get('out_refund_no_{}'.format(i)),
                                             refund_id=parsed_response.get('refund_id_{}'.format(i)),
-                                            refund_channel=parsed_response.get('refund_channel_{}'.format(i)),
-                                            refund_fee=Decimal(parsed_response.get('refund_fee_{}'.format(i))) / 100,
-                                            settlement_refund_fee=Decimal(parsed_response.get('settlement_refund_fee_{}'.format(i))) / 100,
-                                            refund_status=refund_status,
+                                            refund_channel_text=refund_channel_text,
+                                            refund_fee=refund_fee,
+                                            settlement_refund_fee=settlement_refund_fee,
                                             refund_status_text=refund_status_text,
-                                            refund_recv_accout=parsed_response.get('refund_recv_accout_{}'.format(i))
-                                            ))
+                                            refund_recv_accout=parsed_response.get('refund_recv_accout_{}'.format(i))))
         return DictObject(success=True, out_trade_no=parsed_response.out_trade_no, refund_status=refund_status)
 
 
