@@ -122,6 +122,7 @@ def query_alipay_payment_status(out_trade_no):
         LOGGER.exception('alipay payment query exception-thrown: %(params)s', {'params': params})
         raise
     else:
+        LOGGER.debug(response.content)
         arguments = parse_payment_status_response(response.content)
         if arguments.is_success == 'T':
             arguments.trade.update(sign=arguments.sign, sign_type=arguments.sign_type)
@@ -339,18 +340,18 @@ def refund(refund_date, seq_no, refund_data_list, notify_url, dback_notify_url):
     :return: 退款批次号
     """
     if not refund_data_list:
-        return
+        return DictObject(success=False, reason='refund_data_list is empty')
     if len(str(seq_no)) > ALIPAY_REFUND_SEQ_NO_LENGTH_MAX:
-        raise AlipayRefundException('invalid seq_no length')
+        return DictObject(success=False, reason='invalid seq_no length')
     if len(refund_data_list) > ALIPAY_REFUND_DATA_LIST_LENGTH_MAX:
-        raise AlipayRefundException('invalid refund_data_list length')
+        return DictObject(success=False, reason='invalid refund_data_list length')
     if any(e in rd.reason for e in {'^', '|', '$', '#'} for rd in refund_data_list):
-        raise AlipayRefundException('invalid refund reason in refund_data_list')
+        return DictObject(success=False, reason='invalid refund reason in refund_data_list')
     if len({rd.trade_no for rd in refund_data_list}) != len(refund_data_list):
-        raise AlipayRefundException('need merge refund data with same trade no')
+        return DictObject(success=False, reason='need merge refund data with same trade no')
     batch_no = '{}{}'.format(refund_date.strftime('%Y%m%d'), str(seq_no).zfill(ALIPAY_REFUND_SEQ_NO_LENGTH_MIN))
     detail_data = '#'.join('{}^{}^{}'.format(rd.trade_no, rd.amount, rd.reason) for rd in refund_data_list)
-    data = dict(
+    params = dict(
         service='refund_fastpay_by_platform_nopwd',
         partner=alipay_client_config().partner_id,
         _input_charset='UTF-8',
@@ -360,27 +361,27 @@ def refund(refund_date, seq_no, refund_data_list, notify_url, dback_notify_url):
         refund_date=get_current_time_in_client_timezone().strftime('%Y-%m-%d %H:%M:%S'),
         batch_num=len(refund_data_list),
         detail_data=detail_data)
-    data['sign'] = sign_md5(data)
-    data['sign_type'] = 'MD5'
+    params['sign'] = sign_md5(params)
+    params['sign_type'] = 'MD5'
 
     response = None
     try:
-        response = requests.get(REFUND_URL, data=data, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
+        response = requests.get(REFUND_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
     except Exception:
-        LOGGER.exception('request alipay refund got exception: %(response)s, %(data)s', {'response': response.content if response else '', 'data': data})
-        raise
+        LOGGER.exception('request alipay refund got exception: %(response)s, %(params)s', {'response': response.content if response else '', 'params': params})
+        return DictObject(success=False, reason=response.content if response else '')
     else:
         LOGGER.debug(response.content)
         result = parse_xml(response.content)
         if result.is_success == ALIPAY_REFUND_RESPONSE_SUCCESS_MARK:
-            return batch_no
+            return DictObject(success=True, batch_no=batch_no)
         elif result.is_success == ALIPAY_REFUND_RESPONSE_FAIL_MARK:
             if result.error == ALIPAY_REFUND_RESPONSE_DUPLICATE_BATCH_NO:
-                return batch_no
-            raise AlipayRefundException('request alipay refund got failed result: %(error)s', {'error': result.error})
+                return DictObject(success=True, batch_no=batch_no)
+            return DictObject(success=False, reason=result.error)
         elif result.is_success == ALIPAY_REFUND_RESPONSE_PROCESSING_MARK:
-            raise AlipayRefundException('请稍后重试')
+            return DictObject(success=False, reason='please retry')
 
 
 def process_refund_notification(arguments):
@@ -444,7 +445,3 @@ def process_dback_notification(arguments):
         result.reason = '退还至原支付卡失败，在用户余额中'
     publish_event(EVENT_ALIPAY_DBACK_NOTIFIED, result=result)
     return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
-
-
-class AlipayRefundException(Exception):
-    pass

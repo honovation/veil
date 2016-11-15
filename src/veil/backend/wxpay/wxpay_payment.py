@@ -350,7 +350,7 @@ def refund(out_trade_no, out_refund_no, total_fee, refund_fee):
             'data': data,
             'response': response.content if response else ''
         })
-        raise
+        return DictObject(success=False, reason=response.content if response else '')
     else:
         parsed_response = parse_xml_response(response.content)
         if parsed_response.return_code != SUCCESSFULLY_MARK:
