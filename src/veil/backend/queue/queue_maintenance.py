@@ -55,10 +55,19 @@ def delete_pending_jobs_(queue):
     print(count)
 
 
-def delete_pending_jobs(queue):
+def delete_pending_jobs(queue, should_delete=None):
     resq = get_resq()
-    count = resq.size(queue)
-    resq.redis.delete('resque:queue:{}'.format(queue))
+    count = 0
+    key_queue = 'resque:queue:{}'.format(queue)
+    if should_delete is None:
+        with resq.redis.pipeline() as pipe:
+            pipe.llen(key_queue)
+            pipe.delete(key_queue)
+            count = pipe.execute()[0]
+    else:
+        should_delete_jobs = [job for job in resq.redis.lrange(key_queue, 0, -1) if should_delete(job)]
+        for job in should_delete_jobs:
+            count += resq.redis.lrem(key_queue, job, num=1)
     return count
 
 
