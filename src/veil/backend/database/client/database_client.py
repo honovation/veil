@@ -228,7 +228,7 @@ class Database(object):
             })
         return rows[0][0]
 
-    def insert(self, table, objects=None, returns_id=False, returns_record=False, primary_keys=False, should_insert=None, include_attributes=None,
+    def insert(self, table, objects=None, returns_id=False, returns_record=False, _primary_keys=False, should_insert=None, include_attributes=None,
                exclude_columns=(), conflict_target='', conflict_action='', **value_providers):
         """
         include_attributes:
@@ -236,7 +236,6 @@ class Database(object):
             when it is empty tuple, do not add attributes to columns;
             when it is not None and not empty tuple, add include_attributes not in exclude_columns to columns;
         """
-        value_providers.pop('primary_keys', None)
 
         if exclude_columns:
             value_providers = {k: v for k, v in value_providers.items() if k not in exclude_columns}
@@ -310,7 +309,7 @@ class Database(object):
         if conflict_target or conflict_action:
             fragments.append(' ON CONFLICT {} {}'.format(conflict_target, conflict_action))
         if returns_id:
-            key_names = ('id', ) if isinstance(primary_keys, bool) else primary_keys
+            key_names = ('id', ) if isinstance(_primary_keys, bool) else _primary_keys
             fragments.append(' RETURNING {}'.format(', '.join(key_names)))
             if len(key_names) == 1:
                 if objects:
@@ -325,9 +324,9 @@ class Database(object):
         elif returns_record:
             fragments.append(' RETURNING {}'.format('*' if returns_record is True else ', '.join(returns_record)))
             if objects:
-                return self.list(''.join(fragments), primary_keys=primary_keys, **args)
+                return self.list(''.join(fragments), primary_keys=_primary_keys, **args)
             else:
-                return self.get(''.join(fragments), primary_keys=primary_keys, **args)
+                return self.get(''.join(fragments), primary_keys=_primary_keys, **args)
         else:
             return self.execute(''.join(fragments), **args)
 
