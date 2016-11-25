@@ -236,7 +236,7 @@ class Database(object):
             when it is empty tuple, do not add attributes to columns;
             when it is not None and not empty tuple, add include_attributes not in exclude_columns to columns;
         """
-
+        value_providers.pop('primary_keys', None)
         if exclude_columns:
             value_providers = {k: v for k, v in value_providers.items() if k not in exclude_columns}
 
