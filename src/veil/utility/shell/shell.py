@@ -7,7 +7,7 @@ import os
 LOGGER = logging.getLogger(__name__)
 
 
-def shell_execute(command_line, capture=False, waits=True, shell=True, debug=False, expected_return_codes=(0,), **kwargs):
+def shell_execute(command_line, capture=False, waits=True, shell=True, debug=False, expected_return_codes=(0,), depress_log=False, **kwargs):
     if debug:
         LOGGER.debug('shell execute: %(command_line)s', {'command_line': command_line})
     if capture:
@@ -24,12 +24,13 @@ def shell_execute(command_line, capture=False, waits=True, shell=True, debug=Fal
     if capture and output:
         output = output.strip()
     if process.returncode not in expected_return_codes:
-        LOGGER.warn('received nonzero return code: %(return_code)s, %(command_line)s, %(kwargs)s, %(output)s', {
-            'return_code': process.returncode,
-            'command_line': command_line,
-            'kwargs': kwargs,
-            'output': output
-        })
+        if not depress_log:
+            LOGGER.warn('received nonzero return code: %(return_code)s, %(command_line)s, %(kwargs)s, %(output)s', {
+                'return_code': process.returncode,
+                'command_line': command_line,
+                'kwargs': kwargs,
+                'output': output
+            })
         if capture:
             raise ShellExecutionError(
                 'Subprocess return code: {}, command: {}, kwargs: {}, output: {}'.format(process.returncode, command_args, kwargs, output), output)

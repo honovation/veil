@@ -40,11 +40,11 @@ class SourceCodeMonitor(threading.Thread):
         self.init_framework_base_version = None
         self.init_framework_changes = None
         try:
-            self.init_app_base_version, self.init_app_changes = discipline_coach.get_git_dir_version(VEIL_HOME)
+            self.init_app_base_version, self.init_app_changes = discipline_coach.get_git_dir_version(VEIL_HOME, depress_log=True)
         except Exception:
             pass
         try:
-            self.init_framework_base_version, self.init_framework_changes = discipline_coach.get_git_dir_version(VEIL_FRAMEWORK_HOME)
+            self.init_framework_base_version, self.init_framework_changes = discipline_coach.get_git_dir_version(VEIL_FRAMEWORK_HOME, depress_log=True)
         except Exception:
             pass
 
@@ -63,7 +63,7 @@ class SourceCodeMonitor(threading.Thread):
     def detect_framework_change(self):
         while 1:
             try:
-                current_framework_base_version, current_framework_changes = discipline_coach.get_git_dir_version(VEIL_FRAMEWORK_HOME)
+                current_framework_base_version, current_framework_changes = discipline_coach.get_git_dir_version(VEIL_FRAMEWORK_HOME, depress_log=True)
             except Exception:
                 pass
             else:
@@ -87,7 +87,7 @@ class SourceCodeMonitor(threading.Thread):
     def detect_app_change(self):
         while 1:
             try:
-                current_app_base_version, current_app_changes = discipline_coach.get_git_dir_version(VEIL_HOME)
+                current_app_base_version, current_app_changes = discipline_coach.get_git_dir_version(VEIL_HOME, depress_log=True)
             except Exception:
                 pass
             else:
