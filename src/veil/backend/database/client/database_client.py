@@ -228,7 +228,7 @@ class Database(object):
             })
         return rows[0][0]
 
-    def insert(self, table, objects=None, returns_id=False, returns_record=False, _primary_keys=False, should_insert=None, include_attributes=None,
+    def insert(self, table, objects=None, returns_id=False, returns_record=False, returns_entity=False, should_insert=None, include_attributes=None,
                exclude_columns=(), conflict_target='', conflict_action='', **value_providers):
         """
         include_attributes:
@@ -236,7 +236,7 @@ class Database(object):
             when it is empty tuple, do not add attributes to columns;
             when it is not None and not empty tuple, add include_attributes not in exclude_columns to columns;
         """
-        value_providers.pop('primary_keys', None)
+        value_providers.pop('_key_', None)
         if exclude_columns:
             value_providers = {k: v for k, v in value_providers.items() if k not in exclude_columns}
 
@@ -257,7 +257,7 @@ class Database(object):
             elif include_attributes is None:
                 some_object = next(iter(objects))
                 if isinstance(some_object, Entity):
-                    columns += tuple(k for k in some_object if k not in exclude_columns and k not in columns and k != 'primary_keys')
+                    columns += tuple(k for k in some_object if k not in exclude_columns and k not in columns and k != '_key_')
                 elif isinstance(some_object, dict):
                     columns += tuple(k for k in some_object if k not in exclude_columns and k not in columns)
                 elif not columns:
@@ -309,7 +309,12 @@ class Database(object):
         if conflict_target or conflict_action:
             fragments.append(' ON CONFLICT {} {}'.format(conflict_target, conflict_action))
         if returns_id:
-            key_names = ('id', ) if isinstance(_primary_keys, bool) else _primary_keys
+            if returns_id is True:
+                key_names = ('id', )
+            elif isinstance(returns_id, basestring):
+                key_names = (returns_id, )
+            else:
+                key_names = returns_id
             fragments.append(' RETURNING {}'.format(', '.join(key_names)))
             if len(key_names) == 1:
                 if objects:
@@ -324,9 +329,9 @@ class Database(object):
         elif returns_record:
             fragments.append(' RETURNING {}'.format('*' if returns_record is True else ', '.join(returns_record)))
             if objects:
-                return self.list(''.join(fragments), primary_keys=_primary_keys, **args)
+                return self.list(''.join(fragments), returns_entity=returns_entity, **args)
             else:
-                return self.get(''.join(fragments), primary_keys=_primary_keys, **args)
+                return self.get(''.join(fragments), returns_entity=returns_entity, **args)
         else:
             return self.execute(''.join(fragments), **args)
 
@@ -394,12 +399,12 @@ class Database(object):
                 else:
                     return cursor.rowcount
 
-    def _query(self, sql, returns_dict_object=True, primary_keys=False, **kwargs):
+    def _query(self, sql, returns_dict_object=True, returns_entity=False, **kwargs):
         check_table_dependencies(self.component_name, self.purpose, sql)
         reconnected = False
         within_transaction_context = not self.autocommit
         while True:
-            with closing(self.conn.cursor(returns_dict_object=returns_dict_object, primary_keys=primary_keys)) as cursor:
+            with closing(self.conn.cursor(returns_dict_object=returns_dict_object, returns_entity=returns_entity)) as cursor:
                 try:
                     cursor.execute(sql, kwargs)
                 except Exception as e:
@@ -422,7 +427,7 @@ class Database(object):
                 else:
                     return cursor.fetchall()
 
-    def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, primary_keys=False, **kwargs):
+    def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, returns_entity=False, **kwargs):
         """
         Run a query with potentially large result set using server-side cursor
         """
@@ -434,7 +439,7 @@ class Database(object):
                 # psycopg2 named cursor is implemented as 'DECLARE name CURSOR WITHOUT HOLD FOR query'
                 # and should be within a transaction and not be used in autocommit mode
                 with require_transaction_context(self):
-                    cursor = self.conn.cursor(name=self._unique_cursor_name(), returns_dict_object=returns_dict_object, primary_keys=primary_keys)
+                    cursor = self.conn.cursor(name=self._unique_cursor_name(), returns_dict_object=returns_dict_object, returns_entity=returns_entity)
                     if db_fetch_size:
                         cursor.itersize = db_fetch_size
                     cursor.execute(sql, kwargs)

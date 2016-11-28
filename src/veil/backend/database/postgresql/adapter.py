@@ -118,11 +118,11 @@ class PostgresqlAdapter(object):
         if not self.conn.closed:
             self.conn.close()
 
-    def cursor(self, returns_dict_object=True, primary_keys=False, **kwargs):
+    def cursor(self, returns_dict_object=True, returns_entity=False, **kwargs):
         self._reconnect_if_broken_per_lightweight_detection()
         cursor = self.conn.cursor(cursor_factory=NamedTupleCursor if returns_dict_object else NormalCursor, **kwargs)
         if returns_dict_object:
-            return ReturningDictObjectCursor(cursor, primary_keys)
+            return ReturningDictObjectCursor(cursor, returns_entity)
         else:
             return cursor
 
@@ -132,9 +132,9 @@ class PostgresqlAdapter(object):
 
 
 class ReturningDictObjectCursor(object):
-    def __init__(self, cursor, primary_keys):
+    def __init__(self, cursor, returns_entity):
         self.cursor = cursor
-        self.primary_keys = primary_keys
+        self.returns_entity = returns_entity
 
     def fetchone(self):
         return self.to_dict_object(self.cursor.fetchone())
@@ -146,7 +146,7 @@ class ReturningDictObjectCursor(object):
         return [self.to_dict_object(row) for row in self.cursor.fetchall()]
 
     def to_dict_object(self, row):
-        return Entity(row._asdict(), primary_keys=self.primary_keys) if self.primary_keys else DictObject(row._asdict())
+        return Entity(row._asdict(), key=None if self.returns_entity is True else self.returns_entity) if self.returns_entity else DictObject(row._asdict())
 
     def __iter__(self):
         while 1:

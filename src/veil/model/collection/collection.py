@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function, division
 
-DEFAULT_PRIMARY_KEYS = ('id',)
 id2obj = {}
 
 
@@ -17,12 +16,12 @@ def _objectify(o):
         if isinstance(o, Entity):
             id2obj[id_] = o
         elif isinstance(o, DictObject):
-            primary_keys = o.pop('primary_keys', None)
-            id2obj[id_] = Entity(o, primary_keys=primary_keys) if primary_keys else o
+            key = o.pop('_key_', None)
+            id2obj[id_] = Entity(o, key=key) if key else o
         elif isinstance(o, dict):
-            primary_keys = o.pop('primary_keys', None)
-            if primary_keys:
-                id2obj[id_] = Entity(((k, _objectify(v)) for k, v in o.items()), primary_keys=primary_keys)
+            key = o.pop('_key_', None)
+            if key:
+                id2obj[id_] = Entity(((k, _objectify(v)) for k, v in o.items()), key=key)
             else:
                 id2obj[id_] = DictObject((k, _objectify(v)) for k, v in o.items())
         elif isinstance(o, (tuple, set, list)):
@@ -32,23 +31,23 @@ def _objectify(o):
     return id2obj[id_]
 
 
-def entitify(o, primary_keys=True):
+def entitify(o, key=None):
     try:
-        return _entitify(o, primary_keys)
+        return _entitify(o, key)
     finally:
         id2obj.clear()
 
 
-def _entitify(o, primary_keys):
+def _entitify(o, key):
     id_ = id(o)
     if id_ not in id2obj:
         if isinstance(o, Entity):
             id2obj[id_] = o
         elif isinstance(o, (DictObject, dict)):
-            primary_keys_ = o.pop('primary_keys', primary_keys)
-            id2obj[id_] = Entity(((k, _entitify(v, primary_keys)) for k, v in o.items()), primary_keys=primary_keys_)
+            key_ = o.pop('_key_', key)
+            id2obj[id_] = Entity(((k, _entitify(v, key)) for k, v in o.items()), key=key_)
         elif isinstance(o, (tuple, set, list)):
-            id2obj[id_] = o.__class__(_entitify(e, primary_keys) for e in o)
+            id2obj[id_] = o.__class__(_entitify(e, key) for e in o)
         else:
             id2obj[id_] = o
     return id2obj[id_]
@@ -139,11 +138,21 @@ class FrozenDictObject(DictObject):
 
 
 class Entity(DictObject):
-    def __init__(self, seq=None, primary_keys=True, **kwargs):
-        super(Entity, self).__init__(seq, primary_keys=DEFAULT_PRIMARY_KEYS if primary_keys is True else tuple(primary_keys), **kwargs)
-        assert self.primary_keys, 'must specify primary_keys'
-        if all(getattr(self, primary_key, None) is None for primary_key in self.primary_keys):
-            raise Exception('{} does not have any of {}'.format(self, self.primary_keys))
+    KEY = ('id', )
+
+    def __init__(self, seq=None, key=None, **kwargs):
+        if key is None:
+            key_ = self.__class__.KEY
+        else:
+            if isinstance(key, basestring):
+                key_ = (key, )
+            else:
+                key_ = tuple(key)
+            if key_ == self.__class__.KEY:
+                key_ = self.__class__.KEY
+        super(Entity, self).__init__(seq, _key_=key_, **kwargs)
+        if all(getattr(self, attr_name, None) is None for attr_name in self._key_):
+            raise Exception('{} does not have any of {}'.format(self, self._key_))
 
     @classmethod
     def serialize(cls, **kwargs):
@@ -161,15 +170,15 @@ class Entity(DictObject):
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return False
-        return all(getattr(self, k) == getattr(other, k) for k in self.primary_keys)
+        return all(getattr(self, attr_name) == getattr(other, attr_name) for attr_name in self._key_)
 
     def __hash__(self):
         if not self.get('_hash'):
-            self._hash = hash(tuple(self.get(k) for k in self.primary_keys))
+            self._hash = hash(tuple(self.get(attr_name) for attr_name in self._key_))
         return self._hash
 
     def __repr__(self):
-        return '<{}: {}>'.format(type(self).__name__, ', '.join('{}={}'.format(k, getattr(self, k, None)) for k in self.primary_keys))
+        return '<{}: {}>'.format(type(self).__name__, ', '.join('{}={}'.format(attr_name, getattr(self, attr_name, None)) for attr_name in self._key_))
 
 
 class FrozenEntity(Entity):

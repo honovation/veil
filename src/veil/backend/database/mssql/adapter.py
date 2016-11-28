@@ -94,12 +94,12 @@ class MSSQLAdapter(object):
     def close(self):
         self.conn.close()
 
-    def cursor(self, returns_dict_object=True, primary_keys=False, **kwargs):
+    def cursor(self, returns_dict_object=True, returns_entity=False, **kwargs):
         self._reconnect_if_broken_per_lightweight_detection()
         cursor = self.conn.cursor(as_dict=returns_dict_object, **kwargs)
         cursor = NamedParameterCursor(cursor)
         if returns_dict_object:
-            return ReturningDictObjectCursor(cursor, primary_keys)
+            return ReturningDictObjectCursor(cursor, returns_entity)
         else:
             return cursor
 
@@ -155,9 +155,9 @@ class NamedParameterCursor(object):
 
 
 class ReturningDictObjectCursor(object):
-    def __init__(self, cursor, primary_keys):
+    def __init__(self, cursor, returns_entity):
         self.cursor = cursor
-        self.primary_keys = primary_keys
+        self.returns_entity = returns_entity
 
     def fetchone(self):
         return self.to_dict_object(self.cursor.fetchone())
@@ -170,7 +170,7 @@ class ReturningDictObjectCursor(object):
 
     def to_dict_object(self, row):
         o = DictObject(row)
-        return Entity(o, primary_keys=self.primary_keys) if self.primary_keys else o
+        return Entity(o, key=None if self.returns_entity is True else self.returns_entity) if self.returns_entity else o
 
     def __iter__(self):
         while 1:
