@@ -1,4 +1,7 @@
 from __future__ import unicode_literals, print_function, division
+
+from time import sleep
+
 from veil_component import as_path
 from veil.environment import *
 from veil.frontend.cli import *
@@ -58,13 +61,21 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
     for purpose in purposes:
         config = postgresql_maintenance_config(purpose)
         config.update(database_client_config(purpose))
-        # set db owner password
-        shell_execute(
-            '''sudo -u dejavu psql -p {} -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.owner, config.owner_password),
-            debug=True)
-        # set db user password
-        shell_execute('''sudo -u dejavu psql -p {} -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.user, config.password),
-                      debug=True)
+        while True:
+            # set db owner password
+            try:
+                shell_execute(
+                    '''sudo -u dejavu psql -p {} -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.owner, config.owner_password),
+                    debug=True)
+                # set db user password
+                shell_execute(
+                    '''sudo -u dejavu psql -p {} -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.user, config.password),
+                    debug=True, capture=True)
+            except Exception:
+                print('retrying')
+                sleep(2)
+            else:
+                break
     shell_execute('veil migrate', debug=True)
 
     shell_execute('veil down', debug=True)
