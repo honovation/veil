@@ -1,4 +1,9 @@
 # -*- coding: UTF-8 -*-
+"""
+Recommend to use:
+hashids: https://github.com/davidaurelio/hashids-python
+base conversion: https://github.com/semente/python-baseconv
+"""
 from __future__ import unicode_literals, print_function, division
 import re
 from veil.utility.misc import *
