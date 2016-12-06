@@ -13,7 +13,6 @@ def get_js_sdk_sign(params):
 
 
 def get_js_sdk_config(wxop_app_code, app_id, app_secret, url, debug, js_api_list, jsapi_config=None):
-    debug = to_bool(debug)
     timestamp = get_current_timestamp()
     noncestr = uuid4().get_hex()
     params = DictObject(jsapi_ticket=get_wxmp_jsapi_ticket(wxop_app_code, app_id, app_secret, jsapi_config=jsapi_config), noncestr=noncestr,
