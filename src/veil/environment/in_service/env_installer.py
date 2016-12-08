@@ -127,11 +127,27 @@ def download_packages(veil_env_name):
 @script('deploy-monitor')
 @log_elapsed_time
 def deploy_monitor(veil_env_name):
-    server = get_veil_server(veil_env_name, '@monitor')
+    _deploy_server(veil_env_name, '@monitor')
+
+
+@script('deploy-guard')
+@log_elapsed_time
+def deploy_guard(veil_env_name):
+    _deploy_server(veil_env_name, '@guard')
+
+
+@script('deploy-server')
+@log_elapsed_time
+def deploy_server(veil_env_name, veil_server_name):
+    _deploy_server(veil_env_name, veil_server_name)
+
+
+def _deploy_server(veil_env_name, veil_server_name):
+    server = get_veil_server(veil_env_name, veil_server_name)
     host = get_veil_host(veil_env_name, server.host_name)
     with fabric.api.settings(host_string=host.deploys_via):
         if not fabric.contrib.files.exists(server.deployed_tag_path):
-            print(yellow('Use deploy-env to deploy monitor first time'))
+            print(yellow('Use deploy-env to deploy {} first time'.format(veil_server_name)))
             return
         install_resource(veil_host_codebase_resource(host=host))
     stop_servers([server])

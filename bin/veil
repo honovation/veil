@@ -147,6 +147,16 @@ case "$1" in
         sudo veil install veil_installer.component_resource?veil.environment.in_service
         exec veil environment in-service deploy-monitor $@
         ;;
+    deploy-guard)
+        shift
+        sudo veil install veil_installer.component_resource?veil.environment.in_service
+        exec veil environment in-service deploy-guard $@
+        ;;
+    deploy-server)
+        shift
+        sudo veil install veil_installer.component_resource?veil.environment.in_service
+        exec veil environment in-service deploy-server $@
+        ;;
     patch-env)
         shift
         sudo veil install veil_installer.component_resource?veil.environment.in_service

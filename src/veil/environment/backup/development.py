@@ -62,7 +62,7 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
         config = postgresql_maintenance_config(purpose)
         config.update(database_client_config(purpose))
         while True:
-            # set db owner password
+            # set db owner password and run in a loop to wait PG to start
             try:
                 shell_execute(
                     '''sudo -u dejavu psql -p {} -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.owner, config.owner_password),
