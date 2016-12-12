@@ -106,6 +106,8 @@ def veil_host_onetime_config_resource(host):
                                 owner_group='root', mode=0440),
         veil_host_file_resource(local_path=CURRENT_DIR / 'ipv4-ip-forward.conf', host=host, remote_path='/etc/sysctl.d/60-lxc-ipv4-ip-forward.conf',
                                 owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
+        veil_host_file_resource(local_path=CURRENT_DIR / 'disable-ipv6.conf', host=host, remote_path='/etc/sysctl.d/60-disable-ipv6.conf',
+                                owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-disable-ipv6.conf'),
         veil_host_sources_list_resource(host=host),
         veil_host_init_resource(host=host)
     ]

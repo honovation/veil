@@ -69,6 +69,8 @@ def veil_container_onetime_config_resource(server):
                                      owner='root', owner_group='root', mode=0755),
         veil_container_file_resource(local_path=CURRENT_DIR / 'sudoers.d.no-password', server=server, remote_path='/etc/sudoers.d/no-password', owner='root',
                                      owner_group='root', mode=0440),
+        veil_container_file_resource(local_path=CURRENT_DIR / 'disable-ipv6.conf', server=server, remote_path='/etc/sysctl.d/60-disable-ipv6.conf',
+                                     owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-disable-ipv6.conf'),
         veil_container_sources_list_resource(server=server),
         veil_container_init_resource(server=server)
     ]
