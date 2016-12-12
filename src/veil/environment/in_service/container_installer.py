@@ -172,7 +172,7 @@ def veil_container_directory_resource(server, remote_path, owner, owner_group, m
 
 
 @atomic_installer
-def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False):
+def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False, cmd=None):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_container_file?{}&path={}'.format(server.container_name, remote_path)
@@ -183,6 +183,8 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
         fabric.api.sudo('chroot {} cp -pn {path} {path}.origin'.format(container_rootfs_path, path=remote_path))
     fabric.api.put(local_path, '{}{}'.format(container_rootfs_path, remote_path), use_sudo=True, mode=mode)
     fabric.api.sudo('chroot {} chown {}:{} {}'.format(container_rootfs_path, owner, owner_group, remote_path))
+    if cmd:
+        fabric.api.sudo('chroot {} {}'.format(container_rootfs_path, cmd))
 
 
 @atomic_installer
