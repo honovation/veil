@@ -183,8 +183,8 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
         fabric.api.sudo('chroot {} cp -pn {path} {path}.origin'.format(container_rootfs_path, path=remote_path))
     fabric.api.put(local_path, '{}{}'.format(container_rootfs_path, remote_path), use_sudo=True, mode=mode)
     fabric.api.sudo('chroot {} chown {}:{} {}'.format(container_rootfs_path, owner, owner_group, remote_path))
-    if cmd:
-        fabric.api.sudo('chroot {} {}'.format(container_rootfs_path, cmd))
+    # if cmd:
+    #     fabric.api.sudo('chroot {} {}'.format(container_rootfs_path, cmd))
 
 
 @atomic_installer
