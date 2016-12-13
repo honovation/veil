@@ -69,8 +69,6 @@ def veil_container_onetime_config_resource(server):
                                      owner='root', owner_group='root', mode=0755),
         veil_container_file_resource(local_path=CURRENT_DIR / 'sudoers.d.no-password', server=server, remote_path='/etc/sudoers.d/no-password', owner='root',
                                      owner_group='root', mode=0440),
-        veil_container_file_resource(local_path=CURRENT_DIR / 'disable-ipv6.conf', server=server, remote_path='/etc/sysctl.d/60-disable-ipv6.conf',
-                                     owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-disable-ipv6.conf'),
         veil_container_sources_list_resource(server=server),
         veil_container_init_resource(server=server)
     ]
@@ -172,7 +170,7 @@ def veil_container_directory_resource(server, remote_path, owner, owner_group, m
 
 
 @atomic_installer
-def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False, cmd=None):
+def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_container_file?{}&path={}'.format(server.container_name, remote_path)
@@ -183,8 +181,6 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
         fabric.api.sudo('chroot {} cp -pn {path} {path}.origin'.format(container_rootfs_path, path=remote_path))
     fabric.api.put(local_path, '{}{}'.format(container_rootfs_path, remote_path), use_sudo=True, mode=mode)
     fabric.api.sudo('chroot {} chown {}:{} {}'.format(container_rootfs_path, owner, owner_group, remote_path))
-    # if cmd:
-    #     fabric.api.sudo('chroot {} {}'.format(container_rootfs_path, cmd))
 
 
 @atomic_installer

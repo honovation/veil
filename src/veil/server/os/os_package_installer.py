@@ -123,7 +123,8 @@ def update_os_package_catalogue():
                 LOGGER.exception('ignore the failure of running "apt-get update" under dev & test env.')
             else:
                 raise
-        set_apt_get_update_executed(True)
+        else:
+            set_apt_get_update_executed(True)
 
 
 def to_resource_key(pip_package):
