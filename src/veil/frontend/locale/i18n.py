@@ -6,10 +6,7 @@ from babel.core import Locale
 from babel.support import Translations
 import sys
 from veil.environment import VEIL_HOME
-from veil.development.test import *
 from veil.frontend.template import *
-from veil.model.event import *
-from veil.server.process import *
 
 LOGGER = getLogger(__name__)
 LOCALE_DIR = VEIL_HOME / 'locale'
@@ -67,15 +64,3 @@ def get_default_locale():
 def _(*args, **kwargs):
     # to supress the warning of pycharm
     return sys.modules['__builtin__']._(*args, **kwargs)
-
-
-@event(EVENT_PROCESS_SETUP)
-@test_hook
-def install_null_translation():
-    def clean_up():
-        del sys.modules['__builtin__'].__dict__['_']
-
-    executing_test = get_executing_test(optional=True)
-    if executing_test:
-        executing_test.addCleanup(clean_up)
-    NullTranslations().install(unicode=True)
