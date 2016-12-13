@@ -35,7 +35,7 @@ supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 {% if 'inet_http_server' in config %}
 [supervisorctl]
 ;serverurl=unix:///tmp/supervisor.sock ; use a unix:// URL  for a unix socket
-serverurl=http://{{ config.inet_http_server.host }}:{{ config.inet_http_server.port }} ; use an http:// url to specify an inet socket
+serverurl=http://localhost:{{ config.inet_http_server.port }} ; use an http:// url to specify an inet socket
 ;username=chris              ; should be same as http_username if set
 ;password=123                ; should be same as http_password if set
 ;prompt=mysupervisor         ; cmd line prompt (default "supervisor")
