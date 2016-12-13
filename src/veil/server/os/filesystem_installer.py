@@ -32,8 +32,14 @@ def install_directory(is_dry_run, path, owner='root', group='root', mode=0755, r
         if recursive:
             actions.append('RECURSIVELY-CREATE')
             if not is_dry_run:
-                LOGGER.info('creating directory recursively: %(path)s', {'path': path})
-                os.makedirs(path, mode)
+                LOGGER.info('creating directory recursively: %(path)s, %(mode)s', {'path': path, 'mode': oct(mode)})
+                original_umask = None
+                try:
+                    original_umask = os.umask(0)
+                    os.makedirs(path, mode)
+                finally:
+                    if original_umask is not None:
+                        os.umask(original_umask)
         else:
             actions.append('CREATE')
             if not is_dry_run:
