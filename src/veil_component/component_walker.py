@@ -89,12 +89,13 @@ class ComponentWalker(object):
             self.walk_module('{}.{}'.format(module_name, child), visitor)
             visitor.visit_package_end(module_name, path, source_code)
 
+
 def is_component(source_code):
     return RE_COMPONENT.search(source_code)
 
 
 def find_module_loader_without_import(module_name):
-# pkgutil.find_loader will trigger __import__
+    # pkgutil.find_loader will trigger __import__
     if '.' in module_name:
         parent_module_name = module_name[:module_name.rfind('.')]
         parent_loader = find_module_loader_without_import(parent_module_name)

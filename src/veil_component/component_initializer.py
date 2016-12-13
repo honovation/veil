@@ -3,6 +3,7 @@ import contextlib
 import sys
 import time
 import logging
+
 from .component_walker import ComponentWalker
 from .component_walker import ComponentInternalVisitor
 from .component_map import scan_component
@@ -10,6 +11,7 @@ from .component_logging import configure_logging
 
 LOGGER = logging.getLogger(__name__)
 loading_component_names = []
+
 
 @contextlib.contextmanager
 def init_component(component_name):
@@ -37,10 +39,13 @@ def get_loading_component_name():
 
 class ComponentLoader(ComponentInternalVisitor):
     def visit_module(self, module_name, path, source_code):
+        # LOGGER.debug('v>module> {}'.format(module_name))
         __import__(module_name)
 
     def visit_package_start(self, package_name, path, source_code):
+        # LOGGER.debug('v>package> {}'.format(package_name))
         __import__(package_name)
 
     def visit_sub_component(self, component_name, path, source_code):
+        # LOGGER.debug('v>component> {}'.format(component_name))
         __import__(component_name)
