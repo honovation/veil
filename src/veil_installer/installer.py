@@ -115,7 +115,7 @@ def do_install(resource):
             install_resources([('veil_installer.component_resource', dict(name=installer_module_name))])
     try:
         installer = get_installer(installer_name)
-        # LOGGER.debug('install> {}'.format(resource))
+        # print('install> {}'.format(resource))
         return installer(do_install=True, **installer_args) or []
     except Exception:
         if get_dry_run_result() is None:

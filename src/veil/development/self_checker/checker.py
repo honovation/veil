@@ -1,4 +1,7 @@
 from __future__ import unicode_literals, print_function, division
+
+from collections import OrderedDict
+
 import discipline_coach
 import logging
 import os
@@ -19,16 +22,16 @@ from .html_checker import check_html
 
 LOGGER = logging.getLogger(__name__)
 
-SELF_CHECKERS = {
-    'dep-static-integrity': check_static_dependency_integrity,
-    'dep-static-cycle': check_static_dependency_cycle,
-    'encapsulation': check_encapsulation,
-    'loc': check_loc,
-    'live-document': check_live_document,
-    'correctness': check_correctness,
-    'logger': check_logger,
-    'html': check_html,
-}
+SELF_CHECKERS = OrderedDict([
+    ('dep-static-integrity', check_static_dependency_integrity),
+    ('dep-static-cycle', check_static_dependency_cycle),
+    ('encapsulation', check_encapsulation),
+    ('loc', check_loc),
+    ('logger', check_logger),
+    ('html', check_html),
+    ('correctness', check_correctness),
+    ('live-document', check_live_document)
+])
 
 
 @script('self-check')

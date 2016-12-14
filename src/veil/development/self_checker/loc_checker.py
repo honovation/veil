@@ -3,8 +3,8 @@ import os.path
 import veil_component
 import sys
 
-WHITE_LIST = {'veil.frontend.web.tornado'} # copied from somewhere
-THRESHOLD = 500
+WHITE_LIST = {'veil.frontend.web.tornado'}  # copied from somewhere
+THRESHOLD = 600
 GOAL = 500
 
 
@@ -20,7 +20,7 @@ def check_loc():
     for component_name in sorted(component_files):
         files = component_files[component_name]
         component_loc = sum(f[1] for f in files)
-        if component_name not in WHITE_LIST:
+        if component_name not in WHITE_LIST and '.website.' not in component_name:
             max_loc = max(component_loc, max_loc)
             if component_loc > THRESHOLD:
                 raise Exception('{} contains {} lines of code, extract component out!\n{}'.format(
@@ -33,4 +33,4 @@ def get_loc(file_path):
     if not os.path.exists(file_path):
         return 0
     with open(file_path) as f:
-        return len(f.readlines())
+        return sum(1 for line in f.readline() if line.strip())
