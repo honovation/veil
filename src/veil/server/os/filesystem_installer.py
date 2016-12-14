@@ -28,26 +28,36 @@ def directory_resource(path, owner='root', group='root', mode=0755, recursive=Fa
 
 def install_directory(is_dry_run, path, owner='root', group='root', mode=0755, recursive=False):
     actions = []
+    missing_paths = []
     if not os.path.exists(path):
         if recursive:
+            missing_paths = list_missing_paths(path)
             actions.append('RECURSIVELY-CREATE')
             if not is_dry_run:
                 LOGGER.info('creating directory recursively: %(path)s, %(mode)s', {'path': path, 'mode': oct(mode)})
-                original_umask = None
-                try:
-                    original_umask = os.umask(0)
-                    os.makedirs(path, mode)
-                finally:
-                    if original_umask is not None:
-                        os.umask(original_umask)
+                os.makedirs(path, mode)
         else:
             actions.append('CREATE')
             if not is_dry_run:
                 LOGGER.info('creating directory: %(path)s', {'path': path})
                 os.mkdir(path, mode)
-    if os.path.exists(path):
+    if missing_paths:
+        for mp in missing_paths:
+            actions.extend(ensure_metadata(is_dry_run, mp, owner, group, mode=mode))
+    elif os.path.exists(path):
         actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
     return actions
+
+
+def list_missing_paths(path):
+    missing_paths = []
+    head = path
+    while head and not os.path.exists(head):
+        missing_paths.append(head)
+        head, tail = os.path.split(head)
+        if not tail or tail == os.curdir:
+            head, tail = os.path.split(head)
+    return missing_paths
 
 
 @atomic_installer
