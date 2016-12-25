@@ -83,6 +83,7 @@ def read_from_file(file_path, providers, consumers):
 
 lines = []
 
+
 def record_line(line):
     global lines
     if line not in lines:

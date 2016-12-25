@@ -29,6 +29,7 @@ from .environment import VEIL_BUCKET_INLINE_STATIC_FILES_DIR
 from .environment import VEIL_BUCKET_UPLOADED_FILES_DIR
 
 from .environment import VEIL_FRAMEWORK_CODEBASE
+from .environment import get_application
 from .environment import get_application_codebase
 from .environment import get_application_version
 from .environment import get_application_sms_whitelist

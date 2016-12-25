@@ -251,13 +251,11 @@ def get_application_codebase():
 
 
 def get_application_sms_whitelist():
-    application = get_application()
-    return application.SMS_WHITELIST if hasattr(application, 'SMS_WHITELIST') else set()
+    return getattr(get_application(), 'SMS_WHITELIST', set())
 
 
 def get_application_email_whitelist():
-    application = get_application()
-    return application.EMAIL_WHITELIST if hasattr(application, 'EMAIL_WHITELIST') else set()
+    return getattr(get_application(), 'EMAIL_WHITELIST', set())
 
 
 def get_application():
