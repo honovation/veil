@@ -315,9 +315,11 @@ def process_refund_notification(arguments):
     success = arguments.refund_status in TENPAY_REFUND_STATUS_SUCCESS_MARKS
     if success:
         ret_data.success = True
+        ret_data.processing = False
         ret_data.refund_status_text = '退款成功'
     else:
         ret_data.success = False
+        ret_data.processing = arguments.refund_status in TENPAY_REFUND_STATUS_PROCESSING_MARKS
         if arguments.refund_status in TENPAY_REFUND_STATUS_FAIL_MARKS:
             ret_data.refund_status_text = '退款失败'
         elif arguments.refund_status in TENPAY_REFUND_STATUS_PROCESSING_MARKS:
@@ -337,7 +339,7 @@ def query_refund_status(out_trade_no):
     :param out_trade_no: 原交易外部订单号
     :return:
         DictObject(request_success=False, reason=...)
-        DictObject(request_success=True, out_trade_no: 原交易外部订单号, refunds=[DictObject(out_refund_no: 外部退款单号, refund_id: 退款id,
+        DictObject(request_success=True, out_trade_no: 原交易外部订单号, refunds=[DictObject(success:, processing:, out_refund_no: 外部退款单号, refund_id: 退款id,
             refund_status_text:退款状态（成功/失败/处理中/需人工处理）, refund_fee: 退款金额, refund_channel_text: 退款去向（财付通/银行卡）,
             recv_user_id: 接收退款的财付通账号, reccv_user_name: 接收退款的姓名, refund_time_begin: 申请退款时间(UTC), refund_time_last_modify: 退款最后修改时间(UTC)), ...])
     """
@@ -369,12 +371,13 @@ def query_refund_status(out_trade_no):
             if _refund_status in TENPAY_REFUND_STATUS_NEED_RETRY_MARKS:
                 continue
             success = _refund_status in TENPAY_REFUND_STATUS_SUCCESS_MARKS
+            processing = _refund_status in TENPAY_REFUND_STATUS_PROCESSING_MARKS
             if success:
                 refund_status_text = '退款成功'
             else:
                 if _refund_status in TENPAY_REFUND_STATUS_FAIL_MARKS:
                     refund_status_text = '退款失败'
-                elif _refund_status in TENPAY_REFUND_STATUS_PROCESSING_MARKS:
+                elif processing:
                     refund_status_text = '退款处理中'
                     if _refund_status == TENPAY_REFUND_STATUS_PROCESSING_SUBMITTED_TO_BANK:
                         refund_status_text = '退款处理中：已提交退款请求给银行'
@@ -391,6 +394,7 @@ def query_refund_status(out_trade_no):
                 refund_time_last_modify = to_datetime(format='%Y%m%d%H%M%S')(refund_time_last_modify)
             refunds.append(DictObject(
                 success=success,
+                processing=processing,
                 refund_status_text=refund_status_text,
                 out_trade_no=out_trade_no,
                 out_refund_no=result.get('out_refund_no_{}'.format(i)),

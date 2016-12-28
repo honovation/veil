@@ -439,7 +439,10 @@ def query_refund_status(out_trade_no):
         LOGGER.info('query wxpay refund status success: %(response)s', {'response': response.content})
         refund_status = []
         for i in range(int(parsed_response.refund_count)):
-            refund_status_text = WXPAY_REFUND_STATUS[parsed_response.get('refund_status_{}'.format(i))]
+            _refund_status = parsed_response.get('refund_status_{}'.format(i))
+            success = _refund_status == WXPAY_REFUND_STATUS_SUCCESS
+            processing = _refund_status == WXPAY_REFUND_STATUS_PROCESSING
+            refund_status_text = WXPAY_REFUND_STATUS[_refund_status]
             refund_channel_text = None
             refund_channel = parsed_response.get('refund_channel_{}'.format(i))
             if refund_channel:
@@ -450,13 +453,16 @@ def query_refund_status(out_trade_no):
                 settlement_refund_fee = Decimal(settlement_refund_fee) / 100
             else:
                 settlement_refund_fee = refund_fee
-            refund_status.append(DictObject(out_refund_no=parsed_response.get('out_refund_no_{}'.format(i)),
-                                            refund_id=parsed_response.get('refund_id_{}'.format(i)),
-                                            refund_channel_text=refund_channel_text,
-                                            refund_fee=refund_fee,
-                                            settlement_refund_fee=settlement_refund_fee,
-                                            refund_status_text=refund_status_text,
-                                            refund_recv_accout=parsed_response.get('refund_recv_accout_{}'.format(i))))
+            refund_status.append(DictObject(
+                success=success,
+                processing=processing,
+                out_refund_no=parsed_response.get('out_refund_no_{}'.format(i)),
+                refund_id=parsed_response.get('refund_id_{}'.format(i)),
+                refund_channel_text=refund_channel_text,
+                refund_fee=refund_fee,
+                settlement_refund_fee=settlement_refund_fee,
+                refund_status_text=refund_status_text,
+                refund_recv_accout=parsed_response.get('refund_recv_accout_{}'.format(i))))
         return DictObject(success=True, out_trade_no=parsed_response.out_trade_no, refund_status=refund_status)
 
 
