@@ -328,39 +328,37 @@ def close_alipay_trade(out_trade_no):
             })
 
 
-def refund(refund_date, seq_no, refund_data_list, notify_url, dback_notify_url):
+def refund(out_refund_no, trade_no, amount, reason, notify_url=None, dback_notify_url=None):
     """
-    alipay batch refund interface without password
+    alipay refund interface without password
 
-    :param refund_date: 退款日期，用来生成batch_no
-    :param seq_no: 批量退款流水号（最大24位），用来生成batch_no
-    :param refund_data_list: 退款数据列表，最多1000笔，每个元素为一个DictObject(trade_no=..., amount=Decimal object, reason=...)，其中reason中不能包含: ^, |, $, #
+    :param out_refund_no: 批量退款流水号（最大24位），用来生成batch_no
+    :param trade_no: 原支付宝交易号
+    :param amount: 退款金额，Decimal
+    :param reason: 退款原因，不能包含: ^, |, $, #
     :param notify_url: 退款结果异步通知URL
     :param dback_notify_url: 充退结果异步通知URL
-    :return: 退款批次号
+    :return: {request_success=True/False, reason=IF REQUEST FAIL, batch_no=IF REQUEST SUCCESS}
     """
-    if not refund_data_list:
-        return DictObject(success=False, reason='refund_data_list is empty')
-    if len(str(seq_no)) > ALIPAY_REFUND_SEQ_NO_LENGTH_MAX:
-        return DictObject(success=False, reason='invalid seq_no length')
-    if len(refund_data_list) > ALIPAY_REFUND_DATA_LIST_LENGTH_MAX:
-        return DictObject(success=False, reason='invalid refund_data_list length')
-    if any(e in rd.reason for e in {'^', '|', '$', '#'} for rd in refund_data_list):
-        return DictObject(success=False, reason='invalid refund reason in refund_data_list')
-    if len({rd.trade_no for rd in refund_data_list}) != len(refund_data_list):
-        return DictObject(success=False, reason='need merge refund data with same trade no')
-    batch_no = '{}{}'.format(refund_date.strftime('%Y%m%d'), str(seq_no).zfill(ALIPAY_REFUND_SEQ_NO_LENGTH_MIN))
-    detail_data = '#'.join('{}^{}^{}'.format(rd.trade_no, rd.amount, rd.reason) for rd in refund_data_list)
+    if len(str(out_refund_no)) > ALIPAY_REFUND_SEQ_NO_LENGTH_MAX:
+        return DictObject(request_success=False, reason='invalid seq_no length')
+    if any(e in reason for e in {'^', '|', '$', '#'}):
+        return DictObject(request_success=False, reason='invalid refund reason in refund_data_list')
+    refund_time = get_current_time_in_client_timezone()
+    batch_no = '{}{}'.format(refund_time.strftime('%Y%m%d'), str(out_refund_no).zfill(ALIPAY_REFUND_SEQ_NO_LENGTH_MIN))
+    detail_data = '{}^{:f}^{}'.format(trade_no, amount, reason)
     params = dict(
         service='refund_fastpay_by_platform_nopwd',
         partner=alipay_client_config().partner_id,
         _input_charset='UTF-8',
-        notify_url=notify_url,
-        dback_notify_url=dback_notify_url,
         batch_no=batch_no,
-        refund_date=get_current_time_in_client_timezone().strftime('%Y-%m-%d %H:%M:%S'),
-        batch_num=len(refund_data_list),
+        refund_date=refund_time.strftime('%Y-%m-%d %H:%M:%S'),
+        batch_num=1,
         detail_data=detail_data)
+    if notify_url:
+        params['notify_url'] = notify_url
+    if dback_notify_url:
+        params['dback_notify_url'] = dback_notify_url
     params['sign'] = sign_md5(params)
     params['sign_type'] = 'MD5'
 
@@ -368,20 +366,27 @@ def refund(refund_date, seq_no, refund_data_list, notify_url, dback_notify_url):
     try:
         response = requests.get(REFUND_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
-    except Exception:
-        LOGGER.exception('request alipay refund got exception: %(response)s, %(params)s', {'response': response.content if response else '', 'params': params})
-        return DictObject(success=False, reason=response.content if response else '')
+    except ReadTimeout:
+        LOGGER.exception('request alipay refund got read timeout: %(params)s', {'params': params})
+        return DictObject(request_success=False, reason='read response but timeout')
+    except Exception as e:
+        LOGGER.exception('request alipay refund got exception: %(response)s, %(params)s, %(message)s', {
+            'response': response.content if response else '',
+            'params': params,
+            'message': e.message
+        })
+        return DictObject(request_success=False, reason=response.content if response else e.message)
     else:
         LOGGER.debug(response.content)
         result = parse_xml(response.content)
         if result.is_success == ALIPAY_REFUND_RESPONSE_SUCCESS_MARK:
-            return DictObject(success=True, batch_no=batch_no)
+            return DictObject(request_success=True, batch_no=batch_no)
         elif result.is_success == ALIPAY_REFUND_RESPONSE_FAIL_MARK:
             if result.error == ALIPAY_REFUND_RESPONSE_DUPLICATE_BATCH_NO:
-                return DictObject(success=True, batch_no=batch_no)
-            return DictObject(success=False, reason=result.error)
+                return DictObject(request_success=True, batch_no=batch_no)
+            return DictObject(request_success=False, reason=result.error)
         elif result.is_success == ALIPAY_REFUND_RESPONSE_PROCESSING_MARK:
-            return DictObject(success=False, reason='please retry')
+            return DictObject(request_success=False, reason='please query refund on alipay website')
 
 
 def process_refund_notification(arguments):
