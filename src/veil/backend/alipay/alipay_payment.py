@@ -347,7 +347,7 @@ def refund(out_refund_no, trade_no, amount, reason, notify_url=None, dback_notif
     refund_time = get_current_time_in_client_timezone()
     batch_no = '{}{}'.format(refund_time.strftime('%Y%m%d'), str(out_refund_no).zfill(ALIPAY_REFUND_SEQ_NO_LENGTH_MIN))
     detail_data = '{}^{:f}^{}'.format(trade_no, amount, reason)
-    params = dict(
+    params = DictObject(
         service='refund_fastpay_by_platform_nopwd',
         partner=alipay_client_config().partner_id,
         _input_charset='UTF-8',
@@ -356,11 +356,11 @@ def refund(out_refund_no, trade_no, amount, reason, notify_url=None, dback_notif
         batch_num=1,
         detail_data=detail_data)
     if notify_url:
-        params['notify_url'] = notify_url
+        params.notify_url = notify_url
     if dback_notify_url:
-        params['dback_notify_url'] = dback_notify_url
-    params['sign'] = sign_md5(params)
-    params['sign_type'] = 'MD5'
+        params.dback_notify_url = dback_notify_url
+    params.sign = sign_md5(params)
+    params.sign_type = 'MD5'
 
     response = None
     try:

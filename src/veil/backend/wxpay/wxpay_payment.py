@@ -317,18 +317,15 @@ def parse_xml_response(response):
 
 def refund(out_trade_no, out_refund_no, total_fee, refund_fee):
     """
-    wxpay refund
+    request wxpay refund
 
-    :param app_id: 公众号id或app的id
-    :param mch_id: 商户号
-    :param api_key:
     :param out_trade_no: 原交易外部订单号
     :param out_refund_no: 外部退款单号
-    :param total_fee: 原交易金额（分）
-    :param refund_fee: 退款金额（分）
+    :param total_fee: 原交易金额, Decimal
+    :param refund_fee: 退款金额, Decimal
     :return:
-        DictObject(success=False [,reason=...])
-        DictObject(success=True, out_trade_no: 商户订单号, out_refund_no: 商户退款单号, refund_id: 退款id, refund_channel_text: 退款去向（原支付卡/余额）,
+        DictObject(request_success=False reason=...)
+        DictObject(request_success=True, out_trade_no: 商户订单号, out_refund_no: 商户退款单号, refund_id: 退款id, refund_channel_text: 退款去向（原支付卡/余额）,
             refund_fee: 申请退款金额, settlement_refund_fee: 扣除非充值的代金券后实际退款金额（APP微信退款接口无该字段，这里保留该字段，值与refund_fee一致）)
     """
     config = wxpay_client_config()
@@ -343,24 +340,27 @@ def refund(out_trade_no, out_refund_no, total_fee, refund_fee):
         response = requests.post(WXPAY_REFUND_URL, data=data, headers=headers, cert=(config.api_client_cert, config.api_client_key), timeout=(3.05, 9),
                                  max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
-    except Exception:
+    except ReadTimeout:
+        LOGGER.exception('request wxpay refund got read timeout: %(data)s', {'data': data})
+        return DictObject(request_success=False, reason='read response but timeout')
+    except Exception as e:
         LOGGER.exception('request wxpay refund got exception: %(out_trade_no)s, %(out_refund_no)s, %(data)s, %(response)s', {
             'out_trade_no': out_trade_no,
             'out_refund_no': out_refund_no,
             'data': data,
-            'response': response.content if response else ''
+            'response': response.content if response else e.message
         })
-        return DictObject(success=False, reason=response.content if response else '')
+        return DictObject(request_success=False, reason=response.content if response else e.message)
     else:
         parsed_response = parse_xml_response(response.content)
         if parsed_response.return_code != SUCCESSFULLY_MARK:
             LOGGER.error('request wxpay refund got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
-            return DictObject(success=False, reason=parsed_response.return_msg)
+            return DictObject(request_success=False, reason=parsed_response.return_msg)
         try:
             verify_wxpay_response(parsed_response, config.api_key)
         except Exception:
             LOGGER.error('request wxpay refund got fake response: %(data)s, %(response)s', {'data': data, 'response': response.content})
-            return DictObject(success=False, reason='sign is incorrect')
+            return DictObject(request_success=False, reason='sign is incorrect')
         if parsed_response.result_code != SUCCESSFULLY_MARK:
             LOGGER.error('request wxpay refund got failed result: %(err_code)s, %(err_code_des)s, %(data)s, %(response)s', {
                 'err_code': parsed_response.err_code,
@@ -368,7 +368,13 @@ def refund(out_trade_no, out_refund_no, total_fee, refund_fee):
                 'data': data,
                 'response': response.content
             })
-            return DictObject(success=False, reason=parsed_response.err_code_des)
+            return DictObject(request_success=False, reason=parsed_response.err_code_des)
+        if parsed_response.out_trade_no != out_trade_no:
+            return DictObject(request_success=False, reason='out trade no mismatch')
+        if parsed_response.out_refund_no != out_refund_no:
+            return DictObject(request_success=False, reason='out refund no mismatch')
+        if refund_fee != Decimal(parsed_response.refund_fee) / 100:
+            return DictObject(request_success=False, reason='refund fee mismatch')
 
         _refund_fee = Decimal(parsed_response.refund_fee) / 100
         settlement_refund_fee = parsed_response.get('settlement_refund_fee')
@@ -381,27 +387,24 @@ def refund(out_trade_no, out_refund_no, total_fee, refund_fee):
         if refund_channel:
             refund_channel_text = WXPAY_REFUND_CHANNELS[refund_channel]
         LOGGER.info('request wxpay refund success: %(response)s', {'response': response.content})
-        return DictObject(success=True, out_trade_no=parsed_response.out_trade_no, out_refund_no=parsed_response.out_refund_no,
+        return DictObject(request_success=True, out_trade_no=parsed_response.out_trade_no, out_refund_no=parsed_response.out_refund_no,
                           refund_id=parsed_response.refund_id, refund_channel_text=refund_channel_text, refund_fee=_refund_fee,
                           settlement_refund_fee=settlement_refund_fee)
 
 
-def query_refund_status(out_trade_no):
+def query_refund_status(out_refund_no):
     """
     query wxpay refund status
 
-    :param app_id: 公众号id或app的id
-    :param mch_id: 商户号
-    :param api_key:
-    :param out_trade_no: 原交易的外部订单号
+    :param out_refund_no: 退款单号
     :return:
-        DictObject(success=False [,reason=...])
+        DictObject(request_success=False [,reason=...])
         DictObject(success=True, out_trade_no: 原交易外部订单号, refund_status=[DictObject(out_refund_no: 外部退款单号, refund_id: 退款id,
             refund_channel_text: 退款去向（原支付卡/余额）, refund_fee: 申请退款金额, settlement_refund_fee: 扣除非充值的代金券后实际退款金额, refund_status: 退款状态,
             refund_status_text: 退款状态文字（成功/失败/处理中/转代发）, refund_recv_accout: 退款入账账户(某张卡/用户零钱)), ...])
     """
     config = wxpay_client_config()
-    query_request = DictObject(appid=config.app_id, mch_id=config.mch_id, nonce_str=uuid4().get_hex(), out_trade_no=out_trade_no)
+    query_request = DictObject(appid=config.app_id, mch_id=config.mch_id, nonce_str=uuid4().get_hex(), out_refund_no=out_refund_no)
     query_request.sign = sign_md5(query_request, config.api_key)
     with require_current_template_directory_relative_to():
         data = to_str(get_template('query-refund.xml').render(query_request=query_request))
@@ -410,24 +413,27 @@ def query_refund_status(out_trade_no):
     try:
         response = requests.post(WXPAY_REFUND_QUERY_URL, data=data, headers=headers, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
-    except Exception:
-        LOGGER.exception('query wxpay refund status got exception: %(out_trade_no)s, %(data)s, %(response)s', {
-            'out_trade_no': out_trade_no,
+    except ReadTimeout:
+        LOGGER.exception('query wxpay refund status got read timeout: %(data)s', {'data': data})
+        return DictObject(request_success=False, reason='read response but timeout')
+    except Exception as e:
+        LOGGER.exception('query wxpay refund status got exception: %(out_refund_no)s, %(data)s, %(response)s', {
+            'out_refund_no': out_refund_no,
             'data': data,
             'response': response.content if response else ''
         })
-        raise
+        return DictObject(request_success=False, reason=response.content if response else e.message)
     else:
         LOGGER.debug(response.content)
         parsed_response = parse_xml_response(response.content)
         if parsed_response.return_code != SUCCESSFULLY_MARK:
             LOGGER.error('query wxpay refund status got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
-            return DictObject(success=False, reason=parsed_response.return_msg)
+            return DictObject(request_success=False, reason=parsed_response.return_msg)
         try:
             verify_wxpay_response(parsed_response, config.api_key)
         except Exception:
             LOGGER.error('query wxpay refund status got fake response: %(data)s, %(response)s', {'data': data, 'response': response.content})
-            return DictObject(success=False, reason='sign is incorrect')
+            return DictObject(request_success=False, reason='sign is incorrect')
         if parsed_response.result_code != SUCCESSFULLY_MARK:
             LOGGER.error('query wxpay refund status got failed result: %(err_code)s, %(err_code_des)s, %(data)s, %(response)s', {
                 'err_code': parsed_response.err_code,
@@ -435,35 +441,40 @@ def query_refund_status(out_trade_no):
                 'data': data,
                 'response': response.content
             })
-            return DictObject(success=False, reason=parsed_response.err_code_des)
+            return DictObject(request_success=False, reason=parsed_response.err_code_des)
         LOGGER.info('query wxpay refund status success: %(response)s', {'response': response.content})
         refund_status = []
         for i in range(int(parsed_response.refund_count)):
             _refund_status = parsed_response.get('refund_status_{}'.format(i))
+            refund_status_text = WXPAY_REFUND_STATUS[_refund_status]
             success = _refund_status == WXPAY_REFUND_STATUS_SUCCESS
             processing = _refund_status == WXPAY_REFUND_STATUS_PROCESSING
-            refund_status_text = WXPAY_REFUND_STATUS[_refund_status]
+            failed = _refund_status in (WXPAY_REFUND_STATUS_FAIL, WXPAY_REFUND_STATUS_CHANGE)
+
             refund_channel_text = None
             refund_channel = parsed_response.get('refund_channel_{}'.format(i))
             if refund_channel:
                 refund_channel_text = WXPAY_REFUND_CHANNELS[refund_channel]
+
             refund_fee = Decimal(parsed_response.get('refund_fee_{}'.format(i))) / 100
             settlement_refund_fee = parsed_response.get('settlement_refund_fee_{}'.format(i))
             if settlement_refund_fee:
                 settlement_refund_fee = Decimal(settlement_refund_fee) / 100
             else:
                 settlement_refund_fee = refund_fee
+
             refund_status.append(DictObject(
                 success=success,
                 processing=processing,
+                failed=failed,
+                refund_status_text=refund_status_text,
                 out_refund_no=parsed_response.get('out_refund_no_{}'.format(i)),
                 refund_id=parsed_response.get('refund_id_{}'.format(i)),
                 refund_channel_text=refund_channel_text,
                 refund_fee=refund_fee,
                 settlement_refund_fee=settlement_refund_fee,
-                refund_status_text=refund_status_text,
                 refund_recv_accout=parsed_response.get('refund_recv_accout_{}'.format(i))))
-        return DictObject(success=True, out_trade_no=parsed_response.out_trade_no, refund_status=refund_status)
+        return DictObject(request_success=True, out_trade_no=parsed_response.out_trade_no, refund_status=refund_status)
 
 
 class InvalidWXAccessToken(Exception):
