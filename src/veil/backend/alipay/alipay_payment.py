@@ -341,9 +341,9 @@ def refund(out_refund_no, trade_no, amount, reason, notify_url=None, dback_notif
     :return: {request_success=True/False, reason=IF REQUEST FAIL, batch_no=IF REQUEST SUCCESS}
     """
     if len(str(out_refund_no)) > ALIPAY_REFUND_SEQ_NO_LENGTH_MAX:
-        return DictObject(request_success=False, reason='invalid seq_no length')
+        return DictObject(request_success=False, reason='流水号超过上限')
     if any(e in reason for e in {'^', '|', '$', '#'}):
-        return DictObject(request_success=False, reason='invalid refund reason in refund_data_list')
+        return DictObject(request_success=False, reason='退款原因不能包含：^, |, $, #')
     refund_time = get_current_time_in_client_timezone()
     batch_no = '{}{}'.format(refund_time.strftime('%Y%m%d'), str(out_refund_no).zfill(ALIPAY_REFUND_SEQ_NO_LENGTH_MIN))
     detail_data = '{}^{:f}^{}'.format(trade_no, amount, reason)
@@ -400,27 +400,30 @@ def process_refund_notification(arguments):
         DictObject(success=False, reason=...) if sign is incorrect or fake notification from alipay or invalid refund results format
         DictObject(batch_no: 退款批次号, success_num: 成功退款数量, refund_results=[DictObject(trade_no=..., amount=..., success=True/False, [reason=CODE]), ...]
     """
+    assert arguments.sign_type == 'MD5', 'unknown sign type'
     if not is_sign_correct(arguments):
         LOGGER.error('got refund notification which sign is incorrect: %(arguments)s', {'arguments': arguments})
-        return DictObject(success=False, reason='sign is incorrect')
+        return 'sign is incorrect'
     verify_notification_result = validate_notification_from_alipay(arguments.notify_id)
     if verify_notification_result:
         LOGGER.error('got refund notification which is not from alipay: %(arguments)s', {'arguments': arguments})
-        return DictObject(success=False, reason='notification is not from alipay')
-    refund_results = []
-    for refund_result in arguments.result_details.split('#'):
-        try:
-            trade_no, amount, result_code = refund_result.split('^')
-        except Exception:
-            LOGGER.error('got refund notification which refund result format is unexpected: %(result)s', {'result': refund_result})
-            return DictObject(success=False, reason='invalid refund results format')
+        return 'fake notification'
+    ret_data = DictObject(batch_no=arguments.batch_no)
+    refund_result = arguments.result_details
+    try:
+        trade_no, amount, result_code = refund_result.split('^')
+    except Exception:
+        LOGGER.error('got refund notification which refund result format is unexpected: %(result)s', {'result': refund_result})
+        return 'invalid refund results format'
+    else:
+        ret_data.trade_no = trade_no
+        ret_data.amount = Decimal(amount)
+        if result_code == ALIPAY_REFUND_RESULT_SUCCESS_MARK:
+            ret_data.success = True
         else:
-            if result_code == ALIPAY_REFUND_RESULT_SUCCESS_MARK:
-                refund_results.append(DictObject(trade_no=trade_no, amount=Decimal(amount), success=True))
-            else:
-                refund_results.append(DictObject(trade_no=trade_no, amount=Decimal(amount), success=False, reason=result_code))
-    result = DictObject(batch_no=arguments.batch_no, success_num=arguments.success_num, refund_results=refund_results)
-    publish_event(EVENT_ALIPAY_REFUND_NOTIFIED, result=result)
+            ret_data.success = False
+            ret_data.reason = result_code
+    publish_event(EVENT_ALIPAY_REFUND_NOTIFIED, result=ret_data)
     return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
 
 
@@ -438,11 +441,11 @@ def process_dback_notification(arguments):
     """
     if not is_sign_correct(arguments):
         LOGGER.error('got dback notification which sign is incorrect: %(arguments)s', {'arguments': arguments})
-        return DictObject(success=False, reason='sign is incorrect')
+        return 'sign is incorrect'
     verify_notification_result = validate_notification_from_alipay(arguments.notify_id)
     if verify_notification_result:
         LOGGER.error('got dback notification which is not from alipay: %(arguments)s', {'arguments': arguments})
-        return DictObject(success=False, reason='notification is not from alipay')
+        return 'fake notification'
     result = DictObject(trade_no=arguments.trade_no, refund_id=arguments.refund_id, refund_batch_no=arguments.refund_batch_no,
                         refund_to_card_no=arguments.card_no, refund_to_bank_name=arguments.bank_name,
                         success=arguments.status == ALIPAY_DBACK_RESULT_SUCCESS_MARK)
