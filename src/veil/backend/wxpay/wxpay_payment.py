@@ -468,13 +468,14 @@ def query_refund_status(out_refund_no):
                 processing=processing,
                 failed=failed,
                 refund_status_text=refund_status_text,
+                out_trade_no=parsed_response.out_trade_no,
                 out_refund_no=parsed_response.get('out_refund_no_{}'.format(i)),
                 refund_id=parsed_response.get('refund_id_{}'.format(i)),
                 refund_channel_text=refund_channel_text,
                 refund_fee=refund_fee,
                 settlement_refund_fee=settlement_refund_fee,
                 refund_recv_accout=parsed_response.get('refund_recv_accout_{}'.format(i))))
-        return DictObject(request_success=True, out_trade_no=parsed_response.out_trade_no, refund_status=refund_status)
+        return DictObject(request_success=True, refund_status=refund_status)
 
 
 class InvalidWXAccessToken(Exception):
