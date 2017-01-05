@@ -379,6 +379,10 @@ def query_refund_status(out_refund_no):
             LOGGER.error('query tenpay refund status got fake response: %(params)s, %(response)s', {'params': params, 'response': response.content})
             return DictObject(request_success=False, reason='sign is incorrect')
         if result.retcode != '0':
+            if result.retcode == '88222014':
+                return DictObject(request_success=False, reason='退款失败：订单未退款')
+            if result.retcode == '88221009':
+                return DictObject(request_success=False, reason='退款失败：订单不存在')
             LOGGER.error('query tenpay refund status got failed response: %(params)s, %(response)s', {'params': params, 'response': response.content})
             return DictObject(request_success=False, reason=result.retmsg)
         refund_status = []
