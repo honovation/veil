@@ -50,7 +50,7 @@ class SourceCodeMonitor(threading.Thread):
 class ReloadEventHandler(FileSystemEventHandler):
     def on_any_event(self, event):
         if not event.is_directory and ('.py' in event.src_path or 'DEP-DYNAMIC-MANUAL' in event.src_path):
-            LOGGER.info('event type: %(type)s, path: %(path)s', {'type': event.event_type, 'path': event.src_path})
+            LOGGER.debug('event type: %(type)s, path: %(path)s', {'type': event.event_type, 'path': event.src_path})
             os._exit(1)
 
 
