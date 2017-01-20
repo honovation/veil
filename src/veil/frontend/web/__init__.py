@@ -25,6 +25,8 @@ with veil_component.init_component(__name__):
     from .routing import register_page_post_processor
     from .routing import TAG_NO_POST_PROCESS
     from .routing import TAG_NO_LOGIN_REQUIRED
+    from .routing import TAG_NO_JS_POST_PROCESS
+    from .routing import TAG_NO_CSS_POST_PROCESS
     from .routing import publish_new_website_event
 
     from .static_file import static_url
@@ -86,6 +88,8 @@ with veil_component.init_component(__name__):
         register_page_post_processor.__name__,
         'TAG_NO_POST_PROCESS',
         'TAG_NO_LOGIN_REQUIRED',
+        'TAG_NO_JS_POST_PROCESS',
+        'TAG_NO_CSS_POST_PROCESS',
         publish_new_website_event.__name__,
 
         static_url.__name__,
