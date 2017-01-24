@@ -30,7 +30,7 @@ add_application_sub_resource('aisino_invoice', lambda config: aisino_invoice_res
 
 @composite_installer
 def aisino_invoice_resource(seq_prefix, payer_id, payer_name, payer_auth_code, payer_address, payer_telephone, payer_bank_name, payer_bank_account_no, ebp_code,
-                            registration_no, operator_name, client_pfx, client_pfx_key):
+                            registration_no, operator_name, receiver_operator_name, recheck_operator_name, client_pfx, client_pfx_key):
     install_aisino_library()
     config_file_content = render_config('pkcs7.properties.j2', client_pfx=client_pfx, client_pfx_key=client_pfx_key,
                                         platform_cer=AISINO_PLATFORM_CER_FILE_PATH, jni_library=AISINO_JNI_FILE_PATH)
@@ -44,14 +44,16 @@ def aisino_invoice_resource(seq_prefix, payer_id, payer_name, payer_auth_code, p
                       content=render_config('aision_invoice.cfg.j2', seq_prefix=seq_prefix, payer_id=payer_id, payer_name=payer_name,
                                             payer_auth_code=payer_auth_code, payer_address=payer_address, payer_telephone=payer_telephone,
                                             payer_bank_name=payer_bank_name, payer_bank_account_no=payer_bank_account_no, ebp_code=ebp_code,
-                                            registration_no=registration_no, operator_name=operator_name))
+                                            registration_no=registration_no, operator_name=operator_name, receiver_operator_name=receiver_operator_name,
+                                            recheck_operator_name=recheck_operator_name))
     ])
     return resources
 
 
 def load_aisino_invoice_config():
     return load_config_from(VEIL_ETC_DIR / 'aision_invoice.cfg', 'seq_prefix', 'payer_id', 'payer_name', 'payer_auth_code', 'payer_address', 'payer_telephone',
-                            'payer_bank_name', 'payer_bank_account_no', 'ebp_code', 'registration_no', 'operator_name')
+                            'payer_bank_name', 'payer_bank_account_no', 'ebp_code', 'registration_no', 'operator_name', 'receiver_operator_name',
+                            'recheck_operator_name')
 
 
 def aisino_invoice_config():

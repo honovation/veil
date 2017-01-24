@@ -27,8 +27,8 @@
         <HY_DM/>
         <HY_MC/>
         <KPY><![CDATA[{{ operator_name }}]]></KPY>
-        <SKY/>
-        <FHR/>
+        <SKY><![CDATA[{{ receiver_operator_name }}]]></SKY>
+        <FHR><![CDATA[{{ recheck_operator_name }}]]></FHR>
         <KPRQ/>
         <KPLX>{{ type_code }}</KPLX>
         <YFP_DM>{{ ref_invoice_code or '' }}</YFP_DM>

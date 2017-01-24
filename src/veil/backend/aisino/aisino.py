@@ -62,9 +62,9 @@ RED_INVOICE_FLAG_NORMAL = '0'
 RED_INVOICE_FLAG_SPECIAL = '1'
 
 
-def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax_payer, operator_name, invoice_content, total, items,
-                    ref_invoice_code=None, ref_invoice_no=None, comment=None, operation_code=INVOICE_OPERATION_CODE_NORMAL, flag_special_red=None,
-                    red_invoice_reason=None, terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', encrypt_code='2',
+def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax_payer, operator_name, receiver_operator_name, recheck_operator_name,
+                    invoice_content, total, items, ref_invoice_code=None, ref_invoice_no=None, comment=None, operation_code=INVOICE_OPERATION_CODE_NORMAL,
+                    flag_special_red=None, red_invoice_reason=None, terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', encrypt_code='2',
                     encrypt_code_type='CA', is_compressed=True, sample_code='000001', encode_table_version='1.0', flag_dk=0, flag_list=0, list_item_name=None,
                     without_tax_total=0, tax_total=0):
 
@@ -88,7 +88,9 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
 
     with require_current_template_directory_relative_to():
         interface_content = get_template('invoice.xml').render(request_seq=request_seq, ebp_code=ebp_code, buyer=buyer, tax_payer=tax_payer,
-                                                               sample_code=sample_code, encode_table_version=encode_table_version, operator_name=operator_name,
+                                                               sample_code=sample_code, encode_table_version=encode_table_version,
+                                                               operator_name=operator_name, receiver_operator_name=receiver_operator_name,
+                                                               recheck_operator_name=recheck_operator_name,
                                                                invoice_content=invoice_content, total=total, items=items, without_tax_total=without_tax_total,
                                                                tax_total=tax_total, type_code=type_code,
                                                                ref_invoice_code=ref_invoice_code, ref_invoice_no=ref_invoice_no, comment=comment,
