@@ -132,7 +132,7 @@ def get_or_create_environment():
         trim_blocks=True,
         lstrip_blocks=True,
         autoescape=True,
-        extensions=['jinja2.ext.autoescape', 'jinja2.ext.i18n', jinja_tag])
+        extensions=['jinja2.ext.i18n', jinja_tag])
     jinja_tag.init()
     env.filters.update(filters)
     env.install_null_translations()
