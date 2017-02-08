@@ -12,6 +12,7 @@ def elk_resource(config):
 
         os_package_resource(name='elasticsearch'),
         directory_resource(path=VEIL_ETC_DIR / 'elasticsearch'),
+        directory_resource(path=VEIL_ETC_DIR / 'elasticsearch/scripts'),
         file_resource(path=VEIL_ETC_DIR / 'elasticsearch/log4j2.properties', content=render_config('es_log4j2.properties')),
         file_resource(path=VEIL_ETC_DIR / 'elasticsearch/jvm.options',
                       content=render_config('es_jvm.options', min_heap_size=config.es_heap_size, max_heap_size=config.es_heap_size)),
