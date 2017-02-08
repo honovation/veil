@@ -18,7 +18,7 @@ def elk_resource(config):
                       content=render_config('es_jvm.options', min_heap_size=config.es_heap_size, max_heap_size=config.es_heap_size), group='elasticsearch'),
         file_resource(path=VEIL_ETC_DIR / 'elasticsearch/elasticsearch.yml',
                       content=render_config('elasticsearch.yml.j2', elasticsearch_cluster=VEIL_ENV.name, **config), group='elasticsearch'),
-        
+
         directory_resource(path=VEIL_ETC_DIR / 'logstash'),
         directory_resource(path=VEIL_ETC_DIR / 'logstash/conf.d'),
         os_package_resource(name='logstash'),

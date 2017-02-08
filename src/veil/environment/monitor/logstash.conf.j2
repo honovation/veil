@@ -11,17 +11,16 @@ input {
         port => {{ log_buffer_redis_port }}
         key => "postgresql"
         data_type => "list"
-        codec => "plain"
+        codec => multiline {
+            pattern => "^20"
+            negate => true
+            what => "previous"
+        }
         add_field => {"@type" => "postgresql"}
     }
 }
 filter {
     if [@type] == "postgresql" {
-        multiline {
-            pattern => "^20"
-            negate => true
-            what => "previous"
-        }
         csv {
             columns => ["log_time","user_name","database_name","process_id","connection_from","session_id",
                 "session_line_num","command_tag","session_start_time","virtual_transaction_id","transaction_id",
@@ -53,11 +52,8 @@ filter {
     }
 }
 output {
-    stdout {
-        codec => rubydebug
-    }
+    stdout { codec => rubydebug }
     if "_jsonparsefailure" not in [tags] {
-        elasticsearch {
-        }
+        elasticsearch { }
     }
 }
