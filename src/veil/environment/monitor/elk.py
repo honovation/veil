@@ -11,12 +11,14 @@ def elk_resource(config):
         apt_repository_resource(name='elk', key_url='https://artifacts.elastic.co/GPG-KEY-elasticsearch', definition=repository_definition),
 
         os_package_resource(name='elasticsearch'),
+        directory_resource(path=VEIL_ETC_DIR / 'elasticsearch'),
         file_resource(path=VEIL_ETC_DIR / 'elasticsearch/log4j2.properties', content=render_config('es_log4j2.properties')),
         file_resource(path=VEIL_ETC_DIR / 'elasticsearch/jvm.options',
                       content=render_config('es_jvm.options', min_heap_size=config.es_heap_size, max_heap_size=config.es_heap_size)),
         file_resource(path=VEIL_ETC_DIR / 'elasticsearch/elasticsearch.yml',
                       content=render_config('elasticsearch.yml.j2', elasticsearch_cluster=VEIL_ENV.name, **config)),
 
+        directory_resource(path=VEIL_ETC_DIR / 'logstash'),
         os_package_resource(name='logstash'),
         file_resource(path=VEIL_ETC_DIR / 'logstash/log4j2.properties', content=render_config('ls_log4j2.properties')),
         file_resource(path=VEIL_ETC_DIR / 'logstash/jvm.options',
