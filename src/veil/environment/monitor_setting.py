@@ -23,7 +23,7 @@ def monitor_programs(config):
         }},
         {'kibana': {
             'run_in_directory': '/usr/share/kibana',
-            'execute_command': '/usr/share/kibana/bin/kibana',
+            'execute_command': '/usr/share/kibana/bin/kibana --host {}'.format(config.kibana_host),
             'run_as': 'kibana',
             'resources': [('veil.environment.monitor.elk_resource', {'config': config})]
         }}
