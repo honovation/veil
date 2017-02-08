@@ -11,7 +11,7 @@ def monitor_programs(config):
                                         [(900, 1), (300, 10), (60, 10000)]], recursive=True),
         {'elasticsearch': {
             'run_in_directory': '/usr/share/elasticsearch',
-            'execute_command': '/usr/share/elasticsearch/bin/elasticsearch -Epath.conf {}/elasticsearch'.format(VEIL_ETC_DIR),
+            'execute_command': '/usr/share/elasticsearch/bin/elasticsearch -Epath.conf={}/elasticsearch'.format(VEIL_ETC_DIR),
             'run_as': 'elasticsearch',
             'resources': [('veil.environment.monitor.elk_resource', {'config': config})]
         }},
