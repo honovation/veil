@@ -23,7 +23,7 @@ def install_apt_repository_resource(name, key_url, definition, version=None):
     if installed:
         return
     LOGGER.info('installing apt repository: %(name)s, %(version)s ...', {'name': name, 'version': version})
-    shell_execute('wget -q -O - {} | apt-key add -'.format(key_url), capture=True)
+    shell_execute('wget --inet4-only -q -O - {} | apt-key add -'.format(key_url), capture=True)
     shell_execute('echo "{}" | tee /etc/apt/sources.list.d/{}.list'.format(definition, name), capture=True)
     set_apt_get_update_executed(False)
 

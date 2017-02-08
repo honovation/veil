@@ -29,11 +29,11 @@ def download_oracle_instantclient():
         return
     basic_local_path = DEPENDENCY_DIR / 'instantclient-basic-linux.x64-12.1.0.1.0.zip'
     if not os.path.exists(basic_local_path):
-        shell_execute('wget -c {}/instantclient-basic-linux.x64-12.1.0.1.0.zip -O {}'.format(DEPENDENCY_URL, basic_local_path))
+        shell_execute('wget --inet4-only -c {}/instantclient-basic-linux.x64-12.1.0.1.0.zip -O {}'.format(DEPENDENCY_URL, basic_local_path))
     shell_execute('unzip {} -d {}'.format(basic_local_path, DEPENDENCY_INSTALL_DIR))
     sdk_local_path = DEPENDENCY_DIR / 'instantclient-sdk-linux.x64-12.1.0.1.0.zip'
     if not os.path.exists(sdk_local_path):
-        shell_execute('wget -c {}/instantclient-sdk-linux.x64-12.1.0.1.0.zip -O {}'.format(DEPENDENCY_URL, sdk_local_path))
+        shell_execute('wget --inet4-only -c {}/instantclient-sdk-linux.x64-12.1.0.1.0.zip -O {}'.format(DEPENDENCY_URL, sdk_local_path))
     shell_execute('unzip {} -d {}'.format(sdk_local_path, DEPENDENCY_INSTALL_DIR))
 
 
