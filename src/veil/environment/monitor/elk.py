@@ -5,12 +5,10 @@ from veil.profile.installer import *
 
 @composite_installer
 def elk_resource(config):
-    repository_definition = '\n'.join(('deb https://packages.elastic.co/elasticsearch/2.x/debian stable main',
-                                       'deb https://packages.elastic.co/logstash/2.3/debian stable main',
-                                       'deb http://packages.elastic.co/kibana/4.5/debian stable main'))
+    repository_definition = 'deb https://artifacts.elastic.co/packages/5.x/apt stable main'
     return [
         oracle_java_resource(),
-        apt_repository_resource(name='elk', key_url='https://packages.elastic.co/GPG-KEY-elasticsearch', definition=repository_definition),
+        apt_repository_resource(name='elk', key_url='https://artifacts.elastic.co/GPG-KEY-elasticsearch', definition=repository_definition),
 
         os_package_resource(name='elasticsearch'),
         os_service_auto_starting_resource(name='elasticsearch', state='not_installed'),
