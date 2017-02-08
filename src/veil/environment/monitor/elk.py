@@ -19,6 +19,7 @@ def elk_resource(config):
                       content=render_config('elasticsearch.yml.j2', elasticsearch_cluster=VEIL_ENV.name, **config)),
 
         directory_resource(path=VEIL_ETC_DIR / 'logstash'),
+        directory_resource(path=VEIL_ETC_DIR / 'logstash/conf.d'),
         os_package_resource(name='logstash'),
         file_resource(path=VEIL_ETC_DIR / 'logstash/log4j2.properties', content=render_config('ls_log4j2.properties')),
         file_resource(path=VEIL_ETC_DIR / 'logstash/jvm.options',
