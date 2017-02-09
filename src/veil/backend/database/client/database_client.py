@@ -338,10 +338,12 @@ class Database(object):
     def iter_in_batch(self, sql, batch_size=1, db_fetch_size=None, **kwargs):
         """
         batch_size: the number of rows to iterate at a time
-        db_fetch_size: the number of rows to fetch from the db server at each network roundtrip
-            during iteration on a named cursor
+        db_fetch_size: the number of rows to fetch from the db server at each network round-trip during iteration on a named cursor
         """
         return self._query_large_result_set(sql, batch_size, db_fetch_size, **kwargs)
+
+    def iter_scalar_in_batch(self, sql, batch_size=1, db_fetch_size=None, **kwargs):
+        return self.iter_in_batch(sql, batch_size, db_fetch_size, returns_scalar=True, **kwargs)
 
     def _execute(self, sql, **kwargs):
         check_table_dependencies(self.component_name, self.purpose, sql)
@@ -427,11 +429,13 @@ class Database(object):
                 else:
                     return cursor.fetchall()
 
-    def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_dict_object=True, returns_entity=False, **kwargs):
+    def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_scalar=False, returns_dict_object=True, returns_entity=False, **kwargs):
         """
         Run a query with potentially large result set using server-side cursor
         """
         check_table_dependencies(self.component_name, self.purpose, sql)
+        if returns_dict_object and returns_scalar:
+            returns_dict_object = False
         reconnected = False
         within_transaction_context = not self.autocommit
         while True:
@@ -445,7 +449,7 @@ class Database(object):
                     cursor.execute(sql, kwargs)
                     rows = cursor.fetchmany(batch_size)
                     while len(rows) > 0:
-                        yield rows
+                        yield [row[0] for row in rows] if returns_scalar else rows
                         rows = cursor.fetchmany(batch_size)
                     cursor.close()
                     # if exception happen before close, the whole transaction should be rolled back by the caller
