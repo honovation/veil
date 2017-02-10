@@ -136,7 +136,20 @@ class Database(object):
 
     @autocommit.setter
     def autocommit(self, on_off):
-        self.conn.autocommit = on_off
+        reconnected = False
+        while True:
+            try:
+                self.conn.autocommit = on_off
+            except Exception as e:
+                if reconnected:
+                    LOGGER.exception('failed to set autocommit: %(on_off)s', {'on_off': on_off})
+                    raise
+                reconnected = self.conn.reconnect_if_broken_per_exception(e)
+                if not reconnected:
+                    LOGGER.exception('failed to set autocommit: %(on_off)s', {'on_off': on_off})
+                    raise
+            else:
+                break
 
     def disable_autocommit(self):
         if self.autocommit:
