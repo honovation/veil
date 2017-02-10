@@ -104,7 +104,7 @@ def job_worker_manager_program(worker_manager_name, pool_size, pyres_worker_logg
         max_jobs_term = '-j {}'.format(max_jobs) if max_jobs else ''
         programs.update({
             '{}_worker_manager{}'.format(worker_manager_name, i + 1): {
-                'execute_command': 'veil sleep 10 pyres_manager --host={} --port={} --pool {} -i {} --minions_interval {} -l {} -f {} --concat_minions_logs {} {}'.format(
+                'execute_command': 'veil sleep 10 veil backend queue pyres_manager --host={} --port={} --pool {} -i {} --minions_interval {} -l {} -f {} --concat_minions_logs {} {}'.format(
                     queue_host, queue_port, pool_size, manager_interval, minion_interval, pyres_worker_logging_level, pyrse_log_path, max_jobs_term, ','.join(queue_names)
                 ), # log instruction for the main process, a.k.a pyres_worker
                 'environment_variables': {
