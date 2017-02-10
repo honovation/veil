@@ -81,16 +81,16 @@ def install_aisino_library():
 def install_aisino_jni_library():
     url = '{}/{}'.format(DEPENDENCY_SSL_URL, AISINO_JNI_FILE_NAME)
     if not AISINO_JNI_FILE_PATH.exists():
-        shell_execute('wget --inet4-only --no-check-certificate -c {} -O {}'.format(url, AISINO_JNI_FILE_PATH))
+        shell_execute('wget --no-check-certificate -c {} -O {}'.format(url, AISINO_JNI_FILE_PATH))
 
 
 def install_aisino_jar():
     url = '{}/{}'.format(DEPENDENCY_SSL_URL, AISINO_JAR_FILE_NAME)
     if not AISINO_JAR_FILE_PATH.exists():
-        shell_execute('wget --inet4-only --no-check-certificate -c {} -O {}'.format(url, AISINO_JAR_FILE_PATH))
+        shell_execute('wget --no-check-certificate -c {} -O {}'.format(url, AISINO_JAR_FILE_PATH))
 
 
 def install_aisino_platform_cer():
     url = '{}/{}'.format(DEPENDENCY_SSL_URL, AISINO_PLATFORM_CER_FILE_NAME)
     if not AISINO_PLATFORM_CER_FILE_PATH.exists():
-        shell_execute('wget --inet4-only --no-check-certificate -c {} -O {}'.format(url, AISINO_PLATFORM_CER_FILE_PATH))
+        shell_execute('wget --no-check-certificate -c {} -O {}'.format(url, AISINO_PLATFORM_CER_FILE_PATH))

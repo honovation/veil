@@ -32,7 +32,7 @@ def download_scws():
         return
     local_path = DEPENDENCY_DIR / SCWS_PACKAGE_NAME
     if not local_path.exists():
-        shell_execute('wget --inet4-only -c {}/{} -O {}'.format(DEPENDENCY_URL, SCWS_PACKAGE_NAME, local_path))
+        shell_execute('wget -c {}/{} -O {}'.format(DEPENDENCY_URL, SCWS_PACKAGE_NAME, local_path))
     shell_execute('tar jxvf {} -C {}'.format(local_path, DEPENDENCY_INSTALL_DIR))
 
 
@@ -67,7 +67,7 @@ def download_zhparser():
         return
     local_path = DEPENDENCY_DIR / ZHPARSER_PACKAGE_NAME
     if not local_path.exists():
-        shell_execute('wget --inet4-only -c {}/{} -O {}'.format(DEPENDENCY_URL, ZHPARSER_PACKAGE_NAME, local_path))
+        shell_execute('wget -c {}/{} -O {}'.format(DEPENDENCY_URL, ZHPARSER_PACKAGE_NAME, local_path))
     shell_execute('unzip {}'.format(local_path), cwd=DEPENDENCY_INSTALL_DIR)
 
 
