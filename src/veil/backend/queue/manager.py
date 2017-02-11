@@ -105,7 +105,7 @@ class Manager(pyres.horde.Khan):
 class Minion(pyres.horde.Minion):
     def startup(self):
         super(Minion, self).startup()
-        load_all_components()
+        # load_all_components()
         publish_event(EVENT_PROCESS_SETUP)
 
     def unregister_minion(self):
