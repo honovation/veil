@@ -106,7 +106,10 @@ class Minion(pyres.horde.Minion):
     def startup(self):
         super(Minion, self).startup()
         # load_all_components()
+
+    def process(self, job):
         publish_event(EVENT_PROCESS_SETUP)
+        super(Minion, self).process(job)
 
     def unregister_minion(self):
         super(Minion, self).unregister_minion()
