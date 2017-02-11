@@ -110,7 +110,6 @@ class Minion(pyres.horde.Minion):
 
     def unregister_minion(self):
         super(Minion, self).unregister_minion()
-        publish_event(EVENT_PROCESS_TEARDOWN, loads_event_handlers=False)
         self.resq.redis.sadd('resque:khan:{}:restart-minion-pids'.format(self._parent_pid), self.pid)
 
     def work(self, interval=5):
@@ -135,3 +134,7 @@ class Minion(pyres.horde.Minion):
                 self.logger.debug('minion sleeping for: %d secs' % interval)
                 time.sleep(interval)
         self.unregister_minion()
+
+    def done_working(self):
+        super(Minion, self).done_working()
+        publish_event(EVENT_PROCESS_TEARDOWN, loads_event_handlers=False)
