@@ -1,3 +1,4 @@
 #stick to 2.0.4 due to bugs: http://bugs.mysql.com/bug.php?id=76063, http://bugs.mysql.com/bug.php?id=79766, and https://geert.vanderkelen.org/2016/cpy-and-pypi/
 #veil.server.python.python_package_resource?mysql-connector-python&version=2.1.3&url=https://cdn.mysql.com/Downloads/Connector-Python/mysql-connector-python-2.1.3.tar.gz
-veil.server.python.python_package_resource?mysql-connector-python&version=2.0.4
+#use mysql-connector as replacement of mysql-connector-python
+veil.server.python.python_package_resource?mysql-connector
