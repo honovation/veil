@@ -19,7 +19,8 @@ lxc.network.hwaddr = {{ mac_address }}
 
 lxc.start.auto = 1
 lxc.start.delay = 3
-lxc.start.order = {{ start_order }} # higher value means starts earlier
+# higher value means starts earlier
+lxc.start.order = {{ start_order }}
 
 {% if memory_limit %}
 lxc.cgroup.memory.limit_in_bytes = {{ memory_limit }}
