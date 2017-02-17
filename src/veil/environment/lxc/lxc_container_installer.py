@@ -12,6 +12,7 @@ def lxc_container_resource(container_name, user_name, mac_address, lan_interface
     container_rootfs_path = container_path / 'rootfs'
     return [
         lxc_container_created_resource(container_name=container_name, user_name=user_name),
+        file_resource(path=container_path / 'fstab', content='/home/dejavu home/dejavu none bind 0 0'),
         file_resource(path=container_path / 'config',
                       content=render_config('lxc-container.cfg.j2', name=container_name, mac_address=mac_address,
                                             lan_interface=lan_interface, start_order=start_order,
