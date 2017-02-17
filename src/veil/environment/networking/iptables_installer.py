@@ -62,5 +62,7 @@ def list_iptables_resources_to_secure_host(ssh_ports):
     ]
     #  Allow SSH connections
     for ssh_port in ssh_ports:
-        iptables_rule_resource(table='filter', rule='INPUT -p tcp -m tcp --dport {} -j ACCEPT'.format(ssh_port)),
+        resources.append(
+            iptables_rule_resource(table='filter', rule='INPUT -p tcp -m tcp --dport {} -j ACCEPT'.format(ssh_port))
+        )
     return resources
