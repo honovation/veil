@@ -21,9 +21,7 @@ def lxc_container_resource(container_name, user_name, mac_address, lan_interface
                                             editorial_dir=editorial_dir, buckets_dir=buckets_dir, data_dir=data_dir,
                                             log_dir=log_dir), keep_origin=True),
         file_resource(path=container_rootfs_path / 'etc/sysctl.d/60-disable-ipv6.conf',
-                      content=render_config('disable-ipv6.conf')),
-        # restart lxc container for enabling ipv6 disable
-        lxc_container_in_service_resource(container_name=container_name, restart_if_running=True)
+                      content=render_config('disable-ipv6.conf'))
     ]
 
 
