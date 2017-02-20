@@ -7,6 +7,10 @@ from pyres import setup_logging, setup_pidfile
 from veil.frontend.cli import *
 from veil.model.event import *
 from veil.server.process import *
+from veil.backend.redis import *
+from veil_component import VEIL_ENV
+
+redis = register_redis('persist_store')
 
 
 @script('pyres_worker')
@@ -53,3 +57,8 @@ class Worker(pyres.worker.Worker):
     def done_working(self, job):
         super(Worker, self).done_working(job)
         publish_event(EVENT_PROCESS_TEARDOWN, loads_event_handlers=False)
+
+    def reserve(self, timeout=10):
+        if VEIL_ENV.is_prod and 'true' != redis().get('reserve_job'):
+            return None
+        return super(Worker, self).reserve(timeout=timeout)

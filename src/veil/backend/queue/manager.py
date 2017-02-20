@@ -11,7 +11,10 @@ from pyres.horde import setproctitle
 from veil.frontend.cli import *
 from veil.model.event import *
 from veil.server.process import *
-from veil_component import load_all_components
+from veil_component import VEIL_ENV
+from veil.backend.redis import *
+
+redis = register_redis('persist_store')
 
 
 @script('pyres_manager')
@@ -141,3 +144,8 @@ class Minion(pyres.horde.Minion):
     def done_working(self):
         super(Minion, self).done_working()
         publish_event(EVENT_PROCESS_TEARDOWN, loads_event_handlers=False)
+
+    def reserve(self):
+        if VEIL_ENV.is_prod and 'true' != redis().get('reserve_job'):
+            return None
+        return super(Minion, self).reserve()
