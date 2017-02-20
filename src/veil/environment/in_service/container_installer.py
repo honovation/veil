@@ -10,7 +10,6 @@ from veil.server.config import *
 from .server_installer import is_container_running
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
-sources_list_installed = []
 
 
 @composite_installer
@@ -69,7 +68,6 @@ def veil_container_onetime_config_resource(server):
                                      owner='root', owner_group='root', mode=0755),
         veil_container_file_resource(local_path=CURRENT_DIR / 'sudoers.d.no-password', server=server, remote_path='/etc/sudoers.d/no-password', owner='root',
                                      owner_group='root', mode=0440),
-        veil_container_sources_list_resource(server=server),
         veil_container_init_resource(server=server)
     ]
     return resources
@@ -82,8 +80,7 @@ def veil_container_config_resource(server, config_dir):
     resources = [
         veil_server_boot_script_resource(server=server),
         veil_container_file_resource(local_path=CURRENT_DIR / 'apt-config', server=server, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config', owner='root',
-                                     owner_group='root', mode=0644),
-        veil_container_sources_list_resource(server=server)
+                                     owner_group='root', mode=0644)
     ]
     if '@guard' == server.name:
         resources.append(veil_container_file_resource(local_path=env_config_dir / '.ssh-@guard' / 'id_rsa', server=server, remote_path='/etc/ssh/id_rsa-@guard',
@@ -135,28 +132,6 @@ def veil_container_init_resource(server):
     fabric.api.sudo('chroot {} pip install -i {} --trusted-host {} --upgrade "wheel>=0.29.0"'.format(container_rootfs_path, server.pypi_index_url, server.pypi_index_host))
     fabric.api.sudo('chroot {} pip install -i {} --trusted-host {} --upgrade "virtualenv>=15.0.1"'.format(container_rootfs_path, server.pypi_index_url, server.pypi_index_host))
     fabric.api.sudo('touch {}'.format(server.container_initialized_tag_path))
-
-
-@atomic_installer
-def veil_container_sources_list_resource(server):
-    if server.name in sources_list_installed:
-        return
-
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        key = 'veil_container_sources_list?{}'.format(server.container_name)
-        dry_run_result[key] = 'INSTALL'
-        return
-    container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
-    sources_list_path = '/etc/apt/sources.list'
-    full_sources_list_path = '{}{}'.format(container_rootfs_path, sources_list_path)
-    fabric.api.sudo('chroot {} cp -pn {path} {path}.origin'.format(container_rootfs_path, path=sources_list_path))
-    context = dict(mirror=server.apt_url, codename=fabric.api.sudo('chroot {} lsb_release -cs'.format(container_rootfs_path)))
-    fabric.contrib.files.upload_template('sources.list.j2', full_sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR, use_sudo=True,
-                                         backup=False, mode=0644)
-    fabric.api.sudo('chroot {} chown root:root {}'.format(container_rootfs_path, sources_list_path))
-
-    sources_list_installed.append(server.name)
 
 
 @atomic_installer

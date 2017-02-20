@@ -12,14 +12,13 @@ def lxc_container_resource(container_name, user_name, mac_address, lan_interface
     container_rootfs_path = container_path / 'rootfs'
     return [
         lxc_container_created_resource(container_name=container_name, user_name=user_name),
-        file_resource(path=container_path / 'fstab', content='/home/dejavu home/dejavu none bind 0 0'),
         file_resource(path=container_path / 'config',
                       content=render_config('lxc-container.cfg.j2', name=container_name, mac_address=mac_address,
                                             lan_interface=lan_interface, start_order=start_order,
                                             memory_limit=memory_limit, cpu_share=cpu_share, cpus=cpus,
                                             share_dir=SHARE_DIR, code_dir=VEIL_HOME.parent, etc_dir=etc_dir,
                                             editorial_dir=editorial_dir, buckets_dir=buckets_dir, data_dir=data_dir,
-                                            log_dir=log_dir), keep_origin=True),
+                                            log_dir=log_dir, user_name=user_name), keep_origin=True),
         file_resource(path=container_rootfs_path / 'etc/sysctl.d/60-disable-ipv6.conf',
                       content=render_config('disable-ipv6.conf'))
     ]

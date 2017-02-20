@@ -18,7 +18,6 @@ with veil_component.init_component(__name__):
     from .container_installer import veil_container_lxc_resource
     from .container_installer import veil_container_onetime_config_resource
     from .container_installer import veil_container_config_resource
-    from .container_installer import veil_container_sources_list_resource
     from .container_installer import veil_container_init_resource
     from .container_installer import veil_server_boot_script_resource
     from .container_installer import veil_container_file_resource
@@ -48,7 +47,6 @@ with veil_component.init_component(__name__):
         veil_container_lxc_resource.__name__,
         veil_container_onetime_config_resource.__name__,
         veil_container_config_resource.__name__,
-        veil_container_sources_list_resource.__name__,
         veil_container_init_resource.__name__,
         veil_server_boot_script_resource.__name__,
         veil_container_file_resource.__name__,

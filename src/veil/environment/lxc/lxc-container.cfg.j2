@@ -9,7 +9,7 @@ lxc.include = /usr/share/lxc/config/ubuntu.common.conf
 lxc.utsname = {{ name }}
 lxc.arch = x86_64
 lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
-lxc.mount = /var/lib/lxc/{{ name }}/fstab
+lxc.rootfs.backend = dir
 
 # Network configuration
 lxc.network.type = veth
@@ -33,6 +33,8 @@ lxc.cgroup.cpuset.cpus = {{ cpus }}
 lxc.cgroup.cpu.shares = {{ cpu_share }}
 {% endif %}
 
+# bind host's home dir to container
+lxc.mount.entry = /home/{{ user_name }} home/{{ user_name }} none bind 0 0
 lxc.mount.entry = {{ share_dir }} {{ share_dir[1:] }} none bind,create=dir 0 0
 lxc.mount.entry = {{ code_dir }} {{ code_dir[1:] }} none bind,create=dir 0 0
 lxc.mount.entry = {{ etc_dir }} {{ etc_dir[1:] }} none bind,noexec,create=dir 0 0
