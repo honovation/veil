@@ -10,6 +10,7 @@ LOGGER = logging.getLogger(__name__)
 @atomic_installer
 def lxc_container_timezone_resource(container_name, timezone):
     container_rootfs_path = as_path('/var/lib/lxc/') / container_name / 'rootfs'
+    etc_localtime_path = container_rootfs_path / 'etc' / 'localtime'
     etc_timezone_path = container_rootfs_path / 'etc' / 'timezone'
     installed = etc_timezone_path.exists() and timezone == etc_timezone_path.text()
     dry_run_result = get_dry_run_result()
@@ -25,5 +26,6 @@ def lxc_container_timezone_resource(container_name, timezone):
     })
     if not etc_timezone_path.exists():
         etc_timezone_path.touch()
-    etc_timezone_path.write_text(timezone)
-    shell_execute('chroot {} dpkg-reconfigure --frontend noninteractive tzdata'.format(container_rootfs_path), capture=True)
+    shell_execute('ln -sf /usr/share/zoneinfo/{} {}'.format(timezone, etc_localtime_path))
+    shell_execute('chroot {} dpkg-reconfigure --frontend noninteractive tzdata'.format(container_rootfs_path),
+                  capture=True)
