@@ -42,7 +42,7 @@ function veil_init {
     fi
     if [ ! -f $VEIL_HOME/env/.initialized ]; then
         if [[ "$VEIL_SERVER_NAME" == "development" || "$VEIL_SERVER_NAME" == "test" ]] ; then
-            sudo apt-get -q -y install unzip wget python python-dev python-pip python-virtualenv
+            sudo apt -q -y install unzip wget python python-dev python-pip python-virtualenv
             DEPENDENCY_DIR=/opt/share/dependency
             if [ ! -d $DEPENDENCY_DIR ]; then
                 sudo mkdir -p $DEPENDENCY_DIR
