@@ -25,6 +25,7 @@ def veil_server_resource(server, action='PATCH', start_after_deploy=True):
         print(yellow('Skipped {} server {} as its container is not running'.format(action, server.container_name)))
 
     with fabric.api.settings(host_string=server.deploys_via):
+        fabric.api.sudo('sysctl --system')
         with fabric.api.cd(server.veil_home):
             print(cyan('{} server {} ...'.format(action, server.name)))
             if 'DEPLOY' == action:
