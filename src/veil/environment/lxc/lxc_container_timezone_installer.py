@@ -6,6 +6,11 @@ from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
 
+'''
+tzdata bug https://bugs.launchpad.net/ubuntu/+source/tzdata/+bug/1554806
+
+workaround: link timezone file to /etc/localtime, then dpkg-reconfigure
+'''
 
 @atomic_installer
 def lxc_container_timezone_resource(container_name, timezone):
