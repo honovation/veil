@@ -10,7 +10,7 @@ def elk_resource(config):
         oracle_java_resource(),
         apt_repository_resource(name='elk', key_url='https://artifacts.elastic.co/GPG-KEY-elasticsearch', definition=repository_definition),
 
-        os_package_resource(name='elasticsearch'),
+        os_package_resource(name='elasticsearch', cmd_run_before_install='apt update -q'),
         directory_resource(path=VEIL_ETC_DIR / 'elasticsearch', group='elasticsearch'),
         directory_resource(path=VEIL_ETC_DIR / 'elasticsearch/scripts', group='elasticsearch'),
         file_resource(path=VEIL_ETC_DIR / 'elasticsearch/log4j2.properties', content=render_config('es_log4j2.properties'), group='elasticsearch'),
