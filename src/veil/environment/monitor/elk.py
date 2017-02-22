@@ -6,12 +6,13 @@ from veil.profile.installer import *
 @composite_installer
 def elk_resource(config):
     repository_definition = 'deb https://artifacts.elastic.co/packages/5.x/apt stable main'
+    env = os.environ.copy()
+    env['ES_SKIP_SET_KERNEL_PARAMETERS'] = 'true'
     return [
         oracle_java_resource(),
         apt_repository_resource(name='elk', key_url='https://artifacts.elastic.co/GPG-KEY-elasticsearch',
                                 definition=repository_definition, update_apt_index=True),
-
-        os_package_resource(name='elasticsearch'),
+        os_package_resource(name='elasticsearch', install_env=env),
         directory_resource(path=VEIL_ETC_DIR / 'elasticsearch', group='elasticsearch'),
         directory_resource(path=VEIL_ETC_DIR / 'elasticsearch/scripts', group='elasticsearch'),
         file_resource(path=VEIL_ETC_DIR / 'elasticsearch/log4j2.properties', content=render_config('es_log4j2.properties'), group='elasticsearch'),

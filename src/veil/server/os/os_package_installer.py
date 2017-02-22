@@ -8,7 +8,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 @atomic_installer
-def os_package_resource(name, cmd_run_before_install=None, cmd_run_if_install_fail=None, cmd_run_after_install=None):
+def os_package_resource(name, cmd_run_before_install=None, cmd_run_if_install_fail=None, cmd_run_after_install=None,
+                        install_env=None):
     upgrading = is_upgrading()
     installed_version, downloaded_version = get_local_os_package_versions(name)
     latest_version = get_resource_latest_version(to_resource_key(name))
@@ -75,7 +76,8 @@ def os_package_resource(name, cmd_run_before_install=None, cmd_run_if_install_fa
         if cmd_run_before_install:
             shell_execute(cmd_run_before_install, capture=True)
         try:
-            shell_execute('apt -q -y install {}={}'.format(name, downloaded_version), capture=True, debug=True)
+            shell_execute('apt -q -y install {}={}'.format(name, downloaded_version), capture=True, debug=True,
+                          env=install_env)
         except Exception:
             if cmd_run_if_install_fail:
                 shell_execute(cmd_run_if_install_fail, capture=True)
