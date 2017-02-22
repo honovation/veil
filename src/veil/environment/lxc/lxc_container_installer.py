@@ -13,7 +13,8 @@ def lxc_container_resource(container_name, user_name, mac_address, lan_interface
     return [
         lxc_container_created_resource(container_name=container_name, user_name=user_name),
         file_resource(path=container_path / 'config',
-                      content=render_config('lxc-container.cfg.j2', name=container_name, mac_address=mac_address,
+                      content=render_config('lxc-container.cfg.j2', utsname=container_name.replace('@', ''),
+                                            name=container_name, mac_address=mac_address,
                                             lan_interface=lan_interface, start_order=start_order,
                                             memory_limit=memory_limit, cpu_share=cpu_share, cpus=cpus,
                                             share_dir=SHARE_DIR, code_dir=VEIL_HOME.parent, etc_dir=etc_dir,
