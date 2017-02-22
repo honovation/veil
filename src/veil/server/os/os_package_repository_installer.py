@@ -25,7 +25,15 @@ def install_apt_repository_resource(name, key_url, definition, version=None):
     if installed:
         return
     LOGGER.info('installing apt repository: %(name)s, %(version)s ...', {'name': name, 'version': version})
-    shell_execute('wget -q -O - {} | apt-key add -'.format(key_url), capture=True)
+    add_apt_key_tried = 1
+    while add_apt_key_tried <= 3:
+        try:
+            shell_execute('wget -q -O - {} | apt-key add -'.format(key_url), capture=True)
+        except Exception as e:
+            LOGGER.error('failed to add apt key: %(key_url)s, %(err)s', {'key_url': key_url, 'err': e.message})
+            add_apt_key_tried += 1
+        else:
+            break
     shell_execute('echo "{}" | tee /etc/apt/sources.list.d/{}.list'.format(definition, name), capture=True)
     set_apt_get_update_executed(False)
 
