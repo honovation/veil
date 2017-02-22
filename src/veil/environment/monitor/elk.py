@@ -8,9 +8,10 @@ def elk_resource(config):
     repository_definition = 'deb https://artifacts.elastic.co/packages/5.x/apt stable main'
     return [
         oracle_java_resource(),
-        apt_repository_resource(name='elk', key_url='https://artifacts.elastic.co/GPG-KEY-elasticsearch', definition=repository_definition),
+        apt_repository_resource(name='elk', key_url='https://artifacts.elastic.co/GPG-KEY-elasticsearch',
+                                definition=repository_definition, update_apt_index=True),
 
-        os_package_resource(name='elasticsearch', cmd_run_before_install='apt update -q'),
+        os_package_resource(name='elasticsearch'),
         directory_resource(path=VEIL_ETC_DIR / 'elasticsearch', group='elasticsearch'),
         directory_resource(path=VEIL_ETC_DIR / 'elasticsearch/scripts', group='elasticsearch'),
         file_resource(path=VEIL_ETC_DIR / 'elasticsearch/log4j2.properties', content=render_config('es_log4j2.properties'), group='elasticsearch'),
@@ -21,12 +22,12 @@ def elk_resource(config):
 
         directory_resource(path=VEIL_ETC_DIR / 'logstash'),
         directory_resource(path=VEIL_ETC_DIR / 'logstash/conf.d'),
-        os_package_resource(name='logstash', cmd_run_before_install='apt update -q'),
+        os_package_resource(name='logstash'),
         file_resource(path=VEIL_ETC_DIR / 'logstash/log4j2.properties', content=render_config('ls_log4j2.properties')),
         file_resource(path=VEIL_ETC_DIR / 'logstash/jvm.options',
                       content=render_config('ls_jvm.options', min_heap_size=config.ls_heap_size, max_heap_size=config.ls_heap_size)),
         file_resource(path=VEIL_ETC_DIR / 'logstash/logstash.yml', content=render_config('logstash.yml', logstash_config_dir=VEIL_ETC_DIR / 'logstash/conf.d')),
         file_resource(path=VEIL_ETC_DIR / 'logstash/conf.d/10-logstash.conf', content=render_config('logstash.conf.j2', **config)),
 
-        os_package_resource(name='kibana', cmd_run_before_install='apt update -q'),
+        os_package_resource(name='kibana'),
     ]

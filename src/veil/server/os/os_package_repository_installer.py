@@ -10,8 +10,10 @@ ETC_APT = as_path('/etc/apt')
 
 
 @atomic_installer
-def apt_repository_resource(name, key_url, definition, version=None):
+def apt_repository_resource(name, key_url, definition, version=None, update_apt_index=False):
     install_apt_repository_resource(name, key_url, definition, version)
+    if update_apt_index:
+        shell_execute('apt update -q')
 
 
 def install_apt_repository_resource(name, key_url, definition, version=None):
