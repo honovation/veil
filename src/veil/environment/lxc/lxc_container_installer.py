@@ -10,18 +10,21 @@ def lxc_container_resource(container_name, user_name, mac_address, lan_interface
                            cpus=None):
     container_path = as_path('/var/lib/lxc/') / container_name
     container_rootfs_path = container_path / 'rootfs'
+    utsname = container_name.replace('@', '')
     return [
         lxc_container_created_resource(container_name=container_name, user_name=user_name),
         file_resource(path=container_path / 'config',
-                      content=render_config('lxc-container.cfg.j2', utsname=container_name.replace('@', ''),
-                                            name=container_name, mac_address=mac_address,
-                                            lan_interface=lan_interface, start_order=start_order,
-                                            memory_limit=memory_limit, cpu_share=cpu_share, cpus=cpus,
-                                            share_dir=SHARE_DIR, code_dir=VEIL_HOME.parent, etc_dir=etc_dir,
+                      content=render_config('lxc-container.cfg.j2', utsname=utsname, name=container_name,
+                                            mac_address=mac_address, lan_interface=lan_interface,
+                                            start_order=start_order, memory_limit=memory_limit, cpu_share=cpu_share,
+                                            cpus=cpus, share_dir=SHARE_DIR, code_dir=VEIL_HOME.parent, etc_dir=etc_dir,
                                             editorial_dir=editorial_dir, buckets_dir=buckets_dir, data_dir=data_dir,
                                             log_dir=log_dir, user_name=user_name), keep_origin=True),
         file_resource(path=container_rootfs_path / 'etc/sysctl.d/60-disable-ipv6.conf',
-                      content=render_config('disable-ipv6.conf'), cmd_run_after_updated='sysctl --system')
+                      content=render_config('disable-ipv6.conf'), cmd_run_after_updated='sysctl --system'),
+        file_resource(path=container_rootfs_path / 'etc' / 'hostname', content=utsname,
+                      cmd_run_after_updated='hostname {}'.format(utsname)),
+        file_resource(path=container_rootfs_path / 'etc' / 'hosts', content=render_config('hosts', utsname=utsname))
     ]
 
 
