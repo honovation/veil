@@ -25,4 +25,4 @@ def is_supervisord_running():
         LOGGER.exception('Exception occurred while checking if supervisord is running')
         return True
     else:
-        return 'refused' not in output
+        return 'pid' in output

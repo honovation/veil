@@ -5,10 +5,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 @composite_installer
-def supervisor_resource(programs, inet_http_server_port=None, program_groups=None):
+def supervisor_resource(programs, inet_http_server_host=None, inet_http_server_port=None, program_groups=None):
     inet_http_server_config = {
         'inet_http_server': {
-            'host': '*', # it will not cause security risk as the container itself does not have public ip
+            'host': inet_http_server_host or '*',
             'port': inet_http_server_port or (9091 if VEIL_ENV.is_test else 9090)
         }
     }

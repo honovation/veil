@@ -185,8 +185,9 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
     })
 
 
-def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_port=None, name_servers=None, backup_mirror=None, mount_editorial_dir=False,
-                mount_buckets_dir=False, mount_data_dir=False, memory_limit=None, cpu_share=None, cpus=None, ssh_port=None):
+def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_host=None, supervisor_http_port=None,
+                name_servers=None, backup_mirror=None, mount_editorial_dir=False, mount_buckets_dir=False,
+                mount_data_dir=False, memory_limit=None, cpu_share=None, cpus=None, ssh_port=None):
     from veil.model.collection import objectify
     if backup_mirror:
         backup_mirror = objectify(backup_mirror)
@@ -196,6 +197,7 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
         'sequence_no': sequence_no,
         'programs': programs,
         'resources': resources,
+        'supervisor_http_host': supervisor_http_host,
         'supervisor_http_port': supervisor_http_port,
         'name_servers': name_servers or ['119.29.29.29', '182.254.116.116', '8.8.8.8', '8.8.4.4'],
         'backup_mirror': backup_mirror,

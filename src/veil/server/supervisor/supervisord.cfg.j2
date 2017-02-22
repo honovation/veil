@@ -1,6 +1,7 @@
-;[unix_http_server]
-;file=/tmp/supervisor.sock   ; (the path to the socket file)
-;chmod=0700                 ; sockef file mode (default 0700)
+; unix http server only for supervisorctl
+[unix_http_server]
+file=/tmp/supervisor.sock   ; (the path to the socket file)
+chmod=0700                 ; sockef file mode (default 0700)
 ;chown=nobody:nogroup       ; socket file uid:gid owner
 ;username=user              ; (default is no username (open server))
 ;password=123               ; (default is no password (open server))
@@ -32,15 +33,10 @@ minfds=65536
 [rpcinterface:supervisor]
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 
-{% if 'inet_http_server' in config %}
 [supervisorctl]
-;serverurl=unix:///tmp/supervisor.sock ; use a unix:// URL  for a unix socket
-serverurl=http://localhost:{{ config.inet_http_server.port }} ; use an http:// url to specify an inet socket
-;username=chris              ; should be same as http_username if set
-;password=123                ; should be same as http_password if set
+serverurl=unix:///tmp/supervisor.sock ; use a unix:// URL  for a unix socket
 ;prompt=mysupervisor         ; cmd line prompt (default "supervisor")
 ;history_file=~/.sc_history  ; use readline history if available
-{% endif %}
 
 ; The below sample program section shows all possible program subsection values,
 ; create one or more 'real' program: sections to be able to control them under
