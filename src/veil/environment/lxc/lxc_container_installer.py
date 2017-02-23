@@ -42,7 +42,7 @@ def lxc_container_created_resource(container_name, user_name):
     shell_execute('lxc-create -t ubuntu -n {} -- -b {}'.format(container_name, user_name))
 
 
-@composite_installer
+@atomic_installer
 def lxc_container_in_service_resource(container_name, restart_if_running=False):
     running = is_lxc_container_running(container_name)
     if running:
