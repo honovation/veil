@@ -143,15 +143,13 @@ def veil_host_config_resource(host, config_dir):
     return resources
 
 
-@composite_installer
+@atomic_installer
 def veil_host_application_config_resource(host, config_dir):
     env_config_dir = config_dir / host.VEIL_ENV.name
     if not (env_config_dir / '.config').exists():
-        return []
-    return [
-        veil_host_file_resource(local_path=env_config_dir / '.config', host=host, remote_path=host.code_dir / '.config', owner=host.ssh_user,
-                                owner_group=host.ssh_user_group, mode=0600)
-    ]
+        return
+    veil_host_file_resource(local_path=env_config_dir / '.config', host=host, remote_path=host.code_dir / '.config',
+                            owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0600)
 
 
 @atomic_installer
@@ -224,13 +222,16 @@ def veil_host_init_resource(host):
         dry_run_result[key] = 'INSTALL'
         return
 
-    fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no', 'PermitRootLogin no', 'UseDNS no'], use_sudo=True)
-    fabric.api.sudo('service ssh reload')
+    fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no', 'PermitRootLogin no'], use_sudo=True)
+    fabric.api.sudo('systemctl reload-or-restart ssh')
 
     fabric.api.sudo('apt -q update')
     fabric.api.sudo('apt -q -y upgrade')
     fabric.api.sudo('apt -q -y purge ntp whoopsie network-manager')
-    fabric.api.sudo('apt -q -y install apt-transport-https ntpdate unattended-upgrades update-notifier-common iptables git language-pack-en unzip wget python python-dev python-pip python-virtualenv lxc')
+    install_os_packages = ['apt-transport-https', 'ntpdate', 'unattended-upgrades', 'update-notifier-common',
+                           'iptables' 'git', 'language-pack-en', 'unzip', 'wget', 'python', 'python-dev', 'python-pip',
+                           'python-virtualenv', 'lxc', 'lxd']
+    fabric.api.sudo('apt -q -y install {}'.format(' '.join(install_os_packages)))
     # enable time sync on lxc hosts, and which is shared among lxc guests
     fabric.api.sudo(
         '''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
@@ -352,4 +353,4 @@ def veil_host_user_editor_resource(host, config_dir):
     # do not add any config after Match User unless you know what you write
     fabric.contrib.files.append('/etc/ssh/sshd_config',
                                 ['Match User editor', 'ChrootDirectory {}'.format(host.editorial_dir.parent), 'ForceCommand internal-sftp'], use_sudo=True)
-    fabric.api.sudo('service ssh reload')
+    fabric.api.sudo('systemctl reload-or-restart ssh.service')

@@ -21,7 +21,7 @@ def veil_server_resource(server, action='PATCH', start_after_deploy=True):
         dry_run_result['veil_server?{}'.format(server.container_name)] = action
         return
 
-    if not is_container_running(server, not_on_host=True):
+    if not is_container_running(server, on_host=True):
         print(yellow('Skipped {} server {} as its container is not running'.format(action, server.container_name)))
 
     with fabric.api.settings(host_string=server.deploys_via):
@@ -36,8 +36,8 @@ def veil_server_resource(server, action='PATCH', start_after_deploy=True):
                 fabric.api.sudo('touch {}'.format(server.patched_tag_path))
 
 
-def is_container_running(server, not_on_host=False):
-    if not_on_host:
+def is_container_running(server, on_host=False):
+    if not on_host:
         host = get_veil_host(server.VEIL_ENV.name, server.host_name)
         with fabric.api.settings(host_string=host.deploys_via):
             ret = fabric.api.sudo('lxc-info -n {} -s'.format(server.container_name), warn_only=True)
