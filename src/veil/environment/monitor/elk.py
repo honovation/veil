@@ -10,8 +10,7 @@ def elk_resource(config):
     env['ES_SKIP_SET_KERNEL_PARAMETERS'] = 'true'
     return [
         oracle_java_resource(),
-        apt_repository_resource(name='elk', key_url='https://artifacts.elastic.co/GPG-KEY-elasticsearch',
-                                definition=repository_definition, update_apt_index=True),
+        apt_repository_resource(name='elk', key_url='https://artifacts.elastic.co/GPG-KEY-elasticsearch', definition=repository_definition),
         os_package_resource(name='elasticsearch', install_env=env),
         directory_resource(path=VEIL_ETC_DIR / 'elasticsearch', group='elasticsearch'),
         directory_resource(path=VEIL_ETC_DIR / 'elasticsearch/scripts', group='elasticsearch'),

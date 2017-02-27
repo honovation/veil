@@ -110,12 +110,8 @@ def download_os_package(name, version=None):
 apt_get_update_executed = False
 
 
-def set_apt_get_update_executed(value):
-    global apt_get_update_executed
-    apt_get_update_executed = value
-
-
 def update_os_package_catalogue():
+    global apt_get_update_executed
     if not apt_get_update_executed:
         LOGGER.info('updating os package catalogue...')
         try:
@@ -126,7 +122,7 @@ def update_os_package_catalogue():
             else:
                 raise
         else:
-            set_apt_get_update_executed(True)
+            apt_get_update_executed = True
 
 
 def to_resource_key(pip_package):
