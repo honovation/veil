@@ -110,9 +110,9 @@ class Minion(pyres.horde.Minion):
         super(Minion, self).startup()
         # load_all_components()
 
-    def process(self, job):
+    def working_on(self, job):
+        super(Minion, self).working_on(job)
         publish_event(EVENT_PROCESS_SETUP)
-        super(Minion, self).process(job)
 
     def unregister_minion(self):
         super(Minion, self).unregister_minion()
@@ -142,8 +142,11 @@ class Minion(pyres.horde.Minion):
         self.unregister_minion()
 
     def done_working(self):
+        try:
+            publish_event(EVENT_PROCESS_TEARDOWN, loads_event_handlers=False)
+        except Exception:
+            self.logger.warn('exception thrown while publishing EVENT_PROCESS_TEARDOWN', exc_info=1)
         super(Minion, self).done_working()
-        publish_event(EVENT_PROCESS_TEARDOWN, loads_event_handlers=False)
 
     def reserve(self):
         if VEIL_ENV.is_prod and 'true' != redis().get('reserve_job'):

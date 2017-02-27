@@ -55,8 +55,11 @@ class Worker(pyres.worker.Worker):
         return super(Worker, self).before_process(job)
 
     def done_working(self, job):
+        try:
+            publish_event(EVENT_PROCESS_TEARDOWN, loads_event_handlers=False)
+        except Exception:
+            self.logger.warn('exception thrown while publishing EVENT_PROCESS_TEARDOWN', exc_info=1)
         super(Worker, self).done_working(job)
-        publish_event(EVENT_PROCESS_TEARDOWN, loads_event_handlers=False)
 
     def reserve(self, timeout=10):
         if VEIL_ENV.is_prod and 'true' != redis().get('reserve_job'):
