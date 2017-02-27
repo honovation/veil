@@ -87,9 +87,9 @@ def download_baseline(veil_env_name, remote_path, baseline_path):
     if isinstance(baseline_path, basestring):
         baseline_path = as_path(baseline_path)
     baseline_path.makedirs(0755)
-    backup_mirror = get_veil_server(veil_env_name, '@guard').backup_mirror
+    backup_mirror = get_veil_server(veil_env_name, 'guard').backup_mirror
     if not backup_mirror:
-        raise Exception('backup mirror not found on server {}/{}'.format(veil_env_name, '@guard'))
+        raise Exception('backup mirror not found on server {}/{}'.format(veil_env_name, 'guard'))
     if not hasattr(backup_mirror, 'domain'):
         backup_mirror.domain = 'ljhost-01.dmright.com'
     backup_mirror_path = '~/backup_mirror/{}'.format(veil_env_name)

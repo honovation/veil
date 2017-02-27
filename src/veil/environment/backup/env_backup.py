@@ -12,7 +12,7 @@ from veil.environment.in_service import is_server_running
 
 LOGGER = logging.getLogger(__name__)
 
-SSH_KEY_PATH = '/etc/ssh/id_rsa-@guard'
+SSH_KEY_PATH = '/etc/ssh/id_rsa-guard'
 KEEP_BACKUP_FOR_DAYS = 5 if VEIL_ENV.is_staging else 10
 
 
@@ -69,7 +69,7 @@ def fetch_host_backup(host, timestamp):
     backup_dir.makedirs(0700)
     host_backup_dir = host.ssh_user_home / 'backup' / host.VEIL_ENV.name / host.base_name
     link_dest = '--link-dest={}/'.format(VEIL_BACKUP_ROOT / 'latest') if (VEIL_BACKUP_ROOT / 'latest').exists() else ''
-    server_guard = get_veil_server(VEIL_ENV.name, '@guard')
+    server_guard = get_veil_server(VEIL_ENV.name, 'guard')
     if server_guard.host_base_name == host.base_name:
         shell_execute('rsync -avh --numeric-ids --delete {} {} {}/'.format(link_dest, host_backup_dir, backup_dir), debug=True)
     else:

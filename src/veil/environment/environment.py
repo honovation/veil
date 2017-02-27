@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
 import getpass
 import os
+import re
 from urlparse import urlparse
 import operator
 from veil_component import *
@@ -55,17 +56,22 @@ else:
     BASIC_LAYOUT_RESOURCES = []
 
 
+NAME_PATTERN = re.compile(r'^[a-zA-Z0-9-]+$')
+
+
 def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, pypi_index_url=PYPI_INDEX_URL, deployment_memo=None, config=None):
     server_names = servers.keys()
     if sorted_server_names:
         assert set(sorted_server_names) == set(server_names), \
             'ENV {}: inconsistency between sorted_server_names {} and server_names {}'.format(name, sorted_server_names, server_names)
-        assert '@monitor' not in sorted_server_names or '@monitor' == sorted_server_names[-1], \
-            'ENV {}: @monitor should be the last one in {}'.format(name, sorted_server_names)
+        assert 'monitor' not in sorted_server_names or 'monitor' == sorted_server_names[-1], \
+            'ENV {}: monitor should be the last one in {}'.format(name, sorted_server_names)
     else:
         sorted_server_names = sorted(server_names)
 
     from veil.model.collection import objectify
+
+    assert NAME_PATTERN.match(name) is None, 'invalid characters in veil environment name: {}'.format(name)
     env = objectify({
         'name': name, 'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names,
         'apt_url': apt_url, 'pypi_index_host': urlparse(pypi_index_url).hostname, 'pypi_index_url': pypi_index_url,
@@ -76,6 +82,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
     env.veil_home = VEIL_HOME if env.VEIL_ENV.is_dev or env.VEIL_ENV.is_test else env.env_dir / 'code' / 'app'
     env.server_list = []
     for server_name, server in env.servers.items():
+        assert NAME_PATTERN.match(server_name) is None, 'invalid characters in veil server name: {}'.format(server_name)
         server.VEIL_ENV = env.VEIL_ENV
         server.name = server_name
         server.fullname = '{}/{}'.format(server.VEIL_ENV.name, server.name)
@@ -96,6 +103,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         env.server_list.append(server)
     env.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))
     for host_name, host in env.hosts.items():
+        assert NAME_PATTERN.match(host_name) is None, 'invalid characters in veil host name: {}'.format(host_name)
         host.VEIL_ENV = env.VEIL_ENV
         host.name = host_name
         # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.VEIL_ENV.name, host.base_name))
@@ -155,8 +163,8 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         assert all(len(host.server_list) == len(set(server.sequence_no for server in host.server_list)) for host in env.hosts.values()), \
             'ENV {}: found sequence no conflict among servers on one host'.format(env.name)
         assert all(
-            server.name not in ('@guard', '@monitor') or not server.mount_editorial_dir and not server.mount_buckets_dir and not server.mount_data_dir
-            for server in env.servers.values()), 'ENV {}: found @guard or @monitor with editorial/buckets/data mount'.format(env.name)
+            server.name not in ('guard', 'monitor') or not server.mount_editorial_dir and not server.mount_buckets_dir and not server.mount_data_dir
+            for server in env.servers.values()), 'ENV {}: found guard or monitor with editorial/buckets/data mount'.format(env.name)
 
     # break cyclic reference between host and server to get freeze_dict_object out of complain
     for server in env.servers.values():
@@ -214,9 +222,9 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
 def list_veil_servers(veil_env_name, include_guard_server=True, include_monitor_server=True):
     exclude_server_names = []
     if not include_guard_server:
-        exclude_server_names.append('@guard')
+        exclude_server_names.append('guard')
     if not include_monitor_server:
-        exclude_server_names.append('@monitor')
+        exclude_server_names.append('monitor')
     return [server for server in get_veil_env(veil_env_name).server_list if server.name not in exclude_server_names]
 
 

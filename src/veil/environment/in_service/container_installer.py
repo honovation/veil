@@ -82,8 +82,8 @@ def veil_container_config_resource(server, config_dir):
         veil_container_file_resource(local_path=CURRENT_DIR / 'apt-config', server=server, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config', owner='root',
                                      owner_group='root', mode=0644)
     ]
-    if '@guard' == server.name:
-        resources.append(veil_container_file_resource(local_path=env_config_dir / '.ssh-@guard' / 'id_rsa', server=server, remote_path='/etc/ssh/id_rsa-@guard',
+    if 'guard' == server.name:
+        resources.append(veil_container_file_resource(local_path=env_config_dir / '.ssh-guard' / 'id_rsa', server=server, remote_path='/etc/ssh/id_rsa-@guard',
                                                       owner='root', owner_group='root', mode=0600))
     for local_path in server_config_dir.files('*.crt'):
         resources.append(

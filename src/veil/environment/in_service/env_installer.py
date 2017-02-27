@@ -31,10 +31,10 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
     first_round_servers = []
     second_round_servers = []
     for server in list_veil_servers(veil_env_name):
-        if server.name not in ('@guard', '@monitor'):
+        if server.name not in ('guard', 'monitor'):
             first_round_servers.append(server)
         else:
-            if server.name != '@monitor' or include_monitor_server == 'TRUE':
+            if server.name != 'monitor' or include_monitor_server == 'TRUE':
                 second_round_servers.append(server)
 
     if first_round_servers:
@@ -127,13 +127,13 @@ def download_packages(veil_env_name):
 @script('deploy-monitor')
 @log_elapsed_time
 def deploy_monitor(veil_env_name):
-    _deploy_server(veil_env_name, '@monitor')
+    _deploy_server(veil_env_name, 'monitor')
 
 
 @script('deploy-guard')
 @log_elapsed_time
 def deploy_guard(veil_env_name):
-    _deploy_server(veil_env_name, '@guard')
+    _deploy_server(veil_env_name, 'guard')
 
 
 @script('deploy-server')
@@ -230,14 +230,14 @@ def rollback(hosts):
 def ensure_servers_down(hosts):
     for host in hosts:
         with fabric.api.settings(host_string=host.deploys_via):
-            ret = fabric.api.run('ps -ef | grep supervisord | grep {} | grep -v @monitor | grep -v grep'.format(host.etc_dir), warn_only=True)
+            ret = fabric.api.run('ps -ef | grep supervisord | grep {} | grep -v monitor | grep -v grep'.format(host.etc_dir), warn_only=True)
             if ret.return_code == 0:
                 raise Exception('{}: can not rollback while having running veil server(s)'.format(host.base_name))
 
 
 @script('backup-env')
 def backup_env(veil_env_name):
-    server_guard = get_veil_server(veil_env_name, '@guard')
+    server_guard = get_veil_server(veil_env_name, 'guard')
     with fabric.api.settings(host_string=server_guard.deploys_via):
         with fabric.api.cd(server_guard.veil_home):
             fabric.api.sudo('veil :{} backup-env'.format(server_guard.fullname))

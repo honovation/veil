@@ -8,7 +8,7 @@ LOGGER = logging.getLogger(__name__)
 def supervisor_resource(programs, inet_http_server_host=None, inet_http_server_port=None, program_groups=None):
     inet_http_server_config = {
         'inet_http_server': {
-            'host': inet_http_server_host or '*',
+            'host': inet_http_server_host or '*',  # '*' will not cause security risk as the container itself does not have public ip
             'port': inet_http_server_port or (9091 if VEIL_ENV.is_test else 9090)
         }
     }

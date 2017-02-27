@@ -129,13 +129,13 @@ def veil_host_config_resource(host, config_dir):
     ]
 
     servers = get_veil_env(host.VEIL_ENV.name).servers
-    if '@guard' in servers:
+    if 'guard' in servers:
         resources.extend([
             veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0700),
-            veil_host_file_resource(local_path=env_config_dir / '.ssh-@guard' / 'id_rsa.pub', host=host, remote_path='/root/.ssh/authorized_keys', owner='root',
+            veil_host_file_resource(local_path=env_config_dir / '.ssh-guard' / 'id_rsa.pub', host=host, remote_path='/root/.ssh/authorized_keys', owner='root',
                                     owner_group='root', mode=0600)
         ])
-    if '@monitor' in servers:
+    if 'monitor' in servers:
         resources.append(
             veil_host_file_resource(local_path=CURRENT_DIR / 'max-map-count.conf', host=host, remote_path='/etc/sysctl.d/60-max-map-count.conf',
                                     owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-max-map-count.conf'),

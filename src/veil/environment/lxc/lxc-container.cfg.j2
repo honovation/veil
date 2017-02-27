@@ -6,7 +6,7 @@
 lxc.include = /usr/share/lxc/config/ubuntu.common.conf
 
 # Container specific configuration
-lxc.utsname = {{ utsname }}
+lxc.utsname = {{ name }}
 lxc.arch = x86_64
 lxc.rootfs = /var/lib/lxc/{{ name }}/rootfs
 lxc.rootfs.backend = dir
