@@ -122,7 +122,7 @@ def veil_container_init_resource(server):
                                 use_sudo=True)
     # fix error: Missing privilege separation directory: /var/run/sshd
     fabric.api.sudo('chroot {} mkdir /var/run/sshd'.format(container_rootfs_path))
-    fabric.api.sudo('chroot {} systemctl reload-or-restart ssh.service'.format(container_rootfs_path))
+    fabric.api.sudo('chroot {} service ssh restart'.format(container_rootfs_path))
 
     fabric.api.sudo('chroot {} apt -q update'.format(container_rootfs_path))
     fabric.api.sudo('chroot {} apt -q -y purge ntpdate ntp whoopsie network-manager'.format(container_rootfs_path))
