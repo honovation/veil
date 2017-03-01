@@ -56,7 +56,7 @@ else:
     BASIC_LAYOUT_RESOURCES = []
 
 
-NAME_PATTERN = re.compile(r'^[a-zA-Z0-9-]+$')
+NAME_PATTERN = re.compile(r'.*[^a-zA-Z0-9-]+')
 
 
 def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, pypi_index_url=PYPI_INDEX_URL, deployment_memo=None, config=None):

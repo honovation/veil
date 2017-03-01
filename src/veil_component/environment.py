@@ -51,8 +51,10 @@ VEIL_HOME = as_path(VEIL_HOME)
 VEIL_SERVER_NAME = getenv('VEIL_SERVER_NAME') or 'development'
 if '/' in VEIL_SERVER_NAME:
     VEIL_ENV_NAME, VEIL_SERVER_NAME = VEIL_SERVER_NAME.rsplit('/', 1)
+elif VEIL_SERVER_NAME == 'test':
+    VEIL_ENV_NAME, VEIL_SERVER_NAME = VEIL_SERVER_NAME, 'test-server'
 else:
-    VEIL_ENV_NAME, VEIL_SERVER_NAME = VEIL_SERVER_NAME, '@'
+    VEIL_ENV_NAME, VEIL_SERVER_NAME = VEIL_SERVER_NAME, 'dev-server'
 VEIL_ENV = VeilEnv(VEIL_ENV_NAME)
 
 CURRENT_OS = namedtuple('VeilOS', 'distname, version, codename')(*platform.linux_distribution())
