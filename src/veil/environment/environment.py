@@ -56,7 +56,7 @@ else:
     BASIC_LAYOUT_RESOURCES = []
 
 
-NAME_PATTERN = re.compile(r'.*[^a-zA-Z0-9-]+')
+NAME_PATTERN = re.compile(r'^[a-zA-Z0-9-]+$')
 
 
 def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, pypi_index_url=PYPI_INDEX_URL, deployment_memo=None, config=None):
@@ -71,7 +71,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
 
     from veil.model.collection import objectify
 
-    assert NAME_PATTERN.match(name) is None, 'invalid characters in veil environment name: {}'.format(name)
+    assert NAME_PATTERN.match(name) is not None, 'invalid characters in veil environment name: {}'.format(name)
     env = objectify({
         'name': name, 'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names,
         'apt_url': apt_url, 'pypi_index_host': urlparse(pypi_index_url).hostname, 'pypi_index_url': pypi_index_url,
@@ -82,7 +82,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
     env.veil_home = VEIL_HOME if env.VEIL_ENV.is_dev or env.VEIL_ENV.is_test else env.env_dir / 'code' / 'app'
     env.server_list = []
     for server_name, server in env.servers.items():
-        assert NAME_PATTERN.match(server_name) is None, 'invalid characters in veil server name: {}'.format(server_name)
+        assert NAME_PATTERN.match(server_name) is not None, 'invalid characters in veil server name: {}'.format(server_name)
         server.VEIL_ENV = env.VEIL_ENV
         server.name = server_name
         server.fullname = '{}/{}'.format(server.VEIL_ENV.name, server.name)
@@ -103,7 +103,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         env.server_list.append(server)
     env.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))
     for host_name, host in env.hosts.items():
-        assert NAME_PATTERN.match(host_name) is None, 'invalid characters in veil host name: {}'.format(host_name)
+        assert NAME_PATTERN.match(host_name) is not None, 'invalid characters in veil host name: {}'.format(host_name)
         host.VEIL_ENV = env.VEIL_ENV
         host.name = host_name
         # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.VEIL_ENV.name, host.base_name))
