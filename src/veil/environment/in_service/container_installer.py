@@ -78,6 +78,7 @@ def veil_container_config_resource(server, config_dir):
     env_config_dir = config_dir / server.VEIL_ENV.name
     server_config_dir = env_config_dir / 'servers' / server.name
     resources = [
+        veil_server_default_setting_resource(server=server),
         veil_server_boot_script_resource(server=server),
         veil_container_file_resource(local_path=CURRENT_DIR / 'apt-config', server=server, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config', owner='root',
                                      owner_group='root', mode=0644)
@@ -162,12 +163,39 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
 
 
 @atomic_installer
+def veil_server_default_setting_resource(server):
+    default_setting_path = '/etc/default/veil'
+    container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
+    full_default_setting_path = '{}{}'.format(container_rootfs_path, default_setting_path)
+    remote_default_setting_content = get_remote_file_content(full_default_setting_path)
+    default_setting_content = render_veil_server_default_setting(server)
+
+    if remote_default_setting_content:
+        action = None if default_setting_content == remote_default_setting_content else 'UPDATE'
+    else:
+        action = 'INSTALL'
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        key = 'veil_container_app_default_setting?{}'.format(server.container_name)
+        dry_run_result[key] = action or '-'
+        return
+    if not action:
+        return
+    print('{} veil server default setting: {} ...'.format(action, server.container_name))
+    with contextlib.closing(StringIO(default_setting_content)) as f:
+        fabric.api.put(f, full_default_setting_path, use_sudo=True, mode=0644)
+    fabric.api.sudo('chroot {} chown root:root {}'.format(container_rootfs_path, default_setting_path))
+
+
+@atomic_installer
 def veil_server_boot_script_resource(server):
-    boot_script_path = '/etc/init.d/{}'.format(server.container_name)
+    boot_script_path = '/lib/systemd/system/veil-server.service'
     container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
     full_boot_script_path = '{}{}'.format(container_rootfs_path, boot_script_path)
+
     remote_boot_script_content = get_remote_file_content(full_boot_script_path)
-    boot_script_content = render_veil_server_boot_script(server)
+    boot_script_content = render_config('veil-server.service')
+
     if remote_boot_script_content:
         action = None if boot_script_content == remote_boot_script_content else 'UPDATE'
     else:
@@ -180,17 +208,20 @@ def veil_server_boot_script_resource(server):
     if not action:
         return
     print('{} boot script: {} ...'.format(action, server.container_name))
-    fabric.api.sudo('chroot {} update-rc.d -f {} remove'.format(container_rootfs_path, server.container_name))
+
     with contextlib.closing(StringIO(boot_script_content)) as f:
-        fabric.api.put(f, full_boot_script_path, use_sudo=True, mode=0755)
+        fabric.api.put(f, full_boot_script_path, use_sudo=True, mode=0644)
     fabric.api.sudo('chroot {} chown root:root {}'.format(container_rootfs_path, boot_script_path))
-    fabric.api.sudo('chroot {} update-rc.d {} defaults 90 10'.format(container_rootfs_path, server.container_name))
+
+    veil_server_boot_script_preset_path = '/lib/systemd/system-preset/99-veil-server.preset'
+    full_veil_server_boot_script_preset_path = '{}{}'.format(container_rootfs_path, veil_server_boot_script_preset_path)
+    with contextlib.closing(StringIO('enable veil-server.service')) as f:
+        fabric.api.put(f, full_veil_server_boot_script_preset_path, use_sudo=True, mode=0644)
+    fabric.api.sudo('chroot {} chown root:root {}'.format(container_rootfs_path, veil_server_boot_script_preset_path))
 
 
-def render_veil_server_boot_script(server):
-    return render_config('veil-server-boot-script.j2', script_name=server.container_name,
-                         do_start_command='cd {} && sudo veil :{} up --daemonize'.format(server.veil_home, server.fullname),
-                         do_stop_command='cd {} && sudo veil :{} down'.format(server.veil_home, server.fullname))
+def render_veil_server_default_setting(server):
+    return render_config('veil-server-settings.j2', veil_home=server.veil_home, veil_server=server.fullname)
 
 
 def render_installer_file(host, server):
