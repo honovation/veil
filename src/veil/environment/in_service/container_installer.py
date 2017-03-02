@@ -194,7 +194,7 @@ def veil_server_boot_script_resource(server):
     full_boot_script_path = '{}{}'.format(container_rootfs_path, boot_script_path)
 
     remote_boot_script_content = get_remote_file_content(full_boot_script_path)
-    boot_script_content = render_config('veil-server.service')
+    boot_script_content = render_config('veil-server.service.j2', veil_home=server.veil_home)
 
     if remote_boot_script_content:
         action = None if boot_script_content == remote_boot_script_content else 'UPDATE'
