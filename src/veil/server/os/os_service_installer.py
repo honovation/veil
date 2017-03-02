@@ -1,9 +1,6 @@
 from __future__ import unicode_literals, print_function, division
-import glob
-import os
 import logging
 
-from veil_component import CURRENT_OS
 from veil_installer import *
 from veil.utility.shell import *
 
@@ -26,23 +23,12 @@ def os_service_auto_starting_resource(name, state):
 
 
 def stop_service(name):
-    # TODO xenial
-    if CURRENT_OS.codename == 'xenial':
-        try_shell_execute('systemctl stop {}'.format(name))
-    else:
-        try_shell_execute('service {} stop'.format(name), capture=True)
+    try_shell_execute('systemctl stop {}'.format(name))
 
 
 def is_service_auto_starting_installed(name):
-    return any(glob.glob('/etc/rc{}.d/S[0-9][0-9]{}'.format(i, name)) for i in range(7)) or (
-        os.path.exists('/etc/init/{}.conf'.format(name)) and not os.path.exists('/etc/init/{}.override'.format(name))
-    )
+    return try_shell_execute('systemctl is-enabled {}'.format(name), capture=True) in {'enabled', 'static'}
 
 
 def disable_auto_starting(name):
-    # TODO xenial
-    if CURRENT_OS.codename == 'xenial':
-        try_shell_execute('systemctl disable {}'.format(name))
-    else:
-        try_shell_execute('update-rc.d {} disable'.format(name), capture=True)
-        try_shell_execute('sh -c "echo manual > /etc/init/{}.override"'.format(name))
+    try_shell_execute('systemctl disable {}'.format(name))
