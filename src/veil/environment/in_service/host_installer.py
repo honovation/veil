@@ -147,10 +147,11 @@ def veil_host_config_resource(host, config_dir):
 def veil_host_application_config_resource(host, config_dir):
     env_config_dir = config_dir / host.VEIL_ENV.name
     if not (env_config_dir / '.config').exists():
-        return
+        return []
     return [
-        veil_host_file_resource(local_path=env_config_dir / '.config', host=host, remote_path=host.code_dir / '.config',
-                                owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0600)]
+        veil_host_file_resource(local_path=env_config_dir / '.config', host=host, remote_path=host.code_dir / '.config', owner=host.ssh_user,
+                                owner_group=host.ssh_user_group, mode=0600)
+    ]
 
 
 @atomic_installer
