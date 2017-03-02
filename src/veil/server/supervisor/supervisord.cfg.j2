@@ -34,7 +34,7 @@ minfds=65536
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 
 [supervisorctl]
-serverurl=unix:///tmp/supervisor.sock ; use a unix:// URL  for a unix socket
+serverurl=unix:///tmp/supervisor-{{ config.inet_http_server.port }}.sock ; use a unix:// URL  for a unix socket
 ;prompt=mysupervisor         ; cmd line prompt (default "supervisor")
 ;history_file=~/.sc_history  ; use readline history if available
 

@@ -3,11 +3,11 @@ Description=Veil Server
 After=network.target
 
 [Service]
-EnvironmentFile=-/etc/default/veil
-WorkingDirectory=$VEIL_HOME
-ExecStart=veil :$VEIL_SERVER up --daemonize
-ExecStop=veil :$VEIL_SERVER down
-ExecReload=veil :VEIL_SERVER reload
+EnvironmentFile=/etc/default/veil
+WorkingDirectory=${VEIL_HOME}
+ExecStart=veil :${VEIL_SERVER} up --daemonize
+ExecStop=veil :${VEIL_SERVER} down
+ExecReload=veil :{VEIL_SERVER} reload
 KillMode=process
 Restart=on-failure
 RestartPreventExitStatus=255
