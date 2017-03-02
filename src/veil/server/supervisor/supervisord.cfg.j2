@@ -1,6 +1,6 @@
 ; unix http server only for supervisorctl
 [unix_http_server]
-file=/tmp/supervisor.sock   ; (the path to the socket file)
+file=/tmp/supervisor-{{ config.inet_http_server.port }}.sock   ; (the path to the socket file)
 ;chmod=0700                 ; sockef file mode (default 0700)
 ;chown=nobody:nogroup       ; socket file uid:gid owner
 ;username=user              ; (default is no username (open server))
