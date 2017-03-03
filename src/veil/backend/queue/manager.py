@@ -11,10 +11,7 @@ from pyres.horde import setproctitle
 from veil.frontend.cli import *
 from veil.model.event import *
 from veil.server.process import *
-from veil_component import VEIL_ENV
-from veil.backend.redis import *
-
-redis = register_redis('persist_store')
+from .queue import is_jobs_given_up
 
 
 @script('pyres_manager')
@@ -149,6 +146,6 @@ class Minion(pyres.horde.Minion):
         super(Minion, self).done_working()
 
     def reserve(self):
-        if VEIL_ENV.is_prod and 'true' != redis().get('reserve_job'):
+        if is_jobs_given_up():
             return None
         return super(Minion, self).reserve()

@@ -11,11 +11,13 @@ from veil.utility.clock import *
 from veil.model.event import *
 from veil.server.process import *
 from veil.backend.queue.job import *
+from veil.backend.redis import *
 from .queue_client_installer import queue_client_config
 from .queue_client_installer import queue_client_resource
 
 LOGGER = getLogger(__name__)
 _current_queue = None
+redis = register_redis('persist_store')
 
 
 def register_queue():
@@ -153,3 +155,7 @@ class ImmediateQueue(object):
 
     def __repr__(self):
         return 'Queue {} opened by {}'.format(self.__class__, self.opened_by)
+
+
+def is_jobs_given_up():
+    return VEIL_ENV.is_prod and VEIL_ENV.name != redis().get('reserve_job')
