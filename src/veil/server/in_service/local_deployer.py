@@ -17,10 +17,16 @@ def deploy(start_after_deploy='TRUE'):
         check_no_changes_not_committed()
         check_no_commits_not_pushed()
     shell_execute('veil install veil_installer.component_resource?veil.server.supervisor')
-    shell_execute('veil down')
+    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
+        shell_execute('veil down')
+    else:
+        shell_execute('systemctl stop veil-server.service')
     shell_execute('veil install-server')
     if start_after_deploy == 'TRUE':
-        shell_execute('veil up --daemonize')
+        if VEIL_ENV.is_dev or VEIL_ENV.is_test:
+            shell_execute('veil up --daemonize')
+        else:
+            shell_execute('systemctl start veil-server.service')
         shell_execute('veil migrate')
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         check_no_changes_not_committed()

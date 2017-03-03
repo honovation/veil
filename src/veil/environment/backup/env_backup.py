@@ -55,12 +55,12 @@ def backup_host(host):
 
 def bring_down_servers(servers):
     for server in servers:
-        fabric.api.run('lxc-attach -n {} -- sh -c "cd {} && veil :{} down"'.format(server.container_name, server.veil_home, server.fullname))
+        fabric.api.run('lxc-attach -n {} -- systemctl stop veil-server.service'.format(server.container_name, server.veil_home, server.fullname))
 
 
 def bring_up_servers(servers):
     for server in servers:
-        fabric.api.run('lxc-attach -n {} -- sh -c "cd {} && veil :{} up --daemonize"'.format(server.container_name, server.veil_home, server.fullname))
+        fabric.api.run('lxc-attach -n {} -- systemctl start veil-server.service'.format(server.container_name, server.veil_home, server.fullname))
 
 
 @log_elapsed_time
