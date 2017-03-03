@@ -172,13 +172,13 @@ def veil_host_codebase_resource(host):
 def clone_application(host):
     if fabric.contrib.files.exists(host.veil_home):
         return
-    fabric.api.sudo('git clone {} {}'.format(get_application_codebase(), host.veil_home))
+    fabric.api.sudo('git clone --depth=1 {} {}'.format(get_application_codebase(), host.veil_home))
 
 
 def clone_framework(host):
     if fabric.contrib.files.exists(host.veil_framework_home):
         return
-    fabric.api.sudo('git clone {} {}'.format(VEIL_FRAMEWORK_CODEBASE, host.veil_framework_home))
+    fabric.api.sudo('git clone --depth=1 {} {}'.format(VEIL_FRAMEWORK_CODEBASE, host.veil_framework_home))
 
 
 def pull_application(host):
