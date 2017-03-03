@@ -58,4 +58,4 @@ else:
 VEIL_ENV = VeilEnv(VEIL_ENV_NAME)
 
 CURRENT_OS = namedtuple('VeilOS', 'distname, version, codename')(*platform.linux_distribution())
-assert CURRENT_OS.distname == 'Ubuntu' and CURRENT_OS.codename in ('trusty', 'xenial')
+assert CURRENT_OS.distname == 'Ubuntu' and CURRENT_OS.codename in ('xenial', )

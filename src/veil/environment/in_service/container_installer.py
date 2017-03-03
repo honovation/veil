@@ -16,8 +16,8 @@ CURRENT_DIR = as_path(os.path.dirname(__file__))
 def veil_container_resource(host, server, config_dir):
     resources = [
         veil_container_lxc_resource(host=host, server=server),
-        veil_container_onetime_config_resource(server=server),
-        veil_container_config_resource(server=server, config_dir=config_dir)
+        veil_container_config_resource(server=server, config_dir=config_dir),
+        veil_container_onetime_config_resource(server=server)
     ]
     return resources
 
@@ -84,7 +84,7 @@ def veil_container_config_resource(server, config_dir):
                                      owner_group='root', mode=0644)
     ]
     if 'guard' == server.name:
-        resources.append(veil_container_file_resource(local_path=env_config_dir / '.ssh-guard' / 'id_rsa', server=server, remote_path='/etc/ssh/id_rsa-@guard',
+        resources.append(veil_container_file_resource(local_path=env_config_dir / '.ssh-guard' / 'id_rsa', server=server, remote_path='/etc/ssh/id_rsa-guard',
                                                       owner='root', owner_group='root', mode=0600))
     for local_path in server_config_dir.files('*.crt'):
         resources.append(
@@ -132,6 +132,7 @@ def veil_container_init_resource(server):
     fabric.api.sudo('chroot {} pip install -i {} --trusted-host {} --upgrade "setuptools>=20.3.1"'.format(container_rootfs_path, server.pypi_index_url, server.pypi_index_host))
     fabric.api.sudo('chroot {} pip install -i {} --trusted-host {} --upgrade "wheel>=0.29.0"'.format(container_rootfs_path, server.pypi_index_url, server.pypi_index_host))
     fabric.api.sudo('chroot {} pip install -i {} --trusted-host {} --upgrade "virtualenv>=15.0.1"'.format(container_rootfs_path, server.pypi_index_url, server.pypi_index_host))
+    fabric.api.sudo('lxc-attach -n {} -- systemctl enable veil-server.service'.format(server.container_name))
     fabric.api.sudo('touch {}'.format(server.container_initialized_tag_path))
 
 
@@ -212,12 +213,6 @@ def veil_server_boot_script_resource(server):
     with contextlib.closing(StringIO(boot_script_content)) as f:
         fabric.api.put(f, full_boot_script_path, use_sudo=True, mode=0644)
     fabric.api.sudo('chroot {} chown root:root {}'.format(container_rootfs_path, boot_script_path))
-
-    veil_server_boot_script_preset_path = '/lib/systemd/system-preset/99-veil-server.preset'
-    full_veil_server_boot_script_preset_path = '{}{}'.format(container_rootfs_path, veil_server_boot_script_preset_path)
-    with contextlib.closing(StringIO('enable veil-server.service')) as f:
-        fabric.api.put(f, full_veil_server_boot_script_preset_path, use_sudo=True, mode=0644)
-    fabric.api.sudo('chroot {} chown root:root {}'.format(container_rootfs_path, veil_server_boot_script_preset_path))
 
 
 def render_veil_server_default_setting(server):

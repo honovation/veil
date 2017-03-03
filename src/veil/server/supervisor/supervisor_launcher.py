@@ -53,7 +53,7 @@ def bring_up_supervisor(*argv):
         LOGGER.info('failed to bring up supervisor: latest status: %(status)s', {
             'status': supervisor_status
         })
-        sys.exit(1)
+        sys.exit()
     else:
         if VEIL_ENV.is_dev or VEIL_ENV.is_test:
             update_dynamic_dependencies()

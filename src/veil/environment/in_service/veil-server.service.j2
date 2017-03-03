@@ -7,11 +7,8 @@ EnvironmentFile=/etc/default/veil
 WorkingDirectory={{ veil_home }}
 ExecStart=/usr/bin/veil :${VEIL_SERVER} up --daemonize
 ExecStop=/usr/bin/veil :${VEIL_SERVER} down
-ExecReload=/usr/bin/veil :{VEIL_SERVER} reload
 KillMode=process
-Restart=on-failure
-RestartPreventExitStatus=255
-Type=notify
+Type=forking
 
 [Install]
 WantedBy=multi-user.target
