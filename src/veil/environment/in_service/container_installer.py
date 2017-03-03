@@ -213,6 +213,7 @@ def veil_server_boot_script_resource(server):
     with contextlib.closing(StringIO(boot_script_content)) as f:
         fabric.api.put(f, full_boot_script_path, use_sudo=True, mode=0644)
     fabric.api.sudo('chroot {} chown root:root {}'.format(container_rootfs_path, boot_script_path))
+    fabric.api.sudo('lxc-attach -n {} -- systemctl daemon-reload'.format(server.container_name))
 
 
 def render_veil_server_default_setting(server):
