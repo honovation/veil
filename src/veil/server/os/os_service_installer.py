@@ -31,7 +31,7 @@ def stop_service(name):
 
 
 def is_service_auto_starting_installed(name):
-    return try_shell_execute('systemctl is-enabled {}'.format(name), capture=True) == 'enabled' \
+    return try_shell_execute('systemctl is-enabled {}'.format(name), capture=True, expected_return_codes=(0, 1)) == 'enabled' \
            or any(glob.glob('/etc/rc{}.d/S[0-9][0-9]{}'.format(i, name)) for i in range(7)) \
            or (os.path.exists('/etc/init/{}.conf'.format(name)) and not os.path.exists('/etc/init/{}.override'.format(name)))
 
