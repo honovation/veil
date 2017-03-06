@@ -2,14 +2,18 @@ from __future__ import unicode_literals, print_function, division
 import traceback
 from logging import getLogger
 from datetime import timedelta, datetime
+
+import sys
 from pyres import ResQ
 from redis.client import Redis
+
 from veil_component import VEIL_ENV
 from veil.utility.encoding import *
 from veil_installer import *
 from veil.utility.clock import *
 from veil.model.event import *
 from veil.server.process import *
+from veil.frontend.cli import *
 from veil.backend.queue.job import *
 from veil.backend.redis import *
 from .queue_client_installer import queue_client_config
@@ -149,8 +153,8 @@ class ImmediateQueue(object):
         try:
             return job_handler(**payload)
         except (IgnorableInvalidJob, AssertionError):
-            LOGGER.warn('Ignored ignorable invalid job: %(job_handler_name)s, %(payload)s', {'job_handler_name': job_handler.__name__, 'payload': payload},
-                        exc_info=1)
+            LOGGER.warn('Ignored ignorable invalid job: %(job_handler_name)s, %(payload)s',
+                        {'job_handler_name': job_handler.__name__, 'payload': payload}, exc_info=1)
             return
 
     def __repr__(self):
@@ -159,3 +163,33 @@ class ImmediateQueue(object):
 
 def is_jobs_given_up():
     return VEIL_ENV.is_prod and VEIL_ENV.name != redis().get('reserve_job')
+
+
+@script('start-processing-job')
+def start_processing_jobs():
+    if not VEIL_ENV.is_prod:
+        print('WARNING: this is only available to run under production environment.')
+        return
+    print('Are you sure to notify workers to start processing jobs under production environment <{}>? [YES/NO]'.format(
+        VEIL_ENV.name))
+    answer = sys.stdin.readline().strip()
+    if 'YES' != answer:
+        print('WARNING: not started')
+        return
+    redis().set('reserve_job', VEIL_ENV.name)
+    print ('Started')
+
+
+@script('stop-processing-job')
+def stop_processing_jobs():
+    if not VEIL_ENV.is_prod:
+        print('WARNING: this is only available to run under production environment.')
+        return
+    print('Are you sure to notify workers to stop processing jobs under production environment <{}>? [YES/NO]'.format(
+        VEIL_ENV.name))
+    answer = sys.stdin.readline().strip()
+    if 'YES' != answer:
+        print('WARNING: not stopped')
+        return
+    redis().delete('reserve_job')
+    print ('Stopped')
