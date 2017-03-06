@@ -224,7 +224,9 @@ def veil_host_init_resource(host):
         dry_run_result[key] = 'INSTALL'
         return
 
-    fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no', 'PermitRootLogin no'], use_sudo=True)
+    fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no',
+                                                                             'PermitRootLogin without-password'],
+                                use_sudo=True)
     fabric.api.sudo('systemctl reload-or-restart ssh')
 
     fabric.api.sudo('apt -q update')
