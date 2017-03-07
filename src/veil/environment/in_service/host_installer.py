@@ -36,6 +36,10 @@ def veil_hosts_resource(veil_env_name, config_dir):
                 veil_host_application_config_resource(host=host, config_dir=config_dir),
                 veil_host_codebase_resource(host=host)
             ])
+            host_users_dir = as_path(config_dir / host.VEIL_ENV.name / host.base_name / 'USERS')
+            if host_users_dir.exists:
+                for user_dir in host_users_dir.dirs():
+                    resources.append(veil_host_user_resource(host, user_dir))
             if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
                 resources.append(veil_host_user_editor_resource(host=host, config_dir=config_dir))
             resources.append(veil_host_iptables_rules_resource(host=host))
@@ -366,3 +370,24 @@ def veil_host_user_editor_resource(host, config_dir):
     fabric.contrib.files.append('/etc/ssh/sshd_config',
                                 ['Match User editor', 'ChrootDirectory {}'.format(host.editorial_dir.parent), 'ForceCommand internal-sftp'], use_sudo=True)
     fabric.api.sudo('systemctl reload-or-restart ssh.service')
+
+
+@atomic_installer
+def veil_host_user_resource(host, user_config):
+    username = user_config.basename()
+    initialized_file_path = '/home/{}/.veil_host_user_initialized'.format(username)
+    installed = fabric.contrib.files.exists(initialized_file_path, use_sudo=True)
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        key = 'veil_host_user_{}?{}'.format(username, host.VEIL_ENV.name)
+        dry_run_result[key] = '-' if installed else 'INSTALL'
+        return
+
+    if installed:
+        return
+
+    fabric.api.sudo('adduser {username} --gecos {username} --disabled-login --shell /usr/sbin/nologin --quiet'.format(username=username))
+    fabric.api.put(local_path=user_config / '*', remote_path='/home/{}/'.format(username), use_sudo=True)
+    fabric.api.put(local_path=user_config / '.*', remote_path='/home/{}/'.format(username), use_sudo=True)
+    fabric.api.sudo('chown -R {username}:{username} /home/{username}/'.format(username=username))
+    fabric.api.sudo('touch {}'.format(initialized_file_path))
