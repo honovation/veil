@@ -39,7 +39,7 @@ def veil_hosts_resource(veil_env_name, config_dir):
             host_users_dir = as_path(config_dir / host.VEIL_ENV.name / 'hosts' /host.base_name / 'USERS')
             if host_users_dir.exists():
                 for user_dir in host_users_dir.dirs():
-                    resources.append(veil_host_user_resource(host, user_dir))
+                    resources.append(veil_host_user_resource(host=host, user_dir=user_dir))
             if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
                 resources.append(veil_host_user_editor_resource(host=host, config_dir=config_dir))
             resources.append(veil_host_iptables_rules_resource(host=host))
@@ -373,8 +373,8 @@ def veil_host_user_editor_resource(host, config_dir):
 
 
 @atomic_installer
-def veil_host_user_resource(host, user_config):
-    username = user_config.basename()
+def veil_host_user_resource(host, user_dir):
+    username = user_dir.basename()
     initialized_file_path = '/home/{}/.veil_host_user_initialized'.format(username)
     installed = fabric.contrib.files.exists(initialized_file_path, use_sudo=True)
     dry_run_result = get_dry_run_result()
@@ -387,7 +387,7 @@ def veil_host_user_resource(host, user_config):
         return
 
     fabric.api.sudo('adduser {username} --gecos {username} --disabled-login --shell /usr/sbin/nologin --quiet'.format(username=username))
-    fabric.api.put(local_path=user_config / '*', remote_path='/home/{}/'.format(username), use_sudo=True)
-    fabric.api.put(local_path=user_config / '.*', remote_path='/home/{}/'.format(username), use_sudo=True)
+    fabric.api.put(local_path=user_dir / '*', remote_path='/home/{}/'.format(username), use_sudo=True)
+    fabric.api.put(local_path=user_dir / '.*', remote_path='/home/{}/'.format(username), use_sudo=True)
     fabric.api.sudo('chown -R {username}:{username} /home/{username}/'.format(username=username))
     fabric.api.sudo('touch {}'.format(initialized_file_path))
