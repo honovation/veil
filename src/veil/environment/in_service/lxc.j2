@@ -1,15 +1,8 @@
-# MIRROR to be used by ubuntu template at container creation:
-# Leaving it undefined is fine
+# used for lxc-ubuntu template creation
 MIRROR="{{ mirror }}"
 SECURITY_MIRROR="{{ mirror }}"
-# or
-#MIRROR="http://<host-ip-addr>:3142/archive.ubuntu.com/ubuntu"
+USE_LXC_BRIDGE="false"
 
-# LXC_AUTO - whether or not to start containers symlinked under
-# /etc/lxc/auto
-LXC_AUTO="true" # bug: http://askubuntu.com/questions/453659/lxc-containers-fail-to-autoboot-in-14-4-trusty-using-lxc-start-auto-1
-
-USE_LXC_BRIDGE="false"  # overridden in lxc-net
-[ -f /etc/default/lxc-net ] && . /etc/default/lxc-net
-
-LXC_SHUTDOWN_TIMEOUT=120
+# used by systemd stop lxc service executing a clean shutdown all containers
+STOPOPTS="-a -A -s"
+SHUTDOWNDELAY=120
