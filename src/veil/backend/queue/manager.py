@@ -87,7 +87,9 @@ class Manager(pyres.horde.Khan):
         self.resq.redis.sadd('resque:khans', str(self))
         return m
 
-    def check_children(self):
+    def restart_minions(self):
+        if self._shutdown:
+            return
         need_restart_minion_pids = self.resq.redis.smembers('resque:khan:{}:restart-minion-pids'.format(self.pid))
         self.logger.debug('need restart minion pids: %s' % need_restart_minion_pids)
         if need_restart_minion_pids:
@@ -99,14 +101,14 @@ class Manager(pyres.horde.Khan):
 
     def _check_commands(self):
         super(Manager, self)._check_commands()
-        self.check_children()
+        self.restart_minions()
+
+    def unregister_khan(self):
+        self._shutdown_minions()
+        super(Manager, self).unregister_khan()
 
 
 class Minion(pyres.horde.Minion):
-    def startup(self):
-        super(Minion, self).startup()
-        # load_all_components()
-
     def working_on(self, job):
         super(Minion, self).working_on(job)
         publish_event(EVENT_PROCESS_SETUP)
