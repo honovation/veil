@@ -36,8 +36,8 @@ def veil_hosts_resource(veil_env_name, config_dir):
                 veil_host_application_config_resource(host=host, config_dir=config_dir),
                 veil_host_codebase_resource(host=host)
             ])
-            host_users_dir = as_path(config_dir / host.VEIL_ENV.name / host.base_name / 'USERS')
-            if host_users_dir.exists:
+            host_users_dir = as_path(config_dir / host.VEIL_ENV.name / 'hosts' /host.base_name / 'USERS')
+            if host_users_dir.exists():
                 for user_dir in host_users_dir.dirs():
                     resources.append(veil_host_user_resource(host, user_dir))
             if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
