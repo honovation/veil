@@ -355,16 +355,8 @@ def veil_host_user_editor_resource(host, config_dir):
 
     if installed:
         return
-
-    ret = fabric.api.run('getent passwd editor', warn_only=True)
-    if ret.failed:
-        fabric.api.sudo('adduser editor --gecos editor --disabled-login --shell /usr/sbin/nologin --quiet')
-
+    # user `editor` creation is done by veil_host_user_resource
     fabric.api.sudo('chown -R editor:editor {}'.format(host.editorial_dir))
-
-    fabric.api.sudo('mkdir -p -m 0700 /home/editor/.ssh')
-    fabric.api.put(config_dir / host.VEIL_ENV.name / '.ssh-editor' / 'id_rsa.pub', '/home/editor/.ssh/authorized_keys', use_sudo=True, mode=0600)
-    fabric.api.sudo('chown -R editor:editor /home/editor/.ssh')
 
     # do not add any config after Match User unless you know what you write
     fabric.contrib.files.append('/etc/ssh/sshd_config',
