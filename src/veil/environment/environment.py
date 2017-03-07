@@ -78,7 +78,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         'deployment_memo': deployment_memo, 'config': config or {}
     })
     env.VEIL_ENV = VeilEnv(env.name)
-    env.env_dir = OPT_DIR / env.base_name
+    env.env_dir = OPT_DIR / env.VEIL_ENV.base_name
     env.veil_home = VEIL_HOME if env.VEIL_ENV.is_dev or env.VEIL_ENV.is_test else env.env_dir / 'code' / 'app'
     env.server_list = []
     for server_name, server in env.servers.items():
