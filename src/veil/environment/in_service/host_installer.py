@@ -7,7 +7,7 @@ import uuid
 import logging
 import fabric.api
 import fabric.contrib.files
-from veil_component import as_path
+from veil_component import as_path, red
 from veil.environment import *
 from veil.environment.networking import *
 from veil.utility.misc import *
@@ -27,6 +27,8 @@ def veil_hosts_resource(veil_env_name, config_dir):
     hosts = list_veil_hosts(veil_env_name)
     for host in hosts:
         fabric.api.env.host_string = host.deploys_via
+        if is_initialized_for_another_same_base_instance(host):
+            print(red('Can not deploy {} on host {} as it is initialized for another same-base instance!!!'.format(host.VEIL_ENV.name, host.name)))
         if host.base_name not in hosts_to_install:
             resources.extend([
                 veil_host_onetime_config_resource(host=host),
@@ -93,7 +95,7 @@ def veil_host_iptables_rules_resource(host):
 
 @composite_installer
 def veil_host_onetime_config_resource(host):
-    initialized = fabric.contrib.files.exists(host.initialized_tag_path)
+    initialized = fabric.contrib.files.exists(host.initialized_tag_link)
     if initialized:
         return []
 
@@ -250,6 +252,7 @@ def veil_host_init_resource(host):
     install_resource(veil_lxc_config_resource(host=host))
 
     fabric.api.sudo('touch {}'.format(host.initialized_tag_path))
+    fabric.api.sudo('ln -s {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
 
 
 def init_veil_host_basic_layout(host):
@@ -259,6 +262,11 @@ def init_veil_host_basic_layout(host):
     ])))
     fabric.api.sudo('chown {}:{} {} {} {}'.format(host.ssh_user, host.ssh_user_group, host.buckets_dir, host.bucket_log_dir, host.data_dir))
     fabric.api.sudo('ln -s {} {}'.format(host.env_dir, host.env_dir.parent / host.VEIL_ENV.base_name))
+
+
+def is_initialized_for_another_same_base_instance(host):
+    return fabric.contrib.files.exists(host.initialized_tag_link) and not fabric.contrib.files.exists(
+        host.initialized_tag_path)
 
 
 @atomic_installer

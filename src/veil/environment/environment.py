@@ -19,7 +19,7 @@ DEPENDENCY_DIR = SHARE_DIR / 'dependency'
 DEPENDENCY_INSTALL_DIR = SHARE_DIR / 'dependency-install'
 PYPI_ARCHIVE_DIR = SHARE_DIR / 'pypi'
 
-VEIL_ENV_DIR = (VEIL_HOME if VEIL_ENV.is_dev or VEIL_ENV.is_test else OPT_DIR) / VEIL_ENV.name
+VEIL_ENV_DIR = (VEIL_HOME if VEIL_ENV.is_dev or VEIL_ENV.is_test else OPT_DIR) / VEIL_ENV.base_name
 VEIL_ETC_DIR = VEIL_ENV_DIR / 'etc' / VEIL_SERVER_NAME
 VEIL_LOG_DIR = VEIL_ENV_DIR / 'log' / VEIL_SERVER_NAME
 VEIL_VAR_DIR = VEIL_ENV_DIR / 'var'
@@ -51,7 +51,7 @@ if VEIL_ENV.is_dev or VEIL_ENV.is_test:
             directory_resource(path=VEIL_DATA_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         ]
 elif VEIL_ENV.name != VEIL_ENV.base_name:
-    BASIC_LAYOUT_RESOURCES = [symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV.base_name, to=VEIL_ENV_DIR)]
+    BASIC_LAYOUT_RESOURCES = [symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV.name, to=VEIL_ENV_DIR)]
 else:
     BASIC_LAYOUT_RESOURCES = []
 
@@ -78,7 +78,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         'deployment_memo': deployment_memo, 'config': config or {}
     })
     env.VEIL_ENV = VeilEnv(env.name)
-    env.env_dir = OPT_DIR / env.name
+    env.env_dir = OPT_DIR / env.base_name
     env.veil_home = VEIL_HOME if env.VEIL_ENV.is_dev or env.VEIL_ENV.is_test else env.env_dir / 'code' / 'app'
     env.server_list = []
     for server_name, server in env.servers.items():
@@ -107,7 +107,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         host.VEIL_ENV = env.VEIL_ENV
         host.name = host_name
         # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.VEIL_ENV.name, host.base_name))
-        host.base_name = host.name.split('/', 1)[0]  # e.g. ljhost-90/1 => ljhost-90
+        host.base_name = host.name.rsplit('-', 1)[0]  # e.g. ljhost-90-1 => ljhost-90
         host.apt_url = env.apt_url
         host.pypi_index_host = env.pypi_index_host
         host.pypi_index_url = env.pypi_index_url
@@ -132,6 +132,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         host.iptables_rules_installer_path = SHARE_DIR / 'veil-host-iptables-rules-INSTALLER-{}'.format(host.VEIL_ENV.name)
         host.installed_iptables_rules_installer_path = '{}.installed'.format(host.iptables_rules_installer_path)
         host.initialized_tag_path = SHARE_DIR / 'veil-host-{}.initialized'.format(host.VEIL_ENV.name)
+        host.initialized_tag_link = SHARE_DIR / 'veil-host-{}.initialized'.format(host.VEIL_ENV.base_name)
         host.rollbackable_tag_path = SHARE_DIR / 'veil-host-{}.rollbackable'.format(host.VEIL_ENV.name)
         host.with_user_editor = False
         host.server_list = []
