@@ -258,7 +258,7 @@ def veil_host_init_resource(host):
     install_resource(veil_lxc_config_resource(host=host))
 
     fabric.api.sudo('touch {}'.format(host.initialized_tag_path))
-    fabric.api.sudo('ln -sf {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
+    fabric.api.sudo('ln -s {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
 
 
 def init_veil_host_basic_layout(host):
