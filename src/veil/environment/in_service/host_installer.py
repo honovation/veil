@@ -96,6 +96,7 @@ def veil_host_iptables_rules_resource(host):
         fabric.api.put(f, host.iptables_rules_installer_path, use_sudo=True, mode=0600)
     with fabric.api.cd(host.veil_home):
         fabric.api.sudo('veil :{} install veil_installer.installer_resource?{}'.format(host.VEIL_ENV.name, host.iptables_rules_installer_path))
+        fabric.api.sudo('iptables-save -c > /etc/iptables.rules')
     fabric.api.sudo('mv -f {} {}'.format(host.iptables_rules_installer_path, host.installed_iptables_rules_installer_path))
 
 
