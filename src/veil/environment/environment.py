@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 import getpass
 import os
@@ -107,12 +108,8 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         host.VEIL_ENV = env.VEIL_ENV
         host.name = host_name
         # host base_name can be used to determine host config dir: as_path('{}/{}/hosts/{}'.format(config_dir, host.VEIL_ENV.name, host.base_name))
-        if host.name.rsplit('-', 1) == host.name.split('-', 1):
-            # e.g. ljhost-03 => ljhost-03
-            host.base_name = host.name
-        else:
-            # e.g. ljhost-90-1 => ljhost-90
-            host.base_name = host.name.rsplit('-', 1)[0]
+        # 生产环境部署到多个host，staging只有一台host，用一台host模拟多台host时，在staging的host name加--1,--2,--3表示多台机器
+        host.base_name = host.name.rsplit('--', 1)[0]
         host.apt_url = env.apt_url
         host.pypi_index_host = env.pypi_index_host
         host.pypi_index_url = env.pypi_index_url
