@@ -7,7 +7,7 @@ import uuid
 import logging
 import fabric.api
 import fabric.contrib.files
-from veil_component import as_path, red
+from veil_component import as_path, red, cyan
 from veil.environment import *
 from veil.environment.networking import *
 from veil.utility.misc import *
@@ -37,9 +37,9 @@ def veil_hosts_resource(veil_env_name, config_dir):
                 veil_host_codebase_resource(host=host)
             ])
             host_users_dir = as_path(config_dir / host.VEIL_ENV.name / 'hosts' / host.base_name / 'USERS')
-            LOGGER.info(host_users_dir)
+            print(cyan(host_users_dir))
             if host_users_dir.exists():
-                LOGGER.info('Installing veil host users')
+                print(cyan('Installing veil host users'))
                 for user_dir in host_users_dir.dirs():
                     resources.append(veil_host_user_resource(host=host, user_dir=user_dir))
             if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
