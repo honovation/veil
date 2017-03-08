@@ -262,7 +262,7 @@ def restart_env(veil_env_name, *exclude_server_names):
 
 
 @script('stop-env')
-def stop_env(veil_env_name, include_guard_server=True, include_monitor_server=True):
+def stop_env(veil_env_name, include_guard_server=True, include_monitor_server=True, *exclude_server_names):
     """
     Bring down veil servers in sorted server names order
     """
@@ -270,7 +270,10 @@ def stop_env(veil_env_name, include_guard_server=True, include_monitor_server=Tr
         include_guard_server = include_guard_server == 'TRUE'
     if isinstance(include_monitor_server, basestring):
         include_monitor_server = include_monitor_server == 'TRUE'
-    stop_servers(list_veil_servers(veil_env_name, include_guard_server, include_monitor_server), stop_container=True)
+    servers = list_veil_servers(veil_env_name, include_guard_server, include_monitor_server)
+    if exclude_server_names:
+        servers = [s for s in servers if s.name not in exclude_server_names]
+    stop_servers(servers, stop_container=True)
 
 
 def stop_servers(servers, stop_container=False):
