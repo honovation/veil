@@ -256,7 +256,7 @@ def veil_host_init_resource(host):
     install_resource(veil_lxc_config_resource(host=host))
 
     fabric.api.sudo('touch {}'.format(host.initialized_tag_path))
-    fabric.api.sudo('ln -s {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
+    fabric.api.sudo('ln -sf {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
 
 
 def init_veil_host_basic_layout(host):
@@ -265,7 +265,7 @@ def init_veil_host_basic_layout(host):
         host.var_dir, host.editorial_dir, host.buckets_dir, host.bucket_log_dir, host.data_dir
     ])))
     fabric.api.sudo('chown {}:{} {} {} {}'.format(host.ssh_user, host.ssh_user_group, host.buckets_dir, host.bucket_log_dir, host.data_dir))
-    fabric.api.sudo('ln -s {} {}'.format(host.env_dir, host.env_dir.parent / host.VEIL_ENV.base_name))
+    fabric.api.sudo('ln -sf {} {}'.format(host.env_dir, host.env_dir.parent / host.VEIL_ENV.base_name))
 
 
 def is_initialized_for_another_same_base_instance(host):
