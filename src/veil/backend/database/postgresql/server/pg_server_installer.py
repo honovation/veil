@@ -128,9 +128,8 @@ def vacuum_upgraded_postgresql_cluster(purpose, version, host, port, owner, owne
     with postgresql_server_running(version, pg_data_dir, owner):
         env = os.environ.copy()
         env['PGPASSWORD'] = owner_password
-        shell_execute('{pg_bin_dir}/vacuumdb -h {host} -p {port} -U {pg_data_owner} -j `nproc` -a -f -F -z'.format(pg_bin_dir=get_pg_bin_dir(version),
-                                                                                                                   pg_data_owner=owner, host=host, port=port),
-                      env=env, capture=True)
+        shell_execute('{pg_bin_dir}/vacuumdb -h {host} -p {port} -U {pg_data_owner} -a -f -F -z'.format(
+            pg_bin_dir=get_pg_bin_dir(version), pg_data_owner=owner, host=host, port=port), env=env, capture=True)
 
 
 def confirm_postgresql_cluster_upgrading(old_version, new_version):
