@@ -157,7 +157,7 @@ def enable_database_chinese_fts(purpose):
     maintenance_config = postgresql_maintenance_config(purpose)
     env = os.environ.copy()
     env['PGPASSWORD'] = maintenance_config.owner_password
-    if database_chinese_fts_enabled(maintenance_config.version, config.host, config.port, maintenance_config.owner, config.database, env):
+    if is_database_chinese_fts_enabled(maintenance_config.version, config.host, config.port, maintenance_config.owner, config.database, env):
         return
     commands = '''
         BEGIN;
@@ -172,11 +172,11 @@ def enable_database_chinese_fts(purpose):
                                                                    maintenance_config.owner, config.database, commands), env=env, debug=True)
 
 
-def database_chinese_fts_enabled(version, host, port, owner, database, env):
+def is_database_chinese_fts_enabled(version, host, port, owner, database, env):
     output = shell_execute(
-        '{}/psql -h {} -p {} -U {} -d {} -c "CREATE EXTENSION {}"'.format(get_pg_bin_dir(version), host, port, owner, database, 'zhparser'), env=env,
-        expected_return_codes=(0, 1), capture=True, debug=True)
-    return 'already exists' in output
+        '''{}/psql -h {} -p {} -U {} -d {} -Atc "SELECT 'ENABLED' FROM pg_extension WHERE extname='{}'"'''.format(
+            get_pg_bin_dir(version), host, port, owner, database, 'zhparser'), env=env, capture=True, debug=True)
+    return 'ENABLED' == output.splitlines()[-1]
 
 
 def create_database_migration_table_if_not_exists(purpose):
