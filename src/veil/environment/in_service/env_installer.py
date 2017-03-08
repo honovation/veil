@@ -20,13 +20,26 @@ from .server_installer import veil_servers_resource, is_container_running, is_se
 
 @script('deploy-env')
 @log_elapsed_time
-def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', include_monitor_server='TRUE', start_after_deploy='TRUE'):
+def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', include_monitor_server='TRUE',
+               start_after_deploy='TRUE', disable_external_access_='FALSE'):
     print(cyan('Update config ...'))
     update_config(config_dir)
     print(cyan('Make local preparation ...'))
     do_local_preparation(veil_env_name)
     print(cyan('Tag deploy ...'))
     tag_deploy(veil_env_name)
+
+    print(cyan('Make rollback backup -- include code dir, exclude data dir ...'))
+    make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True)
+    print(cyan('Deploy hosts ...'))
+    install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=as_path(config_dir)))
+    if disable_external_access_ == 'TRUE':
+        print(cyan('Disable external access ...'))
+        disable_external_access(veil_env_name)
+
+    if should_download_packages == 'TRUE':
+        print(cyan('Download packages ...'))
+        download_packages(veil_env_name)
 
     first_round_servers = []
     second_round_servers = []
@@ -38,13 +51,6 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
                 second_round_servers.append(server)
 
     if first_round_servers:
-        print(cyan('Make rollback backup -- include code dir, exclude data dir ...'))
-        make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True)
-        print(cyan('Deploy hosts ...'))
-        install_resource(veil_hosts_resource(veil_env_name=veil_env_name, config_dir=as_path(config_dir)))
-        if should_download_packages == 'TRUE':
-            print(cyan('Download packages ...'))
-            download_packages(veil_env_name)
         start_time = time.time()
         first_round_server_names = [server.name for server in first_round_servers]
         print(cyan('Stop round-1 servers {} ...'.format(first_round_server_names)))
@@ -252,13 +258,13 @@ def purge_left_overs(veil_env_name):
 
 
 @script('restart-env')
-def restart_env(veil_env_name, *exclude_server_names):
+def restart_env(veil_env_name, disable_external_access_='FALSE', *exclude_server_names):
     """
     Bring down veil servers in sorted server names order
     Bring up veil servers in reversed sorted server names order
     """
     stop_env(veil_env_name)
-    start_env(veil_env_name, *exclude_server_names)
+    start_env(veil_env_name, disable_external_access_, *exclude_server_names)
 
 
 @script('stop-env')
@@ -291,10 +297,14 @@ def stop_servers(servers, stop_container=False):
 
 
 @script('start-env')
-def start_env(veil_env_name, *exclude_server_names):
+def start_env(veil_env_name, disable_external_access_='FALSE', *exclude_server_names):
     """
     Bring up veil servers in reversed sorted server names order
     """
+    if disable_external_access_ == 'TRUE':
+        print(cyan('Disable external access ...'))
+        disable_external_access(veil_env_name)
+
     for server in reversed(list_veil_servers(veil_env_name)):
         if server.name in exclude_server_names:
             continue
@@ -311,6 +321,34 @@ def start_env(veil_env_name, *exclude_server_names):
                         fabric.api.sudo('systemctl start veil-server.service')
             else:
                 fabric.api.sudo('lxc-start -n {} -d'.format(server.container_name))
+
+
+@script('disable-external-access')
+def disable_external_access_script(veil_env_name):
+    disable_external_access(veil_env_name)
+
+
+def disable_external_access(veil_env_name):
+    for host in list_veil_hosts(veil_env_name):
+        if not host.external_service_ports:
+            continue
+        with fabric.api.settings(host_string=host.deploys_via):
+            fabric.api.sudo('iptables -I FORWARD -p tcp -m multiport --dports {} -j DROP'.format(','.join(str(p) for p in host.external_service_ports)))
+            print(cyan('DISABLED {}: {}'.format(host.base_name, host.external_service_ports)))
+
+
+@script('enable-external-access')
+def enable_external_access_script(veil_env_name):
+    enable_external_access(veil_env_name)
+
+
+def enable_external_access(veil_env_name):
+    for host in list_veil_hosts(veil_env_name):
+        if not host.external_service_ports:
+            continue
+        with fabric.api.settings(host_string=host.deploys_via):
+            fabric.api.sudo('iptables -D FORWARD -p tcp -m multiport --dports {} -j DROP'.format(','.join(str(p) for p in host.external_service_ports)), warn_only=True)
+            print(green('ENABLED {}: {}'.format(host.base_name, host.external_service_ports)))
 
 
 @script('upgrade-env-pip')

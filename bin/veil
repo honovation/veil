@@ -178,6 +178,14 @@ case "$1" in
         shift
         exec veil environment in-service restart-env $@
         ;;
+    enable-env-external-access)
+        shift
+        exec veil environment in-service enable-external-access $@
+        ;;
+    disable-env-external-access)
+        shift
+        exec veil environment in-service disable-external-access $@
+        ;;
     upgrade-env-pip)
         shift
         exec veil environment in-service upgrade-env-pip $@

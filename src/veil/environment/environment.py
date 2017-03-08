@@ -177,7 +177,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
 
 
 def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ssh_user='dejavu', sshd_config=(), iptables_rule_resources=(),
-              timezone='Asia/Shanghai'):
+              timezone='Asia/Shanghai', external_service_ports=()):
     assert 'PermitRootLogin no' not in sshd_config, 'guard needs login host as root with certificate'
     from veil.model.collection import objectify
     internal_ip = '{}.1'.format(lan_range)
@@ -193,7 +193,8 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
         'ssh_user_group': ssh_user,
         'sshd_config': sshd_config,
         'iptables_rule_resources': iptables_rule_resources,
-        'deploys_via': '{}@{}:{}'.format(ssh_user, internal_ip, ssh_port)
+        'deploys_via': '{}@{}:{}'.format(ssh_user, internal_ip, ssh_port),
+        'external_service_ports': external_service_ports
     })
 
 
