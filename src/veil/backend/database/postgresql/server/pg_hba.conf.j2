@@ -1,6 +1,7 @@
 {#
 基于系统自带的缺省文件，做以下改动：
 1. 找{{  }}
+2. trust "local" (Unix domain socket connections only)
 #}
 # PostgreSQL Client Authentication Configuration File
 # ===================================================
@@ -81,7 +82,7 @@
 # TYPE  DATABASE        USER            ADDRESS                 METHOD
 
 # "local" is for Unix domain socket connections only
-local   all             all                                     md5
+local   all             all                                     trust
 # IPv4 local connections:
 host    all             all             {{ host }}/16           md5
 # IPv6 local connections:
