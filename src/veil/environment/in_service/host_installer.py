@@ -382,6 +382,6 @@ def veil_host_user_resource(host, user_dir):
     ret = fabric.api.run('getent passwd {}'.format(username), warn_only=True)
     if ret.failed:
         fabric.api.sudo('adduser {username} --gecos {username} --disabled-login --shell /usr/sbin/nologin --quiet'.format(username=username))
-    fabric.api.put(local_path=user_dir, remote_path='/home'.format(username), use_sudo=True)
+    fabric.api.put(local_path=user_dir, remote_path='/home/', use_sudo=True)
     fabric.api.sudo('chown -R {username}:{username} /home/{username}/'.format(username=username))
     fabric.api.sudo('touch {}'.format(initialized_file_path))
