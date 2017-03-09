@@ -51,8 +51,8 @@ if VEIL_ENV.is_dev or VEIL_ENV.is_test:
             directory_resource(path=VEIL_BUCKET_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
             directory_resource(path=VEIL_DATA_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         ]
-elif VEIL_ENV.name != VEIL_ENV.base_name:
-    BASIC_LAYOUT_RESOURCES = [symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV.name, to=VEIL_ENV_DIR)]
+# elif VEIL_ENV.name != VEIL_ENV.base_name:
+#     BASIC_LAYOUT_RESOURCES = [symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV.name, to=VEIL_ENV_DIR)]
 else:
     BASIC_LAYOUT_RESOURCES = []
 
