@@ -116,9 +116,9 @@ def upgrade_postgresql_cluster(purpose, old_version, new_version, owner, owner_p
     env = os.environ.copy()
     env['PGPASSWORD'] = owner_password
     shell_execute('''
-        su - {pg_data_owner} -p -c '{new_bin_dir}/pg_upgrade {check_only} -v -j {cpu_cores} -U {pg_data_owner} -b {old_bin_dir} -B {new_bin_dir} -d {old_data_dir} -D {new_data_dir} -o "-c config_file={old_data_dir}/postgresql.conf" -O "-c config_file={new_data_dir}/postgresql.conf"'
+        su - {pg_data_owner} -p -c 'PGPASSWORD={PGPASSWORD} {new_bin_dir}/pg_upgrade {check_only} -v -j {cpu_cores} -U {pg_data_owner} -b {old_bin_dir} -B {new_bin_dir} -d {old_data_dir} -D {new_data_dir} -o "-c config_file={old_data_dir}/postgresql.conf" -O "-c config_file={new_data_dir}/postgresql.conf"'
         '''.format(
-        pg_data_owner=owner, check_only='-c' if check_only else '', cpu_cores=shell_execute('nproc', capture=True),
+        pg_data_owner=owner, PGPASSWORD=owner_password, check_only='-c' if check_only else '', cpu_cores=shell_execute('nproc', capture=True),
         old_bin_dir=get_pg_bin_dir(old_version), old_data_dir=get_pg_data_dir(purpose, old_version),
         new_bin_dir=get_pg_bin_dir(new_version), new_data_dir=get_pg_data_dir(purpose, new_version)
     ), env=env, capture=True)
