@@ -107,6 +107,7 @@ def is_postgresql_cluster_upgraded(purpose, version, host, port, owner, owner_pa
 
 
 def upgrade_postgresql_cluster(purpose, old_version, new_version, owner, owner_password, check_only=True):
+    return
     if check_only:
         LOGGER.warn('Checking postgresql server upgrading: %(old_version)s => %(new_version)s', {
             'old_version': old_version, 'new_version': new_version
