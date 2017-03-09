@@ -217,7 +217,7 @@ case "$1" in
         ;;
     restore-from-baseline)
         shift
-        exec veil environment backup restore-from-baseline $@
+        exec veil development baseline restore-from-baseline $@
         ;;
     migrate)
         exec veil server in-service migrate
