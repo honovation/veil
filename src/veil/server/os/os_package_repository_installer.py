@@ -26,7 +26,7 @@ def install_apt_repository_resource(name, key_url, definition, version=None):
     shell_execute('wget --inet4-only -q -O - {} | apt-key add -'.format(key_url), capture=True)
     shell_execute('echo "{}" | tee /etc/apt/sources.list.d/{}.list'.format(definition, name), capture=True)
     # apt update the added repository
-    shell_execute('apt -q update -o Dir::Etc::sourcelist="sources.list.d/{}.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"'.format(name),
+    shell_execute('apt update -o Dir::Etc::sourcelist="sources.list.d/{}.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"'.format(name),
                   capture=True, debug=True)
 
 

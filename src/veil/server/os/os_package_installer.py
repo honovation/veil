@@ -76,7 +76,7 @@ def os_package_resource(name, cmd_run_before_install=None, cmd_run_if_install_fa
         if cmd_run_before_install:
             shell_execute(cmd_run_before_install, capture=True)
         try:
-            shell_execute('apt -q -y install {}={}'.format(name, downloaded_version), capture=True, debug=True,
+            shell_execute('apt -y install {}={}'.format(name, downloaded_version), capture=True, debug=True,
                           env=install_env)
         except Exception:
             if cmd_run_if_install_fail:
@@ -100,7 +100,7 @@ def os_package_resource(name, cmd_run_before_install=None, cmd_run_if_install_fa
 def download_os_package(name, version=None):
     LOGGER.info('downloading os package: %(name)s, %(version)s...', {'name': name, 'version': version})
     update_os_package_catalogue()
-    shell_execute('apt -q -y -d install {}{}'.format(name, '={}'.format(version) if version else ''), capture=True, debug=True)
+    shell_execute('apt -y -d install {}{}'.format(name, '={}'.format(version) if version else ''), capture=True, debug=True)
     _, downloaded_version = get_local_os_package_versions(name)
     assert not version or version == downloaded_version, \
         'the downloaded version of os package {} is {}, different from the specific version {}'.format(name, downloaded_version, version)
@@ -115,7 +115,7 @@ def update_os_package_catalogue():
     if not apt_get_update_executed:
         LOGGER.info('updating os package catalogue...')
         try:
-            shell_execute('apt -q update', capture=True, debug=True)
+            shell_execute('apt update', capture=True, debug=True)
         except ShellExecutionError:
             if VEIL_ENV.is_dev or VEIL_ENV.is_test:
                 LOGGER.exception('ignore the failure of running "apt update" under dev & test env.')

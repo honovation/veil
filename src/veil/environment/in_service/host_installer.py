@@ -238,13 +238,13 @@ def veil_host_init_resource(host):
                                 use_sudo=True)
     fabric.api.sudo('systemctl reload-or-restart ssh')
 
-    fabric.api.sudo('apt -q update')
-    fabric.api.sudo('apt -q -y upgrade')
-    fabric.api.sudo('apt -q -y purge ntp whoopsie network-manager')
+    fabric.api.sudo('apt update')
+    fabric.api.sudo('apt -y upgrade')
+    fabric.api.sudo('apt -y purge ntp whoopsie network-manager')
     install_os_packages = ['apt-transport-https', 'ntpdate', 'unattended-upgrades', 'update-notifier-common',
                            'iptables', 'git', 'language-pack-en', 'unzip', 'wget', 'python', 'python-dev', 'python-pip',
                            'python-virtualenv', 'lxc']
-    fabric.api.sudo('apt -q -y install {}'.format(' '.join(install_os_packages)))
+    fabric.api.sudo('apt -y install {}'.format(' '.join(install_os_packages)))
     # enable time sync on lxc hosts, and which is shared among lxc guests
     fabric.api.sudo(
         '''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
