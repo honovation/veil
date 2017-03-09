@@ -53,7 +53,7 @@ def lxc_container_in_service_resource(container_name, restart_if_running=False):
         return
     if running:
         LOGGER.info('reboot lxc container: %(container_name)s ...', {'container_name': container_name})
-        shell_execute('lxc-stop -n {} -r'.format(container_name), capture=True)
+        shell_execute('lxc-stop -n {cn} && lxc-start -n {cn} -d'.format(cn=container_name), capture=True)
     else:
         LOGGER.info('start lxc container: %(container_name)s ...', {'container_name': container_name})
         shell_execute('lxc-start -n {} -d'.format(container_name), capture=True)
