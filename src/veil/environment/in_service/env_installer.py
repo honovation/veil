@@ -336,9 +336,9 @@ def disable_external_access(veil_env_name):
             continue
         external_service_ports = ','.join(str(p) for p in host.external_service_ports)
         with fabric.api.settings(host_string=host.deploys_via):
-            check_result = fabric.api.sudo('iptables -t nat -C PREROUTING -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports), warn_only=True)
+            check_result = fabric.api.sudo('iptables -w -t nat -C PREROUTING -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports), warn_only=True)
             if check_result.failed:
-                fabric.api.sudo('iptables -t nat -I PREROUTING 1 -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports))
+                fabric.api.sudo('iptables -w -t nat -I PREROUTING 1 -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports))
             print(cyan('DISABLED {}: {}'.format(host.base_name, host.external_service_ports)))
 
 
@@ -354,10 +354,10 @@ def enable_external_access(veil_env_name):
         external_service_ports = ','.join(str(p) for p in host.external_service_ports)
         with fabric.api.settings(host_string=host.deploys_via):
             while 1:
-                check_result = fabric.api.sudo('iptables -t nat -C PREROUTING -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports), warn_only=True)
+                check_result = fabric.api.sudo('iptables -w -t nat -C PREROUTING -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports), warn_only=True)
                 if check_result.failed:
                     break
-                fabric.api.sudo('iptables -t nat -D PREROUTING -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports), warn_only=True)
+                fabric.api.sudo('iptables -w -t nat -D PREROUTING -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports), warn_only=True)
             print(green('ENABLED {}: {}'.format(host.base_name, host.external_service_ports)))
 
 

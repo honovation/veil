@@ -16,7 +16,7 @@ def iptables_rule_resource(table, rule):
     if installed:
         return
     LOGGER.info('install iptables rule: %(rule)s to table %(table)s...', {'rule': rule, 'table': table})
-    shell_execute('iptables -t {} -A {}'.format(table, rule))
+    shell_execute('iptables -w -t {} -A {}'.format(table, rule))
     updated_rules = shell_execute('iptables-save -t {}'.format(table), capture=True)
     if rule not in updated_rules:
         raise Exception(
@@ -33,7 +33,7 @@ def iptables_rule_removed_resource(table, rule):
         return
     if installed:
         LOGGER.info('remove iptables rule: %(rule)s from table %(table)s...', {'rule': rule, 'table': table})
-        shell_execute('iptables -t {} -D {}'.format(table, rule))
+        shell_execute('iptables -w -t {} -D {}'.format(table, rule))
 
 
 @atomic_installer
@@ -47,7 +47,7 @@ def iptables_policy_resource(table, chain, policy):
         return
     LOGGER.info('install iptables policy: %(chain)s %(policy)s to table %(table)s...', {
         'chain': chain, 'policy': policy, 'table': table})
-    shell_execute('iptables -t {} -P {} {}'.format(table, chain, policy))
+    shell_execute('iptables -w -t {} -P {} {}'.format(table, chain, policy))
 
 
 def list_iptables_resources_to_secure_host(ssh_ports):
