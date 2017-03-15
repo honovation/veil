@@ -39,6 +39,7 @@ def bring_up_supervisor(*argv):
     argument_parser.add_argument('--daemonize', action='store_true', help='should the process run in background')
     args = argument_parser.parse_args(argv)
 
+    LOGGER.info('Bring up supervisor ...')
     daemonize = args.daemonize
     if daemonize:
         shell_execute('supervisord -c {}'.format(VEIL_ETC_DIR / 'supervisor.cfg'))
@@ -73,10 +74,9 @@ def update_dynamic_dependencies():
 
 @script('down')
 def bring_down_supervisor():
-    if not is_supervisord_running():
-        return
-    supervisorctl('shutdown')
     while is_supervisord_running():
+        LOGGER.info('Bring down supervisor ...')
+        supervisorctl('shutdown')
         time.sleep(3)
 
 

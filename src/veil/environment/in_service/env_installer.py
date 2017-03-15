@@ -286,14 +286,15 @@ def stop_servers(servers, stop_container=False):
     for server in servers:
         host = get_veil_host(server.VEIL_ENV.name, server.host_name)
         with fabric.api.settings(host_string=host.deploys_via):
-            if not is_container_running(server):
-                continue
-            if is_server_running(server):
-                with fabric.api.settings(host_string=server.deploys_via):
-                    with fabric.api.cd(server.veil_home):
-                        fabric.api.sudo('systemctl stop veil-server.service')
-            if stop_container:
-                fabric.api.sudo('lxc-stop -n {}'.format(server.container_name))
+            if is_container_running(server):
+                while is_server_running(server):
+                    print(cyan('Stop server {} ...'.format(server.name)))
+                    with fabric.api.settings(host_string=server.deploys_via):
+                        with fabric.api.cd(server.veil_home):
+                            fabric.api.sudo('systemctl stop veil-server.service')
+                    time.sleep(1)
+                if stop_container:
+                    fabric.api.sudo('lxc-stop -n {}'.format(server.container_name))
 
 
 @script('start-env')
@@ -313,12 +314,13 @@ def start_env(veil_env_name, disable_external_access_='FALSE', *exclude_server_n
             if not fabric.contrib.files.exists(server.deployed_tag_path):
                 print(yellow('Skipped starting server {} as it is not successfully deployed'.format(server.container_name)))
                 continue
-            if is_server_running(server):
-                continue
             if is_container_running(server):
-                with fabric.api.settings(host_string=server.deploys_via):
-                    with fabric.api.cd(server.veil_home):
-                        fabric.api.sudo('systemctl start veil-server.service')
+                while not is_server_running(server):
+                    print(cyan('Start server {} ...'.format(server.name)))
+                    with fabric.api.settings(host_string=server.deploys_via):
+                        with fabric.api.cd(server.veil_home):
+                            fabric.api.sudo('systemctl start veil-server.service')
+                    time.sleep(1)
             else:
                 fabric.api.sudo('lxc-start -n {} -d'.format(server.container_name))
 
