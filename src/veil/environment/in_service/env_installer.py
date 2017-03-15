@@ -290,8 +290,7 @@ def stop_servers(servers, stop_container=False):
                 while is_server_running(server):
                     print(cyan('Stop server {} ...'.format(server.name)))
                     with fabric.api.settings(host_string=server.deploys_via):
-                        with fabric.api.cd(server.veil_home):
-                            fabric.api.sudo('systemctl stop veil-server.service')
+                        fabric.api.sudo('systemctl stop veil-server.service')
                     time.sleep(1)
                 if stop_container:
                     fabric.api.sudo('lxc-stop -n {}'.format(server.container_name))
@@ -318,8 +317,7 @@ def start_env(veil_env_name, disable_external_access_='FALSE', *exclude_server_n
                 while not is_server_running(server):
                     print(cyan('Start server {} ...'.format(server.name)))
                     with fabric.api.settings(host_string=server.deploys_via):
-                        with fabric.api.cd(server.veil_home):
-                            fabric.api.sudo('systemctl start veil-server.service')
+                        fabric.api.sudo('systemctl start veil-server.service')
                     time.sleep(1)
             else:
                 fabric.api.sudo('lxc-start -n {} -d'.format(server.container_name))
