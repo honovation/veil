@@ -15,13 +15,11 @@ from veil.model.event import *
 from veil.server.process import *
 from veil.frontend.cli import *
 from veil.backend.queue.job import *
-from veil.backend.redis import *
 from .queue_client_installer import queue_client_config
 from .queue_client_installer import queue_client_resource
 
 LOGGER = getLogger(__name__)
 _current_queue = None
-redis = register_redis('persist_store')
 
 
 def register_queue():
@@ -161,8 +159,8 @@ class ImmediateQueue(object):
         return 'Queue {} opened by {}'.format(self.__class__, self.opened_by)
 
 
-def is_jobs_given_up():
-    return VEIL_ENV.is_prod and VEIL_ENV.name != redis().get('reserve_job')
+def is_jobs_given_up(queue_redis):
+    return VEIL_ENV.is_prod and VEIL_ENV.name != queue_redis.get('reserve_job')
 
 
 @script('start-processing-job')
@@ -176,7 +174,7 @@ def start_processing_jobs():
     if 'YES' != answer:
         print('WARNING: not started')
         return
-    redis().set('reserve_job', VEIL_ENV.name)
+    require_queue().resq.redis.set('reserve_job', VEIL_ENV.name)
     print ('Started')
 
 
@@ -191,5 +189,5 @@ def stop_processing_jobs():
     if 'YES' != answer:
         print('WARNING: not stopped')
         return
-    redis().delete('reserve_job')
+    require_queue().resq.redis.delete('reserve_job')
     print ('Stopped')

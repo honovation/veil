@@ -148,6 +148,6 @@ class Minion(pyres.horde.Minion):
         super(Minion, self).done_working()
 
     def reserve(self):
-        if is_jobs_given_up():
+        if is_jobs_given_up(self.resq.redis):
             return None
         return super(Minion, self).reserve()

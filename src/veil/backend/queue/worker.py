@@ -59,6 +59,6 @@ class Worker(pyres.worker.Worker):
         super(Worker, self).done_working(job)
 
     def reserve(self, timeout=10):
-        if is_jobs_given_up():
+        if is_jobs_given_up(self.resq.redis):
             return None
         return super(Worker, self).reserve(timeout=timeout)
