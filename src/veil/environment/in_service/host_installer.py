@@ -259,7 +259,8 @@ def veil_host_init_resource(host):
     install_resource(veil_lxc_config_resource(host=host))
 
     fabric.api.sudo('touch {}'.format(host.initialized_tag_path))
-    fabric.api.sudo('ln -s {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
+    if host.initialized_tag_path != host.initialized_tag_link:
+        fabric.api.sudo('ln -s {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
 
 
 def init_veil_host_basic_layout(host):
@@ -273,8 +274,9 @@ def init_veil_host_basic_layout(host):
 
 
 def is_initialized_for_another_same_base_instance(host):
-    return fabric.contrib.files.exists(host.initialized_tag_link) and not fabric.contrib.files.exists(
-        host.initialized_tag_path)
+    return host.initialized_tag_link != host.initialized_tag_path \
+           and fabric.contrib.files.exists(host.initialized_tag_link) \
+           and not fabric.contrib.files.exists(host.initialized_tag_path)
 
 
 @atomic_installer
