@@ -42,7 +42,6 @@ ENV_DEVELOPMENT = {
                     worker_name='development',
                     queue_names=[
                         'send_transactional_email',
-                        'rewrite_redis_aof',
                         'clean_up_captcha_images',
                         'clean_up_inline_static_files',
                     ],

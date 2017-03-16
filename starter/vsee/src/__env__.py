@@ -79,7 +79,6 @@ def vsee_job_worker_program(worker_name, queue_names, config, run_as=None, count
 def routines_job_worker_program(config, count=1):
     return vsee_job_worker_program('routines',
         [
-            'rewrite_redis_aof',
             'clean_up_captcha_images',
             'clean_up_inline_static_files',
         ],
