@@ -7,7 +7,7 @@ import uuid
 import logging
 import fabric.api
 import fabric.contrib.files
-from veil_component import as_path, red, cyan
+from veil_component import as_path, cyan
 from veil.environment import *
 from veil.environment.networking import *
 from veil.utility.misc import *
@@ -28,7 +28,9 @@ def veil_hosts_resource(veil_env_name, config_dir):
     for host in hosts:
         fabric.api.env.host_string = host.deploys_via
         if is_initialized_for_another_same_base_instance(host):
-            print(red('Can not deploy {} on host {} as it is initialized for another same-base instance!!!'.format(host.VEIL_ENV.name, host.name)))
+            raise Exception(
+                'Can not deploy {} on host {} as it is initialized for another same-base instance!!!'.format(
+                    host.VEIL_ENV.name, host.name))
         if host.base_name not in hosts_to_install:
             resources.extend([
                 veil_host_onetime_config_resource(host=host),
@@ -43,7 +45,7 @@ def veil_hosts_resource(veil_env_name, config_dir):
                     resources.append(veil_host_user_resource(host=host, user_dir=user_dir))
             if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
                 print(cyan('Install Veil host user editor resource'))
-                resources.append(veil_host_user_editor_resource(host=host, config_dir=config_dir))
+                resources.append(veil_host_user_editor_additional_resource(host=host))
             resources.append(veil_host_iptables_rules_resource(host=host))
             hosts_to_install.append(host.base_name)
         for server in host.server_list:
@@ -247,7 +249,7 @@ def veil_host_init_resource(host):
     fabric.api.sudo('apt -y install {}'.format(' '.join(install_os_packages)))
     # enable time sync on lxc hosts, and which is shared among lxc guests
     fabric.api.sudo(
-        '''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 755 /etc/cron.hourly/ntpdate''')
+        '''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 0755 /etc/cron.hourly/ntpdate''')
 
     init_veil_host_basic_layout(host)
 
@@ -351,7 +353,33 @@ def veil_host_file_resource(local_path, host, remote_path, owner, owner_group, m
 
 
 @atomic_installer
-def veil_host_user_editor_resource(host, config_dir):
+def veil_host_user_resource(host, user_dir):
+    username = user_dir.basename()
+    initialized_file_path = '/home/{}/.veil_host_user_initialized'.format(username)
+    installed = fabric.contrib.files.exists(initialized_file_path, use_sudo=True)
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        key = 'veil_host_user_{}?{}'.format(username, host.VEIL_ENV.name)
+        dry_run_result[key] = '-' if installed else 'INSTALL'
+        return
+
+    if not installed:
+        ret = fabric.api.run('getent passwd {}'.format(username), warn_only=True)
+        if ret.failed:
+            fabric.api.sudo('adduser {username} --gecos {username} --disabled-login --shell /usr/sbin/nologin --quiet'.format(username=username))
+    fabric.api.put(local_path=user_dir, remote_path='/home/', use_sudo=True, mode=0755)
+    user_ssh_dir = user_dir / '.ssh'
+    if user_ssh_dir.isdir():
+        fabric.api.sudo('chmod 0700 /home/{}/.ssh'.format(username))
+        if user_ssh_dir.listdir():
+            fabric.api.sudo('chmod 0600 /home/{}/.ssh/*'.format(username))
+    fabric.api.sudo('chown -R {username}:{username} /home/{username}/'.format(username=username))
+    if not installed:
+        fabric.api.sudo('touch {}'.format(initialized_file_path))
+
+
+@atomic_installer
+def veil_host_user_editor_additional_resource(host):
     installed = fabric.contrib.files.contains('/etc/ssh/sshd_config', 'Match User editor')
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
@@ -370,24 +398,3 @@ def veil_host_user_editor_resource(host, config_dir):
                                 ['Match User editor', 'ChrootDirectory {}'.format(host.editorial_dir.parent),
                                  'ForceCommand internal-sftp'], use_sudo=True)
     fabric.api.sudo('systemctl reload-or-restart ssh.service')
-
-
-@atomic_installer
-def veil_host_user_resource(host, user_dir):
-    username = user_dir.basename()
-    initialized_file_path = '/home/{}/.veil_host_user_initialized'.format(username)
-    installed = fabric.contrib.files.exists(initialized_file_path, use_sudo=True)
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        key = 'veil_host_user_{}?{}'.format(username, host.VEIL_ENV.name)
-        dry_run_result[key] = '-' if installed else 'INSTALL'
-        return
-
-    if installed:
-        return
-    ret = fabric.api.run('getent passwd {}'.format(username), warn_only=True)
-    if ret.failed:
-        fabric.api.sudo('adduser {username} --gecos {username} --disabled-login --shell /usr/sbin/nologin --quiet'.format(username=username))
-    fabric.api.put(local_path=user_dir, remote_path='/home/', use_sudo=True)
-    fabric.api.sudo('chown -R {username}:{username} /home/{username}/'.format(username=username))
-    fabric.api.sudo('touch {}'.format(initialized_file_path))

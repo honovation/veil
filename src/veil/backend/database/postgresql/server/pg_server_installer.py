@@ -170,7 +170,7 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
         return
     LOGGER.info('install postgresql cluster: for %(purpose)s, %(version)s', {'purpose': purpose, 'version': version})
     old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.parent), capture=True)
-    shell_execute('chmod 777 {}'.format(pg_data_dir.parent), capture=True)
+    shell_execute('chmod 0777 {}'.format(pg_data_dir.parent), capture=True)
     install_resource(file_resource(path='/tmp/pg-{}-owner-password'.format(purpose), content=owner_password))
     try:
         shell_execute('usermod -a -G postgres {}'.format(owner))
