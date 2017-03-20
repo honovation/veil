@@ -129,7 +129,7 @@ def veil_container_init_resource(server):
     fabric.api.sudo('chroot {} apt -y purge ntpdate ntp whoopsie network-manager'.format(container_rootfs_path))
     fabric.api.sudo('chroot {} apt -y install apt-transport-https unattended-upgrades update-notifier-common iptables git language-pack-en unzip wget python python-dev python-pip python-virtualenv'.format(container_rootfs_path))
     fabric.api.sudo('chroot {} pip install --upgrade "pip>=9.0.1"'.format(container_rootfs_path))
-    fabric.api.sudo('chroot {} pip install -i {} --trusted-host {} --upgrade "setuptools>=34.3.1"'.format(container_rootfs_path, server.pypi_index_url, server.pypi_index_host))
+    fabric.api.sudo('chroot {} pip install -i {} --trusted-host {} --upgrade "setuptools>=34.2.0"'.format(container_rootfs_path, server.pypi_index_url, server.pypi_index_host))
     fabric.api.sudo('chroot {} pip install -i {} --trusted-host {} --upgrade "wheel>=0.30.0a0"'.format(container_rootfs_path, server.pypi_index_url, server.pypi_index_host))
     fabric.api.sudo('chroot {} pip install -i {} --trusted-host {} --upgrade "virtualenv>=15.1.0"'.format(container_rootfs_path, server.pypi_index_url, server.pypi_index_host))
     fabric.api.sudo('lxc-attach -n {} -- systemctl enable veil-server.service'.format(server.container_name))

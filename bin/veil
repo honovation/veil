@@ -58,7 +58,7 @@ function veil_init {
             PYPI_INDEX_URL='https://mirrors.aliyun.com/pypi/simple/'
             PYPI_INDEX_HOST='mirrors.aliyun.com'
             sudo pip install --upgrade "pip>=9.0.1"
-            sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "setuptools>=34.3.1"
+            sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "setuptools>=34.2.0"
             sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "wheel>=0.30.0a0"
             sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "virtualenv>=15.1.0"
         fi

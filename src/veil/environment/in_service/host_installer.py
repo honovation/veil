@@ -254,7 +254,7 @@ def veil_host_init_resource(host):
     init_veil_host_basic_layout(host)
 
     fabric.api.sudo('pip install --upgrade "pip>=9.0.1"')
-    fabric.api.sudo('pip install -i {} --trusted-host {} --upgrade "setuptools>=34.3.1"'.format(host.pypi_index_url, host.pypi_index_host))
+    fabric.api.sudo('pip install -i {} --trusted-host {} --upgrade "setuptools>=34.2.0"'.format(host.pypi_index_url, host.pypi_index_host))
     fabric.api.sudo('pip install -i {} --trusted-host {} --upgrade "wheel>=0.30.0a0"'.format(host.pypi_index_url, host.pypi_index_host))
     fabric.api.sudo('pip install -i {} --trusted-host {} --upgrade "virtualenv>=15.1.0"'.format(host.pypi_index_url, host.pypi_index_host))
 
