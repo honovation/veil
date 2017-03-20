@@ -17,7 +17,6 @@ with veil_component.init_component(__name__):
     from .java_installer import oracle_java_resource
 
     from .nodejs_apt_repository_installer import nodejs_apt_repository_resource
-    from .yarn_apt_repository_installer import yarn_apt_repository_resource
 
     __all__ = [
         directory_resource.__name__,
@@ -36,6 +35,4 @@ with veil_component.init_component(__name__):
         oracle_java_resource.__name__,
 
         nodejs_apt_repository_resource.__name__,
-
-        yarn_apt_repository_resource.__name__,
     ]
