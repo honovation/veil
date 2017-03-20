@@ -55,8 +55,8 @@ function veil_init {
             if [ ! -d $PYPI_ARCHIVE_DIR ]; then
                 sudo mkdir -p $PYPI_ARCHIVE_DIR
             fi
-            PYPI_INDEX_URL='https://pypi.python.org/simple/'
-            PYPI_INDEX_HOST='pypi.python.org'
+            PYPI_INDEX_URL='https://mirrors.aliyun.com/pypi/simple/'
+            PYPI_INDEX_HOST='mirrors.aliyun.com'
             sudo pip install --upgrade "pip>=9.0.1"
             sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "setuptools>=34.3.1"
             sudo pip install -i $PYPI_INDEX_URL --trusted-host $PYPI_INDEX_HOST --upgrade "wheel>=0.30.0a0"
