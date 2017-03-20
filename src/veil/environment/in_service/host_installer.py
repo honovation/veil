@@ -387,11 +387,13 @@ def veil_host_user_editor_additional_resource(host):
         dry_run_result[key] = '-' if installed else 'INSTALL'
         return
 
+    if not fabric.contrib.files.exists(host.editorial_dir, use_sudo=True):
+        # user `editor` creation is done by veil_host_user_resource
+        fabric.api.sudo('mkdir -p -m 0755 {}'.format(host.editorial_dir))
+        fabric.api.sudo('chown -R editor:editor {}'.format(host.editorial_dir))
+
     if installed:
         return
-    # user `editor` creation is done by veil_host_user_resource
-    fabric.api.sudo('mkdir -p -m 0755 {}'.format(host.editorial_dir))
-    fabric.api.sudo('chown -R editor:editor {}'.format(host.editorial_dir))
 
     # do not add any config after Match User unless you know what you write
     fabric.contrib.files.append('/etc/ssh/sshd_config',
