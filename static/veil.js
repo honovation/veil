@@ -51,6 +51,8 @@ veil.defaultAuthenticationErrorHandler = function(jqXHR) {
     }
 };
 
+veil.defaultForbiddenErrorHandler = function() {veil.alert('权限不足');};
+
 veil.log = function(message) {
     if ("undefined" !== typeof console) {
         console.log(message);
@@ -217,6 +219,7 @@ veil.resource.create = function (options) {
     var onError = options.onError;
     var onValidationError = options.onValidationError;
     var onAuthenticationError = options.onAuthenticationError || veil.defaultAuthenticationErrorHandler;
+    var onForbiddenError = options.onForbiddenError || veil.defaultForbiddenErrorHandler;
     var onComplete = options.onComplete;
     var widget = options.widget;
     if (widget){
@@ -246,7 +249,7 @@ veil.resource.create = function (options) {
         statusCode:{
             400: onValidationError,
             401: onAuthenticationError,
-            403: function() {veil.alert('权限不足');},
+            403: onForbiddenError,
             404: function() {veil.alert('未找到')},
             500: function() {veil.alert('服务内部错误');},
             502: function() {veil.alert('服务暂时不可用，请稍后重试');},
