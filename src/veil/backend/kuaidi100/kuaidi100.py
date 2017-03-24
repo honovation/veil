@@ -2,7 +2,11 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 from time import sleep
-from veil.model.collection import objectify
+
+from datetime import datetime
+
+from veil.model.collection import objectify, DictObject
+from veil.utility.clock import *
 from veil.utility.http import *
 from .kuaidi100_client_installer import kuaidi100_client_config
 
@@ -26,16 +30,20 @@ def waybill_web_url(shipper_code, shipping_code):
     return WEB_URL_TEMPLATE.format(shipper_code, shipping_code)
 
 
-def get_delivery_status(shipper_code, shipping_code, sleep_at_start=0):
-    if 'youzhengguonei' == shipper_code: # kuaidi100 API does not support China Post yet
-        return {}
+def get_delivery_status_by_kuaidi100(shipper_code, shipping_code, sleep_at_start=0):
+    """
+    @param shipper_code: kuaidi100 shipping provider code
+    @param shipping_code: trace code
+    @param sleep_at_start: back log time
+    @return: empty object if got error, {signed:=BOOLEAN, rejected:=BOOLEAN, traces:=[{text:=STRING}]}
+    """
     params = {'id': kuaidi100_client_config().api_id, 'com': shipper_code, 'nu': shipping_code, 'muti': '1', 'order': 'desc'}
     # sleep_at_start: avoid IP blocking due to too frequent queries
     if sleep_at_start > 0:
         sleep(sleep_at_start)
     try:
         response = requests.get(API_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9),
-            max_retries=Retry(total=3, backoff_factor=0.5))
+                                max_retries=Retry(total=3, backoff_factor=0.5))
         response.raise_for_status()
     except Exception:
         LOGGER.exception('kuaidi100 query exception-thrown: %(params)s', {'params': params})
@@ -43,7 +51,13 @@ def get_delivery_status(shipper_code, shipping_code, sleep_at_start=0):
         result = objectify(response.json())
         if result.status == STATUS_QUERY_SUCCESS:
             LOGGER.debug('kuaidi100 query succeeded: %(result)s, %(url)s', {'result': result, 'url': response.url})
-            return result
+            ret = DictObject(signed=result.state == DELIVERY_STATE_SIGNED, rejected=result.state == DELIVERY_STATE_REJECTED)
+            ret.traces = [DictObject(text=trace.context) for trace in result.data]
+            if result.data[0].time:
+                ret.delivered_at = convert_datetime_to_utc_timezone(datetime.strptime(result.data[0].time, '%Y-%m-%d %H:%M:%S'))
+            else:
+                ret.delivered_at = get_current_time()
+            return ret
         elif result.status == STATUS_QUERY_ERROR:
             LOGGER.error('kuaidi100 query error: %(result)s, %(url)s', {'result': result, 'url': response.url})
         elif result.status == STATUS_NO_INFO_YET:
