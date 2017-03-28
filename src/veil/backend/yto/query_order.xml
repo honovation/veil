@@ -1,0 +1,9 @@
+<BatchQueryRequest>
+    <logisticProviderID>YTO</logisticProviderID>
+    <clientID>{{ client_id }}</clientID>
+    <orders>
+        <order>
+            <mailNo>{{ trace_code }}</mailNo>
+        </order>
+    </orders>
+</BatchQueryRequest>

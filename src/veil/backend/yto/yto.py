@@ -4,14 +4,25 @@ import logging
 import base64
 import re
 from hashlib import md5
+from uuid import uuid4
+
 import lxml.objectify
+
+from veil.frontend.cli import script
+from veil.model.event import *
+from veil.frontend.template import *
 from veil.model.collection import *
 from veil.utility.http import *
 from veil.utility.encoding import *
 from veil.utility.clock import *
+from veil.environment import VEIL_BUCKET_LOG_DIR
 from .yto_client_installer import yto_client_config
 
 LOGGER = logging.getLogger(__name__)
+
+EVENT_YTO_LOGISTICS_NOTIFICATION_RECEIVED = define_event('yto-logistics-notification-received')
+YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE = VEIL_BUCKET_LOG_DIR / 'yto/incoming/request'
+YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE.makedirs()
 
 STATUS_SENT_SCAN = 'SENT_SCAN'
 STATUS_SIGNED = 'SIGNED'
@@ -29,9 +40,9 @@ STATUS2LABEL = {
 PATTERN_FOR_REASON = re.compile('<reason>(.*?)</reason>')
 
 
-def verify_logistics_notify(notify_data, sign):
-    config = yto_client_config()
-    return sign == base64.b64encode(md5(to_str('{}{}'.format(notify_data, config.partner_id))).digest())
+def sign_md5(data):
+    config = yto_client_config(purpose='public')
+    return base64.b64encode(md5(to_str('{}{}'.format(data, config.partner_id))).digest())
 
 
 def parse_logistics_notify(notify_data):
@@ -75,8 +86,16 @@ def get_delivery_status(notification):
 
 
 def subscribe_logistics_notify(logistics_id, logistics_order):
-    config = yto_client_config()
-    sign = base64.b64encode(md5(to_str('{}{}'.format(logistics_order, config.partner_id))).digest())
+    """
+    subscribe logistics notification from yto
+    @param logistics_id: customized logistics id
+    @param logistics_order: xml format data, see yto documents
+    @return: None if succeed, exception if failed
+    """
+    config = yto_client_config(purpose='public')
+    with require_current_template_directory_relative_to():
+        logistics_order = get_template('request_order.xml').render(config=config, logistics_order=logistics_order, logistics_id=logistics_id)
+    sign = sign_md5(logistics_order)
     headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
     data = {'logistics_interface': to_str(logistics_order), 'data_digest': sign, 'type': config.type, 'clientId': config.client_id}
     try:
@@ -106,9 +125,11 @@ def subscribe_logistics_notify(logistics_id, logistics_order):
             raise Exception('yto logistics subscribe failed with bad response: {}, {}'.format(logistics_id, response.text))
 
 
-def query_logistics_status(query_order):
+def query_logistics_status(trace_code):
     config = yto_client_config(purpose='public')
-    sign = base64.b64encode(md5(to_str('{}{}'.format(query_order, config.partner_id))).digest())
+    with require_current_template_directory_relative_to():
+        query_order = get_template('query_order.xml').render(client_id=config.client_id, trace_code=trace_code)
+    sign = sign_md5(query_order)
     headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
     data = {'logistics_interface': to_str(query_order), 'data_digest': sign, 'type': config.type, 'clientId': config.client_id}
     try:
@@ -118,14 +139,67 @@ def query_logistics_status(query_order):
         LOGGER.exception('yto logistics query exception-thrown: %(data)s, %(headers)s', {'data': data, 'headers': headers})
         raise
     else:
+        LOGGER.debug(response.text)
         query_result = lxml.objectify.fromstring(response.text)
-        logistics_status = DictObject(steps = [], signed_at=None, rejected_at=None)
+        logistics_status = DictObject(traces=[], signed=False, rejected=False)
         for step in query_result.orders.order.steps.iterchildren():
             step_created_at = convert_datetime_to_client_timezone(parse(step.acceptTime.text))
             if step.name.text and '退' in step.name.text:
-                logistics_status.rejected_at = step_created_at
-            logistics_status.steps.append(DictObject(brief='{} {} {}'.format(step.remark.text or '', step.acceptAddress.text or '', step.name.text or ''),
-                                                     created_at=step_created_at))
-        if query_result.orders.order.orderStatus.text == STATUS_SIGNED and logistics_status.rejected_at is None:
-            logistics_status.signed_at = logistics_status.steps[-1].created_at
+                logistics_status.rejected = True
+            logistics_status.traces.append(DictObject(brief='{} {} {}'.format(step.remark.text or '', step.acceptAddress.text or '', step.name.text or ''),
+                                                      created_at=step_created_at))
+        if query_result.orders.order.orderStatus.text == STATUS_SIGNED and not logistics_status.rejected:
+            logistics_status.signed = True
+        logistics_status.latest_biz_time = logistics_status.traces[-1].created_at
         return logistics_status
+
+
+def process_logistics_notification(raw_notification):
+    notification = parse_logistics_notify(raw_notification)
+
+    record_yto_notification(notification.logistics_id, raw_notification)
+
+    config = yto_client_config(purpose='public')
+    if notification.client_id != config.client_id:
+        return '''
+            <Response>
+                <logisticProviderID>YTO</logisticProviderID>
+                <txLogisticID>{}</txLogisticID>
+                <success>false</success>
+            </Response>
+            '''.format(notification.logistics_id)
+    if notification.sign != sign_md5(raw_notification):
+        return '''
+            <Response>
+                <logisticProviderID>YTO</logisticProviderID>
+                <txLogisticID>{}</txLogisticID>
+                <success>false</success>
+            </Response>
+            '''.format(notification.logistics_id)
+    if notification.is_delivered:
+        publish_event(EVENT_YTO_LOGISTICS_NOTIFICATION_RECEIVED, notification=notification)
+    return '''
+            <Response>
+                <logisticProviderID>YTO</logisticProviderID>
+                <txLogisticID>{}</txLogisticID>
+                <success>true</success>
+            </Response>
+            '''.format(notification.logistics_id)
+
+
+def record_yto_notification(logistics_id, raw_notification):
+    LOGGER.info('[YTO-IN]received request payload: %(logistics_id)s, %(payload)s', {
+        'logistics_id': logistics_id,
+        'payload': raw_notification
+    })
+    current_time_string = get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S')
+    log_file_name = '{}-{}-{}.xml'.format(logistics_id, current_time_string, uuid4().hex)
+    log_file_dir = YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE / current_time_string[:4] / current_time_string[4:6] / current_time_string[6:8]
+    log_file_dir.makedirs()
+    with open(log_file_dir / log_file_name, mode='wb+') as f:
+        f.write(to_str(raw_notification))
+
+
+@script('query-status')
+def query_logistics_status_script(trace_code):
+    print(query_logistics_status(trace_code))

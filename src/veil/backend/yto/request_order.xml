@@ -1,0 +1,50 @@
+<RequestOrder>
+    <!--订单基本信息-->
+    <clientID>{{ config.client_id }}</clientID>
+    <logisticProviderID>YTO</logisticProviderID>
+    <customerId>8000</customerId>
+    <txLogisticID>{{ logistics_id }}</txLogisticID>
+    <tradeNo/>
+    <mailNo>{{ logistics_order.trace_code }}</mailNo>
+    <orderType>{{ logistics_order.type2yto }}</orderType>
+    <serviceType>0</serviceType>
+    <flag/>
+    <!--发货方信息-->
+    <sender>
+        <name>{{ logistics_order.sender.name }}</name>
+        <postCode/>
+        <phone>{{ logistics_order.sender.phone }}</phone>
+        <mobile>{{ logistics_order.sender.mobile }}</mobile>
+        <prov>{{ logistics_order.sender.province_name }}</prov>
+        <city>{{ logistics_order.sender.city_and_district |join(',') }}</city>
+        <address>{{ logistics_order.sender.address_detail }}</address>
+    </sender>
+    <!--收货方信息-->
+    <receiver>
+        <name>{{ logistics_order.delivery.addressee }}</name>
+        <postCode/>
+        <phone>{{ logistics_order.delivery.phone or '' }}</phone>
+        <mobile>{{ logistics_order.delivery.mobile }}</mobile>
+        <prov>{{ logistics_order.delivery.province_name or '' }}</prov>
+        <city>{{ logistics_order.delivery.city_and_district |join(',') }}</city>
+        <address>{{ logistics_order.delivery.address_detail }}</address>
+    </receiver>
+    <!--物流公司上门取货时间段-->
+    <sendStartTime/>
+    <sendEndTime/>
+    <!--商品信息-->
+    <goodsValue>{{ logistics_order.total }}</goodsValue>
+    <totalServiceFee>0.0</totalServiceFee>
+    <codSplitFee>0.0</codSplitFee>
+    <itemsValue>{{ logistics_order.total if logistics_order.is_cod else '0.0' }}</itemsValue>
+    <items>
+        <item>
+            <itemName>丽家宝贝官网-母婴购物上丽家：安全、高品质、高性价比的母婴用品</itemName>
+            <number>1</number>
+            <itemValue>{{ logistics_order.total if logistics_order.is_cod else '0.0' }}</itemValue>
+        </item>
+    </items>
+    <insuranceValue/>
+    <special/>
+    <remark>送货时间：{{ logistics_order.delivery.delivery_type_text }}</remark>
+</RequestOrder>
