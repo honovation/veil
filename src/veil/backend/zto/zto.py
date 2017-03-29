@@ -78,6 +78,8 @@ def query_logistics_status(*bill_codes):
                     'data': data
                 })
             else:
+                if json_response.data is None:
+                    json_response.data = []
                 bill_code2logistics_status = {
                     d.billCode: DictObject(traces=[DictObject(brief=t.desc, status_code=t.scanType, created_at=t.scanDate) for t in d.traces],
                                            signed=d.traces[-1].scanType in (SIGN_SCAN_TYPE, TRD_SIGN_SCAN_TYPE),
