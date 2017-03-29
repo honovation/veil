@@ -154,10 +154,11 @@ def query_logistics_status(trace_code):
         return logistics_status
 
 
-def process_logistics_notification(raw_notification):
+def process_logistics_notification(arguments):
+    raw_notification = arguments.logistics_interface
     notification = parse_logistics_notify(raw_notification)
 
-    record_yto_notification(notification.logistics_id, raw_notification)
+    record_yto_notification(notification.logistics_id, arguments)
 
     config = yto_client_config(purpose='public')
     if notification.client_id != config.client_id:
@@ -168,7 +169,7 @@ def process_logistics_notification(raw_notification):
                 <success>false</success>
             </Response>
             '''.format(notification.logistics_id)
-    if notification.sign != sign_md5(raw_notification):
+    if arguments.data_digest != sign_md5(raw_notification):
         return '''
             <Response>
                 <logisticProviderID>YTO</logisticProviderID>
