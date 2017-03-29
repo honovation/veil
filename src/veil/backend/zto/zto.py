@@ -91,9 +91,9 @@ def query_logistics_status(*bill_codes):
                 return bill_code2logistics_status
 
 
-def sign_md5(data):
-    config = zto_client_config()
-    return base64.b64encode(md5(to_str('{}{}'.format(data, config.api_key))).digest())
+def sign_md5(data, api_key=None):
+    api_key = api_key or zto_client_config().api_key
+    return base64.b64encode(md5(to_str('{}{}'.format(data, api_key))).digest())
 
 
 def subscribe_logistics_notify(logistics_id, logistics_order, msg_type=SUBSCRIBE_MSG_TYPE):
@@ -107,8 +107,9 @@ def subscribe_logistics_notify(logistics_id, logistics_order, msg_type=SUBSCRIBE
     """
     config = zto_client_config()
     company_id = config.company_id if VEIL_ENV.is_prod else 'test'
+    create_by = config.subscribe_create_by if VEIL_ENV.is_prod else 'test'
     data_ = [DictObject(id=logistics_id, billCode=logistics_order.trace_code, pushCategory='callback', pushTarget=logistics_order.notify_url,
-                        subscriptionCategory=SUBSCRIBE_ALL_EVENTS, createBy=company_id)]
+                        subscriptionCategory=SUBSCRIBE_ALL_EVENTS, createBy=create_by)]
     data = DictObject(msg_type=msg_type, company_id=company_id, data=json.dumps(data_))
     data.data_digest = sign_md5(data.data)
     response = None
@@ -160,7 +161,7 @@ def process_logistics_notification(arguments):
     if arguments.company_id != config.company_id:
         fail_response.message = 'company_id mismatch'
         return fail_response
-    if sign_md5(arguments.data) != arguments.data_digest:
+    if sign_md5(arguments.data, api_key=config.subscribe_api_key) != arguments.data_digest:
         fail_response.message = 'invalid data_digest'
         return fail_response
     signed_by = None
