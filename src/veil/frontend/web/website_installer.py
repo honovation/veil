@@ -12,6 +12,32 @@ HTTP_STANDARD_PORT = 80
 HTTPS_STANDARD_PORT = 443
 
 
+def register_website_config(purpose):
+    add_application_sub_resource('{}_website'.format(purpose), lambda config: website_resource(purpose=purpose, config=config))
+
+    class WebsiteConfig(object):
+        def __init__(self, purpose):
+            self._purpose = purpose
+
+        @property
+        def purpose(self):
+            return self._purpose
+
+        @property
+        def url(self):
+            return get_website_url(self._purpose)
+
+        @property
+        def domain(self):
+            return get_website_domain(self._purpose)
+
+        @property
+        def parent_domain(self):
+            return get_website_parent_domain(self._purpose)
+
+    return WebsiteConfig(purpose)
+
+
 @event(EVENT_NEW_WEBSITE)
 def on_new_website(website):
     add_application_sub_resource('{}_website'.format(website), lambda config: website_resource(purpose=website, config=config))
