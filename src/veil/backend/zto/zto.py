@@ -7,7 +7,6 @@ import re
 from hashlib import md5
 from uuid import uuid4
 
-from veil.environment import VEIL_BUCKET_LOG_DIR
 from veil.model.event import *
 from veil.model.binding import *
 from veil.utility.clock import *
@@ -17,13 +16,11 @@ from veil.utility.http import *
 from veil.utility.encoding import *
 from veil.utility.json import *
 from veil_component import VEIL_ENV
-from .zto_client_installer import zto_client_config
+from .zto_client_installer import zto_client_config, ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE
 
 LOGGER = logging.getLogger(__name__)
 
 EVENT_ZTO_LOGISTICS_NOTIFICATION_RECEIVED = define_event('zto-logistics-notification-received')
-ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE = VEIL_BUCKET_LOG_DIR / 'zto/incoming/request'
-ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE.makedirs()
 
 API_URL = 'http://japi.zto.cn/gateway.do'
 if VEIL_ENV.is_prod:

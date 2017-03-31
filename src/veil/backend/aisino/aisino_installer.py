@@ -39,7 +39,7 @@ def aisino_invoice_resource(seq_prefix, payer_id, payer_name, payer_auth_code, p
     else:
         resources = [file_resource(path=AISINO_LIBRARY_CONFIG_FILE_PATH, content=config_file_content)]
     resources.extend([
-        directory_resource(path=REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+        directory_resource(path=REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE, owner=CURRENT_USER, group=CURRENT_USER_GROUP, recursive=True),
         file_resource(path=VEIL_ETC_DIR / 'aision_invoice.cfg',
                       content=render_config('aision_invoice.cfg.j2', seq_prefix=seq_prefix, payer_id=payer_id, payer_name=payer_name,
                                             payer_auth_code=payer_auth_code, payer_address=payer_address, payer_telephone=payer_telephone,

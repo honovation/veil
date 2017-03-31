@@ -15,14 +15,12 @@ from veil.model.collection import *
 from veil.utility.http import *
 from veil.utility.encoding import *
 from veil.utility.clock import *
-from veil.environment import VEIL_BUCKET_LOG_DIR
-from .yto_client_installer import yto_client_config
+from .yto_client_installer import yto_client_config, YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE
 
 LOGGER = logging.getLogger(__name__)
 
 EVENT_YTO_LOGISTICS_NOTIFICATION_RECEIVED = define_event('yto-logistics-notification-received')
-YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE = VEIL_BUCKET_LOG_DIR / 'yto/incoming/request'
-YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE.makedirs()
+
 
 STATUS_SENT_SCAN = 'SENT_SCAN'
 STATUS_SIGNED = 'SIGNED'
