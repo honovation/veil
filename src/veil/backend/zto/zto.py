@@ -108,7 +108,7 @@ def subscribe_logistics_notify(logistics_id, logistics_order, msg_type=SUBSCRIBE
     config = zto_client_config()
     company_id = config.company_id if VEIL_ENV.is_prod else 'test'
     create_by = config.subscribe_create_by if VEIL_ENV.is_prod else 'test'
-    data_ = [DictObject(id=logistics_id, billCode=logistics_order.trace_code, pushCategory='callback', pushTarget=logistics_order.notify_url,
+    data_ = [DictObject(id=logistics_id, billCode=logistics_order.trace_code, pushCategory='callBack', pushTarget=logistics_order.notify_url,
                         subscriptionCategory=SUBSCRIBE_ALL_EVENTS, createBy=create_by)]
     data = DictObject(msg_type=msg_type, company_id=company_id, data=json.dumps(data_))
     data.data_digest = sign_md5(data.data)
