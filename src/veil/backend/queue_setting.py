@@ -98,14 +98,17 @@ def job_worker_manager_program(worker_manager_name, pool_size, pyres_worker_logg
         component_resource(name='veil.backend.queue'),
         application_resource(component_names=application_component_names, config=application_config)
     ]
-    pyrse_log_path = VEIL_LOG_DIR / '{}_worker-manager-pyres.log'.format(worker_manager_name)
+    log_path = VEIL_LOG_DIR / '{}-pyres'.format(worker_manager_name)
+    if not log_path.exists():
+        log_path.mkdir()
+    log_file = log_path / 'manager.log'
     programs = {}
     for i in range(count):
         max_jobs_term = '-j {}'.format(max_jobs) if max_jobs else ''
         programs.update({
             '{}_worker_manager{}'.format(worker_manager_name, i + 1): {
                 'execute_command': 'veil sleep 10 veil backend queue pyres_manager --host={} --port={} --pool {} -i {} --minions_interval {} -l {} -f {} --concat_minions_logs {} {}'.format(
-                    queue_host, queue_port, pool_size, manager_interval, minion_interval, pyres_worker_logging_level, pyrse_log_path, max_jobs_term, ','.join(queue_names)
+                    queue_host, queue_port, pool_size, manager_interval, minion_interval, pyres_worker_logging_level, log_file, max_jobs_term, ','.join(queue_names)
                 ),  # log instruction for the main process, a.k.a pyres_worker
                 'environment_variables': {
                     'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path,
