@@ -1,4 +1,5 @@
 from __future__ import unicode_literals, print_function, division
+import pwd
 from veil.profile.installer import *
 from .redis_setting import redis_program
 
@@ -101,6 +102,9 @@ def job_worker_manager_program(worker_manager_name, pool_size, pyres_worker_logg
     log_path = VEIL_LOG_DIR / '{}-pyres'.format(worker_manager_name)
     if not log_path.exists():
         log_path.mkdir()
+    run_as = run_as or CURRENT_USER
+    pwd_entry = pwd.getpwnam(run_as)
+    log_path.chown(pwd_entry.pw_uid, pwd_entry.pw_gid)
     log_file = log_path / 'manager.log'
     programs = {}
     for i in range(count):
@@ -115,7 +119,7 @@ def job_worker_manager_program(worker_manager_name, pool_size, pyres_worker_logg
                     'VEIL_LOGGING_EVENT': 'True'
                 },  # log instruction for the sub-process forked from pyres_worker, a.k.a our code
                 'group': 'worker_manager',
-                'run_as': run_as or CURRENT_USER,
+                'run_as': run_as,
                 'priority': 200,
                 'resources': resources,
                 'startretries': 10,
