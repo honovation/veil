@@ -149,18 +149,30 @@ def subscribe_logistics_notify(logistics_id, logistics_order, msg_type=SUBSCRIBE
 
 def process_logistics_notification(arguments):
     record_zto_notification('{}-{}'.format(arguments.purchase_id, arguments.box_id), to_json(arguments))
-    success_response = DictObject(message='', result='success', status=True, statusCode='0')
+
     fail_response = DictObject(message='', result='fail', status=False, statusCode='')
+    fail_message = None
     if arguments.msg_type != 'Traces':
-        fail_response.message = 'unknown msg_type'
+        fail_message = 'unknown msg_type'
+    else:
+        config = zto_client_config()
+        if arguments.company_id != config.company_id:
+            fail_message = 'company_id mismatch'
+        elif sign_md5(arguments.data, api_key=config.subscribe_api_key) != arguments.data_digest:
+            fail_message = 'invalid data_digest'
+    if fail_message:
+        LOGGER.error('Got wrong zto notification: %(message)s, %(arguments)s', {
+            'message': fail_message,
+            'arguments': arguments
+        })
+        fail_response.message = fail_message
         return fail_response
-    config = zto_client_config()
-    if arguments.company_id != config.company_id:
-        fail_response.message = 'company_id mismatch'
-        return fail_response
-    if sign_md5(arguments.data, api_key=config.subscribe_api_key) != arguments.data_digest:
-        fail_response.message = 'invalid data_digest'
-        return fail_response
+
+    LOGGER.info('Accepted zto notification: %(purchase_id)s, %(box_id)s', {
+        'purchase_id': arguments.purchase_id,
+        'box_id': arguments.box_id
+    })
+
     signed_by = None
     signed = arguments.data.scanType == NOTIFICATION_SIGN_SCAN_TYPE
     if signed:
@@ -171,7 +183,7 @@ def process_logistics_notification(arguments):
         publish_event(EVENT_ZTO_LOGISTICS_NOTIFICATION_RECEIVED, purchase_id=arguments.purchase_id, box_id=arguments.box_id,
                       status_code=arguments.data.scanType, brief=arguments.data.desc, signed=signed, signed_by=signed_by, rejected=rejected,
                       notified_at=notified_at)
-    return success_response
+    return DictObject(message='', result='success', status=True, statusCode='0')
 
 
 @script('subscribe')
