@@ -173,6 +173,7 @@ def process_logistics_notification(arguments):
         'box_id': arguments.box_id
     })
 
+    arguments.data = objectify(from_json(arguments.data))
     signed_by = None
     signed = arguments.data.scanType == NOTIFICATION_SIGN_SCAN_TYPE
     if signed:
