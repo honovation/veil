@@ -156,7 +156,7 @@ def process_logistics_notification(arguments):
         fail_message = 'unknown msg_type'
     else:
         config = zto_client_config()
-        if arguments.company_id != config.company_id:
+        if arguments.company_id != config.subscribe_create_by:
             fail_message = 'company_id mismatch'
         elif sign_md5(arguments.data, api_key=config.subscribe_api_key) != arguments.data_digest:
             fail_message = 'invalid data_digest'
