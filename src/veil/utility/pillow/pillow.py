@@ -27,19 +27,23 @@ def save_image(image, bucket, key, format=None, delete_image=True, quality=95, o
     if not isinstance(image, PIL.Image.Image):
         image = open_image(image)
     image_format = format or image.format
-    with contextlib.closing(StringIO()) as buffer_:
-        try:
-            image.save(buffer_, image_format, quality=quality, optimize=optimize) # JPEG默认保存质量是75, 不太清楚。可选值(0~100, 推荐75~95)
-        except IOError:
-            # max block is not enough for saving this image, then use the square of max value in image's size
-            old_max_block = PIL.ImageFile.MAXBLOCK
+    if image_format.lower() == 'gif':
+        image.fp.seek(0)
+        bucket().store(key, image.fp)
+    else:
+        with contextlib.closing(StringIO()) as buffer_:
             try:
-                PIL.ImageFile.MAXBLOCK = max(image.size) ** 2
-                image.save(buffer_, image_format, quality=quality, optimize=optimize)
-            finally:
-                PIL.ImageFile.MAXBLOCK = old_max_block
-        buffer_.reset()
-        bucket().store(key, buffer_)
+                image.save(buffer_, image_format, quality=quality, optimize=optimize) # JPEG默认保存质量是75, 不太清楚。可选值(0~100, 推荐75~95)
+            except IOError:
+                # max block is not enough for saving this image, then use the square of max value in image's size
+                old_max_block = PIL.ImageFile.MAXBLOCK
+                try:
+                    PIL.ImageFile.MAXBLOCK = max(image.size) ** 2
+                    image.save(buffer_, image_format, quality=quality, optimize=optimize)
+                finally:
+                    PIL.ImageFile.MAXBLOCK = old_max_block
+            buffer_.reset()
+            bucket().store(key, buffer_)
     if delete_image:
         del image
 
