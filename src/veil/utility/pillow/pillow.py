@@ -20,12 +20,15 @@ def open_image(fp):
         return PIL.Image.open(fp)
     except Exception:
         LOGGER.warn('无法读取上传的图片: %(fp)s', {'fp': fp}, exc_info=1)
-        raise
+        raise InvalidImage('无法读取上传的图片: {}'.format(fp))
 
 
-def save_image(image, bucket, key, format=None, delete_image=True, quality=95, optimize=True):
-    if not isinstance(image, PIL.Image.Image):
-        image = open_image(image)
+def save_image(image_path, bucket, key, format=None, quality=95, optimize=True, limit_width=None, limit_height=None):
+    image = open_image(image_path)
+    if limit_width and image.size[0] != limit_width:
+        raise InvalidImage('图片尺寸不正确，请上传宽度为{}px的图片'.format(limit_width))
+    if limit_height and image.size[1] != limit_height:
+        raise InvalidImage('图片尺寸不正确，请上传高度为{}px的图片'.format(limit_height))
     image_format = format or image.format
     if image_format.lower() == 'gif':
         image.fp.seek(0)
@@ -44,32 +47,63 @@ def save_image(image, bucket, key, format=None, delete_image=True, quality=95, o
                     PIL.ImageFile.MAXBLOCK = old_max_block
             buffer_.reset()
             bucket().store(key, buffer_)
-    if delete_image:
-        del image
 
 
-def crop_image(image, box, bucket, key, format=None, delete_image=True, quality=95, optimize=True):
+def crop_image(image, box, bucket, key, format=None, quality=95, optimize=True):
+    image_format = format or image.format
+    assert image_format.lower() != 'gif', 'do not support gif thumbnail'
     # ImageOps compatible mode
     if image.mode not in ("L", "RGB"):
         image = image.convert("RGB")
-    save_image(image.crop(box), bucket, key, format=format, delete_image=delete_image, quality=quality, optimize=optimize)
+
+    image = image.crop(box)
+
+    with contextlib.closing(StringIO()) as buffer_:
+        try:
+            image.save(buffer_, image_format, quality=quality, optimize=optimize) # JPEG默认保存质量是75, 不太清楚。可选值(0~100, 推荐75~95)
+        except IOError:
+            # max block is not enough for saving this image, then use the square of max value in image's size
+            old_max_block = PIL.ImageFile.MAXBLOCK
+            try:
+                PIL.ImageFile.MAXBLOCK = max(image.size) ** 2
+                image.save(buffer_, image_format, quality=quality, optimize=optimize)
+            finally:
+                PIL.ImageFile.MAXBLOCK = old_max_block
+        buffer_.reset()
+        bucket().store(key, buffer_)
 
 
-def generate_thumbnail(image, size, bucket, key, format=None, delete_image=True, quality=92, optimize=True):
+def generate_thumbnail(image_path, size, bucket, key, format=None, quality=92, optimize=True):
+    image = open_image(image_path)
+    image_format = format or image.format
+    assert image_format.lower() != 'gif', 'do not support gif thumbnail'
     # ImageOps compatible mode
     if image.mode not in ("L", "RGB"):
         image = image.convert("RGB")
+
     image.thumbnail(size, PIL.Image.ANTIALIAS)
-    save_image(image, bucket, key, format=format, delete_image=delete_image, quality=quality, optimize=optimize)
+
+    with contextlib.closing(StringIO()) as buffer_:
+        try:
+            image.save(buffer_, image_format, quality=quality, optimize=optimize) # JPEG默认保存质量是75, 不太清楚。可选值(0~100, 推荐75~95)
+        except IOError:
+            # max block is not enough for saving this image, then use the square of max value in image's size
+            old_max_block = PIL.ImageFile.MAXBLOCK
+            try:
+                PIL.ImageFile.MAXBLOCK = max(image.size) ** 2
+                image.save(buffer_, image_format, quality=quality, optimize=optimize)
+            finally:
+                PIL.ImageFile.MAXBLOCK = old_max_block
+        buffer_.reset()
+        bucket().store(key, buffer_)
 
 
-def generate_captcha_image_and_answer(size=(180, 30), img_type="GIF", mode="RGB", bg_color=(255, 255, 255), fg_color=(0, 0, 255), font_size=100,
+def generate_captcha_image_and_answer(size=(180, 30), mode="RGB", bg_color=(255, 255, 255), fg_color=(0, 0, 255), font_size=100,
         font_type="{}/wqy-microhei.ttc".format(os.path.dirname(__file__)), draw_lines=False, n_line=(1, 2), draw_points=False, point_chance=2):
     """
     @todo: 生成验证码图片
     @param size: 图片的大小，格式（宽，高），默认为(120, 30)
     @param chars: 允许的字符集合，格式字符串
-    @param img_type: 图片保存的格式，默认为GIF，可选的为GIF，JPEG，TIFF，PNG
     @param mode: 图片模式，默认为RGB
     @param bg_color: 背景颜色，默认为白色
     @param fg_color: 前景色，验证码字符颜色，默认为蓝色#0000FF
@@ -142,3 +176,7 @@ def generate_captcha_image_and_answer(size=(180, 30), img_type="GIF", mode="RGB"
     #img = img.filter(ImageFilter.EDGE_ENHANCE_MORE) # 滤镜，边界加强（阈值更大）
 
     return img, answer
+
+
+class InvalidImage(Exception):
+    pass
