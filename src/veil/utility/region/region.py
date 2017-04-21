@@ -318,7 +318,9 @@ def validate_regions(db):
             WHERE c.code NOT LIKE CASE c.level WHEN 2 THEN SUBSTRING(p.code, 1, LENGTH(p.code)-4)||'__00' ELSE SUBSTRING(p.code, 1, LENGTH(p.code)-2)||'__' END
     '''.format(REGION_TABLE=REGION_TABLE))
     if invalid_regions:
-        raise Exception('invalid regions with wrong codes: {}'.format(invalid_regions))
+        invalid_regions = [ir for ir in invalid_regions if not ir.startswith('X')]
+        if invalid_regions:
+            raise Exception('invalid regions with wrong codes: {}'.format(invalid_regions))
 
 
 REGION_NAMES_IGNORABLE_FROM_ADDRESS = ('市辖区', '县', '省直辖县级行政区划', '自治区直辖县级行政区划')
