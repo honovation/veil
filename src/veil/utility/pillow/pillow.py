@@ -23,12 +23,41 @@ def open_image(fp):
         raise InvalidImage('无法读取上传的图片: {}'.format(fp))
 
 
-def save_image(image_path, bucket, key, format=None, quality=95, optimize=True, limit_width=None, limit_height=None):
+def save_image(image_path, bucket, key, format=None, quality=95, optimize=True, limit_width=None, limit_height=None, width_scope=(), height_scope=()):
+    """
+    :param image_path:
+    :param bucket:
+    :param key:
+    :param format:
+    :param quality:
+    :param optimize:
+    :param limit_width: 宽度限制，不能与 width_scope 同时存在
+    :param limit_height: 高度限制，不能与 height_scope 同时存在
+    :param width_scope: 宽度范围，格式为元祖，当不为空时，必须包含两个参数（最小值，最大值），None则表示最小值或最大值无限制，不能同时为None
+    :param height_scope: 高度范围，格式为元祖，当不为空时，必须包含两个参数（最小值，最大值），None则表示最小值或最大值无限制，不能同时为None
+    """
+    assert not (limit_width and width_scope) and not (limit_height and height_scope), 'limit and scope cannot be both appear'
     image = open_image(image_path)
     if limit_width and image.size[0] != limit_width:
         raise InvalidImage('图片尺寸不正确，请上传宽度为{}px的图片'.format(limit_width))
+    if width_scope:
+        assert isinstance(width_scope, tuple) and len(width_scope) == 2, 'width scope must include two parameters'
+        assert (width_scope[0] or width_scope[1]) and (not width_scope[1] or width_scope[1] > width_scope[0])
+        if width_scope[0] and image.size[0] < width_scope[0]:
+            raise InvalidImage('图片尺寸不正确，请上传宽度不小于{}px的图片'.format(width_scope[0]))
+        if width_scope[1] and image.size[0] > width_scope[1]:
+            raise InvalidImage('图片尺寸不正确，请上传宽度不大于{}px的图片'.format(width_scope[1]))
+
     if limit_height and image.size[1] != limit_height:
         raise InvalidImage('图片尺寸不正确，请上传高度为{}px的图片'.format(limit_height))
+    if height_scope:
+        assert isinstance(height_scope, tuple) and len(height_scope) == 2, 'height scope must include two parameters'
+        assert (height_scope[0] or height_scope[1]) and (not height_scope[1] or height_scope[1] > height_scope[0])
+        if height_scope[0] and image.size[0] < height_scope[0]:
+            raise InvalidImage('图片尺寸不正确，请上传高度不小于{}px的图片'.format(height_scope[0]))
+        if height_scope[1] and image.size[0] > height_scope[1]:
+            raise InvalidImage('图片尺寸不正确，请上传高度不大于{}px的图片'.format(height_scope[1]))
+
     image_format = format or image.format
     if image_format.lower() == 'gif':
         image.fp.seek(0)
