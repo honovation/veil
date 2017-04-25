@@ -33,8 +33,8 @@ def save_image(image_path, bucket, key, format=None, quality=95, optimize=True, 
     :param optimize:
     :param limit_width: 宽度限制，不能与 width_scope 同时存在
     :param limit_height: 高度限制，不能与 height_scope 同时存在
-    :param width_scope: 宽度范围，格式为元祖，当不为空时，必须包含两个参数（最小值，最大值），None则表示最小值或最大值无限制，不能同时为None
-    :param height_scope: 高度范围，格式为元祖，当不为空时，必须包含两个参数（最小值，最大值），None则表示最小值或最大值无限制，不能同时为None
+    :param width_scope: 宽度范围，格式为元组，当不为空时，必须包含两个参数（最小值，最大值），最大值与最小值可设为None表示无限制，但不能同时为None
+    :param height_scope: 高度范围，格式为元组，当不为空时，必须包含两个参数（最小值，最大值），最大值与最小值可设为None表示无限制，但不能同时为None
     """
     assert not (limit_width and width_scope) and not (limit_height and height_scope), 'limit and scope cannot be both appear'
     image = open_image(image_path)
