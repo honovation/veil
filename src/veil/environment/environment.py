@@ -8,6 +8,7 @@ import operator
 from veil_component import *
 from veil.server.os import *
 
+DEFAULT_DNS_SERVERS = ('119.29.29.29', '182.254.116.116', '8.8.8.8', '8.8.4.4')
 
 DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
 DEPENDENCY_SSL_URL = 'https://dependency-veil.qiniudn.com'
@@ -212,7 +213,7 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
         'resources': resources,
         'supervisor_http_host': supervisor_http_host,
         'supervisor_http_port': supervisor_http_port,
-        'name_servers': name_servers or ['119.29.29.29', '182.254.116.116', '8.8.8.8', '8.8.4.4'],
+        'name_servers': name_servers or DEFAULT_DNS_SERVERS,
         'backup_mirror': backup_mirror,
         'mount_editorial_dir': mount_editorial_dir,
         'mount_buckets_dir': mount_buckets_dir,

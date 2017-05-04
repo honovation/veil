@@ -40,7 +40,6 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, intranet_cid
                       valid_referer_domains=None):
     if is_api_only:
         common_setting = '''
-            add_header X-Content-Type-Options nosniff;
             proxy_pass http://{}-tornado;
             {}
             '''.format(purpose, '\n'.join(extra_headers))
@@ -75,7 +74,6 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, intranet_cid
 
     extra_headers = '''
         add_header X-Frame-Options SAMEORIGIN;
-        add_header X-Content-Type-Options nosniff;
         add_header X-XSS-Protection "1; mode=block";
         add_header X-UA-Compatible "IE=Edge,chrome=1";
         {}
