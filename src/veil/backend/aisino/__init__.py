@@ -1,4 +1,5 @@
 import veil_component
+from veil_installer import *
 
 with veil_component.init_component(__name__):
 
@@ -33,6 +34,9 @@ with veil_component.init_component(__name__):
 
     from .aisino_installer import aisino_invoice_resource
     from .aisino_installer import aisino_invoice_config
+
+    def init():
+        add_application_sub_resource('aisino_invoice', lambda config: aisino_invoice_resource(**config))
 
     __all__ = [
         request_invoice.__name__,

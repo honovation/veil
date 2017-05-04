@@ -3,8 +3,6 @@ from veil.profile.installer import *
 
 _config = None
 
-add_application_sub_resource('alipay_client', lambda config: alipay_client_resource(**config))
-
 
 @composite_installer
 def alipay_client_resource(partner_id, app_key, seller_email, alipay_public_key, rsa_public_key, rsa_private_key):

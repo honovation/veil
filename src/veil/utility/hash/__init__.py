@@ -1,4 +1,5 @@
 import veil_component
+from veil_installer import *
 
 with veil_component.init_component(__name__):
     from .hash import encode_token
@@ -9,6 +10,9 @@ with veil_component.init_component(__name__):
     from .hash import get_check_code
     from .hash import verify_check_code
     from .hash import hash_resource
+
+    def init():
+        add_application_sub_resource('hash', lambda config: hash_resource(**config))
 
     __all__ = [
         # from hash

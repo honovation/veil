@@ -6,8 +6,6 @@ YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE = VEIL_BUCKET_LOG_DIR / 'yto/incoming/re
 
 _config = {}
 
-add_application_sub_resource('yto_client', lambda config: yto_client_resource(**config))
-
 
 @composite_installer
 def yto_client_resource(**kwargs):

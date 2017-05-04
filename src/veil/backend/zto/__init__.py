@@ -1,4 +1,5 @@
 import veil_component
+from veil_installer import *
 
 with veil_component.init_component(__name__):
 
@@ -9,6 +10,9 @@ with veil_component.init_component(__name__):
 
     from .zto_client_installer import zto_client_resource
     from .zto_client_installer import zto_client_config
+
+    def init():
+        add_application_sub_resource('zto_client', lambda config: zto_client_resource(**config))
 
     __all__ = [
         'query_zto_logistics_status',

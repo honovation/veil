@@ -1,4 +1,5 @@
 import veil_component
+from veil_installer import *
 
 with veil_component.init_component(__name__):
     from .kuaidi100 import get_delivery_status_by_kuaidi100
@@ -7,6 +8,9 @@ with veil_component.init_component(__name__):
     from .kuaidi100 import DELIVERY_STATE_REJECTED
     from .kuaidi100 import IPBlockedException
     from .kuaidi100_client_installer import kuaidi100_client_resource
+
+    def init():
+        add_application_sub_resource('kuaidi100_client', lambda config: kuaidi100_client_resource(**config))
 
     __all__ = [
         # from kuaidi100

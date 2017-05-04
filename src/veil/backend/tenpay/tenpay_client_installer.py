@@ -3,8 +3,6 @@ from veil.profile.installer import *
 
 _config = None
 
-add_application_sub_resource('tenpay_client', lambda config: tenpay_client_resource(**config))
-
 
 @composite_installer
 def tenpay_client_resource(partner_id, app_key, refund_op_user_id, refund_op_user_password, api_ca_cert, api_client_cert, api_client_key):

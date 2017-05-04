@@ -4,9 +4,6 @@ from veil.profile.installer import *
 _wxpay_config = None
 _wx_open_app_config = None
 
-add_application_sub_resource('wxpay_client', lambda config: wxpay_client_resource(**config))
-add_application_sub_resource('wx_open_app', lambda config: wx_open_app_resource(**config))
-
 
 @composite_installer
 def wxpay_client_resource(app_id, app_secret, mch_id, api_key, api_client_cert, api_client_key):

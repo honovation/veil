@@ -11,8 +11,6 @@ from veil.development.test import get_executing_test
 
 LOGGER = getLogger(__name__)
 
-add_application_sub_resource('hash', lambda config: hash_resource(**config))
-
 _hash_salt = None
 
 

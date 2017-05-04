@@ -1,4 +1,5 @@
 import veil_component
+from veil_installer import *
 
 with veil_component.init_component(__name__):
     from .wxpay_payment import EVENT_WXPAY_TRADE_PAID
@@ -28,6 +29,10 @@ with veil_component.init_component(__name__):
     from .wxmp_msg_encrypt import parse_wechat_plain_msg
     from .wxmp_msg_encrypt import sign_wxmp_params
     from .wxmp_msg_encrypt import render_wxmp_text_response
+
+    def init():
+        add_application_sub_resource('wxpay_client', lambda config: wxpay_client_resource(**config))
+        add_application_sub_resource('wx_open_app', lambda config: wx_open_app_resource(**config))
 
     __all__ = [
         'EVENT_WXPAY_TRADE_PAID',

@@ -6,8 +6,6 @@ ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE = VEIL_BUCKET_LOG_DIR / 'zto/incoming/re
 
 _config = {}
 
-add_application_sub_resource('zto_client', lambda config: zto_client_resource(**config))
-
 
 @composite_installer
 def zto_client_resource(company_id, api_key, subscribe_create_by, subscribe_api_key):

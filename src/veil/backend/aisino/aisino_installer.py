@@ -25,8 +25,6 @@ RESOURCE_VERSION = '1.0'
 
 _config = None
 
-add_application_sub_resource('aisino_invoice', lambda config: aisino_invoice_resource(**config))
-
 
 @composite_installer
 def aisino_invoice_resource(seq_prefix, payer_id, payer_name, payer_auth_code, payer_address, payer_telephone, payer_bank_name, payer_bank_account_no, ebp_code,

@@ -3,8 +3,6 @@ from veil.profile.installer import *
 
 _config = None
 
-add_application_sub_resource('kuaidi100_client', lambda config: kuaidi100_client_resource(**config))
-
 
 @composite_installer
 def kuaidi100_client_resource(api_id):

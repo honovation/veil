@@ -1,4 +1,5 @@
 import veil_component
+from veil_installer import *
 
 with veil_component.init_component(__name__):
     from .tenpay_payment import EVENT_TENPAY_TRADE_PAID
@@ -14,6 +15,8 @@ with veil_component.init_component(__name__):
     from .tenpay_client_installer import tenpay_client_resource
     from .tenpay_client_installer import tenpay_client_config
 
+    def init():
+        add_application_sub_resource('tenpay_client', lambda config: tenpay_client_resource(**config))
 
     __all__ = [
         'EVENT_TENPAY_TRADE_PAID',

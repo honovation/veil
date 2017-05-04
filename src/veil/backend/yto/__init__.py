@@ -1,4 +1,5 @@
 import veil_component
+from veil_installer import *
 
 with veil_component.init_component(__name__):
 
@@ -10,6 +11,9 @@ with veil_component.init_component(__name__):
 
     from .yto_client_installer import yto_client_resource
     from .yto_client_installer import yto_client_config
+
+    def init():
+        add_application_sub_resource('yto_client', lambda config: yto_client_resource(**config))
 
     __all__ = [
         'subscribe_yto_logistics_notify',

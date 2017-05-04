@@ -1,4 +1,5 @@
 import veil_component
+from veil_installer import *
 
 with veil_component.init_component(__name__):
     from .alipay_payment import EVENT_ALIPAY_TRADE_PAID
@@ -17,6 +18,9 @@ with veil_component.init_component(__name__):
 
     from .alipay_client_installer import alipay_client_resource
     from .alipay_client_installer import alipay_client_config
+
+    def init():
+        add_application_sub_resource('alipay_client', lambda config: alipay_client_resource(**config))
 
     __all__ = [
         'EVENT_ALIPAY_TRADE_PAID',

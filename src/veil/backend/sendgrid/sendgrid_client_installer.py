@@ -3,8 +3,6 @@ from veil.profile.installer import *
 
 _config = None
 
-add_application_sub_resource('sendgrid_client', lambda config: sendgrid_client_resource(**config))
-
 
 @composite_installer
 def sendgrid_client_resource(username, password):
