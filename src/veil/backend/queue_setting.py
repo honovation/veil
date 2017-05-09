@@ -127,3 +127,18 @@ def job_worker_manager_program(worker_manager_name, pool_size, pyres_worker_logg
             }
         })
     return objectify(programs)
+
+
+def tasktiger_admin_program(host, port, broker_host, broker_port, broker_db=0):
+    return objectify({
+        'tasktiger_admin': {
+            'execute_command': 'tasktiger-admin -l {} -h {} -p {} -n {}'.format(port, broker_host, broker_port, broker_db),
+            'resources': [('veil.backend.queue.tasktiger_admin_resource', {
+                'host': host,
+                'port': port,
+                'broker_host': broker_host,
+                'broker_port': broker_port,
+                'broker_db': broker_db
+            })]
+        }
+    })
