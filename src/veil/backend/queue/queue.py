@@ -6,7 +6,7 @@ from datetime import timedelta, datetime
 import sys
 from pyres import ResQ
 from redis.client import Redis
-
+from tasktiger import TaskTiger
 from veil_component import VEIL_ENV
 from veil.utility.encoding import *
 from veil_installer import *
@@ -21,6 +21,8 @@ from .queue_client_installer import queue_client_resource
 LOGGER = getLogger(__name__)
 _current_queue = None
 
+ENQUEUE_AFTER_TIMEDELTA = timedelta(seconds=5)
+
 
 def register_queue():
     add_application_sub_resource('queue_client', lambda config: queue_client_resource(**config))
@@ -31,12 +33,11 @@ def require_queue():
     global _current_queue
     if _current_queue is None:
         config = queue_client_config()
+        redis = Redis(host=config.host, port=config.port)
         if 'redis' == config.type:
-            redis = Redis(host=config.host, port=config.port)
-            resq = ResQ(redis)
-            _current_queue = RedisQueue(resq)
+            _current_queue = TaskTiger(connection=redis)
         elif 'immediate' == config.type:
-            _current_queue = ImmediateQueue()
+            _current_queue = TaskTiger(connection=redis, config={'ALWAYS_EAGER': True})
         else:
             raise Exception('unknown queue type: {}'.format(config.type))
     return _current_queue
@@ -48,7 +49,6 @@ def release_queue():
     if _current_queue:
         if not VEIL_ENV.is_test:
             LOGGER.debug('close queue at exit: %(queue)s', {'queue': _current_queue})
-        _current_queue.close()
         _current_queue = None
 
 
@@ -174,7 +174,7 @@ def start_processing_jobs():
     if 'YES' != answer:
         print('WARNING: not started')
         return
-    require_queue().resq.redis.set('reserve_job', VEIL_ENV.name)
+    require_queue().connection.set('reserve_job', VEIL_ENV.name)
     print ('Started')
 
 
@@ -189,5 +189,5 @@ def stop_processing_jobs():
     if 'YES' != answer:
         print('WARNING: not stopped')
         return
-    require_queue().resq.redis.delete('reserve_job')
+    require_queue().connection.delete('reserve_job')
     print ('Stopped')

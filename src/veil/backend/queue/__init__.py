@@ -6,6 +6,7 @@ with veil_component.init_component(__name__):
     from .job import IgnorableInvalidJob
 
     from .queue import register_queue
+    from .queue import ENQUEUE_AFTER_TIMEDELTA
 
     from .queue_maintenance import count_failed_jobs
     from .queue_maintenance import delete_pending_jobs
@@ -25,6 +26,7 @@ with veil_component.init_component(__name__):
         IgnorableInvalidJob.__name__,
 
         register_queue.__name__,
+        'ENQUEUE_AFTER_TIMEDELTA',
 
         count_failed_jobs.__name__,
         delete_pending_jobs.__name__,
