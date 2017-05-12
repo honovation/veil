@@ -142,3 +142,34 @@ def tasktiger_admin_program(host, port, broker_host, broker_port, broker_db=0):
             })]
         }
     })
+
+
+def tasktiger_job_worker_program(worker_name, application_logging_levels, queue_host, queue_port, queue_names, application_config,
+                                 run_as=None, timeout=120):
+    veil_logging_level_config_path = VEIL_ETC_DIR / '{}-worker-log.cfg'.format(worker_name)
+    application_component_names = set(name for queue_name in queue_names for name in list_dynamic_dependency_providers('job', queue_name))
+    resources = [
+        veil_logging_level_config_resource(path=veil_logging_level_config_path, logging_levels=application_logging_levels),
+        component_resource(name='veil.backend.queue'),
+        application_resource(component_names=application_component_names, config=application_config)
+    ]
+    comma_separated_modules = ','.join(application_component_names)
+    comma_separated_queues = ','.join(queue_names)
+    program = {
+        worker_name: {
+            'execute_command': 'veil backend queue tasktiger {} {} {} {}'.format(queue_host, queue_port, comma_separated_modules, comma_separated_queues),
+            'environment_variables': {
+                'VEIL_LOGGING_LEVEL_CONFIG': veil_logging_level_config_path,
+                'VEIL_LOGGING_EVENT': 'True'
+            }, # log instruction for the sub-process forked from pyres_worker, a.k.a our code
+            'group': 'tasktiger-workers',
+            'run_as': run_as or CURRENT_USER,
+            'priority': 200,
+            'resources': resources,
+            'startretries': 10,
+            'startsecs': 5,
+            'redirect_stderr': False,
+            'patchable': True
+        }
+    }
+    return objectify(program)
