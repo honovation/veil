@@ -19,6 +19,7 @@ from veil.utility.encoding import *
 from veil.utility.misc import *
 from veil.utility.shell import *
 from veil.utility.xml import *
+from veil.backend.queue import *
 
 from .aisino_installer import AISINO_JAR_FILE_PATH, AISINO_LIBRARY_CONFIG_FILE_PATH, aisino_invoice_config, REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE
 
@@ -286,3 +287,11 @@ def record_request_and_response(req, rsp, interface_name, request_seq):
         f.write(to_str(req))
     with open(log_file_dir / response_log_file_name, mode='wb+') as f:
         f.write(to_str(rsp))
+
+
+@periodic_job('17 1 * * *')
+def clean_up_invoice_req_and_resp_logs_job():
+    if not REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE.exists():
+        return
+    shell_execute('find {} -type f -mtime +31 -delete'.format(REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE), capture=True)
+    shell_execute('find {} -type d -mtime +31 -delete'.format(REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE), capture=True)

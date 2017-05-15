@@ -8,13 +8,15 @@ from uuid import uuid4
 
 import lxml.objectify
 
-from veil.frontend.cli import script
+from veil.backend.queue import *
+from veil.frontend.cli import *
 from veil.model.event import *
 from veil.frontend.template import *
 from veil.model.collection import *
 from veil.utility.http import *
 from veil.utility.encoding import *
 from veil.utility.clock import *
+from veil.utility.shell import *
 from .yto_client_installer import yto_client_config, YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE
 
 LOGGER = logging.getLogger(__name__)
@@ -202,3 +204,11 @@ def record_yto_notification(logistics_id, raw_notification):
 @script('query-status')
 def query_logistics_status_script(trace_code):
     print(query_logistics_status(trace_code))
+
+
+@periodic_job('23 0 * * *')
+def clean_up_yto_incoming_request_files_job():
+    if not YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE.exists():
+        return
+    shell_execute('find {} -type f -mtime +30 -delete'.format(YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE), capture=True)
+    shell_execute('find {} -type d -mtime +30 -delete'.format(YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE), capture=True)

@@ -7,6 +7,7 @@ import re
 from hashlib import md5
 from uuid import uuid4
 
+from veil.backend.queue import *
 from veil.model.event import *
 from veil.model.binding import *
 from veil.utility.clock import *
@@ -15,6 +16,7 @@ from veil.model.collection import *
 from veil.utility.http import *
 from veil.utility.encoding import *
 from veil.utility.json import *
+from veil.utility.shell import *
 from veil_component import VEIL_ENV
 from .zto_client_installer import zto_client_config, ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE
 
@@ -214,3 +216,11 @@ def record_zto_notification(logistics_id, raw_notification):
     log_file_dir.makedirs()
     with open(log_file_dir / log_file_name, mode='wb+') as f:
         f.write(to_str(raw_notification))
+
+
+@periodic_job('25 0 * * *')
+def clean_up_zto_incoming_request_files_job():
+    if not ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE.exists():
+        return
+    shell_execute('find {} -type f -mtime +30 -delete'.format(ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE), capture=True)
+    shell_execute('find {} -type d -mtime +30 -delete'.format(ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE), capture=True)
