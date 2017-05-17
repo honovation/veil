@@ -223,4 +223,7 @@ def clean_up_zto_incoming_request_files_job():
     if not ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE.exists():
         return
     shell_execute('find {} -type f -mtime +30 -delete'.format(ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE), capture=True)
-    shell_execute('find {} -type d -mtime +30 -delete'.format(ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE), capture=True)
+    try:
+        shell_execute('find {} -type d -mtime +30 -delete'.format(ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE), capture=True)
+    except ShellExecutionError as err:
+        LOGGER.error('delete dir got error: %(output)s', {'output': err.output})
