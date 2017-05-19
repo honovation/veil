@@ -12,8 +12,10 @@ def nginx_resource(servers, config):
         directory_resource(path=VEIL_LOG_DIR / 'nginx', owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         file_resource(path=VEIL_ETC_DIR / 'nginx.conf',
                       content=render_config('nginx.conf.j2',
-                                            config=dict(config, owner=CURRENT_USER, owner_group=CURRENT_USER_GROUP, log_directory=VEIL_LOG_DIR / 'nginx',
-                                                        pid_file=NGINX_PID_PATH, servers=servers, DEFAULT_DNS_SERVERS=DEFAULT_DNS_SERVERS))),
+                                            config=dict(config, owner=CURRENT_USER, owner_group=CURRENT_USER_GROUP,
+                                                        log_directory=VEIL_LOG_DIR / 'nginx', pid_file=NGINX_PID_PATH,
+                                                        servers=servers, DEFAULT_DNS_SERVERS=DEFAULT_DNS_SERVERS,
+                                                        HTTP_STANDARD_PORT=80, HTTPS_STANDARD_PORT=443))),
         directory_resource(path=VEIL_BUCKET_UPLOADED_FILES_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770)
     ]
     resources.extend([

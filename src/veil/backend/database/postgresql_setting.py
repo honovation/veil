@@ -10,7 +10,7 @@ def postgresql_program(purpose, version, host, port, owner, owner_password, user
             'execute_command': '{}/postgres -D {}'.format(get_pg_bin_dir(version), get_pg_data_dir(purpose, version)),
             'migrate_command': 'veil backend database postgresql migrate {}'.format(purpose),
             'priority': 100,
-            'stop_signal': 'INT', # use the "fast" shutdown signal SIGINT
+            'stopsignal': 'INT',  # use the "fast" shutdown signal SIGINT
             'stopwaitsecs': 20,
             'resources': [('veil.backend.database.postgresql.postgresql_server_resource', {
                 'purpose': purpose,
@@ -29,7 +29,7 @@ def postgresql_program(purpose, version, host, port, owner, owner_password, user
                     'checkpoint_completion_target': checkpoint_completion_target,
                     'effective_cache_size': effective_cache_size,
                     'log_min_duration_statement': log_min_duration_statement,
-                    'log_filename': log_filename, # set to None, postgresql will rotate it for us
+                    'log_filename': log_filename,  # set to None, postgresql will rotate it for us
                     'enable_chinese_fts': enable_chinese_fts
                 }
             })]

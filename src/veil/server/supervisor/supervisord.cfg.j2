@@ -66,7 +66,7 @@ numprocs={{ program.get('process_count', 1) }}
 startsecs={{ program.get('startsecs', 3) }}
 startretries={{ program.get('startretries', 3) }}
 stopwaitsecs={{ program.get('stopwaitsecs', 10) }}
-stopsignal={{ program.get('stop_signal', 'TERM') }}
+stopsignal={{ program.get('stopsignal', 'TERM') }}
 exitcodes={{ ','.join(program.get('expected_exit_codes', '02')) }}
 redirect_stderr={{ 'true' if program.redirect_stderr else 'false' }}
 {% if program.redirect_stderr %}

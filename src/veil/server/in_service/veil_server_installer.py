@@ -38,8 +38,8 @@ def to_supervisor_programs(veil_server_programs):
             supervisor_program['startretries'] = veil_server_program.startretries
         if 'stopwaitsecs' in veil_server_program:
             supervisor_program['stopwaitsecs'] = veil_server_program.stopwaitsecs
-        if 'stop_signal' in veil_server_program:
-            supervisor_program['stop_signal'] = veil_server_program.stop_signal
+        if 'stopsignal' in veil_server_program:
+            supervisor_program['stopsignal'] = veil_server_program.stopsignal
         supervisor_programs[program_name] = supervisor_program
     return supervisor_programs
 
