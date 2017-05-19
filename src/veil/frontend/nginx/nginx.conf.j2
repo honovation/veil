@@ -150,6 +150,7 @@ http {
        location / {
             return 301 https://$host{% if server_properties['listen'] != config.HTTPS_STANDARD_PORT %}:{{ server_properties['listen'] }}{% endif %}$request_uri;
         }
+    }
      {% endif %}
 
     server {
