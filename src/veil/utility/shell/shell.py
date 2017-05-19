@@ -3,6 +3,7 @@ import shlex
 import subprocess
 import logging
 import os
+from veil.utility.encoding import *
 
 LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ def shell_execute(command_line, capture=False, waits=True, shell=True, debug=Fal
         raise
     if not waits:
         return process
-    output = process.communicate()[0]
+    output = to_unicode(process.communicate()[0])
     if capture and output:
         output = output.strip()
     if process.returncode not in expected_return_codes:

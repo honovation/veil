@@ -294,4 +294,7 @@ def clean_up_invoice_req_and_resp_logs_job():
     if not REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE.exists():
         return
     shell_execute('find {} -type f -mtime +31 -delete'.format(REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE), capture=True)
-    shell_execute('find {} -type d -mtime +31 -delete'.format(REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE), capture=True)
+    try:
+        shell_execute('find {} -type d -mtime +31 -delete'.format(REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE), capture=True)
+    except ShellExecutionError as err:
+        LOGGER.error('delete dir got error: %(output)s', {'output': err.output})

@@ -68,7 +68,7 @@ def perform(job_handler, payload):
     # restore datetime as utc timezone
     for key, value in payload.items():
         if isinstance(value, datetime):
-            payload[key] = convert_datetime_to_utc_timezone(value)
+            payload[key] = convert_datetime_to_utc_timezone(value, tzinfo=pytz.utc)
     try:
         return job_handler(**payload)
     except (IgnorableInvalidJob, AssertionError):
