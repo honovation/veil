@@ -229,11 +229,13 @@ http {
             default_type "text/plain";
             root /var/www/html;
         }
-        {% if default_server_name %}
         location / {
+            {% if default_server_name %}
             return 302 {{ 'https' if default_server_ssl else 'http' }}://$host{% if default_server_listen not in (config.HTTP_STANDARD_PORT, config.HTTPS_STANDARD_PORT) %}:{{ default_server_listen }}{% endif %}$request_uri;
+            {% else %}
+            return 444;
+            {% endif %}
         }
-        {% endif %}
     }
     {% endif %}
 }
