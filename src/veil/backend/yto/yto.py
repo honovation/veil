@@ -47,7 +47,7 @@ def sign_md5(data):
 
 def parse_logistics_notify(notify_data):
     root = lxml.objectify.fromstring(notify_data)
-    accepted_at = convert_datetime_to_client_timezone(parse(root.acceptTime.text))
+    accepted_at = convert_datetime_to_client_timezone(parse(root.acceptTime.text)).strftime('%Y-%m-%d %H:%M:%S')
     notification = DictObject(logistics_id=root.txLogisticID.text, client_id=root.clientID.text, accepted_at=accepted_at, info_type=root.infoType.text,
                               info_content=root.infoContent.text, status=root.infoContent.text, brief=STATUS2LABEL.get(root.infoContent.text),
                               is_delivered=False, is_signed=False, is_rejected=False)
