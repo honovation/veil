@@ -181,11 +181,10 @@ def process_logistics_notification(arguments):
     if signed:
         signed_by = arguments.data.contacts
     rejected = arguments.data.scanType == NOTIFICATION_REJECT_SCAN_TYPE
-    notified_at = convert_datetime_to_client_timezone(to_datetime()(arguments.data.scanDate))
     if signed or rejected:
         publish_event(EVENT_ZTO_LOGISTICS_NOTIFICATION_RECEIVED, purchase_id=arguments.purchase_id, box_id=arguments.box_id,
                       status_code=arguments.data.scanType, brief=arguments.data.desc, signed=signed, signed_by=signed_by, rejected=rejected,
-                      notified_at=notified_at)
+                      notified_at=arguments.data.scanDate)
     return DictObject(message='', result='success', status=True, statusCode='0')
 
 
