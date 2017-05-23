@@ -1,13 +1,14 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
+from veil.server.certbot_setting import certbot_program
 
 NGINX_PID_PATH = '/tmp/nginx.pid'
 
 
 def nginx_program(servers, enable_compression=False, base_domain_names=(), has_bunker=False, is_bunker=False,
-                  bunker_ip=None, **kwargs):
+                  bunker_ip=None, certbot_crontab_expression=None, **kwargs):
     assert len([name for name, properties in servers.items() if properties['default_server']]) <= 1
-    return objectify({
+    settings = objectify({
         'nginx': {
             'execute_command': 'nginx -c {}'.format(VEIL_ETC_DIR / 'nginx.conf'),
             'run_as': 'root',
@@ -26,6 +27,10 @@ def nginx_program(servers, enable_compression=False, base_domain_names=(), has_b
             'stopwaitsecs': 20
         }
     })
+    if any(properties['use_certbot'] for properties in servers.values()):
+        assert certbot_crontab_expression
+        settings.update(certbot_program(certbot_crontab_expression))
+    return settings
 
 
 def nginx_server(server_name, listen, locations, upstreams=None, error_page=None, error_page_dir=None, ssl=False,

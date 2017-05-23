@@ -20,6 +20,7 @@ from __future__ import unicode_literals, print_function, division
 
 from veil.frontend.cli import *
 from veil.utility.shell import *
+from veil.utility.timer import *
 from veil.environment import get_application
 
 RELOAD_NGINX_CMD = 'veil server supervisor reload-nginx'
@@ -44,3 +45,12 @@ def certonly(domain_name, staging=False):
 @script('renew')
 def renew():
     shell_execute('certbot renew --quiet --rsa-key-size 4096 --post-hook "{}"'.format(RELOAD_NGINX_CMD), capture=True)
+
+
+@script('renew-termly')
+def renew_termly(crontab_expression):
+    @run_every(crontab_expression)
+    def work():
+        renew()
+
+    work()
