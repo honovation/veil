@@ -224,7 +224,7 @@ http {
         }
         location / {
             {% for server_name, server_properties in config.servers.items() if server_properties['default_server'] %}
-            return 302 {{ 'https' if server_properties['ssl'] else 'http' }}://{{ server_name }}{% if server_properties['listen'] not in (config.HTTP_STANDARD_PORT, config.HTTPS_STANDARD_PORT) %}:{{ server_properties['listen'] }}{% endif %}$request_uri;
+            return 302 {{ 'https' if server_properties['ssl'] else 'http' }}://{{ server_name }}{% if server_properties['listen'] not in (config.HTTP_STANDARD_PORT, config.HTTPS_STANDARD_PORT) %}:{{ server_properties['listen'] }}{% endif %}/;
             {% else %}
             return 444;
             {% endfor %}
