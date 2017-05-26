@@ -36,7 +36,7 @@ def install():
 def certonly(domain_name, staging=False):
     staging_option = '--staging' if staging else ''
     email = get_application().CERTBOT_EMAIL
-    cmd = 'certbot certonly {} --quiet --non-interactive --no-eff-email --agree-tos --email {} --keep-until-expiring ' \
+    cmd = 'certbot certonly {} --non-interactive --no-eff-email --agree-tos --email {} --keep-until-expiring ' \
           '--allow-subset-of-names --expand --renew-with-new-domains --rsa-key-size 4096 --must-staple --webroot ' \
           '-w /var/www/html/ -d {} --post-hook "{}"'.format(staging_option, email, domain_name, RELOAD_NGINX_CMD)
     shell_execute(cmd, capture=True)
@@ -44,7 +44,7 @@ def certonly(domain_name, staging=False):
 
 @script('renew')
 def renew():
-    shell_execute('certbot renew --quiet --rsa-key-size 4096 --post-hook "{}"'.format(RELOAD_NGINX_CMD), capture=True)
+    shell_execute('certbot renew --rsa-key-size 4096 --post-hook "{}"'.format(RELOAD_NGINX_CMD), capture=True)
 
 
 @script('renew-termly')
