@@ -17,3 +17,4 @@ with veil_component.init_component(__name__):
     from veil.backend.redis import *
     from veil.backend.queue import *
     from veil.backend.bucket import *
+    from veil.backend.job_queue import *
