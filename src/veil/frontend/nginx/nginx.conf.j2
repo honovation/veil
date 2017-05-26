@@ -155,7 +155,7 @@ http {
         {% else %}
         access_log off;
         {% endif %}
-        {% if config.HTTP_STANDARD_PORT in server_properties['additional_listens'] %}
+        {% if server_properties['listen'] == config.HTTP_STANDARD_PORT or config.HTTP_STANDARD_PORT in server_properties['additional_listens'] %}
             location ^~ /.well-known/ {
                 allow all;
                 default_type "text/plain";
