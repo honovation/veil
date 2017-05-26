@@ -133,13 +133,11 @@ http {
     server {
         server_name {{ server_name }};
         listen {{ config.HTTP_STANDARD_PORT }}{% if server_properties['default_server'] %} default_server reuseport{% endif %};
-        {% if server_properties['use_certbot'] %}
         location ^~ /.well-known/ {
             allow all;
             default_type "text/plain";
             root /var/www/html;
         }
-        {% endif %}
        location / {
             return 301 https://$host{% if server_properties['listen'] != config.HTTPS_STANDARD_PORT %}:{{ server_properties['listen'] }}{% endif %}$request_uri;
         }
@@ -157,22 +155,21 @@ http {
         {% else %}
         access_log off;
         {% endif %}
+        {% if config.HTTP_STANDARD_PORT in server_properties['additional_listens'] %}
+            location ^~ /.well-known/ {
+                allow all;
+                default_type "text/plain";
+                root /var/www/html;
+            }
+        {% endif %}
         {% if server_properties['use_certbot'] %}
             ssl_certificate /etc/letsencrypt/live/{{ server_name }}/fullchain.pem;
             ssl_certificate_key /etc/letsencrypt/live/{{ server_name }}/privkey.pem;
             ssl_trusted_certificate /etc/letsencrypt/live/{{ server_name }}/chain.pem;
             ssl_stapling on;
             ssl_stapling_verify on;
-
-            {% if config.HTTP_STANDARD_PORT in server_properties['additional_listens'] %}
-                location ^~ /.well-known/ {
-                    allow all;
-                    default_type "text/plain";
-                    root /var/www/html;
-                }
-            {% endif %}
         {% endif %}
-        {% for key, value in server_properties.items() if key not in ('ssl', 'use_certbot', 'default_server') %}
+        {% for key, value in server_properties.items() if key not in ('ssl', 'use_certbot', 'default_server') and (not server_properties['use_certbot'] or key not in ('ssl_certificate', 'ssl_certificate_key', 'ssl_trusted_certificate', 'ssl_stapling', 'ssl_stapling_verify')) %}
             {% if 'locations' == key %}
                 {% for location, location_properties in value.items() %}
                 location {{ location }} {
