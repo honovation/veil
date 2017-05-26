@@ -64,10 +64,3 @@ class Worker(pyres.worker.Worker):
         if is_jobs_given_up(self.resq.redis):
             return None
         return super(Worker, self).reserve(timeout=timeout)
-
-
-@script('tasktiger')
-def tasktiger_worker_script(host, port, modules, queues):
-    conn = redis.Redis(host=host, port=int(port or 6379), decode_responses=True)
-    tiger = TaskTiger(setup_structlog=True, connection=conn)
-    tiger.run_worker(queues=queues, module=modules)

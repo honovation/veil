@@ -6,10 +6,11 @@ from .queue_client_installer import queue_client_resource
 
 with veil_component.init_component(__name__):
 
-    from .job_queue import task
+    from .job_queue import task, periodic
 
     __all__ = [
         task.__name__,
+        periodic.__name__,
     ]
 
     def init():

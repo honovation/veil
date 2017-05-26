@@ -4,10 +4,14 @@ from __future__ import unicode_literals, print_function, division
 import inspect
 import logging
 import functools
-
 from datetime import timedelta
+from flask import Flask
+from flask_admin import Admin
+from tasktiger_admin import TaskTigerView, tasktiger_admin
 from tasktiger import TaskTiger
+from tasktiger import periodic as _periodic
 from redis import Redis
+from veil.frontend.cli import *
 from veil.model.event import *
 from veil.server.process import *
 from veil.utility.json import *
@@ -20,6 +24,8 @@ LOGGER = logging.getLogger(__name__)
 ENQUEUE_AFTER_TIMEDELTA = timedelta(seconds=5)
 DEFAULT_QUEUE_NAME = 'default'
 
+periodic = _periodic
+
 
 @event(EVENT_PROCESS_TEARDOWN)
 def release_queue():
@@ -27,6 +33,20 @@ def release_queue():
     if ins:
         if not VEIL_ENV.is_test:
             LOGGER.debug('close queue at exit: %(queue)s', {'queue': ins})
+
+
+@script('worker')
+def job_queue_worker_script(modules, queues):
+    JobQueue.instance().run_worker(queues=queues, module=modules)
+
+
+@script('admin')
+def job_queue_admin_script(listen_host, listen_port):
+    app = Flask(__name__)
+    app.register_blueprint(tasktiger_admin)
+    admin = Admin(app, url='/')
+    admin.add_view(TaskTigerView(JobQueue.instance(), name='TaskTiger', endpoint='tasktiger'))
+    app.run(host=listen_host, port=int(listen_port))
 
 
 class JobQueue(TaskTiger):
@@ -68,7 +88,8 @@ class JobQueue(TaskTiger):
                                            lock_key=lock_key, when=when, retry=retry, retry_on=retry_on, retry_method=retry_method)
 
 
-def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=None, unique=None, lock=None, lock_key=None, retry=None, retry_on=None, retry_method=None, batch=False):
+def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=None, unique=None, lock=None, lock_key=None, retry=None, retry_on=None, retry_method=None, schedule=None,
+         batch=False):
 
     job_queue = JobQueue.instance()
 
@@ -97,35 +118,19 @@ def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=None, unique=None, lock=None, lo
                 frm = inspect.stack()[1]
                 mod = inspect.getmodule(frm[0])
                 if mod.__name__ == 'tasktiger.worker':
-                    a = [from_json(a) for a in _args[0]['a']]
-                    k = {k: from_json(v) for k, v in _args[0]['k']}
+                    a = [from_json(a) for a in _args[0]['a']] if _args else ()
+                    k = {k: from_json(v) for k, v in _args[0]['k']} if _args else {}
                 else:
                     a = _args
                     k = _kwargs
                 return f(*a, **k)
 
-            if hard_timeout is not None:
-                func_wrapper._task_hard_timeout = hard_timeout
-            func_wrapper._task_queue = queue
-            if unique is not None:
-                func_wrapper._task_unique = unique
-            if lock is not None:
-                func_wrapper._task_lock = lock
-            if lock_key is not None:
-                func_wrapper._task_lock_key = lock_key
-            if retry is not None:
-                func_wrapper._task_retry = retry
-            if retry_on is not None:
-                func_wrapper._task_retry_on = retry_on
-            if retry_method is not None:
-                func_wrapper._task_retry_method = retry_method
-            if batch is not None:
-                func_wrapper._task_batch = batch
+            _func_wrapper = job_queue.task(queue=queue, hard_timeout=hard_timeout, unique=unique, lock=lock, lock_key=lock_key, retry=retry, retry_on=retry_on,
+                                           retry_method=retry_method, schedule=schedule, batch=batch)(func_wrapper)
+            _func_wrapper.delay = _delay(_func_wrapper)
+            _func_wrapper.delay_when = _delay(_func_wrapper, when=ENQUEUE_AFTER_TIMEDELTA)
 
-            func_wrapper.delay = _delay(func_wrapper)
-            func_wrapper.delay_when = _delay(func_wrapper, when=ENQUEUE_AFTER_TIMEDELTA)
-
-            return func_wrapper
+            return _func_wrapper
 
         return _wrap(func)
 
