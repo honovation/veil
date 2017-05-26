@@ -127,16 +127,9 @@ http {
         {% endfor %}
     {% endfor %}
 
-    {% set default_server_name = '' %}
     {% for server_name, server_properties in config.servers.items() %}
-    {% if server_properties['default_server'] %}
-        {% set default_server_name = server_name %}
-        {% set default_server_ssl = server_properties['ssl'] %}
-        {% set default_server_listen = server_properties['listen'] %}
-    {% endif %}
-    {% set listened_on_http_standard_port = config.HTTP_STANDARD_PORT == server_properties['listen'] or config.HTTP_STANDARD_PORT in server_properties['additional_listens'] %}
 
-    {% if server_properties['ssl'] and not listened_on_http_standard_port %}
+    {% if server_properties['ssl'] and config.HTTP_STANDARD_PORT not in server_properties['additional_listens'] %}
     server {
         server_name {{ server_name }};
         listen {{ config.HTTP_STANDARD_PORT }}{% if server_properties['default_server'] %} default_server reuseport{% endif %};
@@ -151,7 +144,7 @@ http {
             return 301 https://$host{% if server_properties['listen'] != config.HTTPS_STANDARD_PORT %}:{{ server_properties['listen'] }}{% endif %}$request_uri;
         }
     }
-     {% endif %}
+    {% endif %}
 
     server {
         server_name {{ server_name }};
@@ -171,7 +164,7 @@ http {
             ssl_stapling on;
             ssl_stapling_verify on;
 
-            {% if listened_on_http_standard_port %}
+            {% if config.HTTP_STANDARD_PORT in server_properties['additional_listens'] %}
                 location ^~ /.well-known/ {
                     allow all;
                     default_type "text/plain";
@@ -230,11 +223,11 @@ http {
             root /var/www/html;
         }
         location / {
-            {% if default_server_name %}
-            return 302 {{ 'https' if default_server_ssl else 'http' }}://$host{% if default_server_listen not in (config.HTTP_STANDARD_PORT, config.HTTPS_STANDARD_PORT) %}:{{ default_server_listen }}{% endif %}$request_uri;
+            {% for server_name, server_properties in config.servers.items() if server_properties['default_server'] %}
+            return 302 {{ 'https' if server_properties['ssl'] else 'http' }}://{{ server_name }}{% if server_properties['listen'] not in (config.HTTP_STANDARD_PORT, config.HTTPS_STANDARD_PORT) %}:{{ server_properties['listen'] }}{% endif %}/;
             {% else %}
             return 444;
-            {% endif %}
+            {% endfor %}
         }
     }
     {% endif %}
