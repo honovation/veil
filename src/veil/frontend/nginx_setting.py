@@ -35,7 +35,7 @@ def nginx_program(servers, enable_compression=False, base_domain_names=(), has_b
 
 def nginx_server(server_name, listen, locations, upstreams=None, error_page=None, error_page_dir=None, ssl=False,
                  use_certbot=False, default_server=False, additional_listens=(), **kwargs):
-    assert not use_certbot or ssl and not any(k in kwargs and kwargs['k'] for k in ('ssl_certificate', 'ssl_certificate_key', 'ssl_trusted_certificate', 'ssl_stapling', 'ssl_stapling_verify'))
+    assert not use_certbot or ssl
     return {
         server_name: dict({
             'listen': int(listen),

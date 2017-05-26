@@ -172,7 +172,7 @@ http {
                 }
             {% endif %}
         {% endif %}
-        {% for key, value in server_properties.items() if key not in ('ssl', 'use_certbot', 'default_server') %}
+        {% for key, value in server_properties.items() if key not in ('ssl', 'use_certbot', 'default_server') and (not server_properties['use_certbot'] or key not in ('ssl_certificate', 'ssl_certificate_key', 'ssl_trusted_certificate', 'ssl_stapling', 'ssl_stapling_verify')) %}
             {% if 'locations' == key %}
                 {% for location, location_properties in value.items() %}
                 location {{ location }} {
