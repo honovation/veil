@@ -36,13 +36,15 @@ def website_upstreams(purpose, start_port, process_count):
     } for i in range(process_count)]}
 
 
-def website_locations(purpose, has_bunker=False, is_api_only=False, intranet_cidr_list=None, max_upload_file_size='1m', extra_headers=(), extra_locations=None,
-                      valid_referer_domains=None):
+def website_locations(purpose, has_bunker=False, enable_hsts=False, is_api_only=False, intranet_cidr_list=None,
+                      max_upload_file_size='1m', extra_locations=None, valid_referer_domains=None):
+    hsts_header = 'add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";' if enable_hsts else ''
     if is_api_only:
         common_setting = '''
-            proxy_pass http://{}-tornado;
+            add_header X-Content-Type-Options nosniff;
             {}
-            '''.format(purpose, '\n'.join(extra_headers))
+            proxy_pass http://{}-tornado;
+            '''.format(hsts_header, purpose)
         if intranet_cidr_list:
             intranet_only = '''
                 {}
@@ -72,12 +74,13 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, intranet_cid
             }
         return locations
 
-    extra_headers = '''
+    headers = '''
+        add_header X-Content-Type-Options nosniff;
         add_header X-Frame-Options SAMEORIGIN;
         add_header X-XSS-Protection "1; mode=block";
         add_header X-UA-Compatible "IE=Edge,chrome=1";
         {}
-        '''.format('\n'.join(extra_headers))
+        '''.format(hsts_header)
     if valid_referer_domains:
         stop_referring = '''
             valid_referers none blocked {};
@@ -132,7 +135,7 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, intranet_cid
             '_': '''
                 proxy_pass http://{}-tornado;
                 {}
-                '''.format(purpose, extra_headers)
+                '''.format(purpose, headers)
         },
         '^~ /fupload/': {
             '_': '''
@@ -142,21 +145,13 @@ def website_locations(purpose, has_bunker=False, is_api_only=False, intranet_cid
                 proxy_set_header X-UPLOAD-FILE-PATH $request_body_file;
                 proxy_set_body off;
                 proxy_pass http://{}-tornado;
-                {}
-            '''.format(max_upload_file_size, VEIL_BUCKET_UPLOADED_FILES_DIR, purpose, extra_headers)
-        },
-        '^~ /fupload-/': {
-            '_': '''
-                client_max_body_size {};
-                proxy_pass http://{}-tornado;
-                {}
-                '''.format(max_upload_file_size, purpose, extra_headers)
+            '''.format(max_upload_file_size, VEIL_BUCKET_UPLOADED_FILES_DIR, purpose)
         },
         '/': {
             '_': '''
                 proxy_pass http://{}-tornado;
                 {}
-                '''.format(purpose, extra_headers)
+                '''.format(purpose, headers)
         },
         # inline static files
         # /static/v-xx-xx/a-b.js

@@ -52,9 +52,6 @@ http {
     resolver {{ config.DEFAULT_DNS_SERVERS |join(' ') }} valid=300s ipv6=off;
     resolver_timeout 10s;
 
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";
-    add_header X-Content-Type-Options nosniff;
-
     {% if config.enable_compression %}
         gzip on;
         # Enable compression both for HTTP/1.0 and HTTP/1.1 (required for CloudFront).

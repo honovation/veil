@@ -36,7 +36,8 @@ def nginx_program(servers, enable_compression=False, base_domain_names=(), has_b
 def nginx_server(server_name, listen, locations, ssl=False, use_certbot=False, default_server=False,
                  additional_http_listens=None, additional_https_listens=None, upstreams=None, error_page=None,
                  error_page_dir=None, **kwargs):
-    ssl = ssl or listen == 443
+    assert ssl and listen != 80 or not ssl and listen != 443
+
     http_listens = additional_http_listens or []
     https_listens = additional_https_listens or []
     if ssl:
