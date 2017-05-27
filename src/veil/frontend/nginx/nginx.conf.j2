@@ -129,7 +129,7 @@ http {
 
     {% for server_name, server_properties in config.servers.items() %}
 
-    {% if server_properties['ssl'] and config.HTTP_STANDARD_PORT not in server_properties['additional_listens'] %}
+    {% if server_properties['ssl'] and config.HTTP_STANDARD_PORT not in server_properties['http_listens'] %}
     server {
         server_name {{ server_name }};
         listen {{ config.HTTP_STANDARD_PORT }}{% if server_properties['default_server'] %} default_server reuseport{% endif %};
@@ -139,7 +139,11 @@ http {
             root /var/www/html;
         }
        location / {
-            return 301 https://$host{% if server_properties['listen'] != config.HTTPS_STANDARD_PORT %}:{{ server_properties['listen'] }}{% endif %}$request_uri;
+            {% if config.HTTPS_STANDARD_PORT in server_properties['https_listens'] %}
+            return 301 https://$host$request_uri;
+            {% else %}
+            return 301 https://$host:{{ server_properties['https_listens'][0] }}$request_uri;
+            {% endif %}
         }
     }
     {% endif %}
@@ -155,7 +159,7 @@ http {
         {% else %}
         access_log off;
         {% endif %}
-        {% if server_properties['listen'] == config.HTTP_STANDARD_PORT or config.HTTP_STANDARD_PORT in server_properties['additional_listens'] %}
+        {% if config.HTTP_STANDARD_PORT in server_properties['http_listens'] %}
             location ^~ /.well-known/ {
                 allow all;
                 default_type "text/plain";
@@ -169,7 +173,7 @@ http {
             ssl_stapling on;
             ssl_stapling_verify on;
         {% endif %}
-        {% for key, value in server_properties.items() if key not in ('ssl', 'use_certbot', 'default_server') and (not server_properties['use_certbot'] or key not in ('ssl_certificate', 'ssl_certificate_key', 'ssl_trusted_certificate', 'ssl_stapling', 'ssl_stapling_verify')) %}
+        {% for key, value in server_properties.items() if not (key in ('ssl', 'use_certbot', 'default_server') or server_properties['use_certbot'] and key in ('ssl_certificate', 'ssl_certificate_key', 'ssl_trusted_certificate', 'ssl_stapling', 'ssl_stapling_verify')) %}
             {% if 'locations' == key %}
                 {% for location, location_properties in value.items() %}
                 location {{ location }} {
@@ -182,11 +186,13 @@ http {
                     {% endfor %}
                 }
                 {% endfor %}
-            {% elif 'listen' == key %}
-                listen {{ value }}{% if server_properties['ssl'] %} ssl http2{% endif %}{% if server_properties['default_server'] %} default_server reuseport{% endif %};
-            {% elif 'additional_listens' == key %}
+            {% elif 'http_listens' == key %}
                 {% for listen in value %}
                     listen {{ listen }}{% if server_properties['default_server'] %} default_server reuseport{% endif %};
+                {% endfor %}
+            {% elif 'https_listens' == key %}
+                {% for listen in value %}
+                    listen {{ listen }} ssl http2{% if server_properties['default_server'] %} default_server reuseport{% endif %};
                 {% endfor %}
             {% elif 'upstreams' == key %}
                 {# skip this #}
@@ -221,9 +227,21 @@ http {
         }
         location / {
             {% for server_name, server_properties in config.servers.items() if server_properties['default_server'] %}
-            return 302 {{ 'https' if server_properties['ssl'] else 'http' }}://{{ server_name }}{% if server_properties['listen'] not in (config.HTTP_STANDARD_PORT, config.HTTPS_STANDARD_PORT) %}:{{ server_properties['listen'] }}{% endif %}/;
+                {% if server_properties['ssl'] %}
+                    {% if config.HTTPS_STANDARD_PORT in server_properties['https_listens'] %}
+                    return 302 https://{{ server_name }}/;
+                    {% else %}
+                    return 302 https://{{ server_name }}:{{ server_properties['https_listens'][0] }}/;
+                    {% endif %}
+                {% else %}
+                    {% if config.HTTP_STANDARD_PORT in server_properties['http_listens'] %}
+                    return 302 http://{{ server_name }}/;
+                    {% else %}
+                    return 302 http://{{ server_name }}:{{ server_properties['http_listens'][0] }}/;
+                    {% endif %}
+                {% endif %}
             {% else %}
-            return 444;
+                return 444;
             {% endfor %}
         }
     }

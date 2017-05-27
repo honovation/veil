@@ -33,20 +33,31 @@ def nginx_program(servers, enable_compression=False, base_domain_names=(), has_b
     return settings
 
 
-def nginx_server(server_name, listen, locations, upstreams=None, error_page=None, error_page_dir=None, ssl=False,
-                 use_certbot=False, default_server=False, additional_listens=(), **kwargs):
-    assert not use_certbot or ssl
+def nginx_server(server_name, listen, locations, ssl=False, use_certbot=False, default_server=False,
+                 additional_http_listens=None, additional_https_listens=None, upstreams=None, error_page=None,
+                 error_page_dir=None, **kwargs):
+    ssl = ssl or listen == 443
+    http_listens = additional_http_listens or []
+    https_listens = additional_https_listens or []
+    if ssl:
+        https_listens.insert(0, listen)
+    else:
+        http_listens.insert(0, listen)
+
+    assert http_listens or https_listens
+    assert not use_certbot or https_listens
+
     return {
         server_name: dict({
-            'listen': int(listen),
-            'additional_listens': tuple(int(listen) for listen in additional_listens),
+            'http_listens': http_listens,
+            'https_listens': https_listens,
+            'ssl': ssl,
+            'use_certbot': use_certbot,
+            'default_server': default_server,
             'locations': locations,
             'upstreams': upstreams,
             'error_page': error_page,
-            'error_page_dir': error_page_dir,
-            'ssl': ssl,
-            'use_certbot': use_certbot,
-            'default_server': default_server
+            'error_page_dir': error_page_dir
         }, **kwargs)
     }
 

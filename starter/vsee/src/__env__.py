@@ -51,7 +51,8 @@ def resweb_program(config):
 
 
 def resweb_nginx_server(config):
-    return nginx_server(config.resweb_domain, config.resweb_domain_port, {'/': nginx_reverse_proxy_location(config.resweb_host, config.resweb_port)})
+    locations = {'/': nginx_reverse_proxy_location(config.resweb_host, config.resweb_port)}
+    return nginx_server(config.resweb_domain, config.resweb_domain_port, locations=locations)
 
 
 _queue_program = queue_program
