@@ -12,8 +12,8 @@ from .kuaidi100_client_installer import kuaidi100_client_config
 
 LOGGER = logging.getLogger(__name__)
 
-API_URL = 'http://api.kuaidi100.com/api'
-WEB_URL_TEMPLATE = 'http://www.kuaidi100.com/chaxun?com={}&nu={}'
+API_URL = 'https://api.kuaidi100.com/api'
+WEB_URL_TEMPLATE = 'https://www.kuaidi100.com/chaxun?com={}&nu={}'
 
 STATUS_NO_INFO_YET = '0'  # 物流单暂无结果
 STATUS_QUERY_SUCCESS = '1'  # 查询成功
