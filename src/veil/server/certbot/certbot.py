@@ -23,6 +23,8 @@ from veil.utility.shell import *
 from veil.utility.timer import *
 from veil.environment import get_application
 
+RELOAD_NGINX_CMD = 'veil server supervisor reload-nginx'
+
 
 @script('install')
 def install():
@@ -31,7 +33,7 @@ def install():
 
 
 @script('certonly')
-def certonly(domain_name, staging=False):
+def certonly(domain_name, staging='FALSE'):
     staging_option = '--staging' if staging == 'TRUE' else ''
     email = get_application().CERTBOT_EMAIL
     cmd = 'certbot certonly {} --non-interactive --no-eff-email --agree-tos --email {} --keep-until-expiring ' \
@@ -41,8 +43,10 @@ def certonly(domain_name, staging=False):
 
 
 @script('renew')
-def renew():
-    shell_execute('certbot renew --rsa-key-size 2048 --post-hook "veil server supervisor reload-nginx"', capture=True)
+def renew(force='FALSE'):
+    force_option = '--force-renewal' if force == 'TRUE' else ''
+    shell_execute('certbot renew {} --rsa-key-size 2048 --post-hook "{}"'.format(force_option, RELOAD_NGINX_CMD),
+                  capture=True)
 
 
 @script('renew-termly')
