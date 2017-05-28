@@ -35,14 +35,14 @@ def certonly(domain_name, staging=False):
     staging_option = '--staging' if staging == 'TRUE' else ''
     email = get_application().CERTBOT_EMAIL
     cmd = 'certbot certonly {} --non-interactive --no-eff-email --agree-tos --email {} --keep-until-expiring ' \
-          '--allow-subset-of-names --expand --renew-with-new-domains --rsa-key-size 4096 --webroot -w /var/www/html/ ' \
+          '--allow-subset-of-names --expand --renew-with-new-domains --rsa-key-size 2048 --webroot -w /var/www/html/ ' \
           '-d {}'.format(staging_option, email, domain_name)
     shell_execute(cmd, capture=True)
 
 
 @script('renew')
 def renew():
-    shell_execute('certbot renew --rsa-key-size 4096 --post-hook "veil server supervisor reload-nginx"', capture=True)
+    shell_execute('certbot renew --rsa-key-size 2048 --post-hook "veil server supervisor reload-nginx"', capture=True)
 
 
 @script('renew-termly')
