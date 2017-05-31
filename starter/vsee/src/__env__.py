@@ -51,7 +51,8 @@ def resweb_program(config):
 
 
 def resweb_nginx_server(config):
-    return nginx_server(config.resweb_domain, config.resweb_domain_port, {'/': nginx_reverse_proxy_location(config.resweb_host, config.resweb_port)})
+    locations = {'/': nginx_reverse_proxy_location(config.resweb_host, config.resweb_port)}
+    return nginx_server(config.resweb_domain, config.resweb_domain_port, locations=locations)
 
 
 _queue_program = queue_program
@@ -128,7 +129,7 @@ def person_website_programs(config):
 
 
 def person_website_nginx_server(config, extra_locations=None):
-    locations = website_locations('person', VEIL_ENV.is_prod or VEIL_ENV.is_staging, max_upload_file_size=PERSON_WEBSITE_MAX_UPLOAD_FILE_SIZE)
+    locations = website_locations('person', max_upload_file_size=PERSON_WEBSITE_MAX_UPLOAD_FILE_SIZE)
     locations = merge_multiple_settings(locations, extra_locations or {}, website_bucket_locations(PERSON_WEBSITE_BUCKETS))
     return nginx_server(config.person_website_domain, config.person_website_domain_port, locations=locations,
         upstreams=website_upstreams('person', config.person_website_start_port, config.person_website_process_count),
@@ -182,7 +183,7 @@ def vsee_config(config):
         vsee_config_['{}_bucket'.format(purpose)] = {
             'type': 'filesystem',
             'base_directory': VEIL_BUCKETS_DIR / purpose.replace('_', '-'),
-            'base_url': 'http://{}/buckets/{}'.format(person_website_authority, purpose.replace('_', '-')),
+            'base_url': '//{}/buckets/{}'.format(person_website_authority, purpose.replace('_', '-')),
         }
     for purpose in POSTGRESQL_CLIENTS:
         vsee_config_['{}_database_client'.format(purpose)] = {
