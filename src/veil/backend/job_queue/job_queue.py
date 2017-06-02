@@ -4,7 +4,8 @@ from __future__ import unicode_literals, print_function, division
 import inspect
 import logging
 import functools
-from datetime import timedelta
+from datetime import timedelta, datetime
+from croniter.croniter import croniter
 from flask import Flask
 from flask_admin import Admin
 from tasktiger_admin import TaskTigerView, tasktiger_admin
@@ -25,6 +26,10 @@ ENQUEUE_AFTER_TIMEDELTA = timedelta(seconds=5)
 DEFAULT_QUEUE_NAME = 'default'
 
 periodic = _periodic
+
+
+def cron_expr(cron_expression):
+    return lambda dt, expr: croniter(expr, start_time=dt).get_next(ret_type=datetime), (cron_expression, )
 
 
 @event(EVENT_PROCESS_TEARDOWN)
