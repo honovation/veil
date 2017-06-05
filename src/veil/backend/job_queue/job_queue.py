@@ -9,7 +9,7 @@ from croniter.croniter import croniter
 from flask import Flask
 from flask_admin import Admin
 from tasktiger_admin import TaskTigerView, tasktiger_admin
-from tasktiger import TaskTiger
+from tasktiger import TaskTiger, JobTimeoutException, fixed, linear, exponential
 from tasktiger import periodic as _periodic
 from redis import Redis
 from veil.frontend.cli import *
@@ -93,8 +93,8 @@ class JobQueue(TaskTiger):
                                            lock_key=lock_key, when=when, retry=retry, retry_on=retry_on, retry_method=retry_method)
 
 
-def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=None, unique=None, lock=None, lock_key=None, retry=None, retry_on=None, retry_method=None, schedule=None,
-         batch=False):
+def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=None, lock=None, lock_key=None, retry=True, retry_on=(JobTimeoutException, Exception),
+         retry_method=exponential(60, 2, 3), schedule=None, batch=False):
 
     job_queue = JobQueue.instance()
 
