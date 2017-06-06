@@ -7,7 +7,7 @@ import re
 from hashlib import md5
 from uuid import uuid4
 
-from veil.backend.queue import *
+from veil.backend.job_queue import *
 from veil.model.event import *
 from veil.model.binding import *
 from veil.utility.clock import *
@@ -217,8 +217,8 @@ def record_zto_notification(logistics_id, raw_notification):
         f.write(to_str(raw_notification))
 
 
-@periodic_job('25 0 * * *')
-def clean_up_zto_incoming_request_files_job():
+@task(queue='clean_up_zto_incoming_request_files', schedule=cron_expr('25 0 * * *'))
+def clean_up_zto_incoming_request_files():
     if not ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE.exists():
         return
     shell_execute('find {} -type f -mtime +30 -delete'.format(ZTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE), capture=True)

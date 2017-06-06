@@ -6,7 +6,7 @@ from datetime import timedelta
 import functools
 import logging
 import uuid
-from veil.backend.queue import *
+from veil.backend.job_queue import *
 from veil.utility.pillow import *
 from veil.utility.shell import *
 from veil.frontend.template import *
@@ -106,8 +106,8 @@ def captcha_bucket_key(challenge_code):
     return '{}/{}.gif'.format(challenge_code[:2], challenge_code[2:])
 
 
-@periodic_job('11 * * * *')
-def clean_up_captcha_images_job():
+@task(queue='clean_up_captcha_images', schedule=cron_expr('11 * * * *'))
+def clean_up_captcha_images():
     if not isinstance(bucket(), FilesystemBucket):
         LOGGER.warn('failed as captcha images are not saved in file-system-based bucket')
         return

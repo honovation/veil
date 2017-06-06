@@ -7,7 +7,7 @@ from markupsafe import Markup
 from veil.environment import *
 from veil_component import as_path
 from veil.utility.shell import *
-from veil.backend.queue import *
+from veil.backend.job_queue import *
 from veil.utility.misc import *
 from veil.utility.encoding import *
 from veil.frontend.template import *
@@ -120,8 +120,8 @@ def write_inline_static_file(page_handler, suffix, content):
     return 'v-{}-{}/{}'.format(hash[:2], hash[2:], pseudo_file_name)
 
 
-@periodic_job('13 1 * * *')
-def clean_up_inline_static_files_job():
+@task(queue='clean_up_inline_static_files', schedule=cron_expr('13 1 * * *'))
+def clean_up_inline_static_files():
     if not VEIL_BUCKET_INLINE_STATIC_FILES_DIR.exists():
         return
     shell_execute('find {} -type f -atime +15 -delete'.format(VEIL_BUCKET_INLINE_STATIC_FILES_DIR), capture=True)

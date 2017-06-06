@@ -8,7 +8,7 @@ from uuid import uuid4
 
 import lxml.objectify
 
-from veil.backend.queue import *
+from veil.backend.job_queue import *
 from veil.frontend.cli import *
 from veil.model.event import *
 from veil.frontend.template import *
@@ -206,8 +206,8 @@ def query_logistics_status_script(trace_code):
     print(query_logistics_status(trace_code))
 
 
-@periodic_job('23 0 * * *')
-def clean_up_yto_incoming_request_files_job():
+@task(queue='clean_up_yto_incoming_request_files', schedule=cron_expr('23 0 * * *'))
+def clean_up_yto_incoming_request_files():
     if not YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE.exists():
         return
     shell_execute('find {} -type f -mtime +30 -delete'.format(YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE), capture=True)
