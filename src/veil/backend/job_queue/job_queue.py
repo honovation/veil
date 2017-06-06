@@ -70,9 +70,9 @@ class JobQueue(TaskTiger):
             config = queue_client_config()
             redis = Redis(host=config.host, port=config.port)
             if 'redis' == config.type:
-                cls._instance = cls(connection=redis)
+                cls._instance = cls(connection=redis, config={'LOGGER_NAME': 'veil.backend.job_queue'})
             elif 'immediate' == config.type:
-                cls._instance = cls(connection=redis, config={'ALWAYS_EAGER': True})
+                cls._instance = cls(connection=redis, config={'ALWAYS_EAGER': True, 'LOGGER_NAME': 'veil.backend.job_queue'})
             else:
                 raise Exception('unknown queue type: {}'.format(config.type))
         return cls._instance
@@ -94,7 +94,7 @@ class JobQueue(TaskTiger):
 
 
 def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=None, lock=None, lock_key=None, retry=True, retry_on=(JobTimeoutException, Exception),
-         retry_method=exponential(60, 2, 3), schedule=None, batch=False):
+         retry_method=exponential(60, 2, 5), schedule=None, batch=False):
 
     job_queue = JobQueue.instance()
 
@@ -133,7 +133,7 @@ def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=None, lock=None, 
             _func_wrapper = job_queue.task(queue=queue, hard_timeout=hard_timeout, unique=unique, lock=lock, lock_key=lock_key, retry=retry, retry_on=retry_on,
                                            retry_method=retry_method, schedule=schedule, batch=batch)(func_wrapper)
             _func_wrapper.delay = _delay(_func_wrapper)
-            _func_wrapper.delay_when = _delay(_func_wrapper, when=ENQUEUE_AFTER_TIMEDELTA)
+            _func_wrapper.delay_after = _delay(_func_wrapper, when=ENQUEUE_AFTER_TIMEDELTA)
 
             return _func_wrapper
 

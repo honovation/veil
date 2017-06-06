@@ -149,7 +149,7 @@ def tasktiger_job_worker_program(worker_name, application_logging_levels, queue_
     application_component_names = set(name for queue_name in queue_names for name in list_dynamic_dependency_providers('job', queue_name))
     resources = [
         veil_logging_level_config_resource(path=veil_logging_level_config_path, logging_levels=application_logging_levels),
-        component_resource(name='veil.backend.queue'),
+        component_resource(name='veil.backend.job_queue'),
         application_resource(component_names=application_component_names, config=application_config)
     ]
     comma_separated_modules = ','.join(application_component_names)
