@@ -9,6 +9,7 @@ ExecStart=/usr/bin/veil :${VEIL_SERVER} up --daemonize
 ExecStop=/usr/bin/veil :${VEIL_SERVER} down
 KillMode=process
 Type=forking
+TimeoutStartSec=5min
 
 [Install]
 WantedBy=multi-user.target
