@@ -133,9 +133,19 @@ with veil_component.init_component(__name__):
         from veil.frontend.nginx import VEIL_BROWSER_CODE_COOKIE_NAME
         from veil.frontend.nginx import VEIL_USER_CODE_COOKIE_NAME
         from veil_component import add_log_context_provider
+        from veil_component.component_logging import to_unicode
 
-        add_log_context_provider(lambda: {
-            'request_code': get_current_http_request().headers.get(X_REQUEST_CODE_HEADER_NAME) if get_current_http_request(optional=True) else '',
-            'browser_code': get_cookie(VEIL_BROWSER_CODE_COOKIE_NAME) or '',
-            'user_code': get_cookie(VEIL_USER_CODE_COOKIE_NAME) or ''
-        })
+        def _log_web_request_provider():
+            request = get_current_http_request(optional=True)
+            if not request:
+                return {}
+            return {
+                'request_code': to_unicode(request.headers.get(X_REQUEST_CODE_HEADER_NAME)),
+                'browser_code': to_unicode(get_cookie(VEIL_BROWSER_CODE_COOKIE_NAME)) or '',
+                'user_code': to_unicode(get_cookie(VEIL_USER_CODE_COOKIE_NAME)) or '',
+                'uri': to_unicode(request.uri),
+                'remote_ip': to_unicode(request.remote_ip),
+                'user_agent': to_unicode(request.headers.get('User-Agent'))
+            }
+
+        add_log_context_provider(_log_web_request_provider)
