@@ -91,7 +91,7 @@ class Widget(object):
     def __init__(self, name, func):
         self.name = name
         self.func = func
-        self.registered_by = to_unicode(b''.join(traceback.format_stack()))
+        self.registered_by = to_unicode(b''.join(traceback.format_stack()), strict=False)
         loading_component_name = get_loading_component_name()
         if loading_component_name:
             self.namespace = loading_component_name

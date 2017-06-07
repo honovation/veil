@@ -108,7 +108,7 @@ def list_toggled_bit_offsets(int_val):
 
 
 def format_exception(exception_info):
-    return to_unicode(b''.join(traceback.format_exception(*exception_info)))
+    return to_unicode(b''.join(traceback.format_exception(*exception_info)), strict=False)
 
 
 def extract_info_from_resident_id(resident_id):

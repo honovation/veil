@@ -54,7 +54,7 @@ def release_queue():
 
 class RedisQueue(object):
     def __init__(self, resq):
-        self.opened_by = to_unicode(b''.join(traceback.format_stack()))
+        self.opened_by = to_unicode(b''.join(traceback.format_stack()), strict=False)
         self.resq = resq
 
     def enqueue(self, job_handler, to_queue=None, **payload):
@@ -106,7 +106,7 @@ class RedisQueue(object):
 
 class ImmediateQueue(object):
     def __init__(self):
-        self.opened_by = to_unicode(b''.join(traceback.format_stack()))
+        self.opened_by = to_unicode(b''.join(traceback.format_stack()), strict=False)
         self.stopped = False
         self.queued_jobs = []
 

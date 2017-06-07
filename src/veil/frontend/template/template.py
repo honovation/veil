@@ -136,7 +136,7 @@ def get_or_create_environment():
     jinja_tag.init()
     env.filters.update(filters)
     env.install_null_translations()
-    env.created_by = to_unicode(b''.join(traceback.format_stack()))
+    env.created_by = to_unicode(b''.join(traceback.format_stack()), strict=False)
     executing_test = get_executing_test(optional=True)
     if executing_test:
         executing_test.addCleanup(reset_template_environment)

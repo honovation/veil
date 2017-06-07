@@ -127,7 +127,7 @@ class Database(object):
     def __init__(self, purpose, component_name, conn):
         self.purpose = purpose
         self.component_name = component_name
-        self.opened_by = to_unicode(b''.join(traceback.format_stack()))
+        self.opened_by = to_unicode(b''.join(traceback.format_stack()), strict=False)
         self.conn = conn
 
     @property
