@@ -124,7 +124,7 @@ def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=None, lock=None, 
                 mod = inspect.getmodule(frm[0])
                 if mod.__name__ == 'tasktiger.worker':
                     a = [from_json(a) for a in _args[0]['a']] if _args else ()
-                    k = {k: from_json(v) for k, v in _args[0]['k']} if _args else {}
+                    k = {k: from_json(v) for k, v in _args[0]['k'].items()} if _args else {}
                 else:
                     a = _args
                     k = _kwargs
