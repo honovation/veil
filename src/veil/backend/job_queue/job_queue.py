@@ -15,6 +15,7 @@ from redis import Redis
 from veil.frontend.cli import *
 from veil.model.event import *
 from veil.server.process import *
+from veil.utility.clock import *
 from veil.utility.json import *
 from veil_component import record_dynamic_dependency_provider, get_loading_component_name, VEIL_ENV
 from .queue_client_installer import queue_client_config
@@ -28,8 +29,15 @@ DEFAULT_QUEUE_NAME = 'default'
 periodic = _periodic
 
 
+def _cron_expr(naive_utc_dt, expr):
+    aware_utc_dt = convert_naive_datetime_to_aware(naive_utc_dt, tzinfo=pytz.utc)
+    local_dt = convert_datetime_to_client_timezone(aware_utc_dt)
+    next_dt = croniter(expr, start_time=local_dt).get_next(ret_type=datetime)
+    return convert_datetime_to_utc_timezone(next_dt)
+
+
 def cron_expr(cron_expression):
-    return lambda dt, expr: croniter(expr, start_time=dt).get_next(ret_type=datetime), (cron_expression, )
+    return _cron_expr, (cron_expression, )
 
 
 @event(EVENT_PROCESS_TEARDOWN)
