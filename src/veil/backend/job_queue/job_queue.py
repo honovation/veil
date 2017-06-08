@@ -91,7 +91,7 @@ class JobQueue(TaskTiger):
         if not self.config['ALWAYS_EAGER']:
             args_json = [to_json(a) for a in args] if args else []
             kwargs_json = {k: to_json(v) for k, v in kwargs.items()} if kwargs else {}
-            _args = ({'a': args_json, 'k': kwargs_json}, )
+            _args = ({'a': args_json, 'k': kwargs_json}, ) if args_json or kwargs_json else ()
             _kwargs = {}
         else:
             when = None  # reset for QUEUED status and execute job handler immediately
