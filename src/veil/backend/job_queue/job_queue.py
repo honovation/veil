@@ -76,11 +76,11 @@ class JobQueue(TaskTiger):
     def instance(cls):
         if cls._instance is None:
             config = queue_client_config()
-            redis = Redis(host=config.host, port=config.port)
+            redis = Redis(host=config.host, port=config.port, decode_responses=True)
             if 'redis' == config.type:
-                cls._instance = cls(connection=redis, config={'LOGGER_NAME': 'veil.backend.job_queue'})
+                cls._instance = cls(connection=redis, config={'LOGGER_NAME': 'veil.backend.job_queue', 'STATS_INTERVAL': 0})
             elif 'immediate' == config.type:
-                cls._instance = cls(connection=redis, config={'ALWAYS_EAGER': True, 'LOGGER_NAME': 'veil.backend.job_queue'})
+                cls._instance = cls(connection=redis, config={'ALWAYS_EAGER': True, 'LOGGER_NAME': 'veil.backend.job_queue', 'STATS_INTERVAL': 0})
             else:
                 raise Exception('unknown queue type: {}'.format(config.type))
         return cls._instance
