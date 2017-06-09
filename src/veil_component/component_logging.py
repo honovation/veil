@@ -82,11 +82,17 @@ class ColoredFormatter(logging.Formatter):
     def format(self, record):
         record.msg = to_unicode(record.msg)
         log_context = get_log_context()
-        if log_context and any(log_context[k] for k in log_context):
-            record.msg = '{}, LOG CONTEXT: {}'.format(record.msg, log_context)
-        if record.args and isinstance(record.args, dict):
-            record.args = {to_unicode(k): to_unicode(v) for k, v in record.args.items()}
-        s = super(ColoredFormatter, self).format(record)
+        old_record_msg = None
+        try:
+            if log_context and any(log_context[k] for k in log_context):
+                old_record_msg = record.msg
+                record.msg = '{}, LOG CONTEXT: {}'.format(record.msg, log_context)
+            if record.args and isinstance(record.args, dict):
+                record.args = {to_unicode(k): to_unicode(v) for k, v in record.args.items()}
+            s = super(ColoredFormatter, self).format(record)
+        finally:
+            if old_record_msg:
+                record.msg = old_record_msg
         if record.levelno >= logging.WARNING:
             wrap = COLOR_WRAPPERS['RED']
         elif record.args and isinstance(record.args, dict) and record.args.get('__color__'):
@@ -138,7 +144,8 @@ def get_log_context():
             context.update(provider())
         except Exception:
             traceback.print_exc()
-    return context
+    # escape % in value of log context otherwise it breaks format syntax (record.msg % record.args) in record.getMessage()
+    return {k: v.replace('%', '%%') if isinstance(v, basestring) else v for k, v in context.items()}
 
 
 def to_unicode(s):
