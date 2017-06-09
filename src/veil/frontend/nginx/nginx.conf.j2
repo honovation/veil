@@ -98,7 +98,7 @@ http {
     proxy_next_upstream error;
 
     access_log off;
-    log_format logstash_json '{ "@timestamp": "$time_iso8601", '
+    log_format logstash_json escape=json '{ "@timestamp": "$time_iso8601", '
                              '"@type": "nginx", '
                              '"@fields": { '
                              '"user_code": "$cookie_vu", '
