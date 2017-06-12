@@ -216,7 +216,7 @@ def query_order_status(app_id, mch_id, api_key, out_trade_no):
 
         trade_no, paid_total, paid_at, bank_billno, errors = validate_order_info(parsed_response)
         if errors:
-            LOGGER.error('wxpay query order status invalid info found: %(errors)s, %(order_info)s', {
+            LOGGER.error('wxpay query order status invalid info found: %(errors)s, %(response)s', {
                 'errors': errors,
                 'response': response.content
             })
