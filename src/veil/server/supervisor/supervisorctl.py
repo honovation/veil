@@ -10,6 +10,23 @@ LOGGER = logging.getLogger(__name__)
 @script('reload-nginx')
 def reload_nginx(program_name='nginx'):
     supervisorctl('signal', 'HUP', program_name, capture=True)
+    prime_nginx_ocsp_cache()
+
+
+@script('prime-nginx-ocsp-cache')
+def prime_nginx_ocsp_cache():
+    config_path = VEIL_ETC_DIR / 'nginx-https.cfg'
+    if not config_path.exists():
+        return
+    for line in config_path.text().splitlines():
+        server_name, https_ports = line.split(':')
+        port = https_ports.split(',')[0]
+        cmd = 'nohup openssl s_client -connect {0}:{1} -servername {0} -status >/dev/null 2>&1 &'.format(server_name,
+                                                                                                         port)
+        try:
+            shell_execute(cmd, capture=True)
+        except:
+            LOGGER.warn('Exception occurred while priming nginx ocsp cache: {}'.format(cmd), exc_info=1)
 
 
 def supervisorctl(action, *arguments, **kwargs):

@@ -7,10 +7,10 @@ from veil_component import is_recording_dynamic_dependencies, load_all_component
 from veil.environment import *
 from veil.utility.shell import *
 from veil.frontend.cli import script
-from .supervisorctl import supervisorctl
-from .supervisorctl import is_supervisord_running
+from .supervisorctl import supervisorctl, is_supervisord_running, prime_nginx_ocsp_cache
 
 LOGGER = logging.getLogger(__name__)
+
 
 @script('up')
 def bring_up_programs(*argv):
@@ -25,6 +25,7 @@ def bring_up_programs(*argv):
         bring_up_program(argv[0])
     else:
         bring_up_supervisor(*argv)
+    prime_nginx_ocsp_cache()
 
 
 def bring_up_program(program_name):
