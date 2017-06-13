@@ -27,6 +27,11 @@ FAILED_MARK = 'FAIL'
 ORDER_PAID_MARK = 'ORDERPAID'
 SYSTEMERROR_MARK = 'SYSTEMERROR'
 QUERY_ORDER_STATUS_NOTPAY = 'NOTPAY'
+QUERY_ORDER_STATUS_CLOSED = 'CLOSED'
+QUERY_ORDER_STATUS_TO_IGNORE = {
+    QUERY_ORDER_STATUS_NOTPAY,
+    QUERY_ORDER_STATUS_CLOSED
+}
 WXPAY_BANK_TYPE = 'WX'
 WXPAY_ORDER_QUERY_URL = 'https://api.mch.weixin.qq.com/pay/orderquery'
 WXPAY_UNIFIEDORDER_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
@@ -217,7 +222,7 @@ def query_order_status(app_id, mch_id, api_key, out_trade_no):
 
         trade_no, paid_total, paid_at, bank_billno, errors = validate_order_info(parsed_response)
         if errors:
-            if parsed_response.trade_state != QUERY_ORDER_STATUS_NOTPAY:
+            if parsed_response.trade_state not in QUERY_ORDER_STATUS_TO_IGNORE:
                 LOGGER.error('wxpay query order status invalid info found: %(errors)s, %(response)s', {
                     'errors': errors,
                     'response': response.content
