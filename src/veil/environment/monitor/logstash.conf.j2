@@ -30,9 +30,6 @@ filter {
         date {
             match => ["log_time", "yyyy-MM-dd HH:mm:ss.SSS 'CST'"]
         }
-        if event.get('message').length >= 30000 {
-            event.set('message', event.get('message')[0..10000])
-        }
         mutate {
             add_field => {"@title" => "POSTGRESQL %{error_severity} <%{process_id}-%{session_id}> %{message}"}
         }
