@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import logging
-from veil.environment import *
+from veil.environment import VEIL_ETC_DIR
 from veil.frontend.cli import *
 from veil.utility.shell import *
 
@@ -19,14 +19,14 @@ def prime_nginx_ocsp_cache():
     if not config_path.exists():
         return
     for line in config_path.text().splitlines():
-        server_name, https_ports = line.split(':')
+        domain, https_ports = line.split(':')
         port = https_ports.split(',')[0]
-        cmd = 'nohup openssl s_client -connect {0}:{1} -servername {0} -status >/dev/null 2>&1 &'.format(server_name,
-                                                                                                         port)
+        cmd = 'nohup openssl s_client -connect 127.0.0.1:{} -servername {} -status >/dev/null 2>&1 &'.format(port,
+                                                                                                             domain)
         try:
             shell_execute(cmd, capture=True)
         except:
-            LOGGER.warn('Exception occurred while priming nginx ocsp cache: {}'.format(cmd), exc_info=1)
+            LOGGER.warn('Exception occurred while priming nginx ocsp cache: %(cmd)', {'cmd': cmd}, exc_info=1)
 
 
 def supervisorctl(action, *arguments, **kwargs):
