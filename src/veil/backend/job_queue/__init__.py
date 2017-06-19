@@ -8,6 +8,9 @@ with veil_component.init_component(__name__):
 
     from .job_queue import task, periodic, cron_expr, fixed, linear, exponential
 
+    def init():
+        add_application_sub_resource('queue_client', lambda config: queue_client_resource(**config))
+
     __all__ = [
         task.__name__,
         periodic.__name__,
@@ -16,6 +19,3 @@ with veil_component.init_component(__name__):
         linear.__name__,
         exponential.__name__,
     ]
-
-    def init():
-        add_application_sub_resource('queue_client', lambda config: queue_client_resource(**config))

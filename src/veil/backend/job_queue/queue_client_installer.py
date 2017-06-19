@@ -10,8 +10,12 @@ def queue_client_resource(type, host, port):
 
 
 def load_queue_client_config():
-    config = load_config_from(VEIL_ETC_DIR / 'queue-client.cfg', 'type', 'host', 'port')
-    config.port = int(config.port)
+    # TODO: return a workaround config as @task is executed during import time, config file still not exist
+    if (VEIL_ETC_DIR / 'queue-client.cfg').exists():
+        config = load_config_from(VEIL_ETC_DIR / 'queue-client.cfg', 'type', 'host', 'port')
+        config.port = int(config.port)
+    else:
+        config = DictObject(type='redis', host='localhost', port=6379)
     return config
 
 
