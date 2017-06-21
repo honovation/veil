@@ -500,7 +500,7 @@ class WXPayException(Exception):
 
 class WXRefundException(Exception):
     def __init__(self, code, reason):
-        super(WXRefundException, self).__init__()
+        super(WXRefundException, self).__init__(code, reason)
         self.code = code
         self.reason = reason
 
