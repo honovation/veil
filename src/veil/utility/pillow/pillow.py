@@ -127,20 +127,21 @@ def generate_thumbnail(image_path, size, bucket, key, format=None, quality=92, o
         bucket().store(key, buffer_)
 
 
-def generate_captcha_image_and_answer(size=(180, 30), mode="RGB", bg_color=(255, 255, 255), fg_color=(0, 0, 255), font_size=100,
-        font_type="{}/wqy-microhei.ttc".format(os.path.dirname(__file__)), draw_lines=False, n_line=(1, 2), draw_points=False, point_chance=2):
+def get_wqy_font(font_size):
+    return PIL.ImageFont.truetype('{}/wqy-microhei.ttc'.format(os.path.dirname(__file__)), font_size)
+
+
+def generate_captcha_image_and_answer(size=(180, 30), mode="RGB", bg_color=(255, 255, 255), fg_color=(0, 0, 255), font_size=100, draw_lines=False,
+                                      n_line=(1, 2), draw_points=False, point_chance=2):
     """
     @todo: 生成验证码图片
     @param size: 图片的大小，格式（宽，高），默认为(120, 30)
-    @param chars: 允许的字符集合，格式字符串
     @param mode: 图片模式，默认为RGB
     @param bg_color: 背景颜色，默认为白色
     @param fg_color: 前景色，验证码字符颜色，默认为蓝色#0000FF
     @param font_size: 验证码字体大小
-    @param font_type: 验证码字体，默认为 ae_AlArabiya.ttf
-    @param length: 验证码字符个数
     @param draw_lines: 是否划干扰线
-    @param n_lines: 干扰线的条数范围，格式元组，默认为(1, 2)，只有draw_lines为True时有效
+    @param n_line: 干扰线的条数范围，格式元组，默认为(1, 2)，只有draw_lines为True时有效
     @param draw_points: 是否画干扰点
     @param point_chance: 干扰点出现的概率，大小范围[0, 100]
     @return: [0]: PIL Image实例
@@ -191,8 +192,7 @@ def generate_captcha_image_and_answer(size=(180, 30), mode="RGB", bg_color=(255,
         c_chars, answer = get_question()
         strs = ' {} '.format(' '.join(c_chars))  # 每个字符前后以空格隔开
 
-        font = PIL.ImageFont.truetype(font_type, font_size)
-        font_width, font_height = font.getsize(strs)
+        font = get_wqy_font(font_size)
         draw.text((0, 0), strs, font=font, fill=fg_color)
 
         return answer
