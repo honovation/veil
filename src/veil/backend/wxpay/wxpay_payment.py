@@ -104,12 +104,12 @@ def create_prepay_order(app_id, mch_id, api_key, trade_type, out_trade_no, subje
     else:
         parsed_response = parse_xml_response(response.content)
         if parsed_response.return_code != SUCCESSFULLY_MARK:
-            LOGGER.info('wxpay unified order got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
+            LOGGER.error('wxpay unified order got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
             raise Exception('wxpay unified order got failed response: {}'.format(parsed_response.return_msg))
         try:
             verify_wxpay_response(parsed_response, api_key)
         except Exception:
-            LOGGER.info('wxpay unified order got fake response: %(data)s', {'data': data})
+            LOGGER.error('wxpay unified order got fake response: %(data)s', {'data': data})
             raise
         if parsed_response.result_code != SUCCESSFULLY_MARK:
             LOGGER.info('wxpay unified order got failed result: %(err_code)s, %(err_code_des)s, %(data)s', {
@@ -117,13 +117,7 @@ def create_prepay_order(app_id, mch_id, api_key, trade_type, out_trade_no, subje
                 'err_code_des': parsed_response.err_code_des,
                 'data': data
             })
-            if parsed_response.result_code == ORDER_PAID_MARK:
-                raise WXPayException('订单已支付完成')
-            if parsed_response.result_code == SYSTEMERROR_MARK:
-                raise WXPayException(parsed_response.err_code_des)
-            if parsed_response.err_code_des:
-                raise WXPayException(parsed_response.err_code_des)
-            raise WXPayException('支付遇到错误，请稍后重试')
+            raise WXPayException(parsed_response.err_code_des or '支付遇到错误，请稍后重试', parsed_response.err_code)
         LOGGER.info('wxpay unified order success: %(response)s', {'response': response.content})
         return DictObject(nonce_str=parsed_response.nonce_str, trade_type=parsed_response.trade_type, prepay_id=parsed_response.prepay_id,
                           code_url=parsed_response.get('code_url'))
@@ -495,7 +489,13 @@ class InvalidWXAccessToken(Exception):
 
 
 class WXPayException(Exception):
-    pass
+    def __init__(self, msg, code):
+        self.msg = msg
+        self.code = code
+
+    @property
+    def already_paid(self):
+        return self.code == ORDER_PAID_MARK
 
 
 class WXRefundException(Exception):
