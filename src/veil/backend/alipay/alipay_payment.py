@@ -29,18 +29,32 @@ REFUND_URL = PAYMENT_URL
 NOTIFIED_FROM_RETURN_URL = 'return_url'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 NOTIFIED_FROM_PAYMENT_QUERY = 'payment_query'
+
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # alipay require this 7 characters to be returned to them
+
 ALIPAY_REFUND_SEQ_NO_LENGTH_MIN = 3
 ALIPAY_REFUND_SEQ_NO_LENGTH_MAX = 24
 ALIPAY_REFUND_DATA_LIST_LENGTH_MAX = 1000
+
 ALIPAY_REFUND_RESPONSE_SUCCESS_MARK = 'T'
 ALIPAY_REFUND_RESPONSE_FAIL_MARK = 'F'
 ALIPAY_REFUND_RESPONSE_PROCESSING_MARK = 'P'
-ALIPAY_REFUND_RESPONSE_DUPLICATE_BATCH_NO = 'DUPLICATE_BATCH_NO'
+
+ALIPAY_REFUND_TIMEOUT = 'ALIPAY_REFUND_TIMEOUT'
+ALIPAY_REFUND_ERROR = 'ALIPAY_REFUND_ERROR'
+ALIPAY_REFUND_DUPLICATE_BATCH_NO = 'DUPLICATE_BATCH_NO'
+
 ALIPAY_REFUND_RESULT_SUCCESS_MARK = 'SUCCESS'
+
 ALIPAY_DBACK_RESULT_SUCCESS_MARK = 'S'
 ALIPAY_DBACK_RESULT_FAIL_MARK = 'F'
 ALIPAY_DBACK_RESULT_WAITING_MARK = 'I'
+
+
+ALIPAY_REQUEST_REFUND_PROCESSING = 'ALIPAY_REQUEST_REFUND_PROCESSING'
+
+ALIPAY_REFUND_INIT = 'INIT'  # 退款申请成功,等待处理
+ALIPAY_REFUND_PROCESSING = 'PROCESSING'  # 退款正在处理中
 
 
 def make_alipay_order_str(out_trade_no, subject, body, total_fee, notify_url, minutes_to_expire):
@@ -338,12 +352,12 @@ def refund(out_refund_no, trade_no, amount, reason, notify_url=None, dback_notif
     :param reason: 退款原因，不能包含: ^, |, $, #
     :param notify_url: 退款结果异步通知URL
     :param dback_notify_url: 充退结果异步通知URL
-    :return: {request_success=True/False, reason=IF REQUEST FAIL, batch_no=IF REQUEST SUCCESS}
+    :return batch_no: 退款批次号
     """
     if len(str(out_refund_no)) > ALIPAY_REFUND_SEQ_NO_LENGTH_MAX:
-        return DictObject(request_success=False, reason='流水号超过上限')
+        raise ALIPayRefundException(ALIPAY_REFUND_ERROR, '流水号超过上限')
     if any(e in reason for e in {'^', '|', '$', '#'}):
-        return DictObject(request_success=False, reason='退款原因不能包含：^, |, $, #')
+        raise ALIPayRefundException(ALIPAY_REFUND_ERROR, '退款原因不能包含：^, |, $, #')
     refund_time = get_current_time_in_client_timezone()
     batch_no = '{}{}'.format(refund_time.strftime('%Y%m%d'), str(out_refund_no).zfill(ALIPAY_REFUND_SEQ_NO_LENGTH_MIN))
     detail_data = '{}^{:f}^{}'.format(trade_no, amount, reason)
@@ -368,25 +382,31 @@ def refund(out_refund_no, trade_no, amount, reason, notify_url=None, dback_notif
         response.raise_for_status()
     except ReadTimeout:
         LOGGER.exception('request alipay refund got read timeout: %(params)s', {'params': params})
-        return DictObject(request_success=False, reason='read response but timeout')
+        raise ALIPayRefundException(ALIPAY_REFUND_TIMEOUT, 'read response but timeout')
     except Exception as e:
         LOGGER.exception('request alipay refund got exception: %(response)s, %(params)s, %(message)s', {
             'response': response.content if response else '',
             'params': params,
             'message': e.message
         })
-        return DictObject(request_success=False, reason=response.content if response else e.message)
+        raise ALIPayRefundException(ALIPAY_REFUND_ERROR, response.content if response else e.message)
     else:
         LOGGER.debug(response.content)
         result = parse_xml(response.content)
         if result.is_success == ALIPAY_REFUND_RESPONSE_SUCCESS_MARK:
-            return DictObject(request_success=True, batch_no=batch_no)
+            LOGGER.info('request alipay refund success: %(params)s', {'params': batch_no})
+            return batch_no
         elif result.is_success == ALIPAY_REFUND_RESPONSE_FAIL_MARK:
-            if result.error == ALIPAY_REFUND_RESPONSE_DUPLICATE_BATCH_NO:
-                return DictObject(request_success=True, batch_no=batch_no)
-            return DictObject(request_success=False, reason=result.error)
+            if result.error == ALIPAY_REFUND_DUPLICATE_BATCH_NO:
+                LOGGER.info('batch_no is duplicate: %(params)s', {'params': params})
+                return batch_no
+            else:
+                LOGGER.error('request alipay refund got failed result: %(error)s, %(params)s, %(response)s',
+                             {'error': result.error, 'params': params, 'response': response.content})
+                raise ALIPayRefundException(result.error)
         elif result.is_success == ALIPAY_REFUND_RESPONSE_PROCESSING_MARK:
-            return DictObject(request_success=False, reason='please query refund on alipay website')
+            LOGGER.info('request alipay refund is processing: %(params)s, %(response)', {'params': params, 'response': response.content})
+            raise ALIPayRefundException(ALIPAY_REQUEST_REFUND_PROCESSING)
 
 
 def process_refund_notification(arguments):
@@ -453,3 +473,24 @@ def process_dback_notification(arguments):
         result.reason = '退还至原支付卡失败，在用户余额中'
     publish_event(EVENT_ALIPAY_DBACK_NOTIFIED, result=result)
     return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
+
+
+class ALIPayRefundException(Exception):
+    def __init__(self, code, reason=''):
+        super(ALIPayRefundException, self).__init__(code, reason)
+        self.code = code
+        self.reason = reason
+
+    @property
+    def is_timeout(self):
+        return self.code == ALIPAY_REFUND_TIMEOUT
+
+    @property
+    def is_processing(self):
+        return self.code in {ALIPAY_REQUEST_REFUND_PROCESSING, ALIPAY_REFUND_PROCESSING, ALIPAY_REFUND_INIT}
+
+    def __unicode__(self):  # TODO: not necessary under python3
+        return 'code: {}, reason: {}'.format(self.code, self.reason)
+
+    def __str__(self):
+        return self.__unicode__().encode('utf-8')

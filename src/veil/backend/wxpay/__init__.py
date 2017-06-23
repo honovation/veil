@@ -14,7 +14,7 @@ with veil_component.init_component(__name__):
     from .wxpay_payment import close_order
     from .wxpay_payment import parse_xml_response
     from .wxpay_payment import WXPayException
-    from .wxpay_payment import WXRefundException
+    from .wxpay_payment import WXPayRefundException
     from .wxpay_payment import WXPAY_TRADE_TYPE_APP
     from .wxpay_payment import WXPAY_TRADE_TYPE_JSAPI
     from .wxpay_payment import refund
@@ -48,7 +48,7 @@ with veil_component.init_component(__name__):
         close_order.__name__,
         parse_xml_response.__name__,
         WXPayException.__name__,
-        WXRefundException.__name__,
+        WXPayRefundException.__name__,
         'WXPAY_TRADE_TYPE_APP',
         'WXPAY_TRADE_TYPE_JSAPI',
         refund.__name__,

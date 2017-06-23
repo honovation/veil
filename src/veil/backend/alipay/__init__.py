@@ -15,6 +15,8 @@ with veil_component.init_component(__name__):
     from .alipay_payment import refund
     from .alipay_payment import process_refund_notification
     from .alipay_payment import process_dback_notification
+    from .alipay_payment import EVENT_ALIPAY_REFUND_NOTIFIED
+    from .alipay_payment import ALIPayRefundException
 
     from .alipay_client_installer import alipay_client_resource
     from .alipay_client_installer import alipay_client_config
@@ -39,4 +41,6 @@ with veil_component.init_component(__name__):
 
         alipay_client_resource.__name__,
         alipay_client_config.__name__,
+        'EVENT_ALIPAY_REFUND_NOTIFIED',
+        'ALIPayRefundException',
     ]
