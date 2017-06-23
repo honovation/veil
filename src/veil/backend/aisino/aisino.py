@@ -27,10 +27,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 if VEIL_ENV.is_prod:
-    url = 'http://ei.51fapiao.cn:10080/51TransferServicePro_zzs/webservice/eInvWS?wsdl'
+    url = 'http://einv.51fapiao.cn:20080/zzssl/webservice/eInvWS?wsdl'
 else:
-    url = 'http://ei-test.51fapiao.cn:20080/51TransferServicePro_zzs/webservice/eInvWS?wsdl'
+    url = 'http://ei-test.51fapiao.cn:9080/zzssl/webservice/eInvWS?wsdl'
 
+INVOICE_INTERFACE_VERSION = '2.0'
 INVOICE_INTERFACE_NAME_FOR_INVOICE = 'ECXML.FPKJ.BC.E_INV'
 INVOICE_INTERFACE_NAME_FOR_DOWNLOAD = 'ECXML.FPXZ.CX.E_INV'
 INVOICE_APP_ID_NORMAL = 'DZFP'
@@ -49,6 +50,8 @@ INVOICE_OPERATION_CODE_REVERT_NORMAL = 11
 INVOICE_OPERATION_CODE_RETURN_RED = 20
 INVOICE_OPERATION_CODE_REVERT_RED = 21
 INVOICE_OPERATION_CODE_REPLACE_RED = 22
+INVOICE_ENCODE_TABLE_VERSION = '12.0'
+INVOICE_SAMPLE_CODE = '000001'
 DATA_GZIP_COMPRESSED = '1'
 CONTENT_DATA_ENCRYPT_CODE_NO = '0'
 CONTENT_DATA_ENCRYPT_CODE_CA = '2'
@@ -56,7 +59,7 @@ SUPPORTED_ENCRYPT_CODES = {CONTENT_DATA_ENCRYPT_CODE_NO, CONTENT_DATA_ENCRYPT_CO
 DEFAULT_TAX_RATE = Decimal('0.17')
 RESPONSE_SUCCESS_MARK = '0000'
 RESPONSE_QUERY_SUCCESS_MARK = '3000'
-REQUEST_SEQ_LENGTH = 20
+REQUEST_SEQ_MAX_LENGTH = 20
 DOWNLOAD_METHOD_FOR_QUERY = '0'
 DOWNLOAD_METHOD_FOR_DOWNLOAD = '1'
 RED_INVOICE_FLAG_NORMAL = '0'
@@ -64,10 +67,9 @@ RED_INVOICE_FLAG_SPECIAL = '1'
 
 
 def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax_payer, operator_name, receiver_operator_name, recheck_operator_name,
-                    invoice_content, total, items, ref_invoice_code=None, ref_invoice_no=None, comment=None, operation_code=INVOICE_OPERATION_CODE_NORMAL,
-                    flag_special_red=None, red_invoice_reason=None, terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', encrypt_code='2',
-                    encrypt_code_type='CA', is_compressed=True, sample_code='000001', encode_table_version='1.0', flag_dk=0, flag_list=0, list_item_name=None,
-                    without_tax_total=0, tax_total=0):
+                    total, items, ref_invoice_code=None, ref_invoice_no=None, comment=None, operation_code=INVOICE_OPERATION_CODE_NORMAL,
+                    flag_special_red=None, red_invoice_reason=None, terminal_code=0, app_id=INVOICE_APP_ID_VAT, encrypt_code='2', encrypt_code_type='CA',
+                    is_compressed=True, flag_dk=0, flag_list=0, list_item_name=None, without_tax_total=0, tax_total=0):
 
     type_code = INVOICE_TYPE_CODE_NORMAL if total > 0 else INVOICE_TYPE_CODE_RED
 
@@ -85,33 +87,35 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
         raise Exception('请填写清单项目名称')
 
     if app_id == INVOICE_APP_ID_VAT and type_code == INVOICE_TYPE_CODE_RED:
-        comment = '对应正数发票代码:{} 号码:{}'.format(ref_invoice_code, ref_invoice_no)
+        comment = '对应正数发票代码:{}号码:{}'.format(ref_invoice_code, ref_invoice_no)
 
     with require_current_template_directory_relative_to():
         interface_content = get_template('invoice.xml').render(request_seq=request_seq, ebp_code=ebp_code, buyer=buyer, tax_payer=tax_payer,
-                                                               sample_code=sample_code, encode_table_version=encode_table_version,
+                                                               sample_code=INVOICE_SAMPLE_CODE, encode_table_version=INVOICE_ENCODE_TABLE_VERSION,
                                                                operator_name=operator_name, receiver_operator_name=receiver_operator_name,
                                                                recheck_operator_name=recheck_operator_name,
-                                                               invoice_content=invoice_content, total=total, items=items, without_tax_total=without_tax_total,
+                                                               invoice_content=items[0].name, total=total, items=items, without_tax_total=without_tax_total,
                                                                tax_total=tax_total, type_code=type_code,
                                                                ref_invoice_code=ref_invoice_code, ref_invoice_no=ref_invoice_no, comment=comment,
                                                                flag_dk=flag_dk, red_invoice_reason=red_invoice_reason, flag_special_red=flag_special_red,
                                                                INVOICE_TYPE_CODE_RED=INVOICE_TYPE_CODE_RED, operation_code=operation_code, flag_list=flag_list,
                                                                list_item_name=list_item_name)
+    LOGGER.debug(interface_content)
     record_request = interface_content
     interface_content = get_ca_encrypted_content(to_str(interface_content)) if encrypt_code == CONTENT_DATA_ENCRYPT_CODE_CA else to_str(interface_content)
     if is_compressed:
         interface_content = get_compressed_content(interface_content)
     interface_content = b64encode(interface_content)
     with require_current_template_directory_relative_to():
-        interface_data = get_template('interface.xml').render(terminal_code=terminal_code, app_id=app_id, version=version, response_code=ebp_code,
-                                                              interface_name=INVOICE_INTERFACE_NAME_FOR_INVOICE, username=username,
+        interface_data = get_template('interface.xml').render(terminal_code=terminal_code, app_id=app_id, version=INVOICE_INTERFACE_VERSION,
+                                                              response_code=ebp_code, interface_name=INVOICE_INTERFACE_NAME_FOR_INVOICE, username=username,
                                                               password=generate_request_password(registration_no),
                                                               tax_payer=tax_payer, request_code=ebp_code,
                                                               request_time=get_request_time(), ebp_code=ebp_code,
                                                               data_exchange_id=generate_data_exchange_id(ebp_code), is_compressed=is_compressed,
                                                               encrypt_code=encrypt_code, encrypt_code_type=encrypt_code_type,
                                                               interface_content=interface_content)
+    LOGGER.debug(interface_data)
     ws = WebService(url)
     response = None
     try:
@@ -120,6 +124,7 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
         LOGGER.info('failed request invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
         raise
     else:
+        LOGGER.debug(response)
         response_obj = parse_xml(to_str(response))
         response_obj.returnStateInfo.is_success = response_obj.returnStateInfo.returnCode == RESPONSE_SUCCESS_MARK
     finally:
@@ -161,7 +166,7 @@ def get_request_time():
 
 
 def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer, download_method=DOWNLOAD_METHOD_FOR_DOWNLOAD,
-                     terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', encrypt_code='2', encrypt_code_type='CA',
+                     terminal_code=0, app_id=INVOICE_APP_ID_VAT, version=INVOICE_INTERFACE_VERSION, encrypt_code='2', encrypt_code_type='CA',
                      is_compressed=True):
     with require_current_template_directory_relative_to():
         interface_content = get_template('download.xml').render(request_seq=request_seq, ebp_code=ebp_code, tax_payer=tax_payer,
@@ -185,9 +190,10 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
     try:
         response = ws.eiInterface(interface_data)
     except Exception as e:
-        LOGGER.info('failed request download invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
+        LOGGER.error('failed request download invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
         raise
     else:
+        LOGGER.debug(response)
         response_obj = parse_xml(to_str(response))
 
         if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD and response_obj.returnStateInfo.returnCode == RESPONSE_SUCCESS_MARK:
@@ -210,7 +216,7 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
 
 
 def query_invoice(request_seq, ebp_code, registration_no, username, tax_payer,
-                  terminal_code=0, app_id=INVOICE_APP_ID_VAT, version='2.0', encrypt_code='2', encrypt_code_type='CA', is_compressed=True):
+                  terminal_code=0, app_id=INVOICE_APP_ID_VAT, version=INVOICE_INTERFACE_VERSION, encrypt_code='2', encrypt_code_type='CA', is_compressed=True):
     return download_invoice(request_seq, ebp_code, registration_no, username, tax_payer, download_method=DOWNLOAD_METHOD_FOR_QUERY,
                             terminal_code=terminal_code, app_id=app_id, version=version, encrypt_code=encrypt_code,
                             encrypt_code_type=encrypt_code_type, is_compressed=is_compressed)
@@ -234,7 +240,7 @@ def parse_content_data(data):
 
 def as_request_seq(request_id):
     config = aisino_invoice_config()
-    return config.seq_prefix + str(md5(str(request_id)).hexdigest()[:3]) + str(request_id).zfill(REQUEST_SEQ_LENGTH-len(config.seq_prefix) - 3)
+    return config.seq_prefix + str(md5(str(request_id)).hexdigest()[:3]) + str(request_id).zfill(REQUEST_SEQ_MAX_LENGTH - len(config.seq_prefix) - 3)
 
 
 class InvoiceBuyer(DictObject):
@@ -263,18 +269,18 @@ class InvoiceTaxPayer(DictObject):
 
 
 class InvoiceItem(DictObject):
-    def __init__(self, type, code, name, quantity, total, tax_rate=DEFAULT_TAX_RATE, with_tax=True, with_promotion=True):
+    def __init__(self, code, name, quantity, total, tax_rate=DEFAULT_TAX_RATE, item_type=INVOICE_ITEM_TYPE_NORMAL):
         super(InvoiceItem, self).__init__()
-        self.type = type
+        self.type = item_type
         self.code = code
         self.name = name
-        self.quantity = quantity
+        self.quantity = abs(quantity)
         self.total = Decimal(total)
-        self.price = (self.total / self.quantity).quantize(Decimal('0.00000001'))
+        if self.total < 0:
+            self.quantity *= -1
+        self.price = abs(self.total / self.quantity).quantize(Decimal('0.00000001'))
         self.tax_rate = tax_rate
         self.tax_total = round_money_half_up(self.tax_rate * (self.total/(1 + tax_rate)))
-        self.with_tax = with_tax
-        self.with_promotion = with_promotion
 
 
 def record_request_and_response(req, rsp, interface_name, request_seq):

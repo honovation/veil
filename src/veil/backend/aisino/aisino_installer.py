@@ -17,7 +17,6 @@ AISINO_JAR_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_JAR_FILE_NAME
 AISINO_LIBRARY_CONFIG_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_LIBRARY_CONFIG_FILE_NAME
 AISINO_JNI_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_JNI_FILE_NAME
 AISINO_PLATFORM_CER_FILE_NAME = '51fapiao.cer'
-AISINO_PLATFORM_CER_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_PLATFORM_CER_FILE_NAME
 RESOURCE_KEY = 'veil.backend.aisino.aisino_invoice_resource'
 REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE = VEIL_BUCKET_LOG_DIR / 'aisino'
 RESOURCE_VERSION = '1.0'
@@ -28,10 +27,10 @@ _config = None
 
 @composite_installer
 def aisino_invoice_resource(seq_prefix, payer_id, payer_name, payer_auth_code, payer_address, payer_telephone, payer_bank_name, payer_bank_account_no, ebp_code,
-                            registration_no, operator_name, receiver_operator_name, recheck_operator_name, client_pfx, client_pfx_key):
+                            registration_no, operator_name, receiver_operator_name, recheck_operator_name, client_pfx, client_pfx_key, server_cer):
     install_aisino_library()
     config_file_content = render_config('pkcs7.properties.j2', client_pfx=client_pfx, client_pfx_key=client_pfx_key,
-                                        platform_cer=AISINO_PLATFORM_CER_FILE_PATH, jni_library=AISINO_JNI_FILE_PATH)
+                                        platform_cer=server_cer, jni_library=AISINO_JNI_FILE_PATH)
     if AISINO_LIBRARY_CONFIG_FILE_PATH.exists() and AISINO_LIBRARY_CONFIG_FILE_PATH.bytes() == config_file_content:
         resources = []
     else:
@@ -62,14 +61,13 @@ def aisino_invoice_config():
 
 
 def install_aisino_library():
-    if AISINO_JAR_FILE_PATH.exists() and AISINO_JNI_FILE_PATH.exists() and AISINO_PLATFORM_CER_FILE_PATH.exists():
+    if AISINO_JAR_FILE_PATH.exists() and AISINO_JNI_FILE_PATH.exists():
         if (VEIL_ENV.is_dev or VEIL_ENV.is_test) and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
             set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return
     dest_path = AISINO_LIBRARY_PATH
     if not dest_path.exists():
         dest_path.mkdir()
-    install_aisino_platform_cer()
     install_aisino_jni_library()
     install_aisino_jar()
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
@@ -86,9 +84,3 @@ def install_aisino_jar():
     url = '{}/{}'.format(DEPENDENCY_SSL_URL, AISINO_JAR_FILE_NAME)
     if not AISINO_JAR_FILE_PATH.exists():
         shell_execute('wget --no-check-certificate -c {} -O {}'.format(url, AISINO_JAR_FILE_PATH))
-
-
-def install_aisino_platform_cer():
-    url = '{}/{}'.format(DEPENDENCY_SSL_URL, AISINO_PLATFORM_CER_FILE_NAME)
-    if not AISINO_PLATFORM_CER_FILE_PATH.exists():
-        shell_execute('wget --no-check-certificate -c {} -O {}'.format(url, AISINO_PLATFORM_CER_FILE_PATH))
