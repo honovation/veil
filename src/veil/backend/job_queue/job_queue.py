@@ -101,7 +101,7 @@ class JobQueue(TaskTiger):
                                            lock_key=lock_key, when=when, retry=retry, retry_on=retry_on, retry_method=retry_method)
 
 
-def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=None, lock=None, lock_key=None, retry=True, retry_on=(JobTimeoutException, Exception),
+def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=True, lock=None, lock_key=None, retry=True, retry_on=(JobTimeoutException, Exception),
          retry_method=exponential(60, 2, 5), schedule=None, batch=False):
 
     job_queue = JobQueue.instance()
