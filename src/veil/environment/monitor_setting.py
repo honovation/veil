@@ -13,6 +13,7 @@ def monitor_programs(config):
             'run_in_directory': '/usr/share/elasticsearch',
             'execute_command': '/usr/share/elasticsearch/bin/elasticsearch -Epath.conf={}/elasticsearch'.format(VEIL_ETC_DIR),
             'run_as': 'elasticsearch',
+            'environment_variables': {'ES_JVM_OPTIONS': VEIL_ETC_DIR / 'elasticsearch/jvm.options'},
             'resources': [('veil.environment.monitor.elk_resource', {'config': config})]
         }},
         {'logstash': {
