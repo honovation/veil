@@ -49,7 +49,7 @@
         <BYZD4/>
         <BYZD5/>
     </FPKJXX_FPTXX>
-    <FPKJXX_XMXXS class="FPKJXX_XMXX;" size="1">
+    <FPKJXX_XMXXS class="FPKJXX_XMXX;" size="{{ items |length }}">
         {% for item in items %}
         <FPKJXX_XMXX>
             <XMMC><![CDATA[{{ item.name }}]]></XMMC>
