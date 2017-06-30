@@ -88,15 +88,12 @@ class JobQueue(TaskTiger):
     def delay(self, func, args=None, kwargs=None, queue=None,
               hard_timeout=None, unique=None, lock=None, lock_key=None,
               when=None, retry=None, retry_on=None, retry_method=None):
-        if not self.config['ALWAYS_EAGER']:
-            args_json = [to_json(a) for a in args] if args else []
-            kwargs_json = {k: to_json(v) for k, v in kwargs.items()} if kwargs else {}
-            _args = ({'a': args_json, 'k': kwargs_json}, ) if args_json or kwargs_json else ()
-            _kwargs = {}
-        else:
-            when = None  # reset for QUEUED status and execute job handler immediately
-            _args = args
-            _kwargs = kwargs
+        if self.config['ALWAYS_EAGER']:
+            when = None
+        args_json = [to_json(a) for a in args] if args else []
+        kwargs_json = {k: to_json(v) for k, v in kwargs.items()} if kwargs else {}
+        _args = ({'a': args_json, 'k': kwargs_json}, ) if args_json or kwargs_json else ()
+        _kwargs = {}
         return super(JobQueue, self).delay(func, args=_args, kwargs=_kwargs, queue=queue, hard_timeout=hard_timeout, unique=unique, lock=lock,
                                            lock_key=lock_key, when=when, retry=retry, retry_on=retry_on, retry_method=retry_method)
 
@@ -130,9 +127,19 @@ def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=True, lock=None, 
             def func_wrapper(*_args, **_kwargs):
                 frm = inspect.stack()[1]
                 mod = inspect.getmodule(frm[0])
-                if mod.__name__ == 'tasktiger.worker':
-                    a = [from_json(a) for a in _args[0]['a']] if _args else ()
-                    k = {k: from_json(v) for k, v in _args[0]['k'].items()} if _args else {}
+                if mod.__name__ == 'tasktiger.worker' or job_queue.config['ALWAYS_EAGER']:
+                    # ALWAYS_EAGER means sync and async call, tasktiger.worker means async call
+                    if _args and isinstance(_args[0], dict) and 'a' in _args[0] and 'k' in _args[0]:
+                        a = [from_json(a) for a in _args[0]['a']]
+                        k = {k: from_json(v) for k, v in _args[0]['k'].items()}
+                    else:
+                        a = _args
+                        k = _kwargs
+                    expired_at = k.pop('expired_at', None)
+                    current_time = get_current_time()
+                    if expired_at and expired_at <= current_time:
+                        LOGGER.debug('ignore expired task: %(expired_at)s, %(current)s', {'expired_at': expired_at, 'current': current_time})
+                        return
                 else:
                     a = _args
                     k = _kwargs
