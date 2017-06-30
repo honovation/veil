@@ -28,6 +28,7 @@ def test_package(*package_names):
                 module_tests = test_loader.loadTestsFromModule(module)
                 module_tests = [t for t in module_tests if is_test_suite_loaded(t)]
                 tests.extend(module_tests)
+                break
     test_result = TextTestRunner(failfast=True, resultclass=TimedTextTestResult).run(TestSuite(tests))
     if not test_result.wasSuccessful():
         raise Exception('test failed')
