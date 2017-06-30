@@ -4,6 +4,7 @@ from __future__ import unicode_literals, print_function, division
 import base64
 import json
 import logging
+import urllib
 from decimal import Decimal
 from decimal import DecimalException
 
@@ -72,10 +73,11 @@ def make_alipay_app_payment_order_str(out_trade_no, subject, body, total_amount,
         timestamp=get_current_time_in_client_timezone().strftime('%Y-%m-%d %H:%M:%S'),
         notify_url=notify_url,
         biz_content=json.dumps(content_params, separators=(',', ':')),
-        version='1.0'
+        version='1.0',
+        sign_type='RSA2'
     )
-    message = to_url_params_string(params)
-    return '{}&sign="{}"&sign_type="RSA2"'.format(message, sign_rsa2(params, config.rsa2_private_key))
+    message = '&'.join('{}={}'.format(key, urllib.quote(params[key])) for key in params if params[key])
+    return '{}&sign={}'.format(message, urllib.quote(sign_rsa2(params, config.rsa2_private_key)))
 
 
 def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True):
