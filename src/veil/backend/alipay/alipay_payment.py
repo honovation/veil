@@ -142,8 +142,7 @@ def validate_query_return_arguments(arguments):
     if not sign:
         return False
 
-    argument_keys = sorted(arguments.keys(), key=lambda k: (k != 'code', k != 'msg', k))
-    arguments = OrderedDict((key, arguments[key]) for key in argument_keys)
+    arguments = OrderedDict(sorted(((key, value) for key, value in arguments.items()), key=lambda l: (l[0] != 'code', l[0] != 'msg', l[0])))
     message = json.dumps(arguments, separators=(',', ':'))
     config = alipay_client_config()
     try:
