@@ -94,14 +94,15 @@ def make_alipay_app_payment_order_str(out_trade_no, subject, body, total_amount,
 
 def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True):
     if is_async_result:
-        if not validate_notification_arguments(arguments):
+        if validate_notification_arguments(arguments):
+            LOGGER.info('alipay notify verify SUCCESS: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
+        else:
             LOGGER.warn('alipay notify verify ERROR: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
             return
-        LOGGER.info('alipay notify verify SUCCESS: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
 
     trade_no, buyer_id, total_amount, paid_at, discarded_reasons = parse_alipay_payment_return_arguments(out_trade_no, arguments, is_async_result)
     if discarded_reasons:
-        LOGGER.warn('alipay trade notification discarded: %(discarded_reasons)s, %(arguments)s', {
+        LOGGER.error('alipay trade notification discarded: %(discarded_reasons)s, %(arguments)s', {
             'discarded_reasons': discarded_reasons,
             'arguments': arguments
         })
@@ -133,7 +134,9 @@ def parse_alipay_payment_return_arguments(out_trade_no, arguments, is_async_resu
     discarded_reasons = []
     if is_async_result:  # 支付宝查询接口同步返回的信息没有 'app_id'
         app_id = arguments.get('app_id')
-        if app_id and app_id != alipay_client_config().app_id:
+        if not app_id:
+            discarded_reasons.append('no app_id')
+        elif app_id != alipay_client_config().app_id:
             discarded_reasons.append('app_id mismatched')
     if arguments.get('trade_status') not in {'TRADE_SUCCESS', 'TRADE_FINISHED'}:
         discarded_reasons.append('trade not succeeded')
@@ -161,7 +164,7 @@ def parse_alipay_payment_return_arguments(out_trade_no, arguments, is_async_resu
             discarded_reasons.append('invalid gmt_payment or notify_time: {}'.format(paid_at))
     else:
         discarded_reasons.append('no gmt_payment or notify_time')
-    return trade_no, arguments.get('buyer_id') or arguments.get('buyer_logon_id'), total_amount, paid_at, discarded_reasons
+    return trade_no, arguments.get('buyer_logon_id') or arguments.get('buyer_id'), total_amount, paid_at, discarded_reasons
 
 
 @script('query-alipay-status')
