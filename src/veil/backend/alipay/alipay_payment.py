@@ -13,6 +13,7 @@ import base64
 import json
 import logging
 import urllib
+from collections import OrderedDict
 from decimal import Decimal
 from decimal import DecimalException
 
@@ -97,7 +98,13 @@ def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True
         if validate_notification_arguments(arguments):
             LOGGER.info('alipay notify verify SUCCESS: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
         else:
-            LOGGER.warn('alipay notify verify ERROR: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
+            LOGGER.error('alipay notify verify ERROR: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
+            return
+    else:
+        if validate_query_arguments(arguments):
+            LOGGER.info('alipay query verify SUCCESS: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
+        else:
+            LOGGER.error('alipay query verify ERROR: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
             return
 
     trade_no, buyer_id, total_amount, paid_at, discarded_reasons = parse_alipay_payment_return_arguments(out_trade_no, arguments, is_async_result)
@@ -121,6 +128,23 @@ def validate_notification_arguments(arguments):
         return False
 
     message = to_url_params_string(arguments)
+    config = alipay_client_config()
+    try:
+        verify_rsa(message.encode('UTF-8'), base64.b64decode(sign), config.alipay_rsa2_public_key)
+    except:
+        return False
+    else:
+        return True
+
+
+def validate_query_arguments(arguments):
+    sign = arguments.pop('sign', None)
+    if not sign:
+        return False
+
+    argument_keys = sorted(arguments.keys(), key=lambda k: (k != 'code', k != 'msg', k))
+    arguments = OrderedDict((key, arguments[key]) for key in argument_keys)
+    message = json.dumps(arguments, separators=(',', ':'))
     config = alipay_client_config()
     try:
         verify_rsa(message.encode('UTF-8'), base64.b64decode(sign), config.alipay_rsa2_public_key)
