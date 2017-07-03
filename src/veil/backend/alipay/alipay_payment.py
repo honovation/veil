@@ -95,13 +95,13 @@ def make_alipay_app_payment_order_str(out_trade_no, subject, body, total_amount,
 
 def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True):
     if is_async_result:
-        if validate_notification_arguments(arguments):
+        if validate_async_notification_return_arguments(arguments):
             LOGGER.info('alipay notify verify SUCCESS: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
         else:
             LOGGER.error('alipay notify verify ERROR: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
             return
     else:
-        if validate_query_arguments(arguments):
+        if validate_query_return_arguments(arguments):
             LOGGER.info('alipay query verify SUCCESS: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
         else:
             LOGGER.error('alipay query verify ERROR: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
@@ -121,7 +121,7 @@ def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True
         return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
 
 
-def validate_notification_arguments(arguments):
+def validate_async_notification_return_arguments(arguments):
     sign = arguments.pop('sign', None)
     sign_type = arguments.pop('sign_type', None)
     if not sign or not sign_type:
@@ -137,7 +137,7 @@ def validate_notification_arguments(arguments):
         return True
 
 
-def validate_query_arguments(arguments):
+def validate_query_return_arguments(arguments):
     sign = arguments.pop('sign', None)
     if not sign:
         return False
@@ -191,7 +191,7 @@ def parse_alipay_payment_return_arguments(out_trade_no, arguments, is_async_resu
     return trade_no, arguments.get('buyer_logon_id') or arguments.get('buyer_id'), total_amount, paid_at, discarded_reasons
 
 
-@script('query-alipay-status')
+@script('query-payment-status')
 def query_alipay_payment_status_script(out_trade_no):
     query_alipay_payment_status(out_trade_no)
 
@@ -230,7 +230,7 @@ def query_alipay_payment_status(out_trade_no):
     return paid
 
 
-@script('close-alipay-payment-trade')
+@script('close-payment-trade')
 def close_alipay_payment_trade_script(out_trade_no):
     close_alipay_payment_trade(out_trade_no)
 
