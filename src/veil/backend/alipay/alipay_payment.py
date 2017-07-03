@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+
+"""
+支付宝新接口与旧接口对比：
+    1. 不能依赖支付同步跳转判断支付是否成功，应以异步通知及主动查询为准
+    2. 新接口使用RSA2签名方式
+    3. 得到异步通知后，应使用支付宝提供的公钥进行验签, 'https://docs.open.alipay.com/291/106074/'
+"""
+
 from __future__ import unicode_literals, print_function, division
 
 import base64
@@ -21,17 +29,21 @@ LOGGER = logging.getLogger(__name__)
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # alipay require this 7 characters to be returned to them
 
 PAYMENT_URL = 'https://openapi.alipay.com/gateway.do'
+REQUEST_SUCCESS_CODE = '10000'
 
-EVENT_ALIPAY_TRADE_PAID = define_event('alipay-trade-paid')  # valid notification
+EVENT_ALIPAY_TRADE_PAID = define_event('alipay-trade-paid')
 
 
 def create_alipay_pc_payment_url(out_trade_no, subject, body, total_amount, show_url, return_url, notify_url, minutes_to_expire):
     content_params = DictObject(out_trade_no=out_trade_no, subject=subject, body=body, total_amount='{:.2f}'.format(total_amount),
                                 product_code='FAST_INSTANT_TRADE_PAY')
-    if show_url:
-        content_params.goods_detail = json.dumps(dict(show_url=show_url), separators=(',', ':'))
+
+    # TODO: 签约新接口后，测试 'goods_detail'、'timeout_express' 字段
+    # if show_url:
+    #     content_params.goods_detail = json.dumps(dict(show_url=show_url), separators=(',', ':'))
     if minutes_to_expire:
-        content_params.timeout_express = '{}m'.format(minutes_to_expire)
+        # content_params.timeout_express = '{}m'.format(100 or minutes_to_expire)
+        content_params.timeout_express = '100m'
     return _create_alipay_payment_url('alipay.trade.page.pay', return_url, notify_url, content_params)
 
 
@@ -85,7 +97,7 @@ def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True
         if not validate_notification_arguments(arguments):
             LOGGER.warn('alipay notify verify ERROR: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
             return
-        LOGGER.warn('alipay notify verify SUCCESS: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
+        LOGGER.info('alipay notify verify SUCCESS: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
 
     trade_no, buyer_id, total_amount, paid_at, discarded_reasons = parse_alipay_payment_return_arguments(out_trade_no, arguments, is_async_result)
     if discarded_reasons:
@@ -119,7 +131,7 @@ def validate_notification_arguments(arguments):
 
 def parse_alipay_payment_return_arguments(out_trade_no, arguments, is_async_result=True):
     discarded_reasons = []
-    if is_async_result:  # 支付宝查询接口同步返回的信息没有‘app_id’
+    if is_async_result:  # 支付宝查询接口同步返回的信息没有 'app_id'
         app_id = arguments.get('app_id')
         if app_id and app_id != alipay_client_config().app_id:
             discarded_reasons.append('app_id mismatched')
@@ -180,7 +192,7 @@ def query_alipay_payment_status(out_trade_no):
         content = from_json(response.content)
         arguments = DictObject(content['alipay_trade_query_response'])
         arguments.sign = content['sign']
-        if arguments.code == '10000':
+        if arguments.code == REQUEST_SUCCESS_CODE:
             result = mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=False)
             paid = result == NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
         else:
@@ -220,7 +232,7 @@ def close_alipay_payment_trade(out_trade_no, notify_url=None):
         content = from_json(response.content)
         arguments = DictObject(content['alipay_trade_close_response'])
         arguments.sign = content['sign']
-        if arguments.code == '10000':
+        if arguments.code == REQUEST_SUCCESS_CODE:
             LOGGER.info('requst alipay payment close success: %(out_trade_no)s, %(params)s, %(arguments)s',
                         {'out_trade_no': out_trade_no, 'params': params, 'arguments': arguments})
         else:
