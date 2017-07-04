@@ -29,7 +29,7 @@ LOGGER = logging.getLogger(__name__)
 
 NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # alipay require this 7 characters to be returned to them
 
-PAYMENT_URL = 'https://openapi.alipay.com/gateway.do'
+ALIPAY_API_URL = 'https://openapi.alipay.com/gateway.do'
 REQUEST_SUCCESS_CODE = '10000'
 
 EVENT_ALIPAY_TRADE_PAID = define_event('alipay-trade-paid')
@@ -70,7 +70,7 @@ def _create_alipay_payment_url(method, return_url, notify_url, content_params):
         sign_type='RSA2'
     )
     params.sign = sign_rsa2(params, config.rsa2_private_key)
-    return '{}?{}'.format(PAYMENT_URL, urlencode(params))
+    return '{}?{}'.format(ALIPAY_API_URL, urlencode(params))
 
 
 def make_alipay_app_payment_order_str(out_trade_no, subject, body, total_amount, notify_url, minutes_to_expire):
@@ -95,16 +95,13 @@ def make_alipay_app_payment_order_str(out_trade_no, subject, body, total_amount,
 
 def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True):
     if is_async_result:
-        if validate_async_notification_return_arguments(arguments):
-            LOGGER.info('alipay notify verify SUCCESS: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
-        else:
-            LOGGER.error('alipay notify verify ERROR: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
+        if not validate_async_notification_return_arguments(arguments):
+            LOGGER.error('verify alipay notify return arguments falied: %(out_trade_no)s, %(arguments)s',
+                         {'out_trade_no': out_trade_no, 'arguments': arguments})
             return
     else:
-        if validate_query_return_arguments(arguments):
-            LOGGER.info('alipay query verify SUCCESS: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
-        else:
-            LOGGER.error('alipay query verify ERROR: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
+        if not validate_query_return_arguments(arguments):
+            LOGGER.error('verify alipay query return arguments failed: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
             return
 
     trade_no, buyer_id, total_amount, paid_at, discarded_reasons = parse_alipay_payment_return_arguments(out_trade_no, arguments, is_async_result)
@@ -208,7 +205,7 @@ def query_alipay_payment_status(out_trade_no):
     )
     params.sign = sign_rsa2(params, config.rsa2_private_key)
     try:
-        response = requests.get(PAYMENT_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
+        response = requests.get(ALIPAY_API_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
     except Exception:
         LOGGER.exception('alipay payment query exception-thrown: %(params)s', {'params': params})
@@ -220,9 +217,12 @@ def query_alipay_payment_status(out_trade_no):
         arguments.sign = content['sign']
         if arguments.code == REQUEST_SUCCESS_CODE:
             result = mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=False)
+            LOGGER.info('query alipay payment status successfully: %(out_trade_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
+                        {'out_trade_no': out_trade_no, 'code': arguments.code, 'msg': arguments.msg, 'sub_code': arguments.sub_code,
+                         'sub_msg': arguments.sub_msg, 'params': params, 'arguments': arguments})
             paid = result == NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
         else:
-            LOGGER.error('alipay payment query failed: %(out_trade_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
+            LOGGER.error('query alipay payment status failed: %(out_trade_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
                          {'out_trade_no': out_trade_no, 'code': arguments.code, 'msg': arguments.msg, 'sub_code': arguments.sub_code,
                           'sub_msg': arguments.sub_msg, 'params': params, 'arguments': arguments})
             paid = False
@@ -248,10 +248,10 @@ def close_alipay_payment_trade(out_trade_no, notify_url=None):
     )
     params.sign = sign_rsa2(params, config.rsa2_private_key)
     try:
-        response = requests.get(PAYMENT_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
+        response = requests.get(ALIPAY_API_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
     except Exception:
-        LOGGER.exception('alipay payment query exception-thrown: %(params)s', {'params': params})
+        LOGGER.exception('query alipay payment get exception: %(params)s', {'params': params})
         raise
     else:
         LOGGER.debug(response.content)
@@ -259,10 +259,10 @@ def close_alipay_payment_trade(out_trade_no, notify_url=None):
         arguments = DictObject(content['alipay_trade_close_response'])
         arguments.sign = content['sign']
         if arguments.code == REQUEST_SUCCESS_CODE:
-            LOGGER.info('requst alipay payment close success: %(out_trade_no)s, %(params)s, %(arguments)s',
+            LOGGER.info('request to close alipay payment successfully: %(out_trade_no)s, %(params)s, %(arguments)s',
                         {'out_trade_no': out_trade_no, 'params': params, 'arguments': arguments})
         else:
-            LOGGER.error('request alipay payment close failed: %(out_trade_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
+            LOGGER.error('request to close alipay payment failed: %(out_trade_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
                          {'out_trade_no': out_trade_no, 'code': arguments.code, 'msg': arguments.msg, 'sub_code': arguments.sub_code,
                           'sub_msg': arguments.sub_msg, 'params': params, 'arguments': arguments})
 
@@ -283,4 +283,4 @@ def verify_rsa(message, sign, public_key_path):
     try:
         rsa.verify(message, sign, public_key)
     except rsa.VerificationError:
-        raise Exception('verify failed')
+        raise Exception('verification failed')

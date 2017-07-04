@@ -319,16 +319,16 @@ def parse_xml_response(response):
     return arguments
 
 
-def refund(out_refund_no, transaction_id, total_fee, refund_fee):
+def refund(out_refund_no, out_trade_no, total_fee, refund_fee):
     """
     request wxpay refund
 
     :param out_refund_no: 外部退款单号
-    :param transaction_id: 原微信交易号
+    :param out_trade_no: 原交易外部订单号
     :param total_fee: 原交易金额, Decimal
     :param refund_fee: 退款金额, Decimal
     :return:
-        DictObject(out_refund_no: 商户退款单号, refund_id: 退款id, transaction_id: 原微信交易号, refund_channel_text: 退款去向（原支付卡/余额）,
+        DictObject(out_refund_no: 商户退款单号, refund_id: 退款id, out_trade_no: 原交易外部订单号, refund_channel_text: 退款去向（原支付卡/余额）,
             refund_fee: 申请退款金额, settlement_refund_fee: 扣除非充值的代金券后实际退款金额（APP微信退款接口无该字段，这里保留该字段，值与refund_fee一致）)
     """
     if refund_fee > total_fee:
@@ -336,7 +336,7 @@ def refund(out_refund_no, transaction_id, total_fee, refund_fee):
 
     config = wxpay_client_config()
     refund_request = DictObject(appid=config.app_id, mch_id=config.mch_id, nonce_str=uuid4().get_hex(), out_refund_no=str(out_refund_no),
-                                transaction_id=transaction_id, total_fee=unicode(int(total_fee * 100)), refund_fee=unicode(int(refund_fee * 100)),
+                                out_trade_no=out_trade_no, total_fee=unicode(int(total_fee * 100)), refund_fee=unicode(int(refund_fee * 100)),
                                 op_user_id=config.mch_id)
     refund_request.sign = sign_md5(refund_request, config.api_key)
     with require_current_template_directory_relative_to():
@@ -351,8 +351,7 @@ def refund(out_refund_no, transaction_id, total_fee, refund_fee):
         LOGGER.exception('request wxpay refund got read timeout: %(data)s', {'data': data})
         raise WXPayRefundException(WXPAY_REFUND_TIMEOUT, 'read response but timeout')
     except Exception as e:
-        LOGGER.exception('request wxpay refund got exception: %(transaction_id)s, %(out_refund_no)s, %(data)s, %(response)s', {
-            'transaction_id': transaction_id,
+        LOGGER.exception('request wxpay refund got exception: %(out_refund_no)s, %(data)s, %(response)s', {
             'out_refund_no': out_refund_no,
             'data': data,
             'response': response.content if response else e.message
@@ -361,23 +360,26 @@ def refund(out_refund_no, transaction_id, total_fee, refund_fee):
     else:
         parsed_response = parse_xml_response(response.content)
         if parsed_response.return_code != SUCCESSFULLY_MARK:
-            LOGGER.error('request wxpay refund got failed response: %(return_msg)s, %(data)s', {'return_msg': parsed_response.return_msg, 'data': data})
+            LOGGER.error('request wxpay refund got failed response: %(out_refund_no)s, %(return_msg)s, %(data)s',
+                         {'out_refund_no': out_refund_no, 'return_msg': parsed_response.return_msg, 'data': data})
             raise WXPayRefundException(WXPAY_REFUND_ERROR, parsed_response.return_msg)
         try:
             verify_wxpay_response(parsed_response, config.api_key)
         except Exception:
-            LOGGER.error('request wxpay refund got fake response: %(data)s, %(response)s', {'data': data, 'response': response.content})
+            LOGGER.error('request wxpay refund got fake response: %(out_refund_no)s, %(data)s, %(response)s',
+                         {'out_refund_no': out_refund_no, 'data': data, 'response': response.content})
             raise WXPayRefundException(WXPAY_REFUND_ERROR, 'sign is incorrect')
         if parsed_response.result_code != SUCCESSFULLY_MARK:
-            LOGGER.error('request wxpay refund got failed result: %(err_code)s, %(err_code_des)s, %(data)s, %(response)s', {
+            LOGGER.error('request wxpay refund got failed result: %(out_refund_no)s, %(err_code)s, %(err_code_des)s, %(data)s, %(response)s', {
+                'out_refund_no': out_refund_no,
                 'err_code': parsed_response.err_code,
                 'err_code_des': parsed_response.err_code_des,
                 'data': data,
                 'response': response.content
             })
             raise WXPayRefundException(parsed_response.result_code, parsed_response.err_code_des)
-        if parsed_response.transaction_id != transaction_id:
-            raise WXPayRefundException(WXPAY_REFUND_ERROR, 'transaction id mismatch')
+        if parsed_response.out_trade_no != out_trade_no:
+            raise WXPayRefundException(WXPAY_REFUND_ERROR, 'out trade no mismatch')
         if parsed_response.out_refund_no != out_refund_no:
             raise WXPayRefundException(WXPAY_REFUND_ERROR, 'out refund no mismatch')
         if refund_fee != Decimal(parsed_response.refund_fee) / 100:
@@ -393,8 +395,9 @@ def refund(out_refund_no, transaction_id, total_fee, refund_fee):
         refund_channel = parsed_response.get('refund_channel')
         if refund_channel:
             refund_channel_text = WXPAY_REFUND_CHANNELS[refund_channel]
-        LOGGER.info('request wxpay refund success: %(data)s, %(response)s', {'response': response.content})
-        return DictObject(out_refund_no=parsed_response.out_refund_no, refund_id=parsed_response.refund_id, transaction_id=parsed_response.transaction_id,
+        LOGGER.info('request wxpay refund success: %(out_refund_no)s, %(data)s, %(response)s',
+                    {'out_refund_no': out_refund_no, 'data': data, 'response': response.content})
+        return DictObject(out_refund_no=parsed_response.out_refund_no, refund_id=parsed_response.refund_id, out_trade_no=parsed_response.out_trade_no,
                           refund_channel_text=refund_channel_text, refund_fee=_refund_fee, settlement_refund_fee=settlement_refund_fee)
 
 
@@ -474,7 +477,7 @@ def query_refund_status(out_refund_no):
             processing=processing,
             failed=failed,
             refund_status_text=refund_status_text,
-            transaction_id=parsed_response.transaction_id,
+            out_trade_no=parsed_response.out_trade_no,
             out_refund_no=parsed_response.get('out_refund_no_0'),
             refund_id=parsed_response.get('refund_id_0'),
             refund_channel_text=refund_channel_text,
