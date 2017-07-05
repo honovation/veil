@@ -28,6 +28,7 @@ def refund(out_refund_no, out_trade_no, refund_amount, refund_reason):
         DictObject(out_refund_no: 商户退款单号, out_trade_no: 原交易外部订单号, buyer_id: 支付宝账号（如：15901825620）, refund_amount: 申请退款金额)
     """
     config = alipay_client_config()
+    refund_amount = '{:.2f}'.format(refund_amount)
     content_params = DictObject(out_request_no=out_refund_no, out_trade_no=out_trade_no, refund_amount=refund_amount, refund_reason=refund_reason)
     params = DictObject(
         app_id=config.app_id,
@@ -56,10 +57,8 @@ def refund(out_refund_no, out_trade_no, refund_amount, refund_reason):
                              {'out_refund_no': out_refund_no, 'arguments': arguments})
                 return
 
-            if arguments.get('out_trade_no') != out_trade_no:
+            if arguments['out_trade_no'] != out_trade_no:
                 raise ALIPayRefundException(REFUND_ERROR_CODE, 'out trade no mismatch')
-            if arguments.get('refund_fee') != refund_amount:
-                raise ALIPayRefundException(REFUND_ERROR_CODE, 'refund amount mismatch')
 
             LOGGER.info('request to refund alipay successfully: %(out_refund_no)s, %(params)s, %(arguments)s',
                         {'out_refund_no': out_refund_no, 'params': params, 'arguments': arguments})
@@ -112,7 +111,7 @@ def query_refund_status(out_refund_no, out_trade_no):
 
             LOGGER.info('query alipay refund status successfully: %(out_refund_no)s, %(params)s, %(arguments)s',
                         {'out_refund_no': out_refund_no, 'params': params, 'arguments': arguments})
-            success = arguments.get('out_request_no')
+            success = bool(arguments.get('out_request_no'))
             return DictObject(success=success, out_refund_no=out_refund_no, out_trade_no=out_trade_no, refund_amount=arguments.get('refund_amount'),
                               refund_reason=arguments.get('refund_reason'))
         else:
