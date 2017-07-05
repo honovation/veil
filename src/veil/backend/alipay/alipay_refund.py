@@ -56,8 +56,9 @@ def refund(out_refund_no, out_trade_no, refund_amount, refund_reason):
                              {'out_refund_no': out_refund_no, 'arguments': arguments})
                 return
 
-            if arguments['out_trade_no'] != out_trade_no:
-                raise ALIPayRefundException(REFUND_ERROR_CODE, 'out trade no mismatch')
+            if arguments.out_trade_no != out_trade_no:
+                raise ALIPayRefundException(REFUND_ERROR_CODE, 'out trade no mismatch, _out_trade_no: {}, out_trade_no: {}'.format(arguments.out_trade_no,
+                                                                                                                                   out_trade_no))
 
             LOGGER.info('request to refund alipay successfully: %(out_refund_no)s, %(params)s, %(arguments)s',
                         {'out_refund_no': out_refund_no, 'params': params, 'arguments': arguments})

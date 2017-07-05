@@ -379,13 +379,15 @@ def refund(out_refund_no, out_trade_no, total_fee, refund_fee):
             })
             raise WXPayRefundException(parsed_response.result_code, parsed_response.err_code_des)
         if parsed_response.out_trade_no != out_trade_no:
-            raise WXPayRefundException(WXPAY_REFUND_ERROR, 'out trade no mismatch')
+            raise WXPayRefundException(WXPAY_REFUND_ERROR, 'out trade no mismatch, _out_trade_no: {}, out_trade_no: {}'.format(parsed_response.out_trade_no,
+                                                                                                                               out_trade_no))
         if parsed_response.out_refund_no != out_refund_no:
-            raise WXPayRefundException(WXPAY_REFUND_ERROR, 'out refund no mismatch')
-        if refund_fee != Decimal(parsed_response.refund_fee) / 100:
-            raise WXPayRefundException(WXPAY_REFUND_ERROR, 'refund fee mismatch')
-
+            raise WXPayRefundException(WXPAY_REFUND_ERROR, 'out refund no mismatch, _out_refund_no: {}, out_refund_no: {}'.format(parsed_response.out_refund_no,
+                                                                                                                                  out_refund_no))
         _refund_fee = Decimal(parsed_response.refund_fee) / 100
+        if _refund_fee != refund_fee:
+            raise WXPayRefundException(WXPAY_REFUND_ERROR, 'refund fee mismatch, wxpay refund fee: {}, request refund fee: {}'.format(_refund_fee, refund_fee))
+
         settlement_refund_fee = parsed_response.get('settlement_refund_fee')
         if settlement_refund_fee:
             settlement_refund_fee = Decimal(settlement_refund_fee) / 100
