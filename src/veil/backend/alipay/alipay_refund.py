@@ -3,11 +3,10 @@ from __future__ import unicode_literals, print_function, division
 
 import json
 import logging
-
-import requests
+from decimal import Decimal
 
 from veil.profile.model import *
-from veil.utility.http import Retry
+from veil.utility.http import *
 from .alipay_client_installer import alipay_client_config
 from .alipay_payment import sign_rsa2, ALIPAY_API_URL, REQUEST_SUCCESS_CODE, validate_query_return_arguments
 
@@ -25,7 +24,7 @@ def refund(out_refund_no, out_trade_no, refund_amount, refund_reason):
     :param refund_amount: 退款金额, Decimal
     :param refund_reason: 退款原因
     :return:
-        DictObject(out_refund_no: 商户退款单号, out_trade_no: 原交易外部订单号, buyer_id: 支付宝账号（如：15901825620）, refund_amount: 申请退款金额)
+        DictObject(out_refund_no: 商户退款单号, out_trade_no: 原交易外部订单号, buyer_id: 支付宝账号（如：15901825620）, refund_total_amount: 退款总金额)
     """
     config = alipay_client_config()
     refund_amount = '{:.2f}'.format(refund_amount)
@@ -62,7 +61,8 @@ def refund(out_refund_no, out_trade_no, refund_amount, refund_reason):
 
             LOGGER.info('request to refund alipay successfully: %(out_refund_no)s, %(params)s, %(arguments)s',
                         {'out_refund_no': out_refund_no, 'params': params, 'arguments': arguments})
-            return DictObject(out_refund_no=out_refund_no, out_trade_no=out_trade_no, buyer_id=arguments.buyer_logon_id, refund_amount=arguments.refund_fee)
+            return DictObject(out_refund_no=out_refund_no, out_trade_no=out_trade_no, buyer_id=arguments.buyer_logon_id,
+                              refund_total_amount=Decimal(arguments.refund_fee))
         else:
             LOGGER.error('request to refund alipay failed: %(out_refund_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
                          {'out_refund_no': out_refund_no, 'code': arguments.code, 'msg': arguments.msg, 'sub_code': arguments.sub_code,
@@ -77,8 +77,10 @@ def query_refund_status(out_refund_no, out_trade_no):
     :param out_refund_no: 外部退款单号
     :param out_trade_no: 原交易外部订单号
     :return:
-        DictObject(success: True/False（退款完成/退款中）, out_refund_no: 商户退款单号, out_trade_no: 原交易外部订单号, refund_amount: 申请退款金额,
-            refund_reason: 退款原因)
+        DictObject(
+                success: True/False（退款完成/退款中）,
+                data: DictObject(out_refund_no: 商户退款单号, out_trade_no: 原交易外部订单号, refund_amount: 申请退款金额, refund_reason: 退款原因)
+                )
     """
     config = alipay_client_config()
     content_params = DictObject(out_request_no=out_refund_no, out_trade_no=out_trade_no)
@@ -111,9 +113,12 @@ def query_refund_status(out_refund_no, out_trade_no):
 
             LOGGER.info('query alipay refund status successfully: %(out_refund_no)s, %(params)s, %(arguments)s',
                         {'out_refund_no': out_refund_no, 'params': params, 'arguments': arguments})
-            success = bool(arguments.get('out_request_no'))
-            return DictObject(success=success, out_refund_no=out_refund_no, out_trade_no=out_trade_no, refund_amount=arguments.get('refund_amount'),
-                              refund_reason=arguments.get('refund_reason'))
+            if arguments.get('out_request_no'):
+                return DictObject(success=True,
+                                  data=DictObject(out_refund_no=out_refund_no, out_trade_no=out_trade_no, refund_amount=Decimal(arguments['refund_amount']),
+                                                  refund_reason=arguments.get('refund_reason')))
+            else:
+                return DictObject(success=False, data=None)
         else:
             LOGGER.error('query alipay refund status failed: %(out_refund_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
                          {'out_refund_no': out_refund_no, 'code': arguments.code, 'msg': arguments.msg, 'sub_code': arguments.sub_code,
