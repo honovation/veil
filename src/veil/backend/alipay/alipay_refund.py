@@ -12,7 +12,8 @@ from .alipay_payment import sign_rsa2, ALIPAY_API_URL, REQUEST_SUCCESS_CODE, val
 
 LOGGER = logging.getLogger(__name__)
 
-REFUND_ERROR_CODE = '100000'
+REFUND_ERROR_CODE = '-1'
+REFUND_TIMEOUT_CODE = '-2'
 
 
 def refund(out_refund_no, out_trade_no, refund_amount, refund_reason):
@@ -39,33 +40,39 @@ def refund(out_refund_no, out_trade_no, refund_amount, refund_reason):
         sign_type='RSA2'
     )
     params.sign = sign_rsa2(params, config.rsa2_private_key)
+    response = None
     try:
         response = requests.get(ALIPAY_API_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
-    except Exception:
-        LOGGER.exception('request to refund alipay get exception: %(params)s', {'params': params})
-        raise
+    except ReadTimeout:
+        LOGGER.exception('request to alipay refund got read timeout: %(params)s', {'params': params})
+        raise ALIPayRefundException(REFUND_TIMEOUT_CODE, 'read response but timeout')
+    except Exception as e:
+        LOGGER.exception('request to alipay refund get exception: %(params)s', {'params': params})
+        raise ALIPayRefundException(REFUND_ERROR_CODE, response.content if response else e.message)
     else:
         LOGGER.debug(response.content)
         content = from_json(response.content)
         arguments = DictObject(content['alipay_trade_refund_response'])
         arguments.sign = content['sign']
+
         if arguments.code == REQUEST_SUCCESS_CODE:
             if not validate_query_return_arguments(arguments):
                 LOGGER.error('verify alipay refund return arguments failed: %(out_refund_no)s, %(arguments)s',
                              {'out_refund_no': out_refund_no, 'arguments': arguments})
-                return
+                raise ALIPayRefundException(REFUND_ERROR_CODE, 'sign is incorrect')
 
             if arguments.out_trade_no != out_trade_no:
+                LOGGER.error('request to alipay refund got invalid response: %(params)s, %(response)s', {'params': params, 'response': response.content})
                 raise ALIPayRefundException(REFUND_ERROR_CODE, 'out trade no mismatch, _out_trade_no: {}, out_trade_no: {}'.format(arguments.out_trade_no,
                                                                                                                                    out_trade_no))
 
-            LOGGER.info('request to refund alipay successfully: %(out_refund_no)s, %(params)s, %(arguments)s',
+            LOGGER.info('request to alipay refund successfully: %(out_refund_no)s, %(params)s, %(arguments)s',
                         {'out_refund_no': out_refund_no, 'params': params, 'arguments': arguments})
             return DictObject(out_refund_no=out_refund_no, out_trade_no=out_trade_no, buyer_id=arguments.buyer_logon_id,
                               refund_total_amount=Decimal(arguments.refund_fee))
         else:
-            LOGGER.error('request to refund alipay failed: %(out_refund_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
+            LOGGER.error('request to alipay refund failed: %(out_refund_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
                          {'out_refund_no': out_refund_no, 'code': arguments.code, 'msg': arguments.msg, 'sub_code': arguments.sub_code,
                           'sub_msg': arguments.sub_msg, 'params': params, 'arguments': arguments})
             raise ALIPayRefundException(arguments.code, arguments.msg, arguments.sub_code, arguments.sub_msg)
@@ -95,22 +102,27 @@ def query_refund_status(out_refund_no, out_trade_no):
         sign_type='RSA2'
     )
     params.sign = sign_rsa2(params, config.rsa2_private_key)
+    response = None
     try:
         response = requests.get(ALIPAY_API_URL, params=params, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
-    except Exception:
-        LOGGER.exception('request to alipay refund get exception: %(params)s', {'params': params})
-        raise
+    except ReadTimeout:
+        LOGGER.exception('query alipay refund status got read timeout: %(params)s', {'params': params})
+        raise ALIPayRefundException(REFUND_TIMEOUT_CODE, 'read response but timeout')
+    except Exception as e:
+        LOGGER.exception('query alipay refund status get exception: %(params)s', {'params': params})
+        raise ALIPayRefundException(REFUND_ERROR_CODE, response.content if response else e.message)
     else:
         LOGGER.debug(response.content)
         content = from_json(response.content)
         arguments = DictObject(content['alipay_trade_fastpay_refund_query_response'])
         arguments.sign = content['sign']
+
         if arguments.code == REQUEST_SUCCESS_CODE:
             if not validate_query_return_arguments(arguments):
                 LOGGER.error('verify alipay refund query return arguments failed: %(out_refund_no)s, %(arguments)s',
                              {'out_refund_no': out_refund_no, 'arguments': arguments})
-                return
+                raise ALIPayRefundException(REFUND_ERROR_CODE, 'sign is incorrect')
 
             LOGGER.info('query alipay refund status successfully: %(out_refund_no)s, %(params)s, %(arguments)s',
                         {'out_refund_no': out_refund_no, 'params': params, 'arguments': arguments})
@@ -134,6 +146,10 @@ class ALIPayRefundException(Exception):
         self.msg = msg
         self.sub_code = sub_code
         self.sub_msg = sub_msg
+
+    @property
+    def is_timeout(self):
+        return self.code == REFUND_TIMEOUT_CODE
 
     @property
     def is_temporarily_unavailable(self):

@@ -14,11 +14,12 @@ with veil_component.init_component(__name__):
     from .wxpay_payment import close_order
     from .wxpay_payment import parse_xml_response
     from .wxpay_payment import WXPayException
-    from .wxpay_payment import WXPayRefundException
     from .wxpay_payment import WXPAY_TRADE_TYPE_APP
     from .wxpay_payment import WXPAY_TRADE_TYPE_JSAPI
-    from .wxpay_payment import refund
-    from .wxpay_payment import query_refund_status
+
+    from .wxpay_refund import refund
+    from .wxpay_refund import query_refund_status
+    from .wxpay_refund import WXPayRefundException
 
     from .wxpay_client_installer import wxpay_client_resource
     from .wxpay_client_installer import wxpay_client_config
@@ -48,11 +49,12 @@ with veil_component.init_component(__name__):
         close_order.__name__,
         parse_xml_response.__name__,
         WXPayException.__name__,
-        WXPayRefundException.__name__,
         'WXPAY_TRADE_TYPE_APP',
         'WXPAY_TRADE_TYPE_JSAPI',
+
         refund.__name__,
         query_refund_status.__name__,
+        'WXPayRefundException',
 
         wxpay_client_resource.__name__,
         wxpay_client_config.__name__,
