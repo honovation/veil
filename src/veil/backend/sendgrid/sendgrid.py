@@ -90,8 +90,3 @@ def send_email(sender, recipient, subject, text='', html='', category='', email_
             'email_code': email_code,
             'to_addr': to_addr
         })
-
-
-@job('send_transactional_email', retry_every=3 * 60, retry_timeout=3 * 60 * 60)
-def send_transactional_email_job(sender, recipient, subject, text='', html='', category='', email_code=''):
-    send_email(sender, recipient, subject, text, html, category, email_code)
