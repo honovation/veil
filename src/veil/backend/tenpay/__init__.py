@@ -12,6 +12,8 @@ with veil_component.init_component(__name__):
     from .tenpay_refund import refund
     from .tenpay_refund import query_refund_status
     from .tenpay_refund import process_refund_notification
+    from .tenpay_refund import EVENT_TENPAY_REFUND_NOTIFIED
+    from .tenpay_refund import TENPayRefundException
 
     from .tenpay_client_installer import tenpay_client_resource
     from .tenpay_client_installer import tenpay_client_config
@@ -30,6 +32,8 @@ with veil_component.init_component(__name__):
         refund.__name__,
         query_refund_status.__name__,
         process_refund_notification.__name__,
+        'EVENT_TENPAY_REFUND_NOTIFIED',
+        'TENPayRefundException',
 
         tenpay_client_resource.__name__,
         tenpay_client_config.__name__,
