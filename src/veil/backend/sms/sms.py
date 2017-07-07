@@ -6,7 +6,6 @@ from collections import OrderedDict
 from veil_component import VEIL_ENV
 from veil.environment import get_application_sms_whitelist
 from veil.backend.job_queue import *
-from veil.backend.queue import *
 from veil.backend.redis import *
 from veil.model.collection import *
 from veil.utility.json import *
@@ -64,29 +63,25 @@ def check_sms_provider_balance_and_reconciliation():
         raise Exception(', '.join(error_messages))
 
 
-def send_validation_code_via_sms(receivers, sms_code, last_sms_code=None, message=None, template=None):
-    send_sms(receivers, sms_code, transactional=True, promotional=False, last_sms_code=last_sms_code, message=message, template=template)
+def send_validation_code_via_sms(receivers, sms_code, last_sms_code=None, message=None, template=None, expired_at=None):
+    send_sms(receivers, sms_code, transactional=True, promotional=False, last_sms_code=last_sms_code, message=message, template=template, expired_at=expired_at)
 
 
-def send_validation_code_via_voice(receiver, code, sms_code, last_sms_code=None):
-    send_voice_validation_code.delay(receiver, code, sms_code, last_sms_code=last_sms_code)
+def send_validation_code_via_voice(receiver, code, sms_code, last_sms_code=None, expired_at=None):
+    send_voice_validation_code.delay(receiver, code, sms_code, last_sms_code=last_sms_code, expired_at=expired_at)
 
 
-def send_sms(receivers, sms_code, transactional=False, promotional=True, last_sms_code=None, message=None, template=None):
+def send_sms(receivers, sms_code, transactional=False, promotional=True, last_sms_code=None, message=None, template=None, expired_at=None):
     assert message is not None or template is not None, 'message or template must be provided'
     json_template = to_json(template)
     if transactional:
         if promotional:
-            send_slow_transactional_sms.delay(receivers, sms_code, promotional, message=message, template=json_template)
+            send_slow_transactional_sms.delay(receivers, sms_code, promotional, message=message, template=json_template, expired_at=expired_at)
         else:
-            send_transactional_sms.delay(receivers, sms_code, promotional, last_sms_code=last_sms_code, message=message, template=json_template)
+            send_transactional_sms.delay(receivers, sms_code, promotional, last_sms_code=last_sms_code, message=message, template=json_template,
+                                         expired_at=expired_at)
     else:
-        send_marketing_sms.delay(receivers, sms_code, promotional, message=message, template=json_template)
-
-
-@job('send_transactional_sms', retry_every=10, retry_timeout=90)
-def send_transactional_sms_job(receivers, sms_code, promotional, last_sms_code=None, message=None, template=None):
-    send_transactional_sms(receivers, sms_code, promotional, last_sms_code=last_sms_code, message=message, template=template)
+        send_marketing_sms.delay(receivers, sms_code, promotional, message=message, template=json_template, expired_at=expired_at)
 
 
 @task(queue='send_transactional_sms', retry_method=fixed(10, 10))
@@ -105,11 +100,6 @@ def send_transactional_sms(receivers, sms_code, promotional, last_sms_code=None,
             send_transactional_sms.delay(receivers_, sms_code, promotional, last_sms_code=last_sms_code, message=message, template=template)
 
 
-@job('send_slow_transactional_sms', retry_every=10 * 60, retry_timeout=3 * 60 * 60)
-def send_slow_transactional_sms_job(receivers, sms_code, promotional, message=None, template=None):
-    send_slow_transactional_sms(receivers, sms_code, promotional, message=message, template=template)
-
-
 @task(queue='send_slow_transactional_sms', retry_method=fixed(60 * 10, 18))
 def send_slow_transactional_sms(receivers, sms_code, promotional, message=None, template=None):
     sms_provider = get_current_sms_provider()
@@ -122,11 +112,6 @@ def send_slow_transactional_sms(receivers, sms_code, promotional, message=None, 
             send_slow_transactional_sms.delay(receivers_, sms_code, promotional, message=message, template=template)
 
 
-@job('send_marketing_sms', retry_every=10 * 60, retry_timeout=3 * 60 * 60)
-def send_marketing_sms_job(receivers, sms_code, promotional, message=None, template=None):
-    send_marketing_sms(receivers, sms_code, promotional, message=message, template=template)
-
-
 @task(queue='send_marketing_sms', retry_method=fixed(60 * 10, 18))
 def send_marketing_sms(receivers, sms_code, promotional, message=None, template=None):
     sms_provider = get_current_sms_provider()
@@ -137,11 +122,6 @@ def send_marketing_sms(receivers, sms_code, promotional, message=None, template=
     else:
         for receivers_ in receiver_list:
             send_marketing_sms.delay(receivers_, sms_code, promotional, message=message, template=template)
-
-
-@job('send_transactional_sms', retry_every=10, retry_timeout=90)
-def send_voice_validation_code_job(receiver, code, sms_code, last_sms_code=None):
-    send_voice_validation_code(receiver, code, sms_code, last_sms_code=last_sms_code)
 
 
 @task(queue='send_voice_validation_code', retry_method=fixed(10, 10))
