@@ -9,7 +9,7 @@ from croniter.croniter import croniter
 from flask import Flask
 from flask_admin import Admin
 from tasktiger_admin import TaskTigerView, tasktiger_admin
-from tasktiger import TaskTiger, JobTimeoutException, StopRetry, fixed, linear, exponential
+from tasktiger import TaskTiger, JobTimeoutException, fixed, linear, exponential
 from tasktiger import periodic as _periodic
 from redis import Redis
 from veil.frontend.cli import *
