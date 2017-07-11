@@ -48,11 +48,12 @@ def refund(out_refund_no, out_trade_no, total_fee, refund_fee):
         DictObject(out_refund_no: 商户退款单号, refund_id: 退款id, out_trade_no: 原交易外部订单号, refund_channel_text: 退款去向（原支付卡/余额）,
             refund_fee: 申请退款金额, settlement_refund_fee: 扣除非充值的代金券后实际退款金额（APP微信退款接口无该字段，这里保留该字段，值与refund_fee一致）)
     """
+    out_refund_no = unicode(out_refund_no)
     if refund_fee > total_fee:
         raise WXPayRefundException(WXPAY_REFUND_ERROR, 'refund_fee can not be greater than total_fee')
 
     config = wxpay_client_config()
-    refund_request = DictObject(appid=config.app_id, mch_id=config.mch_id, nonce_str=uuid4().get_hex(), out_refund_no=str(out_refund_no),
+    refund_request = DictObject(appid=config.app_id, mch_id=config.mch_id, nonce_str=uuid4().get_hex(), out_refund_no=out_refund_no,
                                 out_trade_no=out_trade_no, total_fee=unicode(int(total_fee * 100)), refund_fee=unicode(int(refund_fee * 100)),
                                 op_user_id=config.mch_id)
     refund_request.sign = sign_md5(refund_request, config.api_key)

@@ -55,6 +55,7 @@ def refund(out_refund_no, out_trade_no, total_fee, refund_fee, notify_url=None):
             refund_status_text:退款状态（成功/失败/处理中/需人工处理）, refund_fee: 退款金额, refund_channel_text: 退款去向（财付通/银行卡）,
             recv_user_id: 接收退款的财付通账号, reccv_user_name: 接收退款的姓名)
     """
+    out_refund_no = unicode(out_refund_no)
     config = tenpay_client_config()
     partner_id = config.partner_id
     op_user_id = config.refund_op_user_id
@@ -73,8 +74,8 @@ def refund(out_refund_no, out_trade_no, total_fee, refund_fee, notify_url=None):
     data.sign = sign_md5(data)
     response = None
     try:
-        response = requests.get(REFUND_URL, data=data, verify=config.api_ca_cert, cert=(config.api_client_cert, config.api_client_key),
-                                timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
+        response = requests.post(REFUND_URL, data=data, verify=config.api_ca_cert, cert=(config.api_client_cert, config.api_client_key),
+                                 timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.2))
         response.raise_for_status()
     except ReadTimeout:
         LOGGER.exception('request to tenpay refund got read timeout: %(data)s', {'data': data})

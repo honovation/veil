@@ -27,6 +27,7 @@ def refund(out_refund_no, out_trade_no, refund_amount, refund_reason):
     :return:
         DictObject(out_refund_no: 商户退款单号, out_trade_no: 原交易外部订单号, buyer_id: 支付宝账号（如：15901825620）, refund_total_amount: 退款总金额)
     """
+    out_refund_no = unicode(out_refund_no)
     config = alipay_client_config()
     refund_amount = '{:.2f}'.format(refund_amount)
     content_params = DictObject(out_request_no=out_refund_no, out_trade_no=out_trade_no, refund_amount=refund_amount, refund_reason=refund_reason)
