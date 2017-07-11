@@ -135,6 +135,7 @@ def query_refund_status(out_refund_no):
             refund_channel_text: 退款去向（原支付卡/余额）, refund_fee: 申请退款金额, settlement_refund_fee: 扣除非充值的代金券后实际退款金额, refund_status: 退款状态,
             refund_status_text: 退款状态文字（成功/失败/处理中/转代发）, refund_recv_accout: 退款入账账户(某张卡/用户零钱)), ...]
     """
+    out_refund_no = unicode(out_refund_no)
     config = wxpay_client_config()
     query_request = DictObject(appid=config.app_id, mch_id=config.mch_id, nonce_str=uuid4().get_hex(), out_refund_no=out_refund_no)
     query_request.sign = sign_md5(query_request, config.api_key)

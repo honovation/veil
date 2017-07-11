@@ -84,6 +84,7 @@ def refund(out_refund_no, out_trade_no, total_fee, refund_fee, notify_url=None):
         LOGGER.exception('request to tenpay refund got exception: %(data)s, %(response)s', {'data': data, 'response': response.content if response else ''})
         raise TENPayRefundException(TENPAY_REFUND_ERROR_CODE, response.content if response else e.message)
     else:
+        LOGGER.debug(response.content)
         result = parse_xml_response(response.content)
         assert result.input_charset == 'UTF-8', 'assume tenpay use same input charset as request'
         assert result.sign_type == 'MD5', 'assume tenpay use same sign type as request'
@@ -191,6 +192,7 @@ def query_refund_status(out_refund_no):
             recv_user_id: 接收退款的财付通账号, reccv_user_name: 接收退款的姓名, refund_time_begin: 申请退款时间(UTC), refund_time_last_modify: 退款最后修改时间(UTC)),
             ...])
     """
+    out_refund_no = unicode(out_refund_no)
     params = DictObject(input_charset='UTF-8', service_version='1.1', partner=tenpay_client_config().partner_id, out_refund_no=out_refund_no)
     params.sign = sign_md5(params)
     response = None
@@ -207,19 +209,22 @@ def query_refund_status(out_refund_no):
         })
         raise TENPayRefundException(TENPAY_REFUND_ERROR_CODE, response.content if response else e.message)
     else:
+        LOGGER.debug(response.content)
         result = parse_xml_response(response.content)
         assert result.input_charset == 'UTF-8', 'assume tenpay use same input charset as request'
         assert result.sign_type == 'MD5', 'assume tenpay use same sign type as request'
-        if not is_sign_correct(result):
-            LOGGER.error('query tenpay refund status got fake response: %(params)s, %(response)s', {'params': params, 'response': response.content})
-            raise TENPayRefundException(TENPAY_REFUND_ERROR_CODE, 'sign is incorrect')
         if result.retcode != '0':
-            LOGGER.error('query tenpay refund status got failed response: %(params)s, %(response)s', {'params': params, 'response': response.content})
+            LOGGER.error('query tenpay refund status failed: %(out_refund_no)s, %(params)s, %(response)s',
+                         {'out_refund_no': out_refund_no, 'params': params, 'response': response.content})
             if result.retcode == TENPAY_REFUND_ERROR_NOT_EXIST_CODE:
                 raise TENPayRefundException(result.retcode, '退款失败：原交易未退款')
             if result.retcode == TENPAY_REFUND_ERROR_TRADE_NOT_EXIST_CODE:
                 raise TENPayRefundException(result.retcode, '退款失败：原交易不存在')
             raise TENPayRefundException(TENPAY_REFUND_ERROR_CODE, result.retmsg)
+        if not is_sign_correct(result):
+            LOGGER.error('query tenpay refund status got fake response: %(out_refund_no)s, %(params)s, %(response)s',
+                         {'out_refund_no': out_refund_no, 'params': params, 'response': response.content})
+            raise TENPayRefundException(TENPAY_REFUND_ERROR_CODE, 'sign is incorrect')
 
         _refund_status = result.get('refund_state_0')
         success = _refund_status in TENPAY_REFUND_STATUS_SUCCESS_MARKS
@@ -241,9 +246,12 @@ def query_refund_status(out_refund_no):
             else:
                 refund_status_text = '状态未确定：使用原退款请求号重新发起退款'
         else:
-            LOGGER.error('query tenpay refund status got unknown status: %(params)s, %(response)s', {'params': params, 'response': response.content})
+            LOGGER.error('query tenpay refund status got unknown status: %(out_refund_no)s, %(params)s, %(response)s',
+                         {'out_refund_no': out_refund_no, 'params': params, 'response': response.content})
             raise TENPayRefundException(TENPAY_REFUND_ERROR_CODE, 'unknown refund status')
 
+        LOGGER.info('query tenpay refund status successfully: %(out_refund_no)s, %(params)s, %(response)s',
+                    {'out_refund_no': out_refund_no, 'params': params, 'response': response.content})
         refund_time_begin = result.get('refund_time_begin_0')
         if refund_time_begin:
             refund_time_begin = to_datetime(format='%Y%m%d%H%M%S')(refund_time_begin)

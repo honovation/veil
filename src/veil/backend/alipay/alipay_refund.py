@@ -91,6 +91,7 @@ def query_refund_status(out_refund_no, out_trade_no):
                 data: DictObject(out_refund_no: 商户退款单号, out_trade_no: 原交易外部订单号, refund_amount: 申请退款金额, refund_reason: 退款原因)
                 )
     """
+    out_refund_no = unicode(out_refund_no)
     config = alipay_client_config()
     content_params = DictObject(out_request_no=out_refund_no, out_trade_no=out_trade_no)
     params = DictObject(
