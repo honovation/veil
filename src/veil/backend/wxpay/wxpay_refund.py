@@ -25,8 +25,6 @@ WXPAY_REFUND_CHANNELS = {
 WXPAY_REFUND_TIMEOUT = 'WXPAY_REFUND_TIMEOUT'
 WXPAY_REFUND_ERROR = 'WXPAY_REFUND_ERROR'
 
-SYSTEMERROR_MARK = 'SYSTEMERROR'
-
 WXPAY_REFUND_STATUS_SUCCESS = 'SUCCESS'
 WXPAY_REFUND_STATUS_CLOSED = 'REFUNDCLOSE'
 WXPAY_REFUND_STATUS_PROCESSING = 'PROCESSING'
@@ -222,7 +220,23 @@ class WXPayRefundException(Exception):
 
     @property
     def is_timeout(self):
-        return self.code in {WXPAY_REFUND_TIMEOUT, SYSTEMERROR_MARK}  # 处理超时
+        return self.code in {WXPAY_REFUND_TIMEOUT, 'SYSTEMERROR'}  # 处理超时 / 系统错误，需重试
+
+    @property
+    def is_need_retry(self):
+        return self.code == 'BIZERR_NEED_RETRY'  # 需重试
+
+    @property
+    def is_not_enough(self):
+        return self.code == 'NOTENOUGH'  # 卖家余额不足
+
+    @property
+    def is_overdue(self):
+        return self.code == 'TRADE_OVERDUE'  # 超过一年的可退款期限
+
+    @property
+    def is_abnormal(self):
+        return self.code == 'USER_ACCOUNT_ABNORMAL'  # 退款请求失败，需商家自行处理退款
 
     def __unicode__(self):  # TODO: not necessary under python3
         return 'code: {}, reason: {}'.format(self.code, self.reason)

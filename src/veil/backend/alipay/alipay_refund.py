@@ -155,6 +155,30 @@ class ALIPayRefundException(Exception):
     def is_temporarily_unavailable(self):
         return self.code == '20000' or self.sub_code == 'ACQ.SYSTEM_ERROR'  # 服务暂时不可用 / 系统错误，需重试
 
+    @property
+    def is_not_enough(self):
+        return self.sub_code == 'ACQ.SELLER_BALANCE_NOT_ENOUGH'  # 卖家余额不足
+
+    @property
+    def is_not_equal_total(self):
+        return self.sub_code == 'ACQ.REFUND_AMT_NOT_EQUAL_TOTAL'  # 退款金额超限
+
+    @property
+    def is_been_freezen(self):
+        return self.sub_code == 'ACQ.REASON_TRADE_BEEN_FREEZEN'  # 退款交易被冻结
+
+    @property
+    def is_not_exist(self):
+        return self.sub_code == 'ACQ.TRADE_NOT_EXIST'  # 原交易不存在
+
+    @property
+    def is_finished(self):
+        return self.sub_code == 'ACQ.TRADE_HAS_FINISHED'  # 原交易已完结
+
+    @property
+    def is_not_allow_refund(self):
+        return self.sub_code == 'ACQ.TRADE_NOT_ALLOW_REFUND'  # 原交易不允许退款
+
     def __unicode__(self):  # TODO: not necessary under python3
         return 'code: {}, msg: {}, sub_code: {}, sub_msg: {}'.format(self.code, self.msg, self.sub_code or '', self.sub_msg or '')
 
