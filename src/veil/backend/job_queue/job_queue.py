@@ -25,7 +25,7 @@ LOGGER = logging.getLogger(__name__)
 
 ENQUEUE_AFTER_TIMEDELTA = timedelta(seconds=5)
 DEFAULT_QUEUE_NAME = 'default'
-DEFAULT_RETRY_ON = (JobTimeoutException, )
+ALWAYS_RETRY_ON = (JobTimeoutException, )
 
 periodic = _periodic
 
@@ -101,6 +101,7 @@ class JobQueue(TaskTiger):
 
 def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=True, lock=None, lock_key=None, retry=True, retry_on=(Exception, ),
          retry_method=exponential(60, 2, 5), schedule=None, batch=False):
+    retry_on = retry_on + ALWAYS_RETRY_ON
 
     job_queue = JobQueue.instance()
 
@@ -120,8 +121,7 @@ def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=True, lock=None, 
                 _retry_on = kwargs.pop('retry_on', None)
                 _retry_method = kwargs.pop('retry_method', None)
                 return job_queue.delay(f, args=args, kwargs=kwargs, queue=_queue, hard_timeout=_hard_timeout, unique=_unique, lock=_lock, lock_key=_lock_key,
-                                       when=_when, retry=_retry, retry_on=_retry_on + DEFAULT_RETRY_ON if _retry_on else DEFAULT_RETRY_ON,
-                                       retry_method=_retry_method)
+                                       when=_when, retry=_retry, retry_on=_retry_on, retry_method=_retry_method)
 
             return _delay_inner
 
