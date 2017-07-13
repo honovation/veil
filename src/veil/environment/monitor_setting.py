@@ -20,6 +20,7 @@ def monitor_programs(config):
             'run_in_directory': '/usr/share/logstash',
             'execute_command': '/usr/share/logstash/bin/logstash --path.settings {}/logstash'.format(VEIL_ETC_DIR),
             'run_as': 'logstash',
+            'environment_variables': {'HOME': os.environ.copy()['HOME']},
             'resources': [('veil.environment.monitor.elk_resource', {'config': config})]
         }},
         {'kibana': {
