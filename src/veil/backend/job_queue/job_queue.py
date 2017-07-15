@@ -79,7 +79,7 @@ class JobQueue(TaskTiger):
             config = queue_client_config()
             redis = Redis(host=config.host, port=config.port, decode_responses=True)
             if 'redis' == config.type:
-                cls._instance = cls(connection=redis, config={'LOGGER_NAME': 'veil.backend.job_queue', 'STATS_INTERVAL': 0, 'REQUEUE_EXPIRED_TASKS_BATCH_SIZE': 10000})
+                cls._instance = cls(connection=redis, config={'LOGGER_NAME': 'veil.backend.job_queue', 'STATS_INTERVAL': 0})
             elif 'immediate' == config.type:
                 cls._instance = cls(connection=redis, config={'ALWAYS_EAGER': True, 'LOGGER_NAME': 'veil.backend.job_queue', 'STATS_INTERVAL': 0})
             else:
