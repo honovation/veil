@@ -50,6 +50,7 @@ def self_check():
     if hasattr(application, 'USE_NPM_BUILD') and application.USE_NPM_BUILD:
         shell_execute('sudo npm install yarn -g --registry=https://registry.npm.taobao.org')
         shell_execute('yarn install --registry=https://registry.npm.taobao.org')
+        shell_execute('yarn lint')
         shell_execute('yarn run build')
         shell_execute('yarn run build-mobile')
     shell_execute('sudo veil :test up --daemonize')
