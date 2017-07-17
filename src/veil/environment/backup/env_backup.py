@@ -46,9 +46,9 @@ def backup_host(host):
         running_servers_to_down = [s for s in list_veil_servers(VEIL_ENV.name, False, False) if s.mount_data_dir and s.host_base_name == host.base_name and is_server_running(s)]
         try:
             bring_down_servers(running_servers_to_down)
-            fabric.api.run('rsync -avh --numeric-ids --delete --exclude "/{}" --exclude "/{}" --exclude "/{}" --link-dest={}/ {}/ {}/'.format(
+            fabric.api.run('rsync -avh --numeric-ids --delete --exclude "/{}" --exclude "/{}" --exclude "/{}" {}/ {}/'.format(
                 host.var_dir.relpathto(host.bucket_inline_static_files_dir), host.var_dir.relpathto(host.bucket_captcha_image_dir),
-                host.var_dir.relpathto(host.bucket_uploaded_files_dir), host.var_dir, host.var_dir, host_backup_dir))
+                host.var_dir.relpathto(host.bucket_uploaded_files_dir), host.var_dir, host_backup_dir))
         finally:
             bring_up_servers(reversed(running_servers_to_down))
 
