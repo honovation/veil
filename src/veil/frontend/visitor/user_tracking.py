@@ -49,17 +49,18 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
     @contextlib.contextmanager
     def f():
         request = get_current_http_request()
+
         request.tracking_code = get_browser_code()
+        if not request.tracking_code:
+            request.tracking_code = uuid.uuid4().get_hex()
+        set_browser_code(request.website, request.tracking_code)
+
         try:
             if request.user_agent.is_bot:
                 if TAG_NO_LOGIN_REQUIRED not in request.route.tags:
                     set_http_status_code(httplib.FORBIDDEN)
                     end_http_request_processing()
             else:
-                if not request.tracking_code:
-                    request.tracking_code = uuid.uuid4().get_hex()
-                set_browser_code(request.website, request.tracking_code)
-
                 if try_sign_in:
                     try_sign_in()
 
