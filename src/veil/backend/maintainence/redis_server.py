@@ -5,7 +5,7 @@ from veil.environment import get_current_veil_env
 from veil.backend.job_queue import *
 
 
-@task(queue='rewrite_redis_aof', schedule=cron_expr('17 1 * * *'))
+@task(queue='rewrite_redis_aof', schedule=cron_expr('7 3 * * *'))
 def rewrite_redis_aof():
     current_veil_env = get_current_veil_env()
     if not hasattr(current_veil_env.config, 'redis_servers'):
