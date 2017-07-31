@@ -77,8 +77,18 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
     print(cyan('Remove rollbackable tags ...'))
     remove_rollbackable_tags(veil_env_name)
 
+    print(cyan('Enable vm.overcommit_memory on redis-server-running hosts ...'))
+    enable_vm_overcommit_memory_on_redis_server_running_hosts(veil_env_name)
+
     if elapsed_seconds_to_deploy_first_round_servers:
         print(cyan('\nElapsed time for deploying round-1 servers: {} seconds\n'.format(elapsed_seconds_to_deploy_first_round_servers)))
+
+
+def enable_vm_overcommit_memory_on_redis_server_running_hosts(veil_env_name):
+    for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
+        with fabric.api.settings(host_string=host.deploys_via):
+            fabric.api.sudo('ps -ef | grep redis-server | grep -v grep && sysctl vm.overcommit_memory=1',
+                            warn_only=True)
 
 
 def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True):
