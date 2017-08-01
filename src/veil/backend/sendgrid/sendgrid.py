@@ -8,7 +8,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from veil_component import VEIL_ENV
 from veil.environment import get_application_email_whitelist
-from veil.backend.queue import *
+from veil.backend.job_queue import *
 from veil.development.test import *
 from veil.model.event import *
 from veil.server.process import *
@@ -54,6 +54,7 @@ def reconnect_if_broken_per_verification():
 
 
 @mockable
+@task(queue='send_transactional_email', retry_method=fixed(10, 10))
 def send_email(sender, recipient, subject, text='', html='', category='', email_code=''):
     sender_name, sender_addr = parseaddr(sender)
     from_addr = formataddr((Header(sender_name, 'UTF-8').encode(), sender_addr))
