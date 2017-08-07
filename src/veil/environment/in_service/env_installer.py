@@ -409,6 +409,11 @@ def update_branch(veil_env_name):
         shell_execute('git checkout -B env-{}'.format(veil_env_name), cwd=VEIL_HOME)
         shell_execute('git merge master --ff-only', cwd=VEIL_HOME)
         shell_execute('git push origin env-{}'.format(veil_env_name), cwd=VEIL_HOME)
+
+        # check remote consistency after push
+        shell_execute('git fetch origin', cwd=VEIL_HOME)
+        if bool(shell_execute('git diff origin/env-{}'.format(veil_env_name), capture=True, cwd=VEIL_HOME)):
+            raise Exception('Found remote inconsistency in branch: env-{}'.format(veil_env_name))
     finally:
         shell_execute('git checkout master', cwd=VEIL_HOME)
 
