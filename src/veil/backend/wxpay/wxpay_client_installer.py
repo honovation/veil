@@ -14,8 +14,8 @@ def wxpay_client_resource(app_id, app_secret, mch_id, api_key, api_client_cert, 
     ]
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         resources.extend([
-            symbolic_link_resource(path='/etc/ssl/certs/wxpay_cert.pem', to=VEIL_HOME / 'wxpay_cert.pem'),
-            symbolic_link_resource(path='/etc/ssh/wxpay_key.pem', to=VEIL_HOME / 'wxpay_key.pem')
+            symbolic_link_resource(path='/etc/ssl/certs/wxpay_cert.pub.pem', to=VEIL_HOME / 'wxpay_cert.pub.pem'),
+            symbolic_link_resource(path='/etc/ssh/wxpay_key.pri.pem', to=VEIL_HOME / 'wxpay_key.pri.pem')
         ])
     return resources
 

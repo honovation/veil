@@ -15,9 +15,9 @@ def tenpay_client_resource(partner_id, app_key, refund_op_user_id, refund_op_use
     ]
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         resources.extend([
-            symbolic_link_resource(path='/etc/ssl/certs/tenpay_ca.pem', to=VEIL_HOME / 'tenpay_ca.pem'),
-            symbolic_link_resource(path='/etc/ssl/certs/tenpay_cert.pem', to=VEIL_HOME / 'tenpay_cert.pem'),
-            symbolic_link_resource(path='/etc/ssh/tenpay_key.pem', to=VEIL_HOME / 'tenpay_key.pem')
+            symbolic_link_resource(path='/etc/ssl/certs/tenpay_ca.pub.pem', to=VEIL_HOME / 'tenpay_ca.pub.pem'),
+            symbolic_link_resource(path='/etc/ssl/certs/tenpay_cert.pub.pem', to=VEIL_HOME / 'tenpay_cert.pub.pem'),
+            symbolic_link_resource(path='/etc/ssh/tenpay_key.pri.pem', to=VEIL_HOME / 'tenpay_key.pri.pem')
         ])
     return resources
 
