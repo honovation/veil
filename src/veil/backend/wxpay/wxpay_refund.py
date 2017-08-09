@@ -36,7 +36,7 @@ WXPAY_REFUND_STATUS = {
 }
 
 
-def refund(out_refund_no, out_trade_no, total_fee, refund_fee):
+def refund(out_refund_no, out_trade_no, total_fee, refund_fee, config):
     """
     request to wxpay refund
 
@@ -44,6 +44,7 @@ def refund(out_refund_no, out_trade_no, total_fee, refund_fee):
     :param out_trade_no: 原交易外部订单号
     :param total_fee: 原交易金额, Decimal
     :param refund_fee: 退款金额, Decimal
+    :param config: 配置信息, DictObject
     :return:
         DictObject(out_refund_no: 商户退款单号, refund_id: 退款id, out_trade_no: 原交易外部订单号, refund_channel_text: 退款去向（原支付卡/余额）,
             refund_fee: 申请退款金额, settlement_refund_fee: 扣除非充值的代金券后实际退款金额（APP微信退款接口无该字段，这里保留该字段，值与refund_fee一致）)
@@ -52,7 +53,6 @@ def refund(out_refund_no, out_trade_no, total_fee, refund_fee):
     if refund_fee > total_fee:
         raise WXPayRefundException(WXPAY_REFUND_ERROR, 'refund_fee can not be greater than total_fee')
 
-    config = wxpay_client_config()
     refund_request = DictObject(appid=config.app_id, mch_id=config.mch_id, nonce_str=uuid4().get_hex(), out_refund_no=out_refund_no,
                                 out_trade_no=out_trade_no, total_fee=unicode(int(total_fee * 100)), refund_fee=unicode(int(refund_fee * 100)),
                                 op_user_id=config.mch_id)
@@ -125,18 +125,18 @@ def refund(out_refund_no, out_trade_no, total_fee, refund_fee):
                           refund_channel_text=refund_channel_text, refund_fee=_refund_fee, settlement_refund_fee=settlement_refund_fee)
 
 
-def query_refund_status(out_refund_no):
+def query_refund_status(out_refund_no, config):
     """
     query wxpay refund status
 
     :param out_refund_no: 退款单号
+    :param config: 配置信息, DictObject
     :return:
         [DictObject(out_refund_no: 外部退款单号, refund_id: 退款id,
             refund_channel_text: 退款去向（原支付卡/余额）, refund_fee: 申请退款金额, settlement_refund_fee: 扣除非充值的代金券后实际退款金额, refund_status: 退款状态,
             refund_status_text: 退款状态文字（成功/失败/处理中/转代发）, refund_recv_accout: 退款入账账户(某张卡/用户零钱)), ...]
     """
     out_refund_no = unicode(out_refund_no)
-    config = wxpay_client_config()
     query_request = DictObject(appid=config.app_id, mch_id=config.mch_id, nonce_str=uuid4().get_hex(), out_refund_no=out_refund_no)
     query_request.sign = sign_md5(query_request, config.api_key)
     with require_current_template_directory_relative_to():
