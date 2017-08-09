@@ -23,6 +23,7 @@ TENPAY_REFUND_ERROR_FAILED_CODE = '-3'
 TENPAY_REFUND_ERROR_MANUAL_CODE = '-4'
 
 TENPAY_REFUND_ERROR_NOT_EXIST_CODE = '88222014'  # 原交易未退款
+TENPAY_REFUND_ERROR_MONEY_NOT_ENOUGH = '88229102'  # 退款金额不足
 TENPAY_REFUND_ERROR_TRADE_NOT_EXIST_CODE = '88221009'  # 原交易不存在
 
 TENPAY_REFUND_STATUS_SUCCESS_MARKS = {'4', '10'}
@@ -286,6 +287,10 @@ class TENPayRefundException(Exception):
     @property
     def is_not_exist(self):
         return self.code == TENPAY_REFUND_ERROR_NOT_EXIST_CODE
+
+    @property
+    def is_money_not_enough(self):
+        return self.code == TENPAY_REFUND_ERROR_MONEY_NOT_ENOUGH
 
     @property
     def is_trade_not_exist(self):
