@@ -86,14 +86,18 @@ def render_datetime_range(datetime_range, include_start=True, include_end=False)
     if start_time == end_time:
         if time_precision == 3:
             if start_time.year == current_time.year:
-                return start_time.strftime('%m-%d')
-            return start_time.strftime('%Y-%m-%d')
+                time_format = '%m-%d'
+            else:
+                time_format = '%Y-%m-%d'
         else:
             if start_time.date() == current_time.date():
-                return start_time.strftime(time_format)
+                time_format = time_format
             if start_time.year != current_time.year:
-                return start_time.strftime('%Y-%m-%d{}'.format(time_format))
-            return start_time.strftime('%m-%d{}'.format(time_format))
+                time_format = '%Y-%m-%d{}'.format(time_format)
+            else:
+                time_format = '%m-%d{}'.format(time_format)
+        time_format = to_str(time_format)
+        return to_unicode(start_time.strftime(time_format))
     if start_time.year == current_time.year and start_time.year == end_time.year:
         time_format = '%m-%d{}'.format(time_format)
     else:
