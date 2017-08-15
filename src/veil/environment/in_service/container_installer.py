@@ -90,7 +90,15 @@ def veil_container_config_resource(server, config_dir):
         resources.append(
             veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/certs/{}'.format(local_path.name), owner=server.ssh_user,
                                          owner_group=server.ssh_user_group, mode=0644))
+    for local_path in server_config_dir.files('*.cert.pem'):
+        resources.append(
+            veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/certs/{}'.format(local_path.name), owner=server.ssh_user,
+                                         owner_group=server.ssh_user_group, mode=0644))
     for local_path in server_config_dir.files('*.key'):
+        resources.append(
+            veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/private/{}'.format(local_path.name), owner=server.ssh_user,
+                                         owner_group=server.ssh_user_group, mode=0600))
+    for local_path in server_config_dir.files('*.key.pem'):
         resources.append(
             veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/private/{}'.format(local_path.name), owner=server.ssh_user,
                                          owner_group=server.ssh_user_group, mode=0600))
