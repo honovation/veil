@@ -1,0 +1,2 @@
+veil.server.os.nodejs_apt_repository_resource
+veil.server.os.os_package_resource?nodejs
