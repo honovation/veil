@@ -221,9 +221,9 @@ def query_alipay_payment_status(out_trade_no):
                         {'out_trade_no': out_trade_no, 'params': params, 'arguments': arguments})
             paid = result == NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
         else:
-            LOGGER.error('query alipay payment status failed: %(out_trade_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
-                         {'out_trade_no': out_trade_no, 'code': arguments.code, 'msg': arguments.msg, 'sub_code': arguments.sub_code,
-                          'sub_msg': arguments.sub_msg, 'params': params, 'arguments': arguments})
+            LOGGER.warn('query alipay payment status failed: %(out_trade_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
+                        {'out_trade_no': out_trade_no, 'code': arguments.code, 'msg': arguments.msg, 'sub_code': arguments.sub_code,
+                         'sub_msg': arguments.sub_msg, 'params': params, 'arguments': arguments})
             paid = False
     return paid
 
@@ -261,9 +261,9 @@ def close_alipay_payment_trade(out_trade_no, notify_url=None):
             LOGGER.info('request to close alipay payment successfully: %(out_trade_no)s, %(params)s, %(arguments)s',
                         {'out_trade_no': out_trade_no, 'params': params, 'arguments': arguments})
         else:
-            LOGGER.error('request to close alipay payment failed: %(out_trade_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
-                         {'out_trade_no': out_trade_no, 'code': arguments.code, 'msg': arguments.msg, 'sub_code': arguments.sub_code,
-                          'sub_msg': arguments.sub_msg, 'params': params, 'arguments': arguments})
+            LOGGER.warn('request to close alipay payment failed: %(out_trade_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
+                        {'out_trade_no': out_trade_no, 'code': arguments.code, 'msg': arguments.msg, 'sub_code': arguments.sub_code,
+                         'sub_msg': arguments.sub_msg, 'params': params, 'arguments': arguments})
 
 
 def sign_rsa2(params, keyfile_path):
