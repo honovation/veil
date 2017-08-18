@@ -217,9 +217,8 @@ def query_alipay_payment_status(out_trade_no):
         arguments.sign = content['sign']
         if arguments.code == REQUEST_SUCCESS_CODE:
             result = mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=False)
-            LOGGER.info('query alipay payment status successfully: %(out_trade_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
-                        {'out_trade_no': out_trade_no, 'code': arguments.code, 'msg': arguments.msg, 'sub_code': arguments.sub_code,
-                         'sub_msg': arguments.sub_msg, 'params': params, 'arguments': arguments})
+            LOGGER.info('query alipay payment status successfully: %(out_trade_no)s, %(params)s, %(arguments)s',
+                        {'out_trade_no': out_trade_no, 'params': params, 'arguments': arguments})
             paid = result == NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
         else:
             LOGGER.error('query alipay payment status failed: %(out_trade_no)s, %(code)s, %(msg)s, %(sub_code)s, %(sub_msg)s, %(params)s, %(arguments)s',
