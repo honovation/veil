@@ -39,7 +39,7 @@ def create_alipay_pc_payment_url(out_trade_no, subject, body, total_amount, show
     content_params = DictObject(out_trade_no=out_trade_no, subject=subject, body=body, total_amount='{:.2f}'.format(total_amount),
                                 product_code='FAST_INSTANT_TRADE_PAY')
 
-    # TODO: 签约新接口后，测试 'goods_detail'、'timeout_express' 字段
+    # TODO: 支持 'goods_detail'、'timeout_express' 字段
     # if show_url:
     #     content_params.goods_detail = json.dumps(dict(show_url=show_url), separators=(',', ':'))
     if minutes_to_expire:
