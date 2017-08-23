@@ -124,7 +124,7 @@ def validate_async_notification_return_arguments(arguments):
     if not sign or not sign_type:
         return False
 
-    # TODO: remove this after 2017-12-01
+    # TODO: remove this after 2017-12-20
     if sign_type == 'MD5' and arguments.get('trade_status') == 'TRADE_FINISHED' and arguments.get('gmt_close'):
         LOGGER.info('trade finished notification from old alipay payment interface')
         return True
