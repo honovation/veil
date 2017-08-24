@@ -95,6 +95,11 @@ def make_alipay_app_payment_order_str(out_trade_no, subject, body, total_amount,
 
 def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True):
     if is_async_result:
+        # TODO: remove this after 2017-12-20
+        if arguments.get('sign_type') == 'MD5' and arguments.get('trade_status') == 'TRADE_FINISHED' and arguments.get('gmt_close'):
+            LOGGER.info('trade finished notification from old alipay payment interface: %(arguments)s', {'arguments': arguments})
+            return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
+
         if not validate_async_notification_return_arguments(arguments):
             LOGGER.error('verify alipay notify return arguments falied: %(out_trade_no)s, %(arguments)s',
                          {'out_trade_no': out_trade_no, 'arguments': arguments})
@@ -123,11 +128,6 @@ def validate_async_notification_return_arguments(arguments):
     sign_type = arguments.pop('sign_type', None)
     if not sign or not sign_type:
         return False
-
-    # TODO: remove this after 2017-12-20
-    if sign_type == 'MD5' and arguments.get('trade_status') == 'TRADE_FINISHED' and arguments.get('gmt_close'):
-        LOGGER.info('trade finished notification from old alipay payment interface: %(arguments)s', {'arguments': arguments})
-        return True
 
     message = to_url_params_string(arguments)
     config = alipay_client_config()
