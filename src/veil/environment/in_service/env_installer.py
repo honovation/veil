@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import time
 from datetime import datetime
@@ -22,6 +23,14 @@ from .server_installer import veil_servers_resource, is_container_running, is_se
 @log_elapsed_time
 def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', include_monitor_server='TRUE',
                start_after_deploy='TRUE', disable_external_access_='FALSE'):
+    """
+    注意：
+    start_after_deploy不是'TRUE'，指的是deploy后服务不是启动状态，并不意味着在部署过程中服务不会启动。比如，在安装
+    veil host resource的过程中，当lxc配置有变动时会重启/启动容器进而启动服务，当lxc配置没有变动且容器没有启动时也会
+    启动容器进而启动服务。
+    所以，不能依赖start_after_deploy不是'TRUE'来保证worker没有启动以避免多veil env下worker服务同时处理任务可能造
+    成的问题。这个问题只能依赖特性“worker只有在redis的reserve_job和当前veil env一致时才处理任务”去避免。
+    """
     print(cyan('Update config ...'))
     update_config(config_dir)
     print(cyan('Make local preparation ...'))
