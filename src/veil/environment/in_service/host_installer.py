@@ -366,7 +366,8 @@ def veil_host_user_resource(host, user_dir):
     if not installed:
         ret = fabric.api.run('getent passwd {}'.format(username), warn_only=True)
         if ret.failed:
-            fabric.api.sudo('adduser {username} --gecos {username} --disabled-login --shell /usr/sbin/nologin --quiet'.format(username=username))
+            uid = (user_dir / 'id').text().strip()
+            fabric.api.sudo('adduser --uid {uid} {username} --gecos {username} --disabled-login --shell /usr/sbin/nologin --quiet'.format(username=username, uid=uid))
     fabric.api.put(local_path=user_dir, remote_path='/home/', use_sudo=True, mode=0755)
     user_ssh_dir = user_dir / '.ssh'
     if user_ssh_dir.isdir():
