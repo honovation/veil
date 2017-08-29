@@ -43,7 +43,7 @@ def backup_host(host):
     host_backup_dir = host.ssh_user_home / 'backup' / host.VEIL_ENV.name / host.base_name
     with fabric.api.settings(host_string='root@{}:{}'.format(host.internal_ip, host.ssh_port)):
         fabric.api.run('mkdir -p -m 0700 {}'.format(host_backup_dir))
-        running_servers_to_down = [s for s in list_veil_servers(VEIL_ENV.name, False, False) if s.mount_data_dir and s.host_base_name == host.base_name and is_server_running(s)]
+        running_servers_to_down = [s for s in list_veil_servers(VEIL_ENV.name, False, False) if s.host_base_name == host.base_name and is_server_running(s) and (s.mount_data_dir or is_worker_running_on_server(s))]
         try:
             bring_down_servers(running_servers_to_down)
             fabric.api.run('rsync -avh --numeric-ids --delete --exclude "/{}" --exclude "/{}" --exclude "/{}" --link-dest={}/ {}/ {}/'.format(
@@ -55,12 +55,17 @@ def backup_host(host):
 
 def bring_down_servers(servers):
     for server in servers:
-        fabric.api.run('lxc-attach -n {} -- systemctl stop veil-server.service'.format(server.container_name, server.veil_home, server.fullname))
+        fabric.api.run('lxc-attach -n {} -- systemctl stop veil-server.service'.format(server.container_name))
 
 
 def bring_up_servers(servers):
     for server in servers:
-        fabric.api.run('lxc-attach -n {} -- systemctl start veil-server.service'.format(server.container_name, server.veil_home, server.fullname))
+        fabric.api.run('lxc-attach -n {} -- systemctl start veil-server.service'.format(server.container_name))
+
+
+def is_worker_running_on_server(server):
+    ret = fabric.api.run("lxc-attach -n {} -- ps -ef | grep 'veil backend job-queue' | grep -v grep".format(server.container_name), warn_only=True)
+    return ret.return_code == 0
 
 
 @log_elapsed_time
