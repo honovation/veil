@@ -66,9 +66,8 @@ def job_queue_admin_script(listen_host, listen_port):
 
 class LoadedRedisScripts(RedisScripts):
     def execute_pipeline(self, pipeline, client=None):
-        if hasattr(pipeline, 'load_scripts') and hasattr(pipeline, 'scripts'):
-            if pipeline.scripts:
-                pipeline.load_scripts()
+        if pipeline.scripts:
+            pipeline.load_scripts()
         return super(LoadedRedisScripts, self).execute_pipeline(pipeline, client=client)
 
 
