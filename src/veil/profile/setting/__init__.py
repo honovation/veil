@@ -27,4 +27,5 @@ with veil_component.init_component(__name__):
     from veil.frontend.nginx_setting import nginx_reverse_proxy_location
     from veil.frontend.website_setting import website_programs
     from veil.frontend.website_setting import website_locations
+    from veil.frontend.website_setting import website_request_limit_item
     from veil.frontend.website_setting import website_upstreams

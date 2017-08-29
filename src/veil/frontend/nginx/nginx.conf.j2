@@ -124,6 +124,10 @@ http {
         {% endfor %}
     {% endfor %}
 
+    {% for request_limit_http_config in config.request_limit_http_configs %}
+        {{ request_limit_http_config }}
+    {% endfor %}
+
     {% for server_name, server_properties in config.servers.items() %}
 
     {% if server_properties['https_listens'] and config.HTTP_STANDARD_PORT not in server_properties['http_listens'] %}

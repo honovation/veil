@@ -6,8 +6,13 @@ NGINX_PID_PATH = '/tmp/nginx.pid'
 
 
 def nginx_program(servers, enable_compression=False, base_domain_names=(), has_bunker=False, is_bunker=False,
-                  bunker_ip=None, certbot_crontab_expression=None, **kwargs):
+                  bunker_ip=None, certbot_crontab_expression=None, request_limit_groups=None, **kwargs):
     assert len([name for name, properties in servers.items() if properties['default_server']]) <= 1
+    request_limit_http_configs = []
+    if request_limit_groups:
+        for request_limit_group in request_limit_groups:
+            for request_limit in request_limit_group:
+                request_limit_http_configs.append(request_limit.nginx_http_config)
     settings = objectify({
         'nginx': {
             'execute_command': 'nginx -c {}'.format(VEIL_ETC_DIR / 'nginx.conf'),
@@ -20,7 +25,8 @@ def nginx_program(servers, enable_compression=False, base_domain_names=(), has_b
                     'base_domain_names': base_domain_names,
                     'has_bunker': has_bunker,
                     'is_bunker': is_bunker,
-                    'bunker_ip': bunker_ip
+                    'bunker_ip': bunker_ip,
+                    'request_limit_http_configs': request_limit_http_configs
                 }, **kwargs)
             })],
             'stopsignal': 'QUIT',
@@ -35,7 +41,7 @@ def nginx_program(servers, enable_compression=False, base_domain_names=(), has_b
 
 def nginx_server(server_name, listen, locations, ssl=False, use_certbot=False, default_server=False,
                  additional_http_listens=None, additional_https_listens=None, upstreams=None, error_page=None,
-                 error_page_dir=None, **kwargs):
+                 error_page_dir=None, request_limits=None, **kwargs):
     assert ssl and listen != 80 or not ssl and listen != 443
 
     http_listens = additional_http_listens or []
@@ -47,6 +53,22 @@ def nginx_server(server_name, listen, locations, ssl=False, use_certbot=False, d
 
     assert http_listens or https_listens
     assert not use_certbot or https_listens
+
+    if request_limits:
+        location2location_limit_config = {}
+        for request_limit in request_limits:
+            location2location_limit_config[request_limit.location] = request_limit.nginx_location_config
+
+        locations = unfreeze_dict_object(locations)
+
+        for location, location_limit_config in location2location_limit_config.items():
+            if location in locations:
+                original_location_config = location['_']
+                locations[location] = {'_': '{}\n\n{}'.format(location_limit_config, original_location_config)}
+            else:
+                locations[location] = {'_': '{}\n\nproxy_pass http://{};'.format(location_limit_config, upstreams.keys()[0])}
+
+        locations = freeze_dict_object(locations)
 
     return {
         server_name: dict({

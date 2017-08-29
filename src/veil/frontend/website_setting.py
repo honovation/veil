@@ -166,3 +166,27 @@ def website_locations(purpose, has_bunker=False, enable_hsts=False, is_api_only=
     }
     locations.update(extra_locations)
     return locations
+
+
+def website_request_limit_item(purpose, request_method='POST', location='/login', limit=('2r', 's'), limit_burst=3, limit_nodelay=True):
+    limit_name = '{}_{}_limit'.format(purpose, request_method)
+    limit_zone_name = '{}_zone'.format(limit_name)
+    limit_count = limit[0]
+    limit_interval = limit[1]
+    nginx_location_config_parts = ['limit_req zone={}'.format(limit_zone_name)]
+    if limit_burst:
+        nginx_location_config_parts.append('burst={}'.format(limit_burst))
+    if limit_nodelay:
+        nginx_location_config_parts.append('nodelay')
+    return objectify({
+        'location': location,
+        'nginx_http_config': '''
+            map $request_method ${limit_name} {{
+                default "";
+                {request_method} $binary_remote_addr;
+            }}
+            limit_req_zone ${limit_name} zone={limit_zone_name}:10m rate={limit_count}/{limit_interval};
+        '''.format(limit_name=limit_name, limit_zone_name=limit_zone_name, request_method=request_method, limit_count=limit_count,
+                   limit_interval=limit_interval),
+        'nginx_location_config': '{};'.format(' '.join(nginx_location_config_parts))
+    })
