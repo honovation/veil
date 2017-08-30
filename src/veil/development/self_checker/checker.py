@@ -44,8 +44,8 @@ def self_check():
     shell_execute('git add -A .', cwd=VEIL_FRAMEWORK_HOME)
     shell_execute('veil pull')
     shell_execute('sudo veil :test down')
-    shell_execute('sudo veil install-server')
     shell_execute('sudo veil :test install-server')
+    shell_execute('sudo veil install-server')
     application = get_application()
     if hasattr(application, 'USE_NPM_BUILD') and application.USE_NPM_BUILD:
         shell_execute('sudo npm install yarn -g --registry=https://registry.npm.taobao.org')

@@ -1,14 +1,11 @@
 from veil_installer import *
-import veil_component
 
+import veil_component
 with veil_component.init_component(__name__):
 
-    from .queue_client_installer import queue_client_resource
-
     from .job_queue import task, periodic, cron_expr, fixed, linear, exponential
-
     from .retry import discrete
-
+    from .queue_client_installer import queue_client_resource
     from .tasktiger_admin_installer import tasktiger_admin_resource
 
     def init():
@@ -24,7 +21,7 @@ with veil_component.init_component(__name__):
 
         discrete.__name__,
 
-        tasktiger_admin_resource.__name__,
-
         queue_client_resource.__name__,
+
+        tasktiger_admin_resource.__name__,
     ]
