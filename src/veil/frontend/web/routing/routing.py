@@ -115,7 +115,7 @@ class RoutingHTTPHandler(object):
         request = get_current_http_request()
         request.website = self.website
         request.user_agent = parse_user_agent(request.headers.get('User-Agent'))
-        request.is_ajax = request.headers.get('X-Requested-With') == b'XMLHttpRequest'
+        request.is_ajax = request.headers.get('X-Requested-With') in {b'XMLHttpRequest', b'Fetch'}
         request.website_url = '{}://{}'.format(request.protocol, request.host)
         record_request_referrer(request)
         for route in self.routes:
