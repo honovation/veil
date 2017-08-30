@@ -1,6 +1,6 @@
-import veil_component
 from veil_installer import *
 
+import veil_component
 with veil_component.init_component(__name__):
     from .kuaidi100 import get_delivery_status_by_kuaidi100
     from .kuaidi100 import waybill_web_url

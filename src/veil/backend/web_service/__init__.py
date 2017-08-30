@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .web_service import register_web_service
     from .web_service import log_web_fault

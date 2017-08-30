@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .python_package_installer import get_python_package_installed_version
     from .python_package_installer import python_package_resource

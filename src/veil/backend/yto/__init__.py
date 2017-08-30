@@ -1,6 +1,6 @@
-import veil_component
 from veil_installer import *
 
+import veil_component
 with veil_component.init_component(__name__):
 
     from .yto import subscribe_logistics_notify as subscribe_yto_logistics_notify

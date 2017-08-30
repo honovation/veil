@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
 
     from .WXBizMsgCrypt import SUPPORT_ENCRYPT_METHODS

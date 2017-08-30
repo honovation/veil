@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .const import HTML_START_TAG_PREFIX
     from .const import HEAD_END_TAG

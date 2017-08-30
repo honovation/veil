@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .iptables_installer import list_iptables_resources_to_secure_host
     from .iptables_installer import iptables_rule_resource

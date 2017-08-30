@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .database_client import register_database
     from .database_client import require_database

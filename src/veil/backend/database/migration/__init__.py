@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .migration import load_versions
     from .migration import check_no_migration_scripts_not_locked

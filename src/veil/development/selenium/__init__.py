@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     if veil_component.VEIL_ENV.is_test:
         from .chrome_driver_installer import chrome_driver_resource

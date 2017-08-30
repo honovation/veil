@@ -2,7 +2,6 @@
 Some ideas borrowed from https://github.com/smulloni/validino
 """
 import veil_component
-
 with veil_component.init_component(__name__):
     from .invalid import Invalid
     from .binder_maker import each

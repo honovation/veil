@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .widget import widget
     from .widget import require_current_widget_namespace_being

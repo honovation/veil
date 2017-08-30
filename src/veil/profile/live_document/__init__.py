@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from veil.development.test import get_fixture as g
     from veil.development.test import mock_function

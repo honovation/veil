@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .server.pg_server_installer import postgresql_server_resource
     from .server.pg_server_installer import postgresql_user_resource

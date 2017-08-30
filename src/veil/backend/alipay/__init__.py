@@ -1,6 +1,6 @@
-import veil_component
 from veil_installer import *
 
+import veil_component
 with veil_component.init_component(__name__):
     from .alipay_client_installer import alipay_client_resource
     from .alipay_client_installer import alipay_client_config

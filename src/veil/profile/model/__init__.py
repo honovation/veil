@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from veil_component import VEIL_ENV
     from veil.model.collection import *

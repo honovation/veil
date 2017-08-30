@@ -1,7 +1,6 @@
 import importlib
 
 import veil_component
-
 with veil_component.init_component(__name__):
     from .sms import send_validation_code_via_sms
     from .sms import send_validation_code_via_voice

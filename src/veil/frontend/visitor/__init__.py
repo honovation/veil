@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .user_tracking import enable_user_tracking
     from .user_tracking import enable_access_to_external_cookie

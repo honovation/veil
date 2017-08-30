@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .shell import shell_execute
     from .shell import try_shell_execute

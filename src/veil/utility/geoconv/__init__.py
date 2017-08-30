@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .geoconv import wgs2gcj
     from .geoconv import gcj2wgs

@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .region import REGION_NAMES_IGNORABLE_FROM_ADDRESS
     from .region import get_main_region_name

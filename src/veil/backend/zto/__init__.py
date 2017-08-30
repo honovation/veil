@@ -1,6 +1,6 @@
-import veil_component
 from veil_installer import *
 
+import veil_component
 with veil_component.init_component(__name__):
 
     from .zto import query_logistics_status as query_zto_logistics_status

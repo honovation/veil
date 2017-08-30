@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from pillow import open_image
     from pillow import save_image

@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .clock import DEFAULT_CLIENT_TIMEZONE
     from .clock import require_current_time_being

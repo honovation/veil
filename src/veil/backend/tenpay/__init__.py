@@ -1,6 +1,6 @@
-import veil_component
 from veil_installer import *
 
+import veil_component
 with veil_component.init_component(__name__):
     from .tenpay_payment import EVENT_TENPAY_TRADE_PAID
     from .tenpay_payment import NOTIFIED_FROM_RETURN_URL

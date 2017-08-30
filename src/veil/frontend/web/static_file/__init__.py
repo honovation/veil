@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from .static_file import clear_static_file_hashes
     from .static_file import process_javascript

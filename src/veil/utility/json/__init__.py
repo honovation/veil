@@ -1,5 +1,4 @@
 import veil_component
-
 with veil_component.init_component(__name__):
     from ._json import to_json
     from ._json import from_json

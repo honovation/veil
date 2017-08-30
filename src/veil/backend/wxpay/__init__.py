@@ -1,6 +1,6 @@
-import veil_component
 from veil_installer import *
 
+import veil_component
 with veil_component.init_component(__name__):
     from .wxpay_payment import EVENT_WXPAY_TRADE_PAID
     from .wxpay_payment import NOTIFIED_FROM_ORDER_QUERY
