@@ -6,6 +6,7 @@ from veil.model.collection import *
 LOGGER = getLogger(__name__)
 subscribers = {}
 
+
 def define_event(topic):
     component_name = get_loading_component_name()
     if not component_name:

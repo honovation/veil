@@ -3,13 +3,17 @@ import logging
 import argparse
 import time
 import sys
+
 from veil_component import is_recording_dynamic_dependencies, load_all_components
 from veil.environment import *
+from veil.model.event import *
 from veil.utility.shell import *
-from veil.frontend.cli import script
+from veil.frontend.cli import *
 from .supervisorctl import supervisorctl, is_supervisord_running, prime_nginx_ocsp_cache
 
 LOGGER = logging.getLogger(__name__)
+
+EVENT_SUPERVISOR_TO_BE_DOWN = define_event('supervisor-to-be-down')
 
 
 @script('up')
@@ -75,8 +79,12 @@ def update_dynamic_dependencies():
 
 @script('down')
 def bring_down_supervisor():
+    event_published = False
     while is_supervisord_running():
         LOGGER.info('Bring down supervisor ...')
+        if not event_published:
+            publish_event(EVENT_SUPERVISOR_TO_BE_DOWN)
+            event_published = True
         supervisorctl('shutdown')
         time.sleep(3)
 
