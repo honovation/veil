@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 
+import importlib
 import inspect
 import logging
 import functools
 from datetime import timedelta, datetime
+
+import sys
 from croniter.croniter import croniter
 from flask import Flask
 from flask_admin import Admin
@@ -12,6 +15,7 @@ from tasktiger_admin import TaskTigerView, tasktiger_admin
 from tasktiger import TaskTiger, JobTimeoutException, fixed, linear, exponential
 from tasktiger import periodic as _periodic
 from tasktiger.redis_scripts import RedisScripts
+from tasktiger.worker import Worker
 from redis import Redis
 from veil.frontend.cli import *
 from veil.model.event import *
@@ -108,6 +112,35 @@ class JobQueue(TaskTiger):
         return super(JobQueue, self).delay(func, args=_args, kwargs=_kwargs, queue=queue, hard_timeout=hard_timeout, unique=unique, lock=lock,
                                            lock_key=lock_key, when=when, retry=retry, retry_on=retry_on, retry_method=retry_method)
 
+    def run_worker(self, queues=None, module=None, exclude_queues=None):
+        """
+        behavior same as parent class `run_worker`, except a modified Worker class
+
+        @param queues: queue names to listen, separated by comma
+        @param module: python modules to load, separated by comma
+        @param exclude_queues: format same as queues
+        @return: None
+        """
+
+        module_names = module or ''
+        for module_name in module_names.split(','):
+            module_name = module_name.strip()
+            if module_name:
+                importlib.import_module(module_name)
+                self.log.debug('imported module', module_name=module_name)
+
+        worker = ControllableWorker(self,
+                                    queues.split(',') if queues else None,
+                                    exclude_queues.split(',') if exclude_queues else None)
+        worker.run()
+
+
+class ControllableWorker(Worker):
+    def _worker_run(self):
+        if is_jobs_given_up(self.connection):
+            return None
+        super(ControllableWorker, self)._worker_run()
+
 
 def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=True, lock=None, lock_key=None, retry=True, retry_on=(Exception, ),
          retry_method=exponential(60, 2, 5), schedule=None, batch=False):
@@ -170,4 +203,34 @@ def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=True, lock=None, 
     return wrapper
 
 
-# TODO: custom Worker with start/stop processing jobs implementation
+def is_jobs_given_up(queue_redis):
+    return VEIL_ENV.is_prod and VEIL_ENV.name != queue_redis.get('reserve_job')
+
+
+@script('start-processing-job')
+def start_processing_jobs():
+    if not VEIL_ENV.is_prod:
+        print('WARNING: this is only available to run under production environment.')
+        return
+    print('Are you sure to notify workers to start processing jobs under production environment <{}>? [YES/NO]'.format(VEIL_ENV.name))
+    answer = sys.stdin.readline().strip()
+    if 'YES' != answer:
+        print('WARNING: not started')
+        return
+    JobQueue.instance().connection.set('reserve_job', VEIL_ENV.name)
+    print ('Started')
+
+
+@script('stop-processing-job')
+def stop_processing_jobs():
+    if not VEIL_ENV.is_prod:
+        print('WARNING: this is only available to run under production environment.')
+        return
+    print('Are you sure to notify workers to stop processing jobs under production environment <{}>? [YES/NO]'.format(
+        VEIL_ENV.name))
+    answer = sys.stdin.readline().strip()
+    if 'YES' != answer:
+        print('WARNING: not stopped')
+        return
+    JobQueue.instance().connection.delete('reserve_job')
+    print ('Stopped')
