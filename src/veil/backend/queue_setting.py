@@ -43,7 +43,7 @@ def tasktiger_job_worker_program(worker_name, application_logging_levels, queue_
             'run_as': run_as or CURRENT_USER,
             'priority': 200,
             'stopsignal': 'INT',
-            'stopwaitsecs': 20,
+            'stopwaitsecs': 30,
             'resources': resources,
             'redirect_stderr': False,
             'patchable': True
