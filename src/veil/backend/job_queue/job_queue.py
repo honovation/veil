@@ -138,7 +138,7 @@ class JobQueue(TaskTiger):
 class ControllableWorker(Worker):
     def _worker_run(self):
         if is_jobs_given_up(self.connection):
-            return None
+            return
         super(ControllableWorker, self)._worker_run()
 
 
