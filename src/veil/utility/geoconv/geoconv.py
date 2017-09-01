@@ -52,12 +52,9 @@ def delta(lng, lat):
 
 
 def wgs2gcj(wgs_lng, wgs_lat):
-    if isinstance(wgs_lng, Decimal):
-        gcj_lng, gcj_lat = _wgs2gcj(float(wgs_lng), float(wgs_lat))
-        gcj_lng = Decimal(gcj_lng)
-        gcj_lat = Decimal(gcj_lat)
-    else:
-        gcj_lng, gcj_lat = _wgs2gcj(wgs_lng, wgs_lat)
+    gcj_lng, gcj_lat = _wgs2gcj(float(wgs_lng), float(wgs_lat))
+    gcj_lng = Decimal(gcj_lng)
+    gcj_lat = Decimal(gcj_lat)
     return gcj_lng, gcj_lat
 
 
@@ -70,12 +67,9 @@ def _wgs2gcj(wgs_lng, wgs_lat):
 
 
 def gcj2wgs(gcj_lng, gcj_lat):
-    if isinstance(gcj_lng, Decimal):
-        wgs_lng, wgs_lat = _gcj2wgs(float(gcj_lng), float(gcj_lat))
-        wgs_lng = Decimal(wgs_lng)
-        wgs_lat = Decimal(wgs_lat)
-    else:
-        wgs_lng, wgs_lat = _gcj2wgs(gcj_lng, gcj_lat)
+    wgs_lng, wgs_lat = _gcj2wgs(float(gcj_lng), float(gcj_lat))
+    wgs_lng = Decimal(wgs_lng)
+    wgs_lat = Decimal(wgs_lat)
     return wgs_lng, wgs_lat
 
 
@@ -88,12 +82,9 @@ def _gcj2wgs(gcj_lng, gcj_lat):
 
 
 def gcj2wgs_exact(gcj_lng, gcj_lat):
-    if isinstance(gcj_lng, Decimal):
-        wgs_lng, wgs_lat = _gcj2wgs_exact(float(gcj_lng), float(gcj_lat))
-        wgs_lng = Decimal(wgs_lng)
-        wgs_lat = Decimal(wgs_lat)
-    else:
-        wgs_lng, wgs_lat = _gcj2wgs_exact(gcj_lng, gcj_lat)
+    wgs_lng, wgs_lat = _gcj2wgs_exact(float(gcj_lng), float(gcj_lat))
+    wgs_lng = Decimal(wgs_lng)
+    wgs_lat = Decimal(wgs_lat)
     return wgs_lng, wgs_lat
 
 
@@ -109,8 +100,8 @@ def _gcj2wgs_exact(gcj_lng, gcj_lat):
         wgs_lng = (m_lng + p_lng) / 2
         wgs_lat = (m_lat + p_lat) / 2
         tmp_lng, tmp_lat = wgs2gcj(wgs_lng, wgs_lat)
-        d_lng = tmp_lng - gcj_lng
-        d_lat = tmp_lat - gcj_lat
+        d_lng = float(tmp_lng) - gcj_lng
+        d_lat = float(tmp_lat) - gcj_lat
         if abs(d_lng) < threshold and abs(d_lat) < threshold:
             return wgs_lng, wgs_lat
         if d_lng > 0:
@@ -125,10 +116,7 @@ def _gcj2wgs_exact(gcj_lng, gcj_lat):
 
 
 def distance(lng_a, lat_a, lng_b, lat_b):
-    if isinstance(lng_a, Decimal) or isinstance(lng_b, Decimal):
-        d = _distance(float(lng_a), float(lat_a), float(lng_b), float(lat_b))
-    else:
-        d = _distance(lng_a, lat_a, lng_b, lat_b)
+    d = _distance(float(lng_a), float(lat_a), float(lng_b), float(lat_b))
     return int(round(d))
 
 
@@ -148,12 +136,9 @@ def _distance(lng_a, lat_a, lng_b, lat_b):
 
 
 def gcj2bd(gcj_lng, gcj_lat):
-    if isinstance(gcj_lng, Decimal):
-        bd_lng, bd_lat = _gcj2bd(float(gcj_lng), float(gcj_lat))
-        bd_lng = Decimal(bd_lng)
-        bd_lat = Decimal(bd_lat)
-    else:
-        bd_lng, bd_lat = _gcj2bd(gcj_lng, gcj_lat)
+    bd_lng, bd_lat = _gcj2bd(float(gcj_lng), float(gcj_lat))
+    bd_lng = Decimal(bd_lng)
+    bd_lat = Decimal(bd_lat)
     return bd_lng, bd_lat
 
 
@@ -171,12 +156,9 @@ def _gcj2bd(gcj_lng, gcj_lat):
 
 
 def bd2gcj(bd_lng, bd_lat):
-    if isinstance(bd_lng, Decimal):
-        gcj_lng, gcj_lat = _bd2gcj(float(bd_lng), float(bd_lat))
-        gcj_lng = Decimal(gcj_lng)
-        gcj_lat = Decimal(gcj_lat)
-    else:
-        gcj_lng, gcj_lat = _bd2gcj(bd_lng, bd_lat)
+    gcj_lng, gcj_lat = _bd2gcj(float(bd_lng), float(bd_lat))
+    gcj_lng = Decimal(gcj_lng)
+    gcj_lat = Decimal(gcj_lat)
     return gcj_lng, gcj_lat
 
 
