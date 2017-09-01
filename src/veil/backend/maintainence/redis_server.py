@@ -19,7 +19,7 @@ def rewrite_redis_aof():
 
 
 @event(EVENT_SUPERVISOR_TO_BE_DOWN)
-def rewrite_redis_aof():
+def on_supervisor_to_be_down():
     LOGGER.info('try to rewrite redis aof before supervisor shutdown')
     _rewrite_redis_aof(get_current_veil_server())
 
