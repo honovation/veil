@@ -16,6 +16,7 @@ from tasktiger import TaskTiger, JobTimeoutException, fixed, linear, exponential
 from tasktiger import periodic as _periodic
 from tasktiger.redis_scripts import RedisScripts
 from tasktiger.worker import Worker
+from tasktiger._internal import ERROR as ERROR_QUEUE_KEY
 from redis import Redis
 from veil.frontend.cli import *
 from veil.model.event import *
@@ -234,3 +235,13 @@ def stop_processing_jobs():
         return
     JobQueue.instance().connection.delete('reserve_job')
     print ('Stopped')
+
+
+def count_failed_jobs():
+    job_queue = JobQueue.instance()
+    queue_redis = job_queue.connection
+    error_queue_names = queue_redis.smembers(job_queue._key(ERROR_QUEUE_KEY))
+    failed_jobs_count = 0
+    for queue_name in error_queue_names:
+        failed_jobs_count += queue_redis.zcard(job_queue._key(ERROR_QUEUE_KEY, queue_name))
+    return failed_jobs_count
