@@ -3,7 +3,7 @@ from __future__ import unicode_literals, print_function, division
 
 import logging
 
-from redis.client import StrictRedis
+from redis import StrictRedis
 from veil.environment import get_current_veil_env, get_current_veil_server
 from veil.model.event import *
 from veil.backend.job_queue import *
@@ -31,8 +31,13 @@ def _rewrite_redis_aof(veil_server=None):
     for host, port in current_veil_env.config.redis_servers:
         if veil_server and veil_server.internal_ip != host:
             continue
-        client = StrictRedis(host=host, port=port)
-        if client.config_get('appendonly')['appendonly'] != 'yes':
-            continue
-        LOGGER.info('rewrite redis aof <%(host)s:%(port)s>', {'host': host, 'port': port})
-        client.bgrewriteaof()
+        try:
+            client = StrictRedis(host=host, port=port)
+            if client.config_get('appendonly')['appendonly'] != 'yes':
+                continue
+            LOGGER.info('request for redis aof rewrite <%(host)s:%(port)s>', {'host': host, 'port': port})
+            client.bgrewriteaof()
+        except Exception as e:
+            if 'append only file rewriting already in progress' not in e.message:
+                LOGGER.exception('Exception thrown while requesting for redis aof rewrite <%(host)s:%(port)s>',
+                                 {'host': host, 'port': port})
