@@ -113,10 +113,8 @@ class OracleAdapter(object):
 
     def close(self):
         if self.conn is not None:
-            try:
-                self.conn.close()
-            finally:
-                self.conn = None
+            self.conn.close()
+            self.conn = None
 
     def cursor(self, returns_dict_object=True, returns_entity=False, **kwargs):
         self._reconnect_if_broken_per_lightweight_detection()
