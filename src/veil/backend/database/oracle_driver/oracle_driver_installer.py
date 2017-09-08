@@ -3,10 +3,10 @@ from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 
 
-ORACLE_HOME = DEPENDENCY_INSTALL_DIR / 'instantclient_12_1'
+ORACLE_HOME = DEPENDENCY_INSTALL_DIR / 'instantclient_12_2'
 ORACLE_DRIVER_CONF_PATH = '/etc/ld.so.conf.d/oracle_driver.conf'
 RESOURCE_KEY = 'veil.backend.database.oracle_driver.oracle_driver_resource'
-RESOURCE_VERSION = '12.1.0.1.0'
+RESOURCE_VERSION = '12.2.0.1.0'
 
 
 @atomic_installer
@@ -27,13 +27,25 @@ def oracle_driver_resource():
 def download_oracle_instantclient():
     if os.path.exists(ORACLE_HOME):
         return
-    basic_local_path = DEPENDENCY_DIR / 'instantclient-basic-linux.x64-12.1.0.1.0.zip'
+    basic_local_path = DEPENDENCY_DIR / 'instantclient-basic-linux.x64-{}.zip'.format(RESOURCE_VERSION)
     if not os.path.exists(basic_local_path):
-        shell_execute('wget -c {}/instantclient-basic-linux.x64-12.1.0.1.0.zip -O {}'.format(DEPENDENCY_URL, basic_local_path))
+        while 1:
+            try:
+                shell_execute('wget --no-check-certificate -c {}/instantclient-basic-linux.x64-{}.zip -O {}'.format(DEPENDENCY_SSL_URL, RESOURCE_VERSION, basic_local_path))
+            except Exception as e:
+                print(e.message)
+            else:
+                break
     shell_execute('unzip {} -d {}'.format(basic_local_path, DEPENDENCY_INSTALL_DIR))
-    sdk_local_path = DEPENDENCY_DIR / 'instantclient-sdk-linux.x64-12.1.0.1.0.zip'
+    sdk_local_path = DEPENDENCY_DIR / 'instantclient-sdk-linux.x64-{}.zip'.format(RESOURCE_VERSION)
     if not os.path.exists(sdk_local_path):
-        shell_execute('wget -c {}/instantclient-sdk-linux.x64-12.1.0.1.0.zip -O {}'.format(DEPENDENCY_URL, sdk_local_path))
+        while 1:
+            try:
+                shell_execute('wget --no-check-certificate -c {}/instantclient-sdk-linux.x64-{}.zip -O {}'.format(DEPENDENCY_SSL_URL, RESOURCE_VERSION, sdk_local_path))
+            except Exception as e:
+                print(e.message)
+            else:
+                break
     shell_execute('unzip {} -d {}'.format(sdk_local_path, DEPENDENCY_INSTALL_DIR))
 
 
