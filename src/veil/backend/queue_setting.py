@@ -10,7 +10,7 @@ def queue_program(host, port):
 def tasktiger_admin_program(application_config):
     return objectify({
         'tasktiger_admin': {
-            'execute_command': 'veil backend job-queue admin {} {}'.format(application_config.queue_client.host, application_config.queue_client.port),
+            'execute_command': 'veil backend job-queue admin {} {}'.format(application_config.queue_monitor.host, application_config.queue_monitor.port),
             'resources': [
                 application_resource(component_names=['veil.backend.job_queue'], config=application_config),
                 ('veil.backend.job_queue.tasktiger_admin_resource', {
