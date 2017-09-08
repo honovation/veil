@@ -7,17 +7,19 @@ def queue_program(host, port):
     return objectify({'queue': redis_program('queue', host, port, persisted_by_aof=True).queue_redis})
 
 
-def tasktiger_admin_program(host, port, broker_host, broker_port, broker_db=0):
+def tasktiger_admin_program(application_config):
     return objectify({
         'tasktiger_admin': {
-            'execute_command': 'veil backend job-queue admin {} {}'.format(host, port),
-            'resources': [('veil.backend.job_queue.tasktiger_admin_resource', {
-                'host': host,
-                'port': port,
-                'broker_host': broker_host,
-                'broker_port': broker_port,
-                'broker_db': broker_db
-            })]
+            'execute_command': 'veil backend job-queue admin {} {}'.format(application_config.queue_client.host, application_config.queue_client.port),
+            'resources': [
+                application_resource(component_names=['veil.backend.job_queue'], config=application_config),
+                ('veil.backend.job_queue.tasktiger_admin_resource', {
+                    'host': application_config.queue_monitor.host,
+                    'port': application_config.queue_monitor.port,
+                    'broker_host': application_config.queue_client.host,
+                    'broker_port': application_config.queue_client.port
+                })
+            ]
         }
     })
 

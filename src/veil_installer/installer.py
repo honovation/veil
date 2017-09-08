@@ -93,8 +93,9 @@ def install_resources(resources):
     installing = True
     resources = list(skip_installed_resources(resources))
     for resource in resources:
-        more_resources = do_install(resource)
+        # print('{}{} args: {}'.format(len(stack) * '\t', resource[0], resource[1].get('name')))
         stack.append(resource)
+        more_resources = do_install(resource)
         try:
             if len(stack) > 30:
                 LOGGER.error('failed to install sub resources: %(stack)s', {'stack': stack})
