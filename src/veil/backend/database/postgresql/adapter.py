@@ -73,12 +73,12 @@ class PostgresqlAdapter(object):
                 cur.execute(sql)
         except Exception:
             LOGGER.warn('failed in verifying database connection', exc_info=1)
-            self._reconnect()
+            self._reconnect(depress_exception=False)
 
     def reconnect_if_broken_per_exception(self, e):
-        return self._reconnect() if isinstance(e, (OperationalError, InterfaceError)) else False
+        return self._reconnect(depress_exception=True) if isinstance(e, (OperationalError, InterfaceError)) else False
 
-    def _reconnect(self):
+    def _reconnect(self, depress_exception):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
         try:
             self.close()
@@ -87,8 +87,11 @@ class PostgresqlAdapter(object):
         try:
             self.conn = self._get_conn()
         except Exception:
-            LOGGER.exception('failed to reconnect')
-            return False
+            if depress_exception:
+                LOGGER.exception('failed to reconnect')
+                return False
+            else:
+                raise
         else:
             return True
 

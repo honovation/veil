@@ -50,12 +50,12 @@ class MySQLAdapter(object):
                 cur.execute(sql)
         except Exception:
             LOGGER.warn('failed in verifying database connection', exc_info=1)
-            self._reconnect()
+            self._reconnect(depress_exception=False)
 
     def reconnect_if_broken_per_exception(self, e):
-        return self._reconnect() if isinstance(e, OperationalError) else False
+        return self._reconnect(depress_exception=True) if isinstance(e, OperationalError) else False
 
-    def _reconnect(self):
+    def _reconnect(self, depress_exception):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
         try:
             self.close()
@@ -64,17 +64,24 @@ class MySQLAdapter(object):
         try:
             self.conn = self._get_conn()
         except Exception:
-            LOGGER.exception('failed to reconnect')
-            return False
+            if depress_exception:
+                LOGGER.exception('failed to reconnect')
+                return False
+            else:
+                raise
         else:
             return True
 
     def _reconnect_if_broken_per_lightweight_detection(self):
-        try:
-            self.conn.ping()
-        except Exception:
-            LOGGER.warn('MySQL connection ping test failed, reconnect now: %(connection)s', {'connection': self})
-            self._get_conn()
+        if self.conn is None:
+            LOGGER.warn('Detected database connection had been closed, reconnect now: %(connection)s', {'connection': self})
+            self.conn = self._get_conn()
+        else:
+            try:
+                self.conn.ping()
+            except Exception:
+                LOGGER.warn('MySQL connection ping test failed, reconnect now: %(connection)s', {'connection': self})
+                self._reconnect(depress_exception=False)
 
     @property
     def autocommit(self):
@@ -91,7 +98,11 @@ class MySQLAdapter(object):
         self.conn.commit()
 
     def close(self):
-        self.conn.close()
+        if self.conn is not None:
+            try:
+                self.conn.close()
+            finally:
+                self.conn = None
 
     def cursor(self, returns_dict_object=True, returns_entity=False, **kwargs):
         self._reconnect_if_broken_per_lightweight_detection()

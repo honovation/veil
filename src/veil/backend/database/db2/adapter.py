@@ -52,16 +52,16 @@ class DB2Adapter(object):
                 cur.execute(sql)
         except Exception:
             LOGGER.warn('failed in verifying database connection', exc_info=1)
-            self._reconnect()
+            self._reconnect(depress_exception=False)
 
     def reconnect_if_broken_per_exception(self, e):
         if isinstance(e, OperationalError) or isinstance(e, Error) and "SystemError('error return without exception set',)" in unicode(e):
             # ibm-db driver bug: should raise OperationalError this case
-            return self._reconnect()
+            return self._reconnect(depress_exception=True)
         else:
             return False
 
-    def _reconnect(self):
+    def _reconnect(self, depress_exception):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
         try:
             self.close()
@@ -70,8 +70,11 @@ class DB2Adapter(object):
         try:
             self.conn = self._get_conn()
         except Exception:
-            LOGGER.exception('failed to reconnect')
-            return False
+            if depress_exception:
+                LOGGER.exception('failed to reconnect')
+                return False
+            else:
+                raise
         else:
             return True
 
@@ -98,7 +101,8 @@ class DB2Adapter(object):
         self.conn.commit()
 
     def close(self):
-        self.conn.close()
+        if self.conn.conn_handler is not None:
+            self.conn.close()
 
     def cursor(self, returns_dict_object=True, returns_entity=False, **kwargs):
         self._reconnect_if_broken_per_lightweight_detection()
