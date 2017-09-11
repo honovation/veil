@@ -84,12 +84,6 @@ class OracleAdapter(object):
         if self.conn is None:
             LOGGER.warn('Detected database connection had been closed, reconnect now: %(connection)s', {'connection': self})
             self.conn = self._get_conn()
-        else:
-            try:
-                self.conn.ping()
-            except Exception:
-                LOGGER.warn('Oracle connection ping test failed, reconnect now: %(connection)s', {'connection': self})
-                self._reconnect(depress_exception=False)
 
     @staticmethod
     def output_type_handler(cursor, name, defaultType, size, precision, scale):
