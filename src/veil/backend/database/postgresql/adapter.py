@@ -35,24 +35,24 @@ psycopg2.extras.register_default_jsonb(globally=True, loads=lambda obj: objectif
 class PostgresqlAdapter(object):
     type = DATABASE_TYPE_POSTGRESQL
 
-    def __init__(self, host, port, database, user, password, schema):
+    def __init__(self, host, port, database, user, password, schema, timeout):
         self.host = host
         self.port = port
         self.database = database
         self.user = user
         self.password = password
         self.schema = schema
+        self.timeout = timeout
         self.conn = self._get_conn()
         assert self.autocommit, 'autocommit should be enabled by default'
 
     def _get_conn(self):
         conn = None
+        options = '-c search_path={}'.format(self.schema) if self.schema else ''
         try:
-            conn = psycopg2.connect(host=self.host, port=self.port, database=self.database, user=self.user, password=self.password)
+            conn = psycopg2.connect(host=self.host, port=self.port, database=self.database, user=self.user,
+                                    password=self.password, connect_timeout=self.timeout, options=options)
             conn.set_session(isolation_level=ISOLATION_LEVEL_READ_COMMITTED, autocommit=True)
-            if self.schema:
-                with closing(conn.cursor(cursor_factory=NormalCursor)) as c:
-                    c.execute('SET search_path TO {}'.format(self.schema))
         except:
             LOGGER.critical('Cannot connect to database: %(adapter_with_connection_parameters)s', {'adapter_with_connection_parameters': repr(self)},
                             exc_info=1)

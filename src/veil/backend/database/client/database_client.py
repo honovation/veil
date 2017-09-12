@@ -75,10 +75,10 @@ def close_databases():
     instances.clear()
 
 
-def connect(type_, host, port, database, user, password, schema=None, **ignore):
+def connect(type_, host, port, database, user, password, schema=None, timeout=1, **ignore):
     if type_ not in adapter_classes:
         raise Exception('unknown database type: {}'.format(type_))
-    adapter = adapter_classes[type_](host=host, port=port, database=database, user=user, password=password, schema=schema)
+    adapter = adapter_classes[type_](host=host, port=port, database=database, user=user, password=password, schema=schema, timeout=timeout)
     return adapter
 
 

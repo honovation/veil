@@ -14,13 +14,14 @@ LOGGER = logging.getLogger(__name__)
 class DB2Adapter(object):
     type = DATABASE_TYPE_DB2
 
-    def __init__(self, host, port, database, user, password, schema):
+    def __init__(self, host, port, database, user, password, schema, timeout):
         self.host = host
         self.port = port
         self.database = database
         self.user = user
         self.password = password
         self.schema = schema
+        self.timeout = timeout  # TODO: not implemented yet
         self.conn = self._get_conn()
         assert self.autocommit, 'autocommit should be enabled by default'
 
