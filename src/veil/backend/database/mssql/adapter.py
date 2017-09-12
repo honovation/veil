@@ -32,7 +32,7 @@ class MSSQLAdapter(object):
         try:
             conn = pymssql.connect(**connect_args)
         except Exception:
-            LOGGER.critical('Cannot connect to database: %(connect_args)s', {'connect_args': connect_args}, exc_info=1)
+            LOGGER.critical('Cannot connect to database: %(parameters)s', {'parameters': self}, exc_info=1)
             try:
                 raise
             finally:
@@ -72,19 +72,6 @@ class MSSQLAdapter(object):
         else:
             return True
 
-    def _reconnect_if_broken_per_lightweight_detection(self):
-        if self.conn is None:
-            LOGGER.warn('Detected database connection had been closed, reconnect now: %(connection)s', {'connection': self})
-            self.conn = self._get_conn()
-        else:
-            try:
-                connected = self.conn._conn and self.conn._conn.connected
-            except Exception:
-                connected = False
-            if not connected:
-                LOGGER.warn('MsSQL connection ping test failed, reconnect now: %(connection)s', {'connection': self})
-                self._reconnect(depress_exception=False)
-
     @property
     def autocommit(self):
         return self.conn.autocommit
@@ -100,12 +87,9 @@ class MSSQLAdapter(object):
         self.conn.commit()
 
     def close(self):
-        if self.conn is not None:
-            self.conn.close()
-            self.conn = None
+        self.conn.close()
 
     def cursor(self, returns_dict_object=True, returns_entity=False, **kwargs):
-        self._reconnect_if_broken_per_lightweight_detection()
         cursor = self.conn.cursor(as_dict=returns_dict_object, **kwargs)
         cursor = NamedParameterCursor(cursor)
         if returns_dict_object:
@@ -114,8 +98,9 @@ class MSSQLAdapter(object):
             return cursor
 
     def __repr__(self):
-        return 'MSSQL adapter {} with connection parameters {}'.format(self.__class__.__name__,
-                                                                       dict(host=self.host, port=self.port, database=self.database, user=self.user))
+        parameters = dict(host=self.host, port=self.port, database=self.database, user=self.user, schema=self.schema,
+                          timeout=self.timeout)
+        return 'MSSQL adapter {} with connection parameters {}'.format(self.__class__.__name__, parameters)
 
 
 class NamedParameterCursor(object):

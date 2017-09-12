@@ -54,8 +54,7 @@ class PostgresqlAdapter(object):
                                     password=self.password, connect_timeout=self.timeout, options=options)
             conn.set_session(isolation_level=ISOLATION_LEVEL_READ_COMMITTED, autocommit=True)
         except:
-            LOGGER.critical('Cannot connect to database: %(adapter_with_connection_parameters)s', {'adapter_with_connection_parameters': repr(self)},
-                            exc_info=1)
+            LOGGER.critical('Cannot connect to database: %(parameters)s', {'parameters': self}, exc_info=1)
             try:
                 raise
             finally:
@@ -95,14 +94,6 @@ class PostgresqlAdapter(object):
         else:
             return True
 
-    def _reconnect_if_broken_per_lightweight_detection(self):
-        """
-        lightweight detection is supported by the driver library psycopg2
-        """
-        if self.conn.closed:
-            LOGGER.warn('Detected database connection had been closed, reconnect now: %(connection)s', {'connection': self})
-            self.conn = self._get_conn()
-
     @property
     def autocommit(self):
         return self.conn.autocommit
@@ -118,11 +109,9 @@ class PostgresqlAdapter(object):
         self.conn.commit()
 
     def close(self):
-        if not self.conn.closed:
-            self.conn.close()
+        self.conn.close()
 
     def cursor(self, returns_dict_object=True, returns_entity=False, **kwargs):
-        self._reconnect_if_broken_per_lightweight_detection()
         cursor = self.conn.cursor(cursor_factory=NamedTupleCursor if returns_dict_object else NormalCursor, **kwargs)
         if returns_dict_object:
             return ReturningDictObjectCursor(cursor, returns_entity)
@@ -130,8 +119,9 @@ class PostgresqlAdapter(object):
             return cursor
 
     def __repr__(self):
-        return 'Postgresql adapter {} with connection parameters {}'.format(self.__class__.__name__,
-                                                                            dict(host=self.host, port=self.port, database=self.database, user=self.user))
+        parameters = dict(host=self.host, port=self.port, database=self.database, user=self.user, schema=self.schema,
+                          timeout=self.timeout)
+        return 'Postgresql adapter {} with connection parameters {}'.format(self.__class__.__name__, parameters)
 
 
 class ReturningDictObjectCursor(object):

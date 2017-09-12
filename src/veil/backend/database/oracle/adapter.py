@@ -40,8 +40,7 @@ class OracleAdapter(object):
             if self.schema:
                 conn.current_schema = str(self.schema)  # TODO: current_schema requires str, complains against unicode, may be fixed in new release
         except:
-            LOGGER.critical('Cannot connect to database: %(connection_string)s, %(schema)s', {'connection_string': connection_string, 'schema': self.schema},
-                            exc_info=1)
+            LOGGER.critical('Cannot connect to database: %(parameters)s', {'parameters': self}, exc_info=1)
             try:
                 raise
             finally:
@@ -52,6 +51,12 @@ class OracleAdapter(object):
                         LOGGER.exception('Cannot close database connection')
         else:
             return conn
+
+    @staticmethod
+    def output_type_handler(cursor, name, defaultType, size, precision, scale):
+        # copy from http://www.oracle.com/technetwork/articles/tuininga-cx-oracle-084866.html
+        if defaultType == cx_Oracle.NUMBER and scale > 0:
+            return cursor.var(str, 100, cursor.arraysize, outconverter=decimal.Decimal)
 
     def reconnect_if_broken_per_verification(self, sql='SELECT 1 FROM DUAL'):
         try:
@@ -81,17 +86,6 @@ class OracleAdapter(object):
         else:
             return True
 
-    def _reconnect_if_broken_per_lightweight_detection(self):
-        if self.conn is None:
-            LOGGER.warn('Detected database connection had been closed, reconnect now: %(connection)s', {'connection': self})
-            self.conn = self._get_conn()
-
-    @staticmethod
-    def output_type_handler(cursor, name, defaultType, size, precision, scale):
-        # copy from http://www.oracle.com/technetwork/articles/tuininga-cx-oracle-084866.html
-        if defaultType == cx_Oracle.NUMBER and scale > 0:
-            return cursor.var(str, 100, cursor.arraysize, outconverter=decimal.Decimal)
-
     @property
     def autocommit(self):
         return self.conn.autocommit
@@ -107,12 +101,9 @@ class OracleAdapter(object):
         self.conn.commit()
 
     def close(self):
-        if self.conn is not None:
-            self.conn.close()
-            self.conn = None
+        self.conn.close()
 
     def cursor(self, returns_dict_object=True, returns_entity=False, **kwargs):
-        self._reconnect_if_broken_per_lightweight_detection()
         cursor = self.conn.cursor(**kwargs)
         cursor = NamedParameterCursor(cursor)
         if returns_dict_object:
@@ -121,8 +112,9 @@ class OracleAdapter(object):
             return cursor
 
     def __repr__(self):
-        return 'Oracle adapter {} with connection parameters {}'.format(self.__class__.__name__,
-                                                                        dict(host=self.host, port=self.port, database=self.database, user=self.user))
+        parameters = dict(host=self.host, port=self.port, database=self.database, user=self.user, schema=self.schema,
+                          timeout=self.timeout)
+        return 'Oracle adapter {} with connection parameters {}'.format(self.__class__.__name__, parameters)
 
 
 class NamedParameterCursor(object):

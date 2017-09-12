@@ -363,84 +363,106 @@ class Database(object):
         reconnected = False
         within_transaction_context = not self.autocommit
         while True:
-            with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
-                try:
-                    cursor.execute(sql, kwargs)
-                except Exception as e:
-                    if reconnected:
+            cursor = None
+            try:
+                cursor = self.conn.cursor(returns_dict_object=False)
+                cursor.execute(sql, kwargs)
+            except Exception as e:
+                if reconnected:
+                    LOGGER.exception('failed to execute statement: sql is %(sql)s and kwargs are %(kwargs)s', {
+                        'sql': sql,
+                        'kwargs': kwargs
+                    })
+                    raise
+                else:
+                    reconnected = self.conn.reconnect_if_broken_per_exception(e)
+                    if not reconnected:
                         LOGGER.exception('failed to execute statement: sql is %(sql)s and kwargs are %(kwargs)s', {
                             'sql': sql,
                             'kwargs': kwargs
                         })
                         raise
-                    else:
-                        reconnected = self.conn.reconnect_if_broken_per_exception(e)
-                        if not reconnected:
-                            LOGGER.exception('failed to execute statement: sql is %(sql)s and kwargs are %(kwargs)s', {
-                                'sql': sql,
-                                'kwargs': kwargs
-                            })
-                            raise
-                        elif within_transaction_context:
-                            raise ReconnectedWithinTransactionException()
-                else:
-                    return cursor.rowcount
+                    elif within_transaction_context:
+                        raise ReconnectedWithinTransactionException()
+            else:
+                return cursor.rowcount
+            finally:
+                if cursor is not None:
+                    try:
+                        cursor.close()
+                    except Exception:
+                        LOGGER.warn('Cannot close database cursor', exc_info=1)
+
 
     def _executemany(self, sql, seq_of_parameters):
         check_table_dependencies(self.component_name, self.purpose, sql)
         reconnected = False
         within_transaction_context = not self.autocommit
         while True:
-            with closing(self.conn.cursor(returns_dict_object=False)) as cursor:
-                try:
-                    cursor.executemany(sql, seq_of_parameters)
-                except Exception as e:
-                    if reconnected:
+            cursor = None
+            try:
+                cursor = self.conn.cursor(returns_dict_object=False)
+                cursor.executemany(sql, seq_of_parameters)
+            except Exception as e:
+                if reconnected:
+                    LOGGER.exception('failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s', {
+                        'sql': sql,
+                        'seq_of_parameters': seq_of_parameters
+                    })
+                    raise
+                else:
+                    reconnected = self.conn.reconnect_if_broken_per_exception(e)
+                    if not reconnected:
                         LOGGER.exception('failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s', {
                             'sql': sql,
                             'seq_of_parameters': seq_of_parameters
                         })
                         raise
-                    else:
-                        reconnected = self.conn.reconnect_if_broken_per_exception(e)
-                        if not reconnected:
-                            LOGGER.exception('failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s', {
-                                'sql': sql,
-                                'seq_of_parameters': seq_of_parameters
-                            })
-                            raise
-                        elif within_transaction_context:
-                            raise ReconnectedWithinTransactionException()
-                else:
-                    return cursor.rowcount
+                    elif within_transaction_context:
+                        raise ReconnectedWithinTransactionException()
+            else:
+                return cursor.rowcount
+            finally:
+                if cursor is not None:
+                    try:
+                        cursor.close()
+                    except Exception:
+                        LOGGER.warn('Cannot close database cursor', exc_info=1)
 
     def _query(self, sql, returns_dict_object=True, returns_entity=False, **kwargs):
         check_table_dependencies(self.component_name, self.purpose, sql)
         reconnected = False
         within_transaction_context = not self.autocommit
         while True:
-            with closing(self.conn.cursor(returns_dict_object=returns_dict_object, returns_entity=returns_entity)) as cursor:
-                try:
-                    cursor.execute(sql, kwargs)
-                except Exception as e:
-                    if reconnected:
+            cursor = None
+            try:
+                cursor = self.conn.cursor(returns_dict_object=returns_dict_object, returns_entity=returns_entity)
+                cursor.execute(sql, kwargs)
+            except Exception as e:
+                if reconnected:
+                    LOGGER.exception('failed to execute query: sql is %(sql)s and kwargs are %(kwargs)s', {
+                        'sql': sql,
+                        'kwargs': kwargs
+                    })
+                    raise
+                else:
+                    reconnected = self.conn.reconnect_if_broken_per_exception(e)
+                    if not reconnected:
                         LOGGER.exception('failed to execute query: sql is %(sql)s and kwargs are %(kwargs)s', {
                             'sql': sql,
                             'kwargs': kwargs
                         })
                         raise
-                    else:
-                        reconnected = self.conn.reconnect_if_broken_per_exception(e)
-                        if not reconnected:
-                            LOGGER.exception('failed to execute query: sql is %(sql)s and kwargs are %(kwargs)s', {
-                                'sql': sql,
-                                'kwargs': kwargs
-                            })
-                            raise
-                        elif within_transaction_context:
-                            raise ReconnectedWithinTransactionException()
-                else:
-                    return cursor.fetchall()
+                    elif within_transaction_context:
+                        raise ReconnectedWithinTransactionException()
+            else:
+                return cursor.fetchall()
+            finally:
+                if cursor is not None:
+                    try:
+                        cursor.close()
+                    except Exception:
+                        LOGGER.warn('Cannot close database cursor', exc_info=1)
 
     def _query_large_result_set(self, sql, batch_size, db_fetch_size, returns_scalar=False, returns_dict_object=True, returns_entity=False, **kwargs):
         """
@@ -456,17 +478,22 @@ class Database(object):
                 # psycopg2 named cursor is implemented as 'DECLARE name CURSOR WITHOUT HOLD FOR query'
                 # and should be within a transaction and not be used in autocommit mode
                 with require_transaction_context(self):
-                    cursor = self.conn.cursor(name=self._unique_cursor_name(), returns_dict_object=returns_dict_object, returns_entity=returns_entity)
-                    if db_fetch_size:
-                        cursor.itersize = db_fetch_size
-                    cursor.execute(sql, kwargs)
-                    rows = cursor.fetchmany(batch_size)
-                    while len(rows) > 0:
-                        yield [row[0] for row in rows] if returns_scalar else rows
+                    cursor = None
+                    try:
+                        cursor = self.conn.cursor(name=self._unique_cursor_name(), returns_dict_object=returns_dict_object, returns_entity=returns_entity)
+                        if db_fetch_size:
+                            cursor.itersize = db_fetch_size
+                        cursor.execute(sql, kwargs)
                         rows = cursor.fetchmany(batch_size)
-                    cursor.close()
-                    # if exception happen before close, the whole transaction should be rolled back by the caller
-                    # if we close the cursor when sql execution error, the actual error will be covered by unable to close cursor itself
+                        while len(rows) > 0:
+                            yield [row[0] for row in rows] if returns_scalar else rows
+                            rows = cursor.fetchmany(batch_size)
+                    finally:
+                        if cursor is not None:
+                            try:
+                                cursor.close()
+                            except Exception:
+                                LOGGER.warn('Cannot close database cursor', exc_info=1)
             except Exception as e:
                 if reconnected:
                     LOGGER.exception('failed to query large result set: sql is %(sql)s and kwargs are %(kwargs)s', {

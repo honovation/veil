@@ -35,7 +35,7 @@ class DB2Adapter(object):
             if self.schema:
                 conn.set_current_schema(self.schema)
         except:
-            LOGGER.critical('Cannot connect to database: %(connection_string)s', {'connection_string': connection_string}, exc_info=1)
+            LOGGER.critical('Cannot connect to database: %(parameters)s', {'parameters': self}, exc_info=1)
             try:
                 raise
             finally:
@@ -79,14 +79,6 @@ class DB2Adapter(object):
         else:
             return True
 
-    def _reconnect_if_broken_per_lightweight_detection(self):
-        """
-        lightweight detection is not supported by the driver library ibm_db_dbi
-        """
-        if self.conn.conn_handler is None:
-            LOGGER.warn('Detected database connection had been closed, reconnect now: %(connection)s', {'connection': self})
-            self.conn = self._get_conn()
-
     @property
     def autocommit(self):
         return ibm_db.autocommit(self.conn.conn_handler)
@@ -102,11 +94,9 @@ class DB2Adapter(object):
         self.conn.commit()
 
     def close(self):
-        if self.conn.conn_handler is not None:
-            self.conn.close()
+        self.conn.close()
 
     def cursor(self, returns_dict_object=True, returns_entity=False, **kwargs):
-        self._reconnect_if_broken_per_lightweight_detection()
         cursor = self.conn.cursor(**kwargs)
         cursor = NamedParameterCursor(cursor)
         if returns_dict_object:
@@ -115,8 +105,9 @@ class DB2Adapter(object):
             return cursor
 
     def __repr__(self):
-        return 'DB2 adapter {} with connection parameters {}'.format(self.__class__.__name__,
-                                                                     dict(host=self.host, port=self.port, database=self.database, user=self.user))
+        parameters = dict(host=self.host, port=self.port, database=self.database, user=self.user, schema=self.schema,
+                          timeout=self.timeout)
+        return 'DB2 adapter {} with connection parameters {}'.format(self.__class__.__name__, parameters)
 
 
 class NamedParameterCursor(object):
