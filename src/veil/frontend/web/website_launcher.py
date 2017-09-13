@@ -45,7 +45,7 @@ def start_test_website(purpose):
 def start_website(purpose, port):
     config = website_config(purpose)
     http_handler = create_website_http_handler(purpose, config)
-    io_loop = IOLoop.instance()
+    io_loop = IOLoop.current()
     io_loop.add_callback(lambda: LOGGER.info('started website: %(purpose)s', {'purpose': purpose}))
     start_http_server(http_handler, io_loop=io_loop, host='localhost', port=port)
 

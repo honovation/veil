@@ -12,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 @contextlib.contextmanager
 def require_io_loop_executor():
-    executor = IOLoopExecutor(IOLoop.instance())
+    executor = IOLoopExecutor(IOLoop.current())
     thread = threading.Thread(target=executor.execute)
     thread.start()
     try:
