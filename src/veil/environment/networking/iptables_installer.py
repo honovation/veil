@@ -54,7 +54,6 @@ def list_iptables_resources_to_secure_host(ssh_ports):
     resources = [
         #  Allow all loopback (lo0) traffic and drop all traffic to 127/8 that doesn't use lo0
         iptables_rule_resource(table='filter', rule='INPUT -i lo -j ACCEPT'),
-        iptables_rule_resource(table='filter', rule='INPUT -d 127.0.0.0/8 -j REJECT'),
         #  Accept all established inbound connections
         iptables_rule_resource(table='filter', rule='INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT'),
         #  Drop all other inbound - default deny unless explicitly allowed policy
