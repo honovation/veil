@@ -74,7 +74,7 @@ class HTTPHandler(object):
 
 def is_socket_abnormal(sock):
     try:
-        chunk = sock.recv(1, flags=socket.MSG_PEEK)
+        chunk = sock.recv(1, socket.MSG_PEEK)
     except (socket.error, IOError, OSError) as e:
         if isinstance(e, socket.error) and e.args[0] in _ERRNO_WOULDBLOCK:
             return False
