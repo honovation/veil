@@ -8,6 +8,8 @@ import hashlib
 import httplib
 import re
 import traceback
+import socket
+import errno
 from datetime import datetime
 from logging import getLogger
 
@@ -15,6 +17,8 @@ import tornado
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.stack_context import StackContext
+from tornado.iostream import _ERRNO_WOULDBLOCK
+from tornado.util import errno_from_exception
 
 from veil.development.test import *
 from veil.utility.encoding import to_str
@@ -55,13 +59,32 @@ class HTTPHandler(object):
         self.handler = handler
 
     def __call__(self, request):
-        http_context = HTTPContext(request, HTTPResponse(request))
+        response = HTTPResponse(request)
+        if is_socket_abnormal(request.connection.stream.socket):
+            response.finish()
+            return
+        http_context = HTTPContext(request, response)
         with create_stack_context(require_current_http_context_being, http_context=http_context):
             with handle_exception():
                 with normalize_arguments():
                     with tunnel_put_and_patch_and_delete():
                         self.handler()
         LOGGER.debug('handled request: %(request)s', {'request': unicode(request)})
+
+
+def is_socket_abnormal(sock):
+    try:
+        chunk = sock.recv(1, flags=socket.MSG_PEEK)
+    except (socket.error, IOError, OSError) as e:
+        if isinstance(e, socket.error) and e.args[0] in _ERRNO_WOULDBLOCK:
+            return False
+        if errno_from_exception(e) == errno.EINTR:
+            return False
+        return True
+    else:
+        if not chunk:
+            return True
+        return False
 
 
 def create_stack_context(context_manager, *args, **kwargs):
