@@ -4,7 +4,7 @@ import logging
 import re
 import ibm_db_dbi
 import ibm_db
-from ibm_db_dbi import Error, OperationalError
+from ibm_db_dbi import Error, DatabaseError
 from veil.model.collection import *
 from veil.backend.database.client import *
 
@@ -14,14 +14,13 @@ LOGGER = logging.getLogger(__name__)
 class DB2Adapter(object):
     type = DATABASE_TYPE_DB2
 
-    def __init__(self, host, port, database, user, password, schema, timeout):
+    def __init__(self, host, port, database, user, password, schema):
         self.host = host
         self.port = port
         self.database = database
         self.user = user
         self.password = password
         self.schema = schema
-        self.timeout = timeout  # TODO: not implemented yet
         self.conn = self._get_conn()
         assert self.autocommit, 'autocommit should be enabled by default'
 
@@ -56,8 +55,7 @@ class DB2Adapter(object):
             self._reconnect(depress_exception=False)
 
     def reconnect_if_broken_per_exception(self, e):
-        if isinstance(e, OperationalError) or isinstance(e, Error) and "SystemError('error return without exception set',)" in unicode(e):
-            # ibm-db driver bug: should raise OperationalError this case
+        if isinstance(e, DatabaseError) or isinstance(e, Error) and "SystemError('error return without exception set',)" in unicode(e):
             return self._reconnect(depress_exception=True)
         else:
             return False
@@ -105,8 +103,7 @@ class DB2Adapter(object):
             return cursor
 
     def __repr__(self):
-        parameters = dict(host=self.host, port=self.port, database=self.database, user=self.user, schema=self.schema,
-                          timeout=self.timeout)
+        parameters = dict(host=self.host, port=self.port, database=self.database, user=self.user, schema=self.schema)
         return 'DB2 adapter {} with connection parameters {}'.format(self.__class__.__name__, parameters)
 
 

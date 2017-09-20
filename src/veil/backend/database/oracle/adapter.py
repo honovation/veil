@@ -6,7 +6,7 @@ import re
 import os
 import decimal
 import cx_Oracle
-from cx_Oracle import OperationalError
+from cx_Oracle import DatabaseError
 
 from veil.utility.encoding import *
 from veil.model.collection import *
@@ -18,14 +18,13 @@ LOGGER = logging.getLogger(__name__)
 class OracleAdapter(object):
     type = DATABASE_TYPE_ORACLE
 
-    def __init__(self, host, port, database, user, password, schema, timeout):
+    def __init__(self, host, port, database, user, password, schema):
         self.host = host
         self.port = port
         self.database = database
         self.user = user
         self.password = password
         self.schema = schema
-        self.timeout = timeout  # TODO: not implemented yet
         self.conn = self._get_conn()
         assert self.autocommit, 'autocommit should be enabled by default'
 
@@ -67,7 +66,7 @@ class OracleAdapter(object):
             self._reconnect(depress_exception=False)
 
     def reconnect_if_broken_per_exception(self, e):
-        return self._reconnect(depress_exception=True) if isinstance(e, OperationalError) else False
+        return self._reconnect(depress_exception=True) if isinstance(e, DatabaseError) else False
 
     def _reconnect(self, depress_exception):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
@@ -112,8 +111,7 @@ class OracleAdapter(object):
             return cursor
 
     def __repr__(self):
-        parameters = dict(host=self.host, port=self.port, database=self.database, user=self.user, schema=self.schema,
-                          timeout=self.timeout)
+        parameters = dict(host=self.host, port=self.port, database=self.database, user=self.user, schema=self.schema)
         return 'Oracle adapter {} with connection parameters {}'.format(self.__class__.__name__, parameters)
 
 

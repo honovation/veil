@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import functools
 import inspect
 import traceback
-from contextlib import contextmanager, closing
+from contextlib import contextmanager
 from functools import wraps
 from logging import getLogger
 import uuid
@@ -75,10 +75,11 @@ def close_databases():
     instances.clear()
 
 
-def connect(type_, host, port, database, user, password, schema=None, timeout=1, **ignore):
+def connect(type_, host, port, database, user, password, schema=None, **ignore):
     if type_ not in adapter_classes:
         raise Exception('unknown database type: {}'.format(type_))
-    adapter = adapter_classes[type_](host=host, port=port, database=database, user=user, password=password, schema=schema, timeout=timeout)
+    adapter = adapter_classes[type_](host=host, port=port, database=database, user=user, password=password,
+                                     schema=schema)
     return adapter
 
 
