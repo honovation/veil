@@ -1,4 +1,6 @@
 from __future__ import unicode_literals, print_function, division, absolute_import
+
+import socket
 from logging import getLogger
 from redis import StrictRedis
 from veil_installer import *
@@ -21,6 +23,11 @@ def require_redis(purpose, decode_responses):
     if key not in instances:
         config = redis_client_config(purpose)
         config['decode_responses'] = decode_responses
+        config.setdefault('socket_connect_timeout', 5)
+        config.setdefault('socket_timeout', None)
+        config.setdefault('socket_keepalive', True)
+        config.setdefault('socket_keepalive_options',
+                          {socket.TCP_KEEPIDLE: 60, socket.TCP_KEEPINTVL: 30, socket.TCP_KEEPCNT: 10})
         instances[key] = StrictRedis(**config)
     executing_test = get_executing_test(optional=True)
     if executing_test:
