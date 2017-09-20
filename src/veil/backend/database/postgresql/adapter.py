@@ -51,7 +51,7 @@ class PostgresqlAdapter(object):
         try:
             conn = psycopg2.connect(host=self.host, port=self.port, database=self.database, user=self.user,
                                     password=self.password, options=options, connect_timeout=1, keepalives=1,
-                                    keepalives_idle=4, keepalives_interval=1, keepalives_count=4)
+                                    keepalives_idle=120, keepalives_interval=60, keepalives_count=8)
             conn.set_session(isolation_level=ISOLATION_LEVEL_READ_COMMITTED, autocommit=True)
         except:
             LOGGER.critical('Cannot connect to database: %(parameters)s', {'parameters': self}, exc_info=1)
