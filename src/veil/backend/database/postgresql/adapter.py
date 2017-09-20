@@ -6,7 +6,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_READ_COMMITTED
 from psycopg2.extras import NamedTupleCursor
 from psycopg2.extras import register_uuid
 from psycopg2.extensions import cursor as NormalCursor
-from psycopg2 import OperationalError, InterfaceError
+from psycopg2 import DatabaseError, InterfaceError
 
 from veil.model.collection import *
 from veil.utility.json import *
@@ -35,14 +35,13 @@ psycopg2.extras.register_default_jsonb(globally=True, loads=lambda obj: objectif
 class PostgresqlAdapter(object):
     type = DATABASE_TYPE_POSTGRESQL
 
-    def __init__(self, host, port, database, user, password, schema, timeout):
+    def __init__(self, host, port, database, user, password, schema):
         self.host = host
         self.port = port
         self.database = database
         self.user = user
         self.password = password
         self.schema = schema
-        self.timeout = timeout
         self.conn = self._get_conn()
         assert self.autocommit, 'autocommit should be enabled by default'
 
@@ -51,7 +50,8 @@ class PostgresqlAdapter(object):
         options = '-c search_path={}'.format(self.schema) if self.schema else ''
         try:
             conn = psycopg2.connect(host=self.host, port=self.port, database=self.database, user=self.user,
-                                    password=self.password, connect_timeout=self.timeout, options=options)
+                                    password=self.password, options=options, connect_timeout=1, keepalives=1,
+                                    keepalives_idle=4, keepalives_interval=1, keepalives_count=4)
             conn.set_session(isolation_level=ISOLATION_LEVEL_READ_COMMITTED, autocommit=True)
         except:
             LOGGER.critical('Cannot connect to database: %(parameters)s', {'parameters': self}, exc_info=1)
@@ -75,7 +75,7 @@ class PostgresqlAdapter(object):
             self._reconnect(depress_exception=False)
 
     def reconnect_if_broken_per_exception(self, e):
-        return self._reconnect(depress_exception=True) if isinstance(e, (OperationalError, InterfaceError)) else False
+        return self._reconnect(depress_exception=True) if isinstance(e, (DatabaseError, InterfaceError)) else False
 
     def _reconnect(self, depress_exception):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
@@ -119,8 +119,7 @@ class PostgresqlAdapter(object):
             return cursor
 
     def __repr__(self):
-        parameters = dict(host=self.host, port=self.port, database=self.database, user=self.user, schema=self.schema,
-                          timeout=self.timeout)
+        parameters = dict(host=self.host, port=self.port, database=self.database, user=self.user, schema=self.schema)
         return 'Postgresql adapter {} with connection parameters {}'.format(self.__class__.__name__, parameters)
 
 
