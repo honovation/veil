@@ -32,6 +32,16 @@ NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK = 'success'  # alipay require this 7 cha
 ALIPAY_API_URL = 'https://openapi.alipay.com/gateway.do'
 REQUEST_SUCCESS_CODE = '10000'
 
+TRADE_STATUE_WAIT_BUYER_PAY = 'WAIT_BUYER_PAY'
+TRADE_STATUE_TRADE_CLOSED = 'TRADE_CLOSED'
+TRADE_STATUE_TRADE_SUCCESS = 'TRADE_SUCCESS'
+TRADE_STATUE_TRADE_FINISHED = 'TRADE_FINISHED'
+QUERY_TRADE_STATUS_TO_IGNORE = {
+    TRADE_STATUE_WAIT_BUYER_PAY,
+    TRADE_STATUE_TRADE_CLOSED,
+    TRADE_STATUE_TRADE_FINISHED,
+}
+
 EVENT_ALIPAY_TRADE_PAID = define_event('alipay-trade-paid')
 
 
@@ -96,7 +106,7 @@ def make_alipay_app_payment_order_str(out_trade_no, subject, body, total_amount,
 def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True):
     if is_async_result:
         # TODO: remove this after 2017-12-20
-        if arguments.get('sign_type') == 'MD5' and arguments.get('trade_status') == 'TRADE_FINISHED' and arguments.get('gmt_close'):
+        if arguments.get('sign_type') == 'MD5' and arguments.get('trade_status') == TRADE_STATUE_TRADE_FINISHED and arguments.get('gmt_close'):
             LOGGER.info('trade finished notification from old alipay payment interface: %(arguments)s', {'arguments': arguments})
             return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
 
@@ -109,6 +119,8 @@ def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True
             LOGGER.error('verify alipay query return arguments failed: %(out_trade_no)s, %(arguments)s', {'out_trade_no': out_trade_no, 'arguments': arguments})
             return
 
+    if arguments.get('trade_status') in QUERY_TRADE_STATUS_TO_IGNORE:
+        return
     trade_no, buyer_id, total_amount, paid_at, discarded_reasons = parse_alipay_payment_return_arguments(out_trade_no, arguments, is_async_result)
     if discarded_reasons:
         LOGGER.error('alipay trade notification discarded: %(discarded_reasons)s, %(arguments)s', {
@@ -163,7 +175,7 @@ def parse_alipay_payment_return_arguments(out_trade_no, arguments, is_async_resu
             discarded_reasons.append('no app_id')
         elif app_id != alipay_client_config().app_id:
             discarded_reasons.append('app_id mismatched')
-    if arguments.get('trade_status') not in {'TRADE_SUCCESS', 'TRADE_FINISHED'}:
+    if arguments.get('trade_status') not in {TRADE_STATUE_TRADE_SUCCESS, TRADE_STATUE_TRADE_FINISHED}:
         discarded_reasons.append('trade not succeeded')
     out_trade_no_ = arguments.get('out_trade_no')
     if not out_trade_no_:
