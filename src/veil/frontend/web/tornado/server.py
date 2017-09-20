@@ -76,15 +76,12 @@ def is_socket_abnormal(sock):
     try:
         chunk = sock.recv(1, socket.MSG_PEEK)
     except (socket.error, IOError, OSError) as e:
-        if isinstance(e, socket.error) and e.args[0] in _ERRNO_WOULDBLOCK:
-            return False
-        if errno_from_exception(e) == errno.EINTR:
-            return False
-        return True
+        if e.args[0] not in _ERRNO_WOULDBLOCK and errno_from_exception(e) != errno.EINTR:
+            return True
     else:
         if not chunk:
             return True
-        return False
+    return False
 
 
 def create_stack_context(context_manager, *args, **kwargs):
