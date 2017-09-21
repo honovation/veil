@@ -50,8 +50,8 @@ class PostgresqlAdapter(object):
         options = '-c search_path={}'.format(self.schema) if self.schema else ''
         try:
             conn = psycopg2.connect(host=self.host, port=self.port, database=self.database, user=self.user,
-                                    password=self.password, options=options, connect_timeout=5, keepalives=1,
-                                    keepalives_idle=120, keepalives_interval=60, keepalives_count=8)
+                                    password=self.password, options=options, connect_timeout=3, keepalives=1,
+                                    keepalives_idle=60, keepalives_interval=15, keepalives_count=8)
             conn.set_session(isolation_level=ISOLATION_LEVEL_READ_COMMITTED, autocommit=True)
         except:
             LOGGER.critical('Cannot connect to database: %(parameters)s', {'parameters': self}, exc_info=1)
