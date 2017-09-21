@@ -6,7 +6,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_READ_COMMITTED
 from psycopg2.extras import NamedTupleCursor
 from psycopg2.extras import register_uuid
 from psycopg2.extensions import cursor as NormalCursor
-from psycopg2 import DatabaseError, InterfaceError
+from psycopg2 import DatabaseError, OperationalError, InterfaceError, InternalError
 
 from veil.model.collection import *
 from veil.utility.json import *
@@ -75,7 +75,10 @@ class PostgresqlAdapter(object):
             self._reconnect(depress_exception=False)
 
     def reconnect_if_broken_per_exception(self, e):
-        return self._reconnect(depress_exception=True) if isinstance(e, (DatabaseError, InterfaceError)) else False
+        if isinstance(e, (OperationalError, InterfaceError, InternalError)) \
+                or isinstance(e, DatabaseError) and 'could not receive data' in unicode(e):
+            return self._reconnect(depress_exception=True)
+        return False
 
     def _reconnect(self, depress_exception):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})

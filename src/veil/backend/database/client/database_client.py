@@ -394,7 +394,6 @@ class Database(object):
                     except Exception:
                         LOGGER.warn('Cannot close database cursor', exc_info=1)
 
-
     def _executemany(self, sql, seq_of_parameters):
         check_table_dependencies(self.component_name, self.purpose, sql)
         reconnected = False

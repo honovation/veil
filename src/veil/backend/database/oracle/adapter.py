@@ -6,7 +6,7 @@ import re
 import os
 import decimal
 import cx_Oracle
-from cx_Oracle import DatabaseError
+from cx_Oracle import DatabaseError, OperationalError, InterfaceError, InternalError
 
 from veil.utility.encoding import *
 from veil.model.collection import *
@@ -66,7 +66,10 @@ class OracleAdapter(object):
             self._reconnect(depress_exception=False)
 
     def reconnect_if_broken_per_exception(self, e):
-        return self._reconnect(depress_exception=True) if isinstance(e, DatabaseError) else False
+        if isinstance(e, (OperationalError, InterfaceError, InternalError)) \
+                or isinstance(e, DatabaseError) and 'TNS' in unicode(e):
+            return self._reconnect(depress_exception=True)
+        return False
 
     def _reconnect(self, depress_exception):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})

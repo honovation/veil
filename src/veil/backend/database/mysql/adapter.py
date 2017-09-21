@@ -4,7 +4,7 @@ import contextlib
 import logging
 import re
 import mysql.connector
-from mysql.connector.errors import DatabaseError
+from mysql.connector.errors import OperationalError, InterfaceError, InternalError
 
 from veil.utility.encoding import *
 from veil.model.collection import *
@@ -53,7 +53,9 @@ class MySQLAdapter(object):
             self._reconnect(depress_exception=False)
 
     def reconnect_if_broken_per_exception(self, e):
-        return self._reconnect(depress_exception=True) if isinstance(e, DatabaseError) else False
+        if isinstance(e, (OperationalError, InterfaceError, InternalError)):
+            return self._reconnect(depress_exception=True)
+        return False
 
     def _reconnect(self, depress_exception):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})

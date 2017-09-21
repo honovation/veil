@@ -4,7 +4,7 @@ import logging
 import re
 import ibm_db_dbi
 import ibm_db
-from ibm_db_dbi import Error, DatabaseError
+from ibm_db_dbi import Error, OperationalError, InterfaceError, InternalError
 from veil.model.collection import *
 from veil.backend.database.client import *
 
@@ -55,10 +55,10 @@ class DB2Adapter(object):
             self._reconnect(depress_exception=False)
 
     def reconnect_if_broken_per_exception(self, e):
-        if isinstance(e, DatabaseError) or isinstance(e, Error) and "SystemError('error return without exception set',)" in unicode(e):
+        if isinstance(e, (OperationalError, InterfaceError, InternalError)) \
+                or isinstance(e, Error) and "SystemError('error return without exception set',)" in unicode(e):
             return self._reconnect(depress_exception=True)
-        else:
-            return False
+        return False
 
     def _reconnect(self, depress_exception):
         LOGGER.info('Reconnect now: %(connection)s', {'connection': self})
