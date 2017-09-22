@@ -31,9 +31,10 @@ class OracleAdapter(object):
     def _get_conn(self):
         os.environ['NLS_LANG'] = 'AMERICAN_CHINA.UTF8'
         conn = None
-        connection_string = '{}/{}@{}'.format(self.user, self.password, cx_Oracle.makedsn(self.host, self.port, self.database))
+        tns_name = '(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={})(PORT={}))(TRANSPORT_CONNECT_TIMEOUT=3)(CONNECT_TIMEOUT=6)(SEND_TIMEOUT=60)(RECV_TIMEOUT=180)(EXPIRE_TIME=5)(CONNECT_DATA=(SID={})))'.format(
+            self.host, self.port, self.database)
         try:
-            conn = cx_Oracle.connect(connection_string)
+            conn = cx_Oracle.connect(self.user, self.password, tns_name)
             conn.outputtypehandler = OracleAdapter.output_type_handler
             conn.autocommit = True
             if self.schema:
@@ -67,7 +68,7 @@ class OracleAdapter(object):
 
     def reconnect_if_broken_per_exception(self, e):
         if isinstance(e, (OperationalError, InterfaceError, InternalError)) \
-                or isinstance(e, DatabaseError) and 'TNS' in unicode(e):
+                or isinstance(e, DatabaseError) and any(t in unicode(e) for t in ('TNS', 'Error while trying to retrieve text for error')):
             return self._reconnect(depress_exception=True)
         return False
 
