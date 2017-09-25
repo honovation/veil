@@ -31,7 +31,7 @@ def check_if_commit_in_forbidden_branch():
     current_branch = shell_execute('git rev-parse --abbrev-ref HEAD', capture=True)
     if current_branch.startswith(FORBIDDEN_COMMIT_BRANCH_PREFIX):
         print(red('[Orz] LISTEN!!! Read after me: "I should not commit in this branch"'))
-        sys.exit(-1)
+        sys.exit(1)
 
 
 def is_self_check_passed():

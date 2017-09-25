@@ -111,7 +111,7 @@ class ScriptHandlerDecorator(object):
                 return script_handler(*args, **kwargs)
             except Exception:
                 LOGGER.exception('Exception thrown while executing the script')
-                sys.exit(-1)
+                sys.exit(1)
 
         level_names = get_current_level_names()
         level = script_handlers
