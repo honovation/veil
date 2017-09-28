@@ -48,8 +48,8 @@ def self_check():
     shell_execute('sudo veil install-server')
     application = get_application()
     if hasattr(application, 'USE_NPM_BUILD') and application.USE_NPM_BUILD:
-        shell_execute('sudo npm install yarn -g --registry=https://registry.npm.taobao.org')
-        shell_execute('yarn install --registry=https://registry.npm.taobao.org')
+        shell_execute('sudo npm install yarn -g')
+        shell_execute('yarn install')
         shell_execute('yarn lint')
         shell_execute('yarn run build')
         shell_execute('yarn run build-mobile')

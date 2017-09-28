@@ -16,6 +16,6 @@ def frontend_static_resource(frontend_root_path):
     if dry_run_result is not None:
         dry_run_result['frontend_static_resource'] = 'INSTALL'
         return
-    shell_execute('sudo npm install yarn -g --registry=https://registry.npm.taobao.org', cwd=frontend_root_path)
-    shell_execute('sudo -u {} yarn install --registry=https://registry.npm.taobao.org'.format(CURRENT_USER), cwd=frontend_root_path)
+    shell_execute('sudo npm install yarn -g', cwd=frontend_root_path)
+    shell_execute('sudo -u {} yarn install'.format(CURRENT_USER), cwd=frontend_root_path)
     shell_execute('sudo -u {} yarn run build'.format(CURRENT_USER), cwd=frontend_root_path)
