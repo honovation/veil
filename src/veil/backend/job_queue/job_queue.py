@@ -14,7 +14,6 @@ from flask_admin import Admin
 from tasktiger_admin import TaskTigerView, tasktiger_admin
 from tasktiger import TaskTiger, JobTimeoutException, fixed, linear, exponential
 from tasktiger import periodic as _periodic
-from tasktiger.redis_scripts import RedisScripts
 from tasktiger.worker import Worker
 from tasktiger._internal import ERROR as ERROR_QUEUE_KEY
 from redis import Redis
@@ -69,13 +68,6 @@ def job_queue_admin_script(listen_host, listen_port):
     app.run(host=listen_host, port=int(listen_port))
 
 
-class LoadedRedisScripts(RedisScripts):
-    def execute_pipeline(self, pipeline, client=None):
-        if pipeline.scripts:
-            pipeline.load_scripts()
-        return super(LoadedRedisScripts, self).execute_pipeline(pipeline, client=client)
-
-
 class JobQueue(TaskTiger):
     _instance = None
 
@@ -97,8 +89,6 @@ class JobQueue(TaskTiger):
                 cls._instance = cls(connection=redis, config={'ALWAYS_EAGER': True, 'LOGGER_NAME': 'veil.backend.job_queue', 'STATS_INTERVAL': 0})
             else:
                 raise Exception('unknown queue type: {}'.format(config.type))
-            # reset tasktiger scripts
-            cls._instance.scripts = LoadedRedisScripts(redis)
         return cls._instance
 
     def delay(self, func, args=None, kwargs=None, queue=None,
