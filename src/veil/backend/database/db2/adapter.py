@@ -56,7 +56,7 @@ class DB2Adapter(object):
 
     def reconnect_if_broken_per_exception(self, e):
         if isinstance(e, (OperationalError, InterfaceError, InternalError)) \
-                or isinstance(e, Error) and "SystemError('error return without exception set',)" in unicode(e):
+                or isinstance(e, Error) and "SystemError('error return without exception set',)" in unicode(e.message, errors='replace'):
             return self._reconnect(depress_exception=True)
         return False
 

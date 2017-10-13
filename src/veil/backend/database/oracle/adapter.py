@@ -68,7 +68,7 @@ class OracleAdapter(object):
 
     def reconnect_if_broken_per_exception(self, e):
         if isinstance(e, (OperationalError, InterfaceError, InternalError)) \
-                or isinstance(e, DatabaseError) and any(t in unicode(e) for t in ('TNS', 'Error while trying to retrieve text for error')):
+                or isinstance(e, DatabaseError) and any(t in unicode(e.message, errors='replace') for t in ('TNS', 'Error while trying to retrieve text for error')):
             return self._reconnect(depress_exception=True)
         return False
 
