@@ -245,11 +245,6 @@ class PathTemplate(object):
 
 @memoize(maxsize=2 ** 15, timeout=60 * 20)
 def parse_user_agent(user_agent):
-    if user_agent:
-        try:
-            user_agent.decode('ascii')
-        except UnicodeDecodeError:
-            user_agent = b''
     ua = parse(user_agent or b'')
     ua.is_from_weixin = b'MicroMessenger' in ua.ua_string
     return ua

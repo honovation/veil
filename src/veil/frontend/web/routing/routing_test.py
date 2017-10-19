@@ -23,9 +23,9 @@ class PathTemplateTest(TestCase):
 
 
 class ParseUserAgentTest(TestCase):
-    def test_user_agent_with_unicode(self):
+    def test_user_agent_with_bad_byte_sequences(self):
         ua = parse_user_agent(b'Rajax/1 Lenovo_A820t/A820t Android/4.1.2 Display/Lenovo_A820t_S115_AnZhiæ <96>å®¿ Eleme/4.4.1 ID/ea14ab53-4c54-3645-bac9-a81b63d6e7f1; KERNEL_VERSION:3.4.5 API_Level:16 Mozilla/5.0 (Linux; U; Android 4.1.2; zh-cn; Lenovo A820t Build/JZO54K) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30')
-        self.assertEqual(b'', ua.ua_string)
+        self.assertFalse(b'MicroMessenger' in ua.ua_string, 'it should not from weixin')
 
     def test_user_agent_with_wx(self):
         ua = parse_user_agent(b'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0_2 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Mobile/15A421 MicroMessenger/6.5.18 NetType/WIFI Language/zh_CN')
