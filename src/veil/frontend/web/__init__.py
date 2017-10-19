@@ -144,7 +144,7 @@ with veil_component.init_component(__name__):
                 'user_code': to_unicode(get_cookie(VEIL_USER_CODE_COOKIE_NAME)) or '',
                 'uri': to_unicode(request.uri),
                 'remote_ip': to_unicode(request.remote_ip),
-                'user_agent': to_unicode(request.headers.get('User-Agent'))
+                'user_agent': to_unicode(request.headers.get('User-Agent'), strict=False)
             }
 
         add_log_context_provider(_log_web_request_provider)
