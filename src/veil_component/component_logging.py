@@ -176,4 +176,4 @@ def to_unicode(s):
     try:
         return unicode(s)
     except UnicodeDecodeError:
-        return unicode(repr(s))
+        return unicode(repr(s)[1:-1])

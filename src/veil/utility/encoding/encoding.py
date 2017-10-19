@@ -37,19 +37,19 @@ def to_unicode(s, encoding='UTF-8', remedial_encodings=('gb18030',), strict=True
                     else:
                         return u
 
-    if isinstance(s, tuple):
-        return unicode(tuple(to_unicode(e) for e in s))
-
-    if isinstance(s, list):
-        return unicode([to_unicode(e) for e in s])
-
-    if isinstance(s, dict):
-        return unicode({to_unicode(k): to_unicode(v) for k, v in s.items()})
+    if isinstance(s, (tuple, list, dict)):
+        kwargs = dict(encoding=encoding, remedial_encodings=remedial_encodings, strict=strict, additional=additional)
+        if isinstance(s, tuple):
+            return unicode(tuple(to_unicode(e, **kwargs) for e in s))
+        elif isinstance(s, list):
+            return unicode([to_unicode(e, **kwargs) for e in s])
+        else:
+            return unicode({to_unicode(k, **kwargs): to_unicode(v, **kwargs) for k, v in s.items()})
 
     try:
         return unicode(s)
     except UnicodeDecodeError:
-        u = unicode(repr(s))
+        u = unicode(repr(s)[1:-1])
         LOGGER.warning('to_unicode failed: %(u)s, %(additional)s', {'u': u, 'additional': additional})
         if strict:
             raise
