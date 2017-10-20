@@ -151,12 +151,17 @@ class NamedParameterCursor(object):
                 return ':{}'.format(param_name)
 
         sql = self.PARAMETER_REGEX.sub(replace_placeholder, sql)
-        param_list = [(name, to_str(value) if isinstance(value, unicode) else value) for name, value in kwargs.items() if name in param_names and not isinstance(value, tuple)]
-        param_list.extend(
-            (b'{}{}'.format(name, i), to_str(value) if isinstance(value, unicode) else value)
-            for name, values in kwargs.items() if name in param_names and isinstance(values, tuple)
-            for i, value in enumerate(values)
-        )
+        param_list = []
+        for name, value in kwargs.items():
+            if name not in param_names:
+                continue
+            if isinstance(value, tuple):
+                values = []
+                for i, item in enumerate(value):
+                    values.append((b'{}{}'.format(name, i), to_str(item) if isinstance(item, unicode) else item))
+                param_list.extend(values)
+                continue
+            param_list.append((name, to_str(value) if isinstance(value, unicode) else value))
         return to_str(sql), dict(param_list)
 
     def __getattr__(self, attr):
