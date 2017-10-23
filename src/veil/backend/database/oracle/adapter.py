@@ -31,7 +31,7 @@ class OracleAdapter(object):
     def _get_conn(self):
         os.environ['NLS_LANG'] = 'AMERICAN_CHINA.UTF8'
         conn = None
-        tns_name = '(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={})(PORT={}))(TRANSPORT_CONNECT_TIMEOUT=3)(CONNECT_TIMEOUT=6)(SEND_TIMEOUT=60)(RECV_TIMEOUT=180)(EXPIRE_TIME=5)(CONNECT_DATA=(SID={})))'.format(
+        tns_name = '(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={})(PORT={}))(TRANSPORT_CONNECT_TIMEOUT=3)(CONNECT_TIMEOUT=6)(SEND_TIMEOUT=60)(RECV_TIMEOUT=180)(EXPIRE_TIME=5)(CONNECT_DATA=(SERVICE_NAME={})))'.format(
             self.host, self.port, self.database)
         try:
             conn = cx_Oracle.connect(self.user, self.password, tns_name)
