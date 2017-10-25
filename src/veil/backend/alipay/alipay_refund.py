@@ -185,4 +185,4 @@ class ALIPayRefundException(Exception):
         return 'code: {}, msg: {}, sub_code: {}, sub_msg: {}'.format(self.code, self.msg, self.sub_code or '', self.sub_msg or '')
 
     def __str__(self):
-        return self.__unicode__().encode('utf-8')
+        return unicode(self).encode(encoding='UTF-8')

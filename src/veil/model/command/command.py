@@ -113,6 +113,9 @@ class InvalidCommand(Exception):
         self.errors = errors
 
     def __str__(self):
+        return unicode(self).encode(encoding='UTF-8')
+
+    def __unicode__(self):
         return ', '.join('{}: {}'.format(field_name, field_error) for field_name, field_error in self.errors.items())
 
 

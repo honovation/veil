@@ -244,4 +244,4 @@ class WXPayRefundException(Exception):
         return 'code: {}, reason: {}'.format(self.code, self.reason)
 
     def __str__(self):
-        return self.__unicode__().encode('utf-8')
+        return unicode(self).encode(encoding='UTF-8')
