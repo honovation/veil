@@ -63,7 +63,7 @@ def query_tenpay_payment_status(out_trade_no):
     return paid
 
 
-def process_tenpay_payment_notification(out_trade_no, arguments, notified_from):
+def process_tenpay_payment_notification(out_trade_no, arguments, notified_from, http_referer=None, remote_ip=None, http_ua_string=None):
     with_notify_id = NOTIFIED_FROM_PAYMENT_QUERY != notified_from
     trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_payment_notification(out_trade_no, arguments,
                                                                                                                                  with_notify_id)
@@ -75,7 +75,7 @@ def process_tenpay_payment_notification(out_trade_no, arguments, notified_from):
     else:
         publish_event(EVENT_TENPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
                       paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
-                      notified_from=notified_from)
+                      notified_from=notified_from, http_referer=http_referer, remote_ip=remote_ip, http_ua_string=http_ua_string)
     if NOTIFIED_FROM_RETURN_URL == notified_from:
         return show_url
     elif NOTIFIED_FROM_NOTIFY_URL == notified_from:

@@ -143,7 +143,7 @@ def verify_wxpay_response(parsed_response, api_key):
         raise Exception('invalid sign')
 
 
-def process_wxpay_payment_notification(app_id, mch_id, api_key, arguments, notified_from):
+def process_wxpay_payment_notification(app_id, mch_id, api_key, arguments, notified_from, http_referer=None, remote_ip=None, http_ua_string=None):
     out_trade_no, trade_no, buyer_id, paid_total, paid_at, bank_code, bank_billno, show_url, discarded_reasons = validate_payment_notification(app_id, mch_id, api_key, arguments)
     if discarded_reasons:
         LOGGER.warn('wxpay payment notification discarded: %(discarded_reasons)s, %(arguments)s', {
@@ -158,7 +158,7 @@ def process_wxpay_payment_notification(app_id, mch_id, api_key, arguments, notif
         return_msg = 'OK'
         publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=buyer_id,
                       paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=bank_code, bank_billno=bank_billno, show_url=show_url,
-                      notified_from=notified_from)
+                      notified_from=notified_from, http_referer=http_referer, remote_ip=remote_ip, http_ua_string=http_ua_string)
     with require_current_template_directory_relative_to():
         return get_template('notification-return.xml').render(return_code=return_code, return_msg=return_msg)
 

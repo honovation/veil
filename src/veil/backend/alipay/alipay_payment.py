@@ -103,7 +103,7 @@ def make_alipay_app_payment_order_str(out_trade_no, subject, body, total_amount,
     return '{}&sign={}'.format(message, urllib.quote(sign_rsa2(params, config.rsa2_private_key)))
 
 
-def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True):
+def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True, http_referer=None, remote_ip=None, http_ua_string=None):
     if is_async_result:
         # TODO: remove this after 2017-12-20
         if arguments.get('sign_type') == 'MD5' and arguments.get('trade_status') == TRADE_STATUE_TRADE_FINISHED and arguments.get('gmt_close'):
@@ -131,7 +131,8 @@ def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True
         return '<br/>'.join(discarded_reasons)
     else:
         publish_event(EVENT_ALIPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=arguments.trade_no, payment_channel_buyer_id=buyer_id,
-                      paid_total=total_amount, paid_at=paid_at)
+                      paid_total=total_amount, paid_at=paid_at, show_url=None, notified_from=None, http_referer=http_referer, remote_ip=remote_ip,
+                      http_ua_string=http_ua_string)
         return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
 
 
