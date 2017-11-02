@@ -205,7 +205,7 @@ def query_order_status(app_id, mch_id, api_key, out_trade_no):
             LOGGER.debug(parsed_response)
             publish_event(EVENT_WXPAY_TRADE_PAID, out_trade_no=out_trade_no, payment_channel_trade_no=trade_no, payment_channel_buyer_id=None,
                           paid_total=paid_total, paid_at=paid_at, payment_channel_bank_code=None, bank_billno=bank_billno, show_url=None,
-                          notified_from=NOTIFIED_FROM_ORDER_QUERY)
+                          notified_from=NOTIFIED_FROM_ORDER_QUERY, http_referer=None, remote_ip=None, http_ua_string=None)
             paid = True
     return paid
 
