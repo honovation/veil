@@ -10,14 +10,18 @@ from veil_installer import *
 @atomic_installer
 def frontend_static_resource(frontend_root_path):
     frontend_root_path = as_path(frontend_root_path)
-    if not frontend_root_path or not (frontend_root_path / 'package.json').exists():
-        return
+    if not frontend_root_path.exists():
+        raise Exception('No such directory: {}'.format(frontend_root_path))
+    if not (frontend_root_path / 'package.json').exists():
+        raise Exception('No package.json file: {}'.format(frontend_root_path))
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         dry_run_result['frontend_static_resource'] = 'INSTALL'
         return
-    shell_execute('sudo chown -R {}:{} node_modules'.format(CURRENT_USER, CURRENT_USER_GROUP), cwd=frontend_root_path)
     shell_execute('sudo npm install yarn -g', cwd=frontend_root_path)
+    if not (frontend_root_path / 'node_modules').exists():
+        shell_execute('sudo -u {} yarn'.format(CURRENT_USER), cwd=frontend_root_path)
+    shell_execute('sudo chown -R {}:{} node_modules'.format(CURRENT_USER, CURRENT_USER_GROUP), cwd=frontend_root_path)
     dist_path = frontend_root_path / 'dist'
     if dist_path.exists():
         shell_execute('sudo chown -R {}:{} {}'.format(CURRENT_USER, CURRENT_USER_GROUP, dist_path))
