@@ -18,6 +18,7 @@ def frontend_static_resource(frontend_root_path):
     if dry_run_result is not None:
         dry_run_result['frontend_static_resource'] = 'INSTALL'
         return
+    shell_execute('sudo chown -R {}:{} {}'.format(CURRENT_USER, CURRENT_USER_GROUP, frontend_root_path))
     shell_execute('sudo npm install yarn -g', cwd=frontend_root_path)
     if not (frontend_root_path / 'node_modules').exists():
         shell_execute('sudo -u {} yarn'.format(CURRENT_USER), cwd=frontend_root_path)
