@@ -285,7 +285,7 @@ class InvoiceItem(DictObject):
 
 def record_request_and_response(req, rsp, interface_name, request_seq):
     current_time_string = get_current_time_in_client_timezone().strftime('%Y%m%d%H%M%S')
-    log_file_dir = REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE / current_time_string[:4] / current_time_string[4:6]
+    log_file_dir = REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE / current_time_string[:4] / current_time_string[4:6] / current_time_string[6:8]
     log_file_dir.makedirs()
     request_log_file_name = '{}-{}-{}-req.xml'.format(current_time_string, request_seq, interface_name)
     response_log_file_name = '{}-{}-{}-rsp.xml'.format(current_time_string, request_seq, interface_name)
