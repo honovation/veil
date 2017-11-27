@@ -32,7 +32,7 @@ else:
 QUERY_LOGISTICS_STATUS_MSG_CODE = 'TRACEINTERFACE_NEW_TRACES'
 SIGN_SCAN_TYPE = '签收'
 TRD_SIGN_SCAN_TYPE = '第三方签收'
-REJECT_SCAN_TYPE = '退件签收'
+REJECT_SCAN_TYPES = ('退件签收', '退件')
 NOTIFICATION_SIGN_SCAN_TYPE = 'SIGN'
 NOTIFICATION_REJECT_SCAN_TYPE = 'RESIGN'
 SUBSCRIBE_MSG_TYPE = 'SUB'
@@ -82,7 +82,7 @@ def query_logistics_status(*bill_codes):
                 bill_code2logistics_status = {
                     d.billCode: DictObject(traces=[DictObject(brief=t.desc, status_code=t.scanType, created_at=t.scanDate) for t in d.traces],
                                            signed=d.traces[-1].scanType in (SIGN_SCAN_TYPE, TRD_SIGN_SCAN_TYPE),
-                                           rejected=d.traces[-1].scanType == REJECT_SCAN_TYPE,
+                                           rejected=d.traces[-1].scanType in REJECT_SCAN_TYPES,
                                            latest_biz_time=convert_datetime_to_client_timezone(to_datetime()(d.traces[-1].scanDate)))
                     for d in json_response.data
                 }
@@ -181,6 +181,11 @@ def process_logistics_notification(arguments):
     if signed:
         signed_by = arguments.data.contacts
     rejected = arguments.data.scanType == NOTIFICATION_REJECT_SCAN_TYPE
+    if signed:
+        status = query_logistics_status(arguments.data.billCode)
+        if any(t.status_code in REJECT_SCAN_TYPES for t in status.traces):
+            signed = False
+            rejected = True
     if signed or rejected:
         publish_event(EVENT_ZTO_LOGISTICS_NOTIFICATION_RECEIVED, purchase_id=arguments.purchase_id, box_id=arguments.box_id,
                       status_code=arguments.data.scanType, brief=arguments.data.desc, signed=signed, signed_by=signed_by, rejected=rejected,
