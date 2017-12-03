@@ -32,7 +32,7 @@ else:
 QUERY_LOGISTICS_STATUS_MSG_CODE = 'TRACEINTERFACE_NEW_TRACES'
 SIGN_SCAN_TYPES = ('签收', '第三方签收')
 REJECT_SCAN_TYPES = ('退件签收', '退件')
-RETURN_SCAN_TYPE = '退件扫描'
+RETURN_SCAN_TYPE = '退件'
 NOTIFICATION_SIGN_SCAN_TYPE = 'SIGN'
 NOTIFICATION_REJECT_SCAN_TYPE = 'RESIGN'
 SUBSCRIBE_MSG_TYPE = 'SUB'
@@ -206,6 +206,7 @@ def subscribe_notification_script(logistics_id, trace_code, notify_url, is_subsc
 def query_status_script(trace_code):
     status = query_logistics_status(trace_code)[trace_code]
     print(status.signed)
+    print(status.sender_signed)
     print(status.rejected)
     print(status.latest_biz_time)
     for t in status.traces:
