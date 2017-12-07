@@ -53,7 +53,12 @@ def enable_user_tracking(purpose, try_sign_in=None, login_url='/login', session_
         request.tracking_code = get_browser_code()
         if not request.tracking_code:
             request.tracking_code = uuid.uuid4().get_hex()
-        set_browser_code(request.website, request.tracking_code)
+
+        try:
+            set_browser_code(request.website, request.tracking_code)
+        except SetBrowserCodeError:
+            request.tracking_code = uuid.uuid4().get_hex()
+            set_browser_code(request.website, request.tracking_code)
 
         try:
             if request.user_agent.is_bot:
@@ -119,8 +124,11 @@ def get_browser_code():
 
 
 def set_browser_code(purpose, browser_code):
-    set_cookie(name=VEIL_BROWSER_CODE_COOKIE_NAME, value=browser_code, expires_days=config[purpose].cookie_expires_days,
-               domain=get_website_parent_domain(purpose))
+    try:
+        set_cookie(name=VEIL_BROWSER_CODE_COOKIE_NAME, value=browser_code, expires_days=config[purpose].cookie_expires_days,
+                   domain=get_website_parent_domain(purpose))
+    except CreateCookieError as e:
+        raise SetBrowserCodeError(e.message)
 
 
 def get_latest_user_id(purpose=None, max_age_days=None):
@@ -214,3 +222,7 @@ def remove_logged_in_user_ids(purpose):
 
 def logged_in_user_id_key(session):
     return 'lu:{}:{}'.format(session.purpose, session.browser_code)
+
+
+class SetBrowserCodeError(Exception):
+    pass

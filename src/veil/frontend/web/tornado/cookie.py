@@ -100,7 +100,10 @@ def clear_cookie(name, path='/', domain=None, response=None):
 
 def set_cookie(response=None, **kwargs):
     response = response or get_current_http_response()
-    create_cookie(response.cookies, **kwargs)
+    try:
+        create_cookie(response.cookies, **kwargs)
+    except ValueError as e:
+        raise CreateCookieError(e.message)
 
 
 def create_cookie(cookies, name, value, domain=None, expires=None, path='/', expires_days=None, expires_minutes=None, httponly=True, **kwargs):
@@ -141,3 +144,7 @@ def _time_independent_equals(a, b):
     for x, y in zip(a, b):
         result |= ord(x) ^ ord(y)
     return result == 0
+
+
+class CreateCookieError(Exception):
+    pass

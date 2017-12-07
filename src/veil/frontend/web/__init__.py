@@ -58,6 +58,7 @@ with veil_component.init_component(__name__):
     from .tornado import delete_http_argument
     from .tornado import clear_http_arguments
     from .tornado import require_io_loop_executor
+    from .tornado import CreateCookieError
 
     from .xsrf import xsrf_token
     from .xsrf import TAG_NO_XSRF_CHECK
@@ -122,6 +123,7 @@ with veil_component.init_component(__name__):
         delete_http_argument.__name__,
         clear_http_arguments.__name__,
         require_io_loop_executor.__name__,
+        CreateCookieError.__name__,
 
         xsrf_token.__name__,
         'TAG_NO_XSRF_CHECK',

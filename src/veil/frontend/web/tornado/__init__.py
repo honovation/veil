@@ -21,6 +21,7 @@ with veil_component.init_component(__name__):
     from .cookie import clear_cookie
     from .cookie import get_cookies
     from .cookie import clear_cookies
+    from .cookie import CreateCookieError
 
     from .flash_message import set_flash_message
     from .flash_message import clear_and_return_flash_message
@@ -58,6 +59,7 @@ with veil_component.init_component(__name__):
         clear_cookie.__name__,
         get_cookies.__name__,
         clear_cookies.__name__,
+        CreateCookieError.__name__,
 
         set_flash_message.__name__,
         clear_and_return_flash_message.__name__,
