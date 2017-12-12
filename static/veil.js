@@ -8,7 +8,13 @@
  *
  */
 
-$.ajaxSetup({cache: true, headers: {'X-XSRF': Cookies.get('_xsrf')}});
+$.ajaxSetup({cache: true});
+$(document).ajaxSend(function(event, jqxhr, settings){
+    if (settings.type.toUpperCase() !== 'GET' && settings.type.toUpperCase() !== 'HEAD') {
+        jqxhr.setRequestHeader('X-XSRF', Cookies.get('_xsrf'));
+    }
+});
+
 
 $(document).on('click', 'button,input[type="button"],input[type="submit"]', function (e) {
     var $this = $(this);
