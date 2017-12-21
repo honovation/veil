@@ -14,6 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 API_URL = 'https://api.kuaidi100.com/api'
 WEB_URL_TEMPLATE = 'https://www.kuaidi100.com/chaxun?com={}&nu={}'
+AUTO_COM_URL = 'http://www.kuaidi100.com/autonumber/autoComNum'
 
 STATUS_NO_INFO_YET = '0'  # 物流单暂无结果
 STATUS_QUERY_SUCCESS = '1'  # 查询成功
@@ -66,6 +67,19 @@ def get_delivery_status_by_kuaidi100(shipper_code, shipping_code, sleep_at_start
             else:
                 LOGGER.info('kuaidi100 query no info yet: %(result)s, %(url)s', {'result': result, 'url': response.url})
     return {}
+
+
+def get_delivery_provider(text):
+    params = {'text': text}
+    try:
+        response = requests.get(AUTO_COM_URL, params=params, headers={'Accept': 'application/json'}, timeout=(3.05, 9),
+                                max_retries=Retry(total=3, backoff_factor=0.5))
+        response.raise_for_status()
+    except Exception:
+        LOGGER.exception('kuaidi100 query exception-thrown: %(params)s', {'params': params})
+    else:
+        result = objectify(response.json())
+        return result
 
 
 class IPBlockedException(Exception):
