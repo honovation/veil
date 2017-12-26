@@ -58,11 +58,13 @@ def create_alipay_pc_payment_url(out_trade_no, subject, body, total_amount, show
     return _create_alipay_payment_url('alipay.trade.page.pay', return_url, notify_url, content_params)
 
 
-def create_alipay_wap_payment_url(out_trade_no, subject, body, total_amount, return_url, notify_url, minutes_to_expire):
+def create_alipay_wap_payment_url(out_trade_no, subject, body, total_amount, return_url, notify_url, minutes_to_expire, store_id=None):
     content_params = DictObject(out_trade_no=out_trade_no, subject=subject, body=body, total_amount='{:.2f}'.format(total_amount),
                                 product_code='QUICK_WAP_WAY')
     if minutes_to_expire:
         content_params.timeout_express = '{}m'.format(minutes_to_expire)
+    if store_id:
+        content_params.store_id = store_id
     return _create_alipay_payment_url('alipay.trade.wap.pay', return_url, notify_url, content_params)
 
 
@@ -83,12 +85,14 @@ def _create_alipay_payment_url(method, return_url, notify_url, content_params):
     return '{}?{}'.format(ALIPAY_API_URL, urlencode(params))
 
 
-def make_alipay_app_payment_order_str(out_trade_no, subject, body, total_amount, notify_url, minutes_to_expire):
+def make_alipay_app_payment_order_str(out_trade_no, subject, body, total_amount, notify_url, minutes_to_expire, store_id=None):
     config = alipay_client_config()
     content_params = DictObject(out_trade_no=out_trade_no, subject=subject, body=body, total_amount='{:.2f}'.format(total_amount),
                                 product_code='QUICK_MSECURITY_PAY')
     if minutes_to_expire:
         content_params.timeout_express = '{}m'.format(minutes_to_expire)
+    if store_id:
+        content_params.store_id = store_id
     params = DictObject(
         app_id=config.app_id,
         method='alipay.trade.app.pay',
