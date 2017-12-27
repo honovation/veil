@@ -19,4 +19,5 @@
     <product_id>{{ order.product_id or '' }}</product_id>
     <limit_pay>{{ order.limit_pay or '' }}</limit_pay>
     <openid>{{ order.openid or '' }}</openid>
+    <scene_info>{{ order.scene_info or '' }}</scene_info>
 </xml>

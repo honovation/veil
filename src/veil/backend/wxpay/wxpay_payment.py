@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 
 import hashlib
+import json
 import logging
 from decimal import Decimal, DecimalException
 from uuid import uuid4
@@ -56,7 +57,7 @@ def make_wxpay_request_for_app(app_id, mch_id, api_key, out_trade_no, subject, b
 def make_wxpay_request_for_mp(app_id, mch_id, api_key, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address, openid,
                               scene_info=None):
     wxpay_prepay_order = create_prepay_order(app_id, mch_id, api_key, WXPAY_TRADE_TYPE_JSAPI, out_trade_no, subject, body, total_fee, notify_url,
-                                             shopper_ip_address, time_start, time_expire, openid=openid, scene_info=scene_info)
+                                             shopper_ip_address, time_start, time_expire, scene_info=scene_info, openid=openid)
     wxpay_request = DictObject(appId=app_id, timeStamp=str(get_current_timestamp()), nonceStr=uuid4().get_hex(),
                                package='prepay_id={}'.format(wxpay_prepay_order.prepay_id), signType='MD5')
     wxpay_request.paySign = sign_md5(wxpay_request, api_key)
@@ -64,7 +65,7 @@ def make_wxpay_request_for_mp(app_id, mch_id, api_key, out_trade_no, subject, bo
 
 
 def create_prepay_order(app_id, mch_id, api_key, trade_type, out_trade_no, subject, body, total_fee, notify_url, spbill_create_ip, time_start,
-                        time_expire, openid=None, scene_info=None):
+                        time_expire, scene_info=None, openid=None):
     time_start_beijing_time_str = convert_datetime_to_client_timezone(time_start).strftime('%Y%m%d%H%M%S')
     time_expire_beijing_time_str = convert_datetime_to_client_timezone(time_expire).strftime('%Y%m%d%H%M%S')
     order = DictObject(appid=app_id, mch_id=mch_id, trade_type=trade_type, out_trade_no=out_trade_no, body=subject, detail=body,
@@ -72,7 +73,7 @@ def create_prepay_order(app_id, mch_id, api_key, trade_type, out_trade_no, subje
                        time_expire=time_expire_beijing_time_str, notify_url=notify_url, nonce_str=uuid4().get_hex(), goods_tag=None, product_id=None,
                        fee_type=None, limit_pay=None, device_info=None, openid=openid)
     if scene_info:
-        order.scene_info = scene_info
+        order.scene_info = json.dumps(scene_info, separators=(',', ':'))
     order.sign = sign_md5(order, api_key)
     with require_current_template_directory_relative_to():
         data = to_str(get_template('unified-order.xml').render(order=order))
