@@ -19,6 +19,7 @@ EVENT_WXPAY_DELIVER_NOTIFY_SENT = define_event('wxpay-deliver-notify-sent')
 WXPAY_TRADE_TYPE_APP = 'APP'
 WXPAY_TRADE_TYPE_JSAPI = 'JSAPI'
 WXPAY_TRADE_TYPE_NATIVE = 'NATIVE'
+WXPAY_TRADE_TYPE_MWEB = 'MWEB'
 NOTIFIED_FROM_ORDER_QUERY = 'order_query'
 NOTIFIED_FROM_NOTIFY_URL = 'notify_url'
 SUCCESSFULLY_MARK = 'SUCCESS'  # wxpay require this 7 characters to be returned to them
@@ -63,6 +64,13 @@ def make_wxpay_request_for_mp(app_id, mch_id, api_key, out_trade_no, subject, bo
     return wxpay_request
 
 
+def get_wxpay_mweb_url(app_id, mch_id, api_key, out_trade_no, subject, body, total_fee, notify_url, time_start, time_expire, shopper_ip_address,
+                       device_info=None):
+    wxpay_prepay_order = create_prepay_order(app_id, mch_id, api_key, WXPAY_TRADE_TYPE_MWEB, out_trade_no, subject, body, total_fee, notify_url,
+                                             shopper_ip_address, time_start, time_expire, device_info=device_info)
+    return wxpay_prepay_order.mweb_url
+
+
 def create_prepay_order(app_id, mch_id, api_key, trade_type, out_trade_no, subject, body, total_fee, notify_url, spbill_create_ip, time_start,
                         time_expire, device_info=None, openid=None):
     time_start_beijing_time_str = convert_datetime_to_client_timezone(time_start).strftime('%Y%m%d%H%M%S')
@@ -100,7 +108,7 @@ def create_prepay_order(app_id, mch_id, api_key, trade_type, out_trade_no, subje
             raise WXPayException(parsed_response.err_code_des or '支付遇到错误，请稍后重试', parsed_response.err_code)
         LOGGER.info('wxpay unified order success: %(response)s', {'response': response.content})
         return DictObject(nonce_str=parsed_response.nonce_str, trade_type=parsed_response.trade_type, prepay_id=parsed_response.prepay_id,
-                          code_url=parsed_response.get('code_url'))
+                          code_url=parsed_response.get('code_url'), mweb_url=parsed_response.get('mweb_url'))
 
 
 def close_order(app_id, mch_id, api_key, out_trade_no):
