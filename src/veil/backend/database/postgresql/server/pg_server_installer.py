@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import sys
+from decimal import Decimal
 from veil.profile.installer import *
 from ...postgresql_setting import get_pg_config_dir, get_pg_data_dir, get_pg_bin_dir
 from .pg_fts_chinese import scws_resource, zhparser_resource
@@ -12,8 +13,8 @@ def postgresql_server_resource(purpose, config):
     upgrading = False
     maintenance_config = postgresql_maintenance_config(purpose, must_exist=False)
     if maintenance_config and maintenance_config.version != config.version:
-        assert maintenance_config.version < config.version, 'cannot downgrade postgresql server from {} to {}'.format(maintenance_config.version,
-                                                                                                                      config.version)
+        assert Decimal(maintenance_config.version) < Decimal(config.version), 'cannot downgrade postgresql server from {} to {}'.format(
+            maintenance_config.version, config.version)
         upgrading = True
         LOGGER.warn('Start to install new-version postgresql server: %(old_version)s => %(new_version)s', {
             'old_version': maintenance_config.version,
