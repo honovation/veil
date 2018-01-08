@@ -15,7 +15,7 @@ from ..invalid import Invalid
 EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9_=%.+-]+@([a-zA-Z0-9_=%+-]+\.)+[a-zA-Z]{2,6}$')
 PASSWORD_PATTERN = re.compile(r'[A-Za-z0-9_`~!@#$%^&*()=+\-\[\]\{\};:,\\/?.]{6,16}')
 # reference to http://www.cnfgg.com/article/Asp/Asp_phoneCheck.htm
-MOBILE_PATTERN = re.compile(r'^1[34578]\d{9}$')  # can reference to 支付宝账户支持绑定的手机号段有哪些？(http://help.alipay.com/lab/help_detail.htm?help_id=255119)
+MOBILE_PATTERN = re.compile(r'^1[3456789]\d{9}$')  # can reference to 支付宝账户支持绑定的手机号段有哪些？(http://help.alipay.com/lab/help_detail.htm?help_id=255119)
 LANDLIINE_PATTERN = re.compile(r'^(\d{2,4}[-.\s_－—]?)?\d{3,8}([-.\s_－—]?\d{3,8})?([-.\s_－—]?\d{1,7})?$')
 URL_PATTERN = re.compile(r'^([a-z]+://)?([^\s/:]+\.[a-z]{2,10}|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(\/.*)?$')
 ISO8601_PATTERN = re.compile(r'(?P<year>[0-9]{4})-(?P<month>[0-9]{2})-(?P<day>[0-9]{2}) (?P<hour>[0-9]{2}):(?P<minute>[0-9]{2}) ?(?P<prefix>[+-])(?P<hours>[0-9]{2}):?(?P<minutes>[0-9]{2})')
