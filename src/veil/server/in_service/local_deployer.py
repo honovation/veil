@@ -7,6 +7,7 @@ from veil.utility.shell import *
 from veil.development.git import *
 from veil.frontend.cli import *
 from veil_component import VEIL_ENV
+from veil_installer import *
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,7 +38,12 @@ def deploy(start_after_deploy='TRUE'):
 def patch():
     shell_execute('veil migrate')
     threads = []
-    for program_name, program in get_current_veil_server().programs.items():
+    current_veil_server = get_current_veil_server()
+    server_specified_resources = current_veil_server.get('resources', [])
+    for resource in server_specified_resources:
+        if 'frontend_static_resource' in resource[0]:
+            install_resource(resource)
+    for program_name, program in current_veil_server.programs.items():
         if program.get('patchable'):
             program_name = '{}:{}'.format(program['group'], program_name) if program.get('group') else program_name
             thread = threading.Thread(target=functools.partial(shell_execute, 'veil server supervisor restart-program {}'.format(program_name)))
