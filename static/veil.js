@@ -18,6 +18,9 @@ $(document).ajaxSend(function(event, jqxhr, settings){
 
 $(document).on('click', 'button,input[type="button"],input[type="submit"]', function (e) {
     var $this = $(this);
+    if ($this.data('ignoreDoubleClickDetect')) {
+        return;
+    }
     if($this.data('ignoreDoubleClick')) {
         e.preventDefault();
         e.stopPropagation();
