@@ -38,7 +38,7 @@
         <QD_BZ>{{ flag_list }}</QD_BZ>
         <QDXMMC><![CDATA[{{ list_item_name or '' }}]]></QDXMMC>
         <CHYY><![CDATA[{{ red_invoice_reason or '' }}]]></CHYY>
-        <TSCHBZ>{{ flag_special_red or '' }}</TSCHBZ>
+        <TSCHBZ>{{ flag_special_red }}</TSCHBZ>
         <KPHJJE>{{ total }}</KPHJJE>
         <HJBHSJE>{{ without_tax_total }}</HJBHSJE>
         <HJSE>{{ tax_total }}</HJSE>
