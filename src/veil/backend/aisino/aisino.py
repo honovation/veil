@@ -64,6 +64,12 @@ DOWNLOAD_METHOD_FOR_QUERY = '0'
 DOWNLOAD_METHOD_FOR_DOWNLOAD = '1'
 RED_INVOICE_FLAG_NORMAL = '0'
 RED_INVOICE_FLAG_SPECIAL = '1'
+SPBM_LENGTH = 19
+
+
+def normalize_items_code(items):
+    for item in items:
+        item.code = item.code.ljust(SPBM_LENGTH, '0')
 
 
 def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax_payer, operator_name, receiver_operator_name, recheck_operator_name,
@@ -88,6 +94,8 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
 
     if app_id == INVOICE_APP_ID_VAT and type_code == INVOICE_TYPE_CODE_RED:
         comment = '对应正数发票代码:{}号码:{}'.format(ref_invoice_code, ref_invoice_no)
+
+    normalize_items_code(items)
 
     with require_current_template_directory_relative_to():
         interface_content = get_template('invoice.xml').render(request_seq=request_seq, ebp_code=ebp_code, buyer=buyer, tax_payer=tax_payer,
