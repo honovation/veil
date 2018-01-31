@@ -61,7 +61,7 @@
             <FPHXZ>{{ item.type }}</FPHXZ>
             <SPBM>{{ item.code or '' }}</SPBM>
             <ZXBM/>
-            <YHZCBS>0</YHZCBS>
+            <YHZCBS>{{ 1 if item.tax_rate == 0 else 0 }}</YHZCBS>
             <LSLBS>{{ 2 if item.tax_rate == 0 else '' }}</LSLBS>
             <ZZSTSGL>{{ '不征税' if item.tax_rate == 0 else '' }}</ZZSTSGL>
             <KCE/>
