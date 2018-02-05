@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 
+import re
 import zlib
 import gzip
 import logging
@@ -69,6 +70,8 @@ SPBM_LENGTH = 19
 
 def normalize_items_code(items):
     for item in items:
+        if item.name.startswith('*'):
+            item.name = re.sub(r'^\*+', '', item.name)
         item.code = item.code.ljust(SPBM_LENGTH, '0')
 
 
