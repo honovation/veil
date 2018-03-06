@@ -1,4 +1,4 @@
 veil.server.os.postgresql_apt_repository_resource
 veil.server.os.os_package_resource?language-pack-zh-hans
 veil.server.os.os_package_resource?libpq-dev
-veil.server.python.python_package_resource?psycopg2
+veil.server.python.python_package_resource?psycopg2-binary
