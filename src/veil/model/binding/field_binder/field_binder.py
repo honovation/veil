@@ -220,7 +220,7 @@ def to_datetime_via_parse(value):
 
 
 def to_datetime(format='%Y-%m-%d %H:%M:%S', naive=False):
-    def bind(value):
+    def bind(value, return_none_when_invalid=False):
         if isinstance(value, datetime):
             return convert_datetime_to_naive_local(value) if naive else convert_datetime_to_utc_timezone(value)
         else:
@@ -229,7 +229,10 @@ def to_datetime(format='%Y-%m-%d %H:%M:%S', naive=False):
             try:
                 dt = datetime.strptime(value, bind.format)
             except (TypeError, ValueError):
-                raise Invalid(_('不是有效的日期时间'))
+                if return_none_when_invalid:
+                    return None
+                else:
+                    raise Invalid(_('不是有效的日期时间'))
             else:
                 if not naive:
                     dt = convert_datetime_to_utc_timezone(dt)
