@@ -49,7 +49,7 @@ def postgresql_server_resource(purpose, config):
                 'log_min_duration_statement': config.log_min_duration_statement,
                 'log_filename': config.get('log_filename')
             })),
-        file_resource(path=pg_config_dir / 'pg_hba.conf', content=render_config('pg_hba.conf.j2', host=config.host)),
+        file_resource(path=pg_config_dir / 'pg_hba.conf', content=render_config('pg_hba.conf.j2', host=config.host, replication_user=config.replication_user)),
         file_resource(path=pg_config_dir / 'pg_ident.conf', content=render_config('pg_ident.conf.j2')),
         file_resource(path=pg_config_dir / 'postgresql-maintenance.cfg',
                       content=render_config('postgresql-maintenance.cfg.j2', version=config.version, owner=config.owner, owner_password=config.owner_password)),
@@ -74,6 +74,12 @@ def postgresql_server_resource(purpose, config):
         postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
                                  owner_password=config.owner_password, user='readonly', password='r1adonly', readonly=True)
     ])
+    if config.replication_user:
+        resources.append(postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
+                                                  owner_password=config.owner_password, user=config.replication_user, replication=True))
+    if config.replication_slot_name:
+        resources.append(postgresql_replication_slot_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
+                                                              owner_password=config.owner_password, replication_slot_name=config.replication_slot_name))
 
     return resources
 
@@ -189,9 +195,9 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
 
 
 @atomic_installer
-def postgresql_user_resource(purpose, version, host, port, owner, owner_password, user, password, readonly=False):
+def postgresql_user_resource(purpose, version, host, port, owner, owner_password, user, password=None, readonly=False, replication=False):
     assert user, 'must specify postgresql user'
-    assert password, 'must specify postgresql user password'
+    assert replication or password is not None, 'must specify postgresql user password for non replication mode'
     pg_data_dir = get_pg_data_dir(purpose, version)
     user_installed_tag_file = pg_data_dir / 'user-{}-installed'.format(user)
     installed = user_installed_tag_file.exists()
@@ -211,11 +217,45 @@ def postgresql_user_resource(purpose, version, host, port, owner, owner_password
                 shell_execute('''
                     {}/psql -h {} -p {} -U {} -d postgres -c "CREATE USER {} WITH PASSWORD '{}'; ALTER USER {} SET default_transaction_read_only=on;"
                     '''.format(pg_bin_dir, host, port, owner, user, password, user), env=env, capture=True)
+            elif replication:
+                shell_execute('''
+                    {}/psql -h {} -p {} -U {} -d postgres -c "CREATE USER {} WITH REPLICATION;"
+                    '''.format(pg_bin_dir, host, port, owner, user), env=env, capture=True)
             else:
                 shell_execute('''
                     {}/psql -h {} -p {} -U {} -d postgres -c "CREATE USER {} WITH PASSWORD '{}'"
                     '''.format(pg_bin_dir, host, port, owner, user, password), env=env, capture=True)
         user_installed_tag_file.touch()
+
+
+@atomic_installer
+def postgresql_replication_slot_resource(purpose, version, host, port, owner, owner_password, replication_slot_name):
+    pg_data_dir = get_pg_data_dir(purpose, version)
+    replication_slot_tag_file = pg_data_dir / 'replication-slot-{}-installed'.format(replication_slot_name)
+    installed = replication_slot_tag_file.exists()
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        dry_run_result['postgresql_replication_slot?{}'.format(purpose)] = '-' if installed else 'INSTALL'
+        return
+    if installed:
+        return
+    LOGGER.info('install postgresql replication slot: %(replication_slot_name)s in %(purpose)s', {
+        'replication_slot_name': replication_slot_name,
+        'purpose': purpose
+    })
+    pg_bin_dir = get_pg_bin_dir(version)
+    with postgresql_server_running(version, pg_data_dir, owner):
+        env = os.environ.copy()
+        env['PGPASSWORD'] = owner_password
+        existing = shell_execute('''
+        {}/psql -h {} -p {} -U {} -d postgres -tAc "SELECT 1 FROM pg_replication_slots WHERE slot_name='{}'"
+        '''.format(get_pg_bin_dir(version), host, port, owner, replication_slot_name), env=env, capture=True)
+
+        if not existing:
+            shell_execute('''
+                {}/psql -h {} -p {} -U {} -d postgres -c "SELECT PG_CREATE_PHYSICAL_REPLICATION_SLOT('{}')"
+                '''.format(pg_bin_dir, host, port, owner, replication_slot_name), env=env, capture=True)
+        replication_slot_tag_file.touch()
 
 
 def postgresql_user_existed(version, host, port, owner, user, env):
