@@ -56,7 +56,7 @@ def to_json(obj, **kwargs):
 
 
 def from_json(s, **kwargs):
-    return json.loads(s, cls=CustomJSONDecoder, **kwargs)
+    return json.loads(s, cls=CustomJSONDecoder, parse_float=Decimal, **kwargs)
 
 
 class CustomReadableJSONEncoder(json.JSONEncoder):
