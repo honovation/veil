@@ -107,14 +107,10 @@ def render_datetime_range(datetime_range, include_start=True, include_end=False)
 
 
 def adjust_datetime(dt, time_precision, delta):
-    if time_precision == 0:
-        return dt + timedelta(seconds=delta)
-    elif time_precision == 1:
-        return dt + timedelta(minutes=delta)
-    elif time_precision == 2:
-        return dt + timedelta(hours=delta)
-    elif time_precision == 3:
+    if time_precision == 3:
         return dt + timedelta(days=delta)
+    else:
+        return dt
 
 
 def get_time_precision(dt):
