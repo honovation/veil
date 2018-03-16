@@ -197,7 +197,7 @@ def pull_application(host):
     with fabric.api.cd(host.veil_home):
         while True:
             try:
-                fabric.api.sudo('git pull --rebase')
+                fabric.api.sudo('git pull')
             except Exception:
                 sleep(1)
                 continue
@@ -210,7 +210,7 @@ def pull_framework(host):
         fabric.api.sudo('git checkout {}'.format(read_veil_framework_version(host)))
         while True:
             try:
-                fabric.api.sudo('git pull --rebase')
+                fabric.api.sudo('git pull')
             except Exception:
                 sleep(1)
                 continue
