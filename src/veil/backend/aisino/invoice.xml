@@ -9,7 +9,7 @@
         <DKBZ>{{ flag_dk }}</DKBZ>
         <SGBZ/>
         <PYDM>{{ sample_code }}</PYDM>
-        <KPXM><![CDATA[{{ invoice_content }}]]></KPXM>
+        <KPXM><![CDATA[{{ invoice_content[:20] }}]]></KPXM>
         <BMB_BBH>{{ encode_table_version }}</BMB_BBH>
         <XHF_NSRSBH>{{ tax_payer.id }}</XHF_NSRSBH>
         <XHFMC><![CDATA[{{ tax_payer.name }}]]></XHFMC>
@@ -52,7 +52,7 @@
     <FPKJXX_XMXXS class="FPKJXX_XMXX;" size="{{ items |length }}">
         {% for item in items %}
         <FPKJXX_XMXX>
-            <XMMC><![CDATA[{{ item.name }}]]></XMMC>
+            <XMMC><![CDATA[{{ item.name[:20] }}]]></XMMC>
             <XMDW/>
             <GGXH/>
             <XMSL>{{ item.quantity }}</XMSL>
