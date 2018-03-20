@@ -195,6 +195,7 @@ def clone_framework(host):
 
 def pull_application(host):
     with fabric.api.cd(host.veil_home):
+        check_no_changes(host.veil_home)
         while True:
             try:
                 fabric.api.sudo('git pull')
@@ -207,6 +208,7 @@ def pull_application(host):
 
 def pull_framework(host):
     with fabric.api.cd(host.veil_framework_home):
+        check_no_changes(host.veil_framework_home)
         fabric.api.sudo('git checkout {}'.format(read_veil_framework_version(host)))
         while True:
             try:
@@ -216,6 +218,14 @@ def pull_framework(host):
                 continue
             else:
                 break
+
+
+def check_no_changes(cwd):
+    has_changes_not_committed = bool(fabric.api.run('git diff-index HEAD', warn_only=True))
+    if not has_changes_not_committed:
+        has_commits_not_pushed = 'Your branch is ahead of' in fabric.api.run('git status', warn_only=True)
+    if has_changes_not_committed or has_commits_not_pushed:
+        raise Exception('Local changes detected in {} !!!'.format(cwd))
 
 
 def init_application(host):
