@@ -221,7 +221,7 @@ def pull_framework(host):
 
 
 def check_no_changes(cwd):
-    has_changes_not_committed = bool(fabric.api.run('git diff-index HEAD', warn_only=True))
+    has_changes_not_committed = bool(fabric.api.run('git diff HEAD', warn_only=True))
     if not has_changes_not_committed:
         has_commits_not_pushed = 'Your branch is ahead of' in fabric.api.run('git status', warn_only=True)
     if has_changes_not_committed or has_commits_not_pushed:

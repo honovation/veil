@@ -26,7 +26,7 @@ def pull_dir(cwd):
 
 
 def has_changes_not_committed(cwd):
-    return bool(shell_execute('git diff-index HEAD', capture=True, cwd=cwd))
+    return bool(shell_execute('git diff HEAD', capture=True, cwd=cwd))
 
 
 def check_no_changes_not_committed():
