@@ -93,7 +93,8 @@
 # Allow replication connections from localhost, by a user with the
 # replication privilege.
 {% if replication_user %}
-host    replication     {{ replication_user }}             {{ host }}/16           trust
+host    replication     {{ replication_user }}             {{ replication_host }}/32           trust
+host    all     barman             {{ replication_host }}/32           trust
 {% endif %}
 
 # "local" is for Unix domain socket connections only
