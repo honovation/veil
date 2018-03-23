@@ -653,18 +653,19 @@ veil.widget.initializers = [];
 veil.widget.processWidget = function (html, processHtml) {
     var $body;
     var bodyHtml;
-    function loadJavascript(url) {
-        if ($.inArray(url, veil.widget.loadedJavascripts) == -1) {
-            veil.widget.loadedJavascripts.push(url);
+    function loadJavascript(jsAttributes) {
+        if ($.inArray(jsAttributes.src.value, veil.widget.loadedJavascripts) == -1) {
+            veil.widget.loadedJavascripts.push(jsAttributes.src.value);
             if (!$body) {
                 $body = $('body');
                 bodyHtml = $body.html();
             }
-            if (bodyHtml.indexOf(url) == -1) {
+            if (bodyHtml.indexOf(jsAttributes.src.value) == -1) {
                 var script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.src = url;
-                $body.append(script);
+                for(var i = jsAttributes.length - 1; i >= 0; i--) {
+                    script.setAttribute(jsAttributes[i].name, jsAttributes[i].value);
+                }
+                document.body.appendChild(script);
             }
         }
     }
@@ -689,9 +690,9 @@ veil.widget.processWidget = function (html, processHtml) {
             }
         }
     }
-    var javascriptUrls = [];
+    var javascripts = [];
     html = html.replace(veil.widget.RE_SCRIPT, function (scriptElement) {
-        javascriptUrls.push($(scriptElement).attr('src'));
+        javascripts.push($(scriptElement)[0].attributes);
         return '';
     });
     var stylesheetUrls = [];
@@ -712,8 +713,8 @@ veil.widget.processWidget = function (html, processHtml) {
         loadStylesheet(String(this));
     });
     processHtml(html);
-    $(javascriptUrls).each(function() {
-        loadJavascript(String(this));
+    $(javascripts).each(function() {
+        loadJavascript(this);
     });
     $(veil.widget.initializers).each(function() {
         this();
