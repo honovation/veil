@@ -221,7 +221,7 @@ def pull_framework(host):
 
 
 def check_no_changes(cwd):
-    has_changes_not_committed = bool(fabric.api.run('git diff HEAD', warn_only=True))
+    has_changes_not_committed = bool(fabric.api.run('git diff HEAD', warn_only=True, pty=False))
     if not has_changes_not_committed:
         has_commits_not_pushed = 'Your branch is ahead of' in fabric.api.run('git status', warn_only=True)
     if has_changes_not_committed or has_commits_not_pushed:
@@ -303,7 +303,7 @@ def veil_host_sources_list_resource(host):
         return
     sources_list_path = '/etc/apt/sources.list'
     fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=sources_list_path))
-    context = dict(mirror=host.apt_url, codename=fabric.api.run('lsb_release -cs'))
+    context = dict(mirror=host.apt_url, codename=fabric.api.run('lsb_release -cs', pty=False))
     fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR, use_sudo=True,
                                          backup=False, mode=0644)
     fabric.api.sudo('chown root:root {}'.format(sources_list_path))
