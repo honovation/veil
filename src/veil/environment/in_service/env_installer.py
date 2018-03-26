@@ -53,7 +53,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
     first_round_servers = []
     second_round_servers = []
     for server in list_veil_servers(veil_env_name):
-        if server.name not in ('guard', 'monitor'):
+        if server.name not in ('guard', 'monitor', 'barman'):
             first_round_servers.append(server)
         else:
             if server.name != 'monitor' or include_monitor_server == 'TRUE':
