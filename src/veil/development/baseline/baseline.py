@@ -56,7 +56,11 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
     for purpose in purposes:
         # set db conf permission
         config = postgresql_maintenance_config(purpose)
-        shell_execute('chown -f {}:{} *'.format(config.owner, config.owner), cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version), debug=True)
+        shell_execute('cp pg_hba.conf pg_hba.conf.ori', cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version))
+        shell_execute('printf "local all all trust\nhost all all 127.0.0.1/32 trust" > pg_hba.conf', cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version))
+        shell_execute('chown -f {}:{} *'.format(CURRENT_USER, CURRENT_USER_GROUP),
+                      cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version), debug=True)
+
     shell_execute('veil up --daemonize', debug=True)
     for purpose in purposes:
         config = postgresql_maintenance_config(purpose)
@@ -65,17 +69,16 @@ def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=N
             # set db owner password and run in a loop to wait PG to start
             try:
                 shell_execute(
-                    '''sudo -u dejavu psql -p {} -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.owner, config.owner_password),
-                    debug=True)
+                    '''psql -p {} -d template1 -U {} -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.owner, config.owner, config.owner_password))
                 # set db user password
                 shell_execute(
-                    '''sudo -u dejavu psql -p {} -d template1 -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.user, config.password),
-                    debug=True, capture=True)
+                    '''psql -p {} -d template1 -U {} -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.user, config.user, config.password))
             except Exception:
                 print('retrying')
                 sleep(2)
             else:
                 break
+        shell_execute('mv pg_hba.conf.ori pg_hba.conf', cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version))
     shell_execute('veil migrate', debug=True)
 
     shell_execute('veil down', debug=True)
