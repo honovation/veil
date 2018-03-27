@@ -47,15 +47,24 @@ def backup_host(host):
     with fabric.api.settings(host_string='root@{}:{}'.format(host.internal_ip, host.ssh_port)):
         fabric.api.run('mkdir -p -m 0700 {}'.format(host_backup_dir))
         veil_servers = list_veil_servers(VEIL_ENV.name, include_guard_server=False, include_monitor_server=False, include_barman_server=False)
-        running_servers_to_down = [s for s in veil_servers
-                                   if s.host_base_name == host.base_name and is_server_running(s) and (s.mount_data_dir or is_worker_running_on_server(s))]
+        barman_enabled = any(s.name == 'barman' for s in list_veil_servers(VEIL_ENV.name, include_guard_server=False, include_monitor_server=False))
+        if not barman_enabled:
+            running_servers_to_down = [s for s in veil_servers
+                                       if s.host_base_name == host.base_name and is_server_running(s) and (s.mount_data_dir or is_worker_running_on_server(s))]
+        else:
+            running_servers_to_down = []
         try:
-            bring_down_servers(running_servers_to_down)
-            fabric.api.run('rsync -avh --numeric-ids --delete --exclude "/{}" --exclude "/{}" --exclude "/{}" --link-dest={}/ {}/ {}/'.format(
-                host.var_dir.relpathto(host.bucket_inline_static_files_dir), host.var_dir.relpathto(host.bucket_captcha_image_dir),
-                host.var_dir.relpathto(host.bucket_uploaded_files_dir), host.var_dir, host.var_dir, host_backup_dir))
+            if running_servers_to_down:
+                bring_down_servers(running_servers_to_down)
+            exclude_paths = [host.var_dir.relpathto(host.bucket_inline_static_files_dir),
+                             host.var_dir.relpathto(host.bucket_captcha_image_dir),
+                             host.var_dir.relpathto(host.bucket_uploaded_files_dir)]
+            excludes = ' '.join('--exclude "/{}"'.format(path) for path in exclude_paths)
+            fabric.api.run('rsync -avh --numeric-ids --delete {excludes} --link-dest={host_var_path}/ {host_var_path}/ {host_backup_dir}/'.format(
+                excludes=excludes, host_var_path=host.var_dir, host_backup_dir=host_backup_dir))
         finally:
-            bring_up_servers(reversed(running_servers_to_down))
+            if running_servers_to_down:
+                bring_up_servers(reversed(running_servers_to_down))
 
 
 def bring_down_servers(servers):
