@@ -2,10 +2,13 @@
 from __future__ import unicode_literals, print_function, division
 
 from veil.environment import CURRENT_USER, CURRENT_USER_GROUP, VEIL_ETC_DIR, VEIL_LOG_DIR, VEIL_VAR_DIR
+from veil.frontend.cli import *
+from veil.model.collection import objectify
 from veil.server.config import *
 from veil.server.os import *
+from veil.utility.shell import *
+from veil.utility.timer import *
 from veil_installer import *
-
 
 BARMAN_CONF_PATH = VEIL_ETC_DIR / 'barman.d'
 BARMAN_HOME = VEIL_VAR_DIR / 'barman'
@@ -31,3 +34,23 @@ def pgbarman_resource(config):
                                                                                                           barman_server_home=BARMAN_HOME / config.server_name))
     ]
     return resources
+
+
+@script('barman-backup')
+def bring_up_barman_backup(crontab_expression, server_name):
+    @run_every(crontab_expression)
+    def work():
+        try:
+            shell_execute('barman backup {}'.format(server_name), capture=True)
+        except:
+            pass
+
+    work()
+
+
+def barman_periodic_backup_program(crontab_expression, server_name):
+    return objectify({
+        'barman_backup': {
+            'execute_command': 'veil backend database postgresql barman-backup "{}" {}'.format(crontab_expression, server_name)
+        }
+    })
