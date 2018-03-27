@@ -161,6 +161,12 @@ def deploy_guard(veil_env_name):
     _deploy_server(veil_env_name, 'guard')
 
 
+@script('deploy-barman')
+@log_elapsed_time
+def deploy_guard(veil_env_name):
+    _deploy_server(veil_env_name, 'barman')
+
+
 @script('deploy-server')
 @log_elapsed_time
 def deploy_server(veil_env_name, veil_server_name):
