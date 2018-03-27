@@ -192,7 +192,7 @@ def patch_env(veil_env_name):
     tag_patch(veil_env_name)
     print(cyan('Pull codebase ...'))
     install_resource(veil_hosts_codebase_resource(veil_env_name=veil_env_name))
-    servers = list_veil_servers(veil_env_name, False, False)
+    servers = list_veil_servers(veil_env_name, include_guard_server=False, include_monitor_server=False, include_barman_server=False)
     server_names = [server.name for server in servers]
     print(cyan('Patch servers {} ...'.format(server_names[::-1])))
     install_resource(veil_servers_resource(servers=servers[::-1], action='PATCH'))
@@ -222,7 +222,7 @@ def display_deployment_memo(veil_env_name):
 def rollback_env(veil_env_name):
     hosts = [host for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name) if is_rollbackable(host)]
     if hosts:
-        stop_env(veil_env_name, True, False)
+        stop_env(veil_env_name, include_guard_server=True, include_monitor_server=False, include_barman_server=False)
         rollback(hosts)
         start_env(veil_env_name)
         remove_rollbackable_tags(veil_env_name)
@@ -287,7 +287,7 @@ def restart_env(veil_env_name, disable_external_access_='FALSE', *exclude_server
 
 
 @script('stop-env')
-def stop_env(veil_env_name, include_guard_server=True, include_monitor_server=True, *exclude_server_names):
+def stop_env(veil_env_name, include_guard_server=True, include_monitor_server=True, include_barman_server=True, *exclude_server_names):
     """
     Bring down veil servers in sorted server names order
     """
@@ -295,7 +295,8 @@ def stop_env(veil_env_name, include_guard_server=True, include_monitor_server=Tr
         include_guard_server = include_guard_server == 'TRUE'
     if isinstance(include_monitor_server, basestring):
         include_monitor_server = include_monitor_server == 'TRUE'
-    servers = list_veil_servers(veil_env_name, include_guard_server, include_monitor_server)
+    servers = list_veil_servers(veil_env_name, include_guard_server=include_guard_server, include_monitor_server=include_monitor_server,
+                                include_barman_server=include_barman_server)
     if exclude_server_names:
         servers = [s for s in servers if s.name not in exclude_server_names]
     stop_servers(servers, stop_container=True)

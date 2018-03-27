@@ -23,7 +23,10 @@ def create_env_backup():
     if dry_run_result is not None:
         dry_run_result['env_backup'] = 'BACKUP'
         return
-    hosts_to_backup = [get_veil_host(server.VEIL_ENV.name, server.host_name) for server in unique(list_veil_servers(VEIL_ENV.name, False, False),
+    hosts_to_backup = [get_veil_host(server.VEIL_ENV.name, server.host_name) for server in unique(list_veil_servers(VEIL_ENV.name,
+                                                                                                                    include_guard_server=False,
+                                                                                                                    include_monitor_server=False,
+                                                                                                                    include_barman_server=False),
                                                                                                   id_func=lambda s: s.host_base_name)]
     if not hosts_to_backup:
         LOGGER.warn('no hosts to backup: %(env_name)s', {'env_name': VEIL_ENV.name})
@@ -43,7 +46,9 @@ def backup_host(host):
     host_backup_dir = host.ssh_user_home / 'backup' / host.VEIL_ENV.name / host.base_name
     with fabric.api.settings(host_string='root@{}:{}'.format(host.internal_ip, host.ssh_port)):
         fabric.api.run('mkdir -p -m 0700 {}'.format(host_backup_dir))
-        running_servers_to_down = [s for s in list_veil_servers(VEIL_ENV.name, False, False) if s.host_base_name == host.base_name and is_server_running(s) and (s.mount_data_dir or is_worker_running_on_server(s))]
+        veil_servers = list_veil_servers(VEIL_ENV.name, include_guard_server=False, include_monitor_server=False, include_barman_server=False)
+        running_servers_to_down = [s for s in veil_servers
+                                   if s.host_base_name == host.base_name and is_server_running(s) and (s.mount_data_dir or is_worker_running_on_server(s))]
         try:
             bring_down_servers(running_servers_to_down)
             fabric.api.run('rsync -avh --numeric-ids --delete --exclude "/{}" --exclude "/{}" --exclude "/{}" --link-dest={}/ {}/ {}/'.format(

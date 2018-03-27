@@ -225,12 +225,14 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
     })
 
 
-def list_veil_servers(veil_env_name, include_guard_server=True, include_monitor_server=True):
+def list_veil_servers(veil_env_name, include_guard_server=True, include_monitor_server=True, include_barman_server=True):
     exclude_server_names = []
     if not include_guard_server:
         exclude_server_names.append('guard')
     if not include_monitor_server:
         exclude_server_names.append('monitor')
+    if not include_barman_server:
+        exclude_server_names.append('barman')
     return [server for server in get_veil_env(veil_env_name).server_list if server.name not in exclude_server_names]
 
 
