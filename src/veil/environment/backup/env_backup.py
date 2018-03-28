@@ -59,6 +59,8 @@ def backup_host(host):
             exclude_paths = [host.var_dir.relpathto(host.bucket_inline_static_files_dir),
                              host.var_dir.relpathto(host.bucket_captcha_image_dir),
                              host.var_dir.relpathto(host.bucket_uploaded_files_dir)]
+            if barman_enabled:
+                exclude_paths.append('data/*-postgresql-*')
             excludes = ' '.join('--exclude "/{}"'.format(path) for path in exclude_paths)
             fabric.api.run('rsync -avh --numeric-ids --delete {excludes} --link-dest={host_var_path}/ {host_var_path}/ {host_backup_dir}/'.format(
                 excludes=excludes, host_var_path=host.var_dir, host_backup_dir=host_backup_dir))
