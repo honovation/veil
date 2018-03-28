@@ -22,6 +22,7 @@ def pgbarman_resource(config):
         directory_resource(path=BARMAN_CONF_PATH, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         directory_resource(path=BARMAN_HOME, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         directory_resource(path=BARMAN_HOME / config.server_name, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+        file_resource(path='/etc/cron.d/barman', content=render_config('pg_barman.corn.d.j2', barman_user=CURRENT_USER)),
         file_resource(path='/etc/barman.conf', content=render_config('pg_barman.conf.j2', barman_user=CURRENT_USER, server_conf_path=BARMAN_CONF_PATH,
                                                                      barman_home=BARMAN_HOME, log_path=VEIL_LOG_DIR)),
         file_resource(path=BARMAN_CONF_PATH / '{}.conf'.format(config.server_name), content=render_config('pg_barman_server.conf.j2',
