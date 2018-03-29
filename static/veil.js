@@ -665,7 +665,7 @@ veil.widget.processWidget = function (html, processHtml) {
                 for(var i = jsAttributes.length - 1; i >= 0; i--) {
                     script.setAttribute(jsAttributes[i].name, jsAttributes[i].value);
                 }
-                document.body.appendChild(script);
+                $body.append(script);
             }
         }
     }
