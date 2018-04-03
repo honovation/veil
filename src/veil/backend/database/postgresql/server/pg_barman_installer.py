@@ -55,3 +55,25 @@ def barman_periodic_backup_program(crontab_expression, server_name):
             'execute_command': 'veil backend database postgresql barman-backup "{}" {}'.format(crontab_expression, server_name)
         }
     })
+
+
+@script('barman-recover')
+def bring_up_barman_recover(crontab_expression, server_name, host, port, user, path):
+    @run_every(crontab_expression)
+    def work():
+        ssh_command = 'ssh -p {} {}@{}'.format(port, user, host)
+        try:
+            shell_execute('barman recover --remote-ssh-command "{}" {} latest {}'.format(ssh_command, server_name, path), capture=True)
+        except:
+            pass
+
+    work()
+
+
+def barman_periodic_recover_program(crontab_expression, server_name, host, port, user, path):
+    return objectify({
+        'barman_backup': {
+            'execute_command': 'veil backend database postgresql barman-recover "{}" {} {} {} {} {}'.format(crontab_expression, server_name, host, port, user,
+                                                                                                            path)
+        }
+    })

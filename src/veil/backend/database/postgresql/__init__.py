@@ -8,6 +8,7 @@ with veil_component.init_component(__name__):
 
     from .server.pg_barman_installer import pgbarman_resource
     from .server.pg_barman_installer import barman_periodic_backup_program
+    from .server.pg_barman_installer import barman_periodic_recover_program
 
     from .server.pg_fts_chinese import scws_resource
     from .server.pg_fts_chinese import zhparser_resource
@@ -21,6 +22,7 @@ with veil_component.init_component(__name__):
 
         pgbarman_resource.__name__,
         barman_periodic_backup_program.__name__,
+        barman_periodic_recover_program.__name__,
 
         scws_resource.__name__,
         zhparser_resource.__name__,

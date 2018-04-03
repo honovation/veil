@@ -282,7 +282,12 @@ def get_application():
     return __veil__
 
 
-VEIL_FRAMEWORK_CODEBASE = 'git@git.dmright.com:/opt/git/veil.git'
+def get_veil_framework_codebase():
+    return get_application().VEIL_FRAMEWORK_CODEBASE
+
+
+def get_backup_mirror_domain():
+    return get_application().BACKUP_MIRROR_DOMAIN
 
 
 _application_version = None

@@ -29,13 +29,14 @@ from .environment import VEIL_EDITORIAL_DIR
 from .environment import VEIL_BUCKET_INLINE_STATIC_FILES_DIR
 from .environment import VEIL_BUCKET_UPLOADED_FILES_DIR
 
-from .environment import VEIL_FRAMEWORK_CODEBASE
 from .environment import get_application
 from .environment import get_application_codebase
+from .environment import get_veil_framework_codebase
 from .environment import get_application_version
 from .environment import get_application_sms_whitelist
 from .environment import get_application_email_whitelist
 from .environment import get_veil_framework_version
+from .environment import get_backup_mirror_domain
 
 from .environment import veil_env
 from .environment import veil_host
