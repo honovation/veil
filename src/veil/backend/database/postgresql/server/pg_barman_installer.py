@@ -61,7 +61,7 @@ def barman_periodic_backup_program(crontab_expression, server_name):
 def bring_up_barman_recover(crontab_expression, server_name, host, port, user, path):
     @run_every(crontab_expression)
     def work():
-        ssh_command = 'ssh -p {} {}@{}'.format(port, user, host)
+        ssh_command = 'ssh -p {} -i /etc/ssh/id_rsa-barman {}@{}'.format(port, user, host)
         try:
             shell_execute('barman recover --remote-ssh-command "{}" {} latest {}'.format(ssh_command, server_name, path), capture=True)
         except:
