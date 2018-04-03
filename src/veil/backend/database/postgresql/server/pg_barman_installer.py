@@ -72,7 +72,7 @@ def bring_up_barman_recover(crontab_expression, server_name, host, port, user, p
 
 def barman_periodic_recover_program(crontab_expression, server_name, host, port, user, path):
     return objectify({
-        'barman_backup': {
+        'barman_recover': {
             'execute_command': 'veil backend database postgresql barman-recover "{}" {} {} {} {} {}'.format(crontab_expression, server_name, host, port, user,
                                                                                                             path)
         }
