@@ -58,22 +58,22 @@ def barman_periodic_backup_program(crontab_expression, server_name):
 
 
 @script('barman-recover')
-def bring_up_barman_recover(crontab_expression, server_name, host, port, user):
+def bring_up_barman_recover(crontab_expression, purpose, host, port, user):
     @run_every(crontab_expression)
     def work():
         ssh_command = 'ssh -p {} -i /etc/ssh/id_rsa-barman {}@{}'.format(port, user, host)
-        path = 'backup_mirror/{}/latest-db'.format(get_current_veil_env().name)
+        path = 'backup_mirror/{}/{}-db'.format(get_current_veil_env().name, purpose)
         try:
-            shell_execute('barman recover --remote-ssh-command "{}" {} latest {}'.format(ssh_command, server_name, path), capture=True)
+            shell_execute('barman recover --remote-ssh-command "{}" {} latest {}'.format(ssh_command, purpose, path), capture=True)
         except:
             pass
 
     work()
 
 
-def barman_periodic_recover_program(crontab_expression, server_name, host, port, user):
+def barman_periodic_recover_program(crontab_expression, purpose, host, port, user):
     return objectify({
         'barman_recover': {
-            'execute_command': 'veil backend database postgresql barman-recover "{}" {} {} {} {}'.format(crontab_expression, server_name, host, port, user)
+            'execute_command': 'veil backend database postgresql barman-recover "{}" {} {} {} {}'.format(crontab_expression, purpose, host, port, user)
         }
     })
