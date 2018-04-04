@@ -38,21 +38,21 @@ def pgbarman_resource(config):
 
 
 @script('barman-backup')
-def bring_up_barman_backup(crontab_expression, server_name):
+def bring_up_barman_backup(crontab_expression, purpose):
     @run_every(crontab_expression)
     def work():
         try:
-            shell_execute('barman backup {}'.format(server_name), capture=True)
+            shell_execute('barman backup {}'.format(purpose), capture=True)
         except:
             pass
 
     work()
 
 
-def barman_periodic_backup_program(crontab_expression, server_name):
+def barman_periodic_backup_program(crontab_expression, purpose):
     return objectify({
         'barman_backup': {
-            'execute_command': 'veil backend database postgresql barman-backup "{}" {}'.format(crontab_expression, server_name)
+            'execute_command': 'veil backend database postgresql barman-backup "{}" {}'.format(crontab_expression, purpose)
         }
     })
 
