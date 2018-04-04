@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 
-from veil.environment import CURRENT_USER, CURRENT_USER_GROUP, VEIL_ETC_DIR, VEIL_LOG_DIR, VEIL_VAR_DIR
+from veil.environment import CURRENT_USER, CURRENT_USER_GROUP, VEIL_ETC_DIR, VEIL_LOG_DIR, VEIL_VAR_DIR, get_current_veil_env
 from veil.frontend.cli import *
 from veil.model.collection import objectify
 from veil.server.config import *
@@ -58,10 +58,11 @@ def barman_periodic_backup_program(crontab_expression, server_name):
 
 
 @script('barman-recover')
-def bring_up_barman_recover(crontab_expression, server_name, host, port, user, path):
+def bring_up_barman_recover(crontab_expression, server_name, host, port, user):
     @run_every(crontab_expression)
     def work():
         ssh_command = 'ssh -p {} -i /etc/ssh/id_rsa-barman {}@{}'.format(port, user, host)
+        path = 'backup_mirror/{}/latest-db'.format(get_current_veil_env().name)
         try:
             shell_execute('barman recover --remote-ssh-command "{}" {} latest {}'.format(ssh_command, server_name, path), capture=True)
         except:
@@ -70,10 +71,9 @@ def bring_up_barman_recover(crontab_expression, server_name, host, port, user, p
     work()
 
 
-def barman_periodic_recover_program(crontab_expression, server_name, host, port, user, path):
+def barman_periodic_recover_program(crontab_expression, server_name, host, port, user):
     return objectify({
         'barman_recover': {
-            'execute_command': 'veil backend database postgresql barman-recover "{}" {} {} {} {} {}'.format(crontab_expression, server_name, host, port, user,
-                                                                                                            path)
+            'execute_command': 'veil backend database postgresql barman-recover "{}" {} {} {} {}'.format(crontab_expression, server_name, host, port, user)
         }
     })
