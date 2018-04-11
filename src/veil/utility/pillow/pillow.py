@@ -24,8 +24,18 @@ def open_image(fp):
 
 
 def save_image(image_path, bucket, key, format=None, quality=95, optimize=True, limit_width=None, limit_height=None, width_scope=(), height_scope=()):
+    image = open_image(image_path)
+    _save_image(image, bucket, key, format, quality, optimize, limit_width, limit_height, width_scope, height_scope)
+
+
+def save_image_by_buffer(buffer, bucket, key, format=None, quality=95, optimize=True, limit_width=None, limit_height=None, width_scope=(), height_scope=()):
+    image = open_image(StringIO(buffer))
+    _save_image(image, bucket, key, format, quality, optimize, limit_width, limit_height, width_scope, height_scope)
+
+
+def _save_image(image, bucket, key, format, quality, optimize, limit_width, limit_height, width_scope, height_scope):
     """
-    :param image_path:
+    :param image:
     :param bucket:
     :param key:
     :param format:
@@ -37,7 +47,6 @@ def save_image(image_path, bucket, key, format=None, quality=95, optimize=True, 
     :param height_scope: 高度范围，格式为元组，当不为空时，必须包含两个参数（最小值，最大值），最大值与最小值可设为None表示无限制，但不能同时为None
     """
     assert not (limit_width and width_scope) and not (limit_height and height_scope), 'limit and scope cannot be both appear'
-    image = open_image(image_path)
     if limit_width and image.size[0] != limit_width:
         raise InvalidImage('图片尺寸不正确，请上传宽度为{}px的图片'.format(limit_width))
     if width_scope:
