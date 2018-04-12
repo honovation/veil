@@ -41,7 +41,7 @@ def nginx_program(servers, enable_compression=False, base_domain_names=(), has_b
 
 def nginx_server(server_name, listen, locations, ssl=False, use_certbot=False, default_server=False,
                  additional_http_listens=None, additional_https_listens=None, upstreams=None, error_page=None,
-                 error_page_dir=None, request_limits=None, **kwargs):
+                 error_page_dir=None, request_limits=None, additional_server_names=None, **kwargs):
     assert ssl and listen != 80 or not ssl and listen != 443
 
     http_listens = additional_http_listens or []
@@ -80,7 +80,8 @@ def nginx_server(server_name, listen, locations, ssl=False, use_certbot=False, d
             'locations': locations,
             'upstreams': upstreams,
             'error_page': error_page,
-            'error_page_dir': error_page_dir
+            'error_page_dir': error_page_dir,
+            'additional_server_names': additional_server_names or []
         }, **kwargs)
     }
 

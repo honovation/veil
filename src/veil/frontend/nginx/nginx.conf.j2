@@ -135,7 +135,7 @@ http {
 
     {% if server_properties['https_listens'] and config.HTTP_STANDARD_PORT not in server_properties['http_listens'] %}
     server {
-        server_name {{ server_name }};
+        server_name {{ server_name }} {{ server_properties['additional_server_names'] |join(' ') }};
         listen {{ config.HTTP_STANDARD_PORT }}{% if server_properties['default_server'] %} default_server reuseport{% endif %};
         location ^~ /.well-known/ {
             allow all;
@@ -155,7 +155,7 @@ http {
     {% endif %}
 
     server {
-        server_name {{ server_name }};
+        server_name {{ server_name }} {{ server_properties['additional_server_names'] |join(' ') }};
         if ($request_method !~ ^(GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS)$ ) {
              return 444;
         }
@@ -179,7 +179,7 @@ http {
             ssl_stapling on;
             ssl_stapling_verify on;
         {% endif %}
-        {% for key, value in server_properties.items() if not (key in ('ssl', 'use_certbot', 'default_server') or server_properties['use_certbot'] and key in ('ssl_certificate', 'ssl_certificate_key', 'ssl_trusted_certificate', 'ssl_stapling', 'ssl_stapling_verify')) %}
+        {% for key, value in server_properties.items() if not (key in ('ssl', 'use_certbot', 'default_server', 'additional_server_names') or server_properties['use_certbot'] and key in ('ssl_certificate', 'ssl_certificate_key', 'ssl_trusted_certificate', 'ssl_stapling', 'ssl_stapling_verify')) %}
             {% if 'locations' == key %}
                 {% for location, location_properties in value.items() %}
                 location {{ location }} {
