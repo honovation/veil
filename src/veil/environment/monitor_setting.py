@@ -5,10 +5,9 @@ from veil.backend.redis_setting import redis_program
 
 
 def monitor_programs(config):
+    snapshot_configs = (DictObject(interval=interval, changed_keys=changed_keys) for interval, changed_keys in [(900, 1), (300, 10), (60, 10000)])
     programs = merge_multiple_settings(
-        redis_program('log_buffer', config.log_buffer_redis_host, config.log_buffer_redis_port,
-                      snapshot_configs=[DictObject(interval=interval, changed_keys=changed_keys) for interval, changed_keys in
-                                        [(900, 1), (300, 10), (60, 10000)]], recursive=True),
+        redis_program('log_buffer', config.log_buffer_redis_host, config.log_buffer_redis_port, snapshot_configs=snapshot_configs),
         {'elasticsearch': {
             'run_in_directory': '/usr/share/elasticsearch',
             'execute_command': '/usr/share/elasticsearch/bin/elasticsearch -Epath.conf={}/elasticsearch'.format(VEIL_ETC_DIR),
