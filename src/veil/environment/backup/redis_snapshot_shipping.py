@@ -49,9 +49,10 @@ def bucket_shipping_script(exclude_buckets, remote_path):
     for bucket_path in VEIL_BUCKETS_DIR.listdir():
         bucket_dir_name = bucket_path.basename()
         if bucket_dir_name not in exclude_buckets:
+            LOGGER.info('watching bucket directory: %(bucket_path)s', {'bucket_path': bucket_path})
             watch_directories.append(bucket_path)
 
-    mask = inotify.constants.IN_CREATE | inotify.constants.IN_MODIFY | inotify.constants.IN_DELETE | inotify.constants.IN_DELETE_SELF
+    mask = inotify.constants.IN_CREATE | inotify.constants.IN_MODIFY | inotify.constants.IN_DELETE | inotify.constants.IN_DELETE_SELF | inotify.constants.IN_MOVED_TO
     monitor = inotify.adapters.InotifyTrees(watch_directories, mask=mask)
 
     for event in monitor.event_gen():
@@ -60,13 +61,11 @@ def bucket_shipping_script(exclude_buckets, remote_path):
         (header, type_names, path, filename) = event
         if header.mask & inotify.constants.IN_IGNORED:
             continue
-        if header.mask & (inotify.constants.IN_CREATE | inotify.constants.IN_ISDIR):
-            continue
-        if header.mask & (inotify.constants.IN_DELETE | inotify.constants.IN_ISDIR):
+        if header.mask & inotify.constants.IN_ISDIR:
             continue
         if filename.startswith('tmp') and filename.endswith('---tmp'):
             continue
-        if header.mask & (inotify.constants.IN_DELETE | inotify.constants.IN_DELETE_SELF):
+        if header.mask & inotify.constants.IN_DELETE or header.mask & inotify.constants.IN_DELETE_SELF:
             rel_path = VEIL_BUCKETS_DIR.relpathto(as_path(path).dirname())
         else:
             rel_path = VEIL_BUCKETS_DIR.relpathto(as_path(path) / filename)
