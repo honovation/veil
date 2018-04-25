@@ -16,5 +16,6 @@ def guard_program(crontab_expression, redis_snapshot_shipping_config=None):
         program_config['redis_snapshot_shipping'] = {
             'execute_command': 'veil environment backup snapshot-shipping {} {}'.format(','.join(redis_snapshot_shipping_config.purposes),
                                                                                         redis_snapshot_shipping_config.remote_path),
+            'run_as': 'root'
         }
     return program_config
