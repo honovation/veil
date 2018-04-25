@@ -30,16 +30,17 @@ def snapshot_shipping_script(purposes, remote_path):
 
         if filename.endswith('.rdb'):
             LOGGER.debug('shipping to backup mirror: %(path)s, %(filename)s', {'path': path, 'filename': filename})
-            shipping_to_backup_mirror('{}/{}'.format(path, filename), '{}/{}'.format(remote_path, filename))
+            rel_path = VEIL_DATA_DIR.relpathto('{}/{}'.format(path, filename))
+            shipping_to_backup_mirror(rel_path, remote_path)
 
 
 def shipping_to_backup_mirror(source_path, remote_path):
     backup_mirror = get_current_veil_server().backup_mirror
     backup_mirror_path = '~/backup_mirror/{}/{}'.format(VEIL_ENV.name, remote_path)
-    shell_execute(
-        '''rsync -avhHPz -e "ssh -i {} -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete --bwlimit={} {} {}@{}:{}'''.format(
-            SSH_KEY_PATH, backup_mirror.ssh_port, backup_mirror.bandwidth_limit, source_path, backup_mirror.ssh_user, backup_mirror.host_ip,
-            backup_mirror_path), debug=True)
+    ssh_option = 'ssh -i {} -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no'.format(SSH_KEY_PATH, backup_mirror.ssh_port)
+    shell_execute('rsync -avzhPR -e "{}" --numeric-ids --delete --bwlimit={} {} {}@{}:{}'.format(ssh_option, backup_mirror.bandwidth_limit, source_path,
+                                                                                                 backup_mirror.ssh_user, backup_mirror.host_ip,
+                                                                                                 backup_mirror_path), debug=True)
 
 
 @script('bucket-shipping')
@@ -66,7 +67,10 @@ def bucket_shipping_script(exclude_buckets, remote_path):
         if filename.startswith('tmp') and filename.endswith('---tmp'):
             continue
         if header.mask & inotify.constants.IN_DELETE and header.mask & inotify.constants.IN_ISDIR:
-            rel_path = VEIL_BUCKETS_DIR.relpathto(as_path(path).dirname())
+            rel_path = VEIL_BUCKETS_DIR.relpathto(path)
         else:
-            rel_path = VEIL_BUCKETS_DIR.relpathto(as_path(path) / filename)
-        shipping_to_backup_mirror('{}/{}'.format(path, filename), '{}/{}'.format(remote_path, rel_path))
+            if (as_path(path) / filename).exists():
+                rel_path = VEIL_BUCKETS_DIR.relpathto(as_path(path) / filename)
+            else:
+                rel_path = VEIL_BUCKETS_DIR.relpathto(path)
+        shipping_to_backup_mirror(rel_path, remote_path)
