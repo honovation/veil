@@ -31,16 +31,16 @@ def snapshot_shipping_script(purposes, remote_path):
         if filename.endswith('.rdb'):
             LOGGER.debug('shipping to backup mirror: %(path)s, %(filename)s', {'path': path, 'filename': filename})
             rel_path = VEIL_DATA_DIR.relpathto('{}/{}'.format(path, filename))
-            shipping_to_backup_mirror(rel_path, remote_path)
+            shipping_to_backup_mirror(rel_path, remote_path, VEIL_DATA_DIR)
 
 
-def shipping_to_backup_mirror(source_path, remote_path):
+def shipping_to_backup_mirror(source_path, remote_path, cwd):
     backup_mirror = get_current_veil_server().backup_mirror
     backup_mirror_path = '~/backup_mirror/{}/{}'.format(VEIL_ENV.name, remote_path)
     ssh_option = 'ssh -i {} -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no'.format(SSH_KEY_PATH, backup_mirror.ssh_port)
     shell_execute('rsync -avzhPR -e "{}" --numeric-ids --delete --bwlimit={} {} {}@{}:{}'.format(ssh_option, backup_mirror.bandwidth_limit, source_path,
                                                                                                  backup_mirror.ssh_user, backup_mirror.host_ip,
-                                                                                                 backup_mirror_path), debug=True)
+                                                                                                 backup_mirror_path), debug=True, cwd=cwd)
 
 
 @script('bucket-shipping')
@@ -73,4 +73,4 @@ def bucket_shipping_script(exclude_buckets, remote_path):
                 rel_path = VEIL_BUCKETS_DIR.relpathto(as_path(path) / filename)
             else:
                 rel_path = VEIL_BUCKETS_DIR.relpathto(path)
-        shipping_to_backup_mirror(rel_path, remote_path)
+        shipping_to_backup_mirror(rel_path, remote_path, VEIL_BUCKETS_DIR)
