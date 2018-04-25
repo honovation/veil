@@ -167,8 +167,8 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         assert all(len(host.server_list) == len(set(server.sequence_no for server in host.server_list)) for host in env.hosts.values()), \
             'ENV {}: found sequence no conflict among servers on one host'.format(env.name)
         assert all(
-            server.name not in ('guard', 'monitor') or not server.mount_editorial_dir and not server.mount_buckets_dir and not server.mount_data_dir
-            for server in env.servers.values()), 'ENV {}: found guard or monitor with editorial/buckets/data mount'.format(env.name)
+            server.name != 'monitor' or not server.mount_editorial_dir and not server.mount_buckets_dir and not server.mount_data_dir
+            for server in env.servers.values()), 'ENV {}: found monitor with editorial/buckets/data mount'.format(env.name)
 
     # break cyclic reference between host and server to get freeze_dict_object out of complain
     for server in env.servers.values():
