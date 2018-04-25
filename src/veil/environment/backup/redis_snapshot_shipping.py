@@ -58,12 +58,13 @@ def bucket_shipping_script(exclude_buckets, remote_path):
         if event is None:
             continue
         (header, type_names, path, filename) = event
-        print('{}/{} {}'.format(path, filename, type_names))
         if header.mask & inotify.constants.IN_IGNORED:
             continue
         if header.mask & (inotify.constants.IN_CREATE | inotify.constants.IN_ISDIR):
             continue
         if header.mask & (inotify.constants.IN_DELETE | inotify.constants.IN_ISDIR):
+            continue
+        if filename.startswith('tmp') and filename.endswith('---tmp'):
             continue
         if header.mask & (inotify.constants.IN_DELETE | inotify.constants.IN_DELETE_SELF):
             rel_path = VEIL_BUCKETS_DIR.relpathto(as_path(path).dirname())
