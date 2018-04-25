@@ -144,7 +144,9 @@ def veil_host_config_resource(host, config_dir):
         resources.extend([
             veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0700),
             veil_host_file_resource(local_path=env_config_dir / '.ssh-guard' / 'id_rsa.pub', host=host, remote_path='/root/.ssh/authorized_keys', owner='root',
-                                    owner_group='root', mode=0600)
+                                    owner_group='root', mode=0600),
+            veil_host_file_resource(local_path=CURRENT_DIR / 'max-user-watches.conf', host=host, remote_path='/etc/sysctl.d/60-max-user-watches.conf',
+                                    owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-max-user-watches.conf'),
         ])
     if 'monitor' in servers:
         resources.append(
