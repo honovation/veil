@@ -58,5 +58,14 @@ def hdel_per_pattern(self, key, match, count=None):
         deleted_count += self.hdel(key, *fields)
     return deleted_count
 
+
+# TODO: remove this when spop supports count in the new release > 2.10.6
+def spop(self, name, count=None):
+    "Remove and return a random member of set ``name``"
+    args = (count is not None) and [count] or []
+    return self.execute_command('SPOP', name, *args)
+
+
 StrictRedis.del_per_pattern = del_per_pattern
 StrictRedis.hdel_per_pattern = hdel_per_pattern
+StrictRedis.spop = spop
