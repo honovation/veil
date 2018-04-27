@@ -51,6 +51,7 @@ def self_check():
         shell_execute('sudo npm install yarn -g')
         shell_execute('yarn install')
         shell_execute('yarn lint')
+        shell_execute('yarn test')
         shell_execute('yarn run build')
         shell_execute('yarn run build-mobile')
     shell_execute('sudo veil :test up --daemonize')
