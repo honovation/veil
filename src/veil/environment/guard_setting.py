@@ -14,9 +14,9 @@ def guard_program(crontab_expression, redis_aof_shipping_config=None, bucket_shi
     })
     if redis_aof_shipping_config:
         program_config['redis_snapshot_shipping'] = {
-            'execute_command': 'veil environment backup snapshot-shipping {} {} {}'.format(','.join(redis_aof_shipping_config.purposes),
-                                                                                           redis_aof_shipping_config.remote_path,
-                                                                                           redis_aof_shipping_config.crontab_expression),
+            'execute_command': 'veil environment backup aof-shipping {} {} {}'.format(','.join(redis_aof_shipping_config.purposes),
+                                                                                      redis_aof_shipping_config.remote_path,
+                                                                                      redis_aof_shipping_config.crontab_expression),
             'run_as': 'root'
         }
     if bucket_shipping_config:
