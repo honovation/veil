@@ -5,7 +5,6 @@ from veil.environment import *
 from veil.frontend.cli import *
 from veil.utility.shell import *
 from veil.utility.timer import *
-from veil_component import VEIL_ENV
 
 LOGGER = logging.getLogger(__name__)
 SSH_KEY_PATH = '/etc/ssh/id_rsa-guard'
@@ -28,7 +27,7 @@ def aof_shipping_script(purposes, remote_path, crontab_expression):
 
 def shipping_to_backup_mirror(source_path, remote_path, cwd):
     backup_mirror = get_current_veil_server().backup_mirror
-    backup_mirror_path = '~/backup_mirror/{}/{}'.format(VEIL_ENV.name, remote_path)
+    backup_mirror_path = '~/backup_mirror/{}'.format(remote_path)
     ssh_option = 'ssh -i {} -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no'.format(SSH_KEY_PATH, backup_mirror.ssh_port)
     shell_execute('rsync -avzhPR -e "{}" --numeric-ids --delete --bwlimit={} {} {}@{}:{}'.format(ssh_option, backup_mirror.bandwidth_limit, source_path,
                                                                                                  backup_mirror.ssh_user, backup_mirror.host_ip,
