@@ -82,6 +82,7 @@ def render_iptables_rules_installer_file(host):
 @atomic_installer
 def veil_host_iptables_rules_resource(host):
     remote_installer_file_content = get_remote_file_content(host.installed_iptables_rules_installer_path)
+    LOGGER.info(remote_installer_file_content)
     installer_file_content = render_iptables_rules_installer_file(host)
     if remote_installer_file_content:
         action = None if installer_file_content == remote_installer_file_content else 'UPDATE'
