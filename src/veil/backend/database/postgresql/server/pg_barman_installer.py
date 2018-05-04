@@ -3,7 +3,6 @@ from __future__ import unicode_literals, print_function, division
 
 from veil.environment import CURRENT_USER, CURRENT_USER_GROUP, VEIL_ETC_DIR, VEIL_LOG_DIR, VEIL_VAR_DIR, get_current_veil_env
 from veil.frontend.cli import *
-from veil.model.collection import objectify
 from veil.server.config import *
 from veil.server.os import *
 from veil.utility.shell import *
@@ -49,14 +48,6 @@ def bring_up_barman_backup(crontab_expression, purpose):
     work()
 
 
-def barman_periodic_backup_program(crontab_expression, purpose):
-    return objectify({
-        'barman_backup': {
-            'execute_command': 'veil backend database postgresql barman-backup "{}" {}'.format(crontab_expression, purpose)
-        }
-    })
-
-
 @script('barman-recover')
 def bring_up_barman_recover(crontab_expression, purpose, host, port, user):
     @run_every(crontab_expression)
@@ -69,11 +60,3 @@ def bring_up_barman_recover(crontab_expression, purpose, host, port, user):
             pass
 
     work()
-
-
-def barman_periodic_recover_program(crontab_expression, purpose, host, port, user):
-    return objectify({
-        'barman_recover': {
-            'execute_command': 'veil backend database postgresql barman-recover "{}" {} {} {} {}'.format(crontab_expression, purpose, host, port, user)
-        }
-    })

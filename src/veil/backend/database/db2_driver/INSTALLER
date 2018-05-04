@@ -1,4 +1,4 @@
 veil.server.os.os_package_resource?libaio1
-veil.server.os.os_package_resource?libstdc++6-4.7-dev
-veil.server.os.os_package_resource?libstdc++6-4.7-pic
+veil.server.os.os_package_resource?libstdc++-6-dev
+veil.server.os.os_package_resource?libstdc++-6-pic
 veil.server.os.os_package_resource?libstdc++5

@@ -6,7 +6,7 @@ from .os_package_repository_installer import install_apt_repository_resource
 
 LOGGER = logging.getLogger(__name__)
 
-APT_REPOSITORY_NAME = 'node_6.x'
+APT_REPOSITORY_NAME = 'node_8.x'
 
 
 @atomic_installer
