@@ -28,6 +28,7 @@ def get_remote_file_content(remote_path):
         with contextlib.closing(StringIO()) as f:
             fabric.api.get(remote_path, local_path=f, use_sudo=True)
             content = f.getvalue()
+    print(content)
     return content
 
 
