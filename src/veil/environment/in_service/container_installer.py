@@ -25,8 +25,6 @@ def veil_container_resource(host, server, config_dir):
 def get_remote_file_content(remote_path):
     content = None
     if fabric.contrib.files.exists(remote_path, use_sudo=True):
-        print('file exists!')
-        print(fabric.api.env.user)
         with contextlib.closing(StringIO()) as f:
             fabric.api.get(remote_path, local_path=f, use_sudo=True)
             content = f.getvalue()

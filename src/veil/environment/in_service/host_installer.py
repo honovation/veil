@@ -26,6 +26,7 @@ def veil_hosts_resource(veil_env_name, config_dir):
     resources = []
     hosts = list_veil_hosts(veil_env_name)
     for host in hosts:
+        fabric.api.env.user = host.ssh_user
         fabric.api.env.host_string = host.deploys_via
         if is_initialized_for_another_same_base_instance(host):
             raise Exception(
@@ -61,6 +62,7 @@ def veil_hosts_resource(veil_env_name, config_dir):
 def veil_hosts_codebase_resource(veil_env_name):
     resources = []
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
+        fabric.api.env.user = host.ssh_user
         fabric.api.env.host_string = host.deploys_via
         resources.append(veil_host_codebase_resource(host=host))
     return resources
