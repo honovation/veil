@@ -2,28 +2,15 @@ from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
 import contextlib
 import os
-import shlex
-import pylxd
 import fabric.api
 import fabric.contrib.files
-from veil.environment import SECURITY_CONFIG_FILE
-from veil.utility.setting import *
 from veil_component import as_path
 from veil_installer import *
 from veil.server.config import *
+from veil.environment.lxd import *
 from .server_installer import is_container_running
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
-
-
-def get_lxd_client():
-    config = load_config_from(SECURITY_CONFIG_FILE, 'lxd_endpoint', 'lxd_cert_path', 'lxd_trusted_password')
-    cert = ('{}/lxd.crt'.format(config.lxd_cert_path), '{}/lxd.key'.format(config.lxd_cert_path))
-    client = pylxd.Client(endpoint=config.lxd_endpoint, cert=cert, verify=False, timeout=(3.05, 27))
-    if not client.trusted:
-        client.authenticate(config.lxd_trusted_password)
-    assert client.trusted
-    return client
 
 
 @composite_installer
@@ -45,50 +32,6 @@ def get_remote_file_content(remote_path):
     return content
 
 
-def get_container_file_content(container_name, file_path):
-    """
-    get container file content
-
-    :param container_name: container name
-    :param file_path: file path
-    :return: file content
-    """
-    client = get_lxd_client()
-    container = client.containers.get(container_name)
-    return container.files.get(file_path)
-
-
-def put_container_file(container_name, file_path, content, mode=0644, uid=None, gid=None):
-    """
-    upload container file
-
-    :param container_name: container name
-    :param file_path: file path in container
-    :param content: file content
-    :param mode: file mode
-    :param uid: file uid, None for root
-    :param gid: file gid, None for root
-    :return: None
-    """
-    client = get_lxd_client()
-    container = client.containers.get(container_name)
-    container.files.put(file_path, content, mode=mode, uid=uid, gid=gid)
-
-
-def run_container_command(container_name, command, env=None):
-    """
-    execute commands in container with env
-
-    :param container_name: container name
-    :param command: command
-    :param env: environment variables
-    :return:
-    """
-    client = get_lxd_client()
-    container = client.containers.get(container_name)
-    container.execute(shlex.split(command), environment=env or {})
-
-
 @atomic_installer
 def veil_container_lxc_resource(host, server):
     remote_installer_file_content = get_remote_file_content(server.installed_container_installer_path)
@@ -104,7 +47,9 @@ def veil_container_lxc_resource(host, server):
         return
     if not action:
         if not is_container_running(server):
-            fabric.api.sudo('lxc-start -n {} -d'.format(server.container_name))
+            client = get_lxd_client()
+            container = client.containers.get(server.container_name)
+            container.start()
         return
     with contextlib.closing(StringIO(installer_file_content)) as f:
         fabric.api.put(f, server.container_installer_path, use_sudo=True, mode=0600)

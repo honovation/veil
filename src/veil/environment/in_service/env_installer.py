@@ -12,6 +12,7 @@ from veil_component import *
 from veil_installer import *
 from veil.frontend.cli import *
 from veil.environment import *
+from veil.environment.lxd import *
 from veil.utility.clock import *
 from veil.utility.shell import *
 from veil.backend.database.migration import *
@@ -319,7 +320,9 @@ def stop_servers(servers, stop_container=False):
                         fabric.api.sudo('systemctl stop veil-server.service')
                     time.sleep(1)
                 if stop_container:
-                    fabric.api.sudo('lxc-stop -n {}'.format(server.container_name))
+                    client = get_lxd_client()
+                    container = client.containers.get(server.container_name)
+                    container.stop()
 
 
 @script('start-env')
@@ -346,7 +349,9 @@ def start_env(veil_env_name, disable_external_access_='FALSE', *exclude_server_n
                         fabric.api.sudo('systemctl start veil-server.service')
                     time.sleep(1)
             else:
-                fabric.api.sudo('lxc-start -n {} -d'.format(server.container_name))
+                client = get_lxd_client()
+                container = client.containers.get(server.container_name)
+                container.start()
 
 
 @script('disable-external-access')

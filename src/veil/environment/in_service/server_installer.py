@@ -3,6 +3,7 @@ import fabric.api
 import fabric.contrib.files
 from veil_component import *
 from veil.environment import *
+from veil.environment.lxd import *
 from veil_installer import *
 
 
@@ -21,7 +22,7 @@ def veil_server_resource(server, action='PATCH', start_after_deploy=True):
         dry_run_result['veil_server?{}'.format(server.container_name)] = action
         return
 
-    if not is_container_running(server, on_host=False):
+    if not is_container_running(server):
         print(yellow('Skipped {} server {} as its container is not running'.format(action, server.container_name)))
 
     with fabric.api.settings(host_string=server.deploys_via):
@@ -37,14 +38,9 @@ def veil_server_resource(server, action='PATCH', start_after_deploy=True):
                 fabric.api.sudo('touch {}'.format(server.patched_tag_path))
 
 
-def is_container_running(server, on_host=True):
-    if on_host:
-        ret = fabric.api.sudo('lxc-info -n {} -s'.format(server.container_name), warn_only=True)
-    else:
-        host = get_veil_host(server.VEIL_ENV.name, server.host_name)
-        with fabric.api.settings(host_string=host.deploys_via):
-            ret = fabric.api.sudo('lxc-info -n {} -s'.format(server.container_name), warn_only=True)
-    return ret.return_code == 0 and 'RUNNING' in ret
+def is_container_running(server):
+    client = get_lxd_client()
+    return client.containers.get(server.container_name).status_code == 103
 
 
 def is_server_running(server, on_host=True):

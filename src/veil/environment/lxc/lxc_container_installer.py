@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function, division
-import pylxd
 import pwd
+from veil.environment.lxd import *
 from veil.profile.installer import *
 
 LOGGER = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
 def lxc_container_created_resource(container_name, hostname, timezone, user_name, ip_address, gateway, name_servers, start_order, memory_limit=None, cpus=None,
                                    cpu_share=None, idmap=None, share_dir=None, code_dir=None, etc_dir=None, log_dir=None, editorial_dir=None, buckets_dir=None,
                                    data_dir=None):
-    client = pylxd.Client()
+    client = get_lxd_client()
     installed = client.containers.exists(container_name)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
@@ -158,7 +158,7 @@ def lxc_container_created_resource(container_name, hostname, timezone, user_name
 
 @atomic_installer
 def lxc_container_in_service_resource(container_name, restart_if_running=False):
-    client = pylxd.Client()
+    client = get_lxd_client()
     running = client.containers.get(container_name).status_code == 103
     if running:
         action = 'RESTART' if restart_if_running else None
