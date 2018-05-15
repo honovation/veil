@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 import shlex
+import os
 import pylxd
 from veil.environment import SECURITY_CONFIG_FILE
 from veil.utility.setting import *
@@ -11,7 +12,7 @@ def get_lxd_client(local=False):
         client = pylxd.Client()
     else:
         config = load_config_from(SECURITY_CONFIG_FILE, 'lxd_endpoint', 'lxd_cert_path', 'lxd_trusted_password')
-        cert = ('{}/lxd.crt'.format(config.lxd_cert_path), '{}/lxd.key'.format(config.lxd_cert_path))
+        cert = (os.path.expanduser('{}/lxd.crt'.format(config.lxd_cert_path)), os.path.expanduser('{}/lxd.key'.format(config.lxd_cert_path)))
         client = pylxd.Client(endpoint=config.lxd_endpoint, cert=cert, verify=False, timeout=(3.05, 27))
         if not client.trusted:
             client.authenticate(config.lxd_trusted_password)
