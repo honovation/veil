@@ -2,14 +2,28 @@ from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
 import contextlib
 import os
+import shlex
+import pylxd
 import fabric.api
 import fabric.contrib.files
+from veil.environment import SECURITY_CONFIG_FILE
+from veil.utility.setting import *
 from veil_component import as_path
 from veil_installer import *
 from veil.server.config import *
 from .server_installer import is_container_running
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
+
+
+def get_lxd_client():
+    config = load_config_from(SECURITY_CONFIG_FILE, 'lxd_endpoint', 'lxd_cert_path', 'lxd_trusted_password')
+    cert = ('{}/lxd.crt'.format(config.lxd_cert_path), '{}/lxd.key'.format(config.lxd_cert_path))
+    client = pylxd.Client(endpoint=config.lxd_endpoint, cert=cert, verify=False, timeout=(3.05, 27))
+    if not client.trusted:
+        client.authenticate(config.lxd_trusted_password)
+    assert client.trusted
+    return client
 
 
 @composite_installer
@@ -29,6 +43,50 @@ def get_remote_file_content(remote_path):
             fabric.api.get(remote_path, local_path=f, use_sudo=True)
             content = f.getvalue()
     return content
+
+
+def get_container_file_content(container_name, file_path):
+    """
+    get container file content
+
+    :param container_name: container name
+    :param file_path: file path
+    :return: file content
+    """
+    client = get_lxd_client()
+    container = client.containers.get(container_name)
+    return container.files.get(file_path)
+
+
+def put_container_file(container_name, file_path, content, mode=0644, uid=None, gid=None):
+    """
+    upload container file
+
+    :param container_name: container name
+    :param file_path: file path in container
+    :param content: file content
+    :param mode: file mode
+    :param uid: file uid, None for root
+    :param gid: file gid, None for root
+    :return: None
+    """
+    client = get_lxd_client()
+    container = client.containers.get(container_name)
+    container.files.put(file_path, content, mode=mode, uid=uid, gid=gid)
+
+
+def run_container_command(container_name, command, env=None):
+    """
+    execute commands in container with env
+
+    :param container_name: container name
+    :param command: command
+    :param env: environment variables
+    :return:
+    """
+    client = get_lxd_client()
+    container = client.containers.get(container_name)
+    container.execute(shlex.split(command), environment=env or {})
 
 
 @atomic_installer
@@ -133,26 +191,15 @@ def veil_container_init_resource(server):
         dry_run_result[key] = 'INSTALL'
         return
 
-    container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
-
-    fabric.contrib.files.append('{}/etc/ssh/sshd_config'.format(container_rootfs_path), ['PasswordAuthentication no', 'PermitRootLogin no', 'UseDNS no'],
-                                use_sudo=True)
-    # fix error: Missing privilege separation directory: /var/run/sshd
-    fabric.api.sudo('chroot {} mkdir /var/run/sshd'.format(container_rootfs_path), warn_only=True)
-    fabric.api.sudo('chroot {} service ssh restart'.format(container_rootfs_path))
-
-    fabric.api.sudo('chroot {} apt update'.format(container_rootfs_path))
-    fabric.api.sudo('chroot {} apt -y purge ntpdate ntp whoopsie network-manager'.format(container_rootfs_path))
-    fabric.api.sudo('chroot {} apt -y install apt-transport-https unattended-upgrades update-notifier-common iptables git language-pack-en unzip wget python python-dev python-pip python-virtualenv'.format(container_rootfs_path))
-    fabric.api.sudo('chroot {} pip install --upgrade "pip>=9.0.1"'.format(container_rootfs_path))
+    run_container_command(server.container_name, 'apt -y purge ntpdate ntp whoopsie network-manager')
     pip_index_args = ''
     if server.pypi_index_url:
         pip_index_args = '-i {} --trusted-host {}'.format(server.pypi_index_url, server.pypi_index_host)
-    fabric.api.sudo('chroot {} pip install {} --upgrade "setuptools>=34.2.0"'.format(container_rootfs_path, pip_index_args))
-    fabric.api.sudo('chroot {} pip install {} --upgrade "wheel>=0.30.0a0"'.format(container_rootfs_path, pip_index_args))
-    fabric.api.sudo('chroot {} pip install {} --upgrade "virtualenv>=15.1.0"'.format(container_rootfs_path, pip_index_args))
-    fabric.api.sudo('lxc-attach -n {} -- systemctl enable veil-server.service'.format(server.container_name))
-    fabric.api.sudo('touch {}'.format(server.container_initialized_tag_path))
+    run_container_command(server.container_name, 'pip install {} --upgrade "pip>=9.0.1"'.format(pip_index_args))
+    run_container_command(server.container_name, 'pip install {} --upgrade "setuptools>=34.2.0"'.format(pip_index_args))
+    run_container_command(server.container_name, 'pip install {} --upgrade "wheel>=0.30.0a0"'.format(pip_index_args))
+    run_container_command(server.container_name, 'pip install {} --upgrade "virtualenv>=15.1.0"'.format(pip_index_args))
+    run_container_command(server.container_name, 'touch {}'.format(server.container_initialized_tag_path))
 
 
 @atomic_installer
@@ -162,10 +209,10 @@ def veil_container_directory_resource(server, remote_path, owner, owner_group, m
         key = 'veil_container_directory?{}&path={}'.format(server.container_name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
-    container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
-    fabric.api.sudo('chroot {} mkdir -p {}'.format(container_rootfs_path, remote_path))
-    fabric.api.sudo('chroot {} chmod {:o} {}'.format(container_rootfs_path, mode, remote_path))
-    fabric.api.sudo('chroot {} chown {}:{} {}'.format(container_rootfs_path, owner, owner_group, remote_path))
+
+    run_container_command(server.container_name, 'mkdir -p {}'.format(remote_path)),
+    run_container_command(server.container_name, 'chmod {:o} {}'.format(mode, remote_path)),
+    run_container_command(server.container_name, 'chown {}:{} {}'.format(owner, owner_group, remote_path))
 
 
 @atomic_installer
@@ -175,21 +222,20 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
         key = 'veil_container_file?{}&path={}'.format(server.container_name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
-    container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
     if keep_origin:
-        fabric.api.sudo('chroot {} cp -pn {path} {path}.origin'.format(container_rootfs_path, path=remote_path))
-    fabric.api.put(local_path, '{}{}'.format(container_rootfs_path, remote_path), use_sudo=True, mode=mode)
-    fabric.api.sudo('chroot {} chown {}:{} {}'.format(container_rootfs_path, owner, owner_group, remote_path))
+        run_container_command(server.container_name, 'cp -pn {path} {path}.origin'.format(path=remote_path))
+    f = as_path(local_path)
+    if not f.exists():
+        raise Exception('file not exists: {}'.format(local_path))
+    put_container_file(server.container_name, remote_path, f.bytes(), mode=mode)
+    run_container_command(server.container_name, 'chown {}:{} {}'.format(owner, owner_group, remote_path))
 
 
 @atomic_installer
 def veil_server_default_setting_resource(server):
     default_setting_path = '/etc/default/veil'
-    container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
-    full_default_setting_path = '{}{}'.format(container_rootfs_path, default_setting_path)
-    remote_default_setting_content = get_remote_file_content(full_default_setting_path)
+    remote_default_setting_content = get_container_file_content(server.container_name, default_setting_path)
     default_setting_content = render_veil_server_default_setting(server)
-
     if remote_default_setting_content:
         action = None if default_setting_content == remote_default_setting_content else 'UPDATE'
     else:
@@ -202,20 +248,14 @@ def veil_server_default_setting_resource(server):
     if not action:
         return
     print('{} veil server default setting: {} ...'.format(action, server.container_name))
-    with contextlib.closing(StringIO(default_setting_content)) as f:
-        fabric.api.put(f, full_default_setting_path, use_sudo=True, mode=0644)
-    fabric.api.sudo('chroot {} chown root:root {}'.format(container_rootfs_path, default_setting_path))
+    put_container_file(server.container_name, default_setting_path, default_setting_content)
 
 
 @atomic_installer
 def veil_server_boot_script_resource(server):
     boot_script_path = '/lib/systemd/system/veil-server.service'
-    container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
-    full_boot_script_path = '{}{}'.format(container_rootfs_path, boot_script_path)
-
-    remote_boot_script_content = get_remote_file_content(full_boot_script_path)
+    remote_boot_script_content = get_container_file_content(server.container_name, boot_script_path)
     boot_script_content = render_config('veil-server.service.j2', veil_home=server.veil_home)
-
     if remote_boot_script_content:
         action = None if boot_script_content == remote_boot_script_content else 'UPDATE'
     else:
@@ -228,11 +268,9 @@ def veil_server_boot_script_resource(server):
     if not action:
         return
     print('{} boot script: {} ...'.format(action, server.container_name))
-
-    with contextlib.closing(StringIO(boot_script_content)) as f:
-        fabric.api.put(f, full_boot_script_path, use_sudo=True, mode=0644)
-    fabric.api.sudo('chroot {} chown root:root {}'.format(container_rootfs_path, boot_script_path))
-    fabric.api.sudo('lxc-attach -n {} -- systemctl daemon-reload'.format(server.container_name))
+    put_container_file(server.container_name, boot_script_path, boot_script_content)
+    run_container_command(server.container_name, 'systemctl daemon-reload')
+    run_container_command(server.container_name, 'systemctl enable veil-server')
 
 
 def render_veil_server_default_setting(server):

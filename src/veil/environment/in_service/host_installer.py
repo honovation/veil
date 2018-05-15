@@ -275,8 +275,6 @@ def veil_host_init_resource(host):
     fabric.api.sudo('pip install {} --upgrade "wheel>=0.30.0a0"'.format(pip_index_args))
     fabric.api.sudo('pip install {} --upgrade "virtualenv>=15.1.0"'.format(pip_index_args))
 
-    install_resource(veil_lxc_config_resource(host=host))
-
     fabric.api.sudo('touch {}'.format(host.initialized_tag_path))
     if host.initialized_tag_path != host.initialized_tag_link:
         fabric.api.sudo('ln -s {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
