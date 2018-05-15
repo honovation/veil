@@ -4,7 +4,7 @@ from veil.profile.installer import *
 LOGGER = logging.getLogger(__name__)
 CHROMEDRIVER_PATH = as_path('/usr/bin/chromedriver')
 RESOURCE_KEY = 'veil.development.selenium.chrome_driver_resource'
-RESOURCE_VERSION = '2.37'
+RESOURCE_VERSION = '2.38'
 
 
 def get_installed_version():
