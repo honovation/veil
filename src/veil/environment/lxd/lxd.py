@@ -6,12 +6,15 @@ from veil.environment import SECURITY_CONFIG_FILE
 from veil.utility.setting import *
 
 
-def get_lxd_client():
-    config = load_config_from(SECURITY_CONFIG_FILE, 'lxd_endpoint', 'lxd_cert_path', 'lxd_trusted_password')
-    cert = ('{}/lxd.crt'.format(config.lxd_cert_path), '{}/lxd.key'.format(config.lxd_cert_path))
-    client = pylxd.Client(endpoint=config.lxd_endpoint, cert=cert, verify=False, timeout=(3.05, 27))
-    if not client.trusted:
-        client.authenticate(config.lxd_trusted_password)
+def get_lxd_client(local=False):
+    if local:
+        client = pylxd.Client()
+    else:
+        config = load_config_from(SECURITY_CONFIG_FILE, 'lxd_endpoint', 'lxd_cert_path', 'lxd_trusted_password')
+        cert = ('{}/lxd.crt'.format(config.lxd_cert_path), '{}/lxd.key'.format(config.lxd_cert_path))
+        client = pylxd.Client(endpoint=config.lxd_endpoint, cert=cert, verify=False, timeout=(3.05, 27))
+        if not client.trusted:
+            client.authenticate(config.lxd_trusted_password)
     assert client.trusted
     return client
 
