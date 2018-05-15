@@ -3,6 +3,7 @@ from __future__ import unicode_literals, print_function, division
 import shlex
 import os
 import pylxd
+import pylxd.exceptions
 from veil.environment import SECURITY_CONFIG_FILE
 from veil.utility.setting import *
 
@@ -30,7 +31,10 @@ def get_container_file_content(container_name, file_path):
     """
     client = get_lxd_client()
     container = client.containers.get(container_name)
-    return container.files.get(file_path)
+    try:
+        return container.files.get(file_path)
+    except pylxd.exceptions.NotFound:
+        return None
 
 
 def put_container_file(container_name, file_path, content, mode=0644, uid=None, gid=None):
