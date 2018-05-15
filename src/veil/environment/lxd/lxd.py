@@ -1,11 +1,15 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
+import logging
 import shlex
 import os
 import pylxd
 import pylxd.exceptions
 from veil.environment import SECURITY_CONFIG_FILE
 from veil.utility.setting import *
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def get_lxd_client(local=False):
@@ -31,6 +35,7 @@ def get_container_file_content(container_name, file_path):
     """
     client = get_lxd_client()
     container = client.containers.get(container_name)
+    LOGGER.info('Get container remote file content: %(container_name)s, %(file_path)s', {'container_name': container_name, 'file_path': file_path})
     try:
         return container.files.get(file_path)
     except pylxd.exceptions.NotFound:
@@ -51,6 +56,13 @@ def put_container_file(container_name, file_path, content, mode=0644, uid=None, 
     """
     client = get_lxd_client()
     container = client.containers.get(container_name)
+    LOGGER.info('Upload container remote file: %(container_name)s, %(file_path)s, %(mode)s, %(uid)s, %(gid)s', {
+        'container_name': container_name,
+        'file_path': file_path,
+        'mode': mode,
+        'uid': uid,
+        'gid': gid
+    })
     container.files.put(file_path, content, mode=mode, uid=uid, gid=gid)
 
 
@@ -65,4 +77,5 @@ def run_container_command(container_name, command, env=None):
     """
     client = get_lxd_client()
     container = client.containers.get(container_name)
+    LOGGER.info('Run command on container: %(container_name)s, %(command)s', {'container_name': container_name, 'command': command})
     container.execute(shlex.split(command), environment=env or {})
