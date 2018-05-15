@@ -40,7 +40,7 @@ def check_no_changes_not_committed():
 
 
 def has_commits_not_pushed(cwd):
-    return bool(shell_execute('git log origin/master..HEAD', capture=True, cwd=cwd))
+    return bool(shell_execute('git log origin/$(git rev-parse --abbrev-ref HEAD)..HEAD', capture=True, cwd=cwd, debug=True))
 
 
 def check_no_commits_not_pushed():
