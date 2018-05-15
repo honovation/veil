@@ -153,8 +153,10 @@ def get_installed_package_remote_latest_version(name):
         if name == 'tornado':
             lines = shell_execute('pip list -l -o | grep Latest:', capture=True, debug=True).splitlines()
         else:
-            lines = shell_execute('pip list -i {} --trusted-host {} -l -o | grep Latest:'.format(server.pypi_index_url, server.pypi_index_host), capture=True,
-                                  debug=True).splitlines()
+            pip_index_args = ''
+            if server.pypi_index_url:
+                pip_index_args = '-i {} --trusted-host {}'.format(server.pypi_index_url, server.pypi_index_host)
+            lines = shell_execute('pip list {} -l -o | grep Latest:'.format(pip_index_args), capture=True, debug=True).splitlines()
         for line in lines:
             match = RE_OUTDATED_PACKAGE.match(line)
             outdated_package_name2latest_version[match.group(1)] = match.group(2)
@@ -165,22 +167,21 @@ def download_python_package(name, version=None, url=None, **kwargs):
     tries = 0
     max_tries = 3
     server = get_current_veil_server()
+    pip_index_args = ''
+    if server.pypi_index_url:
+        pip_index_args = '-i {} --trusted-host {}'.format(server.pypi_index_url, server.pypi_index_host)
     name_term = '{}{}'.format(name, '=={}'.format(version) if version else '')
     while True:
         tries += 1
         try:
             if url:
-                shell_execute(
-                    'pip download -i {} --trusted-host {} --timeout 30 -d {} {}'.format(server.pypi_index_url, server.pypi_index_host, PYPI_ARCHIVE_DIR, url),
-                    capture=True, debug=True, **kwargs)
+                shell_execute('pip download {} --timeout 30 -d {} {}'.format(pip_index_args, PYPI_ARCHIVE_DIR, url), capture=True, debug=True, **kwargs)
             else:
                 if name == 'tornado':
-                    shell_execute('pip download --timeout 30 -d {} {name_term}'.format(PYPI_ARCHIVE_DIR, name_term=name_term), capture=True, debug=True,
-                                  **kwargs)
+                    shell_execute('pip download --timeout 30 -d {} {}'.format(PYPI_ARCHIVE_DIR, name_term), capture=True, debug=True, **kwargs)
                 else:
-                    shell_execute('pip download -i {} --trusted-host {} --timeout 30 -d {} {name_term}'.format(server.pypi_index_url, server.pypi_index_host,
-                                                                                                               PYPI_ARCHIVE_DIR, name_term=name_term),
-                                  capture=True, debug=True, **kwargs)
+                    shell_execute('pip download {} --timeout 30 -d {} {}'.format(pip_index_args, PYPI_ARCHIVE_DIR, name_term), capture=True, debug=True,
+                                  **kwargs)
         except Exception:
             if tries >= max_tries:
                 raise
@@ -224,19 +225,19 @@ def install_python_package_remotely(name, version, url, **kwargs):
     tries = 0
     max_tries = 3
     server = get_current_veil_server()
+    pip_index_args = ''
+    if server.pypi_index_url:
+        pip_index_args = '-i {} --trusted-host {}'.format(server.pypi_index_url, server.pypi_index_host)
     while True:
         tries += 1
         try:
             if url:
-                shell_execute('pip install -i {} --trusted-host {} --timeout 30 {}'.format(server.pypi_index_url, server.pypi_index_host, url), capture=True,
-                              debug=True, **kwargs)
+                shell_execute('pip install {} --timeout 30 {}'.format(pip_index_args, url), capture=True, debug=True, **kwargs)
             else:
                 if name == 'tornado':
                     shell_execute('pip install --timeout 30 {}=={}'.format(name, version), capture=True, debug=True, **kwargs)
                 else:
-                    shell_execute(
-                        'pip install -i {} --trusted-host {} --timeout 30 {}=={}'.format(server.pypi_index_url, server.pypi_index_host, name, version),
-                        capture=True, debug=True, **kwargs)
+                    shell_execute('pip install {} --timeout 30 {}=={}'.format(pip_index_args, name, version), capture=True, debug=True, **kwargs)
         except Exception:
             if tries >= max_tries:
                 raise
@@ -256,12 +257,12 @@ def install_python_package(name, version, url=None, **kwargs):
 @script('upgrade-pip')
 def upgrade_pip(setuptools_version, wheel_version, pip_version):
     env = get_current_veil_env()
-    shell_execute('pip install -i {} --trusted-host {} --upgrade pip=={}'.format(env.pypi_index_url, env.pypi_index_host, pip_version), capture=True,
-                  debug=True)
-    shell_execute('pip install -i {} --trusted-host {} --upgrade setuptools=={}'.format(env.pypi_index_url, env.pypi_index_host, setuptools_version),
-                  capture=True, debug=True)
-    shell_execute('pip install -i {} --trusted-host {} --upgrade wheel=={}'.format(env.pypi_index_url, env.pypi_index_host, wheel_version), capture=True,
-                  debug=True)
+    pip_index_args = ''
+    if env.pypi_index_url:
+        pip_index_args = '-i {} --trusted-host {}'.format(env.pypi_index_url, env.pypi_index_host)
+    shell_execute('pip install {} --upgrade pip=={}'.format(pip_index_args, pip_version), capture=True, debug=True)
+    shell_execute('pip install {} --upgrade setuptools=={}'.format(pip_index_args, setuptools_version), capture=True, debug=True)
+    shell_execute('pip install {} --upgrade wheel=={}'.format(pip_index_args, wheel_version), capture=True, debug=True)
 
 
 @atomic_installer
