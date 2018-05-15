@@ -194,7 +194,7 @@ def clone_application(host):
 def clone_framework(host):
     if fabric.contrib.files.exists(host.veil_framework_home):
         return
-    fabric.api.sudo('git clone --depth=1 {} {}'.format(get_veil_framework_codebase(), host.veil_framework_home))
+    fabric.api.sudo('git clone -b {} --depth=1 {} {}'.format(read_veil_framework_version(host), get_veil_framework_codebase(), host.veil_framework_home))
 
 
 def pull_application(host):
