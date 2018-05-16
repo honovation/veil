@@ -23,10 +23,10 @@ def install_apt_repository_resource(name, key_url, definition, version=None):
     if installed:
         return
     LOGGER.info('installing apt repository: %(name)s, %(version)s ...', {'name': name, 'version': version})
-    shell_execute('wget --inet4-only -q -O - {} | apt-key add -'.format(key_url), capture=True)
-    shell_execute('echo "{}" | tee /etc/apt/sources.list.d/{}.list'.format(definition, name), capture=True)
+    shell_execute('wget --inet4-only -q -O - {} | sudo apt-key add -'.format(key_url), capture=True)
+    shell_execute('echo "{}" | sudo tee /etc/apt/sources.list.d/{}.list'.format(definition, name), capture=True)
     # apt update the added repository
-    shell_execute('apt update -o Dir::Etc::sourcelist="sources.list.d/{}.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"'.format(name),
+    shell_execute('sudo apt update -o Dir::Etc::sourcelist="sources.list.d/{}.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"'.format(name),
                   capture=True, debug=True)
 
 
@@ -44,7 +44,7 @@ def os_ppa_repository_resource(name):
         return
     LOGGER.info('installing os package repository: %(name)s ...', {'name': name})
     # add the repository and apt update it
-    shell_execute('add-apt-repository ppa:{} -y -u'.format(name), capture=True)
+    shell_execute('sudo add-apt-repository ppa:{} -y -u'.format(name), capture=True)
 
 
 def is_os_package_repository_installed(name, version=None):
