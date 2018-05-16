@@ -277,7 +277,7 @@ def veil_host_init_resource(host):
                            'python', 'python-dev', 'python-pip', 'python-virtualenv']
     fabric.api.sudo('apt -y install {}'.format(' '.join(install_os_packages)))
     fabric.api.sudo('timedatectl set-ntp true')
-    with fabric.api.settings(sudo_prefix='-H'):
+    with fabric.api.settings(sudo_prefix="sudo -H -S -p '%(sudo_prompt)s' "):
         fabric.api.sudo('pip install --upgrade "pip>=9.0.1"')
         pip_index_args = ''
         if host.pypi_index_url:
