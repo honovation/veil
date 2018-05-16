@@ -77,5 +77,20 @@ def run_container_command(container_name, command, env=None):
     """
     client = get_lxd_client()
     container = client.containers.get(container_name)
-    LOGGER.info('Run command on container: %(container_name)s, %(command)s', {'container_name': container_name, 'command': command})
-    container.execute(shlex.split(command), environment=env or {})
+    LOGGER.info('Run command in container: %(container_name)s, %(command)s', {'container_name': container_name, 'command': command})
+    # TODO: pylxd issue 280
+    result = None
+    while result is None:
+        try:
+            result = container.execute(shlex.split(command), environment=env or {})
+        except pylxd.exceptions.NotFound:
+            LOGGER.info('retry execute command in container: %(container_name)s, %(command)s', {
+                'container_name': container_name,
+                'command': command
+            })
+    LOGGER.info('command result: %(stdout)s, %(stderr)s, %(exit_code)s', {
+        'stdout': result.stdout,
+        'stderr': result.stderr,
+        'exit_code': result.exit_code,
+    })
+    return result
