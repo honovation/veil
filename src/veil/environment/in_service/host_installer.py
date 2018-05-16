@@ -202,14 +202,13 @@ def veil_host_codebase_resource(host):
 def clone_application(host):
     if fabric.contrib.files.exists(host.veil_home):
         return
-    fabric.api.sudo('git clone -b {} --depth=1 {} {}'.format(host.veil_application_branch, get_application_codebase(),
-                                                             host.veil_home))
+    fabric.api.run('git clone -b {} --depth=1 {} {}'.format(host.veil_application_branch, get_application_codebase(), host.veil_home))
 
 
 def clone_framework(host):
     if fabric.contrib.files.exists(host.veil_framework_home):
         return
-    fabric.api.sudo('git clone -b {} --depth=1 {} {}'.format(read_veil_framework_version(host), get_veil_framework_codebase(), host.veil_framework_home))
+    fabric.api.run('git clone -b {} --depth=1 {} {}'.format(read_veil_framework_version(host), get_veil_framework_codebase(), host.veil_framework_home))
 
 
 def pull_application(host):
@@ -217,7 +216,7 @@ def pull_application(host):
         check_no_changes(host.veil_home)
         while True:
             try:
-                fabric.api.sudo('git pull')
+                fabric.api.run('git pull')
             except Exception:
                 sleep(1)
                 continue
@@ -228,10 +227,10 @@ def pull_application(host):
 def pull_framework(host):
     with fabric.api.cd(host.veil_framework_home):
         check_no_changes(host.veil_framework_home)
-        fabric.api.sudo('git checkout {}'.format(read_veil_framework_version(host)))
+        fabric.api.run('git checkout {}'.format(read_veil_framework_version(host)))
         while True:
             try:
-                fabric.api.sudo('git pull')
+                fabric.api.run('git pull')
             except Exception:
                 sleep(1)
                 continue
@@ -249,7 +248,7 @@ def check_no_changes(cwd):
 
 def init_application(host):
     with fabric.api.cd(host.veil_home):
-        fabric.api.sudo('{}/bin/veil :{} init'.format(host.veil_framework_home, host.VEIL_ENV.name))
+        fabric.api.run('{}/bin/veil :{} init'.format(host.veil_framework_home, host.VEIL_ENV.name))
 
 
 def read_veil_framework_version(host):
