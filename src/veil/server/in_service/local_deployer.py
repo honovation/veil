@@ -14,22 +14,17 @@ LOGGER = logging.getLogger(__name__)
 
 @script('deploy')
 def deploy(start_after_deploy='TRUE'):
-    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
+    is_local_env = VEIL_ENV.is_dev or VEIL_ENV.is_test
+    if is_local_env:
         check_no_changes_not_committed()
         check_no_commits_not_pushed()
     shell_execute('veil install veil_installer.component_resource?veil.server.supervisor')
-    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
-        shell_execute('sudo veil down')
-    else:
-        shell_execute('sudo systemctl stop veil-server.service')
+    shell_execute('sudo veil down' if is_local_env else 'sudo systemctl stop veil-server.service')
     shell_execute('veil install-server')
     if start_after_deploy == 'TRUE':
-        if VEIL_ENV.is_dev or VEIL_ENV.is_test:
-            shell_execute('sudo veil up --daemonize')
-        else:
-            shell_execute('sudo systemctl start veil-server.service')
+        shell_execute('sudo veil up --daemonize' if is_local_env else 'sudo systemctl start veil-server.service')
         shell_execute('veil migrate')
-    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
+    if is_local_env:
         check_no_changes_not_committed()
         check_no_commits_not_pushed()
 

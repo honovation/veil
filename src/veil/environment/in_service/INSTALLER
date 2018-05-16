@@ -1,4 +1,3 @@
 veil.server.python.python_package_resource?ecdsa
 veil.server.os.os_package_resource?libssl-dev
 veil.server.python.python_package_resource?Fabric
-veil.server.python.python_package_resource?pylxd

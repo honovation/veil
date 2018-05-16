@@ -11,21 +11,9 @@ def get_idmap():
     return current_user_pwd_entry.pw_uid, current_user_pwd_entry.pw_gid
 
 
-@composite_installer
-def lxc_container_resource(container_name, hostname, timezone, user_name, ip_address, gateway, name_servers, start_order, etc_dir, log_dir,
-                           editorial_dir=None, buckets_dir=None, data_dir=None, memory_limit=None, cpu_share=None, cpus=None):
-    return [
-        lxc_container_created_resource(container_name=container_name, hostname=hostname, timezone=timezone, ip_address=ip_address, gateway=gateway,
-                                       name_servers=name_servers, user_name=user_name, start_order=start_order, memory_limit=memory_limit, cpus=cpus,
-                                       cpu_share=cpu_share, share_dir=SHARE_DIR, code_dir=VEIL_HOME.parent, etc_dir=etc_dir, log_dir=log_dir,
-                                       editorial_dir=editorial_dir, buckets_dir=buckets_dir, data_dir=data_dir)
-    ]
-
-
 @atomic_installer
-def lxc_container_created_resource(container_name, hostname, timezone, user_name, ip_address, gateway, name_servers, start_order, memory_limit=None, cpus=None,
-                                   cpu_share=None, idmap=None, share_dir=None, code_dir=None, etc_dir=None, log_dir=None, editorial_dir=None, buckets_dir=None,
-                                   data_dir=None):
+def lxc_container_resource(container_name, hostname, timezone, user_name, ip_address, gateway, name_servers, start_order, memory_limit=None, cpus=None,
+                           cpu_share=None, idmap=None, etc_dir=None, log_dir=None, editorial_dir=None, buckets_dir=None, data_dir=None):
     client = get_lxd_client(local=True)
     installed = client.containers.exists(container_name)
     dry_run_result = get_dry_run_result()
@@ -90,13 +78,13 @@ def lxc_container_created_resource(container_name, hostname, timezone, user_name
             },
             'share': {
                 'type': 'disk',
-                'path': share_dir,
-                'source': share_dir
+                'path': SHARE_DIR,
+                'source': SHARE_DIR
             },
             'code': {
                 'type': 'disk',
-                'path': code_dir,
-                'source': code_dir
+                'path': VEIL_HOME.parent,
+                'source': VEIL_HOME.parent
             },
             'etc': {
                 'type': 'disk',
