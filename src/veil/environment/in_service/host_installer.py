@@ -51,8 +51,8 @@ def veil_hosts_resource(veil_env_name, config_dir):
             hosts_to_install.append(host.base_name)
         for server in host.server_list:
             resources.extend([
-                veil_host_directory_resource(host=host, remote_path=server.etc_dir),
-                veil_host_directory_resource(host=host, remote_path=server.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+                veil_host_directory_resource(host=host, remote_path=server.etc_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
+                veil_host_directory_resource(host=host, remote_path=server.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
                 veil_container_resource(host=host, server=server, config_dir=config_dir)
             ])
     return resources
