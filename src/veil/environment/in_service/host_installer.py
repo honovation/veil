@@ -277,13 +277,14 @@ def veil_host_init_resource(host):
                            'python', 'python-dev', 'python-pip', 'python-virtualenv']
     fabric.api.sudo('apt -y install {}'.format(' '.join(install_os_packages)))
     fabric.api.sudo('timedatectl set-ntp true')
-    fabric.api.sudo('pip install --upgrade "pip>=9.0.1"')
-    pip_index_args = ''
-    if host.pypi_index_url:
-        pip_index_args = '-i {} --trusted-host {}'.format(host.pypi_index_url, host.pypi_index_host)
-    fabric.api.sudo('pip install {} --upgrade "setuptools>=34.2.0"'.format(pip_index_args))
-    fabric.api.sudo('pip install {} --upgrade "wheel>=0.30.0a0"'.format(pip_index_args))
-    fabric.api.sudo('pip install {} --upgrade "virtualenv>=15.1.0"'.format(pip_index_args))
+    with fabric.api.settings(sudo_prefix='-H'):
+        fabric.api.sudo('pip install --upgrade "pip>=9.0.1"')
+        pip_index_args = ''
+        if host.pypi_index_url:
+            pip_index_args = '-i {} --trusted-host {}'.format(host.pypi_index_url, host.pypi_index_host)
+        fabric.api.sudo('pip install {} --upgrade "setuptools>=34.2.0"'.format(pip_index_args))
+        fabric.api.sudo('pip install {} --upgrade "wheel>=0.30.0a0"'.format(pip_index_args))
+        fabric.api.sudo('pip install {} --upgrade "virtualenv>=15.1.0"'.format(pip_index_args))
 
     fabric.api.sudo('touch {}'.format(host.initialized_tag_path))
     if host.initialized_tag_path != host.initialized_tag_link:
