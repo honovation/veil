@@ -122,6 +122,19 @@ def veil_host_onetime_config_resource(host):
         veil_host_file_resource(local_path=CURRENT_DIR / 'disable-ipv6.conf', host=host, remote_path='/etc/sysctl.d/60-disable-ipv6.conf',
                                 owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-disable-ipv6.conf'),
         veil_host_sources_list_resource(host=host),
+        veil_host_directory_resource(host=host, remote_path=host.opt_dir),
+        veil_host_directory_resource(host=host, remote_path=host.share_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+        veil_host_directory_resource(host=host, remote_path=DEPENDENCY_DIR, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+        veil_host_directory_resource(host=host, remote_path=DEPENDENCY_INSTALL_DIR, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+        veil_host_directory_resource(host=host, remote_path=PYPI_ARCHIVE_DIR, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+        veil_host_directory_resource(host=host, remote_path=host.env_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+        veil_host_directory_resource(host=host, remote_path=host.code_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+        veil_host_directory_resource(host=host, remote_path=host.etc_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+        veil_host_directory_resource(host=host, remote_path=host.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+        veil_host_directory_resource(host=host, remote_path=host.var_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+        veil_host_directory_resource(host=host, remote_path=host.buckets_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+        veil_host_directory_resource(host=host, remote_path=host.buckets_log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+        veil_host_directory_resource(host=host, remote_path=host.data_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
         veil_host_init_resource(host=host)
     ]
     return resources
@@ -249,24 +262,19 @@ def veil_host_init_resource(host):
         dry_run_result[key] = 'INSTALL'
         return
 
-    fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no',
-                                                                             'PermitRootLogin without-password'],
-                                use_sudo=True)
+    if host.VEIL_ENV.name != host.VEIL_ENV.base_name:
+        fabric.api.sudo('ln -sfT {} {}'.format(host.env_dir, host.env_dir.parent / host.VEIL_ENV.name))
+
+    fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no', 'PermitRootLogin without-password'], use_sudo=True)
     fabric.api.sudo('systemctl reload-or-restart ssh')
 
     fabric.api.sudo('apt update')
     fabric.api.sudo('apt -y upgrade')
     fabric.api.sudo('apt -y purge ntp whoopsie network-manager')
-    install_os_packages = ['apt-transport-https', 'ntpdate', 'unattended-upgrades', 'update-notifier-common',
-                           'iptables', 'git', 'language-pack-en', 'unzip', 'wget', 'python', 'python-dev', 'python-pip',
-                           'python-virtualenv', 'lxc']
+    install_os_packages = ['apt-transport-https', 'unattended-upgrades', 'update-notifier-common', 'iptables', 'git', 'language-pack-en', 'unzip', 'wget',
+                           'python', 'python-dev', 'python-pip', 'python-virtualenv']
     fabric.api.sudo('apt -y install {}'.format(' '.join(install_os_packages)))
-    # enable time sync on lxc hosts, and which is shared among lxc guests
-    fabric.api.sudo(
-        '''printf '#!/bin/sh\n/usr/sbin/ntpdate ntp.ubuntu.com time.nist.gov' > /etc/cron.hourly/ntpdate && chmod 0755 /etc/cron.hourly/ntpdate''')
-
-    init_veil_host_basic_layout(host)
-
+    fabric.api.sudo('timedatectl set-ntp true')
     fabric.api.sudo('pip install --upgrade "pip>=9.0.1"')
     pip_index_args = ''
     if host.pypi_index_url:
@@ -278,16 +286,6 @@ def veil_host_init_resource(host):
     fabric.api.sudo('touch {}'.format(host.initialized_tag_path))
     if host.initialized_tag_path != host.initialized_tag_link:
         fabric.api.sudo('ln -s {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
-
-
-def init_veil_host_basic_layout(host):
-    fabric.api.sudo('mkdir -p -m 0755 {}'.format(' '.join([
-        host.opt_dir, host.share_dir, DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.env_dir,
-        host.code_dir, host.etc_dir, host.log_dir, host.var_dir, host.buckets_dir, host.bucket_log_dir, host.data_dir
-    ])))
-    fabric.api.sudo('chown {}:{} {} {} {}'.format(host.ssh_user, host.ssh_user_group, host.buckets_dir, host.bucket_log_dir, host.data_dir))
-    if host.VEIL_ENV.name != host.VEIL_ENV.base_name:
-        fabric.api.sudo('ln -sfT {} {}'.format(host.env_dir, host.env_dir.parent / host.VEIL_ENV.name))
 
 
 def is_initialized_for_another_same_base_instance(host):
