@@ -137,7 +137,7 @@ def veil_container_init_resource(server):
         return
     package_names = ['apt-transport-https', 'unattended-upgrades', 'update-notifier-common', 'iptables', 'git', 'language-pack-en', 'unzip', 'wget', 'python',
                      'python-dev', 'python-pip', 'python-virtualenv']
-    run_container_command(server.container_name, 'api install {}'.format(' '.join(package_names)))
+    run_container_command(server.container_name, 'apt install {}'.format(' '.join(package_names)))
     run_container_command(server.container_name, 'apt -y purge ntpdate ntp whoopsie network-manager')
     run_container_command(server.container_name, 'touch {}'.format(server.container_initialized_tag_path))
 
