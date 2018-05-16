@@ -111,10 +111,10 @@ def veil_host_onetime_config_resource(host):
         return []
 
     resources = [
-        veil_host_file_resource(local_path=CURRENT_DIR / 'iptablesload', host=host, remote_path='/etc/network/if-pre-up.d/iptablesload', owner='root',
-                                owner_group='root', mode=0755),
-        veil_host_file_resource(local_path=CURRENT_DIR / 'iptablessave', host=host, remote_path='/etc/network/if-post-down.d/iptablessave', owner='root',
-                                owner_group='root', mode=0755),
+        veil_host_directory_resource(host=host, remote_path='/etc/networkd-dispatcher/routable.d'),
+        veil_host_directory_resource(host=host, remote_path='/etc/networkd-dispatcher/off.d'),
+        veil_host_file_resource(local_path=CURRENT_DIR / 'iptablesload', host=host, remote_path='/etc/networkd-dispatcher/routable.d/iptablesload'),
+        veil_host_file_resource(local_path=CURRENT_DIR / 'iptablessave', host=host, remote_path='/etc/networkd-dispatcher/off.d/iptablessave'),
         veil_host_file_resource(local_path=CURRENT_DIR / 'sudoers.d.ssh-auth-sock', host=host, remote_path='/etc/sudoers.d/ssh-auth-sock', owner='root',
                                 owner_group='root', mode=0440),
         veil_host_file_resource(local_path=CURRENT_DIR / 'ipv4-ip-forward.conf', host=host, remote_path='/etc/sysctl.d/60-lxc-ipv4-ip-forward.conf',

@@ -65,12 +65,12 @@ def veil_container_onetime_config_resource(server):
         return []
 
     resources = [
-        veil_container_file_resource(local_path=CURRENT_DIR / 'iptablesload', server=server, remote_path='/etc/network/if-pre-up.d/iptablesload', owner='root',
-                                     owner_group='root', mode=0755),
-        veil_container_file_resource(local_path=CURRENT_DIR / 'iptablessave', server=server, remote_path='/etc/network/if-post-down.d/iptablessave',
+        veil_container_directory_resource(server=server, remote_path='/etc/networkd-dispatcher/routable.d', owner='root', owner_group='root', mode=0755),
+        veil_container_directory_resource(server=server, remote_path='/etc/networkd-dispatcher/off.d', owner='root', owner_group='root', mode=0755),
+        veil_container_file_resource(local_path=CURRENT_DIR / 'iptablesload', server=server, remote_path='/etc/networkd-dispatcher/routable.d/iptablesload',
                                      owner='root', owner_group='root', mode=0755),
-        veil_container_file_resource(local_path=CURRENT_DIR / 'sudoers.d.no-password', server=server, remote_path='/etc/sudoers.d/no-password', owner='root',
-                                     owner_group='root', mode=0440),
+        veil_container_file_resource(local_path=CURRENT_DIR / 'iptablessave', server=server, remote_path='/etc/networkd-dispatcher/off.d/iptablessave',
+                                     owner='root', owner_group='root', mode=0755),
         veil_container_init_resource(server=server)
     ]
     return resources
