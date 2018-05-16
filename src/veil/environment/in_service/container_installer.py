@@ -137,13 +137,6 @@ def veil_container_init_resource(server):
         return
 
     run_container_command(server.container_name, 'apt -y purge ntpdate ntp whoopsie network-manager')
-    pip_index_args = ''
-    if server.pypi_index_url:
-        pip_index_args = '-i {} --trusted-host {}'.format(server.pypi_index_url, server.pypi_index_host)
-    run_container_command(server.container_name, 'pip install {} --upgrade "pip>=9.0.1"'.format(pip_index_args))
-    run_container_command(server.container_name, 'pip install {} --upgrade "setuptools>=34.2.0"'.format(pip_index_args))
-    run_container_command(server.container_name, 'pip install {} --upgrade "wheel>=0.30.0a0"'.format(pip_index_args))
-    run_container_command(server.container_name, 'pip install {} --upgrade "virtualenv>=15.1.0"'.format(pip_index_args))
     run_container_command(server.container_name, 'touch {}'.format(server.container_initialized_tag_path))
 
 
