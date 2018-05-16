@@ -8,8 +8,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 @atomic_installer
-def os_package_resource(name, cmd_run_before_install=None, cmd_run_if_install_fail=None, cmd_run_after_install=None,
-                        install_env=None):
+def os_package_resource(name, cmd_run_before_install=None, cmd_run_if_install_fail=None, cmd_run_after_install=None, install_env=None):
     upgrading = is_upgrading()
     installed_version, downloaded_version = get_local_os_package_versions(name)
     latest_version = get_resource_latest_version(to_resource_key(name))
@@ -76,7 +75,7 @@ def os_package_resource(name, cmd_run_before_install=None, cmd_run_if_install_fa
         if cmd_run_before_install:
             shell_execute(cmd_run_before_install, capture=True)
         try:
-            shell_execute('apt -y install {}={}'.format(name, downloaded_version), capture=True, debug=True,
+            shell_execute('sudo apt -y install {}={}'.format(name, downloaded_version), capture=True, debug=True,
                           env=install_env)
         except Exception:
             if cmd_run_if_install_fail:
@@ -100,7 +99,7 @@ def os_package_resource(name, cmd_run_before_install=None, cmd_run_if_install_fa
 def download_os_package(name, version=None):
     LOGGER.info('downloading os package: %(name)s, %(version)s...', {'name': name, 'version': version})
     update_os_package_catalogue()
-    shell_execute('apt -y -d install {}{}'.format(name, '={}'.format(version) if version else ''), capture=True, debug=True)
+    shell_execute('sudo apt -y -d install {}{}'.format(name, '={}'.format(version) if version else ''), capture=True, debug=True)
     _, downloaded_version = get_local_os_package_versions(name)
     assert not version or version == downloaded_version, \
         'the downloaded version of os package {} is {}, different from the specific version {}'.format(name, downloaded_version, version)
@@ -115,7 +114,7 @@ def update_os_package_catalogue():
     if not apt_get_update_executed:
         LOGGER.info('updating os package catalogue...')
         try:
-            shell_execute('apt update', capture=True, debug=True)
+            shell_execute('sudo apt update', capture=True, debug=True)
         except ShellExecutionError:
             if VEIL_ENV.is_dev or VEIL_ENV.is_test:
                 LOGGER.exception('ignore the failure of running "apt update" under dev & test env.')
@@ -133,7 +132,7 @@ def get_local_os_package_versions(name):
     # TODO: rely on English system language, python-apt lib?
     installed_version = None
     downloaded_version = None
-    lines = shell_execute('apt-cache policy {}'.format(name), capture=True, debug=True).splitlines()
+    lines = shell_execute('sudo apt-cache policy {}'.format(name), capture=True, debug=True).splitlines()
     if len(lines) >= 3:
         installed_version = lines[1].split('Installed:')[1].strip()
         if '(none)' == installed_version:
