@@ -133,7 +133,7 @@ def veil_host_onetime_config_resource(host):
         veil_host_directory_resource(host=host, remote_path=host.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
         veil_host_directory_resource(host=host, remote_path=host.var_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
         veil_host_directory_resource(host=host, remote_path=host.buckets_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_directory_resource(host=host, remote_path=host.buckets_log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+        veil_host_directory_resource(host=host, remote_path=host.bucket_log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
         veil_host_directory_resource(host=host, remote_path=host.data_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
         veil_host_init_resource(host=host)
     ]
