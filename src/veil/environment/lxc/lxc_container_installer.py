@@ -58,20 +58,6 @@ def lxc_container_created_resource(container_name, hostname, timezone, user_name
       - sed -i -e '/^UseDNS/s/^.*$/UseDNS no/' /etc/ssh/sshd_config
       - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
       - systemctl restart ssh
-    package_update: true
-    packages:
-      - apt-transport-https 
-      - unattended-upgrades 
-      - update-notifier-common 
-      - iptables 
-      - git 
-      - language-pack-en 
-      - unzip 
-      - wget 
-      - python 
-      - python-dev 
-      - python-pip 
-      - python-virtualenv
     '''.format(container_name=container_name, hostname=hostname, timezone=timezone, user_name=user_name)
     network_config = '''
     version: 2
