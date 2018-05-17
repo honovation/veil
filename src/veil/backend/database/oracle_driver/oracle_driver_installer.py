@@ -11,17 +11,17 @@ RESOURCE_VERSION = '12.2.0.1.0'
 
 @atomic_installer
 def oracle_driver_resource():
-    env = os.environ.copy()
-    env['ORACLE_HOME'] = ORACLE_HOME
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         if is_downloading_while_dry_run():
             download_oracle_instantclient()
         dry_run_result['oracle-driver'] = '-' if is_oracle_instantclient_installed() else 'INSTALL'
     else:
-        install_oracle_instantclient(env)
-
-    install_resource(python_package_resource(name='cx_Oracle', reload_after_install=True, env=env))
+        install_oracle_instantclient()
+        env = os.environ.copy()
+        env['ORACLE_HOME'] = ORACLE_HOME
+        env['LD_LIBRARY_PATH'] = '{}:{}'.format(env['LD_LIBRARY_PATH'], ORACLE_HOME) if env.get('LD_LIBRARY_PATH') else ORACLE_HOME
+        install_resource(python_package_resource(name='cx_Oracle', reload_after_install=True, env=env))
 
 
 def download_oracle_instantclient():
@@ -56,15 +56,14 @@ def is_oracle_instantclient_installed():
         return ORACLE_HOME == f.read()
 
 
-def install_oracle_instantclient(env):
+def install_oracle_instantclient():
     if is_oracle_instantclient_installed():
         if (VEIL_ENV.is_dev or VEIL_ENV.is_test) and RESOURCE_VERSION != get_resource_latest_version(RESOURCE_KEY):
             set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return
     download_oracle_instantclient()
     shell_execute('ln -sf libclntsh.so.12.1 libclntsh.so', cwd=ORACLE_HOME)
-    install_resource(file_resource(path=ORACLE_DRIVER_CONF_PATH, content=ORACLE_HOME))
-    env['LD_LIBRARY_PATH'] = '{}:{}'.format(env.get('LD_LIBRARY_PATH', ''), ORACLE_HOME)
-    shell_execute('ldconfig')
+    shell_execute('echo {} | sudo tee {}'.format(ORACLE_HOME, ORACLE_DRIVER_CONF_PATH))
+    shell_execute('sudo ldconfig')
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
