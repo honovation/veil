@@ -60,7 +60,7 @@ def veil_container_lxc_resource(host, server):
         fabric.api.run('mv -f {} {}'.format(server.container_installer_path, server.installed_container_installer_path))
     while 1:
         try:
-            with fabric.api.settings(server.deploys_via):
+            with fabric.api.settings(host_string=server.deploys_via):
                 fabric.api.run('echo Server started!')
                 break
         except Exception as e:
