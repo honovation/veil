@@ -139,7 +139,7 @@ def veil_container_init_resource(server):
                      'python-dev', 'python-pip', 'python-virtualenv']
     with fabric.api.settings(host_string=server.deploys_via):
         fabric.api.sudo('apt update')
-        fabric.api.sudo('apt install {}'.format(' '.join(package_names)))
+        fabric.api.sudo('apt -y install {}'.format(' '.join(package_names)))
         fabric.api.sudo('apt -y purge ntpdate ntp whoopsie network-manager')
         fabric.api.run('touch {}'.format(server.container_initialized_tag_path))
 
