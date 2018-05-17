@@ -1,0 +1,14 @@
+[Unit]
+Description=save and restore iptables rules
+Requires=network.target
+DefaultDependencies=no
+Before=shutdown.target reboot.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/local/bin/iptablesload
+ExecStop=/usr/local/bin/iptablessave
+
+[Install]
+WantedBy=multi-user.target

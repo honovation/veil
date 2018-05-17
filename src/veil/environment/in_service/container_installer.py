@@ -78,10 +78,13 @@ def veil_container_onetime_config_resource(server):
     resources = [
         veil_container_directory_resource(server=server, remote_path='/etc/networkd-dispatcher/routable.d', owner='root', owner_group='root', mode=0755),
         veil_container_directory_resource(server=server, remote_path='/etc/networkd-dispatcher/off.d', owner='root', owner_group='root', mode=0755),
-        veil_container_file_resource(local_path=CURRENT_DIR / 'iptablesload', server=server, remote_path='/etc/networkd-dispatcher/routable.d/iptablesload',
-                                     owner='root', owner_group='root', mode=0755),
-        veil_container_file_resource(local_path=CURRENT_DIR / 'iptablessave', server=server, remote_path='/etc/networkd-dispatcher/off.d/iptablessave',
-                                     owner='root', owner_group='root', mode=0755),
+        veil_container_file_resource(local_path=CURRENT_DIR / 'iptablesload', server=server, remote_path='/usr/local/bin/iptablesload', owner='root',
+                                     owner_group='root', mode=0755),
+        veil_container_file_resource(local_path=CURRENT_DIR / 'iptablessave', server=server, remote_path='/usr/local/bin/iptablessave', owner='root',
+                                     owner_group='root', mode=0755),
+        veil_container_file_resource(local_path=CURRENT_DIR / 'persist-iptables.service', server=server,
+                                     remote_path='/lib/systemd/system/persist-iptables.service', owner='root', owner_group='root', mode=0755,
+                                     cmd='systemctl daemon-reload'),
         veil_container_init_resource(server=server)
     ]
     return resources
@@ -169,7 +172,7 @@ def veil_container_directory_resource(server, remote_path, owner, owner_group, m
 
 
 @atomic_installer
-def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False):
+def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False, cmd=None):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_container_file?{}&path={}'.format(server.container_name, remote_path)
@@ -182,6 +185,8 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
         raise Exception('file not exists: {}'.format(local_path))
     put_container_file(server.container_name, remote_path, f.bytes(), mode=mode)
     run_container_command(server.container_name, 'chown {}:{} {}'.format(owner, owner_group, remote_path))
+    if cmd:
+        run_container_command(server.container_name, cmd)
 
 
 @atomic_installer
