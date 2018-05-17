@@ -31,7 +31,8 @@ def redis_server_source_code_resource(purpose, host, port, persisted_by_aof=Fals
     return [
         redis_server_os_source_code_resource(version=REDIS_SERVER_SOURCE_CODE_VERSION),
         directory_resource(path=data_directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770),
-        file_resource(path=VEIL_ETC_DIR / '{}-redis.conf'.format(purpose.replace('_', '-')), content=render_config('redis-server.conf.j2', config=redis_config))
+        file_resource(path=VEIL_ETC_DIR / '{}-redis.conf'.format(purpose.replace('_', '-')), content=render_config('redis-server.conf.j2', config=redis_config),
+                      owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     ]
 
 
@@ -42,13 +43,12 @@ def redis_server_os_source_code_resource(version):
     local_path = DEPENDENCY_DIR / tgz_name
     if not local_path.exists():
         shell_execute('wget -c http://download.redis.io/releases/{} -O {}'.format(tgz_name, local_path))
-    install_path = DEPENDENCY_INSTALL_DIR / tgz_name
-    if not install_path.exists():
+    redis_source_code_path = DEPENDENCY_INSTALL_DIR / 'redis-{}'.format(version)
+    if not redis_source_code_path.exists():
         shell_execute('tar zxvf {} -C {}'.format(tgz_name, DEPENDENCY_INSTALL_DIR), cwd=DEPENDENCY_DIR)
-    installed_path = install_path / installed_file_name
+    installed_path = redis_source_code_path / installed_file_name
     if installed_path.exists():
         return
-    redis_source_code_path = DEPENDENCY_INSTALL_DIR / 'redis-{}'.format(version)
     shell_execute('make', cwd=redis_source_code_path)
     shell_execute('sudo make install', cwd=redis_source_code_path)
     shell_execute('touch {}'.format(installed_file_name), cwd=redis_source_code_path)
