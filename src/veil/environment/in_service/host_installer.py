@@ -238,7 +238,11 @@ def init_application(host):
 
 
 def read_veil_framework_version(host):
-    return get_remote_file_content(host.veil_home / 'VEIL-VERSION') or 'master'
+    versions = get_remote_file_content(host.veil_home / 'VEIL-VERSION')
+    for version in versions.split('\n'):
+        if version.startswith(VEIL_ENV.base_name):
+            return version.split('=')[1]
+    return 'master'
 
 
 @atomic_installer
