@@ -25,7 +25,7 @@ def tasktiger_admin_program(application_config):
     })
 
 
-def tasktiger_job_worker_program(worker_name, application_logging_levels, queue_names, application_config, run_as=None):
+def tasktiger_job_worker_program(worker_name, application_logging_levels, queue_names, application_config):
     veil_logging_level_config_path = VEIL_ETC_DIR / '{}-worker-log.cfg'.format(worker_name)
     application_component_names = set(name for queue_name in queue_names for name in list_dynamic_dependency_providers('job', queue_name))
     resources = [
@@ -42,7 +42,6 @@ def tasktiger_job_worker_program(worker_name, application_logging_levels, queue_
                 'VEIL_LOGGING_EVENT': 'True'
             }, # log instruction for the sub-process forked from pyres_worker, a.k.a our code
             'group': 'tasktiger-workers',
-            'run_as': run_as or CURRENT_USER,
             'priority': 200,
             'stopsignal': 'INT',
             'stopwaitsecs': 30,
