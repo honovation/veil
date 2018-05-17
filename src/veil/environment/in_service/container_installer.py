@@ -63,7 +63,8 @@ def veil_container_lxc_resource(host, server):
             with fabric.api.settings(server.deploys_via):
                 fabric.api.run('echo Server started!')
                 break
-        except:
+        except Exception as e:
+            print(e.message)
             print('waiting for server start...')
             sleep(1)
 
