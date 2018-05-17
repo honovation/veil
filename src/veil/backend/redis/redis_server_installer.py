@@ -48,7 +48,7 @@ def redis_server_os_source_code_resource(version):
     installed_path = install_path / installed_file_name
     if installed_path.exists():
         return
-    redis_source_code_path = DEPENDENCY_INSTALL_DIR / tgz_name
+    redis_source_code_path = DEPENDENCY_INSTALL_DIR / 'redis-{}'.format(version)
     shell_execute('make', cwd=redis_source_code_path)
     shell_execute('sudo make install', cwd=redis_source_code_path)
     shell_execute('touch {}'.format(installed_file_name), cwd=redis_source_code_path)
