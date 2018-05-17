@@ -39,4 +39,5 @@ def is_service_auto_starting_installed(name):
 def disable_auto_starting(name):
     try_shell_execute('sudo systemctl disable {}'.format(name))
     try_shell_execute('sudo update-rc.d {} disable'.format(name))
+    try_shell_execute('sudo mkdir -p /etc/init')
     try_shell_execute('echo manual | sudo tee /etc/init/{}.override'.format(name))
