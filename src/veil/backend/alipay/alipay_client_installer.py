@@ -11,7 +11,8 @@ def alipay_client_resource(app_id, partner_id, app_key, seller_email, alipay_pub
         file_resource(path=VEIL_ETC_DIR / 'alipay-client.cfg',
                       content=render_config('alipay-client.cfg.j2', app_id=app_id, partner_id=partner_id, app_key=app_key, seller_email=seller_email,
                                             alipay_public_key=alipay_public_key, alipay_rsa2_public_key=alipay_rsa2_public_key, rsa_public_key=rsa_public_key,
-                                            rsa_private_key=rsa_private_key, rsa2_public_key=rsa2_public_key, rsa2_private_key=rsa2_private_key))
+                                            rsa_private_key=rsa_private_key, rsa2_public_key=rsa2_public_key, rsa2_private_key=rsa2_private_key),
+                      owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     ]
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         resources.extend([

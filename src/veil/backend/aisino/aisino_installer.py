@@ -34,7 +34,7 @@ def aisino_invoice_resource(seq_prefix, payer_id, payer_name, payer_auth_code, p
     if AISINO_LIBRARY_CONFIG_FILE_PATH.exists() and AISINO_LIBRARY_CONFIG_FILE_PATH.bytes() == config_file_content:
         resources = []
     else:
-        resources = [file_resource(path=AISINO_LIBRARY_CONFIG_FILE_PATH, content=config_file_content)]
+        resources = [file_resource(path=AISINO_LIBRARY_CONFIG_FILE_PATH, content=config_file_content, owner=CURRENT_USER, group=CURRENT_USER_GROUP)]
     resources.extend([
         directory_resource(path=REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE, owner=CURRENT_USER, group=CURRENT_USER_GROUP, recursive=True),
         file_resource(path=VEIL_ETC_DIR / 'aision_invoice.cfg',
@@ -42,7 +42,7 @@ def aisino_invoice_resource(seq_prefix, payer_id, payer_name, payer_auth_code, p
                                             payer_auth_code=payer_auth_code, payer_address=payer_address, payer_telephone=payer_telephone,
                                             payer_bank_name=payer_bank_name, payer_bank_account_no=payer_bank_account_no, ebp_code=ebp_code,
                                             registration_no=registration_no, operator_name=operator_name, receiver_operator_name=receiver_operator_name,
-                                            recheck_operator_name=recheck_operator_name))
+                                            recheck_operator_name=recheck_operator_name), owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     ])
     return resources
 

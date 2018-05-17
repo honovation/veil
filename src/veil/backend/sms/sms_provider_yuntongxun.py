@@ -45,7 +45,8 @@ def register():
 def yuntongxun_sms_client_resource(account_sid, auth_token, app_id):
     return [
         file_resource(path=VEIL_ETC_DIR / 'yuntongxun-sms-client.cfg',
-                      content=render_config('yuntongxun-sms-client.cfg.j2', account_sid=account_sid, auth_token=auth_token, app_id=app_id))
+                      content=render_config('yuntongxun-sms-client.cfg.j2', account_sid=account_sid, auth_token=auth_token, app_id=app_id),
+                      owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     ]
 
 

@@ -8,7 +8,7 @@ _config = {}
 def redis_client_resource(purpose, host, port):
     return [
         file_resource(path=VEIL_ETC_DIR / '{}-redis-client.cfg'.format(purpose.replace('_', '-')),
-                      content=render_config('redis-client.cfg.j2', host=host, port=port))
+                      content=render_config('redis-client.cfg.j2', host=host, port=port), owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     ]
 
 

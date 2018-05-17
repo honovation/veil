@@ -10,7 +10,7 @@ def wxpay_client_resource(app_id, app_secret, mch_id, api_key, api_client_cert, 
     resources = [
         file_resource(path=VEIL_ETC_DIR / 'wxpay-client.cfg',
                       content=render_config('wxpay-client.cfg.j2', app_id=app_id, app_secret=app_secret, mch_id=mch_id, api_key=api_key,
-                                            api_client_cert=api_client_cert, api_client_key=api_client_key))
+                                            api_client_cert=api_client_cert, api_client_key=api_client_key), owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     ]
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         resources.extend([
@@ -35,7 +35,8 @@ def wxpay_client_config():
 def wx_open_app_resource(app_id, app_secret, mch_id, api_key):
     return [
         file_resource(path=VEIL_ETC_DIR / 'wx_open_app.cfg',
-                      content=render_config('wx_open_app.cfg.j2', app_id=app_id, app_secret=app_secret, mch_id=mch_id, api_key=api_key))
+                      content=render_config('wx_open_app.cfg.j2', app_id=app_id, app_secret=app_secret, mch_id=mch_id, api_key=api_key),
+                      owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     ]
 
 

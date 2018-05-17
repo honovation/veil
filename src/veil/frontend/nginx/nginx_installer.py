@@ -15,10 +15,10 @@ def nginx_resource(servers, config):
                                             config=dict(config, owner=CURRENT_USER, owner_group=CURRENT_USER_GROUP,
                                                         log_directory=VEIL_LOG_DIR / 'nginx', pid_file=NGINX_PID_PATH,
                                                         servers=servers, DEFAULT_DNS_SERVERS=DEFAULT_DNS_SERVERS,
-                                                        HTTP_STANDARD_PORT=80, HTTPS_STANDARD_PORT=443))),
+                                                        HTTP_STANDARD_PORT=80, HTTPS_STANDARD_PORT=443)), owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         file_resource(path=VEIL_ETC_DIR / 'nginx-https.cfg', content='\n'.join(
             '{}:{}'.format(server_name, ','.join(str(port) for port in server_properties['https_listens'])) for
-            server_name, server_properties in servers.items() if server_properties['https_listens'])),
+            server_name, server_properties in servers.items() if server_properties['https_listens']), owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         directory_resource(path=VEIL_BUCKET_UPLOADED_FILES_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770)
     ]
     resources.extend([

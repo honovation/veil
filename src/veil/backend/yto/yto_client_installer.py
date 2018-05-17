@@ -12,7 +12,7 @@ def yto_client_resource(**kwargs):
     resources = [
         file_resource(path=VEIL_ETC_DIR / 'yto-client-{}.cfg'.format(purpose),
                       content=render_config('yto-client.cfg.j2', api_url=purpose_config.api_url, type=purpose_config.type, client_id=purpose_config.client_id,
-                                            partner_id=purpose_config.partner_id))
+                                            partner_id=purpose_config.partner_id), owner=CURRENT_USER, group=CURRENT_USER_GROUP)
         for purpose, purpose_config in kwargs.items()
     ]
     resources.append(directory_resource(path=YTO_INCOMING_REQUEST_LOG_DIRECTORY_BASE, owner=CURRENT_USER, group=CURRENT_USER_GROUP, recursive=True))

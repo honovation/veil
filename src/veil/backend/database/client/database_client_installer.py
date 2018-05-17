@@ -8,7 +8,7 @@ _config = {}
 def database_client_resource(purpose, config):
     return [
         file_resource(path=VEIL_ETC_DIR / '{}-database-client.cfg'.format(purpose.replace('_', '-')),
-                      content=render_config('database-client.cfg.j2', config=config)),
+                      content=render_config('database-client.cfg.j2', config=config), owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         component_resource(name=config.driver)
     ]
 

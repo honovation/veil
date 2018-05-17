@@ -31,7 +31,8 @@ def pgbarman_resource(config):
                                                                                                           replication_user=config.replication_user,
                                                                                                           replication_slot_name=config.replication_slot_name,
                                                                                                           pg_bin_path=config.pg_bin_path,
-                                                                                                          barman_server_home=BARMAN_HOME / config.server_name))
+                                                                                                          barman_server_home=BARMAN_HOME / config.server_name),
+                      owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     ]
     return resources
 

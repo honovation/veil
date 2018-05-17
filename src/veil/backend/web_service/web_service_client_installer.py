@@ -8,7 +8,8 @@ _config = {}
 def web_service_resource(purpose, url, user, password, proxy_netloc):
     return [
         file_resource(path=VEIL_ETC_DIR / '{}-web-service.cfg'.format(purpose.replace('_', '-')),
-                      content=render_config('web-service.cfg.j2', url=url, user=user, password=password, proxy_netloc=proxy_netloc))
+                      content=render_config('web-service.cfg.j2', url=url, user=user, password=password, proxy_netloc=proxy_netloc),
+                      owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     ]
 
 

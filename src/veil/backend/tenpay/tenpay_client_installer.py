@@ -11,7 +11,8 @@ def tenpay_client_resource(partner_id, app_key, refund_op_user_id, refund_op_use
                                                                                      refund_op_user_id=refund_op_user_id,
                                                                                      refund_op_user_password=refund_op_user_password,
                                                                                      api_ca_cert=api_ca_cert,
-                                                                                     api_client_cert=api_client_cert, api_client_key=api_client_key))
+                                                                                     api_client_cert=api_client_cert, api_client_key=api_client_key),
+                      owner=CURRENT_USER, group=CURRENT_USER_GROUP)
     ]
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         resources.extend([

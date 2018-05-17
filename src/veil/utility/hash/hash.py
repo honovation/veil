@@ -16,7 +16,7 @@ _hash_salt = None
 
 @composite_installer
 def hash_resource(salt):
-    return [file_resource(path=VEIL_ETC_DIR / 'hash.cfg', content='salt={}'.format(salt))]
+    return [file_resource(path=VEIL_ETC_DIR / 'hash.cfg', content='salt={}'.format(salt), owner=CURRENT_USER, group=CURRENT_USER_GROUP)]
 
 
 def get_hash_salt():
