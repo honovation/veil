@@ -84,7 +84,7 @@ def veil_container_onetime_config_resource(server):
                                      owner_group='root', mode=0755),
         veil_container_file_resource(local_path=CURRENT_DIR / 'persist-iptables.service', server=server,
                                      remote_path='/lib/systemd/system/persist-iptables.service', owner='root', owner_group='root', mode=0755,
-                                     cmd='systemctl daemon-reload'),
+                                     cmd='systemctl daemon-reload && systemctl enable persist-iptables.service && systemctl start persist-iptables.service'),
         veil_container_init_resource(server=server)
     ]
     return resources
