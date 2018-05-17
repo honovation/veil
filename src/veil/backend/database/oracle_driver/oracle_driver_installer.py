@@ -4,7 +4,7 @@ from veil.profile.installer import *
 
 
 ORACLE_HOME = DEPENDENCY_INSTALL_DIR / 'instantclient_12_2'
-ORACLE_DRIVER_CONF_PATH = '/etc/ld.so.conf.d/oracle_driver.conf'
+ORACLE_DRIVER_CONF_PATH = as_path('/etc/ld.so.conf.d/oracle_driver.conf')
 RESOURCE_KEY = 'veil.backend.database.oracle_driver.oracle_driver_resource'
 RESOURCE_VERSION = '12.2.0.1.0'
 
@@ -50,10 +50,7 @@ def download_oracle_instantclient():
 
 
 def is_oracle_instantclient_installed():
-    if not os.path.exists(ORACLE_DRIVER_CONF_PATH):
-        return False
-    with open(ORACLE_DRIVER_CONF_PATH, 'rb') as f:
-        return ORACLE_HOME == f.read()
+    return ORACLE_DRIVER_CONF_PATH.exists() and ORACLE_DRIVER_CONF_PATH.text() == ORACLE_HOME
 
 
 def install_oracle_instantclient():
