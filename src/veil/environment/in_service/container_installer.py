@@ -52,12 +52,12 @@ def veil_container_lxc_resource(host, server):
             client = get_lxd_client()
             container = client.containers.get(server.container_name)
             container.start()
-        return
-    with contextlib.closing(StringIO(installer_file_content)) as f:
-        fabric.api.put(f, server.container_installer_path, use_sudo=True, mode=0600)
-    with fabric.api.cd(host.veil_home):
-        fabric.api.run('veil :{} install veil_installer.installer_resource?{}'.format(server.fullname, server.container_installer_path))
-    fabric.api.run('mv -f {} {}'.format(server.container_installer_path, server.installed_container_installer_path))
+    else:
+        with contextlib.closing(StringIO(installer_file_content)) as f:
+            fabric.api.put(f, server.container_installer_path, use_sudo=True, mode=0600)
+        with fabric.api.cd(host.veil_home):
+            fabric.api.run('veil :{} install veil_installer.installer_resource?{}'.format(server.fullname, server.container_installer_path))
+        fabric.api.run('mv -f {} {}'.format(server.container_installer_path, server.installed_container_installer_path))
     while 1:
         try:
             with fabric.api.settings(server.deploys_via):
