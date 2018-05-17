@@ -6,7 +6,6 @@ from veil.frontend.nginx_setting import NGINX_PID_PATH
 @composite_installer
 def nginx_resource(servers, config):
     resources = [
-        os_ppa_repository_resource(name='nginx/stable'),
         os_package_resource(name='nginx-extras'),
         os_service_auto_starting_resource(name='nginx', state='not_installed'),
         directory_resource(path=VEIL_LOG_DIR / 'nginx', owner=CURRENT_USER, group=CURRENT_USER_GROUP),
