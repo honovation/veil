@@ -79,7 +79,7 @@ def install_zhparser(reinstall):
     download_zhparser()
     if reinstall and is_zhparser_installed():
         shell_execute('SCWS_HOME=/usr/local make clean', cwd=ZHPARSER_HOME)
-    shell_execute('SCWS_HOME=/usr/local make && make install', cwd=ZHPARSER_HOME)
+    shell_execute('SCWS_HOME=/usr/local make && sudo make install', cwd=ZHPARSER_HOME)
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         set_resource_latest_version(ZHPARSER_RESOURCE_KEY, ZHPARSER_RESOURCE_VERSION)
 
