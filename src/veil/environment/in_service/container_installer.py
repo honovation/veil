@@ -89,8 +89,7 @@ def veil_container_onetime_config_resource(server):
 
 @composite_installer
 def veil_container_config_resource(server):
-    env_config_dir = server.config_dir / server.VEIL_ENV.name
-    server_config_dir = env_config_dir / 'servers' / server.name
+    server_config_dir = server.env_config_dir / 'servers' / server.name
     resources = [
         veil_server_default_setting_resource(server=server),
         veil_server_boot_script_resource(server=server),
@@ -98,10 +97,10 @@ def veil_container_config_resource(server):
                                      owner_group='root', mode=0644)
     ]
     if 'guard' == server.name:
-        resources.append(veil_container_file_resource(local_path=env_config_dir / '.ssh-guard' / 'id_rsa', server=server, remote_path='/etc/ssh/id_rsa-guard',
-                                                      owner='root', owner_group='root', mode=0600))
+        resources.append(veil_container_file_resource(local_path=server.env_config_dir / '.ssh-guard' / 'id_rsa', server=server,
+                                                      remote_path='/etc/ssh/id_rsa-guard', owner='root', owner_group='root', mode=0600))
     if 'barman' == server.name:
-        resources.append(veil_container_file_resource(local_path=env_config_dir / '.ssh-guard' / 'id_rsa', server=server,
+        resources.append(veil_container_file_resource(local_path=server.env_config_dir / '.ssh-guard' / 'id_rsa', server=server,
                                                       remote_path='/etc/ssh/id_rsa-barman'.format(server.ssh_user),
                                                       owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
     for local_path in server_config_dir.files('*.crt'):
