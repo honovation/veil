@@ -203,7 +203,7 @@ def patch_env(veil_env_name, config_dir):
     print(cyan('Pull codebase ...'))
     install_resource(veil_hosts_codebase_resource(veil_env_name=veil_env_name))
     servers = list_veil_servers(veil_env_name, include_guard_server=False, include_monitor_server=False, include_barman_server=False)
-    server_names = [server.name for server in servers]
+    server_names = []
     for i, server in enumerate(servers):
         servers[i] = set_env_config_dir(server, as_path(config_dir) / veil_env_name)
         server_names.append(server.name)
