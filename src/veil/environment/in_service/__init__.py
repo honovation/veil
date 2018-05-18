@@ -22,6 +22,7 @@ with veil_component.init_component(__name__):
     from .container_installer import veil_server_boot_script_resource
     from .container_installer import veil_server_default_setting_resource
     from .container_installer import veil_container_file_resource
+    from .container_installer import veil_container_sources_list_resource
     from .server_installer import veil_servers_resource
     from .server_installer import veil_server_resource
     from .server_installer import is_server_running
@@ -52,6 +53,7 @@ with veil_component.init_component(__name__):
         veil_server_boot_script_resource.__name__,
         veil_server_default_setting_resource.__name__,
         veil_container_file_resource.__name__,
+        veil_container_sources_list_resource.__name__,
         # from server_installer
         veil_servers_resource.__name__,
         veil_server_resource.__name__,
