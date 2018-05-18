@@ -111,8 +111,6 @@ def veil_host_onetime_config_resource(host):
         return []
 
     resources = [
-        veil_host_directory_resource(host=host, remote_path='/etc/networkd-dispatcher/routable.d'),
-        veil_host_directory_resource(host=host, remote_path='/etc/networkd-dispatcher/off.d'),
         veil_host_file_resource(local_path=CURRENT_DIR / 'iptablesload', host=host, remote_path='/usr/local/bin/iptablesload', owner='root', owner_group='root',
                                 mode=0755),
         veil_host_file_resource(local_path=CURRENT_DIR / 'iptablessave', host=host, remote_path='/usr/local/bin/iptablessave', owner='root', owner_group='root',
@@ -126,7 +124,6 @@ def veil_host_onetime_config_resource(host):
                                 owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
         veil_host_file_resource(local_path=CURRENT_DIR / 'disable-ipv6.conf', host=host, remote_path='/etc/sysctl.d/60-disable-ipv6.conf',
                                 owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-disable-ipv6.conf'),
-        veil_host_sources_list_resource(host=host),
         veil_host_directory_resource(host=host, remote_path=host.opt_dir),
         veil_host_directory_resource(host=host, remote_path=host.share_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
         veil_host_directory_resource(host=host, remote_path=DEPENDENCY_DIR, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
