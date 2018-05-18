@@ -105,6 +105,8 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
     if cpus:
         container_config.config['limits.cpu'] = cpus
     if cpu_share:
+        if not str(cpu_share).endswith('%'):
+            cpu_share = '{}%'.format(cpu_share)
         container_config.config['limits.cpu.allowance'] = cpu_share
     if memory_limit:
         if not memory_limit.endswith('B'):
