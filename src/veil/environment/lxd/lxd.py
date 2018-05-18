@@ -91,4 +91,6 @@ class LXDClient(object):
             'stderr': result.stderr,
             'exit_code': result.exit_code,
         })
-        return result
+        if result.exit_code != 0:
+            raise Exception('Failed run command in container: {}, {}, {}'.format(container_name, command, result.stderr))
+        return result.stdout
