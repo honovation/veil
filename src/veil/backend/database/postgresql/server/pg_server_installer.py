@@ -28,7 +28,7 @@ def postgresql_server_resource(purpose, config):
         os_package_resource(name='postgresql-{}'.format(config.version)),
         os_service_auto_starting_resource(name='postgresql', state='not_installed'),
         postgresql_cluster_resource(purpose=purpose, version=config.version, owner=config.owner, owner_password=config.owner_password),
-        directory_resource(path=pg_config_dir),
+        directory_resource(path=pg_config_dir, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         file_resource(
             path=pg_config_dir / 'postgresql.conf',
             content=render_config('postgresql.conf.j2', config={
