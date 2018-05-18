@@ -107,6 +107,8 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
     if cpu_share:
         container_config.config['limits.cpu.allowance'] = cpu_share
     if memory_limit:
+        if not memory_limit.endswith('B'):
+            memory_limit = '{}B'.format(memory_limit)
         container_config.config['limits.memory'] = memory_limit
 
     if editorial_dir:
