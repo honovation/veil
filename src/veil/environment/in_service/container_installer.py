@@ -87,6 +87,22 @@ def veil_container_onetime_config_resource(server):
     return resources
 
 
+@atomic_installer
+def veil_container_sources_list_resource(server):
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        key = 'veil_container_sources_list?{}'.format(server.name)
+        dry_run_result[key] = 'INSTALL'
+        return
+    client = LXDClient(config_dir=server.env_config_dir)
+    sources_list_path = '/etc/apt/sources.list'
+    client.run_container_command(server.container_name, 'cp -pn {path} {path}.origin'.format(path=sources_list_path))
+    codename = client.run_container_command(server.container_name, 'lsb_release -cs').stdout
+    sources_list_content = render_config(CURRENT_DIR / 'sources.list.j2', mirror=server.apt_url, codename=codename)
+    client.put_container_file(server.container_name, sources_list_path, sources_list_content)
+    client.run_container_command(server.container_name, 'chown root:root {}'.format(sources_list_path))
+
+
 @composite_installer
 def veil_container_config_resource(server):
     server_config_dir = server.env_config_dir / 'servers' / server.name
@@ -94,7 +110,8 @@ def veil_container_config_resource(server):
         veil_server_default_setting_resource(server=server),
         veil_server_boot_script_resource(server=server),
         veil_container_file_resource(local_path=CURRENT_DIR / 'apt-config', server=server, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config', owner='root',
-                                     owner_group='root', mode=0644)
+                                     owner_group='root', mode=0644),
+        veil_container_sources_list_resource(server=server)
     ]
     if 'guard' == server.name:
         resources.append(veil_container_file_resource(local_path=server.env_config_dir / '.ssh-guard' / 'id_rsa', server=server,
