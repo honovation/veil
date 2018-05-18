@@ -41,7 +41,7 @@ def patch():
     for program_name, program in current_veil_server.programs.items():
         if program.get('patchable'):
             program_name = '{}:{}'.format(program['group'], program_name) if program.get('group') else program_name
-            thread = threading.Thread(target=functools.partial(shell_execute, 'sudo veil server supervisor restart-program {}'.format(program_name)))
+            thread = threading.Thread(target=functools.partial(shell_execute, 'sudo -E veil server supervisor restart-program {}'.format(program_name)))
             threads.append(thread)
     for thread in threads:
         thread.start()
