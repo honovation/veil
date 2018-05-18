@@ -97,7 +97,7 @@ def veil_container_sources_list_resource(server):
     client = LXDClient(config_dir=server.env_config_dir)
     sources_list_path = '/etc/apt/sources.list'
     client.run_container_command(server.container_name, 'cp -pn {path} {path}.origin'.format(path=sources_list_path))
-    codename = client.run_container_command(server.container_name, 'lsb_release -cs')
+    codename = client.run_container_command(server.container_name, 'lsb_release -cs').strip()
     sources_list_content = render_config(CURRENT_DIR / 'sources.list.j2', mirror=server.apt_url, codename=codename)
     client.put_container_file(server.container_name, sources_list_path, sources_list_content)
     client.run_container_command(server.container_name, 'chown root:root {}'.format(sources_list_path))
