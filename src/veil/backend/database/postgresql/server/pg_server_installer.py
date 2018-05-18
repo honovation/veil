@@ -184,7 +184,7 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
     shell_execute('chmod 0777 {}'.format(pg_data_dir.parent), capture=True)
     install_resource(file_resource(path='/tmp/pg-{}-owner-password'.format(purpose), content=owner_password, owner=CURRENT_USER, group=CURRENT_USER_GROUP))
     try:
-        shell_execute('usermod -a -G postgres {}'.format(CURRENT_USER))
+        shell_execute('sudo usermod -a -G postgres {}'.format(CURRENT_USER))
         shell_execute(
             'su {pg_data_owner_on_os} -c "{pg_bin_dir}/initdb -E UTF-8 --locale=zh_CN.UTF-8 --lc-collate=C --lc-ctype=C -A md5 -U {pg_data_owner} --pwfile=/tmp/pg-{purpose}-owner-password {pg_data_dir}"'.format(
                 pg_data_owner=owner, pg_bin_dir=get_pg_bin_dir(version), pg_data_dir=pg_data_dir, purpose=purpose,
