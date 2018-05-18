@@ -55,7 +55,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
     first_round_servers = []
     second_round_servers = []
     for server in list_veil_servers(veil_env_name):
-        server.env_config_dir = env_config_dir
+        server = set_env_config_dir(server, env_config_dir)
         if server.name not in ('guard', 'monitor', 'barman'):
             first_round_servers.append(server)
         else:
@@ -137,11 +137,10 @@ def download_packages(veil_env_name, env_config_dir):
                     fabric.api.sudo('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x')
                 try:
                     for server in host.server_list:
-                        server.env_config_dir = env_config_dir
+                        server = set_env_config_dir(server, env_config_dir)
                         print(cyan('Download packages for server {} ...'.format(server.name)))
                         if not fabric.contrib.files.exists(server.deployed_tag_path):
-                            print(yellow('Skipped downloading packages for server {} as it is not successfully deployed'.format(
-                                server.container_name)))
+                            print(yellow('Skipped downloading packages for server {} as it is not successfully deployed'.format(server.container_name)))
                             continue
                         if not is_container_running(server):
                             print(yellow('Skipped downloading packages for server {} as its container is not running'.format(server.container_name)))
@@ -179,10 +178,8 @@ def deploy_server(veil_env_name, config_dir, veil_server_name):
 
 def _deploy_server(veil_env_name, config_dir, veil_server_name):
     env_config_dir = config_dir / veil_env_name
-    server = get_veil_server(veil_env_name, veil_server_name)
-    server.env_config_dir = env_config_dir
-    host = get_veil_host(veil_env_name, server.host_name)
-    host.env_config_dir = env_config_dir
+    server = set_env_config_dir(get_veil_server(veil_env_name, veil_server_name), env_config_dir)
+    host = set_env_config_dir(get_veil_host(veil_env_name, server.host_name), env_config_dir)
     with fabric.api.settings(host_string=host.deploys_via):
         if not fabric.contrib.files.exists(server.deployed_tag_path):
             print(yellow('Use deploy-env to deploy {} first time'.format(veil_server_name)))
@@ -207,9 +204,9 @@ def patch_env(veil_env_name, config_dir):
     install_resource(veil_hosts_codebase_resource(veil_env_name=veil_env_name))
     servers = list_veil_servers(veil_env_name, include_guard_server=False, include_monitor_server=False, include_barman_server=False)
     server_names = [server.name for server in servers]
-    for server in servers:
+    for i, server in enumerate(servers):
+        servers[i] = set_env_config_dir(server, as_path(config_dir) / veil_env_name)
         server_names.append(server.name)
-        server.env_config_dir = as_path(config_dir) / veil_env_name
     print(cyan('Patch servers {} ...'.format(server_names[::-1])))
     install_resource(veil_servers_resource(servers=servers[::-1], action='PATCH'))
 
@@ -239,7 +236,7 @@ def rollback_env(veil_env_name, config_dir):
     hosts = []
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
         if is_rollbackable(host):
-            host.env_config_dir = as_path(config_dir) / veil_env_name
+            host = set_env_config_dir(host, as_path(config_dir) / veil_env_name)
             hosts.append(host)
     if hosts:
         stop_env(veil_env_name, config_dir, include_guard_server=True, include_monitor_server=False, include_barman_server=False)
@@ -320,7 +317,7 @@ def stop_env(veil_env_name, config_dir, include_guard_server=True, include_monit
                                     include_barman_server=include_barman_server):
         if exclude_server_names and server.name in exclude_server_names:
             continue
-        server.env_config_dir = as_path(config_dir) / veil_env_name
+        server = set_env_config_dir(server, as_path(config_dir) / veil_env_name)
         servers.append(server)
     stop_servers(servers, stop_container=True)
 
@@ -352,9 +349,9 @@ def start_env(veil_env_name, config_dir, disable_external_access_='FALSE', *excl
     for server in reversed(list_veil_servers(veil_env_name)):
         if server.name in exclude_server_names:
             continue
-        server.env_config_dir = as_path(config_dir) / veil_env_name
+        server = set_env_config_dir(server, as_path(config_dir) / veil_env_name)
         host = get_veil_host(server.VEIL_ENV.name, server.host_name)
-        host.env_config_dir = as_path(config_dir) / veil_env_name
+        host = set_env_config_dir(host, as_path(config_dir) / veil_env_name)
         with fabric.api.settings(host_string=host.deploys_via):
             if not fabric.contrib.files.exists(server.deployed_tag_path):
                 print(yellow('Skipped starting server {} as it is not successfully deployed'.format(server.container_name)))

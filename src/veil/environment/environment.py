@@ -5,6 +5,8 @@ import os
 import re
 from urlparse import urlparse
 import operator
+
+from veil.model.collection import *
 from veil_component import *
 from veil.server.os import *
 
@@ -310,3 +312,9 @@ def get_application_version():
 def get_veil_framework_version():
     from veil.utility.shell import shell_execute
     return shell_execute('git rev-parse HEAD', cwd=VEIL_FRAMEWORK_HOME, capture=True)
+
+
+def set_env_config_dir(obj, env_config_dir):
+    unfrozen_obj = unfreeze_dict_object(obj)
+    unfrozen_obj.env_config_dir = env_config_dir
+    return freeze_dict_object(unfrozen_obj)

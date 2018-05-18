@@ -26,7 +26,7 @@ def veil_hosts_resource(veil_env_name, env_config_dir):
     resources = []
     hosts = list_veil_hosts(veil_env_name)
     for host in hosts:
-        host.env_config_dir = env_config_dir
+        host = set_env_config_dir(host, env_config_dir)
         fabric.api.env.user = host.ssh_user
         fabric.api.env.host_string = host.deploys_via
         if is_initialized_for_another_same_base_instance(host):
@@ -51,7 +51,7 @@ def veil_hosts_resource(veil_env_name, env_config_dir):
             resources.append(veil_host_iptables_rules_resource(host=host))
             hosts_to_install.append(host.base_name)
         for server in host.server_list:
-            server.env_config_dir = env_config_dir
+            server = set_env_config_dir(server, env_config_dir)
             resources.extend([
                 veil_host_directory_resource(host=host, remote_path=server.etc_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
                 veil_host_directory_resource(host=host, remote_path=server.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
