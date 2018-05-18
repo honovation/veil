@@ -39,8 +39,7 @@ def veil_server_resource(server, action='PATCH', start_after_deploy=True):
 
 
 def is_container_running(server):
-    client = get_lxd_client()
-    return client.containers.get(server.container_name).status_code == 103
+    return LXDClient(config_dir=server.env_config_dir).get_container(server.container_name).status_code == 103
 
 
 def is_server_running(server, on_host=True):

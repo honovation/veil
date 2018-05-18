@@ -14,7 +14,7 @@ def get_idmap():
 @atomic_installer
 def lxc_container_resource(container_name, hostname, timezone, user_name, ip_address, gateway, name_servers, start_order, memory_limit=None, cpus=None,
                            cpu_share=None, idmap=None, etc_dir=None, log_dir=None, editorial_dir=None, buckets_dir=None, data_dir=None):
-    client = get_lxd_client(local=True)
+    client = LXDClient(local=True).client
     installed = client.containers.exists(container_name)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
@@ -132,8 +132,8 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
 
 @atomic_installer
 def lxc_container_in_service_resource(container_name, restart_if_running=False):
-    client = get_lxd_client(local=True)
-    running = client.containers.get(container_name).status_code == 103
+    container = LXDClient(local=True).get_container(container_name)
+    running = container.status_code == 103
     if running:
         action = 'RESTART' if restart_if_running else None
     else:
@@ -146,7 +146,7 @@ def lxc_container_in_service_resource(container_name, restart_if_running=False):
         return
     if running:
         LOGGER.info('reboot lxc container: %(container_name)s ...', {'container_name': container_name})
-        client.containers.get(container_name).restart()
+        container.restart()
     else:
         LOGGER.info('start lxc container: %(container_name)s ...', {'container_name': container_name})
-        client.containers.get(container_name).start()
+        container.start()

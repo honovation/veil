@@ -22,10 +22,11 @@ sources_list_installed = []
 
 
 @composite_installer
-def veil_hosts_resource(veil_env_name, config_dir):
+def veil_hosts_resource(veil_env_name, env_config_dir):
     resources = []
     hosts = list_veil_hosts(veil_env_name)
     for host in hosts:
+        host.env_config_dir = env_config_dir
         fabric.api.env.user = host.ssh_user
         fabric.api.env.host_string = host.deploys_via
         if is_initialized_for_another_same_base_instance(host):
@@ -35,11 +36,11 @@ def veil_hosts_resource(veil_env_name, config_dir):
         if host.base_name not in hosts_to_install:
             resources.extend([
                 veil_host_onetime_config_resource(host=host),
-                veil_host_config_resource(host=host, config_dir=config_dir),
-                veil_host_application_config_resource(host=host, config_dir=config_dir),
+                veil_host_config_resource(host=host),
+                veil_host_application_config_resource(host=host),
                 veil_host_codebase_resource(host=host)
             ])
-            host_users_dir = as_path(config_dir / host.VEIL_ENV.name / 'hosts' / host.base_name / 'USERS')
+            host_users_dir = env_config_dir / 'hosts' / host.base_name / 'USERS'
             if host_users_dir.exists():
                 print(cyan('Install Veil host users resource'))
                 for user_dir in host_users_dir.dirs():
@@ -50,10 +51,11 @@ def veil_hosts_resource(veil_env_name, config_dir):
             resources.append(veil_host_iptables_rules_resource(host=host))
             hosts_to_install.append(host.base_name)
         for server in host.server_list:
+            server.env_config_dir = env_config_dir
             resources.extend([
                 veil_host_directory_resource(host=host, remote_path=server.etc_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
                 veil_host_directory_resource(host=host, remote_path=server.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
-                veil_container_resource(host=host, server=server, config_dir=config_dir)
+                veil_container_resource(host=host, server=server)
             ])
     return resources
 
@@ -143,12 +145,11 @@ def veil_host_onetime_config_resource(host):
 
 
 @composite_installer
-def veil_host_config_resource(host, config_dir):
-    env_config_dir = config_dir / host.VEIL_ENV.name
+def veil_host_config_resource(host):
     resources = [
         veil_host_directory_resource(host=host, remote_path='/home/{}/.ssh'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group,
                                      mode=0700),
-        veil_host_file_resource(local_path=env_config_dir / '.ssh' / 'authorized_keys', host=host,
+        veil_host_file_resource(local_path=host.env_config_dir / '.ssh' / 'authorized_keys', host=host,
                                 remote_path='/home/{}/.ssh/authorized_keys'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group,
                                 mode=0600),
         veil_host_file_resource(local_path=CURRENT_DIR / 'apt-config', host=host, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config', owner='root',
@@ -160,8 +161,8 @@ def veil_host_config_resource(host, config_dir):
     if 'guard' in servers:
         resources.extend([
             veil_host_directory_resource(host=host, remote_path='/root/.ssh', owner='root', owner_group='root', mode=0700),
-            veil_host_file_resource(local_path=env_config_dir / '.ssh-guard' / 'id_rsa.pub', host=host, remote_path='/root/.ssh/authorized_keys', owner='root',
-                                    owner_group='root', mode=0600),
+            veil_host_file_resource(local_path=host.env_config_dir / '.ssh-guard' / 'id_rsa.pub', host=host, remote_path='/root/.ssh/authorized_keys',
+                                    owner='root', owner_group='root', mode=0600),
             veil_host_file_resource(local_path=CURRENT_DIR / 'max-user-watches.conf', host=host, remote_path='/etc/sysctl.d/60-max-user-watches.conf',
                                     owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-max-user-watches.conf'),
         ])
@@ -174,12 +175,11 @@ def veil_host_config_resource(host, config_dir):
 
 
 @composite_installer
-def veil_host_application_config_resource(host, config_dir):
-    env_config_dir = config_dir / host.VEIL_ENV.name
-    if not (env_config_dir / '.config').exists():
+def veil_host_application_config_resource(host):
+    if not (host.env_config_dir / '.config').exists():
         return []
     return [
-        veil_host_file_resource(local_path=env_config_dir / '.config', host=host, remote_path=host.code_dir / '.config', owner=host.ssh_user,
+        veil_host_file_resource(local_path=host.env_config_dir / '.config', host=host, remote_path=host.code_dir / '.config', owner=host.ssh_user,
                                 owner_group=host.ssh_user_group, mode=0600)
     ]
 
