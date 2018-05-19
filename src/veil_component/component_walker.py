@@ -111,6 +111,34 @@ def find_module_loader_without_import(module_name):
         return None
 
 
+def get_top_veil_component_name(module_name):
+    """
+    get top veil component name from module name
+
+    A is normal module
+    A.B is veil component
+    A.B.C is veil component and is sub veil component of A.B
+    the top veil component of A.B.C is A.B
+
+    :param module_name:
+    :return: top veil component name | None
+    """
+    if '.' not in module_name:
+        loader = find_module_loader_without_import(module_name)
+        if not loader:
+            return None
+        return module_name if is_component(loader.get_source()) else None
+    parts = module_name.split('.')
+    for i in range(len(parts)):
+        candidate_module_name = '.'.join(parts[:i + 1])
+        loader = find_module_loader_without_import(candidate_module_name)
+        if not loader:
+            continue
+        if is_component(loader.get_source()):
+            return candidate_module_name
+    return None
+
+
 class InvalidComponentException(Exception):
     pass
 

@@ -18,6 +18,7 @@ from .component_map import get_leaf_component
 from .component_map import list_all_components
 from .component_map import load_all_components
 from .component_walker import find_module_loader_without_import
+from .component_walker import get_top_veil_component_name
 from .component_logging import configure_logging
 from .dynamic_dependency import start_recording_dynamic_dependencies
 from .dynamic_dependency import is_recording_dynamic_dependencies
