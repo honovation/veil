@@ -50,10 +50,11 @@ def composite_installer(func):
 
 @atomic_installer
 def application_resource(component_names, config):
+    top_component_names = set(veil_component.get_top_veil_component_name(component_name) for component_name in component_names)
     global application_sub_resources
     try:
         application_sub_resources = {}
-        component_resources = [('veil_installer.component_resource', dict(name=name)) for name in component_names]
+        component_resources = [('veil_installer.component_resource', dict(name=name)) for name in top_component_names]
         install_resources(component_resources)
         for component_name in component_names:
             try:
