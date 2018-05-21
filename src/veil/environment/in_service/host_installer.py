@@ -409,7 +409,7 @@ def veil_host_user_editor_additional_resource(host):
 
     if not fabric.contrib.files.exists(host.editorial_dir, use_sudo=True):
         # user `editor` creation is done by veil_host_user_resource
-        fabric.api.sudo('mkdir -p -m 0755 {}'.format(host.editorial_dir))
+        fabric.api.run('mkdir -p -m 0755 {}'.format(host.editorial_dir))
         fabric.api.sudo('chown -R editor:editor {}'.format(host.editorial_dir))
 
     if installed:
