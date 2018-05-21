@@ -160,6 +160,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
             server.log_dir = host.log_dir / server.name
             server.editorial_dir = host.editorial_dir if server.mount_editorial_dir else None
             server.buckets_dir = host.buckets_dir if server.mount_buckets_dir else None
+            server.var_dir = host.var_dir if server.mount_data_dir or server.mount_editorial_dir or server.mount_buckets_dir else None
             server.data_dir = host.data_dir if server.mount_data_dir else None
             host.with_user_editor = host.with_user_editor or server.mount_editorial_dir
             host.server_list.append(server)
