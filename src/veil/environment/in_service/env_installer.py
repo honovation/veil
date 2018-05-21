@@ -134,7 +134,13 @@ def download_packages(veil_env_name, env_config_dir):
         with fabric.api.settings(host_string=host.deploys_via):
             with fabric.api.cd(host.veil_home):
                 with fabric.api.settings(forward_agent=True):
-                    fabric.api.sudo('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x')
+                    while True:
+                        try:
+                            fabric.api.run('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x')
+                        except Exception as e:
+                            print(red('Git archive failed, retry: {}'.format(e.message)))
+                        else:
+                            break
                 try:
                     for server in host.server_list:
                         server = set_env_config_dir(server, env_config_dir)
@@ -147,9 +153,9 @@ def download_packages(veil_env_name, env_config_dir):
                             continue
                         with fabric.api.settings(host_string=server.deploys_via):
                             with fabric.api.cd(server.veil_home):
-                                fabric.api.sudo('veil :{} install-server --download-only'.format(server.fullname))
+                                fabric.api.run('veil :{} install-server --download-only'.format(server.fullname))
                 finally:
-                    fabric.api.sudo('git checkout -- RESOURCE-LATEST-VERSION-*')
+                    fabric.api.run('git checkout -- RESOURCE-LATEST-VERSION-*')
 
 
 @script('deploy-monitor')
