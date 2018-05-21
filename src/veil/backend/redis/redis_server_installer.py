@@ -31,7 +31,7 @@ def redis_server_source_code_resource(purpose, host, port, persisted_by_aof=Fals
 
     return [
         redis_server_os_source_code_resource(version=REDIS_SERVER_SOURCE_CODE_VERSION),
-        directory_resource(path=VEIL_DATA_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+        directory_resource(path=VEIL_DATA_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP, recursive=True),
         directory_resource(path=data_directory, owner=CURRENT_USER, group=CURRENT_USER_GROUP, mode=0770),
         file_resource(path=VEIL_ETC_DIR / '{}-redis.conf'.format(purpose.replace('_', '-')), content=render_config('redis-server.conf.j2', config=redis_config),
                       owner=CURRENT_USER, group=CURRENT_USER_GROUP)
