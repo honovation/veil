@@ -23,8 +23,8 @@ def elk_resource(config):
                       content=render_config('elasticsearch.yml.j2', elasticsearch_cluster=VEIL_ENV.name, **config), owner=CURRENT_USER,
                       group=CURRENT_USER_GROUP),
 
-        directory_resource(path=VEIL_ETC_DIR / 'logstash'),
-        directory_resource(path=VEIL_ETC_DIR / 'logstash/conf.d'),
+        directory_resource(path=VEIL_ETC_DIR / 'logstash', owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+        directory_resource(path=VEIL_ETC_DIR / 'logstash/conf.d', owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         os_package_resource(name='logstash'),
         file_resource(path=VEIL_ETC_DIR / 'logstash/log4j2.properties', content=render_config('ls_log4j2.properties'), owner=CURRENT_USER,
                       group=CURRENT_USER_GROUP),
