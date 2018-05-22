@@ -124,22 +124,24 @@ def upgrade_postgresql_cluster(purpose, old_version, new_version, owner, owner_p
         })
     else:
         LOGGER.warn('Upgrading postgresql server: %(old_version)s => %(new_version)s', {'old_version': old_version, 'new_version': new_version})
-    shell_execute('PGPASSWORD={PGPASSWORD} '
-                  '{new_bin_dir}/pg_upgrade '
-                  '{check_only} '
-                  '-v '
-                  '-j `nproc` '
-                  '-U {pg_data_owner} '
-                  '-b {old_bin_dir} '
-                  '-B {new_bin_dir} '
-                  '-d {old_data_dir} '
-                  '-D {new_data_dir} '
-                  '-o "-c config_file={old_data_dir}/postgresql.conf" '
-                  '-O "-c config_file={new_data_dir}/postgresql.conf"'.format(pg_data_owner=owner, PGPASSWORD=owner_password,
-                                                                              check_only='-c' if check_only else '', old_bin_dir=get_pg_bin_dir(old_version),
-                                                                              old_data_dir=get_pg_data_dir(purpose, old_version),
-                                                                              new_bin_dir=get_pg_bin_dir(new_version),
-                                                                              new_data_dir=get_pg_data_dir(purpose, new_version)), capture=True)
+    pg_upgrade_env = {'PGPASSWORD': owner_password}
+    pg_upgrade_command = (
+        '{new_bin_dir}/pg_upgrade '
+        '{check_only} '
+        '-v '
+        '-j `nproc` '
+        '-U {pg_data_owner} '
+        '-b {old_bin_dir} '
+        '-B {new_bin_dir} '
+        '-d {old_data_dir} '
+        '-D {new_data_dir} '
+        "-o '-c config_file={old_data_dir}/postgresql.conf' "
+        "-O '-c config_file={new_data_dir}/postgresql.conf'".format(pg_data_owner=owner, check_only='-c' if check_only else '',
+                                                                    old_bin_dir=get_pg_bin_dir(old_version), old_data_dir=get_pg_data_dir(purpose, old_version),
+                                                                    new_bin_dir=get_pg_bin_dir(new_version), new_data_dir=get_pg_data_dir(purpose, new_version))
+    )
+    shell_execute('su {pg_data_owner} -c "{pg_upgrade_command}"'.format(pg_data_owner=owner, pg_upgrade_command=pg_upgrade_command), env=pg_upgrade_env,
+                  capture=True)
 
 
 def vacuum_upgraded_postgresql_cluster(purpose, version, host, port, owner, owner_password):
@@ -191,18 +193,20 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
     old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.parent), capture=True)
     shell_execute('chmod 0777 {}'.format(pg_data_dir.parent), capture=True)
     install_resource(file_resource(path='/tmp/pg-{}-owner-password'.format(purpose), content=owner_password, owner=CURRENT_USER, group=CURRENT_USER_GROUP))
+    initdb_command = (
+        '{pg_bin_dir}/initdb '
+        '-E UTF-8 '
+        '--locale=zh_CN.UTF-8 '
+        '--lc-collate=C '
+        '--lc-ctype=C '
+        '-A md5 '
+        '-U {pg_data_owner} '
+        '--pwfile=/tmp/pg-{purpose}-owner-password '
+        '{pg_data_dir}'.format(pg_data_owner=owner, pg_bin_dir=get_pg_bin_dir(version), pg_data_dir=pg_data_dir, purpose=purpose)
+    )
     try:
         shell_execute('sudo usermod -a -G postgres {}'.format(CURRENT_USER))
-        shell_execute('sudo su {}'.format(CURRENT_USER))
-        shell_execute('{pg_bin_dir}/initdb '
-                      '-E UTF-8 '
-                      '--locale=zh_CN.UTF-8 '
-                      '--lc-collate=C '
-                      '--lc-ctype=C '
-                      '-A md5 '
-                      '-U {pg_data_owner} '
-                      '--pwfile=/tmp/pg-{purpose}-owner-password '
-                      '{pg_data_dir}'.format(pg_data_owner=owner, pg_bin_dir=get_pg_bin_dir(version), pg_data_dir=pg_data_dir, purpose=purpose), capture=True)
+        shell_execute('su {pg_data_owner} -c "{initdb_command}"'.format(pg_data_owner=owner, initdb_command=initdb_command), capture=True)
         shell_execute('mv postgresql.conf postgresql.conf.origin', cwd=pg_data_dir)
         shell_execute('mv pg_hba.conf pg_hba.conf.origin', cwd=pg_data_dir)
         shell_execute('mv pg_ident.conf pg_ident.conf.origin', cwd=pg_data_dir)
@@ -271,12 +275,12 @@ def postgresql_server_running(version, data_directory, owner):
     else:
         shell_execute('install -d -m 2775 -o postgres -g postgres /var/run/postgresql')
     pg_bin_dir = get_pg_bin_dir(version)
-    shell_execute('{}/pg_ctl -D {} start'.format(pg_bin_dir, data_directory))
+    shell_execute('su {} -c "{}/pg_ctl -D {} start"'.format(owner, pg_bin_dir, data_directory))
     time.sleep(5)
     try:
         yield
     finally:
-        shell_execute('{}/pg_ctl -D {} stop'.format(pg_bin_dir, data_directory))
+        shell_execute('su {} -c "{}/pg_ctl -D {} stop"'.format(owner, pg_bin_dir, data_directory))
 
 
 _maintenance_config = {}
