@@ -20,7 +20,8 @@ def pgbarman_resource(config):
                                          pg_bin_path=config.pg_bin_path, barman_server_home=BARMAN_HOME / config.server_name)
     resources = [
         postgresql_apt_repository_resource(),
-        os_package_resource(name='barman'),
+        os_package_resource(name='barman', cmd_run_before_install='sudo mv /etc/barman.conf /etc/barman.conf.bak',
+                            cmd_run_after_install='sudo mv /etc/barman.conf.a /etc/barman.conf'),
         directory_resource(path=BARMAN_CONF_PATH, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         directory_resource(path=BARMAN_HOME, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         directory_resource(path=BARMAN_HOME / config.server_name, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
