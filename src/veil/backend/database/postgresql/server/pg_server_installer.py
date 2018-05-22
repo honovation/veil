@@ -193,6 +193,7 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
     install_resource(file_resource(path='/tmp/pg-{}-owner-password'.format(purpose), content=owner_password, owner=CURRENT_USER, group=CURRENT_USER_GROUP))
     try:
         shell_execute('sudo usermod -a -G postgres {}'.format(CURRENT_USER))
+        shell_execute('sudo su {}'.format(CURRENT_USER))
         shell_execute('{pg_bin_dir}/initdb '
                       '-E UTF-8 '
                       '--locale=zh_CN.UTF-8 '
