@@ -37,7 +37,7 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
         BASELINE_DIR.mkdir()
     
     if getpwuid(os.stat(BASELINE_DIR).st_uid).pw_name != CURRENT_USER or getgrgid(os.stat(BASELINE_DIR).st_gid).gr_name != CURRENT_USER_GROUP:
-        shell_execute('sudo chown {}:{} {}'.format(CURRENT_USER, CURRENT_USER_GROUP, BASELINE_DIR))
+        shell_execute('chown {}:{} {}'.format(CURRENT_USER, CURRENT_USER_GROUP, BASELINE_DIR))
 
     config = postgresql_maintenance_config(purpose)
     if not config:
@@ -67,15 +67,16 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
 
     print('found postgresql purposes: {}'.format(purpose))
     restored_to_path = VEIL_DATA_DIR / db_path_name
-    shell_execute('sudo veil down', debug=True)
+    is_local_env = VEIL_ENV.is_dev or VEIL_ENV.is_test
+    shell_execute('sudo veil down' if is_local_env else 'sudo systemctl stop veil-server.service', debug=True)
     shell_execute('rsync -avh --delete {}/ {}/'.format(local_db_baseline_path, restored_to_path), debug=True)
-    shell_execute('sudo veil install-server', debug=True)
+    shell_execute('veil install-server', debug=True)
 
     db_config_path = VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version)
-    shell_execute('sudo cp pg_hba.conf pg_hba.conf.ori', cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version))
-    shell_execute('printf "local all all trust\nhost all all 127.0.0.1/32 trust\n" |sudo tee pg_hba.conf', cwd=db_config_path, debug=True)
+    shell_execute('cp pg_hba.conf pg_hba.conf.ori', cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version))
+    shell_execute('printf "local all all trust\nhost all all 127.0.0.1/32 trust\n" | tee pg_hba.conf', cwd=db_config_path, debug=True)
 
-    shell_execute('sudo veil up --daemonize', debug=True)
+    shell_execute('sudo veil up --daemonize' if is_local_env else 'sudo systemctl start veil-server.service', debug=True)
 
     config.update(database_client_config(purpose))
     while True:
@@ -92,11 +93,11 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
             sleep(2)
         else:
             break
-    shell_execute('sudo mv pg_hba.conf.ori pg_hba.conf', cwd=db_config_path)
+    shell_execute('mv pg_hba.conf.ori pg_hba.conf', cwd=db_config_path)
 
     shell_execute('veil migrate', debug=True)
 
-    shell_execute('sudo veil down', debug=True)
+    shell_execute('sudo veil down' if is_local_env else 'sudo systemctl stop veil-server.service', debug=True)
 
 
 @script('restore-from-baseline')
