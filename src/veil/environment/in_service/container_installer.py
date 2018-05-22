@@ -81,7 +81,7 @@ def veil_container_onetime_config_resource(server):
                                      owner_group='root', mode=0755),
         veil_container_file_resource(local_path=CURRENT_DIR / 'persist-iptables.service', server=server,
                                      remote_path='/lib/systemd/system/persist-iptables.service', owner='root', owner_group='root', mode=0755,
-                                     cmd='systemctl daemon-reload && systemctl enable persist-iptables.service && systemctl start persist-iptables.service'),
+                                     cmds=('systemctl daemon-reload', 'systemctl enable persist-iptables.service', 'systemctl start persist-iptables.service')),
         veil_container_init_resource(server=server)
     ]
     return resources
@@ -178,7 +178,7 @@ def veil_container_init_resource(server):
 
 
 @atomic_installer
-def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False, cmd=None, file_content=None):
+def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False, cmds=None, file_content=None):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_container_file?{}&path={}'.format(server.container_name, remote_path)
@@ -196,8 +196,9 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
         content = file_content
     client.put_container_file(server.container_name, remote_path, content, mode=mode)
     client.run_container_command(server.container_name, 'chown {}:{} {}'.format(owner, owner_group, remote_path))
-    if cmd:
-        client.run_container_command(server.container_name, cmd)
+    if cmds:
+        for cmd in cmds:
+            client.run_container_command(server.container_name, cmd)
 
 
 @atomic_installer
