@@ -125,12 +125,6 @@ def veil_container_config_resource(server):
         resources.append(veil_container_file_resource(local_path=server.env_config_dir / '.ssh-guard' / 'id_rsa', server=server,
                                                       remote_path='/etc/ssh/id_rsa-barman'.format(server.ssh_user),
                                                       owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
-        resources.append(veil_container_file_resource(local_path='-', server=server, remote_path='/etc/cron.d/barman', owner='root', owner_group='root',
-                                                      mode=0644, file_content=render_config(CURRENT_DIR / 'pg_barman_cron.d.j2', barman_user=server.ssh_user)))
-        resources.append(veil_container_file_resource(local_path='-', server=server, remote_path='/etc/barman.conf', owner='root', owner_group='root',
-                                                      mode=0644, file_content=render_config(CURRENT_DIR / 'pg_barman.conf.j2', barman_user=server.ssh_user,
-                                                                                            server_conf_path=server.etc_dir / 'barman.d',
-                                                                                            barman_home=server.var_dir / 'barman', log_path=server.log_dir)))
     for local_path in server_config_dir.files('*.crt'):
         resources.append(
             veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/certs/{}'.format(local_path.name), owner=server.ssh_user,
