@@ -8,7 +8,7 @@ def redis_program(purpose, host, port, persisted_by_aof=False, snapshot_configs=
             'execute_command': 'redis-server {}'.format(VEIL_ETC_DIR / '{}-redis.conf'.format(purpose.replace('_', '-'))),
             'priority': 110,
             'stopwaitsecs': 60,
-            'resources': [('veil.backend.redis.redis_server_source_code_resource', {
+            'resources': [('veil.backend.redis.redis_server_resource', {
                 'purpose': purpose,
                 'host': host,
                 'port': port,
