@@ -21,7 +21,11 @@ def pgbarman_resource(config):
     resources = [
         postgresql_apt_repository_resource(),
         os_package_resource(name='barman'),
-        barman_conf_resource(),
+        file_resource(path='/tmp/barman.conf', content=render_config('pg_barman.conf.j2', barman_user=CURRENT_USER, server_conf_path=BARMAN_CONF_PATH,
+                                                                     barman_home=BARMAN_HOME, log_path=VEIL_LOG_DIR), owner=CURRENT_USER,
+                      group=CURRENT_USER_GROUP, cmd_run_after_updated='sudo mv /tmp/barman.conf /etc/barman.conf'),
+        file_resource(path='/tmp/barman', content=render_config('pg_barman_cron.d.j2', barman_user=CURRENT_USER), owner=CURRENT_USER, group=CURRENT_USER_GROUP,
+                      cmd_run_after_updated='sudo mv /tmp/barman /etc/cron.d/barman'),
         directory_resource(path=BARMAN_CONF_PATH, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         directory_resource(path=BARMAN_HOME, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         directory_resource(path=BARMAN_HOME / config.server_name, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
@@ -29,15 +33,6 @@ def pgbarman_resource(config):
     ]
 
     return resources
-
-
-@atomic_installer
-def barman_conf_resource():
-    barman_conf_content = render_config('pg_barman.conf.j2', barman_user=CURRENT_USER, server_conf_path=BARMAN_CONF_PATH, barman_home=BARMAN_HOME,
-                                        log_path=VEIL_LOG_DIR)
-    barman_cron_conf_content = render_config('pg_barman_cron.d.j2', barman_user=CURRENT_USER)
-    shell_execute('echo {} | sudo tee /etc/barman.conf'.format(barman_conf_content))
-    shell_execute('echo {} | sudo tee /etc/cron.d/barman'.format(barman_cron_conf_content))
 
 
 @script('barman-backup')

@@ -7,7 +7,6 @@ with veil_component.init_component(__name__):
     from .server.pg_server_installer import postgresql_maintenance_config
 
     from .server.pg_barman_installer import pgbarman_resource
-    from .server.pg_barman_installer import barman_conf_resource
 
     from .server.pg_fts_chinese import scws_resource
     from .server.pg_fts_chinese import zhparser_resource
@@ -20,7 +19,6 @@ with veil_component.init_component(__name__):
         postgresql_maintenance_config.__name__,
 
         pgbarman_resource.__name__,
-        barman_conf_resource.__name__,
 
         scws_resource.__name__,
         zhparser_resource.__name__,
