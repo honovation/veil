@@ -73,8 +73,8 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
     shell_execute('veil install-server', debug=True)
 
     db_config_path = VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version)
-    shell_execute('cp pg_hba.conf pg_hba.conf.ori', cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version))
-    shell_execute('printf "local all all trust\nhost all all 127.0.0.1/32 trust\n" | tee pg_hba.conf', cwd=db_config_path, debug=True)
+    shell_execute('sudo cp pg_hba.conf pg_hba.conf.ori', cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version))
+    shell_execute('printf "local all all trust\nhost all all all trust\n" |sudo tee pg_hba.conf', cwd=db_config_path, debug=True)
 
     shell_execute('sudo veil up --daemonize' if is_local_env else 'sudo systemctl start veil-server.service', debug=True)
 
