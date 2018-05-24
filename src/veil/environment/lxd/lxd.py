@@ -12,15 +12,16 @@ LOGGER = logging.getLogger(__name__)
 
 
 class LXDClient(object):
-    def __init__(self, local=False, config_dir=None):
+    def __init__(self, endpoint=None, local=False, config_dir=None):
         if local:
             self.client = pylxd.Client()
         else:
+            assert endpoint is not None, 'non local should provide endpoint'
             assert config_dir is not None, 'non local should provide config_dir'
             config_file = as_path(config_dir) / '.config'
-            config = load_config_from(config_file, 'lxd_endpoint', 'lxd_cert_path', 'lxd_trusted_password')
+            config = load_config_from(config_file, 'lxd_cert_path', 'lxd_trusted_password')
             cert = (os.path.expanduser('{}/lxd.crt'.format(config.lxd_cert_path)), os.path.expanduser('{}/lxd.key'.format(config.lxd_cert_path)))
-            self.client = pylxd.Client(endpoint=config.lxd_endpoint, cert=cert, verify=False, timeout=(3.05, 27))
+            self.client = pylxd.Client(endpoint=endpoint, cert=cert, verify=False, timeout=(3.05, 27))
             if not self.client.trusted:
                 self.client.authenticate(config.lxd_trusted_password)
         assert self.client.trusted
