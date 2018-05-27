@@ -49,7 +49,7 @@ def veil_container_lxc_resource(host, server):
         return
     if not action:
         if not is_container_running(server):
-            container = LXDClient(endpoint=server.host.lxd_endpoint, config_dir=server.env_config_dir).get_container(server.container_name)
+            container = LXDClient(endpoint=server.lxd_endpoint, config_dir=server.env_config_dir).get_container(server.container_name)
             container.start()
     else:
         with contextlib.closing(StringIO(installer_file_content)) as f:
@@ -99,7 +99,7 @@ def veil_container_sources_list_resource(server):
         key = 'veil_container_sources_list?{}'.format(server.name)
         dry_run_result[key] = 'INSTALL'
         return
-    client = LXDClient(endpoint=server.host.lxd_endpoint, config_dir=server.env_config_dir)
+    client = LXDClient(endpoint=server.lxd_endpoint, config_dir=server.env_config_dir)
     sources_list_path = '/etc/apt/sources.list'
     client.run_container_command(server.container_name, 'cp -pn {path} {path}.origin'.format(path=sources_list_path))
     codename = client.run_container_command(server.container_name, 'lsb_release -cs').strip()
@@ -183,7 +183,7 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
         key = 'veil_container_file?{}&path={}'.format(server.container_name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
-    client = LXDClient(endpoint=server.host.lxd_endpoint, config_dir=server.env_config_dir)
+    client = LXDClient(endpoint=server.lxd_endpoint, config_dir=server.env_config_dir)
     if keep_origin:
         client.run_container_command(server.container_name, 'cp -pn {path} {path}.origin'.format(path=remote_path))
     if not file_content:
@@ -203,7 +203,7 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
 @atomic_installer
 def veil_server_default_setting_resource(server):
     default_setting_path = '/etc/default/veil'
-    client = LXDClient(endpoint=server.host.lxd_endpoint, config_dir=server.env_config_dir)
+    client = LXDClient(endpoint=server.lxd_endpoint, config_dir=server.env_config_dir)
     remote_default_setting_content = client.get_container_file_content(server.container_name, default_setting_path)
     default_setting_content = render_veil_server_default_setting(server)
     if remote_default_setting_content:
@@ -224,7 +224,7 @@ def veil_server_default_setting_resource(server):
 @atomic_installer
 def veil_server_boot_script_resource(server):
     boot_script_path = '/lib/systemd/system/veil-server.service'
-    client = LXDClient(endpoint=server.host.lxd_endpoint, config_dir=server.env_config_dir)
+    client = LXDClient(endpoint=server.lxd_endpoint, config_dir=server.env_config_dir)
     remote_boot_script_content = client.get_container_file_content(server.container_name, boot_script_path)
     boot_script_content = render_config('veil-server.service.j2', veil_home=server.veil_home)
     if remote_boot_script_content:

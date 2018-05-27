@@ -339,7 +339,7 @@ def stop_servers(servers, stop_container=False):
                         fabric.api.sudo('systemctl stop veil-server.service')
                     time.sleep(1)
                 if stop_container:
-                    container = LXDClient(endpoint=server.host.lxd_endpoint, config_dir=server.env_config_dir).get_container(server.container_name)
+                    container = LXDClient(endpoint=server.lxd_endpoint, config_dir=server.env_config_dir).get_container(server.container_name)
                     container.stop()
 
 
@@ -369,7 +369,7 @@ def start_env(veil_env_name, config_dir, disable_external_access_='FALSE', *excl
                         fabric.api.sudo('systemctl start veil-server.service')
                     time.sleep(1)
             else:
-                container = LXDClient(endpoint=server.host.lxd_endpoint, config_dir=server.env_config_dir).get_container(server.container_name)
+                container = LXDClient(endpoint=server.lxd_endpoint, config_dir=server.env_config_dir).get_container(server.container_name)
                 container.start()
 
 

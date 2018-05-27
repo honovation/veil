@@ -147,6 +147,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
             if host.name != server.host_name:
                 continue
             server.host = host
+            server.lxd_endpoint = host.lxd_endpoint
             server.host_base_name = host.base_name
             server.ssh_user = host.ssh_user
             server.ssh_port = server.ssh_port or host.ssh_port
