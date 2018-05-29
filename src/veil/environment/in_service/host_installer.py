@@ -395,7 +395,7 @@ def veil_host_user_resource(host, user_dir):
         if user_ssh_dir.listdir():
             fabric.api.sudo('chmod 0600 /home/{}/.ssh/*'.format(username), user=username)
     if not installed:
-        fabric.api.run('touch {}'.format(initialized_file_path))
+        fabric.api.sudo('touch {}'.format(initialized_file_path))
 
 
 @atomic_installer
