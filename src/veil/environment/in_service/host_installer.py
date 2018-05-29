@@ -391,9 +391,9 @@ def veil_host_user_resource(host, user_dir):
     fabric.api.sudo('chown -R {username}:{username} /home/{username}/'.format(username=username))
     user_ssh_dir = user_dir / '.ssh'
     if user_ssh_dir.isdir():
-        fabric.api.sudo('chmod 0700 /home/{}/.ssh'.format(username))
+        fabric.api.sudo('chmod 0700 /home/{}/.ssh'.format(username), user=username)
         if user_ssh_dir.listdir():
-            fabric.api.sudo('chmod 0600 /home/{}/.ssh/*'.format(username))
+            fabric.api.sudo('chmod 0600 /home/{}/.ssh/*'.format(username), user=username)
     if not installed:
         fabric.api.run('touch {}'.format(initialized_file_path))
 
