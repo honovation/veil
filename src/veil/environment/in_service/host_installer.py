@@ -388,14 +388,14 @@ def veil_host_user_resource(host, user_dir):
             uid = (user_dir / 'id').text().strip()
             fabric.api.sudo('adduser --uid {uid} {username} --gecos {username} --disabled-login --shell /usr/sbin/nologin --quiet'.format(username=username, uid=uid))
     fabric.api.put(local_path=user_dir, remote_path='/home/', use_sudo=True, mode=0755)
+    fabric.api.sudo('chown -R {username}:{username} /home/{username}/'.format(username=username))
     user_ssh_dir = user_dir / '.ssh'
     if user_ssh_dir.isdir():
         fabric.api.sudo('chmod 0700 /home/{}/.ssh'.format(username))
         if user_ssh_dir.listdir():
             fabric.api.sudo('chmod 0600 /home/{}/.ssh/*'.format(username))
-    fabric.api.sudo('chown -R {username}:{username} /home/{username}/'.format(username=username))
     if not installed:
-        fabric.api.sudo('touch {}'.format(initialized_file_path))
+        fabric.api.run('touch {}'.format(initialized_file_path))
 
 
 @atomic_installer
