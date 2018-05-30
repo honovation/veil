@@ -99,7 +99,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
         },
         'source': {
             'type': 'image',
-            'alias': 'u1804'
+            'alias': LXD_IMAGE_ALIAS
         },
     })
     if cpus:

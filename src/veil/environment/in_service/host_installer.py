@@ -10,6 +10,7 @@ import fabric.contrib.files
 from veil_component import as_path, cyan
 from veil.environment import *
 from veil.environment.networking import *
+from veil.environment.lxd import *
 from veil.utility.misc import *
 from veil_installer import *
 from .container_installer import veil_container_resource, get_remote_file_content
@@ -37,6 +38,7 @@ def veil_hosts_resource(veil_env_name, env_config_dir):
             resources.extend([
                 veil_host_onetime_config_resource(host=host),
                 veil_host_lxd_user_mapping_resource(host=host),
+                veil_host_lxd_image_resource(host=host),
                 veil_host_config_resource(host=host),
                 veil_host_application_config_resource(host=host),
                 veil_host_codebase_resource(host=host)
@@ -85,6 +87,18 @@ def veil_host_lxd_user_mapping_resource(host):
     if ret.return_code == 1:
         lxd_group_mapping = fabric.api.run('echo root:$(id -g):1')
         fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
+
+
+@atomic_installer
+def veil_host_lxd_image_resource(host):
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        key = 'veil_host_lxd_image?{}&host={}'.format(host.VEIL_ENV.name, host.name)
+        dry_run_result[key] = 'INSTALL'
+        return
+    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=host.env_config_dir)
+    if not client.images.exists(LXD_IMAGE_FINGERPRINT):
+        fabric.api.run('lxc image copy {} local: --alias u1804'.format(LXD_IMAGE_FINGERPRINT))
 
 
 @composite_installer
