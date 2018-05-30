@@ -314,15 +314,14 @@ def veil_host_init_resource(host):
 
     if host.VEIL_ENV.name != host.VEIL_ENV.base_name:
         fabric.api.sudo('ln -sfT {} {}'.format(host.env_dir, host.env_dir.parent / host.VEIL_ENV.name))
-
-    fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no', 'PermitRootLogin without-password'], use_sudo=True)
+    fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no'], use_sudo=True)
     fabric.api.sudo('systemctl reload-or-restart ssh')
 
     fabric.api.sudo('apt update')
     fabric.api.sudo('apt -y upgrade')
     fabric.api.sudo('apt -y purge ntp whoopsie network-manager')
-    install_os_packages = ['apt-transport-https', 'unattended-upgrades', 'update-notifier-common', 'iptables', 'git', 'language-pack-en', 'unzip', 'wget',
-                           'python', 'python-dev', 'python-pip', 'python-virtualenv']
+    install_os_packages = ['unattended-upgrades', 'update-notifier-common', 'iptables', 'git', 'language-pack-en', 'unzip', 'wget', 'python', 'python-dev',
+                           'python-pip', 'python-virtualenv']
     fabric.api.sudo('apt -y install {}'.format(' '.join(install_os_packages)))
     fabric.api.sudo('timedatectl set-ntp true')
     with fabric.api.settings(sudo_prefix="sudo -H -S -p '%(sudo_prompt)s' "):

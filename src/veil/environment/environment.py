@@ -185,7 +185,10 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
 
 def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ssh_user='dejavu', sshd_config=(), iptables_rule_resources=(),
               timezone='Asia/Shanghai', external_service_ports=(), lxd_endpoint=None):
-    assert 'PermitRootLogin no' not in sshd_config, 'guard needs login host as root with certificate'
+    if sshd_config and 'PasswordAuthentication no' not in sshd_config:
+        raise AssertionError('password authentication should not be allowed on host')
+    if 'PermitRootLogin yes' in sshd_config or 'PermitRootLogin no' in sshd_config:
+        raise AssertionError('guard needs login host as root with certificate')
     from veil.model.collection import objectify
     internal_ip = '{}.1'.format(lan_range)
     return objectify({
