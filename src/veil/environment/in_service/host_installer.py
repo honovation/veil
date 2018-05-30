@@ -101,7 +101,6 @@ def veil_host_lxd_image_resource(host):
         image = client.images.get(LXD_IMAGE_FINGERPRINT)
         if LXD_IMAGE_ALIAS not in image.aliases:
             image.add_alias(LXD_IMAGE_ALIAS, 'default image')
-            image.save(wait=True)
     else:
         fabric.api.run('lxc image copy {} local: --alias u1804'.format(LXD_IMAGE_FINGERPRINT))
 
