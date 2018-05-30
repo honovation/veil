@@ -96,7 +96,7 @@ def veil_host_lxd_image_resource(host):
         key = 'veil_host_lxd_image?{}&host={}'.format(host.VEIL_ENV.name, host.name)
         dry_run_result[key] = 'INSTALL'
         return
-    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=host.env_config_dir)
+    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=host.env_config_dir).client
     if not client.images.exists(LXD_IMAGE_FINGERPRINT):
         fabric.api.run('lxc image copy {} local: --alias u1804'.format(LXD_IMAGE_FINGERPRINT))
 
