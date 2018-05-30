@@ -68,10 +68,23 @@ def veil_host_lxd_user_mapping_resource(host):
         key = 'veil_host_lxd_user_mapping?{}&host={}'.format(host.VEIL_ENV.name, host.name)
         dry_run_result[key] = 'INSTALL'
         return
-    fabric.api.sudo('grep -rl lxd:$UID:1 /etc/subuid || echo lxd:$UID:1 | sudo tee -a /etc/subuid', user=host.ssh_user)
-    fabric.api.sudo('grep -rl lxd:$(id -g):1 /etc/subgid || echo lxd:$(id -g):1 | sudo tee -a /etc/subgid', user=host.ssh_user)
-    fabric.api.sudo('grep -rl root:$UID:1 /etc/subuid || echo root:$UID:1 | sudo tee -a /etc/subuid', user=host.ssh_user)
-    fabric.api.sudo('grep -rl root:$(id -g):1 /etc/subgid || echo root:$(id -g):1 | sudo tee -a /etc/subgid', user=host.ssh_user)
+    ret = fabric.api.run('grep -rl lxd:$UID:1 /etc/subuid')
+    if ret.return_code == 1:
+        lxd_user_mapping = fabric.api.run('echo lxd:$UID:1')
+        fabric.api.sudo('echo {} >> /etc/subuid'.format(lxd_user_mapping))
+    ret = fabric.api.run('grep -rl lxd:$(id -g):1 /etc/subgid')
+    if ret.return_code == 1:
+        lxd_group_mapping = fabric.api.run('echo lxd:$(id -g):1')
+        fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
+
+    ret = fabric.api.run('grep -rl root:$UID:1 /etc/subuid')
+    if ret.return_code == 1:
+        lxd_user_mapping = fabric.api.run('echo root:$UID:1')
+        fabric.api.sudo('echo {} >> /etc/subuid'.format(lxd_user_mapping))
+    ret = fabric.api.run('grep -rl root:$(id -g):1 /etc/subgid')
+    if ret.return_code == 1:
+        lxd_group_mapping = fabric.api.run('echo root:$(id -g):1')
+        fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
 
 
 @composite_installer
