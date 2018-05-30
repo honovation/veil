@@ -36,6 +36,7 @@ def veil_hosts_resource(veil_env_name, env_config_dir):
         if host.base_name not in hosts_to_install:
             resources.extend([
                 veil_host_onetime_config_resource(host=host),
+                veil_host_lxd_user_mapping_resource(host=host),
                 veil_host_config_resource(host=host),
                 veil_host_application_config_resource(host=host),
                 veil_host_codebase_resource(host=host)
@@ -58,6 +59,19 @@ def veil_hosts_resource(veil_env_name, env_config_dir):
                 veil_container_resource(host=host, server=server)
             ])
     return resources
+
+
+@atomic_installer
+def veil_host_lxd_user_mapping_resource(host):
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        key = 'veil_host_lxd_user_mapping?{}&host={}'.format(host.VEIL_ENV.name, host.name)
+        dry_run_result[key] = 'INSTALL'
+        return
+    fabric.api.sudo('grep -rl lxd:$UID:1 /etc/subuid || echo lxd:$UID:1 | sudo tee -a /etc/subuid', user=CURRENT_USER)
+    fabric.api.sudo('grep -rl lxd:$(id -g):1 /etc/subgid || echo lxd:$(id -g):1 | sudo tee -a /etc/subgid', user=CURRENT_USER)
+    fabric.api.sudo('grep -rl root:$UID:1 /etc/subuid || echo root:$UID:1 | sudo tee -a /etc/subuid', user=CURRENT_USER)
+    fabric.api.sudo('grep -rl root:$(id -g):1 /etc/subgid || echo root:$(id -g):1 | sudo tee -a /etc/subgid', user=CURRENT_USER)
 
 
 @composite_installer
