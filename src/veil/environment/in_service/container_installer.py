@@ -135,8 +135,7 @@ def veil_container_init_resource(server):
 
     container_rootfs_path = '/var/lib/lxc/{}/rootfs'.format(server.container_name)
 
-    fabric.contrib.files.append('{}/etc/ssh/sshd_config'.format(container_rootfs_path), ['PasswordAuthentication no', 'PermitRootLogin no', 'UseDNS no'],
-                                use_sudo=True)
+    fabric.contrib.files.append('{}/etc/ssh/sshd_config'.format(container_rootfs_path), ['PasswordAuthentication no'], use_sudo=True)
     # fix error: Missing privilege separation directory: /var/run/sshd
     fabric.api.sudo('chroot {} mkdir /var/run/sshd'.format(container_rootfs_path), warn_only=True)
     fabric.api.sudo('chroot {} service ssh restart'.format(container_rootfs_path))
