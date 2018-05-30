@@ -16,6 +16,7 @@ with veil_component.init_component(__name__):
     from .host_installer import veil_host_user_editor_additional_resource
     from .host_installer import veil_host_lxd_user_mapping_resource
     from .host_installer import veil_host_lxd_image_resource
+    from .host_installer import veil_host_lxd_profile_resource
     from .container_installer import veil_container_resource
     from .container_installer import veil_container_lxc_resource
     from .container_installer import veil_container_onetime_config_resource
@@ -48,6 +49,7 @@ with veil_component.init_component(__name__):
         veil_host_user_editor_additional_resource.__name__,
         veil_host_lxd_user_mapping_resource.__name__,
         veil_host_lxd_image_resource.__name__,
+        veil_host_lxd_profile_resource.__name__,
         # from container_installer
         veil_container_resource.__name__,
         veil_container_lxc_resource.__name__,

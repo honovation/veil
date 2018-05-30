@@ -21,6 +21,15 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
         dry_run_result['lxc_container?{}'.format(container_name)] = '-' if installed else 'INSTALL'
         return
     if installed:
+        container = client.containers.get(container_name)
+        if container.profiles[0] != LXD_PROFILE_NAME:
+            new_profiles = [LXD_PROFILE_NAME]
+            LOGGER.info('change container profile: %(old_profiles)s, %(new_profiles)s', {
+                'old_profiles': container.profiles,
+                'new_profiles': new_profiles
+            })
+            container.profiles = new_profiles
+            container.save(wait=True)
         return
     LOGGER.info('create lxc container: %(container_name)s...', {'container_name': container_name})
     user_data = '''
@@ -60,7 +69,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
     container_config = DictObject({
         'name': container_name,
         'architecture': 'x86_64',
-        'profiles': ['default'],
+        'profiles': [LXD_PROFILE_NAME],
         'ephemeral': False,
         'config': {
             'boot.autostart': 'true',

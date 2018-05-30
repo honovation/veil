@@ -38,6 +38,7 @@ def veil_hosts_resource(veil_env_name, env_config_dir):
             resources.extend([
                 veil_host_onetime_config_resource(host=host),
                 veil_host_lxd_user_mapping_resource(host=host),
+                veil_host_lxd_profile_resource(host=host),
                 veil_host_lxd_image_resource(host=host),
                 veil_host_config_resource(host=host),
                 veil_host_application_config_resource(host=host),
@@ -61,6 +62,25 @@ def veil_hosts_resource(veil_env_name, env_config_dir):
                 veil_container_resource(host=host, server=server)
             ])
     return resources
+
+
+@atomic_installer
+def veil_host_lxd_profile_resource(host):
+    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=host.env_config_dir).client
+    if not client.profiles.exists(LXD_PROFILE_NAME):
+        client.profiles.create(LXD_PROFILE_NAME, config={}, devices={
+            'root': {
+                'path': '/',
+                'pool': 'default',
+                'type': 'disk'
+            },
+            'eth0': {
+                'name': 'eth0',
+                'type': 'nic',
+                'nictype': 'bridged',
+                'parent': LXD_BRIDGE_NAME
+            }
+        })
 
 
 @atomic_installer
