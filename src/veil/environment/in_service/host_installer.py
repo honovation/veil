@@ -270,8 +270,9 @@ def veil_host_codebase_resource(host):
     with fabric.api.settings(forward_agent=True):
         clone_application(host)
         pull_application(host)
-        clone_framework(host)
-        pull_framework(host)
+        framework_branch = read_veil_framework_branch(host)
+        clone_framework(host, framework_branch)
+        pull_framework(host, framework_branch)
     init_application(host)
 
 
@@ -281,10 +282,10 @@ def clone_application(host):
     fabric.api.run('git clone -b {} --depth=1 {} {}'.format(host.veil_application_branch, get_application_codebase(), host.veil_home))
 
 
-def clone_framework(host):
+def clone_framework(host, branch):
     if fabric.contrib.files.exists(host.veil_framework_home):
         return
-    fabric.api.run('git clone -b {} --depth=1 {} {}'.format(read_veil_framework_version(host), get_veil_framework_codebase(), host.veil_framework_home))
+    fabric.api.run('git clone -b {} --depth=1 --no-single-branch {} {}'.format(branch, get_veil_framework_codebase(), host.veil_framework_home))
 
 
 def pull_application(host):
@@ -300,10 +301,10 @@ def pull_application(host):
                 break
 
 
-def pull_framework(host):
+def pull_framework(host, branch):
     with fabric.api.cd(host.veil_framework_home):
+        fabric.api.run('git checkout {}'.format(branch))
         check_no_changes(host.veil_framework_home)
-        fabric.api.run('git checkout {}'.format(read_veil_framework_version(host)))
         while True:
             try:
                 fabric.api.run('git pull')
@@ -322,17 +323,20 @@ def check_no_changes(cwd):
         raise Exception('Local changes detected in {} !!!'.format(cwd))
 
 
+def read_veil_framework_branch(host):
+    content = get_remote_file_content(host.veil_home / 'VEIL-BRANCH')
+    for line in content.splitlines():
+        if '=' not in line:
+            continue
+        env_base_name, branch = [x.strip() for x in line.split('=', 1)]
+        if env_base_name == host.VEIL_ENV.base_name:
+            return branch
+    return 'master'
+
+
 def init_application(host):
     with fabric.api.cd(host.veil_home):
         fabric.api.run('{}/bin/veil :{} init'.format(host.veil_framework_home, host.VEIL_ENV.name))
-
-
-def read_veil_framework_version(host):
-    versions = get_remote_file_content(host.veil_home / 'VEIL-VERSION')
-    for version in versions.split('\n'):
-        if version.startswith(host.VEIL_ENV.base_name):
-            return version.split('=')[1]
-    return 'master'
 
 
 @atomic_installer
