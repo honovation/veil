@@ -51,9 +51,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
           net.ipv6.conf.lo.disable_ipv6 = 1
     runcmd:
       - systemctl restart systemd-sysctl.service
-      - sed -i -e '/^PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
-      - sed -i -e '/^UseDNS/s/^.*$/UseDNS no/' /etc/ssh/sshd_config
-      - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
+      - sed -i -e '/^PasswordAuthentication\s/{h;s/\s.*/ no/};${x;/^$/{s//PasswordAuthentication no/;H};x}' /etc/ssh/sshd_config
       - systemctl restart ssh
     '''.format(container_name=container_name, hostname=hostname, timezone=timezone, user_name=user_name)
     network_config = '''
