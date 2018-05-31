@@ -167,12 +167,11 @@ def veil_container_init_resource(server):
         key = 'veil_container_init?{}'.format(server.container_name)
         dry_run_result[key] = 'INSTALL'
         return
-    package_names = ['apt-transport-https', 'unattended-upgrades', 'update-notifier-common', 'iptables', 'git', 'language-pack-en', 'unzip', 'wget', 'python',
-                     'python-dev', 'python-pip', 'python-virtualenv']
+    required_packages = ['unattended-upgrades', 'update-notifier-common', 'iptables', 'git', 'language-pack-en', 'unzip', 'wget', 'python', 'python-dev',
+                         'python-pip', 'python-virtualenv']
     with fabric.api.settings(host_string=server.deploys_via):
         fabric.api.sudo('apt update')
-        fabric.api.sudo('apt -y install {}'.format(' '.join(package_names)))
-        fabric.api.sudo('apt -y purge ntpdate ntp whoopsie network-manager')
+        fabric.api.sudo('apt -y install {}'.format(' '.join(required_packages)))
         fabric.api.run('touch {}'.format(server.container_initialized_tag_path))
 
 
