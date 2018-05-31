@@ -7,6 +7,7 @@ import uuid
 import logging
 import fabric.api
 import fabric.contrib.files
+from veil.utility.setting import *
 from veil_component import as_path, cyan
 from veil.environment import *
 from veil.environment.networking import *
@@ -63,6 +64,13 @@ def veil_hosts_resource(veil_env_name, env_config_dir):
                 veil_container_resource(host=host, server=server)
             ])
     return resources
+
+
+@atomic_installer
+def veil_host_lxd_init_resource(host):
+    config_file = as_path(host.env_config_dir) / '.config'
+    config = load_config_from(config_file, 'lxd_trusted_password')
+    fabric.api.run('lxd init --auto --network-address=[::] --trust-password={}'.format(config.lxd_trust_password))
 
 
 @atomic_installer
@@ -206,7 +214,8 @@ def veil_host_onetime_config_resource(host):
         veil_host_directory_resource(host=host, remote_path=host.buckets_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
         veil_host_directory_resource(host=host, remote_path=host.bucket_log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
         veil_host_directory_resource(host=host, remote_path=host.data_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_init_resource(host=host)
+        veil_host_init_resource(host=host),
+        veil_host_lxd_init_resource(host=host),
     ]
     return resources
 
