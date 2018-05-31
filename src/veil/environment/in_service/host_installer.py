@@ -359,6 +359,8 @@ def veil_host_init_resource(host):
                          'python-pip', 'python-virtualenv']
     fabric.api.sudo('apt -y install {}'.format(' '.join(required_packages)))
 
+    fabric.api.sudo('timedatectl set-timezone {}'.format(host.timezone))
+
     # enables and starts the systemd-timesyncd.service for time sync on lxc hosts, and which is shared among lxc guests
     fabric.api.sudo('timedatectl set-ntp true')
 

@@ -7,6 +7,7 @@ from urlparse import urlparse
 import operator
 
 from veil.model.collection import *
+from veil.utility.clock import *
 from veil_component import *
 from veil.server.os import *
 
@@ -184,7 +185,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
 
 
 def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ssh_user='dejavu', sshd_config=(), iptables_rule_resources=(),
-              timezone='Asia/Shanghai', external_service_ports=(), lxd_endpoint=None):
+              timezone=None, external_service_ports=(), lxd_endpoint=None):
     if sshd_config and 'PasswordAuthentication no' not in sshd_config:
         raise AssertionError('password authentication should not be allowed on host')
     if 'PermitRootLogin yes' in sshd_config or 'PermitRootLogin no' in sshd_config:
@@ -192,7 +193,7 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
     from veil.model.collection import objectify
     internal_ip = '{}.1'.format(lan_range)
     return objectify({
-        'timezone': timezone,
+        'timezone': timezone or LOCAL_TIMEZONE.zone,
         'lan_range': lan_range,
         'lan_interface': lan_interface,
         'mac_prefix': mac_prefix,

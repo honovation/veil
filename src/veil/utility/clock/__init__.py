@@ -1,5 +1,6 @@
 import veil_component
 with veil_component.init_component(__name__):
+    from .clock import LOCAL_TIMEZONE
     from .clock import DEFAULT_CLIENT_TIMEZONE
     from .clock import require_current_time_being
     from .clock import get_current_time
@@ -21,6 +22,7 @@ with veil_component.init_component(__name__):
 
     __all__ = [
         # from clock
+        'LOCAL_TIMEZONE',
         'DEFAULT_CLIENT_TIMEZONE',
         require_current_time_being.__name__,
         get_current_time.__name__,

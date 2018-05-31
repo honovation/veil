@@ -10,9 +10,7 @@ parse = parse
 relativedelta = relativedelta
 
 
-LOCAL_TIMEZONE = pytz.timezone('Asia/Shanghai')
-DEFAULT_CLIENT_TIMEZONE = pytz.timezone('Asia/Shanghai')
-assert LOCAL_TIMEZONE is DEFAULT_CLIENT_TIMEZONE
+DEFAULT_CLIENT_TIMEZONE = LOCAL_TIMEZONE = pytz.timezone('Asia/Shanghai')
 
 current_time = None
 
