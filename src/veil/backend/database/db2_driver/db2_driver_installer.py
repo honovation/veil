@@ -19,12 +19,8 @@ def db2_driver_resource():
             download_db2_clidriver()
         dry_run_result['db2-driver'] = '-' if is_db2_clidriver_installed() else 'INSTALL'
     else:
-        if CURRENT_OS.codename == 'xenial':
-            install_resource(os_package_resource(name='libstdc++6-4.7-dev'))
-            install_resource(os_package_resource(name='libstdc++6-4.7-pic'))
-        else:
-            install_resource(os_package_resource(name='libstdc++-6-dev'))
-            install_resource(os_package_resource(name='libstdc++-6-pic'))
+        install_resource(os_package_resource(name='libstdc++-6-dev'))
+        install_resource(os_package_resource(name='libstdc++-6-pic'))
         install_db2_clidriver()
 
     install_resource(python_package_resource(name='ibm_db', env=env))
