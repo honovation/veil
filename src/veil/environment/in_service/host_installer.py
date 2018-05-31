@@ -70,7 +70,7 @@ def veil_hosts_resource(veil_env_name, env_config_dir):
 def veil_host_lxd_init_resource(host):
     config_file = as_path(host.env_config_dir) / '.config'
     config = load_config_from(config_file, 'lxd_trusted_password')
-    fabric.api.run('lxd init --auto --network-address=[::] --trust-password={}'.format(config.lxd_trust_password))
+    fabric.api.run('lxd init --auto --network-address=[::] --trust-password={}'.format(config.lxd_trusted_password))
 
 
 @atomic_installer
