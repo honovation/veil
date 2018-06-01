@@ -157,6 +157,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
             if server.backup_mirror:
                 assert server.backup_mirror.host_ip.rsplit('.', 1)[0] != host.lan_range, \
                     'ENV {}: local backup mirror does not make sense, please use remote mirror (on-site must, off-site optional)'.format(env.name)
+            server.env_dir = host.env_dir
             server.etc_dir = host.etc_dir / server.name
             server.log_dir = host.log_dir / server.name
             server.editorial_dir = host.editorial_dir if server.mount_editorial_dir else None
