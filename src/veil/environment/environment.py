@@ -6,10 +6,7 @@ import re
 from urlparse import urlparse
 import operator
 
-from veil.model.collection import *
-from veil.utility.clock import *
 from veil_component import *
-from veil.server.os import *
 
 DEFAULT_DNS_SERVERS = ('119.29.29.29', '182.254.116.116', '8.8.8.8', '8.8.4.4')
 
@@ -44,6 +41,7 @@ CURRENT_USER_GROUP = CURRENT_USER
 SECURITY_CONFIG_FILE = (VEIL_HOME if VEIL_ENV.is_dev or VEIL_ENV.is_test else VEIL_HOME.parent) / '.config'
 
 if VEIL_ENV.is_dev or VEIL_ENV.is_test:
+    from veil.server.os import directory_resource, symbolic_link_resource
     BASIC_LAYOUT_RESOURCES = [
             directory_resource(path=VEIL_ENV_DIR),
             directory_resource(path=VEIL_ETC_DIR.parent),
@@ -190,7 +188,9 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
         raise AssertionError('password authentication should not be allowed on host')
     if 'PermitRootLogin yes' in sshd_config or 'PermitRootLogin no' in sshd_config:
         raise AssertionError('guard needs login host as root with certificate')
+
     from veil.model.collection import objectify
+    from veil.utility.clock import LOCAL_TIMEZONE
     internal_ip = '{}.1'.format(lan_range)
     return objectify({
         'timezone': timezone or LOCAL_TIMEZONE.zone,
@@ -322,6 +322,7 @@ def get_veil_framework_version():
 
 
 def set_env_config_dir(obj, env_config_dir):
+    from veil.model.collection import freeze_dict_object, unfreeze_dict_object
     unfrozen_obj = unfreeze_dict_object(obj)
     unfrozen_obj.env_config_dir = env_config_dir
     return freeze_dict_object(unfrozen_obj)
