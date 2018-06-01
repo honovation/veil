@@ -41,7 +41,7 @@ CURRENT_USER_GROUP = CURRENT_USER
 SECURITY_CONFIG_FILE = (VEIL_HOME if VEIL_ENV.is_dev or VEIL_ENV.is_test else VEIL_HOME.parent) / '.config'
 
 if VEIL_ENV.is_dev or VEIL_ENV.is_test:
-    from veil.server.os import directory_resource, symbolic_link_resource
+    from veil.server.os import directory_resource
     BASIC_LAYOUT_RESOURCES = [
             directory_resource(path=VEIL_ENV_DIR),
             directory_resource(path=VEIL_ETC_DIR.parent),
@@ -54,6 +54,7 @@ if VEIL_ENV.is_dev or VEIL_ENV.is_test:
             directory_resource(path=VEIL_DATA_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         ]
 elif VEIL_ENV.name != VEIL_ENV.base_name:
+    from veil.server.os import symbolic_link_resource
     BASIC_LAYOUT_RESOURCES = [symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV.name, to=VEIL_ENV_DIR)]
 else:
     BASIC_LAYOUT_RESOURCES = []
