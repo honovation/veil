@@ -111,31 +111,24 @@ def find_module_loader_without_import(module_name):
         return None
 
 
-def get_top_veil_component_name(module_name):
+def get_top_veil_component_name(package_name):
     """
-    get top veil component name from module name
+    get top veil component name from package name
 
-    A is normal module
+    A is normal package
     A.B is veil component
     A.B.C is veil component and is sub veil component of A.B
     the top veil component of A.B.C is A.B
 
-    :param module_name:
+    :param package_name:
     :return: top veil component name | None
     """
-    if '.' not in module_name:
-        loader = find_module_loader_without_import(module_name)
-        if not loader:
-            return None
-        return module_name if is_component(loader.get_source()) else None
-    parts = module_name.split('.')
-    for i in range(len(parts)):
-        candidate_module_name = '.'.join(parts[:i + 1])
-        loader = find_module_loader_without_import(candidate_module_name)
-        if not loader:
-            continue
-        if is_component(loader.get_source()):
-            return candidate_module_name
+    parts = package_name.split('.')
+    for i in range(1, 1 + len(parts)):
+        ancestor_package_name = '.'.join(parts[:i])
+        loader = find_module_loader_without_import(ancestor_package_name)
+        if loader and is_component(loader.get_source()):
+            return ancestor_package_name
     return None
 
 
