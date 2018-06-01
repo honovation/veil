@@ -191,10 +191,9 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
         raise AssertionError('guard needs login host as root with certificate')
 
     from veil.model.collection import objectify
-    from veil.utility.clock import LOCAL_TIMEZONE
     internal_ip = '{}.1'.format(lan_range)
     return objectify({
-        'timezone': timezone or LOCAL_TIMEZONE.zone,
+        'timezone': timezone or get_application_timezone(),
         'lan_range': lan_range,
         'lan_interface': lan_interface,
         'mac_prefix': mac_prefix,
@@ -276,8 +275,18 @@ def get_veil_env_deployment_memo(veil_env_name):
     return get_veil_env(veil_env_name).deployment_memo
 
 
+def get_application():
+    import __veil__
+
+    return __veil__
+
+
 def get_application_codebase():
     return get_application().CODEBASE
+
+
+def get_application_timezone():
+    return getattr(get_application(), 'TIMEZONE', 'Asia/Shanghai')
 
 
 def get_application_sms_whitelist():
@@ -286,12 +295,6 @@ def get_application_sms_whitelist():
 
 def get_application_email_whitelist():
     return getattr(get_application(), 'EMAIL_WHITELIST', set())
-
-
-def get_application():
-    import __veil__
-
-    return __veil__
 
 
 def get_veil_framework_codebase():

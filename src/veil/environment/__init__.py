@@ -33,6 +33,7 @@ from .environment import get_application
 from .environment import get_application_codebase
 from .environment import get_veil_framework_codebase
 from .environment import get_application_version
+from .environment import get_application_timezone
 from .environment import get_application_sms_whitelist
 from .environment import get_application_email_whitelist
 from .environment import get_veil_framework_version

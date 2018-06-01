@@ -6,11 +6,13 @@ from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
 import pytz
 
+from veil.environment import get_application_timezone
+
 parse = parse
 relativedelta = relativedelta
 
 
-DEFAULT_CLIENT_TIMEZONE = LOCAL_TIMEZONE = pytz.timezone('Asia/Shanghai')
+DEFAULT_CLIENT_TIMEZONE = pytz.timezone(get_application_timezone())
 
 current_time = None
 
