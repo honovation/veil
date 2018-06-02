@@ -55,7 +55,7 @@ def backup_host(host, timestamp):
         shell_execute('sudo mkdir -p {}'.format(backup_dir))
         shell_execute('sudo chown -R {}:{} {}'.format(host.ssh_user, host.ssh_user, backup_dir))
         shell_execute('chmod 0700 {}'.format(backup_dir))
-    with fabric.api.settings(host_string='root@{}:{}'.format(host.internal_ip, host.ssh_port)):
+    with fabric.api.settings(host_string='{}@{}:{}'.format(host.ssh_user, host.internal_ip, host.ssh_port)):
         veil_servers = list_veil_servers(VEIL_ENV.name, include_guard_server=False, include_monitor_server=False)
         barman_enabled = any(s.name == 'barman' for s in veil_servers)
         if not barman_enabled:
@@ -84,17 +84,16 @@ def backup_host(host, timestamp):
 
 def bring_down_servers(servers):
     for server in servers:
-        fabric.api.sudo('lxc exec {} -- systemctl stop veil-server.service'.format(server.container_name), user=server.ssh_user)
+        fabric.api.run('lxc exec {} -- systemctl stop veil-server.service'.format(server.container_name))
 
 
 def bring_up_servers(servers):
     for server in servers:
-        fabric.api.sudo('lxc exec {} -- systemctl start veil-server.service'.format(server.container_name), user=server.ssh_user)
+        fabric.api.run('lxc exec {} -- systemctl start veil-server.service'.format(server.container_name))
 
 
 def is_worker_running_on_server(server):
-    ret = fabric.api.sudo("lxc exec {} -- ps -ef | grep 'veil backend job-queue' | grep -v grep".format(server.container_name), warn_only=True,
-                          user=server.ssh_user)
+    ret = fabric.api.run("lxc exec {} -- ps -ef | grep 'veil backend job-queue' | grep -v grep".format(server.container_name), warn_only=True)
     return ret.return_code == 0
 
 
@@ -107,7 +106,7 @@ def rsync_to_backup_mirror():
     if not backup_mirror:
         return
     backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV.name)
-    with fabric.api.settings(host_string='{}@{}:{}'.format(backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror.ssh_port)):
+    with fabric.api.settings(host_string='{}@{}:{}'.format(backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror.ssh_port), key_filename=SSH_KEY_PATH):
         fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
     shell_execute('''rsync -avhHPz -e "ssh -i {} -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete --bwlimit={} {}/ {}@{}:{}/'''.format(
         SSH_KEY_PATH, backup_mirror.ssh_port, backup_mirror.bandwidth_limit, VEIL_BACKUP_ROOT, backup_mirror.ssh_user, backup_mirror.host_ip,
