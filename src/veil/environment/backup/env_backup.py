@@ -43,7 +43,7 @@ def create_env_backup():
     with fabric.api.settings(disable_known_hosts=True, key_filename=SSH_KEY_PATH):
         timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
         backup_host(host, timestamp)
-    shell_execute('ln -sf {} latest'.format(timestamp), cwd=VEIL_BACKUP_ROOT)
+    shell_execute('rm -f latest && ln -s {} latest'.format(timestamp), cwd=VEIL_BACKUP_ROOT)
     delete_old_backups()
     rsync_to_backup_mirror()
 
