@@ -186,7 +186,7 @@ def _deploy_server(veil_env_name, config_dir, veil_server_name):
     env_config_dir = as_path(config_dir) / veil_env_name
     server = set_env_config_dir(get_veil_server(veil_env_name, veil_server_name), env_config_dir)
     host = set_env_config_dir(get_veil_host(veil_env_name, server.host_name), env_config_dir)
-    with fabric.api.settings(host_string=host.deploys_via):
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
         if not fabric.contrib.files.exists(server.deployed_tag_path):
             print(yellow('Use deploy-env to deploy {} first time'.format(veil_server_name)))
             return
