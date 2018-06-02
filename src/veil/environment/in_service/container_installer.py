@@ -120,7 +120,7 @@ def veil_container_config_resource(server):
     ]
     if 'guard' == server.name:
         resources.append(veil_container_file_resource(local_path=server.env_config_dir / '.ssh-guard' / 'id_rsa', server=server,
-                                                      remote_path='/etc/ssh/id_rsa-guard', owner='root', owner_group='root', mode=0600))
+                                                      remote_path='/etc/ssh/id_rsa-guard', owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
     if 'barman' == server.name:
         resources.append(veil_container_file_resource(local_path=server.env_config_dir / '.ssh-guard' / 'id_rsa', server=server,
                                                       remote_path='/etc/ssh/id_rsa-barman'.format(server.ssh_user),

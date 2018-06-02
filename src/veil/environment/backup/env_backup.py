@@ -107,6 +107,8 @@ def rsync_to_backup_mirror():
     if not backup_mirror:
         return
     backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV.name)
+    with fabric.api.settings(host_string='{}@{}:{}'.format(backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror.ssh_port)):
+        fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
     shell_execute('''rsync -avhHPz -e "ssh -i {} -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete --bwlimit={} {}/ {}@{}:{}/'''.format(
         SSH_KEY_PATH, backup_mirror.ssh_port, backup_mirror.bandwidth_limit, VEIL_BACKUP_ROOT, backup_mirror.ssh_user, backup_mirror.host_ip,
         backup_mirror_path), debug=True)
