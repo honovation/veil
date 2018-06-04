@@ -102,10 +102,11 @@ def delete_old_backups():
 
 
 def rsync_to_backup_mirror():
-    backup_mirror = get_current_veil_server().backup_mirror
+    server_guard = get_current_veil_server()
+    backup_mirror = server_guard.backup_mirror
     if not backup_mirror:
         return
-    backup_mirror_path = '~/backup_mirror/{}'.format(VEIL_ENV.name)
+    backup_mirror_path = '~/backup_mirror/{}/{}'.format(VEIL_ENV.name, server_guard.host_name)
     with fabric.api.settings(host_string='{}@{}:{}'.format(backup_mirror.ssh_user, backup_mirror.host_ip, backup_mirror.ssh_port), key_filename=SSH_KEY_PATH):
         fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
     shell_execute('''rsync -avhHPz -e "ssh -i {} -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete --bwlimit={} {}/ {}@{}:{}/'''.format(
