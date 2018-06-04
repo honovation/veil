@@ -9,9 +9,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 @composite_installer
-def postgresql_server_resource(purpose, config):
+def postgresql_server_resource(config):
     upgrading = False
-    maintenance_config = postgresql_maintenance_config(purpose, must_exist=False)
+    maintenance_config = postgresql_maintenance_config(config.purpose, must_exist=False)
     if maintenance_config and maintenance_config.version != config.version:
         assert Decimal(maintenance_config.version) < Decimal(config.version), 'cannot downgrade postgresql server from {} to {}'.format(
             maintenance_config.version, config.version)
@@ -21,38 +21,18 @@ def postgresql_server_resource(purpose, config):
             'new_version': config.version
         })
 
-    pg_data_dir = get_pg_data_dir(purpose, config.version)
-    pg_config_dir = get_pg_config_dir(purpose, config.version)
+    pg_data_dir = get_pg_data_dir(config.purpose, config.version)
+    pg_config_dir = get_pg_config_dir(config.purpose, config.version)
+    pg_config = dict(config, data_directory=pg_data_dir, log_directory=VEIL_LOG_DIR / '{}-postgresql'.format(config.purpose.replace('_', '-')))
     resources = [
         postgresql_apt_repository_resource(),
         os_package_resource(name='postgresql-{}'.format(config.version)),
         os_service_auto_starting_resource(name='postgresql', state='not_installed'),
-        postgresql_cluster_resource(purpose=purpose, version=config.version, owner=config.owner, owner_password=config.owner_password),
+        postgresql_cluster_resource(purpose=config.purpose, version=config.version, owner=config.owner, owner_password=config.owner_password),
         directory_resource(path=pg_config_dir, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         file_resource(
             path=pg_config_dir / 'postgresql.conf',
-            content=render_config('postgresql.conf.j2', config={
-                'purpose': purpose,
-                'version': config.version,
-                'data_directory': pg_data_dir,
-                'host': config.host,
-                'port': config.port,
-                'shared_buffers': config.shared_buffers,
-                'work_mem': config.work_mem,
-                'maintenance_work_mem': config.maintenance_work_mem,
-                'effective_io_concurrency': config.effective_io_concurrency,
-                'checkpoint_completion_target': config.checkpoint_completion_target,
-                'effective_cache_size': config.effective_cache_size,
-                'log_destination': 'csvlog',
-                'logging_collector': True,
-                'log_checkpoints': True,
-                'log_connections': True,
-                'log_disconnections': True,
-                'log_duration': False,
-                'log_min_duration_statement': config.log_min_duration_statement,
-                'log_directory': VEIL_LOG_DIR / '{}-postgresql'.format(purpose.replace('_', '-')),
-                'log_filename': config.get('log_filename')
-            }), owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+            content=render_config('postgresql.conf.j2', config=pg_config), owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         file_resource(path=pg_config_dir / 'pg_hba.conf', content=render_config('pg_hba.conf.j2', host=config.host, replication_user=config.replication_user,
                                                                                 replication_host=config.replication_host),
                       owner=CURRENT_USER, group=CURRENT_USER_GROUP),
@@ -72,20 +52,20 @@ def postgresql_server_resource(purpose, config):
             zhparser_resource(reinstall=upgrading)
         ])
     if upgrading:
-        resources.append(postgresql_cluster_upgrading_resource(purpose=purpose, old_version=maintenance_config.version, new_version=config.version,
+        resources.append(postgresql_cluster_upgrading_resource(purpose=config.purpose, old_version=maintenance_config.version, new_version=config.version,
                                                                host=config.host, port=config.port, owner=config.owner, owner_password=config.owner_password))
     resources.extend([
-        symbolic_link_resource(path=get_pg_config_dir(purpose), to=pg_config_dir),
-        postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
+        symbolic_link_resource(path=get_pg_config_dir(config.purpose), to=pg_config_dir),
+        postgresql_user_resource(purpose=config.purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
                                  owner_password=config.owner_password, user=config.user, password=config.password),
-        postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
+        postgresql_user_resource(purpose=config.purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
                                  owner_password=config.owner_password, user='readonly', password='r1adonly', readonly=True)
     ])
     if config.replication_user:
         resources.extend([
-            postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
+            postgresql_user_resource(purpose=config.purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
                                      owner_password=config.owner_password, user=config.replication_user, replication=True),
-            postgresql_user_resource(purpose=purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
+            postgresql_user_resource(purpose=config.purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
                                      owner_password=config.owner_password, user='barman', superuser=True)
         ])
 

@@ -114,7 +114,7 @@ max_connections = 100			# (change requires restart)
 
 # - Memory -
 
-shared_buffers = {{ config.get('shared_buffers', '128MB') }}			# min 128kB
+shared_buffers = {{ config.get('shared_buffers', '32MB') }}			# min 128kB
 					# (change requires restart)
 #huge_pages = try			# on, off, or try
 					# (change requires restart)
@@ -154,12 +154,12 @@ dynamic_shared_memory_type = posix	# the default is the first option
 #vacuum_cost_page_hit = 1		# 0-10000 credits
 #vacuum_cost_page_miss = 10		# 0-10000 credits
 #vacuum_cost_page_dirty = 20		# 0-10000 credits
-#vacuum_cost_limit = 200		# 1-10000 credits
+vacuum_cost_limit = {{ config.get('vacuum_cost_limit', 200) }}		# 1-10000 credits
 
 # - Background Writer -
 
-#bgwriter_delay = 200ms			# 10-10000ms between rounds
-#bgwriter_lru_maxpages = 100		# 0-1000 max buffers written/round
+bgwriter_delay = {{ config.get('bgwriter_delay', '200ms') }}			# 10-10000ms between rounds
+bgwriter_lru_maxpages = {{ config.get('bgwriter_lru_maxpages', 100) }}		# 0-1000 max buffers written/round
 #bgwriter_lru_multiplier = 2.0		# 0-10.0 multiplier on buffers scanned/round
 #bgwriter_flush_after = 512kB		# measured in pages, 0 disables
 
@@ -209,9 +209,9 @@ effective_io_concurrency = {{ config.get('effective_io_concurrency', 1) }}		# 1-
 
 # - Checkpoints -
 
-#checkpoint_timeout = 5min		# range 30s-1d
-#max_wal_size = 1GB
-#min_wal_size = 80MB
+checkpoint_timeout = {{ config.get('checkpoint_timeout', '5min') }}		# range 30s-1d
+max_wal_size = {{ config.get('max_wal_size', '1GB') }}
+min_wal_size = {{ config.get('min_wal_size', '80MB') }}
 checkpoint_completion_target = {{ config.get('checkpoint_completion_target', 0.5) }}	# checkpoint target duration, 0.0 - 1.0
 #checkpoint_flush_after = 256kB		# measured in pages, 0 disables
 #checkpoint_warning = 30s		# 0 disables
@@ -515,7 +515,7 @@ log_timezone = 'PRC'
 					# their durations, > 0 logs only
 					# actions running at least this number
 					# of milliseconds.
-#autovacuum_max_workers = 3		# max number of autovacuum subprocesses
+autovacuum_max_workers = {{ config.get('autovacuum_max_workers', 3) }}		# max number of autovacuum subprocesses
 					# (change requires restart)
 #autovacuum_naptime = 1min		# time between autovacuum runs
 #autovacuum_vacuum_threshold = 50	# min number of row updates before
@@ -529,7 +529,7 @@ log_timezone = 'PRC'
 #autovacuum_multixact_freeze_max_age = 400000000	# maximum multixact age
 					# before forced vacuum
 					# (change requires restart)
-#autovacuum_vacuum_cost_delay = 20ms	# default vacuum cost delay for
+autovacuum_vacuum_cost_delay = {{ config.get('autovacuum_vacuum_cost_delay', '20ms') }}	# default vacuum cost delay for
 					# autovacuum, in milliseconds;
 					# -1 means use vacuum_cost_delay
 #autovacuum_vacuum_cost_limit = -1	# default vacuum cost limit for

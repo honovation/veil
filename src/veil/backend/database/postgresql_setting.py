@@ -3,8 +3,31 @@ from veil.profile.installer import *
 
 
 def postgresql_program(purpose, version, host, port, owner, owner_password, user, password, log_min_duration_statement, log_filename=None,
-                       shared_buffers='24MB', work_mem='1MB', maintenance_work_mem='16MB', effective_io_concurrency=1, checkpoint_completion_target=0.5,
-                       effective_cache_size='128MB', enable_chinese_fts=False, replication_user=None, replication_host=None):
+                       enable_chinese_fts=False, replication_user=None, replication_host=None, **more_config):
+    config = {
+        'purpose': purpose,
+        'version': version,
+        'host': host,
+        'port': port,
+        'owner': owner,
+        'owner_password': owner_password,
+        'user': user,
+        'password': password,
+
+        'log_destination': 'csvlog',
+        'logging_collector': True,
+        'log_checkpoints': True,
+        'log_connections': True,
+        'log_disconnections': True,
+        'log_duration': False,
+        'log_min_duration_statement': log_min_duration_statement,
+        'log_filename': log_filename,  # set to None, postgresql will rotate it for us
+
+        'enable_chinese_fts': enable_chinese_fts,
+        'replication_user': replication_user,
+        'replication_host': replication_host
+    }
+    config.update(more_config)
     return objectify({
         '{}_postgresql'.format(purpose): {
             'execute_command': '{}/postgres -D {}'.format(get_pg_bin_dir(version), get_pg_data_dir(purpose, version)),
@@ -12,29 +35,7 @@ def postgresql_program(purpose, version, host, port, owner, owner_password, user
             'priority': 100,
             'stopsignal': 'INT',  # use the "fast" shutdown signal SIGINT
             'stopwaitsecs': 60,
-            'resources': [('veil.backend.database.postgresql.postgresql_server_resource', {
-                'purpose': purpose,
-                'config': {
-                    'version': version,
-                    'host': host,
-                    'port': port,
-                    'owner': owner,
-                    'owner_password': owner_password,
-                    'user': user,
-                    'password': password,
-                    'shared_buffers': shared_buffers,
-                    'work_mem': work_mem,
-                    'maintenance_work_mem': maintenance_work_mem,
-                    'effective_io_concurrency': effective_io_concurrency,
-                    'checkpoint_completion_target': checkpoint_completion_target,
-                    'effective_cache_size': effective_cache_size,
-                    'log_min_duration_statement': log_min_duration_statement,
-                    'log_filename': log_filename,  # set to None, postgresql will rotate it for us
-                    'enable_chinese_fts': enable_chinese_fts,
-                    'replication_user': replication_user,
-                    'replication_host': replication_host
-                }
-            })]
+            'resources': [('veil.backend.database.postgresql.postgresql_server_resource', {'config': config})]
         }
     })
 
