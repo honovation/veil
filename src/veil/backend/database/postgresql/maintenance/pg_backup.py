@@ -6,14 +6,6 @@ from veil.utility.shell import *
 from ...postgresql_setting import get_pg_bin_dir
 from ..server.pg_server_installer import postgresql_maintenance_config
 
-"""
-pg_dump -h 10.24.2.30 -p 5432 -U veil -b -v -d ljmall | gzip > backup.gz
-gunzip -c backup.gz | pg_restore -h localhost -p 5432 -U veil -j nproc -v -c -d ljmall
-
-pg_dump -h 10.24.2.30 -p 5432 -U veil -j `nproc` -F d -b -v -f /home/dejavu/dump -d ljmall
-pg_restore -h localhost -p 5432 -U veil -j `nproc` -F d -v -c -d ljmall /home/dejavu/dump
-"""
-
 
 @script('create-backup')
 def create_backup(purpose, backup_path):

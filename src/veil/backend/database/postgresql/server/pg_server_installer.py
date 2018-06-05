@@ -124,8 +124,8 @@ def upgrade_postgresql_cluster(purpose, old_version, new_version, owner, owner_p
                                                                     old_bin_dir=get_pg_bin_dir(old_version), old_data_dir=get_pg_data_dir(purpose, old_version),
                                                                     new_bin_dir=get_pg_bin_dir(new_version), new_data_dir=get_pg_data_dir(purpose, new_version))
     )
-    shell_execute('sudo su {pg_data_owner} -c "{pg_upgrade_command}"'.format(pg_data_owner=owner, pg_upgrade_command=pg_upgrade_command), env=pg_upgrade_env,
-                  capture=True)
+    shell_execute('sudo su {pg_data_owner_os} -c "{pg_upgrade_command}"'.format(pg_data_owner_os=CURRENT_USER, pg_upgrade_command=pg_upgrade_command),
+                  env=pg_upgrade_env, capture=True)
 
 
 def vacuum_upgraded_postgresql_cluster(purpose, version, host, port, owner, owner_password):
@@ -191,7 +191,7 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
     )
     try:
         shell_execute('sudo usermod -a -G postgres {}'.format(CURRENT_USER))
-        shell_execute('sudo su {pg_data_owner} -c "{initdb_command}"'.format(pg_data_owner=owner, initdb_command=initdb_command), capture=True)
+        shell_execute('sudo su {pg_data_owner_os} -c "{initdb_command}"'.format(pg_data_owner_os=CURRENT_USER, initdb_command=initdb_command), capture=True)
         shell_execute('mv postgresql.conf postgresql.conf.origin', cwd=pg_data_dir)
         shell_execute('mv pg_hba.conf pg_hba.conf.origin', cwd=pg_data_dir)
         shell_execute('mv pg_ident.conf pg_ident.conf.origin', cwd=pg_data_dir)
@@ -260,12 +260,12 @@ def postgresql_server_running(version, data_directory, owner):
     else:
         shell_execute('install -d -m 2775 -o postgres -g postgres /var/run/postgresql')
     pg_bin_dir = get_pg_bin_dir(version)
-    shell_execute('sudo su {} -c "{}/pg_ctl -D {} start"'.format(owner, pg_bin_dir, data_directory))
+    shell_execute('sudo su {} -c "{}/pg_ctl -D {} start"'.format(CURRENT_USER, pg_bin_dir, data_directory))
     time.sleep(5)
     try:
         yield
     finally:
-        shell_execute('sudo su {} -c "{}/pg_ctl -D {} stop"'.format(owner, pg_bin_dir, data_directory))
+        shell_execute('sudo su {} -c "{}/pg_ctl -D {} stop"'.format(CURRENT_USER, pg_bin_dir, data_directory))
 
 
 _maintenance_config = {}
