@@ -188,6 +188,8 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
               timezone=None, external_service_ports=(), lxd_endpoint=None):
     if sshd_config and 'PasswordAuthentication no' not in sshd_config:
         raise AssertionError('password authentication should not be allowed on host')
+    if sshd_config and 'PermitRootLogin no' not in sshd_config:
+        raise AssertionError('root login should not be allowed on host')
 
     from veil.model.collection import objectify
     internal_ip = '{}.1'.format(lan_range)

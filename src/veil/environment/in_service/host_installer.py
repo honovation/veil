@@ -347,7 +347,7 @@ def veil_host_init_resource(host):
     if host.VEIL_ENV.name != host.VEIL_ENV.base_name:
         fabric.api.sudo('ln -sfT {} {}'.format(host.env_dir, host.env_dir.parent / host.VEIL_ENV.name))
 
-    fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no'], use_sudo=True)
+    fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no', 'PermitRootLogin no'], use_sudo=True)
     fabric.api.sudo('systemctl reload-or-restart ssh')
 
     fabric.api.sudo('apt update')
