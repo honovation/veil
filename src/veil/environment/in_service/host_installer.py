@@ -401,24 +401,6 @@ def veil_host_sources_list_resource(host):
 
 
 @atomic_installer
-def veil_lxc_config_resource(host):
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        key = 'veil_lxc_config?{}'.format(host.VEIL_ENV.name)
-        dry_run_result[key] = 'INSTALL'
-        return
-
-    lxc_config_path = '/etc/default/lxc'
-    fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=lxc_config_path))
-    fabric.contrib.files.upload_template('lxc.j2', lxc_config_path, context=dict(mirror=host.apt_url), use_jinja=True, template_dir=CURRENT_DIR, use_sudo=True,
-                                         backup=False, mode=0644)
-    fabric.api.sudo('chown root:root {}'.format(lxc_config_path))
-    install_resource(
-        veil_host_file_resource(local_path=CURRENT_DIR / 'lxc-net', host=host, remote_path='/etc/default/lxc-net', owner='root', owner_group='root', mode=0644,
-                                keep_origin=True))
-
-
-@atomic_installer
 def veil_host_directory_resource(host, remote_path, owner='root', owner_group='root', mode=0755):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
