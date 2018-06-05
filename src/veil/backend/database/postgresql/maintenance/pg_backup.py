@@ -13,7 +13,7 @@ def create_backup(purpose, backup_path):
     maintenance_config = postgresql_maintenance_config(purpose)
     env = os.environ.copy()
     env['PGPASSWORD'] = config.password
-    shell_execute('{pg_bin_dir}/pg_dump -h {host} -p {port} -U {user} -j `nproc` -F d -b -v -f "{backup_path}" -d {database}'.format(
+    shell_execute('{pg_bin_dir}/pg_dump -h {host} -p {port} -U {user} -j `nproc` -v -b -F d -f "{backup_path}" -d {database}'.format(
         pg_bin_dir=get_pg_bin_dir(maintenance_config.version),
         host=config.host,
         port=config.port,
@@ -21,13 +21,14 @@ def create_backup(purpose, backup_path):
         backup_path=backup_path,
         database=config.database), env=env)
 
+
 @script('restore-backup')
 def restore_backup(backup_path, purpose):
     config = database_client_config(purpose)
     maintenance_config = postgresql_maintenance_config(purpose)
     env = os.environ.copy()
     env['PGPASSWORD'] = maintenance_config.owner_password
-    shell_execute('{pg_bin_dir}/pg_restore -h {host} -p {port} -U {user} -j `nproc` -F d -v -c -d {database} "{backup_path}"'.format(
+    shell_execute('{pg_bin_dir}/pg_restore -h {host} -p {port} -U {user} -j `nproc` -v -c -e -F d -d {database} "{backup_path}"'.format(
         pg_bin_dir=get_pg_bin_dir(maintenance_config.version),
         host=config.host,
         port=config.port,
