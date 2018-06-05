@@ -8,6 +8,7 @@ from veil.server.os import *
 from veil.utility.shell import *
 from veil.utility.timer import *
 from veil_installer import *
+from ...postgresql_setting import get_pg_bin_dir
 
 BARMAN_CONF_PATH = VEIL_ETC_DIR / 'barman.d'
 BARMAN_HOME = VEIL_VAR_DIR / 'barman'
@@ -17,7 +18,7 @@ BARMAN_HOME = VEIL_VAR_DIR / 'barman'
 def pgbarman_resource(config):
     barman_server_config = render_config('pg_barman_server.conf.j2', server_name=config.server_name, db_host=config.db_host, db_user=config.db_user,
                                          replication_user=config.replication_user, replication_slot_name=config.replication_slot_name,
-                                         pg_bin_path=config.pg_bin_path, barman_server_home=BARMAN_HOME / config.server_name)
+                                         pg_bin_path=get_pg_bin_dir(config.pg_version), barman_server_home=BARMAN_HOME / config.server_name)
     resources = [
         postgresql_apt_repository_resource(),
         os_package_resource(name='barman'),
