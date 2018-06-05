@@ -36,6 +36,12 @@ def postgresql_program(purpose, version, host, port, owner, owner_password, user
             'stopsignal': 'INT',  # use the "fast" shutdown signal SIGINT
             'stopwaitsecs': 60,
             'resources': [('veil.backend.database.postgresql.postgresql_server_resource', {'config': config})]
+        },
+        'pg_routines'.format(purpose): {
+            'execute_command': 'veil backend database postgresql routines-up {}'.format(purpose),
+            'resources': [('veil_installer.component_resource', {
+                'name': 'veil.backend.database.postgresql'
+            })]
         }
     })
 
