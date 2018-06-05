@@ -28,7 +28,7 @@ def restore_backup(backup_path, purpose):
     maintenance_config = postgresql_maintenance_config(purpose)
     env = os.environ.copy()
     env['PGPASSWORD'] = maintenance_config.owner_password
-    shell_execute('{pg_bin_dir}/pg_restore -h {host} -p {port} -U {user} -j `nproc` -v -c -e -F d -d {database} "{backup_path}"'.format(
+    shell_execute('{pg_bin_dir}/pg_restore -h {host} -p {port} -U {user} -j `nproc` -v -c -e -F d -d {database} "{backup_path}" --if-exists'.format(
         pg_bin_dir=get_pg_bin_dir(maintenance_config.version),
         host=config.host,
         port=config.port,
