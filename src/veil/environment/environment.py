@@ -324,10 +324,3 @@ def get_application_version():
 def get_veil_framework_version():
     from veil.utility.shell import shell_execute
     return shell_execute('git rev-parse HEAD', cwd=VEIL_FRAMEWORK_HOME, capture=True)
-
-
-def set_env_config_dir(obj, env_config_dir):
-    from veil.model.collection import freeze_dict_object, unfreeze_dict_object
-    unfrozen_obj = unfreeze_dict_object(obj)
-    unfrozen_obj.env_config_dir = env_config_dir
-    return freeze_dict_object(unfrozen_obj)

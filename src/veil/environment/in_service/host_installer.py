@@ -15,6 +15,7 @@ from veil.environment.lxd import *
 from veil.utility.misc import *
 from veil_installer import *
 from .container_installer import veil_container_resource, get_remote_file_content
+from .env_config_dir import get_env_config_dir
 
 LOGGER = logging.getLogger(__name__)
 
@@ -24,11 +25,10 @@ sources_list_installed = []
 
 
 @composite_installer
-def veil_hosts_resource(veil_env_name, env_config_dir):
+def veil_hosts_resource(veil_env_name):
     resources = []
     hosts = list_veil_hosts(veil_env_name)
     for host in hosts:
-        host = set_env_config_dir(host, env_config_dir)
         fabric.api.env.user = host.ssh_user
         fabric.api.env.port = host.ssh_port
         fabric.api.env.host_string = host.deploys_via
@@ -46,7 +46,7 @@ def veil_hosts_resource(veil_env_name, env_config_dir):
                 veil_host_application_config_resource(host=host),
                 veil_host_codebase_resource(host=host)
             ])
-            host_users_dir = env_config_dir / 'hosts' / host.base_name / 'USERS'
+            host_users_dir = get_env_config_dir() / 'hosts' / host.base_name / 'USERS'
             if host_users_dir.exists():
                 print(cyan('Install Veil host users resource'))
                 for user_dir in host_users_dir.dirs():
@@ -57,7 +57,6 @@ def veil_hosts_resource(veil_env_name, env_config_dir):
             resources.append(veil_host_iptables_rules_resource(host=host))
             hosts_to_install.append(host.base_name)
         for server in host.server_list:
-            server = set_env_config_dir(server, env_config_dir)
             resources.extend([
                 veil_host_directory_resource(host=host, remote_path=server.etc_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
                 veil_host_directory_resource(host=host, remote_path=server.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
@@ -67,15 +66,15 @@ def veil_hosts_resource(veil_env_name, env_config_dir):
 
 
 @atomic_installer
-def veil_host_lxd_init_resource(host):
-    config_file = as_path(host.env_config_dir) / '.config'
+def veil_host_lxd_init_resource():
+    config_file = as_path(get_env_config_dir()) / '.config'
     config = load_config_from(config_file, 'lxd_trusted_password')
     fabric.api.run('lxd init --auto --network-address=[::] --trust-password={}'.format(config.lxd_trusted_password))
 
 
 @atomic_installer
 def veil_host_lxd_profile_resource(host):
-    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=host.env_config_dir).client
+    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=get_env_config_dir()).client
     if not client.profiles.exists(LXD_PROFILE_NAME):
         client.profiles.create(LXD_PROFILE_NAME, config={}, devices={
             'root': {
@@ -125,7 +124,7 @@ def veil_host_lxd_image_resource(host):
         key = 'veil_host_lxd_image?{}&host={}'.format(host.VEIL_ENV.name, host.name)
         dry_run_result[key] = 'INSTALL'
         return
-    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=host.env_config_dir).client
+    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=get_env_config_dir()).client
     if client.images.exists(LXD_IMAGE_FINGERPRINT):
         image = client.images.get(LXD_IMAGE_FINGERPRINT)
         if LXD_IMAGE_ALIAS not in [a['name'] for a in image.aliases]:
@@ -215,7 +214,7 @@ def veil_host_onetime_config_resource(host):
         veil_host_directory_resource(host=host, remote_path=host.bucket_log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
         veil_host_directory_resource(host=host, remote_path=host.data_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
         veil_host_init_resource(host=host),
-        veil_host_lxd_init_resource(host=host),
+        veil_host_lxd_init_resource(),
     ]
     return resources
 
@@ -225,7 +224,7 @@ def veil_host_config_resource(host):
     resources = [
         veil_host_directory_resource(host=host, remote_path='/home/{}/.ssh'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group,
                                      mode=0700),
-        veil_host_file_resource(local_path=host.env_config_dir / '.ssh' / 'authorized_keys', host=host,
+        veil_host_file_resource(local_path=get_env_config_dir() / '.ssh' / 'authorized_keys', host=host,
                                 remote_path='/home/{}/.ssh/authorized_keys'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group,
                                 mode=0600),
         veil_host_file_resource(local_path=CURRENT_DIR / 'apt-config', host=host, remote_path='/etc/apt/apt.conf.d/99-veil-apt-config', owner='root',
@@ -249,10 +248,10 @@ def veil_host_config_resource(host):
 
 @composite_installer
 def veil_host_application_config_resource(host):
-    if not (host.env_config_dir / '.config').exists():
+    if not (get_env_config_dir() / '.config').exists():
         return []
     return [
-        veil_host_file_resource(local_path=host.env_config_dir / '.config', host=host, remote_path=host.code_dir / '.config', owner=host.ssh_user,
+        veil_host_file_resource(local_path=get_env_config_dir() / '.config', host=host, remote_path=host.code_dir / '.config', owner=host.ssh_user,
                                 owner_group=host.ssh_user_group, mode=0600)
     ]
 

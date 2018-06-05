@@ -18,6 +18,7 @@ from veil.utility.shell import *
 from veil.backend.database.migration import *
 from .host_installer import veil_hosts_resource, veil_hosts_codebase_resource, veil_host_codebase_resource
 from .server_installer import veil_servers_resource, is_container_running, is_server_running
+from .env_config_dir import set_env_config_dir, get_env_config_dir
 
 
 @script('deploy-env')
@@ -32,7 +33,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
     所以，不能依赖start_after_deploy不是'TRUE'来保证worker没有启动以避免多veil env下worker服务同时处理任务可能造
     成的问题。这个问题只能依赖特性“worker只有在redis的reserve_job和当前veil env一致时才处理任务”去避免。
     """
-    env_config_dir = as_path(config_dir) / veil_env_name
+    set_env_config_dir(as_path(config_dir) / veil_env_name)
     print(cyan('Update config ...'))
     update_config(config_dir)
     print(cyan('Make local preparation ...'))
@@ -43,19 +44,18 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
     print(cyan('Make rollback backup -- include code dir, exclude data dir ...'))
     make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True)
     print(cyan('Deploy hosts ...'))
-    install_resource(veil_hosts_resource(veil_env_name=veil_env_name, env_config_dir=env_config_dir))
+    install_resource(veil_hosts_resource(veil_env_name=veil_env_name))
     if disable_external_access_ == 'TRUE':
         print(cyan('Disable external access ...'))
         disable_external_access(veil_env_name)
 
     if should_download_packages == 'TRUE':
         print(cyan('Download packages ...'))
-        download_packages(veil_env_name, env_config_dir)
+        download_packages(veil_env_name)
 
     first_round_servers = []
     second_round_servers = []
     for server in list_veil_servers(veil_env_name):
-        server = set_env_config_dir(server, env_config_dir)
         if server.name not in ('guard', 'monitor', 'barman'):
             first_round_servers.append(server)
         else:
@@ -127,7 +127,7 @@ def remove_rollbackable_tags(veil_env_name):
 
 
 @script('download-packages')
-def download_packages(veil_env_name, env_config_dir):
+def download_packages(veil_env_name):
     # this command should not interrupt normal website operation
     # designed to run when website is still running, to prepare for a full deployment
     for host in list_veil_hosts(veil_env_name):
@@ -143,7 +143,6 @@ def download_packages(veil_env_name, env_config_dir):
                             break
                 try:
                     for server in host.server_list:
-                        server = set_env_config_dir(server, env_config_dir)
                         print(cyan('Download packages for server {} ...'.format(server.name)))
                         if not fabric.contrib.files.exists(server.deployed_tag_path):
                             print(yellow('Skipped downloading packages for server {} as it is not successfully deployed'.format(server.container_name)))
@@ -183,9 +182,9 @@ def deploy_server(veil_env_name, config_dir, veil_server_name):
 
 
 def _deploy_server(veil_env_name, config_dir, veil_server_name):
-    env_config_dir = as_path(config_dir) / veil_env_name
-    server = set_env_config_dir(get_veil_server(veil_env_name, veil_server_name), env_config_dir)
-    host = set_env_config_dir(get_veil_host(veil_env_name, server.host_name), env_config_dir)
+    set_env_config_dir(as_path(config_dir) / veil_env_name)
+    server = get_veil_server(veil_env_name, veil_server_name)
+    host = get_veil_host(veil_env_name, server.host_name)
     with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
         if not fabric.contrib.files.exists(server.deployed_tag_path):
             print(yellow('Use deploy-env to deploy {} first time'.format(veil_server_name)))
@@ -202,6 +201,7 @@ def patch_env(veil_env_name, config_dir):
     Iterate veil server in reversed sorted server names order (in veil_servers_resource and local_deployer:patch)
         and patch programs
     """
+    set_env_config_dir(as_path(config_dir) / veil_env_name)
     print(cyan('Make local preparation ...'))
     do_local_preparation(veil_env_name)
     print(cyan('Tag patch ...'))
@@ -209,10 +209,7 @@ def patch_env(veil_env_name, config_dir):
     print(cyan('Pull codebase ...'))
     install_resource(veil_hosts_codebase_resource(veil_env_name=veil_env_name))
     servers = list_veil_servers(veil_env_name, include_guard_server=False, include_monitor_server=False, include_barman_server=False)
-    server_names = []
-    for i, server in enumerate(servers):
-        servers[i] = set_env_config_dir(server, as_path(config_dir) / veil_env_name)
-        server_names.append(server.name)
+    server_names = [s.name for s in servers]
     print(cyan('Patch servers {} ...'.format(server_names[::-1])))
     install_resource(veil_servers_resource(servers=servers[::-1], action='PATCH'))
 
@@ -239,11 +236,8 @@ def display_deployment_memo(veil_env_name):
 
 @script('rollback-env')
 def rollback_env(veil_env_name, config_dir):
-    hosts = []
-    for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
-        if is_rollbackable(host):
-            host = set_env_config_dir(host, as_path(config_dir) / veil_env_name)
-            hosts.append(host)
+    set_env_config_dir(as_path(config_dir) / veil_env_name)
+    hosts = [host for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name) if is_rollbackable(host)]
     if hosts:
         stop_env(veil_env_name, config_dir, include_guard_server=True, include_monitor_server=False, include_barman_server=False)
         rollback(hosts)
@@ -314,6 +308,7 @@ def stop_env(veil_env_name, config_dir, include_guard_server=True, include_monit
     """
     Bring down veil servers in sorted server names order
     """
+    set_env_config_dir(as_path(config_dir) / veil_env_name)
     if isinstance(include_guard_server, basestring):
         include_guard_server = include_guard_server == 'TRUE'
     if isinstance(include_monitor_server, basestring):
@@ -323,7 +318,6 @@ def stop_env(veil_env_name, config_dir, include_guard_server=True, include_monit
                                     include_barman_server=include_barman_server):
         if exclude_server_names and server.name in exclude_server_names:
             continue
-        server = set_env_config_dir(server, as_path(config_dir) / veil_env_name)
         servers.append(server)
     stop_servers(servers, stop_container=True)
 
@@ -339,7 +333,7 @@ def stop_servers(servers, stop_container=False):
                         fabric.api.sudo('systemctl stop veil-server.service')
                     time.sleep(1)
                 if stop_container:
-                    container = LXDClient(endpoint=server.lxd_endpoint, config_dir=server.env_config_dir).get_container(server.container_name)
+                    container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
                     container.stop()
 
 
@@ -348,6 +342,7 @@ def start_env(veil_env_name, config_dir, disable_external_access_='FALSE', *excl
     """
     Bring up veil servers in reversed sorted server names order
     """
+    set_env_config_dir(as_path(config_dir) / veil_env_name)
     if disable_external_access_ == 'TRUE':
         print(cyan('Disable external access ...'))
         disable_external_access(veil_env_name)
@@ -355,9 +350,7 @@ def start_env(veil_env_name, config_dir, disable_external_access_='FALSE', *excl
     for server in reversed(list_veil_servers(veil_env_name)):
         if server.name in exclude_server_names:
             continue
-        server = set_env_config_dir(server, as_path(config_dir) / veil_env_name)
         host = get_veil_host(server.VEIL_ENV.name, server.host_name)
-        host = set_env_config_dir(host, as_path(config_dir) / veil_env_name)
         with fabric.api.settings(host_string=host.deploys_via):
             if not fabric.contrib.files.exists(server.deployed_tag_path):
                 print(yellow('Skipped starting server {} as it is not successfully deployed'.format(server.container_name)))
@@ -369,7 +362,7 @@ def start_env(veil_env_name, config_dir, disable_external_access_='FALSE', *excl
                         fabric.api.sudo('systemctl start veil-server.service')
                     time.sleep(1)
             else:
-                container = LXDClient(endpoint=server.lxd_endpoint, config_dir=server.env_config_dir).get_container(server.container_name)
+                container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
                 container.start()
 
 
