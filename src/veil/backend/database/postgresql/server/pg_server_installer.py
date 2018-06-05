@@ -252,13 +252,6 @@ def delete_file(path):
 
 @contextlib.contextmanager
 def postgresql_server_running(version, data_directory, owner):
-    # create socket directory for postgresql if not exists
-    try:
-        shell_execute('getent passwd postgres')
-    except ShellExecutionError:
-        pass
-    else:
-        shell_execute('install -d -m 2775 -o postgres -g postgres /var/run/postgresql')
     pg_bin_dir = get_pg_bin_dir(version)
     shell_execute('sudo su {} -c "{}/pg_ctl -D {} start"'.format(CURRENT_USER, pg_bin_dir, data_directory))
     time.sleep(5)

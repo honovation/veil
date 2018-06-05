@@ -18,13 +18,6 @@ EVENT_SUPERVISOR_TO_BE_DOWN = define_event('supervisor-to-be-down')
 
 @script('up')
 def bring_up_programs(*argv):
-    # create socket directory for postgresql if not exists
-    try:
-        shell_execute('getent passwd postgres')
-    except ShellExecutionError:
-        pass
-    else:
-        shell_execute('install -d -m 2775 -o postgres -g postgres /var/run/postgresql')
     if 1 == len(argv) and not argv[0].startswith('--'):
         bring_up_program(argv[0])
     else:

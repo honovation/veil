@@ -50,7 +50,7 @@ ident_file = '{{ config.data_directory }}/pg_ident.conf'	# ident configuration f
 					# (change requires restart)
 
 # If external_pid_file is not explicitly set, no extra PID file is written.
-external_pid_file = '/var/run/postgresql/{{ config.purpose }}-{{ config.version }}.pid'			# write an extra PID file
+#external_pid_file = ''			# write an extra PID file
 					# (change requires restart)
 
 
@@ -67,7 +67,7 @@ listen_addresses = '{{ config.host }}'		# what IP address(es) to listen on;
 port = {{ config.port }}				# (change requires restart)
 max_connections = 100			# (change requires restart)
 #superuser_reserved_connections = 3	# (change requires restart)
-#unix_socket_directories = '/var/run/postgresql'	# comma-separated list of directories
+#unix_socket_directories = '/tmp'	# comma-separated list of directories
 					# (change requires restart)
 #unix_socket_group = ''			# (change requires restart)
 #unix_socket_permissions = 0777		# begin with 0 to use octal notation
