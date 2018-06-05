@@ -11,10 +11,11 @@ from ..server.pg_server_installer import postgresql_maintenance_config
 def create_backup(purpose, backup_path):
     config = database_client_config(purpose)
     maintenance_config = postgresql_maintenance_config(purpose)
+    pg_bin_dir = get_pg_bin_dir(maintenance_config.version)
     env = os.environ.copy()
     env['PGPASSWORD'] = config.password
     shell_execute('{pg_bin_dir}/pg_dump -h {host} -p {port} -U {user} -j `nproc` -v -b -F d -f "{backup_path}" -d {database}'.format(
-        pg_bin_dir=get_pg_bin_dir(maintenance_config.version),
+        pg_bin_dir=pg_bin_dir,
         host=config.host,
         port=config.port,
         user=config.user,
@@ -26,12 +27,21 @@ def create_backup(purpose, backup_path):
 def restore_backup(backup_path, purpose):
     config = database_client_config(purpose)
     maintenance_config = postgresql_maintenance_config(purpose)
+    pg_bin_dir = get_pg_bin_dir(maintenance_config.version)
     env = os.environ.copy()
     env['PGPASSWORD'] = maintenance_config.owner_password
-    shell_execute('{pg_bin_dir}/pg_restore -h {host} -p {port} -U {user} -j `nproc` -v -c -e -F d -d {database} "{backup_path}" --if-exists'.format(
-        pg_bin_dir=get_pg_bin_dir(maintenance_config.version),
+    shell_execute('{pg_bin_dir}/pg_restore -h {host} -p {port} -U {user} -j `nproc` -v -c --if-exists -e -F d -d {database} "{backup_path}"'.format(
+        pg_bin_dir=pg_bin_dir,
         host=config.host,
         port=config.port,
         user=maintenance_config.owner,
         backup_path=backup_path,
+        database=config.database), env=env)
+    # TODO: remove the below workaround after bug 14788 is fixed
+    # bug 14788: http://www.postgresql-archive.org/BUG-14788-pg-restore-c-won-t-restore-schema-access-privileges-td5979457.html
+    shell_execute('{pg_bin_dir}/psql -h {host} -p {port} -U {user} -d {database} -c "GRANT ALL ON SCHEMA public TO PUBLIC"'.format(
+        pg_bin_dir=pg_bin_dir,
+        host=config.host,
+        port=config.port,
+        user=maintenance_config.owner,
         database=config.database), env=env)
