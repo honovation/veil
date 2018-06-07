@@ -450,6 +450,13 @@ def veil_host_user_resource(host, user_dir):
             uid = (user_dir / 'id').text().strip()
             fabric.api.sudo('adduser --uid {uid} {username} --gecos {username} --disabled-login --shell /usr/sbin/nologin --quiet'.format(username=username, uid=uid))
     fabric.api.put(local_path=user_dir, remote_path='/home/', use_sudo=True, mode=0755)
+    for f in as_path(user_dir):
+        if f.endswith('.service'):
+            fabric.api.put(local_path=f, remote_path='/lib/systemd/system/', use_sudo=True, mode=0644)
+            fabric.api.sudo('systemctl daemon-reload')
+            service_name = f.basename()
+            fabric.api.sudo('systemctl enable {}'.format(service_name))
+            fabric.api.sudo('systemctl start {}'.format(service_name))
     fabric.api.sudo('chown -R {username}:{username} /home/{username}/'.format(username=username))
     user_ssh_dir = user_dir / '.ssh'
     if user_ssh_dir.isdir():

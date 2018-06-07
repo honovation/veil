@@ -6,7 +6,7 @@ Before=shutdown.target reboot.target
 
 [Service]
 Type=oneshot
-RemainAfterExit=true
+RemainAfterExit=yes
 ExecStart=/usr/local/bin/iptablesload
 ExecStop=/usr/local/bin/iptablessave
 
