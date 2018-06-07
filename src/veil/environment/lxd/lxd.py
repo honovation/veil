@@ -24,8 +24,8 @@ class LXDClient(object):
             assert endpoint is not None, 'non local should provide endpoint'
             assert config_dir is not None, 'non local should provide config_dir'
             config_file = as_path(config_dir) / '.config'
-            config = load_config_from(config_file, 'lxd_cert_path', 'lxd_trusted_password')
-            cert = (os.path.expanduser('{}/lxd.crt'.format(config.lxd_cert_path)), os.path.expanduser('{}/lxd.key'.format(config.lxd_cert_path)))
+            config = load_config_from(config_file, 'lxd_trusted_password')
+            cert = (os.path.expanduser('{}/lxd.crt'.format(config_dir)), os.path.expanduser('{}/lxd.key'.format(config_dir)))
             self.client = pylxd.Client(endpoint=endpoint, cert=cert, verify=False, timeout=(3.05, 27))
             if not self.client.trusted:
                 self.client.authenticate(config.lxd_trusted_password)
