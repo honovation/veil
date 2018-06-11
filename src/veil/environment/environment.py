@@ -13,7 +13,7 @@ DEFAULT_DNS_SERVERS = ('119.29.29.29', '182.254.116.116', '8.8.8.8', '8.8.4.4')
 DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
 DEPENDENCY_SSL_URL = 'https://dependency-veil.qiniudn.com'
 APT_URL = 'https://mirrors.aliyun.com/ubuntu/'
-PYPI_INDEX_URL = None
+PYPI_INDEX_URL = 'https://pypi.doubanio.com/simple/'
 
 OPT_DIR = as_path('/opt')
 SHARE_DIR = OPT_DIR / 'share'
