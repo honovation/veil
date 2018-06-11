@@ -110,16 +110,18 @@ def subscribe_logistics_notify(logistics_id, logistics_order):
         elif '<success>false</success>' in response.text:
             m = PATTERN_FOR_REASON.search(response.text)
             reason = m.group(1) if m else ''
-            LOGGER.info('yto logistics subscribe failed: %(logistics_id)s, %(logistics_order)s, %(reason)s', {
+            LOGGER.error('yto logistics subscribe failed: %(logistics_id)s, %(logistics_order)s, %(data)s, %(reason)s', {
                 'logistics_id': logistics_id,
                 'reason': reason,
+                'data': data,
                 'logistics_order': logistics_order
             })
             raise Exception('yto logistics subscribe failed: {}, {}'.format(logistics_id, reason))
         else:
-            LOGGER.info('yto logistics subscribe failed with bad response: %(logistics_id)s, %(logistics_order)s, %(response)s', {
+            LOGGER.error('yto logistics subscribe failed with bad response: %(logistics_id)s, %(logistics_order)s, %(data)s, %(response)s', {
                 'logistics_id': logistics_id,
                 'response': response.text,
+                'data': data,
                 'logistics_order': logistics_order
             })
             raise Exception('yto logistics subscribe failed with bad response: {}, {}'.format(logistics_id, response.text))
