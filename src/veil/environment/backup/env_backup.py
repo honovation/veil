@@ -11,7 +11,7 @@ from veil.environment.in_service import is_server_running
 
 LOGGER = logging.getLogger(__name__)
 
-SSH_KEY_PATH = '/etc/ssh/id_rsa-guard'
+SSH_KEY_PATH = '/etc/ssh/id_ed25519-guard'
 KEEP_BACKUP_FOR_DAYS = 5 if VEIL_ENV.is_staging else 10
 
 

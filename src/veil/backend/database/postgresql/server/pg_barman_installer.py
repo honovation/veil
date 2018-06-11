@@ -52,7 +52,7 @@ def bring_up_barman_backup(crontab_expression, purpose):
 def bring_up_barman_recover(crontab_expression, purpose, host, port, user):
     @run_every(crontab_expression)
     def work():
-        ssh_command = 'ssh -p {} -i /etc/ssh/id_rsa-barman {}@{}'.format(port, user, host)
+        ssh_command = 'ssh -p {} -i /etc/ssh/id_ed25519-barman {}@{}'.format(port, user, host)
         path = 'backup_mirror/{}/{}-db'.format(get_current_veil_env().name, purpose)
         try:
             shell_execute('barman recover --remote-ssh-command "{}" {} latest {}'.format(ssh_command, purpose, path), capture=True)

@@ -9,7 +9,7 @@ from veil.utility.shell import *
 from veil_component import as_path
 
 LOGGER = logging.getLogger(__name__)
-SSH_KEY_PATH = '/etc/ssh/id_rsa-guard'
+SSH_KEY_PATH = '/etc/ssh/id_ed25519-guard'
 
 
 def shipping_to_backup_mirror(source_path, remote_path, cwd):

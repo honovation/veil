@@ -7,7 +7,7 @@ from veil.utility.shell import *
 from veil.utility.timer import *
 
 LOGGER = logging.getLogger(__name__)
-SSH_KEY_PATH = '/etc/ssh/id_rsa-guard'
+SSH_KEY_PATH = '/etc/ssh/id_ed25519-guard'
 
 
 @script('aof-shipping')
