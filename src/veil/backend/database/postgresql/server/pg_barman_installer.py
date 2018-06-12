@@ -11,7 +11,7 @@ from veil_installer import *
 from ...postgresql_setting import get_pg_bin_dir
 
 BARMAN_CONF_PATH = VEIL_ETC_DIR / 'barman.d'
-BARMAN_HOME = VEIL_VAR_DIR / 'barman'
+BARMAN_HOME = VEIL_VAR_DIR / 'data' / 'barman'
 
 
 @composite_installer
