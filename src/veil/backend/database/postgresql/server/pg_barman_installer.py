@@ -26,7 +26,7 @@ def pgbarman_resource(config):
                                                                      barman_home=BARMAN_HOME, log_path=VEIL_LOG_DIR), owner=CURRENT_USER,
                       group=CURRENT_USER_GROUP, cmd_run_after_updated='sudo mv /tmp/barman.conf /etc/barman.conf'),
         file_resource(path='/tmp/barman', content=render_config('pg_barman_cron.d.j2', barman_user=CURRENT_USER), owner=CURRENT_USER, group=CURRENT_USER_GROUP,
-                      cmd_run_after_updated='sudo mv /tmp/barman /etc/cron.d/barman'),
+                      mode=0600, cmd_run_after_updated='sudo mv /tmp/barman /etc/cron.d/barman && sudo chown root:root /etc/cron.d/barman'),
         directory_resource(path=BARMAN_CONF_PATH, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         directory_resource(path=BARMAN_HOME, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         directory_resource(path=BARMAN_HOME / config.server_name, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
