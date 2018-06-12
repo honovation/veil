@@ -50,9 +50,9 @@ def is_container_running(server):
 
 def is_server_running(server, on_host=True):
     if on_host:
-        ret = fabric.api.run('ps -ef | grep supervisord | grep -e {} | grep -v grep'.format(server.etc_dir), warn_only=True)
+        ret = fabric.api.run('ps -ef | grep supervisord | grep -e {}/supervisor.cfg | grep -v grep'.format(server.etc_dir), warn_only=True)
     else:
         host = get_veil_host(server.VEIL_ENV.name, server.host_name)
         with fabric.api.settings(host_string=host.deploys_via):
-            ret = fabric.api.run('ps -ef | grep supervisord | grep -e {} | grep -v grep'.format(server.etc_dir), warn_only=True)
+            ret = fabric.api.run('ps -ef | grep supervisord | grep -e {}/supervisor.cfg | grep -v grep'.format(server.etc_dir), warn_only=True)
     return ret.return_code == 0
