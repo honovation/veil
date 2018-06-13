@@ -7,8 +7,7 @@ from veil_installer import *
 from veil.frontend.cli import *
 from veil.utility.timer import *
 from veil.utility.shell import *
-from veil.environment.in_service import is_server_running
-from .ship_to_backup_mirror import ship_to_backup_mirror
+from .ship_to_backup_mirror import ship_to_backup_mirror, SSH_KEY_PATH
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,8 +39,8 @@ def create_env_backup():
         return
     server_guard = get_current_veil_server()
     host = get_veil_host(server_guard.VEIL_ENV.name, server_guard.host_name)
-    with fabric.api.settings(disable_known_hosts=True, key_filename=SSH_KEY_PATH):
-        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    with fabric.api.settings(disable_known_hosts=True, host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port, key_filename=SSH_KEY_PATH):
         backup_host(host, timestamp)
     shell_execute('rm -f latest && ln -s {} latest'.format(timestamp), cwd=VEIL_BACKUP_ROOT)
     delete_old_backups()
@@ -55,46 +54,14 @@ def backup_host(host, timestamp):
         shell_execute('sudo mkdir -p {}'.format(backup_dir))
         shell_execute('sudo chown -R {}:{} {}'.format(host.ssh_user, host.ssh_user, backup_dir))
         shell_execute('chmod 0700 {}'.format(backup_dir))
-    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
-        veil_servers = list_veil_servers(VEIL_ENV.name, include_guard_server=False, include_monitor_server=False)
-        barman_enabled = any(s.name == 'barman' for s in veil_servers)
-        if not barman_enabled:
-            running_servers_to_down = [s for s in veil_servers
-                                       if s.host_base_name == host.base_name and is_server_running(s) and (s.mount_data_dir or is_worker_running_on_server(s))]
-        else:
-            running_servers_to_down = []
-
-        exclude_paths = [host.var_dir.relpathto(host.bucket_inline_static_files_dir),
-                         host.var_dir.relpathto(host.bucket_captcha_image_dir),
-                         host.var_dir.relpathto(host.bucket_uploaded_files_dir)]
-        if barman_enabled:
-            exclude_paths.append('data/*-postgresql-*')
-        excludes = ' '.join('--exclude "/{}"'.format(path) for path in exclude_paths)
-
-        try:
-            if running_servers_to_down:
-                bring_down_servers(running_servers_to_down)
-            link_dest = '--link-dest={}'.format(VEIL_BACKUP_ROOT / 'latest') if (VEIL_BACKUP_ROOT / 'latest').exists() else ''
-            shell_execute('rsync -avh --numeric-ids --delete {excludes} {link_dest} {host_var_path}/ {backup_dir}/'.format(
-                excludes=excludes, host_var_path=host.var_dir, link_dest=link_dest, backup_dir=VEIL_BACKUP_ROOT / timestamp))
-        finally:
-            if running_servers_to_down:
-                bring_up_servers(reversed(running_servers_to_down))
-
-
-def bring_down_servers(servers):
-    for server in servers:
-        fabric.api.run('lxc exec {} -- systemctl stop veil-server.service'.format(server.container_name))
-
-
-def bring_up_servers(servers):
-    for server in servers:
-        fabric.api.run('lxc exec {} -- systemctl start veil-server.service'.format(server.container_name))
-
-
-def is_worker_running_on_server(server):
-    ret = fabric.api.run("lxc exec {} -- ps -ef | grep 'veil backend job-queue' | grep -v grep".format(server.container_name), warn_only=True)
-    return ret.return_code == 0
+    exclude_paths = [host.var_dir.relpathto(host.bucket_inline_static_files_dir),
+                     host.var_dir.relpathto(host.bucket_captcha_image_dir),
+                     host.var_dir.relpathto(host.bucket_uploaded_files_dir),
+                     'data/*-postgresql-*']
+    excludes = ' '.join('--exclude "/{}"'.format(path) for path in exclude_paths)
+    link_dest = '--link-dest={}'.format(VEIL_BACKUP_ROOT / 'latest') if (VEIL_BACKUP_ROOT / 'latest').exists() else ''
+    shell_execute('rsync -avh --numeric-ids --delete {excludes} {link_dest} {host_var_path}/ {backup_dir}/'.format(
+        excludes=excludes, host_var_path=host.var_dir, link_dest=link_dest, backup_dir=VEIL_BACKUP_ROOT / timestamp))
 
 
 def delete_old_backups():
