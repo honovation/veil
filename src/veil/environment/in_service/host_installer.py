@@ -51,8 +51,8 @@ def veil_hosts_resource(veil_env_name):
             hosts_to_install.append(host.base_name)
         for server in host.server_list:
             resources.extend([
-                veil_host_directory_resource(host=host, remote_path=server.etc_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
-                veil_host_directory_resource(host=host, remote_path=server.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
+                veil_host_directory_resource(host=host, remote_path=server.etc_dir),
+                veil_host_directory_resource(host=host, remote_path=server.log_dir),
                 veil_container_resource(host=host, server=server)
             ])
     return resources
@@ -133,8 +133,7 @@ def veil_host_onetime_config_resource(host):
 @composite_installer
 def veil_host_config_resource(host):
     resources = [
-        veil_host_directory_resource(host=host, remote_path='/home/{}/.ssh'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group,
-                                     mode=0700),
+        veil_host_directory_resource(host=host, remote_path='/home/{}/.ssh'.format(host.ssh_user), mode=0700),
         veil_host_file_resource(local_path=get_env_config_dir() / '.ssh' / 'authorized_keys', host=host,
                                 remote_path='/home/{}/.ssh/authorized_keys'.format(host.ssh_user), owner=host.ssh_user, owner_group=host.ssh_user_group,
                                 mode=0600),
@@ -345,10 +344,10 @@ def init_lxd_image(client):
 
 
 def init_veil_host_basic_layout(host):
-    dirs = [host.opt_dir, host.share_dir, DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.env_dir, host.code_dir, host.etc_dir, host.log_dir,
-            host.var_dir, host.buckets_dir, host.bucket_log_dir, host.data_dir]
+    dirs = [host.share_dir, DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.env_dir, host.code_dir, host.etc_dir, host.log_dir, host.var_dir,
+            host.buckets_dir, host.bucket_log_dir, host.data_dir]
     fabric.api.sudo('mkdir -p -m 0755 {}'.format(' '.join(dirs)))
-    fabric.api.sudo('chown {}:{} {}'.format(host.ssh_user, host.ssh_user_group, ' '.join(dirs[1:])))
+    fabric.api.sudo('chown -R {}:{} {}'.format(host.ssh_user, host.ssh_user_group, ' '.join(dirs)))
     if host.VEIL_ENV.name != host.VEIL_ENV.base_name:
         env_full_name_link = host.env_dir.parent / host.VEIL_ENV.name
         fabric.api.sudo('ln -sfT {} {}'.format(host.env_dir, env_full_name_link))
@@ -382,16 +381,14 @@ def veil_host_sources_list_resource(host):
 
 
 @atomic_installer
-def veil_host_directory_resource(host, remote_path, owner='root', owner_group='root', mode=0755):
+def veil_host_directory_resource(host, remote_path, mode=0755):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_host_directory?{}&path={}'.format(host.VEIL_ENV.name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
     with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
-        fabric.api.sudo('mkdir -p {}'.format(remote_path))
-        fabric.api.sudo('chmod {:o} {}'.format(mode, remote_path))
-        fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
+        fabric.api.run('mkdir -p -m {:o} {}'.format(mode, remote_path))
 
 
 @atomic_installer

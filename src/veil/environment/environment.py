@@ -119,7 +119,6 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         host.pypi_index_host = env.pypi_index_host
         host.pypi_index_url = env.pypi_index_url
         host.ssh_user_home = as_path('/home') / host.ssh_user
-        host.opt_dir = OPT_DIR
         host.share_dir = SHARE_DIR
         host.env_dir = env.env_dir
         host.etc_dir = host.env_dir / 'etc'
