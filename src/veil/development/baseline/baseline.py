@@ -145,6 +145,6 @@ def download_baseline(veil_env_name, remote_path, baseline_path):
     if not hasattr(backup_mirror, 'domain'):
         backup_mirror.domain = get_backup_mirror_domain()
     backup_mirror_path = '~/backup_mirror/{}'.format(veil_env_name)
-    shell_execute('''rsync -avhPz -e "ssh -p {} -T -x -o Compression=yes -o StrictHostKeyChecking=no" --delete --bwlimit={} {}@{}:{}/{}/ {}/'''.format(
+    shell_execute('''rsync -avzhP -e "ssh -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --delete --bwlimit={} {}@{}:{}/{}/ {}/'''.format(
         backup_mirror.ssh_port, backup_mirror.bandwidth_limit, backup_mirror.ssh_user, backup_mirror.domain, backup_mirror_path, remote_path,
         baseline_path), debug=True)
