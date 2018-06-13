@@ -58,5 +58,7 @@ else:
 VEIL_ENV = VeilEnv(VEIL_ENV_NAME)
 
 CURRENT_OS = namedtuple('VeilOS', 'distname, version, codename')(*platform.linux_distribution())
+
+# Note: when supporting new OS, you might want to change LXD_IMAGE_FINGERPRINT in lxd.py
 if CURRENT_OS.distname != 'Ubuntu' or CURRENT_OS.codename not in {'bionic', 'xenial'}:
     raise AssertionError('CURRENT_OS not supported: {}'.format(CURRENT_OS))

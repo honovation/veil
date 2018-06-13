@@ -10,7 +10,9 @@ from veil_component import as_path
 
 LOGGER = logging.getLogger(__name__)
 
-LXD_IMAGE_FINGERPRINT = '9879a79ac2b208c05af769089f0a6c3cbea8529571e056c82e96f1468cd1f610'
+# How to find the image for the current os and architecture: lxc image list ubuntu:`lsb_release -cs` | grep `uname -m`
+LXD_IMAGE_FINGERPRINT = '9879a79ac2b2'
+
 LXD_PROFILE_NAME = 'veil'
 LXD_BRIDGE_NAME = 'br0'
 
