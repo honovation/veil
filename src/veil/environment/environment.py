@@ -213,7 +213,7 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
 
 def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_host=None, supervisor_http_port=None,
                 name_servers=None, backup_mirror=None, mount_editorial_dir=False, mount_buckets_dir=False,
-                mount_data_dir=False, memory_limit=None, cpu_share=None, cpus=None, ssh_port=None):
+                mount_data_dir=False, memory_limit=None, cpu_share=None, cpus=None, ssh_port=None, is_guard_server=False):
     from veil.model.collection import objectify
     if backup_mirror:
         backup_mirror = objectify(backup_mirror)
@@ -233,19 +233,21 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
         'memory_limit': memory_limit,
         'cpu_share': cpu_share,
         'cpus': cpus,
-        'ssh_port': ssh_port
+        'ssh_port': ssh_port,
+        'is_guard_server': is_guard_server
     })
 
 
 def list_veil_servers(veil_env_name, include_guard_server=True, include_monitor_server=True, include_barman_server=True):
     exclude_server_names = []
-    if not include_guard_server:
-        exclude_server_names.append('guard')
     if not include_monitor_server:
         exclude_server_names.append('monitor')
     if not include_barman_server:
         exclude_server_names.append('barman')
-    return [server for server in get_veil_env(veil_env_name).server_list if server.name not in exclude_server_names]
+    servers = [server for server in get_veil_env(veil_env_name).server_list if server.name not in exclude_server_names]
+    if not include_guard_server:
+        return [s for s in servers if not s.is_guard_server]
+    return servers
 
 
 def get_veil_server(veil_env_name, veil_server_name):

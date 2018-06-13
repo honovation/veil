@@ -56,10 +56,10 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
     first_round_servers = []
     second_round_servers = []
     for server in list_veil_servers(veil_env_name):
-        if server.name not in ('guard', 'monitor', 'barman'):
+        if server.name not in ('monitor', 'barman') and not server.is_guard_server:
             first_round_servers.append(server)
         else:
-            if server.name != 'monitor' or include_monitor_server == 'TRUE':
+            if server.is_guard_server or server.name != 'monitor' or include_monitor_server == 'TRUE':
                 second_round_servers.append(server)
 
     if first_round_servers:
@@ -166,7 +166,10 @@ def deploy_monitor(veil_env_name, config_dir):
 @script('deploy-guard')
 @log_elapsed_time
 def deploy_guard(veil_env_name, config_dir):
-    _deploy_server(veil_env_name, config_dir, 'guard')
+    for server in get_veil_env(veil_env_name).servers:
+        if not server.is_guard_server:
+            continue
+        _deploy_server(veil_env_name, config_dir, server.name)
 
 
 @script('deploy-barman')
@@ -279,10 +282,12 @@ def ensure_servers_down(hosts):
 
 @script('backup-env')
 def backup_env(veil_env_name):
-    server_guard = get_veil_server(veil_env_name, 'guard')
-    with fabric.api.settings(host_string=server_guard.deploys_via):
-        with fabric.api.cd(server_guard.veil_home):
-            fabric.api.sudo('veil :{} backup-env'.format(server_guard.fullname))
+    for server in get_veil_env(veil_env_name).servers:
+        if not server.is_guard_server:
+            continue
+        with fabric.api.settings(host_string=server.deploys_via):
+            with fabric.api.cd(server.veil_home):
+                fabric.api.sudo('veil :{} backup-env'.format(server.fullname))
 
 
 @script('purge-left-overs')

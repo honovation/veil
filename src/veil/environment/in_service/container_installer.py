@@ -119,7 +119,7 @@ def veil_container_config_resource(server):
                                      owner_group='root', mode=0644),
         veil_container_sources_list_resource(server=server)
     ]
-    if 'guard' == server.name:
+    if server.is_guard_server:
         resources.append(
             veil_container_file_resource(local_path=get_env_config_dir() / '.ssh-guard' / 'id_ed25519', server=server, remote_path='/etc/ssh/id_ed25519-guard',
                                          owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
