@@ -37,7 +37,8 @@ def get_remote_file_content(remote_path):
 
 @atomic_installer
 def veil_container_lxc_resource(host, server):
-    remote_installer_file_content = get_remote_file_content(server.installed_container_installer_path)
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        remote_installer_file_content = get_remote_file_content(server.installed_container_installer_path)
     installer_file_content = render_installer_file(host, server)
     if remote_installer_file_content:
         action = None if installer_file_content == remote_installer_file_content else 'UPDATE'
@@ -53,11 +54,12 @@ def veil_container_lxc_resource(host, server):
             container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
             container.start()
     else:
-        with contextlib.closing(StringIO(installer_file_content)) as f:
-            fabric.api.put(f, server.container_installer_path, use_sudo=True, mode=0600)
-        with fabric.api.cd(host.veil_home):
-            fabric.api.run('veil :{} install veil_installer.installer_resource?{}'.format(server.fullname, server.container_installer_path))
-        fabric.api.run('mv -f {} {}'.format(server.container_installer_path, server.installed_container_installer_path))
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+            with contextlib.closing(StringIO(installer_file_content)) as f:
+                fabric.api.put(f, server.container_installer_path, use_sudo=True, mode=0600)
+            with fabric.api.cd(host.veil_home):
+                fabric.api.run('veil :{} install veil_installer.installer_resource?{}'.format(server.fullname, server.container_installer_path))
+            fabric.api.run('mv -f {} {}'.format(server.container_installer_path, server.installed_container_installer_path))
     while 1:
         try:
             with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
