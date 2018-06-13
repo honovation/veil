@@ -11,7 +11,6 @@ from veil_component import as_path
 LOGGER = logging.getLogger(__name__)
 
 LXD_IMAGE_FINGERPRINT = '9879a79ac2b208c05af769089f0a6c3cbea8529571e056c82e96f1468cd1f610'
-LXD_IMAGE_ALIAS = 'u1804'
 LXD_PROFILE_NAME = 'veil'
 LXD_BRIDGE_NAME = 'br0'
 

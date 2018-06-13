@@ -117,12 +117,8 @@ def veil_host_lxd_image_resource(host):
         dry_run_result[key] = 'INSTALL'
         return
     client = LXDClient(endpoint=host.lxd_endpoint, config_dir=get_env_config_dir()).client
-    if client.images.exists(LXD_IMAGE_FINGERPRINT):
-        image = client.images.get(LXD_IMAGE_FINGERPRINT)
-        if LXD_IMAGE_ALIAS not in [a['name'] for a in image.aliases]:
-            image.add_alias(LXD_IMAGE_ALIAS, 'default image')
-    else:
-        fabric.api.run('lxc image copy ubuntu:{} local: --alias u1804'.format(LXD_IMAGE_FINGERPRINT))
+    if not client.images.exists(LXD_IMAGE_FINGERPRINT):
+        fabric.api.run('lxc image copy ubuntu:{} local:'.format(LXD_IMAGE_FINGERPRINT))
 
 
 @composite_installer
