@@ -124,6 +124,9 @@ def veil_container_config_resource(server):
         resources.append(
             veil_container_file_resource(local_path=get_env_config_dir() / '.ssh-guard' / 'id_ed25519', server=server, remote_path='/etc/ssh/id_ed25519-barman',
                                          owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
+    if 'monitor' == server.name:
+        resources.append(veil_container_directory_resource(server=server, remote_path=server.env_dir, owner=server.ssh_user, owner_group=server.ssh_user_group))
+    
     for local_path in server_config_dir.files('*.crt'):
         resources.append(
             veil_container_file_resource(local_path=local_path, server=server, remote_path='/etc/ssl/certs/{}'.format(local_path.name), owner=server.ssh_user,
@@ -195,6 +198,20 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
     if cmds:
         for cmd in cmds:
             client.run_container_command(server.container_name, cmd)
+
+
+@atomic_installer
+def veil_container_directory_resource(server, remote_path, owner, owner_group, mode=0755):
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        key = 'veil_container_directory?server={}&remote_path={}&owner={}&owner_group={}&mode={}'.format(server.container_name, remote_path, owner, owner_group,
+                                                                                                         mode)
+        dry_run_result[key] = 'INSTALL'
+        return
+    client = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir())
+    client.run_container_command(server.container_name, 'mkdir -p {}'.format(remote_path))
+    client.run_container_command(server.container_name, 'chown {}:{} {}'.format(owner, owner_group, remote_path))
+    client.run_container_command(server.container_name, 'chmod {:o} {}'.format(mode, remote_path))
 
 
 @atomic_installer
