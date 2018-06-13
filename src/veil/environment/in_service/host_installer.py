@@ -66,13 +66,6 @@ def veil_hosts_resource(veil_env_name):
 
 
 @atomic_installer
-def veil_host_lxd_init_resource():
-    config_file = as_path(get_env_config_dir()) / '.config'
-    config = load_config_from(config_file, 'lxd_trusted_password')
-    fabric.api.run('lxd init --auto --network-address=[::] --trust-password={}'.format(config.lxd_trusted_password))
-
-
-@atomic_installer
 def veil_host_lxd_profile_resource(host):
     client = LXDClient(endpoint=host.lxd_endpoint, config_dir=get_env_config_dir()).client
     if not client.profiles.exists(LXD_PROFILE_NAME):
@@ -200,21 +193,8 @@ def veil_host_onetime_config_resource(host):
                                 owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-lxc-ipv4-ip-forward.conf'),
         veil_host_file_resource(local_path=CURRENT_DIR / 'disable-ipv6.conf', host=host, remote_path='/etc/sysctl.d/60-disable-ipv6.conf',
                                 owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-disable-ipv6.conf'),
-        veil_host_directory_resource(host=host, remote_path=host.opt_dir),
-        veil_host_directory_resource(host=host, remote_path=host.share_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_directory_resource(host=host, remote_path=DEPENDENCY_DIR, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_directory_resource(host=host, remote_path=DEPENDENCY_INSTALL_DIR, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_directory_resource(host=host, remote_path=PYPI_ARCHIVE_DIR, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_directory_resource(host=host, remote_path=host.env_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_directory_resource(host=host, remote_path=host.code_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_directory_resource(host=host, remote_path=host.etc_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_directory_resource(host=host, remote_path=host.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_directory_resource(host=host, remote_path=host.var_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_directory_resource(host=host, remote_path=host.buckets_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_directory_resource(host=host, remote_path=host.bucket_log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_directory_resource(host=host, remote_path=host.data_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-        veil_host_init_resource(host=host),
-        veil_host_lxd_init_resource(),
+        veil_host_sources_list_resource(host=host),
+        veil_host_init_resource(host=host)  # should be the last one of veil_host_onetime_config_resource which marks the host-initialization tag
     ]
     return resources
 
@@ -343,9 +323,6 @@ def veil_host_init_resource(host):
         dry_run_result[key] = 'INSTALL'
         return
 
-    if host.VEIL_ENV.name != host.VEIL_ENV.base_name:
-        fabric.api.sudo('ln -sfT {} {}'.format(host.env_dir, host.env_dir.parent / host.VEIL_ENV.name))
-
     fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no', 'PermitRootLogin no'], use_sudo=True)
     fabric.api.sudo('systemctl reload-or-restart ssh')
 
@@ -369,9 +346,31 @@ def veil_host_init_resource(host):
         fabric.api.sudo('pip install {} --upgrade "wheel>=0.30.0a0"'.format(pip_index_args))
         fabric.api.sudo('pip install {} --upgrade "virtualenv>=15.1.0"'.format(pip_index_args))
 
+    init_veil_host_lxd()
+
+    init_veil_host_basic_layout(host)
+
     fabric.api.run('touch {}'.format(host.initialized_tag_path))
     if host.initialized_tag_path != host.initialized_tag_link:
         fabric.api.run('ln -s {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
+
+
+@atomic_installer
+def init_veil_host_lxd():
+    config_file = as_path(get_env_config_dir()) / '.config'
+    config = load_config_from(config_file, 'lxd_trusted_password')
+    fabric.api.run('lxd init --auto --network-address=[::] --trust-password={}'.format(config.lxd_trusted_password))
+
+
+def init_veil_host_basic_layout(host):
+    dirs = [host.opt_dir, host.share_dir, DEPENDENCY_DIR, DEPENDENCY_INSTALL_DIR, PYPI_ARCHIVE_DIR, host.env_dir, host.code_dir, host.etc_dir, host.log_dir,
+            host.var_dir, host.buckets_dir, host.bucket_log_dir, host.data_dir]
+    fabric.api.sudo('mkdir -p -m 0755 {}'.format(' '.join(dirs)))
+    fabric.api.sudo('chown {}:{} {}'.format(host.ssh_user, host.ssh_user_group, ' '.join(dirs[1:])))
+    if host.VEIL_ENV.name != host.VEIL_ENV.base_name:
+        env_full_name_link = host.env_dir.parent / host.VEIL_ENV.name
+        fabric.api.sudo('ln -sfT {} {}'.format(host.env_dir, env_full_name_link))
+        fabric.api.sudo('chown {}:{} {}'.format(host.ssh_user, host.ssh_user_group, env_full_name_link))
 
 
 def is_initialized_for_another_same_base_instance(host):
