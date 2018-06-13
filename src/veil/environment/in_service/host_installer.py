@@ -35,9 +35,6 @@ def veil_hosts_resource(veil_env_name):
         if host.base_name not in hosts_to_install:
             resources.extend([
                 veil_host_onetime_config_resource(host=host),
-                veil_host_lxd_user_mapping_resource(host=host),
-                veil_host_lxd_profile_resource(host=host),
-                veil_host_lxd_image_resource(host=host),
                 veil_host_config_resource(host=host),
                 veil_host_application_config_resource(host=host),
                 veil_host_codebase_resource(host=host)
@@ -59,64 +56,6 @@ def veil_hosts_resource(veil_env_name):
                 veil_container_resource(host=host, server=server)
             ])
     return resources
-
-
-@atomic_installer
-def veil_host_lxd_profile_resource(host):
-    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=get_env_config_dir()).client
-    if not client.profiles.exists(LXD_PROFILE_NAME):
-        client.profiles.create(LXD_PROFILE_NAME, config={}, devices={
-            'root': {
-                'path': '/',
-                'pool': 'default',
-                'type': 'disk'
-            },
-            'eth0': {
-                'name': 'eth0',
-                'type': 'nic',
-                'nictype': 'bridged',
-                'parent': LXD_BRIDGE_NAME
-            }
-        })
-
-
-@atomic_installer
-def veil_host_lxd_user_mapping_resource(host):
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        key = 'veil_host_lxd_user_mapping?{}&host={}'.format(host.VEIL_ENV.name, host.name)
-        dry_run_result[key] = 'INSTALL'
-        return
-    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
-        ret = fabric.api.run('grep -rl lxd:$UID:1 /etc/subuid', warn_only=True)
-        if ret.return_code == 1:
-            lxd_user_mapping = fabric.api.run('echo lxd:$UID:1')
-            fabric.api.sudo('echo {} >> /etc/subuid'.format(lxd_user_mapping))
-        ret = fabric.api.run('grep -rl lxd:$(id -g):1 /etc/subgid', warn_only=True)
-        if ret.return_code == 1:
-            lxd_group_mapping = fabric.api.run('echo lxd:$(id -g):1')
-            fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
-
-        ret = fabric.api.run('grep -rl root:$UID:1 /etc/subuid', warn_only=True)
-        if ret.return_code == 1:
-            lxd_user_mapping = fabric.api.run('echo root:$UID:1')
-            fabric.api.sudo('echo {} >> /etc/subuid'.format(lxd_user_mapping))
-        ret = fabric.api.run('grep -rl root:$(id -g):1 /etc/subgid', warn_only=True)
-        if ret.return_code == 1:
-            lxd_group_mapping = fabric.api.run('echo root:$(id -g):1')
-            fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
-
-
-@atomic_installer
-def veil_host_lxd_image_resource(host):
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        key = 'veil_host_lxd_image?{}&host={}'.format(host.VEIL_ENV.name, host.name)
-        dry_run_result[key] = 'INSTALL'
-        return
-    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=get_env_config_dir()).client
-    if not client.images.exists(LXD_IMAGE_FINGERPRINT):
-        fabric.api.run('lxc image copy ubuntu:{} local:'.format(LXD_IMAGE_FINGERPRINT))
 
 
 @composite_installer
@@ -338,7 +277,7 @@ def veil_host_init_resource(host):
             fabric.api.sudo('pip install {} --upgrade "wheel>=0.30.0a0"'.format(pip_index_args))
             fabric.api.sudo('pip install {} --upgrade "virtualenv>=15.1.0"'.format(pip_index_args))
 
-        init_veil_host_lxd()
+        init_veil_host_lxd(host)
 
         init_veil_host_basic_layout(host)
 
@@ -347,11 +286,62 @@ def veil_host_init_resource(host):
             fabric.api.run('ln -s {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
 
 
-@atomic_installer
-def init_veil_host_lxd():
+def init_veil_host_lxd(host):
+    init_lxd_daemon()
+    init_lxd_user_mapping()
+    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=get_env_config_dir()).client
+    init_lxd_profile_resource(client)
+    init_lxd_image(client)
+
+
+def init_lxd_daemon():
     config_file = as_path(get_env_config_dir()) / '.config'
     config = load_config_from(config_file, 'lxd_trusted_password')
     fabric.api.run('lxd init --auto --network-address=[::] --trust-password={}'.format(config.lxd_trusted_password))
+
+
+def init_lxd_user_mapping():
+    ret = fabric.api.run('grep -rl lxd:$UID:1 /etc/subuid', warn_only=True)
+    if ret.return_code == 1:
+        lxd_user_mapping = fabric.api.run('echo lxd:$UID:1')
+        fabric.api.sudo('echo {} >> /etc/subuid'.format(lxd_user_mapping))
+    ret = fabric.api.run('grep -rl lxd:$(id -g):1 /etc/subgid', warn_only=True)
+    if ret.return_code == 1:
+        lxd_group_mapping = fabric.api.run('echo lxd:$(id -g):1')
+        fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
+
+    ret = fabric.api.run('grep -rl root:$UID:1 /etc/subuid', warn_only=True)
+    if ret.return_code == 1:
+        lxd_user_mapping = fabric.api.run('echo root:$UID:1')
+        fabric.api.sudo('echo {} >> /etc/subuid'.format(lxd_user_mapping))
+    ret = fabric.api.run('grep -rl root:$(id -g):1 /etc/subgid', warn_only=True)
+    if ret.return_code == 1:
+        lxd_group_mapping = fabric.api.run('echo root:$(id -g):1')
+        fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
+
+
+def init_lxd_profile_resource(client):
+    if client.profiles.exists(LXD_PROFILE_NAME):
+        return
+    client.profiles.create(LXD_PROFILE_NAME, config={}, devices={
+        'root': {
+            'path': '/',
+            'pool': 'default',
+            'type': 'disk'
+        },
+        'eth0': {
+            'name': 'eth0',
+            'type': 'nic',
+            'nictype': 'bridged',
+            'parent': LXD_BRIDGE_NAME
+        }
+    })
+
+
+def init_lxd_image(client):
+    if client.images.exists(LXD_IMAGE_FINGERPRINT):
+        return
+    fabric.api.run('lxc image copy ubuntu:{} local:'.format(LXD_IMAGE_FINGERPRINT))
 
 
 def init_veil_host_basic_layout(host):
