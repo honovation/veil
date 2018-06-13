@@ -30,37 +30,34 @@ def veil_hosts_resource(veil_env_name):
     hosts = list_veil_hosts(veil_env_name)
     for host in hosts:
         # user and port are required as setting host_string would not set them accordingly
-        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
-            if is_initialized_for_another_same_base_instance(host):
-                raise Exception(
-                    'Can not deploy {} on host {} as it is initialized for another same-base instance!!!'.format(
-                        host.VEIL_ENV.name, host.name))
-            if host.base_name not in hosts_to_install:
-                resources.extend([
-                    veil_host_onetime_config_resource(host=host),
-                    veil_host_lxd_user_mapping_resource(host=host),
-                    veil_host_lxd_profile_resource(host=host),
-                    veil_host_lxd_image_resource(host=host),
-                    veil_host_config_resource(host=host),
-                    veil_host_application_config_resource(host=host),
-                    veil_host_codebase_resource(host=host)
-                ])
-                host_users_dir = get_env_config_dir() / 'hosts' / host.base_name / 'USERS'
-                if host_users_dir.exists():
-                    print(cyan('Install Veil host users resource'))
-                    for user_dir in host_users_dir.dirs():
-                        resources.append(veil_host_user_resource(host=host, user_dir=user_dir))
-                if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
-                    print(cyan('Install Veil host user editor resource'))
-                    resources.append(veil_host_user_editor_additional_resource(host=host))
-                resources.append(veil_host_iptables_rules_resource(host=host))
-                hosts_to_install.append(host.base_name)
-            for server in host.server_list:
-                resources.extend([
-                    veil_host_directory_resource(host=host, remote_path=server.etc_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
-                    veil_host_directory_resource(host=host, remote_path=server.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
-                    veil_container_resource(host=host, server=server)
-                ])
+        if is_initialized_for_another_same_base_instance(host):
+            raise Exception('Can not deploy {} on host {} as it is initialized for another same-base instance!!!'.format(host.VEIL_ENV.name, host.name))
+        if host.base_name not in hosts_to_install:
+            resources.extend([
+                veil_host_onetime_config_resource(host=host),
+                veil_host_lxd_user_mapping_resource(host=host),
+                veil_host_lxd_profile_resource(host=host),
+                veil_host_lxd_image_resource(host=host),
+                veil_host_config_resource(host=host),
+                veil_host_application_config_resource(host=host),
+                veil_host_codebase_resource(host=host)
+            ])
+            host_users_dir = get_env_config_dir() / 'hosts' / host.base_name / 'USERS'
+            if host_users_dir.exists():
+                print(cyan('Install Veil host users resource'))
+                for user_dir in host_users_dir.dirs():
+                    resources.append(veil_host_user_resource(host=host, user_dir=user_dir))
+            if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
+                print(cyan('Install Veil host user editor resource'))
+                resources.append(veil_host_user_editor_additional_resource(host=host))
+            resources.append(veil_host_iptables_rules_resource(host=host))
+            hosts_to_install.append(host.base_name)
+        for server in host.server_list:
+            resources.extend([
+                veil_host_directory_resource(host=host, remote_path=server.etc_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
+                veil_host_directory_resource(host=host, remote_path=server.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
+                veil_container_resource(host=host, server=server)
+            ])
     return resources
 
 
@@ -90,23 +87,24 @@ def veil_host_lxd_user_mapping_resource(host):
         key = 'veil_host_lxd_user_mapping?{}&host={}'.format(host.VEIL_ENV.name, host.name)
         dry_run_result[key] = 'INSTALL'
         return
-    ret = fabric.api.run('grep -rl lxd:$UID:1 /etc/subuid', warn_only=True)
-    if ret.return_code == 1:
-        lxd_user_mapping = fabric.api.run('echo lxd:$UID:1')
-        fabric.api.sudo('echo {} >> /etc/subuid'.format(lxd_user_mapping))
-    ret = fabric.api.run('grep -rl lxd:$(id -g):1 /etc/subgid', warn_only=True)
-    if ret.return_code == 1:
-        lxd_group_mapping = fabric.api.run('echo lxd:$(id -g):1')
-        fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        ret = fabric.api.run('grep -rl lxd:$UID:1 /etc/subuid', warn_only=True)
+        if ret.return_code == 1:
+            lxd_user_mapping = fabric.api.run('echo lxd:$UID:1')
+            fabric.api.sudo('echo {} >> /etc/subuid'.format(lxd_user_mapping))
+        ret = fabric.api.run('grep -rl lxd:$(id -g):1 /etc/subgid', warn_only=True)
+        if ret.return_code == 1:
+            lxd_group_mapping = fabric.api.run('echo lxd:$(id -g):1')
+            fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
 
-    ret = fabric.api.run('grep -rl root:$UID:1 /etc/subuid', warn_only=True)
-    if ret.return_code == 1:
-        lxd_user_mapping = fabric.api.run('echo root:$UID:1')
-        fabric.api.sudo('echo {} >> /etc/subuid'.format(lxd_user_mapping))
-    ret = fabric.api.run('grep -rl root:$(id -g):1 /etc/subgid', warn_only=True)
-    if ret.return_code == 1:
-        lxd_group_mapping = fabric.api.run('echo root:$(id -g):1')
-        fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
+        ret = fabric.api.run('grep -rl root:$UID:1 /etc/subuid', warn_only=True)
+        if ret.return_code == 1:
+            lxd_user_mapping = fabric.api.run('echo root:$UID:1')
+            fabric.api.sudo('echo {} >> /etc/subuid'.format(lxd_user_mapping))
+        ret = fabric.api.run('grep -rl root:$(id -g):1 /etc/subgid', warn_only=True)
+        if ret.return_code == 1:
+            lxd_group_mapping = fabric.api.run('echo root:$(id -g):1')
+            fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
 
 
 @atomic_installer
@@ -125,8 +123,7 @@ def veil_host_lxd_image_resource(host):
 def veil_hosts_codebase_resource(veil_env_name):
     resources = []
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
-        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
-            resources.append(veil_host_codebase_resource(host=host))
+        resources.append(veil_host_codebase_resource(host=host))
     return resources
 
 
@@ -145,32 +142,34 @@ def render_iptables_rules_installer_file(host):
 
 @atomic_installer
 def veil_host_iptables_rules_resource(host):
-    remote_installer_file_content = get_remote_file_content(host.installed_iptables_rules_installer_path)
-    installer_file_content = render_iptables_rules_installer_file(host)
-    if remote_installer_file_content:
-        action = None if installer_file_content == remote_installer_file_content else 'UPDATE'
-    else:
-        action = 'INSTALL'
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        key = 'veil_host_iptables_rules?{}'.format(host.VEIL_ENV.name)
-        dry_run_result[key] = action or '-'
-        return
-    if not action:
-        return
-    with contextlib.closing(StringIO(installer_file_content)) as f:
-        fabric.api.put(f, host.iptables_rules_installer_path, use_sudo=True, mode=0600)
-    with fabric.api.cd(host.veil_home):
-        fabric.api.sudo('veil :{} install veil_installer.installer_resource?{}'.format(host.VEIL_ENV.name, host.iptables_rules_installer_path))
-        fabric.api.sudo('iptables-save -c > /etc/iptables.rules')
-    fabric.api.sudo('mv -f {} {}'.format(host.iptables_rules_installer_path, host.installed_iptables_rules_installer_path))
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        remote_installer_file_content = get_remote_file_content(host.installed_iptables_rules_installer_path)
+        installer_file_content = render_iptables_rules_installer_file(host)
+        if remote_installer_file_content:
+            action = None if installer_file_content == remote_installer_file_content else 'UPDATE'
+        else:
+            action = 'INSTALL'
+        dry_run_result = get_dry_run_result()
+        if dry_run_result is not None:
+            key = 'veil_host_iptables_rules?{}'.format(host.VEIL_ENV.name)
+            dry_run_result[key] = action or '-'
+            return
+        if not action:
+            return
+        with contextlib.closing(StringIO(installer_file_content)) as f:
+            fabric.api.put(f, host.iptables_rules_installer_path, use_sudo=True, mode=0600)
+        with fabric.api.cd(host.veil_home):
+            fabric.api.sudo('veil :{} install veil_installer.installer_resource?{}'.format(host.VEIL_ENV.name, host.iptables_rules_installer_path))
+            fabric.api.sudo('iptables-save -c > /etc/iptables.rules')
+        fabric.api.sudo('mv -f {} {}'.format(host.iptables_rules_installer_path, host.installed_iptables_rules_installer_path))
 
 
 @composite_installer
 def veil_host_onetime_config_resource(host):
-    initialized = fabric.contrib.files.exists(host.initialized_tag_link)
-    if initialized:
-        return []
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        initialized = fabric.contrib.files.exists(host.initialized_tag_link)
+        if initialized:
+            return []
 
     resources = [
         veil_host_file_resource(local_path=CURRENT_DIR / 'iptablesload', host=host, remote_path='/usr/local/bin/iptablesload', owner='root', owner_group='root',
@@ -236,7 +235,7 @@ def veil_host_codebase_resource(host):
         key = 'veil_host_codebase?{}'.format(host.VEIL_ENV.name)
         dry_run_result[key] = 'INSTALL'
         return
-    with fabric.api.settings(forward_agent=True):
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port, forward_agent=True):
         clone_application(host)
         pull_application(host)
         framework_branch = read_veil_framework_branch(host)
@@ -315,37 +314,37 @@ def veil_host_init_resource(host):
         key = 'veil_host_init?{}'.format(host.VEIL_ENV.name)
         dry_run_result[key] = 'INSTALL'
         return
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no', 'PermitRootLogin no'], use_sudo=True)
+        fabric.api.sudo('systemctl reload-or-restart ssh')
 
-    fabric.contrib.files.append('/etc/ssh/sshd_config', host.sshd_config or ['PasswordAuthentication no', 'PermitRootLogin no'], use_sudo=True)
-    fabric.api.sudo('systemctl reload-or-restart ssh')
+        fabric.api.sudo('apt update')
+        fabric.api.sudo('apt -y upgrade')
+        required_packages = ['unattended-upgrades', 'update-notifier-common', 'iptables', 'git', 'language-pack-en', 'unzip', 'wget', 'python', 'python-dev',
+                             'python-pip', 'python-virtualenv']
+        fabric.api.sudo('apt -y install {}'.format(' '.join(required_packages)))
 
-    fabric.api.sudo('apt update')
-    fabric.api.sudo('apt -y upgrade')
-    required_packages = ['unattended-upgrades', 'update-notifier-common', 'iptables', 'git', 'language-pack-en', 'unzip', 'wget', 'python', 'python-dev',
-                         'python-pip', 'python-virtualenv']
-    fabric.api.sudo('apt -y install {}'.format(' '.join(required_packages)))
+        fabric.api.sudo('timedatectl set-timezone {}'.format(host.timezone))
 
-    fabric.api.sudo('timedatectl set-timezone {}'.format(host.timezone))
+        # enables and starts the systemd-timesyncd.service for time sync on lxc hosts, and which is shared among lxc guests
+        fabric.api.sudo('timedatectl set-ntp true')
 
-    # enables and starts the systemd-timesyncd.service for time sync on lxc hosts, and which is shared among lxc guests
-    fabric.api.sudo('timedatectl set-ntp true')
+        with fabric.api.settings(sudo_prefix="sudo -H -S -p '%(sudo_prompt)s' "):
+            fabric.api.sudo('pip install --upgrade "pip>=9.0.1"')
+            pip_index_args = ''
+            if host.pypi_index_url:
+                pip_index_args = '-i {} --trusted-host {}'.format(host.pypi_index_url, host.pypi_index_host)
+            fabric.api.sudo('pip install {} --upgrade "setuptools>=34.2.0"'.format(pip_index_args))
+            fabric.api.sudo('pip install {} --upgrade "wheel>=0.30.0a0"'.format(pip_index_args))
+            fabric.api.sudo('pip install {} --upgrade "virtualenv>=15.1.0"'.format(pip_index_args))
 
-    with fabric.api.settings(sudo_prefix="sudo -H -S -p '%(sudo_prompt)s' "):
-        fabric.api.sudo('pip install --upgrade "pip>=9.0.1"')
-        pip_index_args = ''
-        if host.pypi_index_url:
-            pip_index_args = '-i {} --trusted-host {}'.format(host.pypi_index_url, host.pypi_index_host)
-        fabric.api.sudo('pip install {} --upgrade "setuptools>=34.2.0"'.format(pip_index_args))
-        fabric.api.sudo('pip install {} --upgrade "wheel>=0.30.0a0"'.format(pip_index_args))
-        fabric.api.sudo('pip install {} --upgrade "virtualenv>=15.1.0"'.format(pip_index_args))
+        init_veil_host_lxd()
 
-    init_veil_host_lxd()
+        init_veil_host_basic_layout(host)
 
-    init_veil_host_basic_layout(host)
-
-    fabric.api.run('touch {}'.format(host.initialized_tag_path))
-    if host.initialized_tag_path != host.initialized_tag_link:
-        fabric.api.run('ln -s {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
+        fabric.api.run('touch {}'.format(host.initialized_tag_path))
+        if host.initialized_tag_path != host.initialized_tag_link:
+            fabric.api.run('ln -s {} {}'.format(host.initialized_tag_path, host.initialized_tag_link))
 
 
 @atomic_installer
@@ -367,9 +366,10 @@ def init_veil_host_basic_layout(host):
 
 
 def is_initialized_for_another_same_base_instance(host):
-    return host.initialized_tag_link != host.initialized_tag_path \
-           and fabric.contrib.files.exists(host.initialized_tag_link) \
-           and not fabric.contrib.files.exists(host.initialized_tag_path)
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        return host.initialized_tag_link != host.initialized_tag_path \
+               and fabric.contrib.files.exists(host.initialized_tag_link) \
+               and not fabric.contrib.files.exists(host.initialized_tag_path)
 
 
 @atomic_installer
@@ -383,11 +383,12 @@ def veil_host_sources_list_resource(host):
         dry_run_result[key] = 'INSTALL'
         return
     sources_list_path = '/etc/apt/sources.list'
-    fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=sources_list_path))
-    context = dict(mirror=host.apt_url, codename=fabric.api.run('lsb_release -cs', pty=False))
-    fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR, use_sudo=True,
-                                         backup=False, mode=0644)
-    fabric.api.sudo('chown root:root {}'.format(sources_list_path))
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=sources_list_path))
+        context = dict(mirror=host.apt_url, codename=fabric.api.run('lsb_release -cs', pty=False))
+        fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR, use_sudo=True,
+                                             backup=False, mode=0644)
+        fabric.api.sudo('chown root:root {}'.format(sources_list_path))
 
     sources_list_installed.append(host.base_name)
 
@@ -399,9 +400,10 @@ def veil_host_directory_resource(host, remote_path, owner='root', owner_group='r
         key = 'veil_host_directory?{}&path={}'.format(host.VEIL_ENV.name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
-    fabric.api.sudo('mkdir -p {}'.format(remote_path))
-    fabric.api.sudo('chmod {:o} {}'.format(mode, remote_path))
-    fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        fabric.api.sudo('mkdir -p {}'.format(remote_path))
+        fabric.api.sudo('chmod {:o} {}'.format(mode, remote_path))
+        fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
 
 
 @atomic_installer
@@ -411,73 +413,76 @@ def veil_host_file_resource(local_path, host, remote_path, owner, owner_group, m
         key = 'veil_host_file?{}&path={}'.format(host.VEIL_ENV.name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
-    if keep_origin:
-        fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=remote_path))
-    if set_owner_first:
-        temp_file = '/tmp/{}'.format(uuid.uuid4().get_hex())
-        fabric.api.put(local_path, temp_file, use_sudo=True, mode=mode)
-        fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, temp_file))
-        fabric.api.sudo('mv -f {} {}'.format(temp_file, remote_path))
-    else:
-        fabric.api.put(local_path, remote_path, use_sudo=True, mode=mode)
-        fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
-    if cmd:
-        fabric.api.sudo(cmd)
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        if keep_origin:
+            fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=remote_path))
+        if set_owner_first:
+            temp_file = '/tmp/{}'.format(uuid.uuid4().get_hex())
+            fabric.api.put(local_path, temp_file, use_sudo=True, mode=mode)
+            fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, temp_file))
+            fabric.api.sudo('mv -f {} {}'.format(temp_file, remote_path))
+        else:
+            fabric.api.put(local_path, remote_path, use_sudo=True, mode=mode)
+            fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
+        if cmd:
+            fabric.api.sudo(cmd)
 
 
 @atomic_installer
 def veil_host_user_resource(host, user_dir):
     username = user_dir.basename()
     initialized_file_path = '/home/{}/.veil_host_user_initialized'.format(username)
-    installed = fabric.contrib.files.exists(initialized_file_path, use_sudo=True)
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        key = 'veil_host_user_{}?{}'.format(username, host.VEIL_ENV.name)
-        dry_run_result[key] = '-' if installed else 'INSTALL'
-        return
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        installed = fabric.contrib.files.exists(initialized_file_path, use_sudo=True)
+        dry_run_result = get_dry_run_result()
+        if dry_run_result is not None:
+            key = 'veil_host_user_{}?{}'.format(username, host.VEIL_ENV.name)
+            dry_run_result[key] = '-' if installed else 'INSTALL'
+            return
 
-    if not installed:
-        ret = fabric.api.run('getent passwd {}'.format(username), warn_only=True)
-        if ret.failed:
-            uid = (user_dir / 'id').text().strip()
-            fabric.api.sudo('adduser --uid {uid} {username} --gecos {username} --disabled-login --shell /usr/sbin/nologin --quiet'.format(username=username, uid=uid))
-    fabric.api.put(local_path=user_dir, remote_path='/home/', use_sudo=True, mode=0755)
-    fabric.api.sudo('chown -R {username}:{username} /home/{username}/'.format(username=username))
-    user_ssh_dir = user_dir / '.ssh'
-    if user_ssh_dir.isdir():
-        fabric.api.sudo('chmod 0700 /home/{}/.ssh'.format(username), user=username)
-        if user_ssh_dir.listdir():
-            fabric.api.sudo('chmod 0600 /home/{}/.ssh/*'.format(username), user=username)
-    for f in as_path(user_dir):
-        if f.endswith('.service'):
-            fabric.api.put(local_path=f, remote_path='/lib/systemd/system/', use_sudo=True, mode=0644)
-            fabric.api.sudo('systemctl daemon-reload')
-            service_name = f.basename()
-            fabric.api.sudo('systemctl enable {}'.format(service_name))
-            fabric.api.sudo('systemctl start {}'.format(service_name))
-    if not installed:
-        fabric.api.sudo('touch {}'.format(initialized_file_path))
+        if not installed:
+            ret = fabric.api.run('getent passwd {}'.format(username), warn_only=True)
+            if ret.failed:
+                uid = (user_dir / 'id').text().strip()
+                fabric.api.sudo('adduser --uid {uid} {username} --gecos {username} --disabled-login --shell /usr/sbin/nologin --quiet'.format(username=username, uid=uid))
+        fabric.api.put(local_path=user_dir, remote_path='/home/', use_sudo=True, mode=0755)
+        fabric.api.sudo('chown -R {username}:{username} /home/{username}/'.format(username=username))
+        user_ssh_dir = user_dir / '.ssh'
+        if user_ssh_dir.isdir():
+            fabric.api.sudo('chmod 0700 /home/{}/.ssh'.format(username), user=username)
+            if user_ssh_dir.listdir():
+                fabric.api.sudo('chmod 0600 /home/{}/.ssh/*'.format(username), user=username)
+        for f in as_path(user_dir):
+            if f.endswith('.service'):
+                fabric.api.put(local_path=f, remote_path='/lib/systemd/system/', use_sudo=True, mode=0644)
+                fabric.api.sudo('systemctl daemon-reload')
+                service_name = f.basename()
+                fabric.api.sudo('systemctl enable {}'.format(service_name))
+                fabric.api.sudo('systemctl start {}'.format(service_name))
+        if not installed:
+            fabric.api.sudo('touch {}'.format(initialized_file_path))
 
 
 @atomic_installer
 def veil_host_user_editor_additional_resource(host):
-    installed = fabric.contrib.files.contains('/etc/ssh/sshd_config', 'Match User editor')
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        key = 'veil_host_user_editor?{}'.format(host.VEIL_ENV.name)
-        dry_run_result[key] = '-' if installed else 'INSTALL'
-        return
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        installed = fabric.contrib.files.contains('/etc/ssh/sshd_config', 'Match User editor')
+        dry_run_result = get_dry_run_result()
+        if dry_run_result is not None:
+            key = 'veil_host_user_editor?{}'.format(host.VEIL_ENV.name)
+            dry_run_result[key] = '-' if installed else 'INSTALL'
+            return
 
-    if not fabric.contrib.files.exists(host.editorial_dir, use_sudo=True):
-        # user `editor` creation is done by veil_host_user_resource
-        fabric.api.run('mkdir -p -m 0755 {}'.format(host.editorial_dir))
-        fabric.api.sudo('chown -R editor:editor {}'.format(host.editorial_dir))
+        if not fabric.contrib.files.exists(host.editorial_dir, use_sudo=True):
+            # user `editor` creation is done by veil_host_user_resource
+            fabric.api.run('mkdir -p -m 0755 {}'.format(host.editorial_dir))
+            fabric.api.sudo('chown -R editor:editor {}'.format(host.editorial_dir))
 
-    if installed:
-        return
+        if installed:
+            return
 
-    # do not add any config after Match User unless you know what you write
-    fabric.contrib.files.append('/etc/ssh/sshd_config',
-                                ['Match User editor', 'ChrootDirectory {}'.format(host.editorial_dir.parent),
-                                 'ForceCommand internal-sftp'], use_sudo=True)
-    fabric.api.sudo('systemctl reload-or-restart ssh.service')
+        # do not add any config after Match User unless you know what you write
+        fabric.contrib.files.append('/etc/ssh/sshd_config',
+                                    ['Match User editor', 'ChrootDirectory {}'.format(host.editorial_dir.parent),
+                                     'ForceCommand internal-sftp'], use_sudo=True)
+        fabric.api.sudo('systemctl reload-or-restart ssh.service')

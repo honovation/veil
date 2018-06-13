@@ -21,7 +21,7 @@ def veil_container_resource(host, server):
     resources = [
         veil_container_lxc_resource(host=host, server=server),
         veil_container_config_resource(server=server),
-        veil_container_onetime_config_resource(server=server)
+        veil_container_onetime_config_resource(host=host, server=server)
     ]
     return resources
 
@@ -75,10 +75,11 @@ def veil_container_lxc_resource(host, server):
 
 
 @composite_installer
-def veil_container_onetime_config_resource(server):
-    initialized = fabric.contrib.files.exists(server.container_initialized_tag_path)
-    if initialized:
-        return []
+def veil_container_onetime_config_resource(host, server):
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        initialized = fabric.contrib.files.exists(server.container_initialized_tag_path)
+        if initialized:
+            return []
 
     resources = [
         veil_container_file_resource(local_path=CURRENT_DIR / 'iptablesload', server=server, remote_path='/usr/local/bin/iptablesload', owner='root',
