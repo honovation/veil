@@ -241,7 +241,7 @@ def veil_host_codebase_resource(host):
         framework_branch = read_veil_framework_branch(host)
         clone_framework(host, framework_branch)
         pull_framework(host, framework_branch)
-    init_application(host)
+        init_application(host)
 
 
 def clone_application(host):
