@@ -83,26 +83,31 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
         'devices': {
             'home': {
                 'type': 'disk',
+                'recursive': True,
                 'path': '/home/{}'.format(user_name),
                 'source': '/home/{}'.format(user_name)
             },
             'share': {
                 'type': 'disk',
+                'recursive': True,
                 'path': SHARE_DIR,
                 'source': SHARE_DIR
             },
             'code': {
                 'type': 'disk',
+                'recursive': True,
                 'path': VEIL_HOME.parent,
                 'source': VEIL_HOME.parent
             },
             'etc': {
                 'type': 'disk',
+                'recursive': True,
                 'path': etc_dir,
                 'source': etc_dir
             },
             'log': {
                 'type': 'disk',
+                'recursive': True,
                 'path': log_dir,
                 'source': log_dir
             }
