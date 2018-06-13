@@ -8,10 +8,10 @@ from veil.frontend.cli import *
 from veil.utility.timer import *
 from veil.utility.shell import *
 from veil.environment.in_service import is_server_running
+from .ship_to_backup_mirror import ship_to_backup_mirror
 
 LOGGER = logging.getLogger(__name__)
 
-SSH_KEY_PATH = '/etc/ssh/id_ed25519-guard'
 KEEP_BACKUP_FOR_DAYS = 5 if VEIL_ENV.is_staging else 10
 
 
@@ -109,6 +109,4 @@ def rsync_to_backup_mirror():
     backup_mirror_path = '~/backup_mirror/{}/{}'.format(VEIL_ENV.name, server_guard.host_name)
     with fabric.api.settings(host_string=backup_mirror.deploys_via, user=backup_mirror.ssh_user, port=backup_mirror.ssh_port, key_filename=SSH_KEY_PATH):
         fabric.api.run('mkdir -p {}'.format(backup_mirror_path))
-    shell_execute('''rsync -avhHPz -e "ssh -i {} -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --numeric-ids --delete --bwlimit={} {}/ {}@{}:{}/'''.format(
-        SSH_KEY_PATH, backup_mirror.ssh_port, backup_mirror.bandwidth_limit, VEIL_BACKUP_ROOT, backup_mirror.ssh_user, backup_mirror.host_ip,
-        backup_mirror_path), debug=True)
+    ship_to_backup_mirror(backup_mirror, '{}/'.format(VEIL_BACKUP_ROOT), '{}/{}'.format(VEIL_ENV.name, server_guard.host_name))

@@ -5,20 +5,10 @@ import inotify.adapters
 import inotify.constants
 from veil.environment import *
 from veil.frontend.cli import *
-from veil.utility.shell import *
 from veil_component import as_path
+from .ship_to_backup_mirror import ship_to_backup_mirror
 
 LOGGER = logging.getLogger(__name__)
-SSH_KEY_PATH = '/etc/ssh/id_ed25519-guard'
-
-
-def shipping_to_backup_mirror(source_path, remote_path, cwd):
-    backup_mirror = get_current_veil_server().backup_mirror
-    backup_mirror_path = '~/backup_mirror/{}'.format(remote_path)
-    ssh_option = 'ssh -i {} -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no'.format(SSH_KEY_PATH, backup_mirror.ssh_port)
-    shell_execute('rsync -avzhPR -e "{}" --numeric-ids --delete --bwlimit={} {} {}@{}:{}'.format(ssh_option, backup_mirror.bandwidth_limit, source_path,
-                                                                                                 backup_mirror.ssh_user, backup_mirror.host_ip,
-                                                                                                 backup_mirror_path), debug=True, cwd=cwd)
 
 
 @script('bucket-shipping')
@@ -34,6 +24,7 @@ def bucket_shipping_script(exclude_buckets, remote_path):
     mask = inotify.constants.IN_CREATE | inotify.constants.IN_MODIFY | inotify.constants.IN_DELETE | inotify.constants.IN_DELETE_SELF | inotify.constants.IN_MOVED_TO
     monitor = inotify.adapters.InotifyTrees(watch_directories, mask=mask)
 
+    backup_mirror = get_current_veil_server().backup_mirror
     for event in monitor.event_gen():
         if event is None:
             continue
@@ -51,4 +42,4 @@ def bucket_shipping_script(exclude_buckets, remote_path):
                 rel_path = VEIL_BUCKETS_DIR.relpathto(as_path(path) / filename)
             else:
                 rel_path = VEIL_BUCKETS_DIR.relpathto(path)
-        shipping_to_backup_mirror(rel_path, remote_path, VEIL_BUCKETS_DIR)
+        ship_to_backup_mirror(backup_mirror, rel_path, remote_path, VEIL_BUCKETS_DIR)
