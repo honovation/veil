@@ -150,7 +150,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
             server.lxd_endpoint = host.lxd_endpoint
             server.host_base_name = host.base_name
             server.ssh_user = host.ssh_user
-            server.ssh_port = server.ssh_port or host.ssh_port
+            server.ssh_port = host.ssh_port
             server.ssh_user_group = host.ssh_user_group
             server.internal_ip = '{}.{}'.format(host.lan_range, server.sequence_no)
             server.deploys_via = '{}@{}:{}'.format(server.ssh_user, server.internal_ip, server.ssh_port)
@@ -213,7 +213,7 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
 
 def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_host=None, supervisor_http_port=None,
                 name_servers=None, backup_mirror=None, mount_editorial_dir=False, mount_buckets_dir=False,
-                mount_data_dir=False, memory_limit=None, cpu_share=None, cpus=None, ssh_port=None, is_guard_server=False):
+                mount_data_dir=False, memory_limit=None, cpu_share=None, cpus=None, is_guard_server=False):
     from veil.model.collection import objectify
     if backup_mirror:
         backup_mirror = objectify(backup_mirror)
@@ -233,7 +233,6 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
         'memory_limit': memory_limit,
         'cpu_share': cpu_share,
         'cpus': cpus,
-        'ssh_port': ssh_port,
         'is_guard_server': is_guard_server
     })
 

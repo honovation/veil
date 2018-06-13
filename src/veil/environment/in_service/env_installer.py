@@ -98,7 +98,7 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
 
 def enable_vm_overcommit_memory_on_redis_server_running_hosts(veil_env_name):
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
-        with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             fabric.api.sudo('ps -ef | grep redis-server | grep -v grep && sysctl vm.overcommit_memory=1',
                             warn_only=True)
 
@@ -112,7 +112,7 @@ def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir
             excludes.append('--exclude "/{}"'.format(host.env_dir.relpathto(host.code_dir)))
         if exclude_data_dir:
             excludes.append('--exclude "/{}"'.format(host.env_dir.relpathto(host.data_dir)))
-        with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             if not fabric.contrib.files.exists(source_dir):
                 continue
             fabric.api.sudo('rsync -ah --numeric-ids --delete {} --link-dest={}/ {}/ {}/'.format(' '.join(excludes), source_dir, source_dir,
@@ -122,7 +122,7 @@ def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir
 
 def remove_rollbackable_tags(veil_env_name):
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
-        with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             fabric.api.sudo('rm -f {}'.format(host.rollbackable_tag_path))
 
 
@@ -131,7 +131,7 @@ def download_packages(veil_env_name):
     # this command should not interrupt normal website operation
     # designed to run when website is still running, to prepare for a full deployment
     for host in list_veil_hosts(veil_env_name):
-        with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             with fabric.api.cd(host.veil_home):
                 with fabric.api.settings(forward_agent=True):
                     while True:
@@ -150,7 +150,7 @@ def download_packages(veil_env_name):
                         if not is_container_running(server):
                             print(yellow('Skipped downloading packages for server {} as its container is not running'.format(server.container_name)))
                             continue
-                        with fabric.api.settings(host_string=server.deploys_via):
+                        with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
                             with fabric.api.cd(server.veil_home):
                                 fabric.api.run('veil :{} install-server --download-only'.format(server.fullname))
                 finally:
@@ -252,7 +252,7 @@ def rollback_env(veil_env_name, config_dir):
 
 def is_rollbackable(host):
     rollback_backup_dir = '{}-backup'.format(host.env_dir)
-    with fabric.api.settings(host_string=host.deploys_via):
+    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
         if fabric.contrib.files.exists(host.rollbackable_tag_path) and fabric.contrib.files.exists(rollback_backup_dir):
             return True
         else:
@@ -265,7 +265,7 @@ def rollback(hosts):
     for host in hosts:
         source_dir = host.env_dir
         rollback_backup_dir = '{}-backup'.format(source_dir)
-        with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             if fabric.contrib.files.exists(source_dir):
                 left_over_dir = '{}-to-be-deleted-{}'.format(source_dir, datetime.now().strftime('%Y%m%d%H%M%S'))
                 fabric.api.sudo('rsync -ah --numeric-ids --delete --link-dest={}/ {}/ {}/'.format(rollback_backup_dir, source_dir, left_over_dir))
@@ -274,7 +274,7 @@ def rollback(hosts):
 
 def ensure_servers_down(hosts):
     for host in hosts:
-        with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             ret = fabric.api.run('ps -ef | grep supervisord | grep {} | grep -v monitor | grep -v grep'.format(host.etc_dir), warn_only=True)
             if ret.return_code == 0:
                 raise Exception('{}: can not rollback while having running veil server(s)'.format(host.base_name))
@@ -285,7 +285,7 @@ def backup_env(veil_env_name):
     for server in get_veil_env(veil_env_name).servers:
         if not server.is_guard_server:
             continue
-        with fabric.api.settings(host_string=server.deploys_via):
+        with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
             with fabric.api.cd(server.veil_home):
                 fabric.api.sudo('veil :{} backup-env'.format(server.fullname))
 
@@ -294,7 +294,7 @@ def backup_env(veil_env_name):
 def purge_left_overs(veil_env_name):
     hosts = unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name)
     for host in hosts:
-        with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             fabric.api.sudo('rm -rf {}-to-be-deleted-*'.format(host.env_dir))
 
 
@@ -330,11 +330,11 @@ def stop_env(veil_env_name, config_dir, include_guard_server=True, include_monit
 def stop_servers(servers, stop_container=False):
     for server in servers:
         host = get_veil_host(server.VEIL_ENV.name, server.host_name)
-        with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             if is_container_running(server):
                 while is_server_running(server):
                     print(cyan('Stop server {} ...'.format(server.name)))
-                    with fabric.api.settings(host_string=server.deploys_via):
+                    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
                         fabric.api.sudo('systemctl stop veil-server.service')
                     time.sleep(1)
                 if stop_container:
@@ -356,14 +356,14 @@ def start_env(veil_env_name, config_dir, disable_external_access_='FALSE', *excl
         if server.name in exclude_server_names:
             continue
         host = get_veil_host(server.VEIL_ENV.name, server.host_name)
-        with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             if not fabric.contrib.files.exists(server.deployed_tag_path):
                 print(yellow('Skipped starting server {} as it is not successfully deployed'.format(server.container_name)))
                 continue
             if is_container_running(server):
                 while not is_server_running(server):
                     print(cyan('Start server {} ...'.format(server.name)))
-                    with fabric.api.settings(host_string=server.deploys_via):
+                    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
                         fabric.api.sudo('systemctl start veil-server.service')
                     time.sleep(1)
             else:
@@ -381,7 +381,7 @@ def disable_external_access(veil_env_name):
         if not host.external_service_ports:
             continue
         external_service_ports = ','.join(str(p) for p in host.external_service_ports)
-        with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             check_result = fabric.api.sudo('iptables -w -t nat -C PREROUTING -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports),
                                            warn_only=True)
             if check_result.failed:
@@ -399,7 +399,7 @@ def enable_external_access(veil_env_name):
         if not host.external_service_ports:
             continue
         external_service_ports = ','.join(str(p) for p in host.external_service_ports)
-        with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             while 1:
                 check_result = fabric.api.sudo('iptables -w -t nat -C PREROUTING -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports),
                                                warn_only=True)
@@ -412,7 +412,7 @@ def enable_external_access(veil_env_name):
 @script('upgrade-env-pip')
 def upgrade_env_pip(veil_env_name, setuptools_version, wheel_version, pip_version):
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
-        with fabric.api.settings(host_string=host.deploys_via):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             with fabric.api.cd(host.veil_home):
                 fabric.api.sudo('veil :{} upgrade-pip {} {} {}'.format(host.VEIL_ENV.name, setuptools_version, wheel_version, pip_version))
 

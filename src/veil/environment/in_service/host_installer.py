@@ -29,39 +29,38 @@ def veil_hosts_resource(veil_env_name):
     resources = []
     hosts = list_veil_hosts(veil_env_name)
     for host in hosts:
-        fabric.api.env.user = host.ssh_user
-        fabric.api.env.port = host.ssh_port
-        fabric.api.env.host_string = host.deploys_via
-        if is_initialized_for_another_same_base_instance(host):
-            raise Exception(
-                'Can not deploy {} on host {} as it is initialized for another same-base instance!!!'.format(
-                    host.VEIL_ENV.name, host.name))
-        if host.base_name not in hosts_to_install:
-            resources.extend([
-                veil_host_onetime_config_resource(host=host),
-                veil_host_lxd_user_mapping_resource(host=host),
-                veil_host_lxd_profile_resource(host=host),
-                veil_host_lxd_image_resource(host=host),
-                veil_host_config_resource(host=host),
-                veil_host_application_config_resource(host=host),
-                veil_host_codebase_resource(host=host)
-            ])
-            host_users_dir = get_env_config_dir() / 'hosts' / host.base_name / 'USERS'
-            if host_users_dir.exists():
-                print(cyan('Install Veil host users resource'))
-                for user_dir in host_users_dir.dirs():
-                    resources.append(veil_host_user_resource(host=host, user_dir=user_dir))
-            if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
-                print(cyan('Install Veil host user editor resource'))
-                resources.append(veil_host_user_editor_additional_resource(host=host))
-            resources.append(veil_host_iptables_rules_resource(host=host))
-            hosts_to_install.append(host.base_name)
-        for server in host.server_list:
-            resources.extend([
-                veil_host_directory_resource(host=host, remote_path=server.etc_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
-                veil_host_directory_resource(host=host, remote_path=server.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
-                veil_container_resource(host=host, server=server)
-            ])
+        # user and port are required as setting host_string would not set them accordingly
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+            if is_initialized_for_another_same_base_instance(host):
+                raise Exception(
+                    'Can not deploy {} on host {} as it is initialized for another same-base instance!!!'.format(
+                        host.VEIL_ENV.name, host.name))
+            if host.base_name not in hosts_to_install:
+                resources.extend([
+                    veil_host_onetime_config_resource(host=host),
+                    veil_host_lxd_user_mapping_resource(host=host),
+                    veil_host_lxd_profile_resource(host=host),
+                    veil_host_lxd_image_resource(host=host),
+                    veil_host_config_resource(host=host),
+                    veil_host_application_config_resource(host=host),
+                    veil_host_codebase_resource(host=host)
+                ])
+                host_users_dir = get_env_config_dir() / 'hosts' / host.base_name / 'USERS'
+                if host_users_dir.exists():
+                    print(cyan('Install Veil host users resource'))
+                    for user_dir in host_users_dir.dirs():
+                        resources.append(veil_host_user_resource(host=host, user_dir=user_dir))
+                if any(h.with_user_editor for h in hosts if h.base_name == host.base_name):
+                    print(cyan('Install Veil host user editor resource'))
+                    resources.append(veil_host_user_editor_additional_resource(host=host))
+                resources.append(veil_host_iptables_rules_resource(host=host))
+                hosts_to_install.append(host.base_name)
+            for server in host.server_list:
+                resources.extend([
+                    veil_host_directory_resource(host=host, remote_path=server.etc_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
+                    veil_host_directory_resource(host=host, remote_path=server.log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
+                    veil_container_resource(host=host, server=server)
+                ])
     return resources
 
 
@@ -130,10 +129,8 @@ def veil_host_lxd_image_resource(host):
 def veil_hosts_codebase_resource(veil_env_name):
     resources = []
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
-        fabric.api.env.user = host.ssh_user
-        fabric.api.env.port = host.ssh_port
-        fabric.api.env.host_string = host.deploys_via
-        resources.append(veil_host_codebase_resource(host=host))
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+            resources.append(veil_host_codebase_resource(host=host))
     return resources
 
 
