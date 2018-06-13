@@ -372,13 +372,11 @@ def veil_host_sources_list_resource(host):
         key = 'veil_host_sources_list?{}'.format(host.VEIL_ENV.name)
         dry_run_result[key] = 'INSTALL'
         return
-    sources_list_path = '/etc/apt/sources.list'
     with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
-        fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=sources_list_path))
         context = dict(mirror=host.apt_url, codename=fabric.api.run('lsb_release -cs', pty=False))
-        fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR, use_sudo=True,
-                                             backup=False, mode=0644)
-        fabric.api.sudo('chown root:root {}'.format(sources_list_path))
+        # keep if no change, otherwise rename the original one with .bak extension
+        fabric.contrib.files.upload_template('sources.list.j2', '/etc/apt/sources.list', context=context, use_jinja=True, template_dir=CURRENT_DIR,
+                                             use_sudo=True, backup=True, mode=0644)
 
     sources_list_installed.append(host.base_name)
 
@@ -405,7 +403,7 @@ def veil_host_file_resource(local_path, host, remote_path, owner, owner_group, m
         return
     with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
         if keep_origin:
-            fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=remote_path))
+            fabric.api.sudo('cp -pn {path} {path}.bak'.format(path=remote_path))
         if set_owner_first:
             temp_file = '/tmp/{}'.format(uuid.uuid4().get_hex())
             fabric.api.put(local_path, temp_file, use_sudo=True, mode=mode)

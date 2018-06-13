@@ -100,11 +100,10 @@ def veil_container_sources_list_resource(server):
         return
     client = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir())
     sources_list_path = '/etc/apt/sources.list'
-    client.run_container_command(server.container_name, 'cp -pn {path} {path}.origin'.format(path=sources_list_path))
     codename = client.run_container_command(server.container_name, 'lsb_release -cs').strip()
     sources_list_content = render_config(CURRENT_DIR / 'sources.list.j2', mirror=server.apt_url, codename=codename)
+    client.run_container_command(server.container_name, 'cp -pn {path} {path}.bak'.format(path=sources_list_path))
     client.put_container_file(server.container_name, sources_list_path, sources_list_content)
-    client.run_container_command(server.container_name, 'chown root:root {}'.format(sources_list_path))
 
 
 @composite_installer
@@ -184,7 +183,7 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
         return
     client = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir())
     if keep_origin:
-        client.run_container_command(server.container_name, 'cp -pn {path} {path}.origin'.format(path=remote_path))
+        client.run_container_command(server.container_name, 'cp -pn {path} {path}.bak'.format(path=remote_path))
     if not file_content:
         f = as_path(local_path)
         if not f.exists():
@@ -192,8 +191,7 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
         content = f.bytes()
     else:
         content = file_content
-    client.put_container_file(server.container_name, remote_path, content, mode=mode)
-    client.run_container_command(server.container_name, 'chown {}:{} {}'.format(owner, owner_group, remote_path))
+    client.put_container_file(server.container_name, remote_path, content, mode=mode, uid=owner, gid=owner_group)
     if cmds:
         for cmd in cmds:
             client.run_container_command(server.container_name, cmd)
