@@ -63,11 +63,6 @@ def veil_container_lxc_resource(host, server):
     while 1:
         try:
             with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
-                try:
-                    fabric.api.sudo('sudo chown -R {}:{} {}'.format(server.ssh_user, server.ssh_user_group, host.env_dir))
-                except:
-                    # ignore some path can not change ownship like editorial dir
-                    pass
                 fabric.api.run('echo Server started!')
                 break
         except Exception as e:

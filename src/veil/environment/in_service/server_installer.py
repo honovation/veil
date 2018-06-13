@@ -29,11 +29,6 @@ def veil_server_resource(server, action='PATCH', start_after_deploy=True):
     with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
         # TODO: workaround for issue: https://github.com/lxc/lxc/issues/1450
         fabric.api.sudo('sysctl --quiet --system')
-        try:
-            fabric.api.sudo('sudo chown -R {}:{} {}'.format(server.ssh_user, server.ssh_user_group, server.env_dir))
-        except:
-            # ignore some path can not change ownship like editorial dir
-            pass
         with fabric.api.cd(server.veil_home):
             print(cyan('{} server {} ...'.format(action, server.name)))
             if 'DEPLOY' == action:
