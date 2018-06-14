@@ -14,14 +14,14 @@ def get_idmap():
 @atomic_installer
 def lxc_container_resource(container_name, hostname, timezone, user_name, ip_address, gateway, name_servers, start_order, memory_limit=None, cpus=None,
                            cpu_share=None, idmap=None, etc_dir=None, log_dir=None, editorial_dir=None, buckets_dir=None, data_dir=None):
-    client = LXDClient(local=True).client
-    installed = client.containers.exists(container_name)
+    client = LXDClient(local=True)
+    installed = client.is_container_exists(container_name)
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         dry_run_result['lxc_container?{}'.format(container_name)] = '-' if installed else 'INSTALL'
         return
     if installed:
-        container = client.containers.get(container_name)
+        container = client.get_container(container_name)
         if container.profiles[0] != LXD_PROFILE_NAME:
             new_profiles = [LXD_PROFILE_NAME]
             LOGGER.info('change container profile: %(old_profiles)s, %(new_profiles)s', {
@@ -141,7 +141,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
             'path': data_dir,
             'source': data_dir
         }
-    client.containers.create(container_config, wait=True)
+    client.create_container(container_config, wait=True)
 
 
 @atomic_installer

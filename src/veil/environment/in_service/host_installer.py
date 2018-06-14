@@ -288,7 +288,7 @@ def veil_host_init_resource(host):
 def init_veil_host_lxd(host):
     init_lxd_daemon()
     init_lxd_user_mapping()
-    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=get_env_config_dir()).client
+    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=get_env_config_dir())
     init_lxd_profile_resource(client)
     init_lxd_image(client)
 
@@ -320,9 +320,9 @@ def init_lxd_user_mapping():
 
 
 def init_lxd_profile_resource(client):
-    if client.profiles.exists(LXD_PROFILE_NAME):
+    if client.is_profile_exists(LXD_PROFILE_NAME):
         return
-    client.profiles.create(LXD_PROFILE_NAME, config={}, devices={
+    client.create_profile(LXD_PROFILE_NAME, config={}, devices={
         'root': {
             'path': '/',
             'pool': 'default',
@@ -338,7 +338,7 @@ def init_lxd_profile_resource(client):
 
 
 def init_lxd_image(client):
-    if client.images.exists(LXD_IMAGE_FINGERPRINT):
+    if client.is_image_exists(LXD_IMAGE_FINGERPRINT):
         return
     fabric.api.run('lxc image copy ubuntu:{} local:'.format(LXD_IMAGE_FINGERPRINT))
 

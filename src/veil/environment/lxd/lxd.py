@@ -32,6 +32,21 @@ class LXDClient(object):
                 self.client.authenticate(config.lxd_trusted_password)
         assert self.client.trusted
 
+    def is_image_exists(self, fingerprint):
+        return self.client.images.exists(fingerprint)
+
+    def is_profile_exists(self, name):
+        return self.client.profiles.exists(name)
+
+    def create_profile(self, name, config=None, device=None):
+        return self.client.profiles.create(name, config=config, device=device)
+
+    def is_container_exists(self, name):
+        return self.client.containers.exists(name)
+
+    def create_container(self, config, wait=True):
+        return self.client.containers.create(config, wait=wait)
+
     def get_container(self, name):
         return self.client.containers.get(name)
 
@@ -83,16 +98,7 @@ class LXDClient(object):
         """
         container = self.get_container(container_name)
         LOGGER.info('Run command in container: %(container_name)s, %(command)s', {'container_name': container_name, 'command': command})
-        # TODO: pylxd issue 280
-        result = None
-        while result is None:
-            try:
-                result = container.execute(shlex.split(command), environment=env or {})
-            except pylxd.exceptions.NotFound:
-                LOGGER.info('retry execute command in container: %(container_name)s, %(command)s', {
-                    'container_name': container_name,
-                    'command': command
-                })
+        result = container.execute(shlex.split(command), environment=env or {})
         LOGGER.info('command result: %(stdout)s, %(stderr)s, %(exit_code)s', {
             'stdout': result.stdout,
             'stderr': result.stderr,
