@@ -8,6 +8,8 @@ with veil_component.init_component(__name__):
     from veil.environment.guard_setting import guard_program
     from veil.environment.monitor_setting import monitor_programs
     from veil.backend.database.postgresql_setting import postgresql_program
+    from veil.backend.database.postgresql_setting import barman_periodic_backup_program
+    from veil.backend.database.postgresql_setting import barman_periodic_recover_program
     from veil.backend.redis_setting import redis_program
     from veil.backend.queue_setting import queue_program
     from veil.backend.queue_setting import tasktiger_admin_program
