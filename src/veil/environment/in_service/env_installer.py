@@ -166,7 +166,7 @@ def deploy_monitor(veil_env_name, config_dir):
 @script('deploy-guard')
 @log_elapsed_time
 def deploy_guard(veil_env_name, config_dir):
-    for server in get_veil_env(veil_env_name).servers:
+    for server in list_veil_servers(veil_env_name):
         if not server.is_guard_server:
             continue
         _deploy_server(veil_env_name, config_dir, server.name)
@@ -282,7 +282,7 @@ def ensure_servers_down(hosts):
 
 @script('backup-env')
 def backup_env(veil_env_name):
-    for server in get_veil_env(veil_env_name).servers:
+    for server in list_veil_servers(veil_env_name):
         if not server.is_guard_server:
             continue
         with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
