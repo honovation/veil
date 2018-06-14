@@ -46,21 +46,11 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
 
     db_path_name = '{}-postgresql-{}'.format(purpose, config.version)
     barman_enabled = any(s.name == 'barman' for s in list_veil_servers(veil_env_name))
-    if barman_enabled:
-        remote_db_baseline_path = '{}-db'.format(purpose)
-        local_db_baseline_path = BASELINE_DIR / remote_db_baseline_path
-    else:
-        host_name = None
-        for server in list_veil_servers(veil_env_name):
-            if server.mount_data_dir:
-                host_name = server.host_name
-                break
-        if not host_name:
-            print('can not find mounted data host name for env: {}'.format(veil_env_name))
-            return
-        host = get_veil_host(veil_env_name, host_name)
-        remote_db_baseline_path = 'latest/{}/data/{}'.format(host.base_name, db_path_name)
-        local_db_baseline_path = BASELINE_DIR / veil_env_name / host.base_name / 'data' / db_path_name
+    if not barman_enabled:
+        print('can not restore db as barman is not enabled: {}'.format(purpose))
+        return
+    remote_db_baseline_path = '{}-db'.format(purpose)
+    local_db_baseline_path = BASELINE_DIR / remote_db_baseline_path
 
     if remote_download == 'TRUE':
         download_baseline(veil_env_name, remote_db_baseline_path, local_db_baseline_path)
@@ -98,34 +88,6 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
     shell_execute('veil migrate', debug=True)
 
     shell_execute('sudo veil down' if is_local_env else 'sudo systemctl stop veil-server.service', debug=True)
-
-
-@script('restore-from-baseline')
-@log_elapsed_time
-def restore_from_baseline(veil_env_name, force_download='FALSE', relative_path=None, host_name=None):
-    if not host_name:
-        for server in list_veil_servers(veil_env_name):
-            if server.mount_data_dir:
-                host_name = server.host_name
-                break
-    host = get_veil_host(veil_env_name, host_name)
-    if not relative_path:
-        assert any(server.mount_data_dir for server in host.server_list), 'Please specify relative_path'
-        relative_path = host.var_dir.relpathto(host.data_dir)
-    if relative_path == '*':
-        remote_path = as_path('latest') / host.base_name
-        baseline_path = BASELINE_DIR / veil_env_name / host.base_name
-        restored_to_path = VEIL_VAR_DIR
-    else:
-        remote_path = as_path('latest') / host.base_name / relative_path
-        baseline_path = BASELINE_DIR / veil_env_name / host.base_name / relative_path
-        restored_to_path = VEIL_VAR_DIR / relative_path
-    if force_download.upper() == 'TRUE' or not baseline_path.exists():
-        download_baseline(veil_env_name, remote_path, baseline_path)
-
-    shell_execute('veil down', debug=True)
-    shell_execute('rsync -avh --delete {}/ {}/'.format(baseline_path, restored_to_path), debug=True)
-    shell_execute('veil install-server', debug=True)
 
 
 @script('download-baseline')
