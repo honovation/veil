@@ -239,6 +239,8 @@ def init_application(host):
 
 def read_veil_framework_version(host):
     versions = get_remote_file_content(host.veil_home / 'VEIL-VERSION')
+    if not versions:
+        return 'master'
     for version in versions.split('\n'):
         if version.startswith(host.VEIL_ENV.base_name):
             return version.split('=')[1]
