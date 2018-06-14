@@ -6,13 +6,13 @@ import inotify.constants
 from veil.environment import *
 from veil.frontend.cli import *
 from veil_component import as_path
-from .ship_to_backup_mirror import ship_to_backup_mirror
+from .sync_to_backup_mirror import sync_to_backup_mirror
 
 LOGGER = logging.getLogger(__name__)
 
 
-@script('bucket-shipping')
-def bucket_shipping_script(exclude_buckets, remote_path):
+@script('bucket-sync')
+def sync_bucket_script(exclude_buckets, remote_path):
     watch_directories = []
     exclude_buckets = exclude_buckets.split(',')
     for bucket_path in VEIL_BUCKETS_DIR.listdir():
@@ -42,4 +42,4 @@ def bucket_shipping_script(exclude_buckets, remote_path):
                 rel_path = VEIL_BUCKETS_DIR.relpathto(as_path(path) / filename)
             else:
                 rel_path = VEIL_BUCKETS_DIR.relpathto(path)
-        ship_to_backup_mirror(backup_mirror, rel_path, remote_path, VEIL_BUCKETS_DIR)
+        sync_to_backup_mirror(backup_mirror, rel_path, remote_path, VEIL_BUCKETS_DIR)

@@ -214,9 +214,9 @@ case "$1" in
         shift
         exec veil server in-service patch $@
         ;;
-    backup-env)
+    backup-host)
         shift
-        exec veil environment backup create-env-backup $@
+        exec veil environment backup create-host-backup $@
         ;;
     restore-from-baseline)
         shift

@@ -64,6 +64,19 @@ NAME_PATTERN = re.compile(r'^[a-zA-Z0-9-]+$')
 
 
 def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, pypi_index_url=PYPI_INDEX_URL, deployment_memo=None, config=None):
+    """
+    Veil env. consists of multiple veil servers deployed on one or more veil hosts, every veil server is running as an LXD container.
+    Recommended deployment of a Veil Env. consists of two hosts:
+        Host #1: runs veil servers such as guard, web, db, worker
+        Host #2: runs veil servers such as guard, barman, monitor
+    If only one host available, it is okay to deploy the whole veil env. on one host.
+
+    At most one barman server is available for PostgreSQL server backup (PITR with streaming replication).
+
+    Server guard can make daily backup for host, send the daily host backup to backup-mirror, sync bucket updates and redis aof to backup-mirror.
+    Backup mirror is a special host configured on every guard server to mirror the backups on another host.
+    Every host requiring bucket&redis backup should run a guard server.
+    """
     server_names = servers.keys()
     if sorted_server_names:
         assert set(sorted_server_names) == set(server_names), \
@@ -172,6 +185,8 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         assert all(server.host for server in env.servers.values()), 'ENV {}: found server without host'.format(env.name)
         assert all(len(host.server_list) == len(set(server.sequence_no for server in host.server_list)) for host in env.hosts.values()), \
             'ENV {}: found sequence no conflict among servers on one host'.format(env.name)
+        assert all(len([server for server in host.server_list if server.is_guard]) <= 1 for host in env.hosts.values()), \
+            'ENV {}: found more than one guard on one host'.format(env.name)
         assert all(
             server.name != 'monitor' or not server.mount_editorial_dir and not server.mount_buckets_dir and not server.mount_data_dir
             for server in env.servers.values()), 'ENV {}: found monitor with editorial/buckets/data mount'.format(env.name)
@@ -212,7 +227,7 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
 
 def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_host=None, supervisor_http_port=None,
                 name_servers=None, backup_mirror=None, mount_editorial_dir=False, mount_buckets_dir=False,
-                mount_data_dir=False, memory_limit=None, cpu_share=None, cpus=None, is_guard_server=False):
+                mount_data_dir=False, memory_limit=None, cpu_share=None, cpus=None, is_guard=False):
     from veil.model.collection import objectify
     if backup_mirror:
         backup_mirror = objectify(backup_mirror)
@@ -232,7 +247,7 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
         'memory_limit': memory_limit,
         'cpu_share': cpu_share,
         'cpus': cpus,
-        'is_guard_server': is_guard_server
+        'is_guard': is_guard
     })
 
 
@@ -242,9 +257,7 @@ def list_veil_servers(veil_env_name, include_guard_server=True, include_monitor_
         exclude_server_names.append('monitor')
     if not include_barman_server:
         exclude_server_names.append('barman')
-    servers = [server for server in get_veil_env(veil_env_name).server_list if server.name not in exclude_server_names]
-    if not include_guard_server:
-        return [s for s in servers if not s.is_guard_server]
+    servers = [s for s in get_veil_env(veil_env_name).server_list if s.name not in exclude_server_names and (include_guard_server or not s.is_guard)]
     return servers
 
 

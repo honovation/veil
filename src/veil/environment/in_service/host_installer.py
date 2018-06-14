@@ -143,7 +143,7 @@ def veil_host_config_resource(host):
     ]
 
     servers = list_veil_servers(host.VEIL_ENV.name)
-    if any(s.is_guard_server for s in servers):
+    if any(s.is_guard for s in servers):
         resources.extend([
             veil_host_file_resource(local_path=CURRENT_DIR / 'max-user-watches.conf', host=host, remote_path='/etc/sysctl.d/60-max-user-watches.conf',
                                     owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-max-user-watches.conf'),
@@ -231,6 +231,8 @@ def check_no_changes(cwd):
 
 def read_veil_framework_branch(host):
     content = get_remote_file_content(host.veil_home / 'VEIL-BRANCH')
+    if not content:
+        return 'master'
     for line in content.splitlines():
         if '=' not in line:
             continue

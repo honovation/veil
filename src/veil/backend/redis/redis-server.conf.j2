@@ -617,7 +617,7 @@ appendonly {% if config.get('persisted_by_aof') %}yes{% else %}no{% endif %}
 
 # The name of the append only file (default: "appendonly.aof")
 
-appendfilename {{ config.get('aof_file', 'appendonly.aof') }}
+appendfilename appendonly.aof
 
 # The fsync() call tells the Operating System to actually write data on disk
 # instead of waiting for more data in the output buffer. Some OS will really flush

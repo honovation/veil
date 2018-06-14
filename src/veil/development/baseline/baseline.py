@@ -136,7 +136,7 @@ def download_baseline(veil_env_name, remote_path, baseline_path):
     baseline_path.makedirs(0755)
     backup_mirror = None
     for server in list_veil_servers(veil_env_name):
-        if not server.is_guard_server or not server.backup_mirror:
+        if not server.is_guard or not server.backup_mirror:
             continue
         backup_mirror = server.backup_mirror
         break
