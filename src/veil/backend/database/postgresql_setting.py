@@ -4,7 +4,8 @@ from veil.profile.installer import *
 
 def postgresql_program(purpose, version, host, port, owner, owner_password, user, password, log_min_duration_statement, log_filename=None,
                        shared_buffers='24MB', work_mem='1MB', maintenance_work_mem='16MB', effective_io_concurrency=1, checkpoint_completion_target=0.5,
-                       effective_cache_size='128MB', enable_chinese_fts=False, replication_user=None, replication_host=None, checkpoint_timeout=None):
+                       effective_cache_size='128MB', enable_chinese_fts=False, replication_user=None, replication_host=None, checkpoint_timeout=None,
+                       bgwriter_delay=None, bgwriter_lru_maxpages=None, vacuum_cost_limit=None, autovacuum_vacuum_cost_delay=None, autovacuum_max_workers=None):
     return objectify({
         '{}_postgresql'.format(purpose): {
             'execute_command': '{}/postgres -D {}'.format(get_pg_bin_dir(version), get_pg_data_dir(purpose, version)),
