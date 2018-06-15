@@ -21,5 +21,5 @@ def sync_redis_aof_script(purposes, remote_path, crontab_expression):
     for purpose in purposes.split(','):
         directories.append(VEIL_DATA_DIR / '{}-redis'.format(purpose.replace('_', '-')))
 
-    backup_mirror = get_current_veil_server().backup_mirror
+    backup_mirror = get_current_veil_env().backup_mirror
     sync_redis_aof(backup_mirror, directories)

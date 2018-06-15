@@ -45,8 +45,7 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
         return
 
     db_path_name = '{}-postgresql-{}'.format(purpose, config.version)
-    barman_enabled = any(s.name == 'barman' for s in list_veil_servers(veil_env_name))
-    if not barman_enabled:
+    if not any(s.is_barman for s in list_veil_servers(veil_env_name)):
         print('can not restore db as barman is not enabled: {}'.format(purpose))
         return
     remote_db_baseline_path = '{}-db'.format(purpose)
@@ -93,19 +92,14 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
 @script('download-baseline')
 @log_elapsed_time
 def download_baseline(veil_env_name, remote_path, baseline_path):
+    backup_mirror = get_veil_env(veil_env_name).backup_mirror
+    if not backup_mirror:
+        raise Exception('backup mirror not found in veil env. {}'.format(veil_env_name))
+
     if isinstance(baseline_path, basestring):
         baseline_path = as_path(baseline_path)
     baseline_path.makedirs(0755)
-    backup_mirror = None
-    for server in list_veil_servers(veil_env_name):
-        if not server.is_guard or not server.backup_mirror:
-            continue
-        backup_mirror = server.backup_mirror
-        break
-    if not backup_mirror:
-        raise Exception('backup mirror not found on server {}/guard'.format(veil_env_name))
-    if not hasattr(backup_mirror, 'domain'):
-        backup_mirror.domain = get_backup_mirror_domain()
+
     backup_mirror_path = '~/backup_mirror/{}'.format(veil_env_name)
     shell_execute('''rsync -avzhP -e "ssh -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --delete --bwlimit={} {}@{}:{}/{}/ {}/'''.format(
         backup_mirror.ssh_port, backup_mirror.bandwidth_limit, backup_mirror.ssh_user, backup_mirror.domain, backup_mirror_path, remote_path,

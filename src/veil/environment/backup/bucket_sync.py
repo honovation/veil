@@ -24,7 +24,7 @@ def sync_bucket_script(exclude_buckets, remote_path):
     mask = inotify.constants.IN_CREATE | inotify.constants.IN_MODIFY | inotify.constants.IN_DELETE | inotify.constants.IN_DELETE_SELF | inotify.constants.IN_MOVED_TO
     monitor = inotify.adapters.InotifyTrees(watch_directories, mask=mask)
 
-    backup_mirror = get_current_veil_server().backup_mirror
+    backup_mirror = get_current_veil_env().backup_mirror
     for event in monitor.event_gen():
         if event is None:
             continue

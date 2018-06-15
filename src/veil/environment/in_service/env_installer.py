@@ -23,8 +23,8 @@ from .env_config_dir import set_env_config_dir, get_env_config_dir
 
 @script('deploy-env')
 @log_elapsed_time
-def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', include_monitor_server='TRUE',
-               start_after_deploy='TRUE', disable_external_access_='FALSE'):
+def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', include_monitor_server='TRUE', start_after_deploy='TRUE',
+               disable_external_access_='FALSE'):
     """
     注意：
     start_after_deploy不是'TRUE'，指的是deploy后服务不是启动状态，并不意味着在部署过程中服务不会启动。比如，在安装
@@ -56,10 +56,10 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
     first_round_servers = []
     second_round_servers = []
     for server in list_veil_servers(veil_env_name):
-        if server.name not in ('monitor', 'barman') and not server.is_guard:
+        if not server.is_guard and not server.is_barman and not server.is_monitor:
             first_round_servers.append(server)
         else:
-            if server.is_guard or server.name != 'monitor' or include_monitor_server == 'TRUE':
+            if not server.is_monitor or include_monitor_server == 'TRUE':
                 second_round_servers.append(server)
 
     if first_round_servers:
@@ -115,8 +115,8 @@ def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir
         with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             if not fabric.contrib.files.exists(source_dir):
                 continue
-            fabric.api.sudo('rsync -ah --numeric-ids --delete {} --link-dest={}/ {}/ {}/'.format(' '.join(excludes), source_dir, source_dir,
-                rollback_backup_dir))
+            fabric.api.sudo(
+                'rsync -ah --numeric-ids --delete {} --link-dest={}/ {}/ {}/'.format(' '.join(excludes), source_dir, source_dir, rollback_backup_dir))
             fabric.api.sudo('touch {}'.format(host.rollbackable_tag_path))
 
 

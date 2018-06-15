@@ -120,11 +120,11 @@ def veil_container_config_resource(server):
         resources.append(
             veil_container_file_resource(local_path=get_env_config_dir() / '.ssh-guard' / 'id_ed25519', server=server, remote_path='/etc/ssh/id_ed25519-guard',
                                          owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
-    if 'barman' == server.name:
+    if server.is_barman:
         resources.append(
             veil_container_file_resource(local_path=get_env_config_dir() / '.ssh-guard' / 'id_ed25519', server=server, remote_path='/etc/ssh/id_ed25519-barman',
                                          owner=server.ssh_user, owner_group=server.ssh_user_group, mode=0600))
-    if 'monitor' == server.name:
+    if server.is_monitor:
         resources.append(veil_container_directory_resource(server=server, remote_path=server.env_dir, owner=server.ssh_user, owner_group=server.ssh_user_group))
     
     for local_path in server_config_dir.files('*.crt'):

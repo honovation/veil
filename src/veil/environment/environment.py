@@ -1,10 +1,12 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
+
 import getpass
+import itertools
+import operator
 import os
 import re
 from urlparse import urlparse
-import operator
 
 from veil_component import *
 
@@ -25,15 +27,18 @@ VEIL_ENV_DIR = (VEIL_HOME if VEIL_ENV.is_dev or VEIL_ENV.is_test else OPT_DIR) /
 VEIL_ETC_DIR = VEIL_ENV_DIR / 'etc' / VEIL_SERVER_NAME
 VEIL_LOG_DIR = VEIL_ENV_DIR / 'log' / VEIL_SERVER_NAME
 VEIL_VAR_DIR = VEIL_ENV_DIR / 'var'
-VEIL_BUCKETS_DIR = VEIL_VAR_DIR / 'buckets'
-VEIL_BUCKET_LOG_DIR = VEIL_BUCKETS_DIR / 'log'
-VEIL_DATA_DIR = VEIL_VAR_DIR / 'data'
-
 VEIL_EDITORIAL_DIR = VEIL_VAR_DIR / 'editor-rootfs' / 'editorial'
+VEIL_BUCKETS_DIR = VEIL_VAR_DIR / 'buckets'
+VEIL_DATA_DIR = VEIL_VAR_DIR / 'data'
+VEIL_BARMAN_DIR = VEIL_VAR_DIR / 'barman'
+
+VEIL_BUCKET_LOG_DIR = VEIL_BUCKETS_DIR / 'log'
 VEIL_BUCKET_INLINE_STATIC_FILES_DIR = VEIL_BUCKETS_DIR / 'inline-static-files'
+VEIL_BUCKET_CAPTCHA_IMAGE_DIR = VEIL_BUCKETS_DIR / 'captcha-image'
 VEIL_BUCKET_UPLOADED_FILES_DIR = VEIL_BUCKETS_DIR / 'uploaded-files'
 
 VEIL_BACKUP_ROOT = as_path('/backup')
+VEIL_BACKUP_MIRROR_ROOT = as_path('~/backup_mirror')
 
 CURRENT_USER = os.getenv('SUDO_USER') or getpass.getuser()
 CURRENT_USER_GROUP = CURRENT_USER
@@ -52,6 +57,7 @@ if VEIL_ENV.is_dev or VEIL_ENV.is_test:
             directory_resource(path=VEIL_BUCKETS_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
             directory_resource(path=VEIL_BUCKET_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
             directory_resource(path=VEIL_DATA_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+            directory_resource(path=VEIL_BARMAN_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         ]
 elif VEIL_ENV.name != VEIL_ENV.base_name:
     from veil.server.os import symbolic_link_resource
@@ -71,11 +77,18 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         Host #2: runs veil servers such as guard, barman, monitor
     If only one host available, it is okay to deploy the whole veil env. on one host.
 
-    At most one barman server is available for PostgreSQL server backup (PITR with streaming replication).
-
-    Server guard can make daily backup for host, send the daily host backup to backup-mirror, sync bucket updates and redis aof to backup-mirror.
-    Backup mirror is a special host configured on every guard server to mirror the backups on another host.
+    Server guard:
+        1. Periodically: makes host backup (except PostgreSQL) and synchronizes to backup mirror
+        2. Near-real-time: synchronizes latest updates for buckets and redis aof files to backup-mirror
     Every host requiring bucket&redis backup should run a guard server.
+    At most one guard server is allowed for hosts with the same base name.
+
+    Backup mirror is a special host configured on every guard server to mirror the backups on another host.
+    Every guard server should have one backup mirror.
+    At most one backup mirror is allowed in one env.
+
+    At most one barman server is available for PostgreSQL server backup (PITR with streaming replication).
+    At most one monitor server is allowed in one env.
     """
     server_names = servers.keys()
     if sorted_server_names:
@@ -100,9 +113,13 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
     env.env_dir = OPT_DIR / env.VEIL_ENV.base_name
     env.veil_home = VEIL_HOME if env.VEIL_ENV.is_dev or env.VEIL_ENV.is_test else env.env_dir / 'code' / 'app'
     env.server_list = []
+    env.backup_mirror = next((server.backup_mirror for server in env.servers.values() if server.backup_mirror), None)
     for server_name, server in env.servers.items():
         assert NAME_PATTERN.match(server_name) is not None, 'invalid characters in veil server name: {}'.format(server_name)
         server.VEIL_ENV = env.VEIL_ENV
+        server.is_guard = is_guard_server(server_name)
+        server.is_barman = is_barman_server(server_name)
+        server.is_monitor = is_monitor_server(server_name)
         server.name = server_name
         server.fullname = '{}/{}'.format(server.VEIL_ENV.name, server.name)
         server.start_order = 1000 + 10 * sorted_server_names.index(server.name) if sorted_server_names else 0
@@ -140,10 +157,8 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         host.editorial_dir = host.var_dir / 'editor-rootfs' / 'editorial'
         host.buckets_dir = host.var_dir / 'buckets'
         host.bucket_log_dir = host.buckets_dir / 'log'
-        host.bucket_inline_static_files_dir = host.buckets_dir / 'inline-static-files'
-        host.bucket_captcha_image_dir = host.buckets_dir / 'captcha-image'
-        host.bucket_uploaded_files_dir = host.buckets_dir / 'uploaded-files'
         host.data_dir = host.var_dir / 'data'
+        host.barman_dir = host.var_dir / 'barman'
         host.veil_home = env.veil_home
         host.veil_application_branch = 'env-{}'.format(host.VEIL_ENV.name)
         host.code_dir = host.veil_home.parent
@@ -166,16 +181,17 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
             server.ssh_user_group = host.ssh_user_group
             server.internal_ip = '{}.{}'.format(host.lan_range, server.sequence_no)
             server.deploys_via = '{}@{}:{}'.format(server.ssh_user, server.internal_ip, server.ssh_port)
-            if server.backup_mirror:
-                assert server.backup_mirror.host_ip.rsplit('.', 1)[0] != host.lan_range, \
-                    'ENV {}: local backup mirror does not make sense, please use remote mirror (on-site must, off-site optional)'.format(env.name)
             server.env_dir = host.env_dir
             server.etc_dir = host.etc_dir / server.name
             server.log_dir = host.log_dir / server.name
+            if server.mount_var_dir or server.mount_editorial_dir or server.mount_buckets_dir or server.mount_data_dir or server.mount_barman_dir:
+                server.var_dir = host.var_dir
+            else:
+                server.var_dir = None
             server.editorial_dir = host.editorial_dir if server.mount_editorial_dir else None
             server.buckets_dir = host.buckets_dir if server.mount_buckets_dir else None
-            server.var_dir = host.var_dir if server.mount_data_dir or server.mount_editorial_dir or server.mount_buckets_dir else None
             server.data_dir = host.data_dir if server.mount_data_dir else None
+            server.barman_dir = host.barman_dir if server.mount_barman_dir else None
             host.with_user_editor = host.with_user_editor or server.mount_editorial_dir
             host.server_list.append(server)
         host.server_list.sort(key=lambda s: env.sorted_server_names.index(s.name))
@@ -183,13 +199,26 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
     if env.hosts:
         assert all(host.server_list for host in env.hosts.values()), 'ENV {}: found host without server(s)'.format(env.name)
         assert all(server.host for server in env.servers.values()), 'ENV {}: found server without host'.format(env.name)
-        assert all(len(host.server_list) == len(set(server.sequence_no for server in host.server_list)) for host in env.hosts.values()), \
-            'ENV {}: found sequence no conflict among servers on one host'.format(env.name)
-        assert all(len([server for server in host.server_list if server.is_guard]) <= 1 for host in env.hosts.values()), \
-            'ENV {}: found more than one guard on one host'.format(env.name)
+        assert all(len(host.server_list) == len(set(server.sequence_no for server in host.server_list)) for host in
+                   env.hosts.values()), 'ENV {}: found sequence no conflict among servers on one host'.format(env.name)
+        assert all(len([server for server in servers if server.is_guard]) <= 1 for _, servers
+                   in itertools.groupby(sorted(env.servers.values, key=operator.attrgetter('host_base_name')), operator.attrgetter('host_base_name'))
+                   ), 'ENV {}: found more than one guard on one host'.format(env.name)
+        assert len([server for server in env.servers.values() if server.is_barman]) <= 1, 'ENV {}: found more than one barman'.format(env.name)
+        assert len([server for server in env.servers.values() if server.is_monitor]) <= 1, 'ENV {}: found more than one monitor'.format(env.name)
+        assert all(not server.is_guard or server.mount_var_dir for server in env.servers.values()), 'ENV {}: found guard without var mount'.format(env.name)
+        assert all(not server.is_barman or server.mount_barman_dir for server in env.servers.values()), \
+            'ENV {}: found barman without barman mount'.format(env.name)
+        assert all(server.is_guard or not server.mount_var_dir for server in env.servers.values()), \
+            'ENV {}: found servers not guard with var mount'.format(env.name)
         assert all(
-            server.name != 'monitor' or not server.mount_editorial_dir and not server.mount_buckets_dir and not server.mount_data_dir
-            for server in env.servers.values()), 'ENV {}: found monitor with editorial/buckets/data mount'.format(env.name)
+            not server.is_monitor or not server.mount_var_dir and not server.mount_editorial_dir and not server.mount_buckets_dir and not server.mount_data_dir and not server.mount_barman_dir
+            for server in env.servers.values()), 'ENV {}: found monitor with var/editorial/buckets/data mount'.format(env.name)
+
+        assert all(server.is_guard and server.backup_mirror or not server.is_guard and not server.backup_mirror for server in env.servers.values()), \
+            'ENV {}: found guard without backup mirror or non-guard server with backup mirror'.format(env.name)
+        assert all(not server.is_guard or env.backup_mirror == server.backup_mirror for server in env.servers.values()), \
+            'ENV {}: found more than one backup mirror, at most one is allowed in one env.'.format(env.name)
 
     # break cyclic reference between host and server to get freeze_dict_object out of complain
     for server in env.servers.values():
@@ -226,8 +255,10 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
 
 
 def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_host=None, supervisor_http_port=None,
-                name_servers=None, backup_mirror=None, mount_editorial_dir=False, mount_buckets_dir=False,
-                mount_data_dir=False, memory_limit=None, cpu_share=None, cpus=None, is_guard=False):
+                name_servers=None, backup_mirror=None, mount_var_dir=False, mount_editorial_dir=False, mount_buckets_dir=False,
+                mount_data_dir=False, mount_barman_dir=False, memory_limit=None, cpu_share=None, cpus=None):
+    assert not mount_var_dir or not mount_editorial_dir and not mount_buckets_dir and not mount_data_dir and not mount_barman_dir
+
     from veil.model.collection import objectify
     if backup_mirror:
         backup_mirror = objectify(backup_mirror)
@@ -241,24 +272,32 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
         'supervisor_http_port': supervisor_http_port,
         'name_servers': name_servers or DEFAULT_DNS_SERVERS,
         'backup_mirror': backup_mirror,
+        'mount_var_dir': mount_var_dir,
         'mount_editorial_dir': mount_editorial_dir,
         'mount_buckets_dir': mount_buckets_dir,
         'mount_data_dir': mount_data_dir,
+        'mount_barman_dir': mount_barman_dir,
         'memory_limit': memory_limit,
         'cpu_share': cpu_share,
-        'cpus': cpus,
-        'is_guard': is_guard
+        'cpus': cpus
     })
 
 
+def is_guard_server(name):
+    return 'guard' == name.split('-', 1)[0]
+
+
+def is_barman_server(name):
+    return 'barman' == name
+
+
+def is_monitor_server(name):
+    return 'monitor' == name
+
+
 def list_veil_servers(veil_env_name, include_guard_server=True, include_monitor_server=True, include_barman_server=True):
-    exclude_server_names = []
-    if not include_monitor_server:
-        exclude_server_names.append('monitor')
-    if not include_barman_server:
-        exclude_server_names.append('barman')
-    servers = [s for s in get_veil_env(veil_env_name).server_list if s.name not in exclude_server_names and (include_guard_server or not s.is_guard)]
-    return servers
+    return [s for s in get_veil_env(veil_env_name).server_list if
+            (include_guard_server or not s.is_guard) and (include_monitor_server or not s.is_monitor) and (include_barman_server or not s.is_barman)]
 
 
 def get_veil_server(veil_env_name, veil_server_name):
@@ -313,10 +352,6 @@ def get_application_email_whitelist():
 
 def get_veil_framework_codebase():
     return get_application().VEIL_FRAMEWORK_CODEBASE
-
-
-def get_backup_mirror_domain():
-    return get_application().BACKUP_MIRROR_DOMAIN
 
 
 _application_version = None

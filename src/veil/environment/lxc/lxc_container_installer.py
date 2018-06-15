@@ -13,7 +13,8 @@ def get_idmap():
 
 @atomic_installer
 def lxc_container_resource(container_name, hostname, timezone, user_name, ip_address, gateway, name_servers, start_order, memory_limit=None, cpus=None,
-                           cpu_share=None, idmap=None, etc_dir=None, log_dir=None, editorial_dir=None, buckets_dir=None, data_dir=None):
+                           cpu_share=None, idmap=None, etc_dir=None, log_dir=None, var_dir=None, editorial_dir=None, buckets_dir=None, data_dir=None,
+                           barman_dir=None):
     client = LXDClient(local=True)
     installed = client.is_container_exists(container_name)
     dry_run_result = get_dry_run_result()
@@ -123,6 +124,12 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
             memory_limit = '{}B'.format(memory_limit)
         container_config.config['limits.memory'] = memory_limit
 
+    if var_dir:
+        container_config.devices['var'] = {
+            'type': 'disk',
+            'path': var_dir,
+            'source': var_dir
+        }
     if editorial_dir:
         container_config.devices['editorial'] = {
             'type': 'disk',
@@ -140,6 +147,12 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
             'type': 'disk',
             'path': data_dir,
             'source': data_dir
+        }
+    if barman_dir:
+        container_config.devices['data'] = {
+            'type': 'disk',
+            'path': barman_dir,
+            'source': barman_dir
         }
     client.create_container(container_config, wait=True)
 
