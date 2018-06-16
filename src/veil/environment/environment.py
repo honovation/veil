@@ -202,7 +202,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         assert all(len(host.server_list) == len(set(server.sequence_no for server in host.server_list)) for host in
                    env.hosts.values()), 'ENV {}: found sequence no conflict among servers on one host'.format(env.name)
         assert all(len([server for server in servers if server.is_guard]) <= 1 for _, servers
-                   in itertools.groupby(sorted(env.servers.values, key=operator.attrgetter('host_base_name')), operator.attrgetter('host_base_name'))
+                   in itertools.groupby(sorted(env.servers.values(), key=operator.attrgetter('host_base_name')), operator.attrgetter('host_base_name'))
                    ), 'ENV {}: found more than one guard on one host'.format(env.name)
         assert len([server for server in env.servers.values() if server.is_barman]) <= 1, 'ENV {}: found more than one barman'.format(env.name)
         assert len([server for server in env.servers.values() if server.is_monitor]) <= 1, 'ENV {}: found more than one monitor'.format(env.name)
