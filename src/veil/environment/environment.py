@@ -215,9 +215,10 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
             not server.is_monitor or not server.mount_var_dir and not server.mount_editorial_dir and not server.mount_buckets_dir and not server.mount_data_dir and not server.mount_barman_dir
             for server in env.servers.values()), 'ENV {}: found monitor with var/editorial/buckets/data mount'.format(env.name)
 
-        assert all(server.is_guard and server.backup_mirror or not server.is_guard and not server.backup_mirror for server in env.servers.values()), \
-            'ENV {}: found guard without backup mirror or non-guard server with backup mirror'.format(env.name)
-        assert all(not server.is_guard or env.backup_mirror == server.backup_mirror for server in env.servers.values()), \
+        assert all(
+            (server.is_guard or server.is_barman) and server.backup_mirror or not (server.is_guard or server.is_barman) and not server.backup_mirror for server
+            in env.servers.values()), 'ENV {}: found guard/barman without backup mirror or non-guard/barman server with backup mirror'.format(env.name)
+        assert all(not server.backup_mirror or env.backup_mirror == server.backup_mirror for server in env.servers.values()), \
             'ENV {}: found more than one backup mirror, at most one is allowed in one env.'.format(env.name)
 
     # break cyclic reference between host and server to get freeze_dict_object out of complain

@@ -1,12 +1,9 @@
 # -*- coding: UTF-8 -*-
 from __future__ import unicode_literals, print_function, division
 
-from veil.environment import CURRENT_USER, CURRENT_USER_GROUP, VEIL_ETC_DIR, VEIL_LOG_DIR, VEIL_BARMAN_DIR, get_current_veil_env
-from veil.frontend.cli import *
+from veil.environment import CURRENT_USER, CURRENT_USER_GROUP, VEIL_ETC_DIR, VEIL_LOG_DIR, VEIL_BARMAN_DIR
 from veil.server.config import *
 from veil.server.os import *
-from veil.utility.shell import *
-from veil.utility.timer import *
 from veil_installer import *
 from ...postgresql_setting import get_pg_bin_dir
 
@@ -32,29 +29,3 @@ def pgbarman_resource(config):
     ]
 
     return resources
-
-
-@script('barman-backup')
-def bring_up_barman_backup(crontab_expression, purpose):
-    @run_every(crontab_expression)
-    def work():
-        try:
-            shell_execute('barman backup {}'.format(purpose), capture=True)
-        except:
-            pass
-
-    work()
-
-
-@script('barman-recover')
-def bring_up_barman_recover(crontab_expression, purpose, host, port, user):
-    @run_every(crontab_expression)
-    def work():
-        ssh_command = 'ssh -p {} -i /etc/ssh/id_ed25519-barman {}@{}'.format(port, user, host)
-        path = 'backup_mirror/{}/{}-db'.format(get_current_veil_env().name, purpose)
-        try:
-            shell_execute('barman recover --remote-ssh-command "{}" {} latest {}'.format(ssh_command, purpose, path), capture=True)
-        except:
-            pass
-
-    work()

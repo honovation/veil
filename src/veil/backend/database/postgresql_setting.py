@@ -56,19 +56,3 @@ def get_pg_data_dir(purpose, version):
 
 def get_pg_bin_dir(version):
     return as_path('/usr/lib/postgresql/{}/bin'.format(version))
-
-
-def barman_periodic_backup_program(crontab_expression, purpose):
-    return objectify({
-        'barman_backup': {
-            'execute_command': 'veil backend database postgresql barman-backup "{}" {}'.format(crontab_expression, purpose)
-        }
-    })
-
-
-def barman_periodic_recover_program(crontab_expression, purpose, host, port, user):
-    return objectify({
-        'barman_recover': {
-            'execute_command': 'veil backend database postgresql barman-recover "{}" {} {} {} {}'.format(crontab_expression, purpose, host, port, user)
-        }
-    })

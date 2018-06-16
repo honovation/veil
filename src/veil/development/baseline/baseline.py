@@ -12,7 +12,7 @@ from veil.utility.shell import *
 from veil.backend.database.client import *
 from veil.backend.database.postgresql import *
 
-BASELINE_DIR = VEIL_HOME / 'baseline'
+BASELINE_DIR = VEIL_HOME / 'baseline' / 'db'
 
 
 @script('restore-db-from-baseline')
@@ -20,8 +20,7 @@ BASELINE_DIR = VEIL_HOME / 'baseline'
 def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FALSE'):
     """
     restore db baseline from backup mirror
-    barman enabled db baseline path: backup_mirror/<veil_env_name>/<purpose>-db
-    non barman enabled db baseline path: backup_mirror/<veil_env_name>/latest/<host_name>/data/<purpose>-postgresql-<version>
+    barman enabled db baseline path: ~/backup_mirror/<veil_env_name>/latest-database-recover/<purpose>
 
     Excample:
         veil development baseline restore-db-from-baseline ENV_NAME DB_PURPOSE
@@ -48,11 +47,10 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
     if not any(s.is_barman for s in list_veil_servers(veil_env_name)):
         print('can not restore db as barman is not enabled: {}'.format(purpose))
         return
-    remote_db_baseline_path = '{}-db'.format(purpose)
-    local_db_baseline_path = BASELINE_DIR / remote_db_baseline_path
+    local_db_baseline_path = BASELINE_DIR / purpose
 
     if remote_download == 'TRUE':
-        download_baseline(veil_env_name, remote_db_baseline_path, local_db_baseline_path)
+        download_baseline(veil_env_name, purpose, local_db_baseline_path)
 
     print('found postgresql purposes: {}'.format(purpose))
     restored_to_path = VEIL_DATA_DIR / db_path_name
@@ -91,7 +89,7 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
 
 @script('download-baseline')
 @log_elapsed_time
-def download_baseline(veil_env_name, remote_path, baseline_path):
+def download_baseline(veil_env_name, purpose, baseline_path):
     backup_mirror = get_veil_env(veil_env_name).backup_mirror
     if not backup_mirror:
         raise Exception('backup mirror not found in veil env. {}'.format(veil_env_name))
@@ -100,7 +98,7 @@ def download_baseline(veil_env_name, remote_path, baseline_path):
         baseline_path = as_path(baseline_path)
     baseline_path.makedirs(0755)
 
-    backup_mirror_path = '~/backup_mirror/{}'.format(veil_env_name)
+    backup_mirror_path = VEIL_BACKUP_MIRROR_ROOT / veil_env_name / 'latest-database-recover'
     shell_execute('''rsync -avzhP -e "ssh -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --delete --bwlimit={} {}@{}:{}/{}/ {}/'''.format(
-        backup_mirror.ssh_port, backup_mirror.bandwidth_limit, backup_mirror.ssh_user, backup_mirror.domain, backup_mirror_path, remote_path,
-        baseline_path), debug=True)
+        backup_mirror.ssh_port, backup_mirror.bandwidth_limit, backup_mirror.ssh_user, backup_mirror.domain, backup_mirror_path, purpose, baseline_path),
+        debug=True)

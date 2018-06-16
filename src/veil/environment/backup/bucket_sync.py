@@ -12,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 @script('bucket-sync')
-def sync_bucket_script(exclude_buckets, remote_path):
+def sync_bucket_script(exclude_buckets):
     watch_directories = []
     exclude_buckets = exclude_buckets.split(',')
     for bucket_path in VEIL_BUCKETS_DIR.listdir():
@@ -24,7 +24,6 @@ def sync_bucket_script(exclude_buckets, remote_path):
     mask = inotify.constants.IN_CREATE | inotify.constants.IN_MODIFY | inotify.constants.IN_DELETE | inotify.constants.IN_DELETE_SELF | inotify.constants.IN_MOVED_TO
     monitor = inotify.adapters.InotifyTrees(watch_directories, mask=mask)
 
-    backup_mirror = get_current_veil_env().backup_mirror
     for event in monitor.event_gen():
         if event is None:
             continue
@@ -42,4 +41,4 @@ def sync_bucket_script(exclude_buckets, remote_path):
                 rel_path = VEIL_BUCKETS_DIR.relpathto(as_path(path) / filename)
             else:
                 rel_path = VEIL_BUCKETS_DIR.relpathto(path)
-        sync_to_backup_mirror(backup_mirror, rel_path, remote_path, VEIL_BUCKETS_DIR)
+        sync_to_backup_mirror(rel_path, 'latest-bucket-updates', VEIL_BUCKETS_DIR)
