@@ -49,17 +49,18 @@ def veil_container_lxc_resource(host, server):
         key = 'veil_container?{}'.format(server.container_name)
         dry_run_result[key] = action or '-'
         return
-    if not action:
-        if not is_container_running(server):
-            container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
-            container.start()
-    else:
+    if action:
         with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             with contextlib.closing(StringIO(installer_file_content)) as f:
                 fabric.api.put(f, server.container_installer_path, use_sudo=True, mode=0600)
             with fabric.api.cd(host.veil_home):
                 fabric.api.run('veil :{} install veil_installer.installer_resource?{}'.format(server.fullname, server.container_installer_path))
             fabric.api.run('mv -f {} {}'.format(server.container_installer_path, server.installed_container_installer_path))
+    else:
+        if is_container_running(server):
+            return
+        container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
+        container.start()
     while 1:
         try:
             with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
@@ -264,9 +265,7 @@ def render_veil_server_default_setting(server):
 
 
 def render_installer_file(host, server):
-    mac_address = '{}:{}'.format(host.mac_prefix, server.sequence_no)
     ip_address = '{}.{}'.format(host.lan_range, server.sequence_no)
     gateway = '{}.1'.format(host.lan_range)
-    installer_file_content = render_config('container-installer-file.j2', mac_address=mac_address, ip_address=ip_address, gateway=gateway, server=server,
-                                           host=host)
+    installer_file_content = render_config('container-installer-file.j2', ip_address=ip_address, gateway=gateway, server=server, host=host)
     return installer_file_content

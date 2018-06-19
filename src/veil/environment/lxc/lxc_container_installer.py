@@ -12,9 +12,8 @@ def get_idmap():
 
 
 @atomic_installer
-def lxc_container_resource(container_name, hostname, timezone, user_name, ip_address, gateway, name_servers, start_order, memory_limit=None, cpus=None,
-                           cpu_share=None, idmap=None, etc_dir=None, log_dir=None, var_dir=None, editorial_dir=None, buckets_dir=None, data_dir=None,
-                           barman_dir=None):
+def lxc_container_resource(container_name, hostname, timezone, user_name, ip_address, gateway, name_servers, start_order, etc_dir, log_dir, var_dir=None,
+                           editorial_dir=None, buckets_dir=None, data_dir=None, barman_dir=None, memory_limit=None, cpus=None, cpu_share=None, idmap=None):
     client = LXDClient(local=True)
     installed = client.is_container_exists(container_name)
     dry_run_result = get_dry_run_result()
