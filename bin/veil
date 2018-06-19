@@ -55,10 +55,11 @@ function veil_init {
             if [ ! -d $PYPI_ARCHIVE_DIR ]; then
                 sudo mkdir -p $PYPI_ARCHIVE_DIR
             fi
-            sudo -H pip install -i https://pypi.doubanio.com/simple/ --upgrade "pip>=9.0.1"
-            sudo -H pip install -i https://pypi.doubanio.com/simple/ --upgrade "setuptools>=34.2.0"
-            sudo -H pip install -i https://pypi.doubanio.com/simple/ --upgrade "wheel>=0.30.0a0"
-            sudo -H pip install -i https://pypi.doubanio.com/simple/ --upgrade "virtualenv>=15.1.0"
+            PYPI_INDEX_URL='https://pypi.doubanio.com/simple/'
+            sudo -H pip install -i $PYPI_INDEX_URL --upgrade "pip>=9.0.1"
+            sudo -H pip install -i $PYPI_INDEX_URL --upgrade "setuptools>=34.2.0"
+            sudo -H pip install -i $PYPI_INDEX_URL --upgrade "wheel>=0.30.0a0"
+            sudo -H pip install -i $PYPI_INDEX_URL --upgrade "virtualenv>=15.1.0"
         fi
         virtualenv env
         echo "$VEIL_FRAMEWORK_HOME/src" > env/lib/python2.7/site-packages/veil.pth
