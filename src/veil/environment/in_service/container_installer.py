@@ -110,7 +110,7 @@ def veil_container_sources_list_resource(server):
 
 @composite_installer
 def veil_container_config_resource(server):
-    server_config_dir = get_env_config_dir() / 'servers' / server.name
+    server_config_dir = get_env_config_dir() / 'servers' / (server.name.split('-', 1)[0] if server.is_guard else server.name)
     resources = [
         veil_server_default_setting_resource(server=server),
         veil_server_boot_script_resource(server=server),
