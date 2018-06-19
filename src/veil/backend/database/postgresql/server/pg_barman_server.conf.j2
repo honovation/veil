@@ -3,6 +3,7 @@ active = true
 description = "Streaming archive and backup for {{ server_name }}"
 basebackup_retry_times = 3
 immediate_checkpoint = true
+minimum_redundancy = 3
 last_backup_maximum_age = 3 DAYS
 retention_policy = RECOVERY WINDOW OF 1 WEEKS
 retention_policy_mode = auto
@@ -11,7 +12,7 @@ conninfo = host={{ db_host }} user={{ db_user }} dbname=postgres
 streaming_conninfo = host={{ db_host }} user={{ replication_user }} dbname=postgres
 backup_method = postgres
 streaming_archiver = on
-slot_name = {{ replication_slot_name }}
+slot_name = barman
 path_prefix = {{ pg_bin_path }}
 basebackups_directory = {{ barman_server_home }}/base
 errors_directory = {{ barman_server_home }}/errors
