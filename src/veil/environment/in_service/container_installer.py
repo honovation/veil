@@ -61,6 +61,7 @@ def veil_container_lxc_resource(host, server):
             return
         container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
         container.start()
+    # ensure the container is started and ready to accept login
     while 1:
         try:
             with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
@@ -87,7 +88,7 @@ def veil_container_onetime_config_resource(host, server):
         veil_container_file_resource(local_path=CURRENT_DIR / 'persist-iptables.service', server=server,
                                      remote_path='/lib/systemd/system/persist-iptables.service', owner='root', owner_group='root', mode=0755,
                                      cmds=('systemctl daemon-reload', 'systemctl enable persist-iptables.service', 'systemctl start persist-iptables.service')),
-        veil_container_init_resource(server=server)
+        veil_container_init_resource(server=server)  # should be the last one of onetime config which marks the container-initialization tag
     ]
     return resources
 
@@ -179,6 +180,20 @@ def veil_container_init_resource(server):
 
 
 @atomic_installer
+def veil_container_directory_resource(server, remote_path, owner, owner_group, mode=0755):
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        key = 'veil_container_directory?server={}&remote_path={}&owner={}&owner_group={}&mode={}'.format(server.container_name, remote_path, owner, owner_group,
+                                                                                                         mode)
+        dry_run_result[key] = 'INSTALL'
+        return
+    client = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir())
+    client.run_container_command(server.container_name, 'mkdir -p {}'.format(remote_path))
+    client.run_container_command(server.container_name, 'chmod {:o} {}'.format(mode, remote_path))
+    client.run_container_command(server.container_name, 'chown {}:{} {}'.format(owner, owner_group, remote_path))
+
+
+@atomic_installer
 def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False, cmds=None, file_content=None):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
@@ -199,20 +214,6 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
     if cmds:
         for cmd in cmds:
             client.run_container_command(server.container_name, cmd)
-
-
-@atomic_installer
-def veil_container_directory_resource(server, remote_path, owner, owner_group, mode=0755):
-    dry_run_result = get_dry_run_result()
-    if dry_run_result is not None:
-        key = 'veil_container_directory?server={}&remote_path={}&owner={}&owner_group={}&mode={}'.format(server.container_name, remote_path, owner, owner_group,
-                                                                                                         mode)
-        dry_run_result[key] = 'INSTALL'
-        return
-    client = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir())
-    client.run_container_command(server.container_name, 'mkdir -p {}'.format(remote_path))
-    client.run_container_command(server.container_name, 'chown {}:{} {}'.format(owner, owner_group, remote_path))
-    client.run_container_command(server.container_name, 'chmod {:o} {}'.format(mode, remote_path))
 
 
 @atomic_installer
