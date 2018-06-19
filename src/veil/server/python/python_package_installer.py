@@ -153,7 +153,7 @@ def get_installed_package_remote_latest_version(name):
         if name == 'tornado':
             lines = shell_execute('pip list -l -o | grep Latest:', capture=True, debug=True).splitlines()
         else:
-            pip_index_args = '-i {} --trusted-host {}'.format(server.pypi_index_url, server.pypi_index_host) if server.pypi_index_url else ''
+            pip_index_args = '-i {}'.format(server.pypi_index_url) if server.pypi_index_url else ''
             lines = shell_execute('pip list {} -l -o | grep Latest:'.format(pip_index_args), capture=True, debug=True).splitlines()
         for line in lines:
             match = RE_OUTDATED_PACKAGE.match(line)
@@ -165,7 +165,7 @@ def download_python_package(name, version=None, url=None, **kwargs):
     tries = 0
     max_tries = 3
     server = get_current_veil_server()
-    pip_index_args = '-i {} --trusted-host {}'.format(server.pypi_index_url, server.pypi_index_host) if server.pypi_index_url else ''
+    pip_index_args = '-i {}'.format(server.pypi_index_url) if server.pypi_index_url else ''
     name_term = '{}{}'.format(name, '=={}'.format(version) if version else '')
     while True:
         tries += 1
@@ -221,7 +221,7 @@ def install_python_package_remotely(name, version, url, **kwargs):
     tries = 0
     max_tries = 3
     server = get_current_veil_server()
-    pip_index_args = '-i {} --trusted-host {}'.format(server.pypi_index_url, server.pypi_index_host) if server.pypi_index_url else ''
+    pip_index_args = '-i {}'.format(server.pypi_index_url) if server.pypi_index_url else ''
     while True:
         tries += 1
         try:
@@ -251,7 +251,7 @@ def install_python_package(name, version, url=None, **kwargs):
 @script('upgrade-pip')
 def upgrade_pip(setuptools_version, wheel_version, pip_version):
     env = get_current_veil_env()
-    pip_index_args = '-i {} --trusted-host {}'.format(env.pypi_index_url, env.pypi_index_host) if env.pypi_index_url else ''
+    pip_index_args = '-i {}'.format(env.pypi_index_url) if env.pypi_index_url else ''
     shell_execute('pip install {} --upgrade pip=={}'.format(pip_index_args, pip_version), capture=True, debug=True)
     shell_execute('pip install {} --upgrade setuptools=={}'.format(pip_index_args, setuptools_version), capture=True, debug=True)
     shell_execute('pip install {} --upgrade wheel=={}'.format(pip_index_args, wheel_version), capture=True, debug=True)

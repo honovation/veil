@@ -6,7 +6,6 @@ import itertools
 import operator
 import os
 import re
-from urlparse import urlparse
 
 from veil_component import *
 
@@ -105,7 +104,6 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
     env = objectify({
         'name': name, 'hosts': hosts, 'servers': servers, 'sorted_server_names': sorted_server_names,
         'apt_url': apt_url,
-        'pypi_index_host': urlparse(pypi_index_url).hostname if pypi_index_url is not None else None,
         'pypi_index_url': pypi_index_url,
         'deployment_memo': deployment_memo, 'config': config or {}
     })
@@ -124,7 +122,6 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         server.fullname = '{}/{}'.format(server.VEIL_ENV.name, server.name)
         server.start_order = 1000 + 10 * sorted_server_names.index(server.name) if sorted_server_names else 0
         server.apt_url = env.apt_url
-        server.pypi_index_host = env.pypi_index_host
         server.pypi_index_url = env.pypi_index_url
         server.veil_home = env.veil_home
         server.code_dir = server.veil_home.parent
@@ -146,7 +143,6 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         # 生产环境部署到多个host，staging只有一台host，用一台host模拟多台host时，在staging的host name加--1,--2,--3表示多台机器
         host.base_name = host.name.rsplit('--', 1)[0]
         host.apt_url = env.apt_url
-        host.pypi_index_host = env.pypi_index_host
         host.pypi_index_url = env.pypi_index_url
         host.ssh_user_home = as_path('/home') / host.ssh_user
         host.share_dir = SHARE_DIR

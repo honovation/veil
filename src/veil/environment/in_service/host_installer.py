@@ -288,7 +288,8 @@ def veil_host_init_resource(host):
         fabric.api.sudo('timedatectl set-ntp true')
 
         with fabric.api.settings(sudo_prefix="sudo -H -S -p '%(sudo_prompt)s' "):
-            pip_index_args = '-i {} --trusted-host {}'.format(host.pypi_index_url, host.pypi_index_host) if host.pypi_index_url else ''
+            # upgrade before initializing veil app (veil init) which will create virtualenv and copy pip&wheel into virtual env.
+            pip_index_args = '-i {}'.format(host.pypi_index_url) if host.pypi_index_url else ''
             fabric.api.sudo('pip install {} --upgrade "pip>=9.0.1"'.format(pip_index_args))
             fabric.api.sudo('pip install {} --upgrade "setuptools>=34.2.0"'.format(pip_index_args))
             fabric.api.sudo('pip install {} --upgrade "wheel>=0.30.0a0"'.format(pip_index_args))

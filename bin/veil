@@ -55,6 +55,7 @@ function veil_init {
             if [ ! -d $PYPI_ARCHIVE_DIR ]; then
                 sudo mkdir -p $PYPI_ARCHIVE_DIR
             fi
+            # upgrade before initializing veil app (veil init) which will create virtualenv and copy pip&wheel into virtual env.
             PYPI_INDEX_URL='https://pypi.doubanio.com/simple/'
             sudo -H pip install -i $PYPI_INDEX_URL --upgrade "pip>=9.0.1"
             sudo -H pip install -i $PYPI_INDEX_URL --upgrade "setuptools>=34.2.0"
