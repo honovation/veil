@@ -38,8 +38,8 @@ class LXDClient(object):
     def is_profile_exists(self, name):
         return self.client.profiles.exists(name)
 
-    def create_profile(self, name, config=None, device=None):
-        return self.client.profiles.create(name, config=config, device=device)
+    def create_profile(self, name, config=None, devices=None):
+        return self.client.profiles.create(name, config=config, devices=devices)
 
     def is_container_exists(self, name):
         return self.client.containers.exists(name)
