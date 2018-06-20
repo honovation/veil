@@ -126,7 +126,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
         server.veil_home = env.veil_home
         server.code_dir = server.veil_home.parent
         server.veil_framework_home = server.code_dir / 'veil'
-        server.container_name = '{}-{}'.format(server.VEIL_ENV.name, server.name)
+        server.container_name = '{}---{}'.format(server.VEIL_ENV.name, server.name)
         server.container_installer_path = SHARE_DIR / 'veil-container-INSTALLER-{}'.format(server.container_name)
         server.installed_container_installer_path = '{}.installed'.format(server.container_installer_path)
         server.container_initialized_tag_path = SHARE_DIR / 'veil-container-{}.initialized'.format(server.container_name)
