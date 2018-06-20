@@ -96,7 +96,7 @@ def install_file(is_dry_run, path, content, owner='root', group='root', mode=064
         reason = "it doesn't exist"
     if write:
         if path_exists and keep_origin:
-            shell_execute('cp -pn {path} {path}.bak'.format(path=path), capture=True)
+            shell_execute('cp -pn {path} {path}.origin'.format(path=path), capture=True)
         with open(path, 'wb') as fp:
             LOGGER.info('Writing file: %(path)s because %(reason)s', {'path': path, 'reason': reason})
             fp.write(content)

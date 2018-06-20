@@ -104,7 +104,7 @@ def veil_container_sources_list_resource(server):
     sources_list_path = '/etc/apt/sources.list'
     codename = client.run_container_command(server.container_name, 'lsb_release -cs').strip()
     sources_list_content = render_config(CURRENT_DIR / 'sources.list.j2', mirror=server.apt_url, codename=codename)
-    client.run_container_command(server.container_name, 'cp -pn {path} {path}.bak'.format(path=sources_list_path))
+    client.run_container_command(server.container_name, 'cp -pn {path} {path}.origin'.format(path=sources_list_path))
     client.put_container_file(server.container_name, sources_list_path, sources_list_content)
 
 
@@ -194,7 +194,7 @@ def veil_container_directory_resource(server, remote_path, owner, owner_group, m
 
 
 @atomic_installer
-def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False, cmds=None, file_content=None):
+def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False, cmds=None):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_container_file?{}&path={}'.format(server.container_name, remote_path)
@@ -202,14 +202,11 @@ def veil_container_file_resource(local_path, server, remote_path, owner, owner_g
         return
     client = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir())
     if keep_origin:
-        client.run_container_command(server.container_name, 'cp -pn {path} {path}.bak'.format(path=remote_path))
-    if not file_content:
-        f = as_path(local_path)
-        if not f.exists():
-            raise Exception('file not exists: {}'.format(local_path))
-        content = f.bytes()
-    else:
-        content = file_content
+        client.run_container_command(server.container_name, 'cp -pn {path} {path}.origin'.format(path=remote_path))
+    f = as_path(local_path)
+    if not f.exists():
+        raise Exception('file not exists: {}'.format(local_path))
+    content = f.bytes()
     client.put_container_file(server.container_name, remote_path, content, mode=mode, uid=owner, gid=owner_group)
     if cmds:
         for cmd in cmds:

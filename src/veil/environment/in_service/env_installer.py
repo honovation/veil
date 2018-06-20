@@ -117,13 +117,13 @@ def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir
                 continue
             fabric.api.sudo(
                 'rsync -ah --numeric-ids --delete {} --link-dest={}/ {}/ {}/'.format(' '.join(excludes), source_dir, source_dir, rollback_backup_dir))
-            fabric.api.sudo('touch {}'.format(host.rollbackable_tag_path))
+            fabric.api.run('touch {}'.format(host.rollbackable_tag_path))
 
 
 def remove_rollbackable_tags(veil_env_name):
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
         with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
-            fabric.api.sudo('rm -f {}'.format(host.rollbackable_tag_path))
+            fabric.api.run('rm -f {}'.format(host.rollbackable_tag_path))
 
 
 @script('download-packages')

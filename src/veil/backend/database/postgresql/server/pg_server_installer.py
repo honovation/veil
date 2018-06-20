@@ -190,9 +190,9 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
     try:
         shell_execute('sudo usermod -a -G postgres {}'.format(CURRENT_USER))
         shell_execute('sudo su {pg_data_owner_os} -c "{initdb_command}"'.format(pg_data_owner_os=CURRENT_USER, initdb_command=initdb_command), capture=True)
-        shell_execute('mv postgresql.conf postgresql.conf.bak', cwd=pg_data_dir)
-        shell_execute('mv pg_hba.conf pg_hba.conf.bak', cwd=pg_data_dir)
-        shell_execute('mv pg_ident.conf pg_ident.conf.bak', cwd=pg_data_dir)
+        shell_execute('mv -n postgresql.conf postgresql.conf.origin', cwd=pg_data_dir)
+        shell_execute('mv -n pg_hba.conf pg_hba.conf.origin', cwd=pg_data_dir)
+        shell_execute('mv -n pg_ident.conf pg_ident.conf.origin', cwd=pg_data_dir)
     finally:
         delete_file('/tmp/pg-{}-owner-password'.format(purpose))
         shell_execute('chmod {} {}'.format(old_permission, pg_data_dir.parent), capture=True)

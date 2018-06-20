@@ -373,7 +373,7 @@ def init_veil_host_basic_layout(host):
     if host.VEIL_ENV.name != host.VEIL_ENV.base_name:
         env_full_name_link = host.env_dir.parent / host.VEIL_ENV.name
         fabric.api.sudo('ln -sfT {} {}'.format(host.env_dir, env_full_name_link))
-        fabric.api.sudo('chown {}:{} {}'.format(host.ssh_user, host.ssh_user_group, env_full_name_link))
+        fabric.api.sudo('chown -h {}:{} {}'.format(host.ssh_user, host.ssh_user_group, env_full_name_link))
 
 
 def is_initialized_for_another_same_base_instance(host):
@@ -394,10 +394,12 @@ def veil_host_sources_list_resource(host):
         dry_run_result[key] = 'INSTALL'
         return
     with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        sources_list_path = '/etc/apt/sources.list'
         context = dict(mirror=host.apt_url, codename=fabric.api.run('lsb_release -cs', pty=False))
-        # keep if no change, otherwise rename the original one with .bak extension
-        fabric.contrib.files.upload_template('sources.list.j2', '/etc/apt/sources.list', context=context, use_jinja=True, template_dir=CURRENT_DIR,
-                                             use_sudo=True, backup=True, mode=0644)
+        fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=sources_list_path))
+        fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR, use_sudo=True,
+                                             backup=False, mode=0644)
+        fabric.api.sudo('chown root:root {}'.format(sources_list_path))
 
     sources_list_installed.append(host.base_name)
 
@@ -416,7 +418,7 @@ def veil_host_directory_resource(host, remote_path, owner='root', owner_group='r
 
 
 @atomic_installer
-def veil_host_file_resource(local_path, host, remote_path, owner, owner_group, mode, keep_origin=False, set_owner_first=False, cmd=None):
+def veil_host_file_resource(local_path, host, remote_path, owner, owner_group, mode, keep_origin=False, cmd=None):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_host_file?{}&path={}'.format(host.VEIL_ENV.name, remote_path)
@@ -424,15 +426,9 @@ def veil_host_file_resource(local_path, host, remote_path, owner, owner_group, m
         return
     with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
         if keep_origin:
-            fabric.api.sudo('cp -pn {path} {path}.bak'.format(path=remote_path))
-        if set_owner_first:
-            temp_file = '/tmp/{}'.format(uuid.uuid4().get_hex())
-            fabric.api.put(local_path, temp_file, use_sudo=True, mode=mode)
-            fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, temp_file))
-            fabric.api.sudo('mv -f {} {}'.format(temp_file, remote_path))
-        else:
-            fabric.api.put(local_path, remote_path, use_sudo=True, mode=mode)
-            fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
+            fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=remote_path))
+        fabric.api.put(local_path, remote_path, use_sudo=True, mode=mode)
+        fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
         if cmd:
             fabric.api.sudo(cmd)
 
@@ -470,6 +466,7 @@ def veil_host_user_resource(host, user_dir):
                 fabric.api.sudo('systemctl start {}'.format(service_name))
         if not installed:
             fabric.api.sudo('touch {}'.format(initialized_file_path))
+            fabric.api.sudo('chown {}:{} {}'.format(username, username, initialized_file_path))
 
 
 @atomic_installer
