@@ -357,9 +357,10 @@ def init_lxd_profile_resource(client):
 
 
 def init_lxd_image(client):
-    if client.is_image_exists(LXD_IMAGE_FINGERPRINT):
+    codename = fabric.api.run('lsb_release -cs', pty=False)
+    if client.is_image_exists(codename):
         return
-    fabric.api.run('lxc image copy ubuntu:{} local:'.format(LXD_IMAGE_FINGERPRINT))
+    fabric.api.run('lxc image copy ubuntu:{codename} local: --alias {codename}'.format(codename=codename))
 
 
 def init_veil_host_basic_layout(host):

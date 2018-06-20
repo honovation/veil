@@ -10,9 +10,6 @@ from veil_component import as_path
 
 LOGGER = logging.getLogger(__name__)
 
-# How to find the image for the current os and architecture: lxc image list ubuntu:`lsb_release -cs` | grep `uname -m`
-LXD_IMAGE_FINGERPRINT = '9879a79ac2b2'
-
 LXD_PROFILE_NAME = 'veil'
 LXD_BRIDGE_NAME = 'br0'
 
@@ -32,8 +29,8 @@ class LXDClient(object):
                 self.client.authenticate(config.lxd_trusted_password)
         assert self.client.trusted
 
-    def is_image_exists(self, fingerprint):
-        return self.client.images.exists(fingerprint)
+    def is_image_exists(self, alias):
+        return self.client.images.exists(alias, alias=True)
 
     def is_profile_exists(self, name):
         return self.client.profiles.exists(name)
