@@ -245,6 +245,7 @@ def veil_host(lan_range, external_ip, ssh_port=22, ssh_user='dejavu', sshd_confi
         'iptables_rule_resources': iptables_rule_resources,
         'deploys_via': '{}@{}:{}'.format(ssh_user, internal_ip, ssh_port),
         'external_service_ports': external_service_ports,
+        'lxd_port': lxd_port,
         'lxd_endpoint': 'https://{}:{}'.format(internal_ip, lxd_port)
     })
 
