@@ -72,7 +72,7 @@ def render_iptables_rules_installer_file(host):
     for h in list_veil_hosts(host.VEIL_ENV.name):
         if h.base_name != host.base_name:
             continue
-        resources.append(iptables_rule_resource(table='filter', rule='INPUT -d {}/32 -p tcp -m tcp --dport 8443 -j ACCEPT'.format(h.internal_ip)))
+        resources.append(iptables_rule_resource(table='filter', rule='INPUT -d {}/32 -p tcp -m tcp --dport {} -j ACCEPT'.format(h.internal_ip, h.lxd_port)))
         resources.append(iptables_rule_resource(table='nat', rule='POSTROUTING -s {}.0/24 ! -d {}.0/24 -j MASQUERADE'.format(h.lan_range, h.lan_range)))
         resources.extend(h.iptables_rule_resources)
         ssh_ports.add(host.ssh_port)
