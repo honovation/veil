@@ -155,8 +155,29 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
     devices_config = generate_lxc_container_devices_config(user_name, etc_dir, log_dir, var_dir=var_dir, editorial_dir=editorial_dir, buckets_dir=buckets_dir,
                                                            data_dir=data_dir, barman_dir=barman_dir)
     if installed:
-        LOGGER.info('Update lxc container: %(container_name)s', {'container_name': container_name})
         container = client.get_container(container_name)
+        if container.config['user.user-data'] != user_data:
+            LOGGER.info('Delete container as user-data changed: %(container_name)s, %(old)s, %(new)s', {
+                'container_name': container_name,
+                'old': container.config['user.user-data'],
+                'new': user_data
+            })
+            container.stop()
+            container.delte()
+            installed = False
+        elif container.config['user.network-config'] != network_config:
+            LOGGER.info('Delete container as network-config changed: %(container_name)s, %(old)s, %(new)s', {
+                'container_name': container_name,
+                'old': container.config['user.network-config'],
+                'new': network_config
+            })
+            container.stop()
+            container.delte()
+            installed = False
+
+    if installed:
+        container = client.get_container(container_name)
+        LOGGER.info('Update lxc container: %(container_name)s', {'container_name': container_name})
         if container.profiles[0] != LXD_PROFILE_NAME:
             new_profiles = [LXD_PROFILE_NAME]
             LOGGER.info('change container profile: %(old_profiles)s, %(new_profiles)s', {
