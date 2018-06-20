@@ -203,7 +203,10 @@ def veil_host_codebase_resource(host):
 def clone_application(host):
     if fabric.contrib.files.exists(host.veil_home):
         return
-    fabric.api.run('git clone -b {} --depth=1 {} {}'.format(host.veil_application_branch, get_application_codebase(), host.veil_home))
+    codebase = get_application_codebase()
+    codebase_host = codebase.split(':', 1)[0].split('@', 1)[1]
+    fabric.api.run('ssh-keyscan {} >> ~/.ssh/known_hosts'.format(codebase_host))
+    fabric.api.run('git clone -b {} --depth=1 {} {}'.format(host.veil_application_branch, codebase, host.veil_home))
 
 
 def clone_framework(host, branch):
