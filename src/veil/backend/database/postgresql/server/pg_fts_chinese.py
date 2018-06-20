@@ -42,7 +42,7 @@ def install_scws():
             set_resource_latest_version(SCWS_RESOURCE_KEY, SCWS_RESOURCE_VERSION)
         return
     download_scws()
-    shell_execute('./configure && sudo make install', cwd=SCWS_HOME)
+    shell_execute('./configure && make && sudo make install', cwd=SCWS_HOME)
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         set_resource_latest_version(SCWS_RESOURCE_KEY, SCWS_RESOURCE_VERSION)
 
