@@ -3,6 +3,7 @@ import platform
 import pwd
 from veil.environment.lxd import *
 from veil.profile.installer import *
+from veil.utility.clock import *
 
 LOGGER = logging.getLogger(__name__)
 
@@ -163,7 +164,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
                 'new': user_data
             })
             container.stop()
-            container.delte()
+            container.rename('{}-deleted-at-{}'.format(container.name, get_current_timestamp()), wait=True)
             installed = False
         elif container.config['user.network-config'] != network_config:
             LOGGER.info('Delete container as network-config changed: %(container_name)s, %(old)s, %(new)s', {
@@ -172,7 +173,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
                 'new': network_config
             })
             container.stop()
-            container.delte()
+            container.rename('{}-deleted-at-{}'.format(container.name, get_current_timestamp()), wait=True)
             installed = False
 
     if installed:
