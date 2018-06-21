@@ -116,4 +116,4 @@ class ContainerProxy(object):
         return self.container.status_code == 103
 
     def __getattribute__(self, name):
-        return self.container.__getattribute__(name)
+        return getattr(self.container, name)
