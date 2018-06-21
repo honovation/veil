@@ -4,6 +4,8 @@ import contextlib
 import os
 import fabric.api
 import fabric.contrib.files
+
+from veil.utility.shell import *
 from veil_component import as_path
 from veil_installer import *
 from veil.server.config import *
@@ -57,6 +59,7 @@ def veil_container_lxc_resource(host, server):
             if deleted_container_name:
                 fabric.api.run('rm -f {} {} {}'.format(server.container_initialized_tag_path, server.deployed_tag_path, server.patched_tag_path))
                 fabric.api.run('lxc delete {}'.format(deleted_container_name))
+                shell_execute('ssh-keygen -R {}'.format(server.internal_ip))
     else:
         container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
         if not container.running:
