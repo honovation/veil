@@ -339,7 +339,10 @@ def stop_servers(servers, stop_container=False):
                     time.sleep(1)
                 if stop_container:
                     container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
-                    container.stop(wait=True)
+                    try:
+                        container.stop(wait=True)
+                    except:
+                        pass
 
 
 @script('start-env')
