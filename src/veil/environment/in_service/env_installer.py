@@ -150,7 +150,7 @@ def download_packages(veil_env_name):
                         if not is_container_running(server):
                             print(yellow('Skipped downloading packages for server {} as its container is not running'.format(server.container_name)))
                             continue
-                        with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
+                        with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port, disable_known_hosts=True):
                             with fabric.api.cd(server.veil_home):
                                 fabric.api.run('veil :{} install-server --download-only'.format(server.fullname))
                 finally:
@@ -285,7 +285,7 @@ def backup_env(veil_env_name):
     for server in list_veil_servers(veil_env_name):
         if not server.is_guard:
             continue
-        with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
+        with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port, disable_known_hosts=True):
             with fabric.api.cd(server.veil_home):
                 fabric.api.sudo('veil :{} backup-host'.format(server.fullname))
 
@@ -335,7 +335,7 @@ def stop_servers(servers, stop_container=False):
             if container.running:
                 while is_server_running(server):
                     print(cyan('Stop server {} ...'.format(server.name)))
-                    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
+                    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port, disable_known_hosts=True):
                         fabric.api.sudo('systemctl stop veil-server.service')
                     time.sleep(1)
                 if stop_container:
@@ -364,7 +364,7 @@ def start_env(veil_env_name, config_dir, disable_external_access_='FALSE', *excl
             if container.running:
                 while not is_server_running(server):
                     print(cyan('Start server {} ...'.format(server.name)))
-                    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
+                    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port, disable_known_hosts=True):
                         fabric.api.sudo('systemctl start veil-server.service')
                     time.sleep(1)
             else:

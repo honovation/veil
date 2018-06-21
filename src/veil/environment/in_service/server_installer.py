@@ -26,7 +26,7 @@ def veil_server_resource(server, action='PATCH', start_after_deploy=True):
     if not is_container_running(server):
         print(yellow('Skipped {} server {} as its container is not running'.format(action, server.container_name)))
 
-    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
+    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port, disable_known_hosts=True):
         # TODO: workaround for issue: https://github.com/lxc/lxc/issues/1450
         fabric.api.sudo('sysctl --quiet --system')
         with fabric.api.cd(server.veil_home):

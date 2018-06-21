@@ -166,7 +166,7 @@ def veil_container_init_resource(server):
         return
     required_packages = ['unattended-upgrades', 'update-notifier-common', 'iptables', 'git', 'language-pack-en', 'unzip', 'wget', 'python', 'python-dev',
                          'python-pip', 'python-virtualenv']
-    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
+    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port, disable_known_hosts=True):
         fabric.api.sudo('apt update')
         fabric.api.sudo('apt -y install {}'.format(' '.join(required_packages)))
         fabric.api.run('touch {}'.format(server.container_initialized_tag_path))
@@ -246,7 +246,7 @@ def veil_server_boot_script_resource(server):
         return
     print('{} boot script: {} ...'.format(action, server.container_name))
     client.put_container_file(server.container_name, boot_script_path, boot_script_content)
-    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
+    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port, disable_known_hosts=True):
         fabric.api.sudo('systemctl daemon-reload')
         fabric.api.sudo('systemctl enable veil-server')
 
