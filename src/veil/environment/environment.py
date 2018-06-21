@@ -9,7 +9,7 @@ import re
 
 from veil_component import *
 
-DEFAULT_DNS_SERVERS = ('119.29.29.29', '182.254.116.116', '114.114.114.114', '114.114.115.115')
+DEFAULT_DNS_SERVERS = ('119.29.29.29', '182.254.116.116', '223.5.5.5', '223.6.6.6')
 
 DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
 DEPENDENCY_SSL_URL = 'https://dependency-veil.qiniudn.com'
