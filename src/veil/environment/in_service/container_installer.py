@@ -64,7 +64,7 @@ def veil_container_lxc_resource(host, server):
         if is_container_running(server):
             return
         container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
-        container.start()
+        container.start(wait=True)
     # ensure the container is started and ready to accept login
     while 1:
         try:

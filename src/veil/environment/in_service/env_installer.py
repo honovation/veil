@@ -339,7 +339,7 @@ def stop_servers(servers, stop_container=False):
                     time.sleep(1)
                 if stop_container:
                     container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
-                    container.stop()
+                    container.stop(wait=True)
 
 
 @script('start-env')
@@ -368,7 +368,7 @@ def start_env(veil_env_name, config_dir, disable_external_access_='FALSE', *excl
                     time.sleep(1)
             else:
                 container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
-                container.start()
+                container.start(wait=True)
 
 
 @script('disable-external-access')

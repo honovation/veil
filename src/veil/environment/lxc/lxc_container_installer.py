@@ -163,7 +163,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
                 'old': container.config['user.user-data'],
                 'new': user_data
             })
-            container.stop()
+            container.stop(wait=True)
             container.rename('{}-deleted-at-{}'.format(container.name, get_current_timestamp()), wait=True)
             installed = False
         elif container.config['user.network-config'] != network_config:
@@ -172,7 +172,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
                 'old': container.config['user.network-config'],
                 'new': network_config
             })
-            container.stop()
+            container.stop(wait=True)
             container.rename('{}-deleted-at-{}'.format(container.name, get_current_timestamp()), wait=True)
             installed = False
 
@@ -223,7 +223,7 @@ def lxc_container_in_service_resource(container_name, restart_if_running=False):
         return
     if running:
         LOGGER.info('reboot lxc container: %(container_name)s ...', {'container_name': container_name})
-        container.restart()
+        container.restart(wait=True)
     else:
         LOGGER.info('start lxc container: %(container_name)s ...', {'container_name': container_name})
-        container.start()
+        container.start(wait=True)
