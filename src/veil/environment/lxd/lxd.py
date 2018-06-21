@@ -46,10 +46,7 @@ class LXDClient(object):
         return self.client.containers.create(config, wait=wait)
 
     def get_container(self, name):
-        container = self.client.containers.get(name)
-        if container:
-            container.running = container.status_code == 103
-        return container
+        return ContainerProxy(self.client.containers.get(name))
 
     def get_container_file_content(self, container_name, file_path):
         """
@@ -108,3 +105,15 @@ class LXDClient(object):
         if result.exit_code != 0:
             raise Exception('Failed run command in container: {}, {}, {}'.format(container_name, command, result.stderr))
         return result.stdout
+
+
+class ContainerProxy(object):
+    def __init__(self, container):
+        self.container = container
+
+    @property
+    def running(self):
+        return self.container.status_code == 103
+
+    def __getattribute__(self, name):
+        return self.container.__getattribute__(name)
