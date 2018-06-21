@@ -9,16 +9,16 @@ from .sync_to_backup_mirror import sync_to_backup_mirror
 LOGGER = logging.getLogger(__name__)
 
 
-@script('redis-aof-sync')
-def sync_redis_aof_script(purposes, crontab_expression):
+@script('redis-sync')
+def sync_redis_script(purposes, crontab_expression):
     @run_every(crontab_expression)
-    def sync_redis_aof(redis_directories):
+    def sync_redis(redis_directories):
         for directory in redis_directories:
-            rel_path = VEIL_DATA_DIR.relpathto('{}/appendonly.aof'.format(directory))
+            rel_path = VEIL_DATA_DIR.relpathto(directory)
             sync_to_backup_mirror(rel_path, 'latest-redis-updates', VEIL_DATA_DIR)
 
     directories = []
     for purpose in purposes.split(','):
         directories.append(VEIL_DATA_DIR / '{}-redis'.format(purpose.replace('_', '-')))
 
-    sync_redis_aof(directories)
+    sync_redis(directories)

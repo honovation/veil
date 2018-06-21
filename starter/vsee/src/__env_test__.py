@@ -34,7 +34,7 @@ ENV_TEST = {
             sequence_no=20,
             supervisor_http_port=TEST_SUPERVISOR_HTTP_PORT,
             programs=merge_multiple_settings(
-                redis_program('test', TEST_REDIS_HOST, TEST_REDIS_PORT),
+                redis_program('test', TEST_REDIS_HOST, TEST_REDIS_PORT, enable_snapshot=False),
                 __env__.vsee_postgresql_program(config),
                 __env__.log_rotated_nginx_program(merge_multiple_settings(
                     __env__.person_website_nginx_server(config),

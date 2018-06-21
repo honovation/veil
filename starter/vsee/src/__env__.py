@@ -116,11 +116,11 @@ def vsee_postgresql_program(config, more_config=None):
 
 
 def persist_store_redis_program(config):
-    return redis_program('persist_store', config.persist_store_redis_host, config.persist_store_redis_port, persisted_by_aof=True)
+    return redis_program('persist_store', config.persist_store_redis_host, config.persist_store_redis_port, enable_aof=True)
 
 
 def memory_cache_redis_program(config):
-    return redis_program('memory_cache', config.memory_cache_redis_host, config.memory_cache_redis_port)
+    return redis_program('memory_cache', config.memory_cache_redis_host, config.memory_cache_redis_port, max_memory_policy='allkeys-lru', enable_snapshot=False)
 
 
 def person_website_programs(config):

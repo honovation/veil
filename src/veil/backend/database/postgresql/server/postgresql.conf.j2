@@ -1,6 +1,7 @@
 {#
-基于系统自带的缺省文件，做以下改动：
+在升级大版本时，基于系统自带的缺省文件，做以下改动：
 1. 找{{  }}
+2. set lc_messages to 'C.UTF-8' as some functions depend on messages in English
 #}
 # -----------------------------
 # PostgreSQL configuration file
@@ -468,7 +469,7 @@ log_duration = {{ 'on' if config.get('log_duration', False) else 'off' }}
 					#   %% = '%'
 					# e.g. '<%u%%%d> '
 #log_lock_waits = off			# log lock waits >= deadlock_timeout
-log_statement = '{{ config.get('log_statement', 'none') }}'			# none, ddl, mod, all
+log_statement = 'none'			# none, ddl, mod, all
 #log_replication_commands = off
 #log_temp_files = -1			# log temporary files equal or larger
 					# than the specified size in kilobytes;

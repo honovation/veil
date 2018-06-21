@@ -1,3 +1,7 @@
+{#
+在升级大版本时，基于系统自带的缺省文件，做以下改动：
+1. 找{{  }}
+#}
 # Based on Redis 3.2.8-1chl1~xenial1 configuration file
 #
 # Redis configuration file example.
@@ -105,7 +109,7 @@ tcp-backlog 511
 
 # Close the connection after a client is idle for N seconds (0 to disable)
 
-timeout {{ config.get('timeout', 300) }}
+timeout 0
 
 # TCP keepalive.
 #
@@ -128,10 +132,7 @@ tcp-keepalive 300
 
 # By default Redis does not run as a daemon. Use 'yes' if you need it.
 # Note that Redis will write a pid file in /var/run/redis.pid when daemonized.
-
-{% if config.get('daemonize') %}
-daemonize yes
-{% endif %}
+daemonize no
 
 # If you run Redis from upstart or systemd, Redis can interact with your
 # supervision tree. Options:
@@ -153,10 +154,7 @@ supervised no
 #
 # Creating a pid file is best effort: if Redis is not able to create it
 # nothing bad happens, the server will start and run normally.
-
-{% if 'pidfile' in config %}
-pidfile {{ config.pidfile }}
-{% endif %}
+pidfile /var/run/redis-{{ config.purpose }}.pid
 
 # Specify the server verbosity level.
 # This can be one of:
@@ -165,13 +163,13 @@ pidfile {{ config.pidfile }}
 # notice (moderately verbose, what you want in production probably)
 # warning (only very important / critical messages are logged)
 
-loglevel {{ config.get('log_level', 'notice') }}
+loglevel notice
 
 # Specify the log file name. Also the empty string can be used to force
 # Redis to log on the standard output. Note that if you use standard
 # output for logging but daemonize, logs will be sent to /dev/null
 
-logfile {{ config.get('log_file', '""') }}
+logfile ""
 
 # To enable logging to the system logger, just set 'syslog-enabled' to yes,
 # and optionally update the other syslog parameters to suit your needs.
@@ -186,8 +184,7 @@ logfile {{ config.get('log_file', '""') }}
 # Set the number of databases. The default database is DB 0, you can select
 # a different one on a per-connection basis using SELECT <dbid> where
 # dbid is a number between 0 and 'databases'-1
-
-databases {{ config.get('max_databases_count', 100) }}
+databases 16
 
 ################################ SNAPSHOTTING  ################################
 #
@@ -211,11 +208,17 @@ databases {{ config.get('max_databases_count', 100) }}
 #
 #   save ""
 
-{% for snapshot_config in config.get('snapshot_configs', []) %}
+{% if config.enable_snapshot %}
+{% for snapshot_config in config.snapshot_configs %}
 save {{ snapshot_config.interval }} {{ snapshot_config.changed_keys }}
 {% else %}
-save ""
+save 900 1
+save 300 10
+save 60 10000
 {% endfor %}
+{% else %}
+save ""
+{% endif %}
 
 # By default Redis will stop accepting writes if RDB snapshots are enabled
 # (at least one save point) and the latest background save failed.
@@ -249,7 +252,7 @@ rdbchecksum yes
 
 # The filename where to dump the DB
 
-dbfilename {{ config.get('dump_file', 'dump.rdb') }}
+dbfilename dump.rdb
 
 # The working directory.
 #
@@ -494,10 +497,6 @@ slave-priority 100
 #
 # requirepass foobared
 
-{% if 'password' in config %}
-requirepass {{ config.password }}
-{% endif %}
-
 # Command renaming.
 #
 # It is possible to change the name of dangerous commands in a shared
@@ -555,7 +554,7 @@ requirepass {{ config.password }}
 #
 # maxmemory <bytes>
 
-{% if 'max_memory' in config %}
+{% if config.max_memory %}
 maxmemory {{ config.max_memory }}
 {% endif %}
 
@@ -581,6 +580,7 @@ maxmemory {{ config.max_memory }}
 # The default is:
 #
 # maxmemory-policy noeviction
+maxmemory-policy {{ config.max_memory_policy or 'noeviction' }}
 
 # LRU and minimal TTL algorithms are not precise algorithms but approximated
 # algorithms (in order to save memory), so you can tune it for speed or
@@ -613,7 +613,7 @@ maxmemory {{ config.max_memory }}
 #
 # Please check http://redis.io/topics/persistence for more information.
 
-appendonly {% if config.get('persisted_by_aof') %}yes{% else %}no{% endif %}
+appendonly {% if config.enable_aof %}yes{% else %}no{% endif %}
 
 # The name of the append only file (default: "appendonly.aof")
 
@@ -644,7 +644,7 @@ appendfilename appendonly.aof
 
 # appendfsync always
 
-appendfsync {{ config.get('aof_fsync', 'everysec') }}
+appendfsync {{ config.aof_fsync or 'everysec' }}
 
 # appendfsync no
 
@@ -686,7 +686,7 @@ no-appendfsync-on-rewrite no
 # Specify a percentage of zero in order to disable the automatic AOF
 # rewrite feature.
 
-auto-aof-rewrite-percentage 60
+auto-aof-rewrite-percentage 100
 auto-aof-rewrite-min-size 64mb
 
 # An AOF file may be found to be truncated at the end during the Redis

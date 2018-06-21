@@ -33,7 +33,7 @@ ENV_DEVELOPMENT = {
             sequence_no=10,
             supervisor_http_port=DEVELOPMENT_SUPERVISOR_HTTP_PORT,
             programs=merge_multiple_settings(
-                redis_program('development', DEVELOPMENT_REDIS_HOST, DEVELOPMENT_REDIS_PORT),
+                redis_program('development', DEVELOPMENT_REDIS_HOST, DEVELOPMENT_REDIS_PORT, enable_snapshot=False),
                 __env__.vsee_postgresql_program(config),
                 __env__.resweb_program(config),
                 __env__.delayed_job_scheduler_program(config),

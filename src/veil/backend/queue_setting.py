@@ -4,8 +4,7 @@ from .redis_setting import redis_program
 
 
 def queue_program(host, port):
-    snapshot_configs = tuple(DictObject(interval=interval, changed_keys=changed_keys) for interval, changed_keys in [(900, 1), (300, 10), (60, 10000)])
-    return objectify({'queue': redis_program('queue', host, port, persisted_by_aof=True, snapshot_configs=snapshot_configs).queue_redis})
+    return objectify({'queue': redis_program('queue', host, port, enable_aof=True).queue_redis})
 
 
 def tasktiger_admin_program(application_config):

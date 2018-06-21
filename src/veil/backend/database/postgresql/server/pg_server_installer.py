@@ -171,6 +171,7 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
     if dry_run_result is not None:
         dry_run_result['postgresql_initdb?{}'.format(purpose)] = '-' if installed else 'INSTALL'
         return
+    # run the below idempotent command even the resource has been installed, and it is necessary for the case that lxc container is recreated.
     shell_execute('sudo usermod -a -G postgres {}'.format(CURRENT_USER))
     if installed:
         return
