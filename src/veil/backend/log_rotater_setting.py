@@ -7,6 +7,7 @@ def log_rotater_program(log_rotater_name, crontab_expression, config):
     return objectify({
         '{}_log_rotater'.format(log_rotater_name): {
             'execute_command': "veil backend log-rotater up {} '{}'".format(config['config_file'], crontab_expression),
+            'run_as': 'root',
             'resources': [('veil.backend.log_rotater.log_rotater_resource', {
                 'config': config
             })]
