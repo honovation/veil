@@ -171,6 +171,7 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
     if dry_run_result is not None:
         dry_run_result['postgresql_initdb?{}'.format(purpose)] = '-' if installed else 'INSTALL'
         return
+    shell_execute('sudo usermod -a -G postgres {}'.format(CURRENT_USER))
     if installed:
         return
     LOGGER.info('install postgresql cluster: for %(purpose)s, %(version)s', {'purpose': purpose, 'version': version})
@@ -188,7 +189,6 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
         '{pg_data_dir}'.format(pg_data_owner=owner, pg_bin_dir=get_pg_bin_dir(version), pg_data_dir=pg_data_dir, purpose=purpose)
     )
     try:
-        shell_execute('sudo usermod -a -G postgres {}'.format(CURRENT_USER))
         shell_execute('sudo su {pg_data_owner_os} -c "{initdb_command}"'.format(pg_data_owner_os=CURRENT_USER, initdb_command=initdb_command), capture=True)
         shell_execute('mv -n postgresql.conf postgresql.conf.origin', cwd=pg_data_dir)
         shell_execute('mv -n pg_hba.conf pg_hba.conf.origin', cwd=pg_data_dir)
