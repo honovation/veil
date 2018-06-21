@@ -13,7 +13,7 @@ def get_idmap():
     return current_user_pwd_entry.pw_uid, current_user_pwd_entry.pw_gid
 
 
-def generate_lxc_container_user_data(container_name, hostname, timezone, user_name):
+def make_user_data(hostname, timezone, user_name):
     user_data = '''
     #cloud-config
     hostname: {hostname}
@@ -36,13 +36,13 @@ def generate_lxc_container_user_data(container_name, hostname, timezone, user_na
       - sed -i -e '{no_password_authentication}' /etc/ssh/sshd_config
       - sed -i -e '{no_root_login}' /etc/ssh/sshd_config
       - systemctl restart ssh
-    '''.format(container_name=container_name, hostname=hostname, timezone=timezone, user_name=user_name,
+    '''.format(hostname=hostname, timezone=timezone, user_name=user_name,
                no_password_authentication='/^PasswordAuthentication\s/{h;s/\s.*/ no/};${x;/^$/{s//PasswordAuthentication no/;H};x}',
                no_root_login='/^PermitRootLogin\s/{h;s/\s.*/ no/};${x;/^$/{s//PermitRootLogin no/;H};x}')
     return user_data
 
 
-def generate_lxc_container_network_config(ip_address, gateway, name_servers):
+def make_network_config(ip_address, gateway, name_servers):
     network_config = '''
     version: 2
     ethernets:
@@ -55,7 +55,7 @@ def generate_lxc_container_network_config(ip_address, gateway, name_servers):
     return network_config
 
 
-def generate_lxc_container_general_config(user_data, network_config, start_order, memory_limit=None, cpus=None, cpu_share=None, idmap=None):
+def make_general_config(user_data, network_config, start_order, memory_limit=None, cpus=None, cpu_share=None, idmap=None):
     idmap = idmap or get_idmap()
     config_part = {
         'boot.autostart': 'true',
@@ -78,7 +78,7 @@ def generate_lxc_container_general_config(user_data, network_config, start_order
     return config_part
 
 
-def generate_lxc_container_devices_config(user_name, etc_dir, log_dir, var_dir=None, editorial_dir=None, buckets_dir=None, data_dir=None, barman_dir=None):
+def make_devices_config(user_name, etc_dir, log_dir, var_dir=None, editorial_dir=None, buckets_dir=None, data_dir=None, barman_dir=None):
     devices_config = {
         'home': {
             'type': 'disk',
@@ -149,13 +149,14 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
     if dry_run_result is not None:
         dry_run_result['lxc_container?{}'.format(container_name)] = '-' if installed else 'INSTALL'
         return
-    user_data = generate_lxc_container_user_data(container_name, hostname, timezone, user_name)
-    network_config = generate_lxc_container_network_config(ip_address, gateway, name_servers)
-    general_config = generate_lxc_container_general_config(user_data, network_config, start_order, memory_limit=memory_limit, cpus=cpus, cpu_share=cpu_share,
-                                                           idmap=idmap)
-    devices_config = generate_lxc_container_devices_config(user_name, etc_dir, log_dir, var_dir=var_dir, editorial_dir=editorial_dir, buckets_dir=buckets_dir,
-                                                           data_dir=data_dir, barman_dir=barman_dir)
+    user_data = make_user_data(hostname, timezone, user_name)
+    network_config = make_network_config(ip_address, gateway, name_servers)
+    general_config = make_general_config(user_data, network_config, start_order, memory_limit=memory_limit, cpus=cpus, cpu_share=cpu_share,
+                                         idmap=idmap)
+    devices_config = make_devices_config(user_name, etc_dir, log_dir, var_dir=var_dir, editorial_dir=editorial_dir, buckets_dir=buckets_dir,
+                                         data_dir=data_dir, barman_dir=barman_dir)
     if installed:
+        need_delete_container = False
         container = client.get_container(container_name)
         if container.config['user.user-data'] != user_data:
             LOGGER.info('Delete container as user-data changed: %(container_name)s, %(old)s, %(new)s', {
@@ -163,35 +164,23 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
                 'old': container.config['user.user-data'],
                 'new': user_data
             })
-            try:
-                container.stop(wait=True)
-            except:
-                pass
-            container.rename('{}-deleted-at-{}'.format(container.name, get_current_timestamp()), wait=True)
-            installed = False
-        elif container.config['user.network-config'] != network_config:
+            need_delete_container = True
+        if container.config['user.network-config'] != network_config:
             LOGGER.info('Delete container as network-config changed: %(container_name)s, %(old)s, %(new)s', {
                 'container_name': container_name,
                 'old': container.config['user.network-config'],
                 'new': network_config
             })
-            try:
+            need_delete_container = True
+        if need_delete_container:
+            if container.running:
                 container.stop(wait=True)
-            except:
-                pass
             container.rename('{}-deleted-at-{}'.format(container.name, get_current_timestamp()), wait=True)
             installed = False
 
     if installed:
         container = client.get_container(container_name)
         LOGGER.info('Update lxc container: %(container_name)s', {'container_name': container_name})
-        if container.profiles[0] != LXD_PROFILE_NAME:
-            new_profiles = [LXD_PROFILE_NAME]
-            LOGGER.info('change container profile: %(old_profiles)s, %(new_profiles)s', {
-                'old_profiles': container.profiles,
-                'new_profiles': new_profiles
-            })
-            container.profiles = new_profiles
         container.config = general_config
         container.devices = devices_config
         container.save(wait=True)
@@ -200,7 +189,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
     LOGGER.info('Create lxc container: %(container_name)s...', {'container_name': container_name})
     container_config = DictObject({
         'name': container_name,
-        'architecture': 'x86_64',
+        'architecture': platform.machine(),
         'profiles': [LXD_PROFILE_NAME],
         'ephemeral': False,
         'config': general_config,
@@ -216,8 +205,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
 @atomic_installer
 def lxc_container_in_service_resource(container_name, restart_if_running=False):
     container = LXDClient(local=True).get_container(container_name)
-    running = container.status_code == 103
-    if running:
+    if container.running:
         action = 'RESTART' if restart_if_running else None
     else:
         action = 'START'
@@ -227,7 +215,7 @@ def lxc_container_in_service_resource(container_name, restart_if_running=False):
         return
     if not action:
         return
-    if running:
+    if container.running:
         LOGGER.info('reboot lxc container: %(container_name)s ...', {'container_name': container_name})
         container.restart(wait=True)
     else:

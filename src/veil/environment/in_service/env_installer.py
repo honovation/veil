@@ -331,18 +331,15 @@ def stop_servers(servers, stop_container=False):
     for server in servers:
         host = get_veil_host(server.VEIL_ENV.name, server.host_name)
         with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
-            if is_container_running(server):
+            container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
+            if container.running:
                 while is_server_running(server):
                     print(cyan('Stop server {} ...'.format(server.name)))
                     with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
                         fabric.api.sudo('systemctl stop veil-server.service')
                     time.sleep(1)
                 if stop_container:
-                    container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
-                    try:
-                        container.stop(wait=True)
-                    except:
-                        pass
+                    container.stop(wait=True)
 
 
 @script('start-env')
@@ -363,14 +360,14 @@ def start_env(veil_env_name, config_dir, disable_external_access_='FALSE', *excl
             if not fabric.contrib.files.exists(server.deployed_tag_path):
                 print(yellow('Skipped starting server {} as it is not successfully deployed'.format(server.container_name)))
                 continue
-            if is_container_running(server):
+            container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
+            if container.running:
                 while not is_server_running(server):
                     print(cyan('Start server {} ...'.format(server.name)))
                     with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
                         fabric.api.sudo('systemctl start veil-server.service')
                     time.sleep(1)
             else:
-                container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
                 container.start(wait=True)
 
 

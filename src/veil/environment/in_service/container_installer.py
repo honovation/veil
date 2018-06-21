@@ -2,15 +2,12 @@ from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
 import contextlib
 import os
-from time import sleep
-
 import fabric.api
 import fabric.contrib.files
 from veil_component import as_path
 from veil_installer import *
 from veil.server.config import *
 from veil.environment.lxd import *
-from .server_installer import is_container_running
 from .env_config_dir import get_env_config_dir
 
 CURRENT_DIR = as_path(os.path.dirname(__file__))
@@ -58,25 +55,12 @@ def veil_container_lxc_resource(host, server):
             fabric.api.run('mv -f {} {}'.format(server.container_installer_path, server.installed_container_installer_path))
             deleted_container_name = fabric.api.run('lxc ls {}-deleted-at --columns n --format csv'.format(server.container_name))
             if deleted_container_name:
-                fabric.api.run('rm {}'.format(server.container_initialized_tag_path), warn_only=True)
-                fabric.api.run('rm {}'.format(server.deployed_tag_path), warn_only=True)
-                fabric.api.run('rm {}'.format(server.patched_tag_path), warn_only=True)
+                fabric.api.run('rm -f {} {} {}'.format(server.container_initialized_tag_path, server.deployed_tag_path, server.patched_tag_path))
                 fabric.api.run('lxc delete {}'.format(deleted_container_name))
     else:
-        if is_container_running(server):
-            return
         container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
-        container.start(wait=True)
-    # ensure the container is started and ready to accept login
-    while 1:
-        try:
-            with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
-                fabric.api.run('echo Server started!')
-                break
-        except Exception as e:
-            print(e.message)
-            print('waiting for server start...')
-            sleep(1)
+        if not container.running:
+            container.start(wait=True)
 
 
 @composite_installer
@@ -106,8 +90,8 @@ def veil_container_sources_list_resource(server):
         key = 'veil_container_sources_list?{}'.format(server.name)
         dry_run_result[key] = 'INSTALL'
         return
-    client = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir())
     sources_list_path = '/etc/apt/sources.list'
+    client = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir())
     codename = client.run_container_command(server.container_name, 'lsb_release -cs').strip()
     sources_list_content = render_config(CURRENT_DIR / 'sources.list.j2', mirror=server.apt_url, codename=codename)
     client.run_container_command(server.container_name, 'cp -pn {path} {path}.origin'.format(path=sources_list_path))

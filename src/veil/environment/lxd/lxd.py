@@ -10,6 +10,7 @@ from veil_component import as_path
 
 LOGGER = logging.getLogger(__name__)
 
+# DO NOT CHANGE THE BELOW TWO CONSTANTS, OTHERWISE you need update container profile and apply it to every containers on every hosts
 LXD_PROFILE_NAME = 'veil'
 LXD_BRIDGE_NAME = 'br0'
 
@@ -45,7 +46,10 @@ class LXDClient(object):
         return self.client.containers.create(config, wait=wait)
 
     def get_container(self, name):
-        return self.client.containers.get(name)
+        container = self.client.containers.get(name)
+        if container:
+            container.running = container.status_code == 103
+        return container
 
     def get_container_file_content(self, container_name, file_path):
         """
