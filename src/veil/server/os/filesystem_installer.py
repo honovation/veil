@@ -1,14 +1,9 @@
 from __future__ import unicode_literals, print_function, division
-import os
-import logging
 import grp
 import pwd
 import uuid
-
-from veil.environment import CURRENT_USER, CURRENT_USER_GROUP
+from veil.profile.installer import *
 from veil.utility.encoding import *
-from veil_installer import *
-from veil.utility.shell import *
 
 LOGGER = logging.getLogger(__name__)
 

@@ -15,6 +15,7 @@ from .environment import CURRENT_USER_GROUP
 
 from .environment import VEIL_HOME
 from .environment import VEIL_FRAMEWORK_HOME
+from .environment import VEIL_ENV_DIR
 from .environment import VEIL_ETC_DIR
 from .environment import VEIL_VAR_DIR
 from .environment import VEIL_BUCKETS_DIR
@@ -22,7 +23,6 @@ from .environment import VEIL_BUCKET_LOG_DIR
 from .environment import VEIL_DATA_DIR
 from .environment import VEIL_BARMAN_DIR
 from .environment import VEIL_LOG_DIR
-from .environment import BASIC_LAYOUT_RESOURCES
 
 from .environment import VEIL_BACKUP_ROOT
 from .environment import VEIL_BACKUP_MIRROR_ROOT

@@ -1,13 +1,32 @@
 from __future__ import unicode_literals, print_function, division
 from veil_installer import *
 from veil.environment import *
+from veil.server.os import *
 from veil.server.supervisor import *
 
 
 @composite_installer
 def veil_server_resource():
+    if VEIL_ENV.is_dev or VEIL_ENV.is_test:
+        basic_layout_resources = [
+                directory_resource(path=VEIL_ENV_DIR),
+                directory_resource(path=VEIL_ETC_DIR.parent),
+                directory_resource(path=VEIL_ETC_DIR),
+                directory_resource(path=VEIL_LOG_DIR.parent),
+                directory_resource(path=VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+                directory_resource(path=VEIL_VAR_DIR),
+                directory_resource(path=VEIL_BUCKETS_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+                directory_resource(path=VEIL_BUCKET_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+                directory_resource(path=VEIL_DATA_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+                directory_resource(path=VEIL_BARMAN_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+            ]
+    elif VEIL_ENV.name != VEIL_ENV.base_name:
+        basic_layout_resources = [symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV.name, to=VEIL_ENV_DIR)]
+    else:
+        basic_layout_resources = []
+
+    resources = list(basic_layout_resources)
     server = get_current_veil_server()
-    resources = list(BASIC_LAYOUT_RESOURCES)
     if server.programs:
         resources.append(supervisor_resource(programs=to_supervisor_programs(server.programs),
                                              inet_http_server_host=server.supervisor_http_host,
