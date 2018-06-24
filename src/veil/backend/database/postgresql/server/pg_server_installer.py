@@ -66,7 +66,9 @@ def postgresql_server_resource(config):
             postgresql_user_resource(purpose=config.purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
                                      owner_password=config.owner_password, user=config.replication_user, replication=True),
             postgresql_user_resource(purpose=config.purpose, version=config.version, host=config.host, port=config.port, owner=config.owner,
-                                     owner_password=config.owner_password, user='barman', superuser=True)
+                                     owner_password=config.owner_password, user='barman', superuser=True),
+            postgresql_physical_replication_slot_resource(purpose=config.purpose, version=config.version, host=config.host, port=config.port,
+                                                          owner=config.owner, owner_password=config.owner_password, slot_name='barman')
         ])
 
     return resources
@@ -241,6 +243,35 @@ def postgresql_user_existed(version, host, port, owner, user, env):
     return '1' == shell_execute('''
         {}/psql -h {} -p {} -U {} -d postgres -tAc "SELECT 1 FROM pg_user WHERE usename='{}'"
         '''.format(get_pg_bin_dir(version), host, port, owner, user), env=env, capture=True)
+
+
+@atomic_installer
+def postgresql_physical_replication_slot_resource(purpose, version, host, port, owner, owner_password, slot_name):
+    pg_data_dir = get_pg_data_dir(purpose, version)
+    slot_installed_tag_file = pg_data_dir / 'physical-replication-slot-{}-installed'.format(slot_name)
+    installed = slot_installed_tag_file.exists()
+    dry_run_result = get_dry_run_result()
+    if dry_run_result is not None:
+        dry_run_result['postgresql_physical_replication_slot?{}'.format(purpose)] = '-' if installed else 'INSTALL'
+        return
+    if installed:
+        return
+    LOGGER.info('install postgresql physical replication slot: %(slot_name)s in %(purpose)s', {'slot_name': slot_name, 'purpose': purpose})
+    pg_bin_dir = get_pg_bin_dir(version)
+    with postgresql_server_running(version, pg_data_dir, owner):
+        env = os.environ.copy()
+        env['PGPASSWORD'] = owner_password
+        if not postgresql_physical_replication_slot_existed(version, host, port, owner, slot_name, env):
+            shell_execute('''
+                {}/psql -h {} -p {} -U {} -d postgres -c "SELECT * FROM PG_CREATE_PHYSICAL_REPLICATION_SLOT('{}')"
+                '''.format(pg_bin_dir, host, port, owner, slot_name), env=env, capture=True)
+        slot_installed_tag_file.touch()
+
+
+def postgresql_physical_replication_slot_existed(version, host, port, owner, slot_name, env):
+    return '1' == shell_execute('''
+        {}/psql -h {} -p {} -U {} -d postgres -tAc "SELECT 1 FROM pg_replication_slots WHERE slot_name='{}' AND slot_type='physical'"
+        '''.format(get_pg_bin_dir(version), host, port, owner, slot_name), env=env, capture=True)
 
 
 def delete_file(path):

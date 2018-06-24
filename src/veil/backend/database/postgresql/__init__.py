@@ -2,6 +2,7 @@ import veil_component
 with veil_component.init_component(__name__):
     from .server.pg_server_installer import postgresql_server_resource
     from .server.pg_server_installer import postgresql_user_resource
+    from .server.pg_server_installer import postgresql_physical_replication_slot_resource
     from .server.pg_server_installer import postgresql_cluster_resource
     from .server.pg_server_installer import postgresql_cluster_upgrading_resource
     from .server.pg_server_installer import postgresql_maintenance_config
@@ -14,6 +15,7 @@ with veil_component.init_component(__name__):
     __all__ = [
         postgresql_server_resource.__name__,
         postgresql_user_resource.__name__,
+        postgresql_physical_replication_slot_resource.__name__,
         postgresql_cluster_resource.__name__,
         postgresql_cluster_upgrading_resource.__name__,
         postgresql_maintenance_config.__name__,
