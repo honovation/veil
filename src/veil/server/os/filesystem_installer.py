@@ -1,8 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import os
 import logging
-import grp
-import pwd
 import uuid
 from veil.environment import CURRENT_USER, CURRENT_USER_GROUP
 from veil.utility.encoding import *
@@ -168,9 +166,8 @@ def ensure_metadata(is_dry_run, path, user, group, mode=None):
                 })
                 shell_execute('sudo chmod {:0} {}'.format(existing_mode, path), capture=True, debug=True)
     if user:
-        uid = coerce_uid(user)
-        existing_owner = shell_execute("sudo stat -c '%u' {}".format(path), capture=True)
-        if existing_owner != uid:
+        existing_owner = shell_execute("sudo stat -c '%U' {}".format(path), capture=True)
+        if existing_owner != user:
             actions.append('CHOWN')
             if not is_dry_run:
                 LOGGER.info('changing owner: for %(path)s from %(existing_owner)s to %(user)s', {
@@ -178,11 +175,10 @@ def ensure_metadata(is_dry_run, path, user, group, mode=None):
                     'existing_owner': existing_owner,
                     'user': user
                 })
-                shell_execute('sudo chown {} {}'.format(uid, path), capture=True, debug=True)
+                shell_execute('sudo chown {} {}'.format(user, path), capture=True, debug=True)
     if group:
-        gid = coerce_gid(group)
-        existing_group = shell_execute("sudo stat -c '%g' {}".format(path), capture=True)
-        if existing_group != gid:
+        existing_group = shell_execute("sudo stat -c '%G' {}".format(path), capture=True)
+        if existing_group != group:
             actions.append('CHGRP')
             if not is_dry_run:
                 LOGGER.info('changing group: for %(path)s from %(existing_group)s to %(group)s', {
@@ -190,22 +186,5 @@ def ensure_metadata(is_dry_run, path, user, group, mode=None):
                     'existing_group': existing_group,
                     'group': group
                 })
-                os.chown(path, -1, gid)
-                shell_execute('sudo chgrp {} {}'.format(gid, path), capture=True, debug=True)
+                shell_execute('sudo chgrp {} {}'.format(group, path), capture=True, debug=True)
     return actions
-
-
-def coerce_gid(group):
-    try:
-        gid = int(group)
-    except ValueError:
-        gid = grp.getgrnam(group).gr_gid
-    return gid
-
-
-def coerce_uid(user):
-    try:
-        uid = int(user)
-    except ValueError:
-        uid = pwd.getpwnam(user).pw_uid
-    return uid
