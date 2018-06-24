@@ -81,8 +81,8 @@ def deploy_env(veil_env_name, config_dir, should_download_packages='TRUE', inclu
         second_round_server_names = [server.name for server in second_round_servers]
         print(cyan('Stop round-2 servers {} ...'.format(second_round_server_names)))
         stop_servers(second_round_servers)
-        print(cyan('Deploy round-2 servers {} ...'.format(second_round_server_names[::-1])))
-        install_resource(veil_servers_resource(servers=second_round_servers[::-1], action='DEPLOY', start_after_deploy=start_after_deploy == 'TRUE'))
+        print(cyan('Deploy round-2 servers {} ...'.format(second_round_server_names)))
+        install_resource(veil_servers_resource(servers=second_round_servers, action='DEPLOY', start_after_deploy=start_after_deploy == 'TRUE'))
     else:
         print(cyan('No round-2 servers to deploy'))
 
@@ -211,7 +211,7 @@ def patch_env(veil_env_name, config_dir):
     tag_patch(veil_env_name)
     print(cyan('Pull codebase ...'))
     install_resource(veil_hosts_codebase_resource(veil_env_name=veil_env_name))
-    servers = list_veil_servers(veil_env_name, include_guard_server=False, include_monitor_server=False, include_barman_server=False)
+    servers = list_veil_servers(veil_env_name, include_guard_server=False, include_barman_server=False, include_monitor_server=False)
     server_names = [s.name for s in servers]
     print(cyan('Patch servers {} ...'.format(server_names[::-1])))
     install_resource(veil_servers_resource(servers=servers[::-1], action='PATCH'))
@@ -242,7 +242,7 @@ def rollback_env(veil_env_name, config_dir):
     set_env_config_dir(as_path(config_dir) / veil_env_name)
     hosts = [host for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name) if is_rollbackable(host)]
     if hosts:
-        stop_env(veil_env_name, config_dir, include_guard_server=True, include_monitor_server=False, include_barman_server=False)
+        stop_env(veil_env_name, config_dir, include_guard_server=True, include_barman_server=True, include_monitor_server=False)
         rollback(hosts)
         start_env(veil_env_name, config_dir)
         remove_rollbackable_tags(veil_env_name)
@@ -309,18 +309,20 @@ def restart_env(veil_env_name, config_dir, disable_external_access_='FALSE', *ex
 
 
 @script('stop-env')
-def stop_env(veil_env_name, config_dir, include_guard_server=True, include_monitor_server=True, include_barman_server=True, *exclude_server_names):
+def stop_env(veil_env_name, config_dir, include_guard_server=True, include_barman_server=True, include_monitor_server=True, *exclude_server_names):
     """
     Bring down veil servers in sorted server names order
     """
     set_env_config_dir(as_path(config_dir) / veil_env_name)
     if isinstance(include_guard_server, basestring):
         include_guard_server = include_guard_server == 'TRUE'
+    if isinstance(include_barman_server, basestring):
+        include_barman_server = include_barman_server == 'TRUE'
     if isinstance(include_monitor_server, basestring):
         include_monitor_server = include_monitor_server == 'TRUE'
     servers = []
-    for server in list_veil_servers(veil_env_name, include_guard_server=include_guard_server, include_monitor_server=include_monitor_server,
-                                    include_barman_server=include_barman_server):
+    for server in list_veil_servers(veil_env_name, include_guard_server=include_guard_server, include_barman_server=include_barman_server,
+                                    include_monitor_server=include_monitor_server):
         if exclude_server_names and server.name in exclude_server_names:
             continue
         servers.append(server)

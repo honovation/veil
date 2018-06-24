@@ -270,9 +270,9 @@ def is_monitor_server(name):
     return 'monitor' == name
 
 
-def list_veil_servers(veil_env_name, include_guard_server=True, include_monitor_server=True, include_barman_server=True):
+def list_veil_servers(veil_env_name, include_guard_server=True, include_barman_server=True, include_monitor_server=True):
     return [s for s in get_veil_env(veil_env_name).server_list if
-            (include_guard_server or not s.is_guard) and (include_monitor_server or not s.is_monitor) and (include_barman_server or not s.is_barman)]
+            (include_guard_server or not s.is_guard) and (include_barman_server or not s.is_barman) and (include_monitor_server or not s.is_monitor)]
 
 
 def get_veil_server(veil_env_name, veil_server_name):
