@@ -96,7 +96,7 @@ def install_file(is_dry_run, path, content, owner='root', group='root', mode=064
         reason = "it doesn't exist"
     if write:
         if path_exists and keep_origin:
-            shell_execute('cp -pn {path} {path}.origin'.format(path=path), capture=True)
+            shell_execute('cp -pn {path} {path}.origin'.format(path=path), capture=True, debug=True)
         with open(path, 'wb') as fp:
             LOGGER.info('Writing file: %(path)s because %(reason)s', {'path': path, 'reason': reason})
             fp.write(content)
@@ -122,20 +122,21 @@ def symbolic_link_resource(path, to):
 def install_symbolic_link(is_dry_run, path, to):
     action = None
     if os.path.lexists(path):
+        if not os.path.islink(path):
+            raise Exception('trying to create a symlink with the same name as an existing file or directory: {}'.format(path))
         old_path = os.path.realpath(path)
         if old_path == to:
             return
-        if not os.path.islink(path):
-            raise Exception('trying to create a symlink with the same name as an existing file or directory: {}'.format(path))
         action = 'UPDATE'
         if not is_dry_run:
             LOGGER.info("replacing old symlink: %(path)s from %(old_path)s to %(to)s", {'path': path, 'old_path': old_path, 'to': to})
-            os.unlink(path)
+            shell_execute('sudo rm {}'.format(path), capture=True, debug=True)
     if not action:
         action = 'CREATE'
     if not is_dry_run:
         LOGGER.info('Creating symbolic: %(path)s to %(to)s', {'path': path, 'to': to})
-        os.symlink(to, path)
+        shell_execute('sudo ln -s {} {}'.format(to, path), capture=True, debug=True)
+        shell_execute('sudo chown {}:{} {}'.format(os.getuid(), os.getgid(), path), capture=True, debug=True)
     return action
 
 
