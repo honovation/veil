@@ -164,7 +164,7 @@ def ensure_metadata(is_dry_run, path, user, group, mode=None):
                     'existing_mode': oct(existing_mode),
                     'mode': oct(mode)
                 })
-                shell_execute('sudo chmod {:0} {}'.format(mode, path), capture=True, debug=True)
+                shell_execute('sudo chmod {:o} {}'.format(mode, path), capture=True, debug=True)
     if user:
         existing_owner = shell_execute("sudo stat -c '%U' {}".format(path), capture=True)
         if existing_owner != user:
