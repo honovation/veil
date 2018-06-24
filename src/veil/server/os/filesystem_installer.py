@@ -136,7 +136,7 @@ def install_symbolic_link(is_dry_run, path, to):
     if not is_dry_run:
         LOGGER.info('Creating symbolic: %(path)s to %(to)s', {'path': path, 'to': to})
         shell_execute('sudo ln -s {} {}'.format(to, path), capture=True, debug=True)
-        shell_execute('sudo chown {}:{} {}'.format(os.getuid(), os.getgid(), path), capture=True, debug=True)
+        shell_execute('sudo chown -h {}:{} {}'.format(os.getuid(), os.getgid(), path), capture=True, debug=True)
     return action
 
 
