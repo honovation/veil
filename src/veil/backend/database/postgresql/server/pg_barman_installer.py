@@ -20,12 +20,12 @@ def pgbarman_resource(config):
         os_package_resource(name='barman'),
         directory_resource(path=BARMAN_CONF_PATH, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         directory_resource(path=VEIL_BARMAN_DIR / config.server_name, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-        file_resource(path='/tmp/barman.conf', content=render_config('pg_barman.conf.j2', barman_user=CURRENT_USER, server_conf_path=BARMAN_CONF_PATH,
-                                                                     barman_home=VEIL_BARMAN_DIR, log_path=VEIL_LOG_DIR), owner=CURRENT_USER,
-                      group=CURRENT_USER_GROUP, cmd_run_after_updated='sudo mv /tmp/barman.conf /etc/barman.conf'),
+        file_resource(path='/etc/barman.conf',
+                      content=render_config('pg_barman.conf.j2', barman_user=CURRENT_USER, server_conf_path=BARMAN_CONF_PATH, barman_home=VEIL_BARMAN_DIR,
+                                            log_path=VEIL_LOG_DIR),
+                      owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         file_resource(path=BARMAN_CONF_PATH / '{}.conf'.format(config.server_name), content=barman_server_config, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-        file_resource(path='/tmp/barman', content=render_config('pg_barman_cron.d.j2', barman_user=CURRENT_USER), owner=CURRENT_USER, group=CURRENT_USER_GROUP,
-                      cmd_run_after_updated='sudo mv /tmp/barman /etc/cron.d/barman && sudo chown root:root /etc/cron.d/barman && sudo chmod 444 /etc/cron.d/barman')
+        file_resource(path='/etc/cron.d/barman', content=render_config('pg_barman_cron.d.j2', barman_user=CURRENT_USER), owner='root', group='root', mode=0444)
     ]
 
     return resources

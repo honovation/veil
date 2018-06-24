@@ -3,7 +3,6 @@ from cStringIO import StringIO
 import contextlib
 import os
 from time import sleep
-import uuid
 import logging
 import fabric.api
 import fabric.contrib.files

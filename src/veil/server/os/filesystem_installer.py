@@ -3,7 +3,9 @@ import os
 import logging
 import grp
 import pwd
+import uuid
 
+from veil.environment import CURRENT_USER, CURRENT_USER_GROUP
 from veil.utility.encoding import *
 from veil_installer import *
 from veil.utility.shell import *
@@ -81,25 +83,38 @@ def install_file(is_dry_run, path, content, owner='root', group='root', mode=064
     write = False
     reason = None
     path_exists = os.path.exists(path)
-    if path_exists:
-        with open(path, "rb") as fp:
-            old_content = fp.read()
-        if old_content:
-            old_content = old_content.strip()
-        if content.strip() != old_content:
-            actions.append('UPDATE')
+    temp_path = '/tmp/{}.{}'.format(os.path.basename(path), uuid.uuid4().get_hex())
+    try:
+        if path_exists:
+            shell_execute('sudo cp -f {} {}'.format(path, temp_path), capture=True)
+            shell_execute('sudo chown {}:{} {}'.format(CURRENT_USER, CURRENT_USER_GROUP, temp_path), capture=True)
+        if path_exists:
+            with open(temp_path, 'rb') as fp:
+                old_content = fp.read()
+            if old_content:
+                old_content = old_content.strip()
+            if content.strip() != old_content:
+                actions.append('UPDATE')
+                write = not is_dry_run
+                reason = "contents don't match"
+        else:
+            actions.append('CREATE')
             write = not is_dry_run
-            reason = "contents don't match"
-    else:
-        actions.append('CREATE')
-        write = not is_dry_run
-        reason = "it doesn't exist"
-    if write:
-        if path_exists and keep_origin:
-            shell_execute('cp -pn {path} {path}.origin'.format(path=path), capture=True, debug=True)
-        with open(path, 'wb') as fp:
-            LOGGER.info('Writing file: %(path)s because %(reason)s', {'path': path, 'reason': reason})
-            fp.write(content)
+            reason = "it doesn't exist"
+        if write:
+            if path_exists and keep_origin:
+                shell_execute('sudo cp -pn {path} {path}.origin'.format(path=path), capture=True, debug=True)
+            with open(temp_path, 'wb') as fp:
+                LOGGER.info('Writing file: %(path)s because %(reason)s', {'path': temp_path, 'reason': reason})
+                fp.write(content)
+            shell_execute('sudo mv -f {} {}'.format(temp_path, path), capture=True, debug=True)
+            shell_execute('sudo chown {}:{} {}'.format(owner, group, path), capture=True, debug=True)
+            shell_execute('sudo chmod {:o} {}'.format(mode, path), capture=True, debug=True)
+    finally:
+        try:
+            shell_execute('sudo rm -f {}'.format(temp_path), capture=True)
+        except Exception:
+            LOGGER.exception('exception while removing temp file: %(temp_path)s', {'temp_path': temp_path})
     if path_exists:
         actions.extend(ensure_metadata(is_dry_run, path, owner, group, mode=mode))
     if write and cmd_run_after_updated:
@@ -121,7 +136,7 @@ def symbolic_link_resource(path, to):
 
 def install_symbolic_link(is_dry_run, path, to):
     action = None
-    if os.path.lexists(path):
+    if os.path.exists(path):
         if not os.path.islink(path):
             raise Exception('trying to create a symlink with the same name as an existing file or directory: {}'.format(path))
         old_path = os.path.realpath(path)
@@ -136,15 +151,14 @@ def install_symbolic_link(is_dry_run, path, to):
     if not is_dry_run:
         LOGGER.info('Creating symbolic: %(path)s to %(to)s', {'path': path, 'to': to})
         shell_execute('sudo ln -s {} {}'.format(to, path), capture=True, debug=True)
-        shell_execute('sudo chown -h {}:{} {}'.format(os.getuid(), os.getgid(), path), capture=True, debug=True)
+        shell_execute('sudo chown -h {}:{} {}'.format(CURRENT_USER, CURRENT_USER_GROUP, path), capture=True, debug=True)
     return action
 
 
 def ensure_metadata(is_dry_run, path, user, group, mode=None):
     actions = []
-    stat = os.stat(path)
     if mode:
-        existing_mode = stat.st_mode & 07777
+        existing_mode = int(shell_execute("sudo stat -c '%a' {}".format(path), capture=True), 8)
         if existing_mode != mode:
             actions.append('CHMOD')
             if not is_dry_run:
@@ -153,29 +167,32 @@ def ensure_metadata(is_dry_run, path, user, group, mode=None):
                     'existing_mode': oct(existing_mode),
                     'mode': oct(mode)
                 })
-                os.chmod(path, mode)
+                shell_execute('sudo chmod {:0} {}'.format(existing_mode, path), capture=True, debug=True)
     if user:
         uid = coerce_uid(user)
-        if stat.st_uid != uid:
+        existing_owner = shell_execute("sudo stat -c '%u' {}".format(path), capture=True)
+        if existing_owner != uid:
             actions.append('CHOWN')
             if not is_dry_run:
                 LOGGER.info('changing owner: for %(path)s from %(existing_owner)s to %(user)s', {
                     'path': path,
-                    'existing_owner': stat.st_uid,
+                    'existing_owner': existing_owner,
                     'user': user
                 })
-                os.chown(path, uid, -1)
+                shell_execute('sudo chown {} {}'.format(uid, path), capture=True, debug=True)
     if group:
         gid = coerce_gid(group)
-        if stat.st_gid != gid:
+        existing_group = shell_execute("sudo stat -c '%g' {}".format(path), capture=True)
+        if existing_group != gid:
             actions.append('CHGRP')
             if not is_dry_run:
                 LOGGER.info('changing group: for %(path)s from %(existing_group)s to %(group)s', {
                     'path': path,
-                    'existing_group': stat.st_gid,
+                    'existing_group': existing_group,
                     'group': group
                 })
                 os.chown(path, -1, gid)
+                shell_execute('sudo chgrp {} {}'.format(gid, path), capture=True, debug=True)
     return actions
 
 
