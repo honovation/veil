@@ -116,7 +116,7 @@ def vsee_postgresql_program(config, more_config=None):
 
 
 def persist_store_redis_program(config):
-    return redis_program('persist_store', config.persist_store_redis_host, config.persist_store_redis_port, persisted_by_aof=True)
+    return redis_program('persist_store', config.persist_store_redis_host, config.persist_store_redis_port)
 
 
 def memory_cache_redis_program(config):
