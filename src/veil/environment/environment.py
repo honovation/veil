@@ -180,8 +180,8 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
     return env
 
 
-def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ssh_user='dejavu', sshd_config=(), iptables_rule_resources=(),
-              timezone='Asia/Shanghai', external_service_ports=()):
+def veil_host(lan_range, external_ip, ssh_port=22, ssh_user='dejavu', sshd_config=(), iptables_rule_resources=(), timezone=None, external_service_ports=(),
+              lxd_port=8443):
     if sshd_config and 'PasswordAuthentication no' not in sshd_config:
         raise AssertionError('password authentication should not be allowed on host')
     if sshd_config and 'PermitRootLogin no' not in sshd_config:
@@ -190,10 +190,8 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
     from veil.model.collection import objectify
     internal_ip = '{}.1'.format(lan_range)
     return objectify({
-        'timezone': timezone,
+        'timezone': timezone or get_application_timezone(),
         'lan_range': lan_range,
-        'lan_interface': lan_interface,
-        'mac_prefix': mac_prefix,
         'internal_ip': internal_ip,
         'external_ip': external_ip,
         'ssh_port': ssh_port,
@@ -202,7 +200,9 @@ def veil_host(lan_range, lan_interface, mac_prefix, external_ip, ssh_port=22, ss
         'sshd_config': sshd_config,
         'iptables_rule_resources': iptables_rule_resources,
         'deploys_via': '{}@{}:{}'.format(ssh_user, internal_ip, ssh_port),
-        'external_service_ports': external_service_ports
+        'external_service_ports': external_service_ports,
+        'lxd_port': lxd_port,
+        'lxd_endpoint': 'https://{}:{}'.format(internal_ip, lxd_port)
     })
 
 
