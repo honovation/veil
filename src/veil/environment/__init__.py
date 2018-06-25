@@ -15,28 +15,31 @@ from .environment import CURRENT_USER_GROUP
 
 from .environment import VEIL_HOME
 from .environment import VEIL_FRAMEWORK_HOME
+from .environment import VEIL_ENV_DIR
 from .environment import VEIL_ETC_DIR
 from .environment import VEIL_VAR_DIR
 from .environment import VEIL_BUCKETS_DIR
 from .environment import VEIL_BUCKET_LOG_DIR
 from .environment import VEIL_DATA_DIR
+from .environment import VEIL_BARMAN_DIR
 from .environment import VEIL_LOG_DIR
-from .environment import BASIC_LAYOUT_RESOURCES
 
 from .environment import VEIL_BACKUP_ROOT
+from .environment import VEIL_BACKUP_MIRROR_ROOT
 
 from .environment import VEIL_EDITORIAL_DIR
 from .environment import VEIL_BUCKET_INLINE_STATIC_FILES_DIR
+from .environment import VEIL_BUCKET_CAPTCHA_IMAGE_DIR
 from .environment import VEIL_BUCKET_UPLOADED_FILES_DIR
 
 from .environment import get_application
 from .environment import get_application_codebase
 from .environment import get_veil_framework_codebase
 from .environment import get_application_version
+from .environment import get_application_timezone
 from .environment import get_application_sms_whitelist
 from .environment import get_application_email_whitelist
 from .environment import get_veil_framework_version
-from .environment import get_backup_mirror_domain
 
 from .environment import veil_env
 from .environment import veil_host
@@ -49,5 +52,4 @@ from .environment import get_veil_host
 from .environment import list_veil_servers
 from .environment import get_veil_server
 from .environment import get_current_veil_server
-
 from .environment import is_guard_server
