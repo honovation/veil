@@ -181,7 +181,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
 
     if installed:
         container = client.get_container(container_name)
-        LOGGER.info('Update lxc container: %(container_name)s, %(general_config)s', {
+        LOGGER.info('Update lxc container: %(container_name)s, %(general_config)s, %(devices_config)s', {
             'container_name': container_name,
             'general_config': general_config,
             'devices_config': devices_config
@@ -191,7 +191,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
         container.save(wait=True)
         return
 
-    LOGGER.info('Create lxc container: %(container_name)s...', {
+    LOGGER.info('Create lxc container: %(container_name)s, %(general_config)s, %(devices_config)s...', {
         'container_name': container_name,
         'general_config': general_config,
         'devices_config': devices_config
