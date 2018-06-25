@@ -116,3 +116,7 @@ class ContainerProxy(object):
         if name == 'running':
             return container and container.status_code == 103
         return container.__getattribute__(name)
+
+    def __setattr__(self, key, value):
+        container = object.__getattribute__(self, 'container')
+        container.__setattr__(key, value)
