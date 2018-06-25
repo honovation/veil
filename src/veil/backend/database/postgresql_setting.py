@@ -61,9 +61,9 @@ def barman_periodic_backup_program(crontab_expression, purpose):
     })
 
 
-def barman_periodic_recover_program(crontab_expression, purpose, host, port, user):
+def barman_periodic_recover_program(crontab_expression, purpose):
     return objectify({
         'barman_recover': {
-            'execute_command': 'veil backend database postgresql barman-recover "{}" {} {} {} {}'.format(crontab_expression, purpose, host, port, user)
+            'execute_command': 'veil backend database postgresql barman-recover "{}" {}'.format(crontab_expression, purpose)
         }
     })
