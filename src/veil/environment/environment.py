@@ -275,6 +275,10 @@ def get_application_codebase():
     return get_application().CODEBASE
 
 
+def get_application_timezone():
+    return getattr(get_application(), 'TIMEZONE', 'Asia/Shanghai')
+
+
 def get_application_sms_whitelist():
     return getattr(get_application(), 'SMS_WHITELIST', set())
 
