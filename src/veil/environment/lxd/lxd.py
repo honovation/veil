@@ -109,14 +109,18 @@ class LXDClient(object):
 
 class ContainerProxy(object):
     def __init__(self, container):
-        object.__setattr__(self, 'container', container)
+        self.container = container
 
     def __getattribute__(self, name):
         container = object.__getattribute__(self, 'container')
+        if name == 'container':
+            return container
         if name == 'running':
             return container and container.status_code == 103
         return container.__getattribute__(name)
 
-    def __setattr__(self, key, value):
-        container = object.__getattribute__(self, 'container')
-        container.__setattr__(key, value)
+    def __setattr__(self, name, value):
+        if name == 'container':
+            object.__setattr__(self, name, value)
+        else:
+            self.container.__setattr__(name, value)
