@@ -232,6 +232,10 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
     })
 
 
+def is_guard_server(name):
+    return 'guard' == name.split('-', 1)[0]
+
+
 def list_veil_servers(veil_env_name, include_guard_server=True, include_monitor_server=True, include_barman_server=True):
     exclude_server_names = []
     if not include_guard_server:

@@ -49,3 +49,5 @@ from .environment import get_veil_host
 from .environment import list_veil_servers
 from .environment import get_veil_server
 from .environment import get_current_veil_server
+
+from .environment import is_guard_server
