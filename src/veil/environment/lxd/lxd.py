@@ -109,7 +109,7 @@ class LXDClient(object):
 
 class ContainerProxy(object):
     def __init__(self, container):
-        self.container = container
+        object.__setattr__(self, 'container', container)
 
     def __getattribute__(self, name):
         container = object.__getattribute__(self, 'container')
