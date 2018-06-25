@@ -131,16 +131,15 @@ def download_packages(veil_env_name):
     # this command should not interrupt normal website operation
     # designed to run when website is still running, to prepare for a full deployment
     for host in list_veil_hosts(veil_env_name):
-        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port, forward_agent=True):
             with fabric.api.cd(host.veil_home):
-                with fabric.api.settings(forward_agent=True):
-                    while True:
-                        try:
-                            fabric.api.run('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x')
-                        except Exception as e:
-                            print(red('Git archive failed, retry: {}'.format(e.message)))
-                        else:
-                            break
+                while True:
+                    try:
+                        fabric.api.run('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x')
+                    except Exception as e:
+                        print(red('Git archive failed, retry: {}'.format(e.message)))
+                    else:
+                        break
                 try:
                     for server in host.server_list:
                         print(cyan('Download packages for server {} ...'.format(server.name)))
@@ -154,7 +153,8 @@ def download_packages(veil_env_name):
                             with fabric.api.cd(server.veil_home):
                                 fabric.api.run('veil :{} install-server --download-only'.format(server.fullname))
                 finally:
-                    fabric.api.run('git checkout -- RESOURCE-LATEST-VERSION-*')
+                    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port, forward_agent=True):
+                        fabric.api.run('git checkout -- RESOURCE-LATEST-VERSION-*')
 
 
 @script('deploy-monitor')
