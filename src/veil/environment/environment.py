@@ -207,8 +207,10 @@ def veil_host(lan_range, external_ip, ssh_port=22, ssh_user='dejavu', sshd_confi
 
 
 def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_host=None, supervisor_http_port=None,
-                name_servers=None, backup_mirror=None, mount_editorial_dir=False, mount_buckets_dir=False,
-                mount_data_dir=False, memory_limit=None, cpu_share=None, cpus=None, ssh_port=None, is_guard_server=None):
+                name_servers=None, backup_mirror=None, mount_var_dir=False, mount_editorial_dir=False, mount_buckets_dir=False,
+                mount_data_dir=False, mount_barman_dir=False, memory_limit=None, cpu_share=None, cpus=None):
+    assert not mount_var_dir or not mount_editorial_dir and not mount_buckets_dir and not mount_data_dir and not mount_barman_dir
+
     from veil.model.collection import objectify
     if backup_mirror:
         backup_mirror = objectify(backup_mirror)
@@ -222,13 +224,14 @@ def veil_server(host_name, sequence_no, programs, resources=(), supervisor_http_
         'supervisor_http_port': supervisor_http_port,
         'name_servers': name_servers or DEFAULT_DNS_SERVERS,
         'backup_mirror': backup_mirror,
+        'mount_var_dir': mount_var_dir,
         'mount_editorial_dir': mount_editorial_dir,
         'mount_buckets_dir': mount_buckets_dir,
         'mount_data_dir': mount_data_dir,
+        'mount_barman_dir': mount_barman_dir,
         'memory_limit': memory_limit,
         'cpu_share': cpu_share,
-        'cpus': cpus,
-        'ssh_port': ssh_port
+        'cpus': cpus
     })
 
 
