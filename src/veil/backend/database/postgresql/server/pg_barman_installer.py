@@ -25,7 +25,7 @@ def pgbarman_resource(config):
                                             log_path=VEIL_LOG_DIR),
                       owner=CURRENT_USER, group=CURRENT_USER_GROUP),
         file_resource(path=BARMAN_CONF_PATH / '{}.conf'.format(config.server_name), content=barman_server_config, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-        file_resource(path='/etc/cron.d/barman', content=render_config('pg_barman_cron.d.j2', barman_user=CURRENT_USER), owner='root', group='root', mode=0444)
+        file_resource(path='/etc/cron.d/barman', content=render_config('pg_barman_cron.d.j2', barman_user=CURRENT_USER), owner='root', group='root')
     ]
 
     return resources
