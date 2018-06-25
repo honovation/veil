@@ -79,6 +79,7 @@ def make_general_config(user_data, network_config, start_order, memory_limit=Non
 
 
 def make_devices_config(user_name, etc_dir, log_dir, var_dir=None, editorial_dir=None, buckets_dir=None, data_dir=None, barman_dir=None):
+    assert not var_dir or not editorial_dir and not buckets_dir and not data_dir and not barman_dir
     devices_config = {
         'home': {
             'type': 'disk',
@@ -132,7 +133,7 @@ def make_devices_config(user_name, etc_dir, log_dir, var_dir=None, editorial_dir
             'source': data_dir
         }
     if barman_dir:
-        devices_config['data'] = {
+        devices_config['barman'] = {
             'type': 'disk',
             'path': barman_dir,
             'source': barman_dir
