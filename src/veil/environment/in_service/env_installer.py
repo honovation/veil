@@ -149,7 +149,8 @@ def download_packages(veil_env_name):
                         if not is_container_running(server):
                             print(yellow('Skipped downloading packages for server {} as its container is not running'.format(server.container_name)))
                             continue
-                        with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port, disable_known_hosts=True):
+                        with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port, forward_agent=True,
+                                                 disable_known_hosts=True):
                             with fabric.api.cd(server.veil_home):
                                 fabric.api.run('veil :{} install-server --download-only'.format(server.fullname))
                 finally:
