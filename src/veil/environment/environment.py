@@ -159,10 +159,7 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
             server.env_dir = host.env_dir
             server.etc_dir = host.etc_dir / server.name
             server.log_dir = host.log_dir / server.name
-            if server.mount_var_dir or server.mount_editorial_dir or server.mount_buckets_dir or server.mount_data_dir or server.mount_barman_dir:
-                server.var_dir = host.var_dir
-            else:
-                server.var_dir = None
+            server.var_dir = host.var_dir if server.mount_var_dir else None
             server.editorial_dir = host.editorial_dir if server.mount_editorial_dir else None
             server.buckets_dir = host.buckets_dir if server.mount_buckets_dir else None
             server.data_dir = host.data_dir if server.mount_data_dir else None
@@ -181,13 +178,11 @@ def veil_env(name, hosts, servers, sorted_server_names=None, apt_url=APT_URL, py
                    ), 'ENV {}: found more than one guard on one host'.format(env.name)
         assert len([server for server in env.servers.values() if server.is_barman]) <= 1, 'ENV {}: found more than one barman'.format(env.name)
         assert len([server for server in env.servers.values() if server.is_monitor]) <= 1, 'ENV {}: found more than one monitor'.format(env.name)
-        assert all(not server.is_guard or server.mount_var_dir for server in env.servers.values()), 'ENV {}: found guard without var mount'.format(env.name)
-        assert all(not server.is_barman or server.mount_barman_dir for server in env.servers.values()), \
-            'ENV {}: found barman without barman mount'.format(env.name)
-        assert all(server.is_guard or not server.mount_var_dir for server in env.servers.values()), \
-            'ENV {}: found servers not guard with var mount'.format(env.name)
+        assert all(not server.is_guard or server.var_dir for server in env.servers.values()), 'ENV {}: found guard without var mount'.format(env.name)
+        assert all(not server.is_barman or server.barman_dir for server in env.servers.values()), 'ENV {}: found barman without barman mount'.format(env.name)
+        assert all(server.is_guard or not server.var_dir for server in env.servers.values()), 'ENV {}: found non-guard servers with var mount'.format(env.name)
         assert all(
-            not server.is_monitor or not server.mount_var_dir and not server.mount_editorial_dir and not server.mount_buckets_dir and not server.mount_data_dir and not server.mount_barman_dir
+            not server.is_monitor or not server.var_dir and not server.editorial_dir and not server.buckets_dir and not server.data_dir and not server.barman_dir
             for server in env.servers.values()), 'ENV {}: found monitor with var/editorial/buckets/data mount'.format(env.name)
 
         assert all(
