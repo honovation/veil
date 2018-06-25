@@ -131,31 +131,30 @@ def download_packages(veil_env_name):
     # this command should not interrupt normal website operation
     # designed to run when website is still running, to prepare for a full deployment
     for host in list_veil_hosts(veil_env_name):
-        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port, forward_agent=True):
+        with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             with fabric.api.cd(host.veil_home):
-                while True:
-                    try:
-                        fabric.api.run('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x')
-                    except Exception as e:
-                        print(red('Git archive failed, retry: {}'.format(e.message)))
-                    else:
-                        break
-                try:
-                    for server in host.server_list:
-                        print(cyan('Download packages for server {} ...'.format(server.name)))
-                        if not fabric.contrib.files.exists(server.deployed_tag_path):
-                            print(yellow('Skipped downloading packages for server {} as it is not successfully deployed'.format(server.container_name)))
-                            continue
-                        if not is_container_running(server):
-                            print(yellow('Skipped downloading packages for server {} as its container is not running'.format(server.container_name)))
-                            continue
-                        with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port, forward_agent=True,
-                                                 disable_known_hosts=True):
-                            with fabric.api.cd(server.veil_home):
-                                fabric.api.run('veil :{} install-server --download-only'.format(server.fullname))
-                finally:
-                    with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port, forward_agent=True):
-                        fabric.api.run('git checkout -- RESOURCE-LATEST-VERSION-*')
+                with fabric.api.settings(forward_agent=True):
+                    while True:
+                        try:
+                            fabric.api.run('git archive --format=tar --remote=origin master RESOURCE-LATEST-VERSION-* | tar -x')
+                        except Exception as e:
+                            print(red('Git archive failed, retry: {}'.format(e.message)))
+                        else:
+                            break
+            try:
+                for server in host.server_list:
+                    print(cyan('Download packages for server {} ...'.format(server.name)))
+                    if not fabric.contrib.files.exists(server.deployed_tag_path):
+                        print(yellow('Skipped downloading packages for server {} as it is not successfully deployed'.format(server.container_name)))
+                        continue
+                    if not is_container_running(server):
+                        print(yellow('Skipped downloading packages for server {} as its container is not running'.format(server.container_name)))
+                        continue
+                    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port, disable_known_hosts=True):
+                        with fabric.api.cd(server.veil_home):
+                            fabric.api.run('veil :{} install-server --download-only'.format(server.fullname))
+            finally:
+                fabric.api.run('git checkout -- RESOURCE-LATEST-VERSION-*')
 
 
 @script('deploy-monitor')

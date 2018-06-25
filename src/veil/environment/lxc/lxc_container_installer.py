@@ -8,11 +8,6 @@ from veil.utility.clock import *
 LOGGER = logging.getLogger(__name__)
 
 
-def get_idmap():
-    current_user_pwd_entry = pwd.getpwnam(CURRENT_USER)
-    return current_user_pwd_entry.pw_uid, current_user_pwd_entry.pw_gid
-
-
 def make_user_data(hostname, timezone, user_name):
     user_data = '''
     #cloud-config
@@ -55,15 +50,15 @@ def make_network_config(ip_address, gateway, name_servers):
     return network_config
 
 
-def make_general_config(user_data, network_config, start_order, memory_limit=None, cpus=None, cpu_share=None, idmap=None):
-    idmap = idmap or get_idmap()
+def make_general_config(user_data, network_config, start_order, memory_limit=None, cpus=None, cpu_share=None):
+    current_user_pwd_entry = pwd.getpwnam(CURRENT_USER)
     config_part = {
         'boot.autostart': 'true',
         'boot.autostart.delay': '3',
         'boot.autostart.priority': start_order,
         'user.user-data': user_data,
         'user.network-config': network_config,
-        'raw.idmap': 'uid {host_uid} 1000\ngid {host_gid} 1000'.format(host_uid=idmap[0], host_gid=idmap[1])
+        'raw.idmap': 'uid {host_uid} 1000\ngid {host_gid} 1000'.format(host_uid=current_user_pwd_entry.pw_uid, host_gid=current_user_pwd_entry.pw_gid)
     }
     if cpus:
         config_part['limits.cpu'] = cpus
@@ -143,7 +138,7 @@ def make_devices_config(user_name, etc_dir, log_dir, var_dir=None, editorial_dir
 
 @atomic_installer
 def lxc_container_resource(container_name, hostname, timezone, user_name, ip_address, gateway, name_servers, start_order, etc_dir, log_dir, var_dir=None,
-                           editorial_dir=None, buckets_dir=None, data_dir=None, barman_dir=None, memory_limit=None, cpus=None, cpu_share=None, idmap=None):
+                           editorial_dir=None, buckets_dir=None, data_dir=None, barman_dir=None, memory_limit=None, cpus=None, cpu_share=None):
     client = LXDClient(local=True)
     installed = client.is_container_exists(container_name)
     dry_run_result = get_dry_run_result()
@@ -152,8 +147,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
         return
     user_data = make_user_data(hostname, timezone, user_name)
     network_config = make_network_config(ip_address, gateway, name_servers)
-    general_config = make_general_config(user_data, network_config, start_order, memory_limit=memory_limit, cpus=cpus, cpu_share=cpu_share,
-                                         idmap=idmap)
+    general_config = make_general_config(user_data, network_config, start_order, memory_limit=memory_limit, cpus=cpus, cpu_share=cpu_share)
     devices_config = make_devices_config(user_name, etc_dir, log_dir, var_dir=var_dir, editorial_dir=editorial_dir, buckets_dir=buckets_dir,
                                          data_dir=data_dir, barman_dir=barman_dir)
     if installed:
