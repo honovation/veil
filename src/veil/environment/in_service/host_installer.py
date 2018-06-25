@@ -146,20 +146,20 @@ def veil_host_config_resource(host):
     servers = list_veil_servers(host.VEIL_ENV.name)
     if any(s.var_dir for s in servers):
         resources.extend([
-            veil_host_directory_resource(host=host, remote_path=host.var_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+            veil_host_directory_resource(host=host, remote_path=host.var_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
         ])
     if any(s.buckets_dir for s in servers):
         resources.extend([
-            veil_host_directory_resource(host=host, remote_path=host.buckets_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
-            veil_host_directory_resource(host=host, remote_path=host.bucket_log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+            veil_host_directory_resource(host=host, remote_path=host.buckets_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
+            veil_host_directory_resource(host=host, remote_path=host.bucket_log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
         ])
     if any(s.data_dir for s in servers):
         resources.extend([
-            veil_host_directory_resource(host=host, remote_path=host.data_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+            veil_host_directory_resource(host=host, remote_path=host.data_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
         ])
     if any(s.barman_dir for s in servers):
         resources.extend([
-            veil_host_directory_resource(host=host, remote_path=host.barman_dir, owner=host.ssh_user, owner_group=host.ssh_user_group, mode=0755),
+            veil_host_directory_resource(host=host, remote_path=host.barman_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
         ])
     if any(s.is_guard for s in servers):
         resources.extend([
@@ -404,8 +404,7 @@ def veil_host_directory_resource(host, remote_path, owner='root', owner_group='r
         dry_run_result[key] = 'INSTALL'
         return
     with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
-        fabric.api.sudo('mkdir -p {}'.format(remote_path))
-        fabric.api.sudo('chmod {:o} {}'.format(mode, remote_path))
+        fabric.api.sudo('mkdir -p -m {:o} {}'.format(mode, remote_path))
         fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
 
 

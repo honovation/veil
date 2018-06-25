@@ -93,12 +93,13 @@ def veil_container_sources_list_resource(server):
         key = 'veil_container_sources_list?{}'.format(server.name)
         dry_run_result[key] = 'INSTALL'
         return
-    sources_list_path = '/etc/apt/sources.list'
-    client = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir())
-    codename = client.run_container_command(server.container_name, 'lsb_release -cs').strip()
-    sources_list_content = render_config(CURRENT_DIR / 'sources.list.j2', mirror=server.apt_url, codename=codename)
-    client.run_container_command(server.container_name, 'cp -pn {path} {path}.origin'.format(path=sources_list_path))
-    client.put_container_file(server.container_name, sources_list_path, sources_list_content)
+    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
+        sources_list_path = '/etc/apt/sources.list'
+        context = dict(mirror=server.apt_url, codename=fabric.api.run('lsb_release -cs', pty=False))
+        fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=sources_list_path))
+        fabric.contrib.files.upload_template('sources.list.j2', sources_list_path, context=context, use_jinja=True, template_dir=CURRENT_DIR, use_sudo=True,
+                                             backup=False, mode=0644)
+        fabric.api.sudo('chown root:root {}'.format(sources_list_path))
 
 
 @composite_installer
@@ -180,30 +181,25 @@ def veil_container_directory_resource(server, remote_path, owner, owner_group, m
                                                                                                          mode)
         dry_run_result[key] = 'INSTALL'
         return
-    client = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir())
-    client.run_container_command(server.container_name, 'mkdir -p {}'.format(remote_path))
-    client.run_container_command(server.container_name, 'chmod {:o} {}'.format(mode, remote_path))
-    client.run_container_command(server.container_name, 'chown {}:{} {}'.format(owner, owner_group, remote_path))
+    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
+        fabric.api.sudo('mkdir -p -m {:o} {}'.format(mode, remote_path))
+        fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
 
 
 @atomic_installer
-def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False, cmds=None):
+def veil_container_file_resource(local_path, server, remote_path, owner, owner_group, mode, keep_origin=False, cmds=()):
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         key = 'veil_container_file?{}&path={}'.format(server.container_name, remote_path)
         dry_run_result[key] = 'INSTALL'
         return
-    client = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir())
-    if keep_origin:
-        client.run_container_command(server.container_name, 'cp -pn {path} {path}.origin'.format(path=remote_path))
-    f = as_path(local_path)
-    if not f.exists():
-        raise Exception('file not exists: {}'.format(local_path))
-    content = f.bytes()
-    client.put_container_file(server.container_name, remote_path, content, mode=mode, uid=owner, gid=owner_group)
-    if cmds:
+    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
+        if keep_origin:
+            fabric.api.sudo('cp -pn {path} {path}.origin'.format(path=remote_path))
+        fabric.api.put(local_path, remote_path, use_sudo=True, mode=mode)
+        fabric.api.sudo('chown {}:{} {}'.format(owner, owner_group, remote_path))
         for cmd in cmds:
-            client.run_container_command(server.container_name, cmd)
+            fabric.api.sudo(cmd)
 
 
 @atomic_installer
