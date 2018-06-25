@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function, division
-import platform
 import pwd
+import grp
+import platform
 from veil.environment.lxd import *
 from veil.profile.installer import *
 from veil.utility.clock import *
@@ -51,14 +52,15 @@ def make_network_config(ip_address, gateway, name_servers):
 
 
 def make_general_config(user_data, network_config, start_order, memory_limit=None, cpus=None, cpu_share=None):
-    current_user_pwd_entry = pwd.getpwnam(CURRENT_USER)
+    host_uid = pwd.getpwnam(CURRENT_USER).pw_uid
+    host_gid = grp.getgrnam(CURRENT_USER_GROUP).gr_gid
     config_part = {
         'boot.autostart': 'true',
         'boot.autostart.delay': '3',
         'boot.autostart.priority': start_order,
         'user.user-data': user_data,
         'user.network-config': network_config,
-        'raw.idmap': 'uid {host_uid} 1000\ngid {host_gid} 1000'.format(host_uid=current_user_pwd_entry.pw_uid, host_gid=current_user_pwd_entry.pw_gid)
+        'raw.idmap': 'uid {host_uid} 1000\ngid {host_gid} 1000'.format(host_uid=host_uid, host_gid=host_gid)
     }
     if cpus:
         config_part['limits.cpu'] = cpus

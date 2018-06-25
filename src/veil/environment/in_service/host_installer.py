@@ -322,23 +322,15 @@ def init_lxd_daemon():
 
 
 def init_lxd_user_mapping():
-    ret = fabric.api.run('grep -rl lxd:$UID:1 /etc/subuid', warn_only=True)
+    user_mapping = fabric.api.run('echo $(id -u):1')
+    ret = fabric.api.run('grep -rl lxd:{user_mapping} /etc/subuid'.format(user_mapping=user_mapping), warn_only=True)
     if ret.return_code == 1:
-        lxd_user_mapping = fabric.api.run('echo lxd:$UID:1')
-        fabric.api.sudo('echo {} >> /etc/subuid'.format(lxd_user_mapping))
-    ret = fabric.api.run('grep -rl lxd:$(id -g):1 /etc/subgid', warn_only=True)
+        fabric.api.sudo('printf "lxd:{user_mapping}\nroot:{user_mapping}\n" >> /etc/subuid'.format(user_mapping=user_mapping))
+    group_mapping = fabric.api.run('echo $(id -g):1')
+    ret = fabric.api.run('grep -rl lxd:{group_mapping} /etc/subgid'.format(group_mapping=group_mapping), warn_only=True)
     if ret.return_code == 1:
-        lxd_group_mapping = fabric.api.run('echo lxd:$(id -g):1')
-        fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
-
-    ret = fabric.api.run('grep -rl root:$UID:1 /etc/subuid', warn_only=True)
-    if ret.return_code == 1:
-        lxd_user_mapping = fabric.api.run('echo root:$UID:1')
-        fabric.api.sudo('echo {} >> /etc/subuid'.format(lxd_user_mapping))
-    ret = fabric.api.run('grep -rl root:$(id -g):1 /etc/subgid', warn_only=True)
-    if ret.return_code == 1:
-        lxd_group_mapping = fabric.api.run('echo root:$(id -g):1')
-        fabric.api.sudo('echo {} >> /etc/subgid'.format(lxd_group_mapping))
+        fabric.api.sudo('printf "lxd:{group_mapping}\nroot:{group_mapping}\n" >> /etc/subgid'.format(group_mapping=group_mapping))
+    fabric.api.sudo('systemctl restart lxd')
 
 
 def init_lxd_profile_resource(client):
