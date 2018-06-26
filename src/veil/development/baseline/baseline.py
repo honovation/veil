@@ -26,7 +26,7 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
     Excample:
         veil development baseline restore-db-from-baseline ENV_NAME DB_PURPOSE
         veil development baseline restore-db-from-baseline ENV_NAME DB_PURPOSE TRUE
-        sudo -E veil :ENV_NAME/SERVER_NAME development baseline restore-db-from-baseline ENV_NAME DB_PURPOSE
+        veil :ENV_NAME/SERVER_NAME development baseline restore-db-from-baseline ENV_NAME DB_PURPOSE
 
     @param veil_env_name:
     @param purpose: db purpose
