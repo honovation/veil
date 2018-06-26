@@ -34,7 +34,7 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
     @return:
     """
     if not BASELINE_DIR.exists():
-        BASELINE_DIR.mkdir()
+        BASELINE_DIR.makedirs()
     
     if getpwuid(os.stat(BASELINE_DIR).st_uid).pw_name != CURRENT_USER or getgrgid(os.stat(BASELINE_DIR).st_gid).gr_name != CURRENT_USER_GROUP:
         shell_execute('chown {}:{} {}'.format(CURRENT_USER, CURRENT_USER_GROUP, BASELINE_DIR))
