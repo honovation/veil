@@ -10,8 +10,7 @@ from veil_component import as_path
 
 LOGGER = logging.getLogger(__name__)
 
-# DO NOT CHANGE THE BELOW TWO CONSTANTS, OTHERWISE you need update container profile and apply it to every containers on every hosts
-LXD_PROFILE_NAME = 'veil'
+# DO NOT CHANGE THE BELOW CONSTANT, OTHERWISE you need update container profile and apply it to every containers on every hosts
 LXD_BRIDGE_NAME = 'br0'
 
 

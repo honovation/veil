@@ -195,7 +195,6 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
     container_config = DictObject({
         'name': container_name,
         'architecture': platform.machine(),
-        'profiles': [LXD_PROFILE_NAME],
         'ephemeral': False,
         'config': general_config,
         'devices': devices_config,

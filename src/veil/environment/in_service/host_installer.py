@@ -310,9 +310,8 @@ def veil_host_init_resource(host):
 def init_veil_host_lxd(host):
     init_lxd_daemon()
     init_lxd_user_mapping()
-    client = LXDClient(endpoint=host.lxd_endpoint, config_dir=get_env_config_dir())
-    init_lxd_profile_resource(client)
-    init_lxd_image(client)
+    init_lxd_profile_resource()
+    init_lxd_image(LXDClient(endpoint=host.lxd_endpoint, config_dir=get_env_config_dir()))
 
 
 def init_lxd_daemon():
@@ -333,22 +332,9 @@ def init_lxd_user_mapping():
     fabric.api.sudo('systemctl restart lxd')
 
 
-def init_lxd_profile_resource(client):
-    if client.is_profile_exists(LXD_PROFILE_NAME):
-        return
-    client.create_profile(LXD_PROFILE_NAME, config={}, devices={
-        'root': {
-            'path': '/',
-            'pool': 'default',
-            'type': 'disk'
-        },
-        'eth0': {
-            'name': 'eth0',
-            'type': 'nic',
-            'nictype': 'bridged',
-            'parent': LXD_BRIDGE_NAME
-        }
-    })
+def init_lxd_profile_resource():
+    fabric.api.run('lxc profile device set default eth0 parent {}'.format(LXD_BRIDGE_NAME))
+    fabric.api.run('lxc network delete lxdbr0')
 
 
 def init_lxd_image(client):
