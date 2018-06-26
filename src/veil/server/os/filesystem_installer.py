@@ -133,7 +133,7 @@ def symbolic_link_resource(path, to):
 
 def install_symbolic_link(is_dry_run, path, to):
     action = None
-    if os.path.exists(path):
+    if os.path.lexists(path):
         if not os.path.islink(path):
             raise Exception('trying to create a symlink with the same name as an existing file or directory: {}'.format(path))
         old_path = os.path.realpath(path)
@@ -147,7 +147,7 @@ def install_symbolic_link(is_dry_run, path, to):
         action = 'CREATE'
     if not is_dry_run:
         LOGGER.info('Creating symbolic: %(path)s to %(to)s', {'path': path, 'to': to})
-        shell_execute('sudo ln -sf {} {}'.format(to, path), capture=True, debug=True)
+        shell_execute('sudo ln -s {} {}'.format(to, path), capture=True, debug=True)
         shell_execute('sudo chown -h {}:{} {}'.format(CURRENT_USER, CURRENT_USER_GROUP, path), capture=True, debug=True)
     return action
 
