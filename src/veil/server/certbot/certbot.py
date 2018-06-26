@@ -5,10 +5,9 @@ One single certificate for multiple domains is not supported
 How to use letsencrypt certificate for a website under a domain
 1. update veil app env config to add the parent domain under base_domain_names and deploy
 2. ssh to veil server hosting nginx service
-3. install/upgrade certbot: sudo veil :ljmall-public--2/web server certbot install
-4. get the certificate for the domain: sudo veil :ljmall-public--2/web server certbot certonly www.lijiababy.com.cn
-5. update veil app env config to add the website with use_certbot=True
-6. deploy and verify
+3. get the certificate for the domain: sudo veil :ljmall-public--2/web server certbot certonly www.lijiababy.com.cn
+4. update veil app env config to add the website with use_certbot=True
+5. deploy and verify
 
 How to renew letsencrypt certificates
 1. ssh to veil server hosting nginx service
@@ -24,12 +23,6 @@ from veil.utility.timer import *
 from veil.environment import get_application
 
 RELOAD_NGINX_CMD = 'veil server supervisor reload-nginx'
-
-
-@script('install')
-def install():
-    shell_execute('add-apt-repository ppa:certbot/certbot -y -u', capture=True)
-    shell_execute('apt -y install certbot', capture=True)
 
 
 @script('certonly')
