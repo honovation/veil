@@ -11,6 +11,7 @@ from veil.utility.timer import *
 from veil.utility.shell import *
 from veil.backend.database.client import *
 from veil.backend.database.postgresql import *
+from veil.backend.database.postgresql_setting import get_pg_data_dir, get_pg_config_dir
 
 BASELINE_DIR = VEIL_HOME / 'baseline' / 'db'
 
@@ -43,7 +44,6 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
         print('can not find db: {}'.format(purpose))
         return
 
-    db_path_name = '{}-postgresql-{}'.format(purpose, config.version)
     if not any(s.is_barman for s in list_veil_servers(veil_env_name)):
         print('can not restore db as barman is not enabled: {}'.format(purpose))
         return
@@ -53,38 +53,38 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
         download_baseline(veil_env_name, purpose, local_db_baseline_path)
 
     print('found postgresql purposes: {}'.format(purpose))
-    restored_to_path = VEIL_DATA_DIR / db_path_name
+
+    data_dir = get_pg_data_dir(purpose, config.version)
+    config_dir = get_pg_config_dir(purpose, config.version)
     is_local_env = VEIL_ENV.is_dev or VEIL_ENV.is_test
     shell_execute('sudo veil down' if is_local_env else 'sudo systemctl stop veil-server.service', debug=True)
-    shell_execute('rsync -avh --delete {}/ {}/'.format(local_db_baseline_path, restored_to_path), debug=True)
-    shell_execute('veil install-server', debug=True)
-
-    db_config_path = VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version)
+    shell_execute('rsync -avh --delete {}/ {}/'.format(local_db_baseline_path, data_dir), debug=True)
+    shell_execute('chmod 700 {}'.format(data_dir))
+    shell_execute('ln -sf {}/postgresql.conf .'.format(config_dir), cwd=data_dir)
+    shell_execute('ln -sf {}/pg_hba.conf .'.format(config_dir), cwd=data_dir)
+    shell_execute('ln -sf {}/pg_ident.conf .'.format(config_dir), cwd=data_dir)
     shell_execute('sudo cp pg_hba.conf pg_hba.conf.ori', cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version))
-    shell_execute('printf "local all all trust\nhost all all all trust\n" |sudo tee pg_hba.conf', cwd=db_config_path, debug=True)
-
-    shell_execute('sudo veil up --daemonize' if is_local_env else 'sudo systemctl start veil-server.service', debug=True)
+    shell_execute('printf "local all all trust\nhost all all all trust\n" |sudo tee pg_hba.conf', cwd=config_dir, debug=True)
 
     config.update(database_client_config(purpose))
-    while True:
-        # set db owner password and run in a loop to wait PG to start
-        try:
-            shell_execute(
-                '''psql -p {} -d template1 -U {} -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.owner, config.owner,
-                                                                                                 config.owner_password))
-            # set db user password
-            shell_execute(
-                '''psql -p {} -d template1 -U {} -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.user, config.user, config.password))
-        except Exception:
-            print('retrying')
-            sleep(2)
-        else:
-            break
-    shell_execute('mv pg_hba.conf.ori pg_hba.conf', cwd=db_config_path)
-
-    shell_execute('veil migrate', debug=True)
-
-    shell_execute('sudo veil down' if is_local_env else 'sudo systemctl stop veil-server.service', debug=True)
+    with postgresql_server_running(config.version, data_dir, config.owner):
+        while True:
+            # set db owner password and run in a loop to wait PG to start
+            try:
+                shell_execute(
+                    '''psql -p {} -d template1 -U {} -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.owner, config.owner,
+                                                                                                     config.owner_password))
+                # set db user password
+                shell_execute(
+                    '''psql -p {} -d template1 -U {} -c "ALTER ROLE {} WITH PASSWORD '{}'"'''.format(config.port, config.user, config.user, config.password))
+            except Exception:
+                print('retrying')
+                sleep(2)
+            else:
+                break
+        shell_execute('veil migrate', debug=True)
+    shell_execute('veil install-server', debug=True)
+    shell_execute('mv pg_hba.conf.ori pg_hba.conf', cwd=config_dir)
 
 
 @script('download-baseline')

@@ -6,6 +6,7 @@ with veil_component.init_component(__name__):
     from .server.pg_server_installer import postgresql_cluster_resource
     from .server.pg_server_installer import postgresql_cluster_upgrading_resource
     from .server.pg_server_installer import postgresql_maintenance_config
+    from .server.pg_server_installer import postgresql_server_running
 
     from .server.pg_barman_installer import pgbarman_resource
 
@@ -19,6 +20,7 @@ with veil_component.init_component(__name__):
         postgresql_cluster_resource.__name__,
         postgresql_cluster_upgrading_resource.__name__,
         postgresql_maintenance_config.__name__,
+        postgresql_server_running.__name__,
 
         pgbarman_resource.__name__,
 
