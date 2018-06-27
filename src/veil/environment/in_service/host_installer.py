@@ -143,30 +143,29 @@ def veil_host_config_resource(host):
         veil_host_sources_list_resource(host=host)
     ]
 
-    servers = list_veil_servers(host.VEIL_ENV.name)
-    if any(s.var_dir for s in servers):
+    if any(s.var_dir for s in host.server_list):
         resources.extend([
             veil_host_directory_resource(host=host, remote_path=host.var_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
         ])
-    if any(s.buckets_dir for s in servers):
+    if any(s.buckets_dir for s in host.server_list):
         resources.extend([
             veil_host_directory_resource(host=host, remote_path=host.buckets_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
             veil_host_directory_resource(host=host, remote_path=host.bucket_log_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
         ])
-    if any(s.data_dir for s in servers):
+    if any(s.data_dir for s in host.server_list):
         resources.extend([
             veil_host_directory_resource(host=host, remote_path=host.data_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
         ])
-    if any(s.barman_dir for s in servers):
+    if any(s.barman_dir for s in host.server_list):
         resources.extend([
             veil_host_directory_resource(host=host, remote_path=host.barman_dir, owner=host.ssh_user, owner_group=host.ssh_user_group),
         ])
-    if any(s.is_guard for s in servers):
+    if any(s.is_guard for s in host.server_list):
         resources.extend([
             veil_host_file_resource(local_path=CURRENT_DIR / 'max-user-watches.conf', host=host, remote_path='/etc/sysctl.d/60-max-user-watches.conf',
                                     owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-max-user-watches.conf'),
         ])
-    if any(s.is_monitor for s in servers):
+    if any(s.is_monitor for s in host.server_list):
         resources.append(
             veil_host_file_resource(local_path=CURRENT_DIR / 'max-map-count.conf', host=host, remote_path='/etc/sysctl.d/60-max-map-count.conf',
                                     owner='root', owner_group='root', mode=0644, cmd='sysctl -p /etc/sysctl.d/60-max-map-count.conf'),
