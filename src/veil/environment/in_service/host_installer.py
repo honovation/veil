@@ -334,7 +334,7 @@ def init_lxd_user_mapping():
 
 def init_lxd_profile_resource():
     fabric.api.run('lxc profile device set default eth0 parent {}'.format(LXD_BRIDGE_NAME))
-    fabric.api.run('lxc network delete lxdbr0')
+    fabric.api.run('lxc network delete lxdbr0', warn_only=True)
 
 
 def init_lxd_image(client):
