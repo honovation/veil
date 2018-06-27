@@ -182,7 +182,7 @@ def lxc_container_resource(container_name, hostname, timezone, user_name, ip_add
             'general_config': general_config,
             'devices_config': devices_config
         })
-        container.config = general_config
+        container.config.update(general_config)
         container.devices = devices_config
         container.save(wait=True)
         return
