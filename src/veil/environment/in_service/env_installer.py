@@ -372,7 +372,7 @@ def start_env(veil_env_name, config_dir, disable_external_access_='FALSE', *excl
                 container.start(wait=True)
 
 
-@script('disable-external-access')
+@script('disable-env-external-access')
 def disable_external_access_script(veil_env_name):
     disable_external_access(veil_env_name)
 
@@ -387,10 +387,10 @@ def disable_external_access(veil_env_name):
                                            warn_only=True)
             if check_result.failed:
                 fabric.api.sudo('iptables -w -t nat -I PREROUTING 1 -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports))
-            print(cyan('DISABLED {}: {}'.format(host.base_name, host.external_service_ports)))
+        print(cyan('DISABLED {}: {}'.format(host.base_name, host.external_service_ports)))
 
 
-@script('enable-external-access')
+@script('enable-env-external-access')
 def enable_external_access_script(veil_env_name):
     enable_external_access(veil_env_name)
 
@@ -401,13 +401,11 @@ def enable_external_access(veil_env_name):
             continue
         external_service_ports = ','.join(str(p) for p in host.external_service_ports)
         with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
-            while 1:
-                check_result = fabric.api.sudo('iptables -w -t nat -C PREROUTING -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports),
-                                               warn_only=True)
-                if check_result.failed:
-                    break
-                fabric.api.sudo('iptables -w -t nat -D PREROUTING -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports), warn_only=True)
-            print(green('ENABLED {}: {}'.format(host.base_name, host.external_service_ports)))
+            check_result = fabric.api.sudo('iptables -w -t nat -C PREROUTING -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports),
+                                           warn_only=True)
+            if check_result.succeeded:
+                fabric.api.sudo('iptables -w -t nat -D PREROUTING -p tcp -m multiport --dports {} -j RETURN'.format(external_service_ports))
+        print(green('ENABLED {}: {}'.format(host.base_name, host.external_service_ports)))
 
 
 @script('upgrade-env-pip')
