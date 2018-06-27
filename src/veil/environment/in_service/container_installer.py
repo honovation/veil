@@ -2,8 +2,10 @@ from __future__ import unicode_literals, print_function, division
 from cStringIO import StringIO
 import contextlib
 import os
+import time
 import fabric.api
 import fabric.contrib.files
+import fabric.exceptions
 
 from veil.utility.shell import *
 from veil_component import as_path
@@ -64,6 +66,16 @@ def veil_container_lxc_resource(host, server):
         container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
         if not container.running:
             container.start(wait=True)
+    while 1:
+        try:
+            with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
+                fabric.api.run('echo Server started!')
+                break
+        except fabric.exceptions.NetworkError as err:
+            if err.message == 'No existing session':
+                print('wait for server SSH starting')
+                time.sleep(1)
+            raise
 
 
 @composite_installer
