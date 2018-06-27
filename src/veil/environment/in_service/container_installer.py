@@ -66,16 +66,16 @@ def veil_container_lxc_resource(host, server):
         container = LXDClient(endpoint=server.lxd_endpoint, config_dir=get_env_config_dir()).get_container(server.container_name)
         if not container.running:
             container.start(wait=True)
-    while 1:
-        try:
-            with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
-                fabric.api.run('echo Server started!')
+    # ensure the container is started and ready to accept login
+    with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port):
+        while True:
+            try:
+                fabric.api.run('echo server sshd started')
                 break
-        except fabric.exceptions.NetworkError as err:
-            if err.message == 'No existing session':
-                print('wait for server SSH starting')
+            except Exception as e:
+                print(e.message)
+                print('wait for server sshd to start ...')
                 time.sleep(1)
-            raise
 
 
 @composite_installer

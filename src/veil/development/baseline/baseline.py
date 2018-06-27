@@ -99,6 +99,6 @@ def download_baseline(veil_env_name, purpose, baseline_path):
     baseline_path.makedirs(0755)
 
     backup_mirror_path = VEIL_BACKUP_MIRROR_ROOT / veil_env_name / 'latest-database-recover'
-    shell_execute('''rsync -avzhP -e "ssh -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --delete --bwlimit={} {}@{}:{}/{}/ {}/'''.format(
+    shell_execute('''rsync -avzhPH -e "ssh -p {} -T -x -o Compression=no -o StrictHostKeyChecking=no" --delete --bwlimit={} {}@{}:{}/{}/ {}/'''.format(
         backup_mirror.ssh_port, backup_mirror.bandwidth_limit, backup_mirror.ssh_user, backup_mirror.domain, backup_mirror_path, purpose, baseline_path),
         debug=True)
