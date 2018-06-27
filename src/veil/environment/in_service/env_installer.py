@@ -115,8 +115,7 @@ def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir
         with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             if not fabric.contrib.files.exists(source_dir):
                 continue
-            fabric.api.sudo(
-                'rsync -ah --numeric-ids --delete {} --link-dest={}/ {}/ {}/'.format(' '.join(excludes), source_dir, source_dir, rollback_backup_dir))
+            fabric.api.sudo('rsync -ah --delete {} --link-dest={}/ {}/ {}/'.format(' '.join(excludes), source_dir, source_dir, rollback_backup_dir))
             fabric.api.run('touch {}'.format(host.rollbackable_tag_path))
 
 
@@ -268,8 +267,8 @@ def rollback(hosts):
         with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             if fabric.contrib.files.exists(source_dir):
                 left_over_dir = '{}-to-be-deleted-{}'.format(source_dir, datetime.now().strftime('%Y%m%d%H%M%S'))
-                fabric.api.sudo('rsync -ah --numeric-ids --delete --link-dest={}/ {}/ {}/'.format(rollback_backup_dir, source_dir, left_over_dir))
-            fabric.api.sudo('rsync -ah --numeric-ids --delete {}/ {}/'.format(rollback_backup_dir, source_dir))
+                fabric.api.sudo('rsync -ah --delete --link-dest={}/ {}/ {}/'.format(rollback_backup_dir, source_dir, left_over_dir))
+            fabric.api.sudo('rsync -ah --delete {}/ {}/'.format(rollback_backup_dir, source_dir))
 
 
 def ensure_servers_down(hosts):
