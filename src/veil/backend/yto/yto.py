@@ -98,11 +98,16 @@ def subscribe_logistics_notify(logistics_id, logistics_order):
     sign = sign_md5(logistics_order)
     headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
     data = {'logistics_interface': to_str(logistics_order), 'data_digest': sign, 'type': config.type, 'clientId': config.client_id}
+    response = None
     try:
         response = requests.post(config.api_url, data=data, headers=headers, timeout=(3.05, 9), max_retries=Retry(total=3, backoff_factor=0.5))
         response.raise_for_status()
     except Exception:
-        LOGGER.exception('yto logistics subscribe exception-thrown: %(data)s, %(headers)s', {'data': data, 'headers': headers})
+        LOGGER.exception('yto logistics subscribe exception-thrown: %(data)s, %(headers)s, %(response)s', {
+            'data': data,
+            'headers': headers,
+            'response': response.text if response else ''
+        })
         raise
     else:
         if '<success>true</success>' in response.text:
