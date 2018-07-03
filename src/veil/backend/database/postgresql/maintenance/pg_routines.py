@@ -5,6 +5,8 @@ from veil.frontend.cli import *
 from veil.utility.timer import *
 from veil.utility.shell import *
 from veil.backend.database.client import *
+from veil_component import VEIL_ENV
+
 from ...postgresql_setting import get_pg_bin_dir
 from ..server.pg_server_installer import postgresql_maintenance_config
 
@@ -15,6 +17,8 @@ LOGGER = logging.getLogger(__name__)
 def bring_up_routines(purpose):
     @run_every('47 3 * * 2')
     def work():
+        if not VEIL_ENV.is_prod:
+            return
         vacuum_and_reindex_db(purpose)
 
     work()
