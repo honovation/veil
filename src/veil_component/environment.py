@@ -59,5 +59,5 @@ VEIL_ENV = VeilEnv(VEIL_ENV_NAME)
 
 CURRENT_OS = namedtuple('VeilOS', 'distname, version, codename')(*platform.linux_distribution())
 
-if CURRENT_OS.distname != 'Ubuntu' or CURRENT_OS.codename not in {'bionic', 'xenial'}:
+if CURRENT_OS.distname != 'Ubuntu' or CURRENT_OS.codename not in {'bionic'}:
     raise AssertionError('CURRENT_OS not supported: {}'.format(CURRENT_OS))
