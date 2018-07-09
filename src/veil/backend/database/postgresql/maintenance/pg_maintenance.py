@@ -167,7 +167,7 @@ def enable_database_chinese_fts(purpose):
         ALTER TEXT SEARCH CONFIGURATION {ext_config_name} DROP MAPPING IF EXISTS FOR {token_types};
         ALTER TEXT SEARCH CONFIGURATION {ext_config_name} ADD MAPPING FOR {token_types} WITH {dictionary_name};
         COMMIT;
-        '''.format(ext_name='zhparser', ext_config_name='zhparser_config', token_types='n,v,a,i,e,l', dictionary_name='simple')
+        '''.format(ext_name='zhparser', ext_config_name='zhparser_config', token_types='n,v,a,i,e,l,j', dictionary_name='simple')
     shell_execute('{}/psql -h {} -p {} -U {} -d {} -c "{}"'.format(get_pg_bin_dir(maintenance_config.version), config.host, config.port,
                                                                    maintenance_config.owner, config.database, commands), env=env, debug=True)
 
