@@ -25,8 +25,9 @@ def bring_up_barman_recover(crontab_expression, purpose):
     def work():
         ssh_command = 'ssh -p {} -i /etc/ssh/id_ed25519-barman {}@{}'.format(backup_mirror.ssh_port, backup_mirror.ssh_user, backup_mirror.host_ip)
         path = VEIL_BACKUP_MIRROR_ROOT / VEIL_ENV.name / 'latest-database-recover' / purpose
+        assert path.startswith('~/')
         try:
-            shell_execute('barman recover --remote-ssh-command "{}" {} latest {}'.format(ssh_command, purpose, path), capture=True)
+            shell_execute('barman recover --remote-ssh-command "{}" {} latest {}'.format(ssh_command, purpose, path[2:]), capture=True)
         except:
             pass
 
