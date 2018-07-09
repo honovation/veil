@@ -46,8 +46,11 @@ def backup_host(timestamp):
                      server.var_dir.relpathto(VEIL_BUCKET_UPLOADED_FILES_DIR),
                      server.var_dir.relpathto(VEIL_DATA_DIR) / '*-postgresql-*']
     excludes = ' '.join('--exclude "/{}"'.format(path) for path in exclude_paths)
-    shell_execute('rsync -avh --numeric-ids --delete {excludes} --link-dest={var_path}/ {var_path}/ {backup_dir}/{timestamp}/'.format(
-        excludes=excludes, var_path=server.var_dir, backup_dir=backup_dir, timestamp=timestamp))
+    latest_dir = backup_dir / 'latest'
+    link_dest = '--link-dest={}/'.format(latest_dir) if latest_dir.exists() else ''
+    shell_execute(
+        'rsync -avh --numeric-ids --delete {} {} {}/ {}/{}/'.format(excludes, link_dest, server.var_dir, backup_dir,
+                                                                    timestamp))
     return backup_dir
 
 
