@@ -146,7 +146,7 @@ def nginx_log_rotater_program():
             'sharedscripts',
             'postrotate',
             'if [ -f {} ]; then'.format(NGINX_PID_PATH),
-            'kill -USR1 `cat {}`'.format(NGINX_PID_PATH),
+            'sudo kill -USR1 `cat {}`'.format(NGINX_PID_PATH),
             'fi',
             'endscript'
         ]
