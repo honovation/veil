@@ -2,17 +2,18 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 
-# TODO: upgrade mechanism for scws & zhparser, and record scws & zhparser versions
-SCWS_RESOURCE_VERSION = '1.2.2'
 SCWS_RESOURCE_KEY = 'veil.backend.database.postgresql.pg_fts_chinese_scws_resource'
+SCWS_RESOURCE_VERSION = '1.2.3'
 SCWS_PACKAGE_NAME = 'scws-{}.tar.bz2'.format(SCWS_RESOURCE_VERSION)
+SCWS_DOWNLOAD_URL = 'http://www.xunsearch.com/scws/down/{}'.format(SCWS_PACKAGE_NAME)
 SCWS_HOME = as_path('{}/scws-{}'.format(DEPENDENCY_INSTALL_DIR, SCWS_RESOURCE_VERSION))
 SCWS_BIN_PATH = as_path('/usr/local/bin/scws')
 
-ZHPARSER_RESOURCE_VERSION = '0.1.4'
 ZHPARSER_RESOURCE_KEY = 'veil.backend.database.postgresql.pg_fts_chinese_zhparser_resource'
-ZHPARSER_PACKAGE_NAME = 'zhparser-zhparser-{}.zip'.format(ZHPARSER_RESOURCE_VERSION)
-ZHPARSER_HOME = as_path('{}/zhparser-zhparser-{}'.format(DEPENDENCY_INSTALL_DIR, ZHPARSER_RESOURCE_VERSION))
+ZHPARSER_RESOURCE_VERSION = '0.2.0'
+ZHPARSER_PACKAGE_NAME = 'zhparser-{}.zip'.format(ZHPARSER_RESOURCE_VERSION)
+ZHPARSER_DOWNLOAD_URL = 'https://github.com/amutu/zhparser/archive/v{}.zip'.format(ZHPARSER_RESOURCE_VERSION)
+ZHPARSER_HOME = as_path('{}/zhparser-{}'.format(DEPENDENCY_INSTALL_DIR, ZHPARSER_RESOURCE_VERSION))
 ZHPARSER_SO_PATH = as_path('{}/zhparser.so'.format(ZHPARSER_HOME))
 
 
@@ -32,7 +33,7 @@ def download_scws():
         return
     local_path = DEPENDENCY_DIR / SCWS_PACKAGE_NAME
     if not local_path.exists():
-        shell_execute('wget -c {}/{} -O {}'.format(DEPENDENCY_URL, SCWS_PACKAGE_NAME, local_path))
+        shell_execute('wget -c {} -O {}'.format(SCWS_DOWNLOAD_URL, local_path))
     shell_execute('tar jxvf {} -C {}'.format(local_path, DEPENDENCY_INSTALL_DIR))
 
 
@@ -67,7 +68,7 @@ def download_zhparser():
         return
     local_path = DEPENDENCY_DIR / ZHPARSER_PACKAGE_NAME
     if not local_path.exists():
-        shell_execute('wget -c {}/{} -O {}'.format(DEPENDENCY_URL, ZHPARSER_PACKAGE_NAME, local_path))
+        shell_execute('wget -c {} -O {}'.format(ZHPARSER_DOWNLOAD_URL, local_path))
     shell_execute('unzip {}'.format(local_path), cwd=DEPENDENCY_INSTALL_DIR)
 
 
