@@ -661,3 +661,9 @@ default_text_search_config = 'pg_catalog.english'
 #------------------------------------------------------------------------------
 
 # Add settings for extensions here
+{% if config.enable_chinese_fts %}
+zhparser.extra_dicts = 'dict.{{ config.purpose }}.txt'
+zhparser.punctuation_ignore = t
+#zhparser.multi_short = t
+#zhparser.dict_in_memory = t
+{% endif %}

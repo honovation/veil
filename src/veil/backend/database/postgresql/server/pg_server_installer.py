@@ -47,9 +47,15 @@ def postgresql_server_resource(config):
     if upgrading or config.enable_chinese_fts:
         resources.append(os_package_resource(name='postgresql-server-dev-{}'.format(config.version)))
     if config.enable_chinese_fts:
+        pg_major_version = config.version.split('.', 1)[0]
+        custom_dict_install_path = '/usr/share/postgresql/{}/tsearch_data/dict.{}.txt'.format(pg_major_version,
+                                                                                              config.purpose)
+        custom_dict_path = VEIL_HOME / 'dict.txt'
+        custom_dict_content = render_config(custom_dict_path) if custom_dict_path.exists() else ''
         resources.extend([
             scws_resource(),
-            zhparser_resource(reinstall=upgrading)
+            zhparser_resource(reinstall=upgrading),
+            file_resource(path=custom_dict_install_path, content=custom_dict_content)
         ])
     if upgrading:
         resources.append(postgresql_cluster_upgrading_resource(purpose=config.purpose, old_version=maintenance_config.version, new_version=config.version,

@@ -2,8 +2,9 @@ from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 
 
-def postgresql_program(purpose, version, host, port, owner, owner_password, user, password, log_min_duration_statement, log_filename=None,
-                       enable_chinese_fts=False, replication_user=None, replication_host=None, **more_config):
+def postgresql_program(purpose, version, host, port, owner, owner_password, user, password, log_min_duration_statement,
+                       log_filename=None, enable_chinese_fts=False, replication_user=None, replication_host=None,
+                       **more_config):
     config = {
         'purpose': purpose,
         'version': version,
@@ -24,6 +25,7 @@ def postgresql_program(purpose, version, host, port, owner, owner_password, user
         'log_filename': log_filename,  # set to None, postgresql will rotate it for us
 
         'enable_chinese_fts': enable_chinese_fts,
+
         'replication_user': replication_user,
         'replication_host': replication_host
     }
