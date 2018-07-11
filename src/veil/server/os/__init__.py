@@ -13,8 +13,6 @@ with veil_component.init_component(__name__):
 
     from .postgresql_apt_repository_installer import postgresql_apt_repository_resource
 
-    from .java_installer import oracle_java_resource
-
     from .nodejs_apt_repository_installer import nodejs_apt_repository_resource
 
     __all__ = [
@@ -30,8 +28,6 @@ with veil_component.init_component(__name__):
         os_service_auto_starting_resource.__name__,
 
         postgresql_apt_repository_resource.__name__,
-
-        oracle_java_resource.__name__,
 
         nodejs_apt_repository_resource.__name__,
     ]
