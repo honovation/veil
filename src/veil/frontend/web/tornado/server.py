@@ -60,7 +60,7 @@ class HTTPHandler(object):
 
     def __call__(self, request):
         response = HTTPResponse(request)
-        if is_socket_abnormal(request.connection.stream.socket):
+        if not request.connection.stream.socket or is_socket_abnormal(request.connection.stream.socket):
             response.finish()
             return
         http_context = HTTPContext(request, response)
