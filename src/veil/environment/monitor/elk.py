@@ -9,7 +9,7 @@ def elk_resource(config):
     env = os.environ.copy()
     env['ES_SKIP_SET_KERNEL_PARAMETERS'] = 'true'
     return [
-        os_package_resource(name='openjdk-8-jre'),
+        os_package_resource(name='default-jre'),
         apt_repository_resource(name='elk', key_url='https://artifacts.elastic.co/GPG-KEY-elasticsearch', definition=repository_definition),
         os_package_resource(name='elasticsearch', install_env=env),
         directory_resource(path=VEIL_ETC_DIR / 'elasticsearch', owner=CURRENT_USER, group=CURRENT_USER_GROUP),
