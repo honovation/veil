@@ -2,7 +2,6 @@
 from __future__ import unicode_literals, print_function, division
 
 import logging
-from veil.environment import CURRENT_USER, CURRENT_USER_GROUP
 from veil.utility.shell import *
 from veil_component import as_path
 from veil_installer import *
@@ -25,20 +24,12 @@ def frontend_static_resource(frontend_root_path):
         dry_run_result['frontend_static_resource'] = 'INSTALL'
         return
 
-    shell_execute('sudo chown -R {}:{} {}'.format(CURRENT_USER, CURRENT_USER_GROUP, frontend_root_path))
-
     shell_execute('sudo npm install yarn -g', cwd=frontend_root_path)
 
     node_modules_path = frontend_root_path / 'node_modules'
     if not node_modules_path.exists():
         LOGGER.info('node modules path does not exist, install')
-        shell_execute('sudo -u {} yarn'.format(CURRENT_USER), cwd=frontend_root_path)
+        shell_execute('yarn', cwd=frontend_root_path)
 
-    shell_execute('sudo chown -R {}:{} node_modules'.format(CURRENT_USER, CURRENT_USER_GROUP), cwd=frontend_root_path)
-
-    dist_path = frontend_root_path / 'dist'
-    if dist_path.exists():
-        shell_execute('sudo chown -R {}:{} {}'.format(CURRENT_USER, CURRENT_USER_GROUP, dist_path))
-
-    shell_execute('sudo -u {} yarn install'.format(CURRENT_USER), cwd=frontend_root_path)
-    shell_execute('sudo -u {} yarn run build'.format(CURRENT_USER), cwd=frontend_root_path)
+    shell_execute('yarn install', cwd=frontend_root_path)
+    shell_execute('yarn run build', cwd=frontend_root_path)
