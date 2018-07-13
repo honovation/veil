@@ -39,13 +39,13 @@ SELF_CHECKERS = OrderedDict([
 def self_check():
     if 0 == os.getuid():
         raise Exception('self-check can not be executed using root privilege')
-    shell_execute('sudo echo self-checking ...')
+    shell_execute('echo self-checking ...')
     shell_execute('git add -A .')
     shell_execute('git add -A .', cwd=VEIL_FRAMEWORK_HOME)
     shell_execute('veil pull')
     shell_execute('sudo veil :test down')
-    shell_execute('sudo veil :test install-server')
-    shell_execute('sudo veil install-server')
+    shell_execute('veil :test install-server')
+    shell_execute('veil install-server')
     application = get_application()
     if hasattr(application, 'USE_NPM_BUILD') and application.USE_NPM_BUILD:
         shell_execute('sudo npm install yarn -g')

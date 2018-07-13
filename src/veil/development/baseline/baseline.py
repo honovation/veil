@@ -63,8 +63,8 @@ def restore_db_from_baseline_script(veil_env_name, purpose, remote_download='FAL
     shell_execute('ln -sf {}/postgresql.conf .'.format(config_dir), cwd=data_dir)
     shell_execute('ln -sf {}/pg_hba.conf .'.format(config_dir), cwd=data_dir)
     shell_execute('ln -sf {}/pg_ident.conf .'.format(config_dir), cwd=data_dir)
-    shell_execute('sudo cp pg_hba.conf pg_hba.conf.ori', cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version))
-    shell_execute('printf "local all all trust\nhost all all all trust\n" |sudo tee pg_hba.conf', cwd=config_dir, debug=True)
+    shell_execute('cp pg_hba.conf pg_hba.conf.ori', cwd=VEIL_ETC_DIR / '{}-postgresql-{}'.format(purpose, config.version))
+    shell_execute('printf "local all all trust\nhost all all all trust\n" |tee pg_hba.conf', cwd=config_dir, debug=True)
 
     config.update(database_client_config(purpose))
     with postgresql_server_running(config.version, data_dir, config.owner):
