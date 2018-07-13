@@ -178,8 +178,9 @@ def download_python_package(name, version=None, url=None, **kwargs):
                     shell_execute('pip download --timeout 30 -d {} {}'.format(PYPI_ARCHIVE_DIR, name_term),
                                   capture=True, debug=True, **kwargs)
                 elif name == 'ibm-db':
-                    shell_execute('pip download {} -d {} {}'.format(pip_index_args, PYPI_ARCHIVE_DIR, name_term),
-                                  expected_return_codes=(0, 1), capture=True, debug=True, **kwargs)
+                    shell_execute(
+                        'pip download --timeout 180 {} -d {} {}'.format(pip_index_args, PYPI_ARCHIVE_DIR, name_term),
+                        capture=True, debug=True, **kwargs)
                 else:
                     shell_execute(
                         'pip download {} --timeout 30 -d {} {}'.format(pip_index_args, PYPI_ARCHIVE_DIR, name_term),
@@ -239,8 +240,8 @@ def install_python_package_remotely(name, version, url, **kwargs):
                     shell_execute('pip install --timeout 30 {}=={}'.format(name, version), capture=True, debug=True,
                                   **kwargs)
                 elif name == 'ibm-db':
-                    shell_execute('pip install {} {}=={}'.format(pip_index_args, name, version), capture=True,
-                                  debug=True, **kwargs)
+                    shell_execute('pip install --timeout 180 {} {}=={}'.format(pip_index_args, name, version),
+                                  capture=True, debug=True, **kwargs)
                 else:
                     shell_execute('pip install {} --timeout 30 {}=={}'.format(pip_index_args, name, version),
                                   capture=True, debug=True, **kwargs)
