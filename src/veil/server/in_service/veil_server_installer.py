@@ -10,15 +10,13 @@ def veil_server_resource():
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         basic_layout_resources = [
                 directory_resource(path=VEIL_ENV_DIR),
-                directory_resource(path=VEIL_ETC_DIR.parent),
-                directory_resource(path=VEIL_ETC_DIR),
-                directory_resource(path=VEIL_LOG_DIR.parent),
-                directory_resource(path=VEIL_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+                directory_resource(path=VEIL_ETC_DIR, recursive=True),
+                directory_resource(path=VEIL_LOG_DIR, recursive=True),
                 directory_resource(path=VEIL_VAR_DIR),
-                directory_resource(path=VEIL_BUCKETS_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-                directory_resource(path=VEIL_BUCKET_LOG_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-                directory_resource(path=VEIL_DATA_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-                directory_resource(path=VEIL_BARMAN_DIR, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+                directory_resource(path=VEIL_BUCKETS_DIR),
+                directory_resource(path=VEIL_BUCKET_LOG_DIR),
+                directory_resource(path=VEIL_DATA_DIR),
+                directory_resource(path=VEIL_BARMAN_DIR),
             ]
     elif VEIL_ENV.name != VEIL_ENV.base_name:
         basic_layout_resources = [symbolic_link_resource(path=VEIL_ENV_DIR.parent / VEIL_ENV.name, to=VEIL_ENV_DIR)]

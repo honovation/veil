@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 
-from veil.environment import VEIL_ETC_DIR, CURRENT_USER, CURRENT_USER_GROUP
+from veil.environment import VEIL_ETC_DIR
 from veil.server.config import *
 from veil.server.os import *
 from veil.utility.setting import *
@@ -13,8 +13,8 @@ _config = None
 @composite_installer
 def qcloud_ocr_client_resource(appid, secret_id, secret_key):
     return [file_resource(path=VEIL_ETC_DIR / 'qcloud-ocr-client.cfg',
-                          content=render_config('qcloud-ocr-client.cfg.j2', appid=appid, secret_id=secret_id, secret_key=secret_key),
-                          owner=CURRENT_USER, group=CURRENT_USER_GROUP)]
+                          content=render_config('qcloud-ocr-client.cfg.j2', appid=appid, secret_id=secret_id,
+                                                secret_key=secret_key))]
 
 
 def load_qcloud_ocr_client_config():

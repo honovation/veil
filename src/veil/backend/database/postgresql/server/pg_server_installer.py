@@ -29,17 +29,15 @@ def postgresql_server_resource(config):
         os_package_resource(name='postgresql-{}'.format(config.version)),
         os_service_auto_starting_resource(name='postgresql', state='not_installed'),
         postgresql_cluster_resource(purpose=config.purpose, version=config.version, owner=config.owner, owner_password=config.owner_password),
-        directory_resource(path=pg_config_dir, owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+        directory_resource(path=pg_config_dir),
         file_resource(
             path=pg_config_dir / 'postgresql.conf',
-            content=render_config('postgresql.conf.j2', config=pg_config), owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+            content=render_config('postgresql.conf.j2', config=pg_config)),
         file_resource(path=pg_config_dir / 'pg_hba.conf', content=render_config('pg_hba.conf.j2', host=config.host, replication_user=config.replication_user,
-                                                                                replication_host=config.replication_host),
-                      owner=CURRENT_USER, group=CURRENT_USER_GROUP),
-        file_resource(path=pg_config_dir / 'pg_ident.conf', content=render_config('pg_ident.conf.j2'), owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+                                                                                replication_host=config.replication_host)),
+        file_resource(path=pg_config_dir / 'pg_ident.conf', content=render_config('pg_ident.conf.j2')),
         file_resource(path=pg_config_dir / 'postgresql-maintenance.cfg',
-                      content=render_config('postgresql-maintenance.cfg.j2', version=config.version, owner=config.owner, owner_password=config.owner_password),
-                      owner=CURRENT_USER, group=CURRENT_USER_GROUP),
+                      content=render_config('postgresql-maintenance.cfg.j2', version=config.version, owner=config.owner, owner_password=config.owner_password)),
         symbolic_link_resource(path=pg_data_dir / 'postgresql.conf', to=pg_config_dir / 'postgresql.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_hba.conf', to=pg_config_dir / 'pg_hba.conf'),
         symbolic_link_resource(path=pg_data_dir / 'pg_ident.conf', to=pg_config_dir / 'pg_ident.conf'),
@@ -55,7 +53,7 @@ def postgresql_server_resource(config):
         resources.extend([
             scws_resource(),
             zhparser_resource(reinstall=upgrading),
-            file_resource(path=custom_dict_install_path, content=custom_dict_content)
+            file_resource(path=custom_dict_install_path, content=custom_dict_content, owner='root', group='root')
         ])
     if upgrading:
         resources.append(postgresql_cluster_upgrading_resource(purpose=config.purpose, old_version=maintenance_config.version, new_version=config.version,
@@ -186,7 +184,7 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
     LOGGER.info('install postgresql cluster: for %(purpose)s, %(version)s', {'purpose': purpose, 'version': version})
     old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.parent), capture=True)
     shell_execute('chmod 0777 {}'.format(pg_data_dir.parent), capture=True)
-    install_resource(file_resource(path='/tmp/pg-{}-owner-password'.format(purpose), content=owner_password, owner=CURRENT_USER, group=CURRENT_USER_GROUP))
+    install_resource(file_resource(path='/tmp/pg-{}-owner-password'.format(purpose), content=owner_password))
     initdb_command = (
         '{pg_bin_dir}/initdb '
         '--data-checksums '

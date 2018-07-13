@@ -48,7 +48,7 @@ def install_db2_clidriver():
             set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)
         return
     download_db2_clidriver()
-    install_resource(file_resource(path=DB2_DRIVER_CONF_PATH, content=DB2_DRIVER_CONF_CONTENT, owner=CURRENT_USER, group=CURRENT_USER_GROUP))
-    shell_execute('ldconfig')
+    install_resource(file_resource(path=DB2_DRIVER_CONF_PATH, content=DB2_DRIVER_CONF_CONTENT))
+    shell_execute('sudo ldconfig')
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)

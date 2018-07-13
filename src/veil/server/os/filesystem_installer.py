@@ -11,7 +11,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 @atomic_installer
-def directory_resource(path, owner='root', group='root', mode=0755, recursive=False):
+def directory_resource(path, owner=None, group=None, mode=0755, recursive=False):
+    if not owner:
+        owner = CURRENT_USER
+    if not group:
+        group = CURRENT_USER_GROUP
     args = dict(path=path, owner=owner, group=group, mode=mode, recursive=recursive)
     dry_run_result = get_dry_run_result()
     if dry_run_result is None:
@@ -25,7 +29,7 @@ def directory_resource(path, owner='root', group='root', mode=0755, recursive=Fa
             dry_run_result[resource_name] = '-'
 
 
-def install_directory(is_dry_run, path, owner='root', group='root', mode=0755, recursive=False):
+def install_directory(is_dry_run, path, owner, group, mode, recursive):
     actions = []
     missing_paths = []
     if not os.path.exists(path):
@@ -34,12 +38,12 @@ def install_directory(is_dry_run, path, owner='root', group='root', mode=0755, r
             actions.append('RECURSIVELY-CREATE')
             if not is_dry_run:
                 LOGGER.info('creating directory recursively: %(path)s, %(mode)s', {'path': path, 'mode': oct(mode)})
-                os.makedirs(path, mode)
+                shell_execute('sudo mkdir -p -m {:o} {}'.format(mode, path), capture=True, debug=True)
         else:
             actions.append('CREATE')
             if not is_dry_run:
                 LOGGER.info('creating directory: %(path)s', {'path': path})
-                os.mkdir(path, mode)
+                shell_execute('sudo mkdir -m {:o} {}'.format(mode, path), capture=True, debug=True)
     if missing_paths:
         for mp in missing_paths:
             actions.extend(ensure_metadata(is_dry_run, mp, owner, group, mode=mode))
@@ -60,8 +64,13 @@ def list_missing_paths(path):
 
 
 @atomic_installer
-def file_resource(path, content, owner='root', group='root', mode=0644, keep_origin=False, cmd_run_after_updated=None):
-    args = dict(path=path, content=to_str(content), owner=owner, group=group, mode=mode, keep_origin=keep_origin, cmd_run_after_updated=cmd_run_after_updated)
+def file_resource(path, content, owner=None, group=None, mode=0644, keep_origin=False, cmd_run_after_updated=None):
+    if not owner:
+        owner = CURRENT_USER
+    if not group:
+        group = CURRENT_USER_GROUP
+    args = dict(path=path, content=to_str(content), owner=owner, group=group, mode=mode, keep_origin=keep_origin,
+                cmd_run_after_updated=cmd_run_after_updated)
     dry_run_result = get_dry_run_result()
     if dry_run_result is None:
         install_file(is_dry_run=False, **args)
@@ -74,7 +83,7 @@ def file_resource(path, content, owner='root', group='root', mode=0644, keep_ori
             dry_run_result[resource_name] = '-'
 
 
-def install_file(is_dry_run, path, content, owner='root', group='root', mode=0644, keep_origin=False, cmd_run_after_updated=None):
+def install_file(is_dry_run, path, content, owner, group, mode, keep_origin, cmd_run_after_updated):
     assert content is not None
     actions = []
     write = False
@@ -120,9 +129,13 @@ def install_file(is_dry_run, path, content, owner='root', group='root', mode=064
 
 
 @atomic_installer
-def symbolic_link_resource(path, to):
+def symbolic_link_resource(path, to, owner=None, group=None):
+    if not owner:
+        owner = CURRENT_USER
+    if not group:
+        group = CURRENT_USER_GROUP
     resource_name = 'symbolic_link?path={}'.format(path)
-    args = dict(path=path, to=to)
+    args = dict(path=path, to=to, owner=owner, group=group)
     dry_run_result = get_dry_run_result()
     if dry_run_result is None:
         install_symbolic_link(is_dry_run=False, **args)
@@ -131,24 +144,26 @@ def symbolic_link_resource(path, to):
         dry_run_result[resource_name] = action if action else '-'
 
 
-def install_symbolic_link(is_dry_run, path, to):
+def install_symbolic_link(is_dry_run, path, to, owner, group):
     action = None
     if os.path.lexists(path):
         if not os.path.islink(path):
-            raise Exception('trying to create a symlink with the same name as an existing file or directory: {}'.format(path))
+            raise Exception(
+                'trying to create a symlink with the same name as an existing file or directory: {}'.format(path))
         old_path = os.path.realpath(path)
         if old_path == to:
             return
         action = 'UPDATE'
         if not is_dry_run:
-            LOGGER.info("replacing old symlink: %(path)s from %(old_path)s to %(to)s", {'path': path, 'old_path': old_path, 'to': to})
+            LOGGER.info("replacing old symlink: %(path)s from %(old_path)s to %(to)s",
+                        {'path': path, 'old_path': old_path, 'to': to})
             shell_execute('sudo rm {}'.format(path), capture=True, debug=True)
     if not action:
         action = 'CREATE'
     if not is_dry_run:
         LOGGER.info('Creating symbolic: %(path)s to %(to)s', {'path': path, 'to': to})
         shell_execute('sudo ln -s {} {}'.format(to, path), capture=True, debug=True)
-        shell_execute('sudo chown -h {}:{} {}'.format(CURRENT_USER, CURRENT_USER_GROUP, path), capture=True, debug=True)
+        shell_execute('sudo chown -h {}:{} {}'.format(owner, group, path), capture=True, debug=True)
     return action
 
 

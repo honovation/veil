@@ -33,9 +33,10 @@ def chrome_driver_resource():
     local_path = DEPENDENCY_DIR / 'chromedriver_linux64_{}.zip'.format(RESOURCE_VERSION)
     if not os.path.exists(local_path):
         shell_execute('wget -c {} -O {}'.format(url, local_path))
-    shell_execute('unzip {} -d /usr/bin'.format(local_path))
-    shell_execute('mv {} {}-{}'.format(CHROMEDRIVER_PATH, CHROMEDRIVER_PATH, RESOURCE_VERSION))
-    shell_execute('chown {}:{} {}-{}'.format(os.environ.get('SUDO_UID'), os.environ.get('SUDO_GID'), CHROMEDRIVER_PATH, RESOURCE_VERSION))
-    shell_execute('ln -sf {}-{} {}'.format(CHROMEDRIVER_PATH, RESOURCE_VERSION, CHROMEDRIVER_PATH))
+    shell_execute('sudo unzip {} -d /usr/bin'.format(local_path))
+    shell_execute('sudo mv {} {}-{}'.format(CHROMEDRIVER_PATH, CHROMEDRIVER_PATH, RESOURCE_VERSION))
+    shell_execute(
+        'sudo chown {}:{} {}-{}'.format(CURRENT_USER, CURRENT_USER_GROUP, CHROMEDRIVER_PATH, RESOURCE_VERSION))
+    shell_execute('sudo ln -sf {}-{} {}'.format(CHROMEDRIVER_PATH, RESOURCE_VERSION, CHROMEDRIVER_PATH))
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
         set_resource_latest_version(RESOURCE_KEY, RESOURCE_VERSION)

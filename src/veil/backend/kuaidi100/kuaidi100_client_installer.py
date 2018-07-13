@@ -6,8 +6,7 @@ _config = None
 
 @composite_installer
 def kuaidi100_client_resource(api_id):
-    return [file_resource(path=VEIL_ETC_DIR / 'kuaidi100-client.cfg', content=render_config('kuaidi100-client.cfg.j2', api_id=api_id),
-                          owner=CURRENT_USER, group=CURRENT_USER_GROUP)]
+    return [file_resource(path=VEIL_ETC_DIR / 'kuaidi100-client.cfg', content=render_config('kuaidi100-client.cfg.j2', api_id=api_id))]
 
 
 def load_kuaidi100_client_config():

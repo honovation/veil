@@ -43,17 +43,22 @@ function veil_init {
     if [ ! -f $VEIL_HOME/env/.initialized ]; then
         if [[ "$VEIL_SERVER_NAME" == "development" || "$VEIL_SERVER_NAME" == "test" ]] ; then
             sudo apt -y install unzip wget python python-dev python-pip python-virtualenv
-            DEPENDENCY_DIR=/opt/share/dependency
+            SHARE_DIR=/opt/share
+            if [ ! -d $SHARE_DIR ]; then
+                sudo mkdir -m 0755 $SHARE_DIR
+                sudo chown -R $USER:$USER $SHARE_DIR
+            fi
+            DEPENDENCY_DIR=$SHARE_DIR/dependency
             if [ ! -d $DEPENDENCY_DIR ]; then
-                sudo mkdir -p $DEPENDENCY_DIR
+                mkdir -m 0755 $DEPENDENCY_DIR
             fi
-            DEPENDENCY_INSTALL_DIR=/opt/share/dependency-install
+            DEPENDENCY_INSTALL_DIR=$SHARE_DIR/dependency-install
             if [ ! -d $DEPENDENCY_INSTALL_DIR ]; then
-                sudo mkdir -p $DEPENDENCY_INSTALL_DIR
+                mkdir -m 0755 $DEPENDENCY_INSTALL_DIR
             fi
-            PYPI_ARCHIVE_DIR=/opt/share/pypi
+            PYPI_ARCHIVE_DIR=$SHARE_DIR/pypi
             if [ ! -d $PYPI_ARCHIVE_DIR ]; then
-                sudo mkdir -p $PYPI_ARCHIVE_DIR
+                mkdir -m 0755 $PYPI_ARCHIVE_DIR
             fi
             # upgrade before initializing veil app (veil init) which will create virtualenv and copy pip&wheel into virtual env.
             PYPI_INDEX_URL='https://pypi.doubanio.com/simple/'

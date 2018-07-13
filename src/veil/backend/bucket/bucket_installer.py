@@ -7,8 +7,7 @@ overridden_bucket_configs = {}
 
 @composite_installer
 def bucket_resource(purpose, config):
-    return [file_resource(path=VEIL_ETC_DIR / '{}-bucket.cfg'.format(purpose.replace('_', '-')), content=render_config('bucket.cfg.j2', config=config),
-                          owner=CURRENT_USER, group=CURRENT_USER_GROUP)]
+    return [file_resource(path=VEIL_ETC_DIR / '{}-bucket.cfg'.format(purpose.replace('_', '-')), content=render_config('bucket.cfg.j2', config=config))]
 
 
 def override_bucket_config(purpose, **overrides):

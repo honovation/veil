@@ -6,7 +6,7 @@ from ..log_shipper_setting import LOG_SHIPPER_CONF_PATH
 
 @composite_installer
 def log_shipper_resource(config):
-    return [file_resource(path=LOG_SHIPPER_CONF_PATH, content=render_config('log-shipper.cfg.j2', config=config), owner=CURRENT_USER, group=CURRENT_USER_GROUP)]
+    return [file_resource(path=LOG_SHIPPER_CONF_PATH, content=render_config('log-shipper.cfg.j2', config=config))]
 
 
 def load_log_shipper_config():

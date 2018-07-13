@@ -6,5 +6,5 @@ from veil.profile.installer import *
 def log_rotater_resource(config):
     return [
         os_package_resource(name='logrotate'),
-        file_resource(path=config.pop('config_file'), content=render_config('log-rotater.cfg.j2', config=config), owner=CURRENT_USER, group=CURRENT_USER_GROUP)
+        file_resource(path=config.pop('config_file'), content=render_config('log-rotater.cfg.j2', config=config))
     ]

@@ -6,8 +6,7 @@ _config = None
 
 @composite_installer
 def sendgrid_client_resource(username, password):
-    return [file_resource(path=VEIL_ETC_DIR / 'sendgrid-client.cfg', content=render_config('sendgrid-client.cfg.j2', username=username, password=password),
-                          owner=CURRENT_USER, group=CURRENT_USER_GROUP)]
+    return [file_resource(path=VEIL_ETC_DIR / 'sendgrid-client.cfg', content=render_config('sendgrid-client.cfg.j2', username=username, password=password))]
 
 
 def load_sendgrid_client_config():
