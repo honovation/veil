@@ -180,7 +180,7 @@ def download_python_package(name, version=None, url=None, **kwargs):
                 elif name == 'ibm-db':
                     shell_execute(
                         'pip download --timeout 180 {} -d {} {}'.format(pip_index_args, PYPI_ARCHIVE_DIR, name_term),
-                        capture=True, debug=True, **kwargs)
+                        expected_return_codes=(0, 1), capture=True, debug=True, **kwargs)
                 else:
                     shell_execute(
                         'pip download {} --timeout 30 -d {} {}'.format(pip_index_args, PYPI_ARCHIVE_DIR, name_term),
