@@ -229,10 +229,6 @@ case "$1" in
         shift
         exec veil environment backup create-host-backup $@
         ;;
-    restore-from-baseline)
-        shift
-        exec veil development baseline restore-from-baseline $@
-        ;;
     migrate)
         exec veil server in-service migrate
         ;;
