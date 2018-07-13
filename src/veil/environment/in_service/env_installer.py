@@ -105,17 +105,22 @@ def enable_vm_overcommit_memory_on_redis_server_running_hosts(veil_env_name):
 
 def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir=True):
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
-        source_dir = host.env_dir
-        rollback_backup_dir = '{}-backup'.format(source_dir)
-        excludes = []
+        rollback_backup_dir = '{}-backup'.format(host.env_dir)
+        excludes = ['--exclude "/{}"'.format(host.env_dir.relpathto(host.buckets_dir)),
+                    '--exclude "/{}"'.format(host.env_dir.relpathto(host.log_dir)),
+                    '--exclude "/{}"'.format(host.env_dir.relpathto(host.veil_home / 'baseline'))]
         if exclude_code_dir:
             excludes.append('--exclude "/{}"'.format(host.env_dir.relpathto(host.code_dir)))
         if exclude_data_dir:
             excludes.append('--exclude "/{}"'.format(host.env_dir.relpathto(host.data_dir)))
         with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
-            if not fabric.contrib.files.exists(source_dir):
+            if not fabric.contrib.files.exists(host.env_dir):
                 continue
-            fabric.api.sudo('rsync -ah --delete {} {}/ {}/'.format(' '.join(excludes), source_dir, rollback_backup_dir))
+            fabric.api.sudo(
+                'rsync -ah --delete {} {}/ {}/'.format(' '.join(excludes), host.env_dir, rollback_backup_dir))
+            rollback_buckets_backup_dir = '{}/{}'.format(rollback_backup_dir, host.env_dir.relpathto(host.buckets_dir))
+            fabric.api.sudo('rsync -ah --delete --link-dest={}/ {}/ {}/'.format(host.buckets_dir, host.buckets_dir,
+                                                                                rollback_buckets_backup_dir))
             fabric.api.run('touch {}'.format(host.rollbackable_tag_path))
 
 
