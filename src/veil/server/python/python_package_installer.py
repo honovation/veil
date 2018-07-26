@@ -150,11 +150,8 @@ def get_installed_package_remote_latest_version(name):
     if outdated_package_name2latest_version is None:
         outdated_package_name2latest_version = {}
         server = get_current_veil_server()
-        if name == 'tornado':
-            lines = shell_execute('pip list -l -o | grep Latest:', capture=True, debug=True).splitlines()
-        else:
-            pip_index_args = '-i {}'.format(server.pypi_index_url) if server.pypi_index_url else ''
-            lines = shell_execute('pip list {} -l -o | grep Latest:'.format(pip_index_args), capture=True, debug=True).splitlines()
+        pip_index_args = '-i {}'.format(server.pypi_index_url) if server.pypi_index_url else ''
+        lines = shell_execute('pip list {} -l -o | grep Latest:'.format(pip_index_args), capture=True, debug=True).splitlines()
         for line in lines:
             match = RE_OUTDATED_PACKAGE.match(line)
             outdated_package_name2latest_version[match.group(1)] = match.group(2)
@@ -174,10 +171,7 @@ def download_python_package(name, version=None, url=None, **kwargs):
                 shell_execute('pip download {} --timeout 30 -d {} {}'.format(pip_index_args, PYPI_ARCHIVE_DIR, url),
                               capture=True, debug=True, **kwargs)
             else:
-                if name == 'tornado':
-                    shell_execute('pip download --timeout 30 -d {} {}'.format(PYPI_ARCHIVE_DIR, name_term),
-                                  capture=True, debug=True, **kwargs)
-                elif name == 'ibm-db':
+                if name == 'ibm-db':
                     shell_execute(
                         'pip download --timeout 180 {} -d {} {}'.format(pip_index_args, PYPI_ARCHIVE_DIR, name_term),
                         expected_return_codes=(0, 1), capture=True, debug=True, **kwargs)
@@ -236,10 +230,7 @@ def install_python_package_remotely(name, version, url, **kwargs):
                 shell_execute('pip install {} --timeout 30 {}'.format(pip_index_args, url), capture=True, debug=True,
                               **kwargs)
             else:
-                if name == 'tornado':
-                    shell_execute('pip install --timeout 30 {}=={}'.format(name, version), capture=True, debug=True,
-                                  **kwargs)
-                elif name == 'ibm-db':
+                if name == 'ibm-db':
                     shell_execute('pip install --timeout 180 {} {}=={}'.format(pip_index_args, name, version),
                                   capture=True, debug=True, **kwargs)
                 else:
