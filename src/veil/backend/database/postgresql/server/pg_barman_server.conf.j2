@@ -3,9 +3,9 @@ active = true
 description = "Streaming archive and backup for {{ server_name }}"
 basebackup_retry_times = 3
 immediate_checkpoint = true
-minimum_redundancy = 3
-last_backup_maximum_age = 3 DAYS
-retention_policy = RECOVERY WINDOW OF 1 WEEKS
+minimum_redundancy = {{ 3 if is_prod else 1}}
+last_backup_maximum_age = {{ 3 if is_prod else 2}} DAYS
+retention_policy = RECOVERY WINDOW OF {{ 7 if is_prod else 2}} DAYS
 retention_policy_mode = auto
 wal_retention_policy = main
 conninfo = host={{ db_host }} user={{ db_user }} dbname=postgres
