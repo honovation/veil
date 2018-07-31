@@ -133,9 +133,10 @@ def get_local_os_package_versions(name):
     installed_version = None
     downloaded_version = None
     lines = shell_execute('sudo apt-cache policy {}'.format(name), capture=True, debug=True).splitlines()
-    if len(lines) >= 3:
-        installed_version = lines[1].split('Installed:')[1].strip()
+    index = next((index for index, line in enumerate(lines) if 'Installed:' in line), None)
+    if index is not None:
+        installed_version = lines[index].split('Installed:')[1].strip()
         if '(none)' == installed_version:
             installed_version = None
-        downloaded_version = lines[2].split('Candidate:')[1].strip()
+        downloaded_version = lines[index + 1].split('Candidate:')[1].strip()
     return installed_version, downloaded_version
