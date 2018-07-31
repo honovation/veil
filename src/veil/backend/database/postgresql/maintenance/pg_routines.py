@@ -15,10 +15,8 @@ LOGGER = logging.getLogger(__name__)
 
 @script('routines-up')
 def bring_up_routines(purpose):
-    @run_every('47 3 * * 2')
+    @run_every('47 3 * * *')
     def work():
-        if not VEIL_ENV.is_prod:
-            return
         vacuum_and_reindex_db(purpose)
 
     work()
