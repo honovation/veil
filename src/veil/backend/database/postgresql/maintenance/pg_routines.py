@@ -30,7 +30,7 @@ def vacuum_and_reindex_db(purpose):
     pg_bin_dir = get_pg_bin_dir(maintenance_config.version)
     env = os.environ.copy()
     env['PGPASSWORD'] = maintenance_config.owner_password
-    shell_execute('{pg_bin_dir}/vacuumdb -h {host} -p {port} -U {user} --all --full --analyze'.format(
+    shell_execute('{pg_bin_dir}/vacuumdb -h {host} -p {port} -U {user} -j `nproc` -a -F -z'.format(
         pg_bin_dir=pg_bin_dir,
         host=config.host,
         port=config.port,
