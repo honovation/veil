@@ -214,6 +214,8 @@ def download_invoice(request_seq, ebp_code, registration_no, username, tax_payer
         else:
             # download/query error or not create invoice before.
             response_obj.is_success = False
+            response_obj.error_code = response_obj.returnStateInfo.returnCode
+            response_obj.error_message = b64decode(response_obj.returnStateInfo.returnMessage).decode('UTF-8')
 
         if download_method == DOWNLOAD_METHOD_FOR_DOWNLOAD:
             if response_obj.Data.content:
