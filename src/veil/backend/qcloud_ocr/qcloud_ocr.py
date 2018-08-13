@@ -51,10 +51,17 @@ def get_ocr_result_by_url(bucket_name, url):
     try:
         response = requests.post(QCLOUD_OCR_URL, json=json_arguments, headers=additional_header)
         response.raise_for_status()
-    except Exception:
-        LOGGER.exception('Got exception when get image ocr result by url: %(json_arguments)s, %(response)s', {
+    except requests.HTTPError:
+        LOGGER.exception('Got http error when get image ocr result by url: %(json_arguments)s, %(response)s', {
             'json_arguments': json_arguments,
             'response': response.text if response else ''
+        })
+        raise ImageOCRException(response.text if response else '')
+    except Exception as e:
+        LOGGER.exception('Got exception when get image ocr result by url: %(json_arguments)s, %(message)s, %(response)s', {
+            'json_arguments': json_arguments,
+            'response': response.text if response else '',
+            'message': e.message
         })
         raise
 
