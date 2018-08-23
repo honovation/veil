@@ -96,7 +96,7 @@ def refund(out_refund_no, out_trade_no, total_fee, refund_fee, config):
                 'data': data,
                 'response': response.content
             })
-            raise WXPayRefundException(parsed_response.result_code, parsed_response.err_code_des)
+            raise WXPayRefundException(parsed_response.err_code, parsed_response.err_code_des)
 
         reasons = []
         if parsed_response.out_trade_no != out_trade_no:
@@ -175,7 +175,7 @@ def query_refund_status(out_refund_no, config):
                 'data': data,
                 'response': response.content
             })
-            raise WXPayRefundException(WXPAY_REFUND_ERROR, parsed_response.err_code_des)
+            raise WXPayRefundException(parsed_response.err_code, parsed_response.err_code_des)
 
         LOGGER.info('query wxpay refund status success: %(data)s, %(response)s', {'data': data, 'response': response.content})
         _refund_status = parsed_response.get('refund_status_0')
