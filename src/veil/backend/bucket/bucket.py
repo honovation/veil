@@ -47,6 +47,9 @@ class Bucket(object):
     def is_existing(self, key):
         raise NotImplementedError()
 
+    def get_urls(self, key):
+        raise NotImplementedError()
+
     @classmethod
     def validate_key(cls, key):
         raise NotImplementedError()
@@ -106,6 +109,12 @@ class FilesystemBucket(Bucket):
         path = self.base_directory.joinpath(key)
         assert path.abspath().startswith(self.base_directory.abspath())
         return path
+
+    def get_urls(self, key):
+        assert key is not None
+        if not self.to_path(key).exists():
+            return []
+        return [self.get_url(os.path.join(key, f)) for f in os.listdir(self.to_path(key)) if os.path.isfile(self.base_directory.joinpath(os.path.join(key, f)))]
 
     @classmethod
     def validate_key(cls, key):
