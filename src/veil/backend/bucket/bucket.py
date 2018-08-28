@@ -110,11 +110,11 @@ class FilesystemBucket(Bucket):
         assert path.abspath().startswith(self.base_directory.abspath())
         return path
 
-    def get_urls(self, key):
-        assert key is not None
-        if not self.to_path(key).exists():
+    def get_urls(self, dir):
+        assert dir is not None
+        if not self.to_path(dir).exists():
             return []
-        return [self.get_url(os.path.join(key, f)) for f in os.listdir(self.to_path(key)) if os.path.isfile(self.base_directory.joinpath(os.path.join(key, f)))]
+        return [self.get_url(os.path.join(dir, f)) for f in os.listdir(self.to_path(dir)) if os.path.isfile(self.base_directory.joinpath(os.path.join(dir, f)))]
 
     @classmethod
     def validate_key(cls, key):
