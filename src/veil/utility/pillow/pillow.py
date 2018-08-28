@@ -30,6 +30,10 @@ def save_image(image_path, bucket, key, format=None, quality=95, optimize=True, 
     _save_image(image, bucket, key, format, quality, optimize, limit_width, limit_height, width_scope, height_scope)
 
 
+def save_image_by_bytes(image, bucket, key, format=None, quality=95, optimize=True, limit_width=None, limit_height=None, width_scope=(), height_scope=()):
+    _save_image(image, bucket, key, format, quality, optimize, limit_width, limit_height, width_scope, height_scope)
+
+
 def save_image_by_base64(image_base64, bucket, key, format=None, quality=95, optimize=True, limit_width=None, limit_height=None, width_scope=(),
                          height_scope=()):
     image_base64 = image_base64.split('base64,')[1] if 'base64,' in image_base64 else image_base64

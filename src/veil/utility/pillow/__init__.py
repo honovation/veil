@@ -3,6 +3,7 @@ with veil_component.init_component(__name__):
     from pillow import open_image
     from pillow import save_image
     from pillow import save_image_by_base64
+    from pillow import save_image_by_bytes
     from pillow import crop_image
     from pillow import generate_thumbnail
     from pillow import generate_captcha_image_and_answer
@@ -14,6 +15,7 @@ with veil_component.init_component(__name__):
         open_image.__name__,
         save_image.__name__,
         save_image_by_base64.__name__,
+        save_image_by_bytes.__name__,
         crop_image.__name__,
         generate_thumbnail.__name__,
         generate_captcha_image_and_answer.__name__,
