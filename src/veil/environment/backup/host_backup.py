@@ -9,7 +9,7 @@ from .sync_to_backup_mirror import sync_to_backup_mirror
 
 LOGGER = logging.getLogger(__name__)
 
-KEEP_BACKUP_FOR_DAYS = 10 if VEIL_ENV.is_prod else 2
+KEEP_BACKUP_FOR_DAYS = 7 if VEIL_ENV.is_prod else 2
 
 
 @script('host-backup')
