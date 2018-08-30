@@ -287,19 +287,45 @@ class InvoiceItem(DictObject):
         self.type = item_type
         self.code = code
         self.name = name
-        self.quantity = abs(quantity)
+        self.__quantity = abs(quantity)
+        self.__tax_rate = tax_rate
         self.total = Decimal(total)
         if self.total < 0:
             self.quantity *= -1
-        self.price = None
-        self.tax_rate = tax_rate
-        self.tax_total = None
 
-        self.initialize()
+    @property
+    def quantity(self):
+        return self.__quantity
 
-    def initialize(self):
-        self.price = abs(self.total / self.quantity).quantize(Decimal('0.00000001'))
-        self.tax_total = round_money_half_up(self.tax_rate * (self.total/(1 + self.tax_rate)))
+    @quantity.setter
+    def quantity(self, value):
+        self.__quantity = value
+        self.price = self.cal_price()
+
+    @property
+    def total(self):
+        return self.__total
+
+    @total.setter
+    def total(self, value):
+        self.__total = value
+        self.price = self.cal_price()
+        self.tax_total = self.cal_tax_total()
+
+    @property
+    def tax_rate(self):
+        return self.__tax_rate
+
+    @tax_rate.setter
+    def tax_rate(self, value):
+        self.__tax_rate = value
+        self.tax_total = self.cal_tax_total()
+
+    def cal_tax_total(self):
+        return round_money_half_up(self.tax_rate * (self.total/(1 + self.tax_rate)))
+
+    def cal_price(self):
+        return abs(self.total / self.quantity).quantize(Decimal('0.00000001'))
 
 
 def record_request_and_response(req, rsp, interface_name, request_seq):
