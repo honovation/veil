@@ -256,9 +256,8 @@ def as_request_seq(request_id):
     return config.seq_prefix + str(md5(str(request_id)).hexdigest()[:3]) + str(request_id).zfill(REQUEST_SEQ_MAX_LENGTH - len(config.seq_prefix) - 3)
 
 
-class InvoiceBuyer(DictObject):
+class InvoiceBuyer(object):
     def __init__(self, type, id, name, mobile, telephone, address, bank_name, bank_account_no):
-        super(InvoiceBuyer, self).__init__()
         self.type = type
         self.id = id
         self.name = name
@@ -269,9 +268,8 @@ class InvoiceBuyer(DictObject):
         self.bank_account_no = bank_account_no
 
 
-class InvoiceTaxPayer(DictObject):
+class InvoiceTaxPayer(object):
     def __init__(self, id, name, auth_code, address, telephone, bank_name, bank_account_no):
-        super(InvoiceTaxPayer, self).__init__()
         self.id = id
         self.name = name
         self.auth_code = auth_code
@@ -281,9 +279,8 @@ class InvoiceTaxPayer(DictObject):
         self.bank_account_no = bank_account_no
 
 
-class InvoiceItem(DictObject):
+class InvoiceItem(object):
     def __init__(self, code, name, quantity, total, tax_rate=DEFAULT_TAX_RATE, item_type=INVOICE_ITEM_TYPE_NORMAL):
-        super(InvoiceItem, self).__init__()
         self.type = item_type
         self.code = code
         self.name = name
