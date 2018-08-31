@@ -107,6 +107,7 @@ def make_rollback_backup(veil_env_name, exclude_code_dir=False, exclude_data_dir
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
         rollback_backup_dir = '{}-backup'.format(host.env_dir)
         excludes = ['--exclude "/{}"'.format(host.env_dir.relpathto(host.buckets_dir)),
+                    '--exclude "/{}"'.format(host.env_dir.relpathto(host.barman_dir)),
                     '--exclude "/{}"'.format(host.env_dir.relpathto(host.log_dir)),
                     '--exclude "/{}"'.format(host.env_dir.relpathto(host.veil_home / 'baseline'))]
         if exclude_code_dir:
