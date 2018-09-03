@@ -4,7 +4,6 @@ with veil_component.init_component(__name__):
     from veil.environment import *
     from veil.utility.setting import *
     from veil.environment.networking import *
-    from veil.server.vcs import *
     from veil.environment.guard_setting import guard_program
     from veil.environment.barman_setting import barman_periodic_backup_program
     from veil.environment.barman_setting import barman_periodic_recover_program
