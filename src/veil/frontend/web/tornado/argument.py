@@ -58,10 +58,8 @@ def normalize_arguments():
 
     # parse request body in ``application/json`` as tornado's parse_body_arguments does not support it
     if request.headers.get('Content-Type', '').startswith('application/json'):
-        if not request.body:
-            raise HTTPError(httplib.UNSUPPORTED_MEDIA_TYPE, message=to_json(DictObject(msg='not supported request body')))
         try:
-            json_obj = from_json(request.body)
+            json_obj = from_json(request.body or '{}')
         except ValueError:
             raise HTTPError(httplib.UNSUPPORTED_MEDIA_TYPE, message=to_json(DictObject(msg='not supported request body')))
         else:
