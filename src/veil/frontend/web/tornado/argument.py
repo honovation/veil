@@ -12,6 +12,7 @@ remove arguments with blank values
 """
 from __future__ import unicode_literals, print_function, division
 import logging
+import httplib
 import contextlib
 import re
 import traceback
@@ -20,6 +21,7 @@ from veil.model.command import *
 from veil.utility.encoding import *
 from veil.utility.json import *
 from .context import get_current_http_request
+from .error import HTTPError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -56,7 +58,14 @@ def normalize_arguments():
 
     # parse request body in ``application/json`` as tornado's parse_body_arguments does not support it
     if request.headers.get('Content-Type', '').startswith('application/json'):
-        json_arguments = objectify(from_json(request.body or '{}'))
+        if not request.body:
+            raise HTTPError(httplib.UNSUPPORTED_MEDIA_TYPE, message=to_json(DictObject(msg='not supported request body')))
+        try:
+            json_obj = from_json(request.body)
+        except ValueError:
+            raise HTTPError(httplib.UNSUPPORTED_MEDIA_TYPE, message=to_json(DictObject(msg='not supported request body')))
+        else:
+            json_arguments = objectify(json_obj)
         if json_arguments:
             value_contained_in_array = json_arguments.pop('value_contained_in_array', False)
             for name, value in json_arguments.items():
