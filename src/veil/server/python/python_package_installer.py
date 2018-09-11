@@ -1,12 +1,10 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import re
-import json
 import imp
 from pkg_resources import safe_name, safe_version, parse_version, to_filename
 from veil_component import VEIL_ENV
 from veil.environment import PYPI_ARCHIVE_DIR, get_current_veil_server, get_current_veil_env
-from veil.model.collection import *
 from veil.utility.shell import *
 from veil_installer import *
 from veil.frontend.cli import *
@@ -141,20 +139,6 @@ def get_python_package_installed_version(name, from_cache=True):
             if len(parts) == 2:
                 installed_package_name2version[parts[0]] = parts[1]
     return installed_package_name2version.get(safe_name(name))
-
-
-outdated_package_name2latest_version = None
-
-
-def get_installed_package_remote_latest_version(name):
-    global outdated_package_name2latest_version
-    if outdated_package_name2latest_version is None:
-        server = get_current_veil_server()
-        pip_index_args = '-i {}'.format(server.pypi_index_url) if server.pypi_index_url else ''
-        output = shell_execute('pip list {} -l -o --format=json'.format(pip_index_args), capture=True, debug=True)
-        outdated_packages = objectify(json.loads(output.splitlines()[0]))
-        outdated_package_name2latest_version = {p.name: p.latest_version for p in outdated_packages}
-    return outdated_package_name2latest_version.get(name)
 
 
 def download_python_package(name, version=None, url=None, **kwargs):
