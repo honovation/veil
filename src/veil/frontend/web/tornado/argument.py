@@ -59,15 +59,15 @@ def normalize_arguments():
     # parse request body in ``application/json`` as tornado's parse_body_arguments does not support it
     if request.headers.get('Content-Type', '').startswith('application/json'):
         try:
-            json_obj = from_json(request.body or '{}')
+            json_arguments = objectify(from_json(request.body or '{}'))
         except ValueError:
-            raise HTTPError(httplib.UNSUPPORTED_MEDIA_TYPE, message=to_json(DictObject(msg='not supported request body')))
+            raise HTTPError(httplib.UNSUPPORTED_MEDIA_TYPE, message=to_json(dict(msg='invalid request body: not a well-formed json')))
         else:
-            json_arguments = objectify(json_obj)
-        if json_arguments:
-            value_contained_in_array = json_arguments.pop('value_contained_in_array', False)
-            for name, value in json_arguments.items():
-                request.arguments.setdefault(name, []).extend(value if value_contained_in_array else [value])
+            if not isinstance(json_arguments, dict):
+                raise HTTPError(httplib.BAD_REQUEST, message=to_json(dict(msg='invalid request body: not a json object')))
+        value_contained_in_array = json_arguments.pop('value_contained_in_array', False)
+        for name, value in json_arguments.items():
+            arguments.setdefault(name, []).extend(value if value_contained_in_array else [value])
     yield
 
 
