@@ -1,10 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 import re
+import json
 import imp
 from pkg_resources import safe_name, safe_version, parse_version, to_filename
 from veil_component import VEIL_ENV
 from veil.environment import PYPI_ARCHIVE_DIR, get_current_veil_server, get_current_veil_env
+from veil.model.collection import *
 from veil.utility.shell import *
 from veil_installer import *
 from veil.frontend.cli import *
@@ -141,20 +143,17 @@ def get_python_package_installed_version(name, from_cache=True):
     return installed_package_name2version.get(safe_name(name))
 
 
-RE_OUTDATED_PACKAGE = re.compile(r'^(.+) \(Current: .+ Latest: (.+)\)$')
 outdated_package_name2latest_version = None
 
 
 def get_installed_package_remote_latest_version(name):
     global outdated_package_name2latest_version
     if outdated_package_name2latest_version is None:
-        outdated_package_name2latest_version = {}
         server = get_current_veil_server()
         pip_index_args = '-i {}'.format(server.pypi_index_url) if server.pypi_index_url else ''
-        lines = shell_execute('pip list {} -l -o | grep Latest:'.format(pip_index_args), capture=True, debug=True).splitlines()
-        for line in lines:
-            match = RE_OUTDATED_PACKAGE.match(line)
-            outdated_package_name2latest_version[match.group(1)] = match.group(2)
+        output = shell_execute('pip list {} -l -o --format=json'.format(pip_index_args), capture=True, debug=True)
+        outdated_packages = objectify(json.loads(output.splitlines()[0]))
+        outdated_package_name2latest_version = {p.name: p.latest_version for p in outdated_packages}
     return outdated_package_name2latest_version.get(name)
 
 
