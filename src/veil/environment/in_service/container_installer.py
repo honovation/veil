@@ -178,7 +178,7 @@ def veil_container_init_resource(server):
         dry_run_result[key] = 'INSTALL'
         return
     required_packages = ['unattended-upgrades', 'update-notifier-common', 'iptables', 'git', 'language-pack-en', 'unzip', 'wget', 'python', 'python-dev',
-                         'python-pip', 'python-virtualenv']
+                         'python-virtualenv']
     with fabric.api.settings(host_string=server.deploys_via, user=server.ssh_user, port=server.ssh_port, disable_known_hosts=True):
         fabric.api.sudo('apt update')
         fabric.api.sudo('apt -y install {}'.format(' '.join(required_packages)))

@@ -281,7 +281,7 @@ def veil_host_init_resource(host):
         fabric.api.sudo('apt update')
         fabric.api.sudo('apt -y upgrade')
         required_packages = ['unattended-upgrades', 'update-notifier-common', 'iptables', 'git', 'language-pack-en', 'unzip', 'wget', 'python', 'python-dev',
-                             'python-pip', 'python-virtualenv']
+                             'python-virtualenv']
         fabric.api.sudo('apt -y install {}'.format(' '.join(required_packages)))
 
         fabric.api.sudo('timedatectl set-timezone {}'.format(host.timezone))
