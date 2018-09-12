@@ -124,8 +124,8 @@ def update_os_package_catalogue():
             apt_get_update_executed = True
 
 
-def to_resource_key(pip_package):
-    return 'veil.server.os.os_package_resource?{}'.format(pip_package)
+def to_resource_key(name):
+    return 'veil.server.os.os_package_resource?{}'.format(name)
 
 
 def get_local_os_package_versions(name):

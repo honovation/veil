@@ -416,11 +416,11 @@ def enable_external_access(veil_env_name):
 
 
 @script('upgrade-env-pip')
-def upgrade_env_pip(veil_env_name, setuptools_version, wheel_version, pip_version):
+def upgrade_env_pip(veil_env_name, version):
     for host in unique(list_veil_hosts(veil_env_name), id_func=lambda h: h.base_name):
         with fabric.api.settings(host_string=host.deploys_via, user=host.ssh_user, port=host.ssh_port):
             with fabric.api.cd(host.veil_home):
-                fabric.api.sudo('veil :{} upgrade-pip {} {} {}'.format(host.VEIL_ENV.name, setuptools_version, wheel_version, pip_version))
+                fabric.api.sudo('veil :{} upgrade-pip {}'.format(host.VEIL_ENV.name, version))
 
 
 def get_deployed_or_patched_at():

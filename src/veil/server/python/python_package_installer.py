@@ -236,12 +236,10 @@ def install_python_package(name, version, url=None, **kwargs):
 
 
 @script('upgrade-pip')
-def upgrade_pip(setuptools_version, wheel_version, pip_version):
+def upgrade_pip(version):
     env = get_current_veil_env()
     pip_index_args = '-i {}'.format(env.pypi_index_url) if env.pypi_index_url else ''
-    shell_execute('pip install {} --upgrade pip=={}'.format(pip_index_args, pip_version), capture=True, debug=True)
-    shell_execute('pip install {} --upgrade setuptools=={}'.format(pip_index_args, setuptools_version), capture=True, debug=True)
-    shell_execute('pip install {} --upgrade wheel=={}'.format(pip_index_args, wheel_version), capture=True, debug=True)
+    shell_execute('pip install {} --upgrade pip=={}'.format(pip_index_args, version), capture=True, debug=True)
 
 
 @atomic_installer
