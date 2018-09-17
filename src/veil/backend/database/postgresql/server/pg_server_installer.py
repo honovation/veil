@@ -2,8 +2,9 @@ from __future__ import unicode_literals, print_function, division
 import sys
 from decimal import Decimal
 from veil.profile.installer import *
-from ...postgresql_setting import get_pg_config_dir, get_pg_data_dir, get_pg_bin_dir, get_pg_lib_dir
-from .pg_fts_chinese import scws_resource, zhparser_resource
+from ...postgresql_setting import get_pg_config_dir, get_pg_data_dir, get_pg_bin_dir, get_pg_lib_dir, \
+    get_pg_tsearch_data_dir
+from .pg_fts_chinese import scws_resource, zhparser_resource, scws_dict_resource
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,14 +46,16 @@ def postgresql_server_resource(config):
     if upgrading or config.enable_chinese_fts:
         resources.append(os_package_resource(name='postgresql-server-dev-{}'.format(config.version)))
     if config.enable_chinese_fts:
-        pg_major_version = config.version.split('.', 1)[0]
-        custom_dict_install_path = '/usr/share/postgresql/{}/tsearch_data/dict.{}.txt'.format(pg_major_version,
-                                                                                              config.purpose)
+        pg_tsearch_data_dir = get_pg_tsearch_data_dir(config.version)
+        custom_dict_install_path = pg_tsearch_data_dir / 'dict.{}.txt'.format(config.purpose)
         custom_dict_path = VEIL_HOME / 'dict.txt'
         custom_dict_content = render_config(custom_dict_path) if custom_dict_path.exists() else ''
+        pg_lib_dir = get_pg_lib_dir(config.version)
+        pg_bin_dir = get_pg_bin_dir(config.version)
         resources.extend([
-            scws_resource(),
-            zhparser_resource(pg_lib_path=get_pg_lib_dir(config.version)),
+            scws_resource(pg_tsearch_data_dir=pg_tsearch_data_dir),
+            zhparser_resource(pg_lib_dir=pg_lib_dir, pg_bin_dir=pg_bin_dir, pg_tsearch_data_dir=pg_tsearch_data_dir),
+            scws_dict_resource(pg_tsearch_data_dir=pg_tsearch_data_dir),
             file_resource(path=custom_dict_install_path, content=custom_dict_content, owner='root', group='root')
         ])
     if upgrading:

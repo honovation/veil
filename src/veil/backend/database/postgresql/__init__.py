@@ -12,6 +12,7 @@ with veil_component.init_component(__name__):
 
     from .server.pg_fts_chinese import scws_resource
     from .server.pg_fts_chinese import zhparser_resource
+    from .server.pg_fts_chinese import scws_dict_resource
 
     __all__ = [
         postgresql_server_resource.__name__,
@@ -26,6 +27,7 @@ with veil_component.init_component(__name__):
 
         scws_resource.__name__,
         zhparser_resource.__name__,
+        scws_dict_resource.__name__,
     ]
 
     def init():

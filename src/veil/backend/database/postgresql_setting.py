@@ -62,3 +62,7 @@ def get_pg_bin_dir(version):
 
 def get_pg_lib_dir(version):
     return as_path('/usr/lib/postgresql/{}/lib'.format(version))
+
+
+def get_pg_tsearch_data_dir(version):
+    return as_path('/usr/share/postgresql/{}/tsearch_data'.format(version))
