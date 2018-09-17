@@ -5,12 +5,11 @@ import sys
 
 from veil.environment import get_application
 
-THRESHOLD = 800
-GOAL = 800
+THRESHOLD = 1000
+GOAL = 1000
 
 WHITE_LIST = {
     'veil.environment.in_service',
-    'veil.frontend.web.tornado',  # copied from somewhere
 }
 
 
