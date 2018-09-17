@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function, division
 import sys
 from decimal import Decimal
 from veil.profile.installer import *
-from ...postgresql_setting import get_pg_config_dir, get_pg_data_dir, get_pg_bin_dir
+from ...postgresql_setting import get_pg_config_dir, get_pg_data_dir, get_pg_bin_dir, get_pg_lib_dir
 from .pg_fts_chinese import scws_resource, zhparser_resource
 
 LOGGER = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ def postgresql_server_resource(config):
         custom_dict_content = render_config(custom_dict_path) if custom_dict_path.exists() else ''
         resources.extend([
             scws_resource(),
-            zhparser_resource(reinstall=upgrading),
+            zhparser_resource(pg_lib_path=get_pg_lib_dir(config.version)),
             file_resource(path=custom_dict_install_path, content=custom_dict_content, owner='root', group='root')
         ])
     if upgrading:
