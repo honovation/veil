@@ -3,8 +3,7 @@ from veil.profile.installer import *
 
 
 def postgresql_program(purpose, version, host, port, owner, owner_password, user, password, log_min_duration_statement,
-                       log_filename=None, enable_chinese_fts=False, replication_user=None, barman_host=None, replication_hosts=None,
-                       **more_config):
+                       log_filename=None, enable_chinese_fts=False, replication_user=None, barman_host=None, replication_hosts=(), **more_config):
     config = {
         'purpose': purpose,
         'version': version,
