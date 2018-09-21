@@ -35,7 +35,7 @@ def postgresql_server_resource(config):
             path=pg_config_dir / 'postgresql.conf',
             content=render_config('postgresql.conf.j2', config=pg_config)),
         file_resource(path=pg_config_dir / 'pg_hba.conf', content=render_config('pg_hba.conf.j2', host=config.host, replication_user=config.replication_user,
-                                                                                replication_host=config.replication_host)),
+                                                                                barman_host=config.barman_host, replication_hosts=config.replication_hosts)),
         file_resource(path=pg_config_dir / 'pg_ident.conf', content=render_config('pg_ident.conf.j2')),
         file_resource(path=pg_config_dir / 'postgresql-maintenance.cfg',
                       content=render_config('postgresql-maintenance.cfg.j2', version=config.version, owner=config.owner, owner_password=config.owner_password)),
