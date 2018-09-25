@@ -182,7 +182,9 @@ def process_logistics_notification(arguments):
     rejected = arguments.data.scanType == NOTIFICATION_REJECT_SCAN_TYPE
     sender_signed = False
     if signed:
-        status = query_logistics_status(arguments.data.billCode)[arguments.data.billCode]
+        status = query_logistics_status(arguments.data.billCode).get(arguments.data.billCode)
+        if not status:
+            return fail_response
         if any(t.status_code == RETURN_SCAN_TYPE for t in status.traces):
             signed = False
             rejected = False
