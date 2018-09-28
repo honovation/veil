@@ -31,8 +31,8 @@ def scws_dict_resource(pg_tsearch_data_dir):
         if is_downloading_while_dry_run():
             download_scws_dict()
         dry_run_result['scws_dict'] = '-' if is_scws_dict_installed(pg_tsearch_data_dir) else 'INSTALL'
-    else:
-        install_scws_dict(pg_tsearch_data_dir)
+        return
+    install_scws_dict(pg_tsearch_data_dir)
 
 
 def download_scws_dict():
@@ -72,8 +72,8 @@ def scws_resource(pg_tsearch_data_dir):
         if is_downloading_while_dry_run():
             download_scws()
         dry_run_result['scws'] = '-' if is_scws_installed() else 'INSTALL'
-    else:
-        install_scws(pg_tsearch_data_dir)
+        return
+    install_scws(pg_tsearch_data_dir)
 
 
 def download_scws():
@@ -111,8 +111,8 @@ def zhparser_resource(pg_lib_dir, pg_bin_dir, pg_tsearch_data_dir):
         if is_downloading_while_dry_run():
             download_zhparser()
         dry_run_result['zhparser'] = '-' if is_zhparser_installed(pg_lib_dir) else 'INSTALL'
-    else:
-        install_zhparser(pg_lib_dir, pg_bin_dir, pg_tsearch_data_dir)
+        return
+    install_zhparser(pg_lib_dir, pg_bin_dir, pg_tsearch_data_dir)
 
 
 def download_zhparser():

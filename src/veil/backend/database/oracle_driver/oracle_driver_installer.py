@@ -18,10 +18,11 @@ def oracle_driver_resource():
         dry_run_result['oracle-driver'] = '-' if is_oracle_instantclient_installed() else 'INSTALL'
     else:
         install_oracle_instantclient()
-        env = os.environ.copy()
-        env['ORACLE_HOME'] = ORACLE_HOME
-        env['LD_LIBRARY_PATH'] = '{}:{}'.format(env['LD_LIBRARY_PATH'], ORACLE_HOME) if env.get('LD_LIBRARY_PATH') else ORACLE_HOME
-        install_resource(python_package_resource(name='cx_Oracle', reload_after_install=True, env=env))
+
+    env = os.environ.copy()
+    env['ORACLE_HOME'] = ORACLE_HOME
+    env['LD_LIBRARY_PATH'] = '{}:{}'.format(env['LD_LIBRARY_PATH'], ORACLE_HOME) if env.get('LD_LIBRARY_PATH') else ORACLE_HOME
+    install_resource(python_package_resource(name='cx_Oracle', reload_after_install=True, env=env))
 
 
 def download_oracle_instantclient():
