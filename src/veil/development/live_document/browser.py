@@ -12,7 +12,6 @@ from veil.development.test import *
 from .live_document import require_current_context_being
 from .live_document import document_statement
 
-
 LOGGER = logging.getLogger(__name__)
 current_http_server = None
 webdriver = None
@@ -150,13 +149,13 @@ else:
         old_cwd = os.getcwd()
         os.chdir('/tmp')
         try:
-            chromium_binary_location = '/usr/bin/chromium-browser'
             options = selenium.webdriver.ChromeOptions()
             options.add_argument('incognito')
             options.add_argument('auto-open-devtools-for-tabs')
+            chromium_binary_location = '/usr/bin/chromium-browser'
             if os.path.exists(chromium_binary_location):
                 options.binary_location = chromium_binary_location
-            webdriver = selenium.webdriver.Chrome(options=options)
+            webdriver = selenium.webdriver.Chrome('/usr/lib/chromium-browser/chromedriver', options=options)
             atexit.register(webdriver.close)  # only close when we finished everything
             get_executing_test().addCleanup(webdriver.delete_all_cookies)  # delete all cookies to isolate document-checking
             return webdriver

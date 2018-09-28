@@ -2,7 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 
-
+# Oracle Instant Client "Basic Package": https://www.oracle.com/technetwork/topics/linuxx86-64soft-092277.html
 ORACLE_HOME = DEPENDENCY_INSTALL_DIR / 'instantclient_12_2'
 ORACLE_DRIVER_CONF_PATH = as_path('/etc/ld.so.conf.d/oracle_driver.conf')
 RESOURCE_KEY = 'veil.backend.database.oracle_driver.oracle_driver_resource'

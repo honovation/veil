@@ -1,7 +1,8 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
 
-
+# IBM Data Server Driver for ODBC and CLI (CLI Driver):
+#       https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.apdv.cli.doc/doc/t0023867.html
 IBM_DB_HOME = DEPENDENCY_INSTALL_DIR / 'db2-clidriver'
 DB2_DRIVER_CONF_PATH = '/etc/ld.so.conf.d/db2-clidriver.conf'
 DB2_DRIVER_CONF_CONTENT = '{}/lib'.format(IBM_DB_HOME)
@@ -11,8 +12,6 @@ RESOURCE_VERSION = '9.7'
 
 @atomic_installer
 def db2_driver_resource():
-    env = os.environ.copy()
-    env['IBM_DB_HOME'] = IBM_DB_HOME
     dry_run_result = get_dry_run_result()
     if dry_run_result is not None:
         if is_downloading_while_dry_run():
@@ -23,6 +22,8 @@ def db2_driver_resource():
         install_resource(os_package_resource(name='libstdc++-6-pic'))
         install_db2_clidriver()
 
+    env = os.environ.copy()
+    env['IBM_DB_HOME'] = IBM_DB_HOME
     install_resource(python_package_resource(name='ibm_db', env=env))
 
 

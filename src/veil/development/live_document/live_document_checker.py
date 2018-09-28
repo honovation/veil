@@ -5,7 +5,6 @@ from veil.environment import VEIL_HOME
 from veil.utility.encoding import *
 from veil.development.test import *
 
-
 LOGGER = logging.getLogger(__name__)
 
 

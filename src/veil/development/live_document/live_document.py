@@ -9,6 +9,7 @@ from veil.development.test import *
 root_context = {}
 contexts = [lambda statement_name, args: root_context[statement_name](*args)]
 
+
 def register_document_statement(statement_name, statement_executor):
     root_context[statement_name] = statement_executor
 
@@ -31,6 +32,7 @@ def document_statement(statement_name):
         return wrapper
     return register
 
+
 document_statement('创建')(require_fixture)
 document_statement('选择')(require_fixture)
 
@@ -42,4 +44,3 @@ def require_current_context_being(new_context):
         yield
     finally:
         contexts.pop()
-
