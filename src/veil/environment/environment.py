@@ -11,8 +11,7 @@ from veil_component import *
 
 DEFAULT_DNS_SERVERS = ('119.29.29.29', '114.114.114.114', '114.114.115.115', '182.254.116.116')
 
-DEPENDENCY_URL = 'http://dependency-veil.qiniudn.com'
-DEPENDENCY_SSL_URL = 'https://dependency-veil.qiniudn.com'
+DEPENDENCY_URL = 'https://veil-dependency-1257735614.cos.ap-beijing.myqcloud.com'
 APT_URL = 'https://mirrors.aliyun.com/ubuntu/'
 PYPI_INDEX_URL = 'https://pypi.doubanio.com/simple/'  # alternative: https://mirrors.aliyun.com/pypi/simple/
 

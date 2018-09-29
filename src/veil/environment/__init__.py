@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from .environment import DEFAULT_DNS_SERVERS
 from .environment import DEPENDENCY_URL
-from .environment import DEPENDENCY_SSL_URL
 from .environment import SHARE_DIR
 from .environment import DEPENDENCY_DIR
 from .environment import DEPENDENCY_INSTALL_DIR
