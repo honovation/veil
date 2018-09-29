@@ -10,13 +10,11 @@ from veil_installer import *
 
 
 AISINO_JNI_FILE_NAME = 'libSOFJni_x64.so'
-AISINO_LIBRARY_CONFIG_FILE_NAME = 'pkcs7.properties'
 AISINO_JAR_FILE_NAME = 'aisino-1.2.jar'
 AISINO_LIBRARY_PATH = DEPENDENCY_DIR / 'aisino'
 AISINO_JAR_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_JAR_FILE_NAME
-AISINO_LIBRARY_CONFIG_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_LIBRARY_CONFIG_FILE_NAME
 AISINO_JNI_FILE_PATH = AISINO_LIBRARY_PATH / AISINO_JNI_FILE_NAME
-AISINO_PLATFORM_CER_FILE_NAME = '51fapiao.cer'
+AISINO_LIBRARY_CONFIG_FILE_PATH = AISINO_LIBRARY_PATH / 'pkcs7.properties'
 RESOURCE_KEY = 'veil.backend.aisino.aisino_invoice_resource'
 REQUEST_AND_RESPONSE_LOG_DIRECTORY_BASE = VEIL_BUCKET_LOG_DIR / 'aisino'
 RESOURCE_VERSION = '1.0'
@@ -77,10 +75,10 @@ def install_aisino_library():
 def install_aisino_jni_library():
     url = '{}/{}'.format(DEPENDENCY_URL, AISINO_JNI_FILE_NAME)
     if not AISINO_JNI_FILE_PATH.exists():
-        shell_execute('wget --no-check-certificate -c {} -O {}'.format(url, AISINO_JNI_FILE_PATH))
+        shell_execute('wget -c {} -O {}'.format(url, AISINO_JNI_FILE_PATH))
 
 
 def install_aisino_jar():
     url = '{}/{}'.format(DEPENDENCY_URL, AISINO_JAR_FILE_NAME)
     if not AISINO_JAR_FILE_PATH.exists():
-        shell_execute('wget --no-check-certificate -c {} -O {}'.format(url, AISINO_JAR_FILE_PATH))
+        shell_execute('wget -c {} -O {}'.format(url, AISINO_JAR_FILE_PATH))
