@@ -9,10 +9,11 @@ input {
     redis {
         host => "{{ log_buffer_redis_host }}"
         port => {{ log_buffer_redis_port }}
-        key => "lines"
+        key => "barman_log"
         data_type => "list"
-        codec => "line"
+        codec => "plain"
         add_field => {"@type" => "barman"}
+        add_field => {"@title" => "barman: %{message}"}
     }
     redis {
         host => "{{ log_buffer_redis_host }}"
@@ -28,6 +29,28 @@ input {
     }
 }
 filter {
+     if [@type] == "barman" {
+        if "INFO:" in [message] {
+            mutate {
+                add_field => {"@fields.level" => "INFO"}
+            }
+        }
+        if "WARNING:" in [message] {
+            mutate {
+                add_field => {"@fields.level" => "WARNING"}
+            }
+        }
+        if "ERROR:" in [message] {
+            mutate {
+                add_field => {"@fields.level" => "ERROR"}
+            }
+        }
+        if "CRITICAL:" in [message] {
+            mutate {
+                add_field => {"@fields.level" => "ERROR"}
+            }
+        }
+    }
     if [@type] == "postgresql" {
         csv {
             columns => ["log_time","user_name","database_name","process_id","connection_from","session_id",
