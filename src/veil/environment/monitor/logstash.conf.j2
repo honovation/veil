@@ -9,6 +9,14 @@ input {
     redis {
         host => "{{ log_buffer_redis_host }}"
         port => {{ log_buffer_redis_port }}
+        key => "lines"
+        data_type => "list"
+        codec => "line"
+        add_field => {"@type" => "barman"}
+    }
+    redis {
+        host => "{{ log_buffer_redis_host }}"
+        port => {{ log_buffer_redis_port }}
         key => "postgresql"
         data_type => "list"
         codec => multiline {
