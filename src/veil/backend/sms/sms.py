@@ -22,6 +22,7 @@ SENT_SMS_RECORD_ALIVE_IN_SECONDS = 60 * 60
 SMS_PROVIDER_BALANCE_THRESHOLD = 2000
 SMS_PROVIDER_BALANCE_ALIVE_IN_SECONDS = 60 * 60 * 36
 SMS_PROVIDER_SENT_QUANTITY_ALIVE_IN_SECONDS = 60 * 60 * 36
+SMS_SENT_QUANTITY_DIFF_THRESHOLD = 10
 
 
 def sent_sms_redis_key(mobile, sms_code):
@@ -272,7 +273,7 @@ class SMService(object):
             self.set_balance(balance)
             last_balance = balance
         provider_sent_quantity = last_balance - balance
-        if provider_sent_quantity != sent_quantity:
+        if abs(provider_sent_quantity - sent_quantity) >= SMS_SENT_QUANTITY_DIFF_THRESHOLD:
             LOGGER.info('VEIL SMS RECONCILIATION: %(provider_sent_quantity)s, %(sent_quantity)s, %(diff)s', {
                 'provider_sent_quantity': provider_sent_quantity,
                 'sent_quantity': sent_quantity,
