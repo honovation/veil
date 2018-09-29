@@ -38,16 +38,6 @@ def download_oracle_instantclient():
             else:
                 break
     shell_execute('unzip {} -d {}'.format(basic_local_path, DEPENDENCY_INSTALL_DIR))
-    sdk_local_path = DEPENDENCY_DIR / 'instantclient-sdk-linux.x64-{}.zip'.format(RESOURCE_VERSION)
-    if not os.path.exists(sdk_local_path):
-        while 1:
-            try:
-                shell_execute('wget --no-check-certificate -c {}/instantclient-sdk-linux.x64-{}.zip -O {}'.format(DEPENDENCY_URL, RESOURCE_VERSION, sdk_local_path))
-            except Exception as e:
-                print(e.message)
-            else:
-                break
-    shell_execute('unzip {} -d {}'.format(sdk_local_path, DEPENDENCY_INSTALL_DIR))
 
 
 def is_oracle_instantclient_installed():
