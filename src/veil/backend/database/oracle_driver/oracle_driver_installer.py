@@ -32,7 +32,7 @@ def download_oracle_instantclient():
     if not os.path.exists(basic_local_path):
         while 1:
             try:
-                shell_execute('wget --no-check-certificate -c {}/instantclient-basic-linux.x64-{}.zip -O {}'.format(DEPENDENCY_URL, RESOURCE_VERSION, basic_local_path))
+                shell_execute('wget -c {}/instantclient-basic-linux.x64-{}.zip -O {}'.format(DEPENDENCY_URL, RESOURCE_VERSION, basic_local_path))
             except Exception as e:
                 print(e.message)
             else:
@@ -41,7 +41,8 @@ def download_oracle_instantclient():
 
 
 def is_oracle_instantclient_installed():
-    return ORACLE_DRIVER_CONF_PATH.exists() and ORACLE_DRIVER_CONF_PATH.text() == ORACLE_HOME
+    return (ORACLE_HOME / 'libclntsh.so').exists() and ORACLE_DRIVER_CONF_PATH.exists() \
+           and ORACLE_DRIVER_CONF_PATH.text() == ORACLE_HOME
 
 
 def install_oracle_instantclient():

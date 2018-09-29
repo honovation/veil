@@ -37,6 +37,8 @@ def download_db2_clidriver():
 
 
 def is_db2_clidriver_installed():
+    if not os.path.exists(DB2_DRIVER_CONF_CONTENT):
+        return False
     if not os.path.exists(DB2_DRIVER_CONF_PATH):
         return False
     with open(DB2_DRIVER_CONF_PATH, 'rb') as f:
