@@ -31,7 +31,7 @@ filter {
      if [@type] == "barman" {
         grok {
             match => {
-                "message" => "%{TIMESTAMP_ISO8601:timestamp} \[%{NUMBER:pid}\] %{WORD:package_name}.%{WORD:module} %{LOGLEVEL:level}: %{GREEDYDATA:log_msg}"
+                "message" => "%{TIMESTAMP_ISO8601:timestamp} \[%{NUMBER:pid}\] %{WORD:package_name}.%{WORD:module} %{LOGLEVEL:@fields.level}: %{GREEDYDATA:log_msg}"
             }
         }
         mutate {
@@ -49,7 +49,10 @@ filter {
             match => ["log_time", "yyyy-MM-dd HH:mm:ss.SSS 'CST'"]
         }
         mutate {
-            add_field => {"@title" => "POSTGRESQL %{error_severity} <%{process_id}-%{session_id}> %{message}"}
+            add_field => {
+                "@title" => "POSTGRESQL %{error_severity} <%{process_id}-%{session_id}> %{message}"
+                "@fields.level" => "%{error_severity}"
+            }
         }
     }
     if [@type] == "nginx" {
