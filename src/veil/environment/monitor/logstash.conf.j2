@@ -13,7 +13,6 @@ input {
         data_type => "list"
         codec => "plain"
         add_field => {"@type" => "barman"}
-        add_field => {"@title" => "barman: %{message}"}
     }
     redis {
         host => "{{ log_buffer_redis_host }}"
@@ -30,25 +29,13 @@ input {
 }
 filter {
      if [@type] == "barman" {
-        if "INFO:" in [message] {
-            mutate {
-                add_field => {"@fields.level" => "INFO"}
+        grok {
+            match => {
+                "message" => "%{TIMESTAMP_ISO8601:timestamp} \[%{NUMBER:pid}\] %{WORD:package_name}.%{WORD:module} %{LOGLEVEL:level}: %{GREEDYDATA:log_msg}"
             }
         }
-        if "WARNING:" in [message] {
-            mutate {
-                add_field => {"@fields.level" => "WARNING"}
-            }
-        }
-        if "ERROR:" in [message] {
-            mutate {
-                add_field => {"@fields.level" => "ERROR"}
-            }
-        }
-        if "CRITICAL:" in [message] {
-            mutate {
-                add_field => {"@fields.level" => "ERROR"}
-            }
+        mutate {
+            add_field => {"@title" => "%{package_name}.%{module} %{log_msg}"}
         }
     }
     if [@type] == "postgresql" {
