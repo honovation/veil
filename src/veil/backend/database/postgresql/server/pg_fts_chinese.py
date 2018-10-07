@@ -130,7 +130,7 @@ def install_zhparser(pg_lib_dir, pg_bin_dir, pg_tsearch_data_dir):
             set_resource_latest_version(ZHPARSER_RESOURCE_KEY, ZHPARSER_RESOURCE_VERSION)
         return
     download_zhparser()
-    shell_execute('PG_CONFIG={}/pg_config make && sudo make install'.format(pg_bin_dir), cwd=ZHPARSER_HOME)
+    shell_execute('SCWS_HOME=/usr/local PG_CONFIG={}/pg_config make && sudo make install'.format(pg_bin_dir), cwd=ZHPARSER_HOME)
     shell_execute('sudo cp {} {}'.format(SCWS_RULES_PATH, pg_tsearch_data_dir))
     shell_execute('sudo cp {} {}'.format(SCWS_DICT_HOME / SCWS_DICT_NAME, pg_tsearch_data_dir))
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:
