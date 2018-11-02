@@ -132,7 +132,7 @@ def request_invoice(request_seq, ebp_code, registration_no, username, buyer, tax
     try:
         response = ws.eiInterface(interface_data)
     except Exception as e:
-        LOGGER.info('failed request invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
+        LOGGER.error('failed request invoice: %(request_seq)s, %(message)s', {'request_seq': request_seq, 'message': e.message})
         raise
     else:
         LOGGER.debug(response)
