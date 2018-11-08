@@ -37,6 +37,15 @@ fi
 function veil_init {
     find $VEIL_FRAMEWORK_HOME -type f -name "*.pyc" -delete
     find $VEIL_HOME -type f -name "*.pyc" -delete
+    if [ ! -f $VEIL_HOME/DEP-DYNAMIC-MANUAL ]; then
+        touch $VEIL_HOME/DEP-DYNAMIC-MANUAL;
+    fi
+    if [ ! -f $VEIL_HOME/DEP-DYNAMIC-RECORDED ]; then
+        touch $VEIL_HOME/DEP-DYNAMIC-RECORDED;
+    fi
+    if [ ! -f $VEIL_HOME/DEP-STATIC ]; then
+        touch $VEIL_HOME/DEP-STATIC;
+    fi
     if [ ! -f /usr/bin/veil ]; then
         sudo ln -sf $VEIL_FRAMEWORK_HOME/bin/veil /usr/bin/veil
     fi
