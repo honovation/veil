@@ -135,9 +135,9 @@ def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=True, lock=None, 
          retry_method=exponential(60, 2, 5), schedule=None, batch=False):
     retry_on = retry_on + ALWAYS_RETRY_ON
 
-    job_queue = JobQueue.instance()
-
     def wrapper(func):
+        job_queue = JobQueue.instance()
+
         record_dynamic_dependency_provider(get_loading_component_name(), 'job', queue)
 
         def _delay(f, when=None):
