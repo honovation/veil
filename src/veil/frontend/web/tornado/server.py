@@ -31,6 +31,8 @@ from .error import handle_exception
 
 LOGGER = getLogger(__name__)
 
+INVALID_HEADER_CHAR_RE = re.compile(r"[\x00-\x1f]")
+
 
 def start_http_server(handler, io_loop=None, host='127.0.0.1', port=8080, process_count=1):
     io_loop = io_loop or IOLoop.current()
@@ -159,8 +161,7 @@ class HTTPResponse(object):
             # If \n is allowed into the header, it is possible to inject
             # additional headers or split the request. Also cap length to
             # prevent obviously erroneous values.
-            safe_value = re.sub(r'[\x00-\x1f]', ' ', value)[:4000]
-            if safe_value != value:
+            if INVALID_HEADER_CHAR_RE.search(value):
                 raise ValueError('Unsafe header value %r', value)
         self._headers[to_str(name)] = value
 
