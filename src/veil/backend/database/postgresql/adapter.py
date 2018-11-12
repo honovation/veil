@@ -75,7 +75,7 @@ class PostgresqlAdapter(object):
             self._reconnect(depress_exception=False)
 
     def reconnect_if_broken_per_exception(self, e):
-        if isinstance(e, InternalError) and 'HINT' in e.message:
+        if isinstance(e, InternalError) and 'You can drop constraint' in e.message:
             return False
         if isinstance(e, (OperationalError, InterfaceError, InternalError)) \
                 or isinstance(e, DatabaseError) and 'could not receive data' in unicode(e.message, errors='replace'):
