@@ -104,7 +104,7 @@ http {
     log_format logstash_json escape=json '{ "@timestamp": "$time_iso8601", '
                              '"@type": "nginx", '
                              '"@fields": { '
-                             '"user_code": $cookie_vu, '
+                             '"user_code": "$cookie_vu", '
                              '"browser_code": "$cookie_vb", '
                              '"remote_addr": "$remote_addr", '
                              '"request": "$request", '
