@@ -60,11 +60,10 @@ class LoggingWebServicePlugin(MessagePlugin):
 class WebService(object):
     def __init__(self, url, username=None, password=None, proxy_netloc=None):
         # faults=True  raise faults raised by server, else return tuple from service method invocation as (httpcode, object).
-        # timeout=30  default suds transport timeout is 90 seconds
         # use logging plugin collect last sent/received
 
         self.logging_plugin = LoggingWebServicePlugin()
-        options = DictObject(timeout=30, faults=True, plugins=[self.logging_plugin])
+        options = DictObject(faults=True, plugins=[self.logging_plugin])
         if not VEIL_ENV.is_prod:
             options.cache = None
         if username:
