@@ -129,10 +129,10 @@ def to_resource_key(name):
 
 
 def get_local_os_package_versions(name):
-    # TODO: rely on English system language, python-apt lib?
     installed_version = None
     downloaded_version = None
-    lines = shell_execute('sudo apt-cache policy {}'.format(name), capture=True, debug=True).splitlines()
+    lines = shell_execute('sudo env -u LANGUAGE LC_ALL=C apt-cache policy {}'.format(name), capture=True,
+                          debug=True).splitlines()
     index = next((index for index, line in enumerate(lines) if 'Installed:' in line), None)
     if index is not None:
         installed_version = lines[index].split('Installed:')[1].strip()

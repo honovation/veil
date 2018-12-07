@@ -38,7 +38,7 @@ class OracleAdapter(object):
             conn.outputtypehandler = OracleAdapter.output_type_handler
             conn.autocommit = True
             if self.schema:
-                conn.current_schema = str(self.schema)  # TODO: current_schema requires str, complains against unicode, may be fixed in new release
+                conn.current_schema = self.schema
         except:
             LOGGER.critical('Cannot connect to database: %(parameters)s', {'parameters': self}, exc_info=1)
             try:

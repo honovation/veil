@@ -151,7 +151,7 @@ def get_wqy_font(font_size):
 def generate_captcha_image_and_answer(size=(180, 30), mode="RGB", bg_color=(255, 255, 255), fg_color=(0, 0, 255), font_size=100, draw_lines=False,
                                       n_line=(1, 2), draw_points=False, point_chance=2):
     """
-    @todo: 生成验证码图片
+    生成验证码图片
     @param size: 图片的大小，格式（宽，高），默认为(120, 30)
     @param mode: 图片模式，默认为RGB
     @param bg_color: 背景颜色，默认为白色

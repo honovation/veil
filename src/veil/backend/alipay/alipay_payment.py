@@ -45,22 +45,18 @@ QUERY_TRADE_STATUS_TO_IGNORE = {
 EVENT_ALIPAY_TRADE_PAID = define_event('alipay-trade-paid')
 
 
-def create_alipay_pc_payment_url(out_trade_no, subject, body, total_amount, show_url, return_url, notify_url, minutes_to_expire):
-    content_params = DictObject(out_trade_no=out_trade_no, subject=subject, body=body, total_amount='{:.2f}'.format(total_amount),
-                                product_code='FAST_INSTANT_TRADE_PAY')
-
-    # TODO: 支持 'goods_detail'、'timeout_express' 字段
-    # if show_url:
-    #     content_params.goods_detail = json.dumps(dict(show_url=show_url), separators=(',', ':'))
+def create_alipay_pc_payment_url(out_trade_no, subject, body, total_amount, return_url, notify_url, minutes_to_expire):
+    content_params = DictObject(out_trade_no=out_trade_no, subject=subject, body=body,
+                                total_amount='{:.2f}'.format(total_amount), product_code='FAST_INSTANT_TRADE_PAY')
     if minutes_to_expire:
-        # content_params.timeout_express = '{}m'.format(100 or minutes_to_expire)
-        content_params.timeout_express = '100m'
+        content_params.timeout_express = '{}m'.format(minutes_to_expire)
     return _create_alipay_payment_url('alipay.trade.page.pay', return_url, notify_url, content_params)
 
 
-def create_alipay_wap_payment_url(out_trade_no, subject, body, total_amount, return_url, notify_url, minutes_to_expire, store_id=None):
-    content_params = DictObject(out_trade_no=out_trade_no, subject=subject, body=body, total_amount='{:.2f}'.format(total_amount),
-                                product_code='QUICK_WAP_WAY')
+def create_alipay_wap_payment_url(out_trade_no, subject, body, total_amount, return_url, notify_url, minutes_to_expire,
+                                  store_id=None):
+    content_params = DictObject(out_trade_no=out_trade_no, subject=subject, body=body,
+                                total_amount='{:.2f}'.format(total_amount), product_code='QUICK_WAP_WAY')
     if minutes_to_expire:
         content_params.timeout_express = '{}m'.format(minutes_to_expire)
     if store_id:
@@ -109,11 +105,6 @@ def make_alipay_app_payment_order_str(out_trade_no, subject, body, total_amount,
 
 def mark_alipay_payment_successful(out_trade_no, arguments, is_async_result=True, http_referer=None, remote_ip=None, http_ua_string=None):
     if is_async_result:
-        # TODO: remove this after 2017-12-20
-        if arguments.get('sign_type') == 'MD5' and arguments.get('trade_status') == TRADE_STATUE_TRADE_FINISHED and arguments.get('gmt_close'):
-            LOGGER.info('trade finished notification from old alipay payment interface: %(arguments)s', {'arguments': arguments})
-            return NOTIFICATION_RECEIVED_SUCCESSFULLY_MARK
-
         if not validate_async_notification_return_arguments(arguments):
             LOGGER.error('verify alipay notify return arguments falied: %(out_trade_no)s, %(arguments)s',
                          {'out_trade_no': out_trade_no, 'arguments': arguments})
