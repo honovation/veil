@@ -128,49 +128,6 @@ class YunpianSMService(SMService):
     def send(self, receivers, sms_code, transactional, promotional, message=None, template=None):
         return self.single_send(receivers, message, sms_code, promotional=promotional)
 
-    # TODO: need modify
-    def batch_send(self, receivers, message, sms_code, transactional, promotional=True):
-        config = yunpian_sms_client_config()
-        api_key = config.apikey if not promotional else config.promotion_apikey
-        receivers = set(r.strip() for r in receivers if r.strip())
-        if len(message) > MAX_SMS_CONTENT_LENGTH:
-            raise Exception('try to send sms with message size over {}'.format(MAX_SMS_CONTENT_LENGTH))
-        receivers = ','.join(receivers)
-        message = message.encode('UTF-8')
-        data = {'apikey': api_key, 'mobile': receivers, 'text': message}
-        response = None
-        try:
-            response = requests.post(SEND_SMS_URL, data=data, timeout=(3.05, 9), headers={'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'},
-                                     max_retries=Retry(total=2, read=False, method_whitelist={'POST'}, status_forcelist={502, 503, 504}, backoff_factor=2))
-            response.raise_for_status()
-        except ReadTimeout:
-            if transactional:
-                LOGGER.exception('yunpian sms send ReadTimeout exception for transactional message: %(sms_code)s, %(receivers)s',
-                                 {'sms_code': sms_code, 'receivers': receivers})
-                raise
-            else:
-                LOGGER.exception('yunpian sms send ReadTimeout exception for marketing message: %(sms_code)s, %(receivers)s',
-                                 {'sms_code': sms_code, 'receivers': receivers})
-        except Exception as e:
-            LOGGER.exception('yunpian sms send exception-thrown: %(sms_code)s, %(receivers)s, %(message)s, %(response)s', {
-                'sms_code': sms_code, 'receivers': receivers, 'message': e.message, 'response': response.text if response else ''
-            })
-            if response and response.status_code == 400:
-                result = objectify(response.json())
-                if result.code in IGNORE_CODES:
-                    return
-            raise
-        else:
-            result = objectify(response.json())
-            if all(r.code == 0 for r in result.data):
-                LOGGER.info('yunpian sms send succeeded: %(sms_code)s, %(receivers)s', {'sms_code': sms_code, 'receivers': receivers})
-            else:
-                LOGGER.error('yunpian sms send failed: %(sms_code)s, %(response)s, %(receivers)s', {
-                    'sms_code': sms_code, 'response': response.text, 'receivers': receivers
-                })
-                retry_mobiles = set(r.mobile for r in result.data if r.code in RETRY_CODES)
-                raise SendError('yunpian sms send failed: {}, {}'.format(sms_code, receivers), retry_mobiles)
-
     def send_voice(self, receiver, code, sms_code):
         config = yunpian_sms_client_config()
         LOGGER.debug('attempt to send voice: %(sms_code)s, %(receiver)s, %(code)s', {'sms_code': sms_code, 'receiver': receiver, 'code': code})
