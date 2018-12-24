@@ -79,14 +79,17 @@ def query_logistics_status(*bill_codes):
             else:
                 if json_response.data is None:
                     json_response.data = []
-                bill_code2logistics_status = {
-                    d.billCode: DictObject(traces=[DictObject(brief=t.desc, status_code=t.scanType, created_at=t.scanDate) for t in d.traces],
-                                           signed=d.traces[-1].scanType in SIGN_SCAN_TYPES and all(t.scanType != RETURN_SCAN_TYPE for t in d.traces),
-                                           rejected=d.traces[-1].scanType in REJECT_SCAN_TYPES,
-                                           sender_signed=d.traces[-1].scanType in SIGN_SCAN_TYPES and any(t.scanType == RETURN_SCAN_TYPE for t in d.traces),
-                                           latest_biz_time=convert_datetime_to_client_timezone(to_datetime()(d.traces[-1].scanDate)))
-                    for d in json_response.data
-                }
+                bill_code2logistics_status = {}
+                for d in json_response.data:
+                    if not d.traces:
+                        continue
+                    traces = [DictObject(brief=t.desc, status_code=t.scanType, created_at=t.scanDate) for t in d.traces]
+                    signed = d.traces[-1].scanType in SIGN_SCAN_TYPES and all(t.scanType != RETURN_SCAN_TYPE for t in d.traces)
+                    rejected = d.traces[-1].scanType in REJECT_SCAN_TYPES
+                    sender_signed = d.traces[-1].scanType in SIGN_SCAN_TYPES and any(t.scanType == RETURN_SCAN_TYPE for t in d.traces)
+                    latest_biz_time = convert_datetime_to_client_timezone(to_datetime()(d.traces[-1].scanDate))
+                    bill_code2logistics_status[d.billCode] = DictObject(traces=traces, signed=signed, rejected=rejected, sender_signed=sender_signed,
+                                                                        latest_biz_time=latest_biz_time)
                 LOGGER.debug(bill_code2logistics_status)
                 return bill_code2logistics_status
 
@@ -206,13 +209,14 @@ def subscribe_notification_script(logistics_id, trace_code, notify_url, is_subsc
 
 @script('query-status')
 def query_status_script(trace_code):
-    status = query_logistics_status(trace_code)[trace_code]
-    print(status.signed)
-    print(status.sender_signed)
-    print(status.rejected)
-    print(status.latest_biz_time)
-    for t in status.traces:
-        print('{} {} {}'.format(t.created_at, t.brief, t.status_code))
+    status = query_logistics_status(trace_code).get(trace_code)
+    if status:
+        print(status.signed)
+        print(status.sender_signed)
+        print(status.rejected)
+        print(status.latest_biz_time)
+        for t in status.traces:
+            print('{} {} {}'.format(t.created_at, t.brief, t.status_code))
 
 
 def record_zto_notification(logistics_id, raw_notification):
