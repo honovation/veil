@@ -71,7 +71,7 @@ def scws_resource(pg_tsearch_data_dir):
     if dry_run_result is not None:
         if is_downloading_while_dry_run():
             download_scws()
-        dry_run_result['scws'] = '-' if is_scws_installed() else 'INSTALL'
+        dry_run_result['scws'] = '-' if is_scws_installed(pg_tsearch_data_dir) else 'INSTALL'
         return
     install_scws(pg_tsearch_data_dir)
 
@@ -86,7 +86,7 @@ def download_scws():
 
 
 def install_scws(pg_tsearch_data_dir):
-    if is_scws_installed():
+    if is_scws_installed(pg_tsearch_data_dir):
         if (VEIL_ENV.is_dev or VEIL_ENV.is_test) and SCWS_RESOURCE_VERSION != get_resource_latest_version(SCWS_RESOURCE_KEY):
             set_resource_latest_version(SCWS_RESOURCE_KEY, SCWS_RESOURCE_VERSION)
         return
@@ -97,8 +97,8 @@ def install_scws(pg_tsearch_data_dir):
         set_resource_latest_version(SCWS_RESOURCE_KEY, SCWS_RESOURCE_VERSION)
 
 
-def is_scws_installed():
-    if not SCWS_BIN_PATH.exists():
+def is_scws_installed(pg_tsearch_data_dir):
+    if not SCWS_BIN_PATH.exists() or not (pg_tsearch_data_dir / SCWS_RULES_PATH).exists():
         return False
     output = shell_execute('{} -v'.format(SCWS_BIN_PATH), capture=True)
     return output and SCWS_RESOURCE_VERSION in output
@@ -130,7 +130,8 @@ def install_zhparser(pg_lib_dir, pg_bin_dir, pg_tsearch_data_dir):
             set_resource_latest_version(ZHPARSER_RESOURCE_KEY, ZHPARSER_RESOURCE_VERSION)
         return
     download_zhparser()
-    shell_execute('SCWS_HOME=/usr/local PG_CONFIG={}/pg_config make && sudo make install'.format(pg_bin_dir), cwd=ZHPARSER_HOME)
+    env = 'SCWS_HOME=/usr/local PG_CONFIG={}/pg_config'.format(pg_bin_dir)
+    shell_execute('make distclean && {env} make && sudo {env} make install'.format(env=env), cwd=ZHPARSER_HOME)
     shell_execute('sudo cp {} {}'.format(SCWS_RULES_PATH, pg_tsearch_data_dir))
     shell_execute('sudo cp {} {}'.format(SCWS_DICT_HOME / SCWS_DICT_NAME, pg_tsearch_data_dir))
     if VEIL_ENV.is_dev or VEIL_ENV.is_test:

@@ -1,6 +1,6 @@
 {#
 在升级大版本时，基于系统自带的缺省文件，做以下改动：
-1. 找{{  }}
+1. 找"{{"和"{%"
 2. set lc_messages to 'C.UTF-8' as some functions depend on messages in English
 #}
 # -----------------------------
@@ -68,7 +68,7 @@ listen_addresses = '{{ config.host }}'		# what IP address(es) to listen on;
 port = {{ config.port }}				# (change requires restart)
 max_connections = 100			# (change requires restart)
 #superuser_reserved_connections = 3	# (change requires restart)
-#unix_socket_directories = '/tmp'	# comma-separated list of directories
+#unix_socket_directories = '/var/run/postgresql'	# comma-separated list of directories
 					# (change requires restart)
 #unix_socket_group = ''			# (change requires restart)
 #unix_socket_permissions = 0777		# begin with 0 to use octal notation
@@ -77,26 +77,6 @@ max_connections = 100			# (change requires restart)
 					# (change requires restart)
 #bonjour_name = ''			# defaults to the computer name
 					# (change requires restart)
-
-# - Security and Authentication -
-
-#authentication_timeout = 1min		# 1s-600s
-#ssl = off				# (change requires restart)
-#ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL' # allowed SSL ciphers
-					# (change requires restart)
-#ssl_prefer_server_ciphers = on		# (change requires restart)
-#ssl_ecdh_curve = 'prime256v1'		# (change requires restart)
-#ssl_cert_file = 'server.crt'		# (change requires restart)
-#ssl_key_file = 'server.key'		# (change requires restart)
-#ssl_ca_file = ''			# (change requires restart)
-#ssl_crl_file = ''			# (change requires restart)
-#password_encryption = on
-#db_user_namespace = off
-#row_security = on
-
-# GSSAPI using Kerberos
-#krb_server_keyfile = ''
-#krb_caseins_users = off
 
 # - TCP Keepalives -
 # see "man 7 tcp" for details
@@ -108,6 +88,30 @@ max_connections = 100			# (change requires restart)
 #tcp_keepalives_count = 0		# TCP_KEEPCNT;
 					# 0 selects the system default
 
+# - Authentication -
+
+#authentication_timeout = 1min		# 1s-600s
+#password_encryption = md5		# md5 or scram-sha-256
+#db_user_namespace = off
+
+# GSSAPI using Kerberos
+#krb_server_keyfile = ''
+#krb_caseins_users = off
+
+# - SSL -
+
+#ssl = off
+#ssl_ca_file = ''
+#ssl_cert_file = 'server.crt'
+#ssl_crl_file = ''
+#ssl_key_file = 'server.key'
+#ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL' # allowed SSL ciphers
+#ssl_prefer_server_ciphers = on
+#ssl_ecdh_curve = 'prime256v1'
+#ssl_dh_params_file = ''
+#ssl_passphrase_command = ''
+#ssl_passphrase_command_supports_reload = off
+
 
 #------------------------------------------------------------------------------
 # RESOURCE USAGE (except WAL)
@@ -115,7 +119,7 @@ max_connections = 100			# (change requires restart)
 
 # - Memory -
 
-shared_buffers = {{ config.get('shared_buffers', '32MB') }}			# min 128kB
+shared_buffers = {{ config.get('shared_buffers', '128MB') }}			# min 128kB
 					# (change requires restart)
 #huge_pages = try			# on, off, or try
 					# (change requires restart)
@@ -126,7 +130,6 @@ temp_buffers = {{ config.get('temp_buffers', '8MB') }}			# min 800kB
 # you actively intend to use prepared transactions.
 work_mem = {{ config.get('work_mem', '4MB') }}				# min 64kB
 maintenance_work_mem = {{ config.get('maintenance_work_mem', '64MB') }}		# min 1MB
-#replacement_sort_tuples = 150000	# limits use of replacement selection sort
 #autovacuum_work_mem = -1		# min 1MB, or -1 to use maintenance_work_mem
 #max_stack_depth = 2MB			# min 100kB
 dynamic_shared_memory_type = posix	# the default is the first option
@@ -143,11 +146,10 @@ dynamic_shared_memory_type = posix	# the default is the first option
 #temp_file_limit = -1			# limits per-process temp file space
 					# in kB, or -1 for no limit
 
-# - Kernel Resource Usage -
+# - Kernel Resources -
 
 #max_files_per_process = 1000		# min 25
 					# (change requires restart)
-#shared_preload_libraries = ''		# (change requires restart)
 
 # - Cost-Based Vacuum Delay -
 
@@ -160,7 +162,7 @@ vacuum_cost_limit = {{ config.get('vacuum_cost_limit', 200) }}		# 1-10000 credit
 # - Background Writer -
 
 bgwriter_delay = {{ config.get('bgwriter_delay', '200ms') }}			# 10-10000ms between rounds
-bgwriter_lru_maxpages = {{ config.get('bgwriter_lru_maxpages', 100) }}		# 0-1000 max buffers written/round
+bgwriter_lru_maxpages = {{ config.get('bgwriter_lru_maxpages', 100) }}		# max buffers written/round, 0 disables
 #bgwriter_lru_multiplier = 2.0		# 0-10.0 multiplier on buffers scanned/round
 #bgwriter_flush_after = 512kB		# measured in pages, 0 disables
 
@@ -168,16 +170,18 @@ bgwriter_lru_maxpages = {{ config.get('bgwriter_lru_maxpages', 100) }}		# 0-1000
 
 effective_io_concurrency = {{ config.get('effective_io_concurrency', 1) }}		# 1-1000; 0 disables prefetching
 #max_worker_processes = 8		# (change requires restart)
+#max_parallel_maintenance_workers = 2	# taken from max_parallel_workers
 #max_parallel_workers_per_gather = 2	# taken from max_parallel_workers
+#parallel_leader_participation = on
 #max_parallel_workers = 8		# maximum number of max_worker_processes that
-					# can be used in parallel queries
+					# can be used in parallel operations
 #old_snapshot_threshold = -1		# 1min-60d; -1 disables; 0 is immediate
 					# (change requires restart)
 #backend_flush_after = 0		# measured in pages, 0 disables
 
 
 #------------------------------------------------------------------------------
-# WRITE AHEAD LOG
+# WRITE-AHEAD LOG
 #------------------------------------------------------------------------------
 
 # - Settings -
@@ -233,13 +237,13 @@ checkpoint_completion_target = {{ config.get('checkpoint_completion_target', 0.5
 # REPLICATION
 #------------------------------------------------------------------------------
 
-# - Sending Server(s) -
+# - Sending Servers -
 
 # Set these on the master and on any standby that will send replication data.
 
 #max_wal_senders = 10		# max number of walsender processes
 				# (change requires restart)
-#wal_keep_segments = 0		# in logfile segments, 16MB each; 0 disables
+#wal_keep_segments = 0		# in logfile segments; 0 disables
 #wal_sender_timeout = 60s	# in milliseconds; 0 disables
 
 #max_replication_slots = 10	# max number of replication slots
@@ -302,9 +306,14 @@ checkpoint_completion_target = {{ config.get('checkpoint_completion_target', 0.5
 #enable_material = on
 #enable_mergejoin = on
 #enable_nestloop = on
+#enable_parallel_append = on
 #enable_seqscan = on
 #enable_sort = on
 #enable_tidscan = on
+#enable_partitionwise_join = off
+#enable_partitionwise_aggregate = off
+#enable_parallel_hash = on
+#enable_partition_pruning = on
 
 # - Planner Cost Constants -
 
@@ -315,6 +324,16 @@ random_page_cost = {{ config.get('random_page_cost', 4.0) }}			# same scale as a
 #cpu_operator_cost = 0.0025		# same scale as above
 #parallel_tuple_cost = 0.1		# same scale as above
 #parallel_setup_cost = 1000.0	# same scale as above
+
+#jit_above_cost = 100000		# perform JIT compilation if available
+					# and query more expensive than this;
+					# -1 disables
+#jit_inline_above_cost = 500000		# inline small functions if query is
+					# more expensive than this; -1 disables
+#jit_optimize_above_cost = 500000	# use expensive JIT optimizations if
+					# query is more expensive than this;
+					# -1 disables
+
 #min_parallel_table_scan_size = 8MB
 #min_parallel_index_scan_size = 512kB
 effective_cache_size = {{ config.get('effective_cache_size', '4GB') }}
@@ -338,10 +357,11 @@ default_statistics_target = {{ config.get('default_statistics_target', 100) }}	#
 #join_collapse_limit = 8		# 1 disables collapsing of explicit
 					# JOIN clauses
 #force_parallel_mode = off
+#jit = off				# allow JIT compilation
 
 
 #------------------------------------------------------------------------------
-# ERROR REPORTING AND LOGGING
+# REPORTING AND LOGGING
 #------------------------------------------------------------------------------
 
 # - Where to Log -
@@ -447,7 +467,7 @@ log_disconnections = {{ 'on' if config.get('log_disconnections', False) else 'of
 log_duration = {{ 'on' if config.get('log_duration', False) else 'off' }}
 #log_error_verbosity = default		# terse, default, or verbose messages
 #log_hostname = off
-#log_line_prefix = ''			# special values:
+#log_line_prefix = '%m [%p] '		# special values:
 					#   %a = application name
 					#   %u = user name
 					#   %d = database name
@@ -469,15 +489,16 @@ log_duration = {{ 'on' if config.get('log_duration', False) else 'off' }}
 					#   %% = '%'
 					# e.g. '<%u%%%d> '
 #log_lock_waits = off			# log lock waits >= deadlock_timeout
-log_statement = 'none'			# none, ddl, mod, all
+#log_statement = 'none'			# none, ddl, mod, all
 #log_replication_commands = off
 #log_temp_files = -1			# log temporary files equal or larger
 					# than the specified size in kilobytes;
 					# -1 disables, 0 logs all temp files
 log_timezone = 'PRC'
 
-
-# - Process Title -
+#------------------------------------------------------------------------------
+# PROCESS TITLE
+#------------------------------------------------------------------------------
 
 #cluster_name = ''			# added to process titles if nonempty
 					# (change requires restart)
@@ -485,10 +506,10 @@ log_timezone = 'PRC'
 
 
 #------------------------------------------------------------------------------
-# RUNTIME STATISTICS
+# STATISTICS
 #------------------------------------------------------------------------------
 
-# - Query/Index Statistics Collector -
+# - Query and Index Statistics Collector -
 
 #track_activities = on
 #track_counts = on
@@ -498,7 +519,7 @@ log_timezone = 'PRC'
 #stats_temp_directory = 'pg_stat_tmp'
 
 
-# - Statistics Monitoring -
+# - Monitoring -
 
 #log_parser_stats = off
 #log_planner_stats = off
@@ -507,7 +528,7 @@ log_timezone = 'PRC'
 
 
 #------------------------------------------------------------------------------
-# AUTOVACUUM PARAMETERS
+# AUTOVACUUM
 #------------------------------------------------------------------------------
 
 #autovacuum = on			# Enable autovacuum subprocess?  'on'
@@ -545,6 +566,7 @@ autovacuum_vacuum_cost_delay = {{ config.get('autovacuum_vacuum_cost_delay', '20
 # - Statement Behavior -
 
 #search_path = '"$user", public'	# schema names
+#row_security = on
 #default_tablespace = ''		# a tablespace name, '' uses the default
 #temp_tablespaces = ''			# a list of tablespace names, '' uses
 					# only default tablespace
@@ -560,6 +582,9 @@ autovacuum_vacuum_cost_delay = {{ config.get('autovacuum_vacuum_cost_delay', '20
 #vacuum_freeze_table_age = 150000000
 #vacuum_multixact_freeze_min_age = 5000000
 #vacuum_multixact_freeze_table_age = 150000000
+#vacuum_cleanup_index_scale_factor = 0.1	# fraction of total number of tuples
+						# before index cleanup, 0 always performs
+						# index cleanup
 #bytea_output = 'hex'			# hex, escape
 #xmlbinary = 'base64'
 #xmloption = 'content'
@@ -592,11 +617,16 @@ lc_time = 'C.UTF-8'				# locale for time formatting
 # default configuration for text search
 default_text_search_config = 'pg_catalog.english'
 
+# - Shared Library Preloading -
+
+#shared_preload_libraries = ''	# (change requires restart)
+#local_preload_libraries = ''
+#session_preload_libraries = ''
+#jit_provider = 'llvmjit'		# JIT library to use
+
 # - Other Defaults -
 
 #dynamic_library_path = '$libdir'
-#local_preload_libraries = ''
-#session_preload_libraries = ''
 
 
 #------------------------------------------------------------------------------
@@ -615,7 +645,7 @@ default_text_search_config = 'pg_catalog.english'
 
 
 #------------------------------------------------------------------------------
-# VERSION/PLATFORM COMPATIBILITY
+# VERSION AND PLATFORM COMPATIBILITY
 #------------------------------------------------------------------------------
 
 # - Previous PostgreSQL Versions -

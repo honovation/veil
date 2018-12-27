@@ -174,7 +174,7 @@ def enable_database_chinese_fts(purpose):
 
 def is_database_chinese_fts_enabled(version, host, port, owner, database, env):
     output = shell_execute(
-        '''{}/psql -h {} -p {} -U {} -d {} -Atc "SELECT 'ENABLED' FROM pg_extension WHERE extname='{}'"'''.format(
+        '''{}/psql -h {} -p {} -U {} -d {} -Atqc "SELECT 'ENABLED' FROM pg_extension WHERE extname='{}'"'''.format(
             get_pg_bin_dir(version), host, port, owner, database, 'zhparser'), env=env, capture=True, debug=True)
     return output and 'ENABLED' == output.splitlines()[-1]
 

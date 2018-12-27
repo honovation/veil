@@ -105,7 +105,7 @@ def is_postgresql_cluster_upgraded(purpose, version, host, port, owner, owner_pa
         env = os.environ.copy()
         env['PGPASSWORD'] = owner_password
         output = shell_execute(
-            "{}/psql -h {} -p {} -U {} -d postgres -Atc 'SELECT COUNT(*) FROM pg_database'".format(get_pg_bin_dir(version), host, port, owner), env=env,
+            "{}/psql -h {} -p {} -U {} -d postgres -Atqc 'SELECT COUNT(*) FROM pg_database'".format(get_pg_bin_dir(version), host, port, owner), env=env,
             capture=True, debug=True)
         return int(output) > 3
 
@@ -117,8 +117,8 @@ def upgrade_postgresql_cluster(purpose, old_version, new_version, owner, owner_p
         })
     else:
         LOGGER.warn('Upgrading postgresql server: %(old_version)s => %(new_version)s', {'old_version': old_version, 'new_version': new_version})
-    pg_upgrade_env = {'PGPASSWORD': owner_password}
     pg_upgrade_command = (
+        'PGPASSWORD={PGPASSWORD} '
         '{new_bin_dir}/pg_upgrade '
         '{check_only} '
         '-v '
@@ -129,12 +129,12 @@ def upgrade_postgresql_cluster(purpose, old_version, new_version, owner, owner_p
         '-d {old_data_dir} '
         '-D {new_data_dir} '
         "-o '-c config_file={old_data_dir}/postgresql.conf' "
-        "-O '-c config_file={new_data_dir}/postgresql.conf'".format(pg_data_owner=owner, check_only='-c' if check_only else '',
+        "-O '-c config_file={new_data_dir}/postgresql.conf'".format(check_only='-c' if check_only else '', pg_data_owner=owner, PGPASSWORD=owner_password,
                                                                     old_bin_dir=get_pg_bin_dir(old_version), old_data_dir=get_pg_data_dir(purpose, old_version),
                                                                     new_bin_dir=get_pg_bin_dir(new_version), new_data_dir=get_pg_data_dir(purpose, new_version))
     )
     shell_execute('sudo su {pg_data_owner_os} -c "{pg_upgrade_command}"'.format(pg_data_owner_os=CURRENT_USER, pg_upgrade_command=pg_upgrade_command),
-                  env=pg_upgrade_env, capture=True)
+                  capture=True)
 
 
 def vacuum_upgraded_postgresql_cluster(purpose, version, host, port, owner, owner_password):
@@ -144,7 +144,8 @@ def vacuum_upgraded_postgresql_cluster(purpose, version, host, port, owner, owne
         env = os.environ.copy()
         env['PGPASSWORD'] = owner_password
         shell_execute('{pg_bin_dir}/vacuumdb -h {host} -p {port} -U {pg_data_owner} -j `nproc` -a -F -z'.format(
-            pg_bin_dir=get_pg_bin_dir(version), pg_data_owner=owner, host=host, port=port), env=env, capture=True)
+            pg_bin_dir=get_pg_bin_dir(version), pg_data_owner=owner, host=host, port=port), env=env, capture=True,
+            debug=True)
 
 
 def confirm_postgresql_cluster_upgrading(old_version, new_version):
@@ -248,7 +249,7 @@ def postgresql_user_resource(purpose, version, host, port, owner, owner_password
 
 def postgresql_user_existed(version, host, port, owner, user, env):
     return '1' == shell_execute('''
-        {}/psql -h {} -p {} -U {} -d postgres -tAc "SELECT 1 FROM pg_user WHERE usename='{}'"
+        {}/psql -h {} -p {} -U {} -d postgres -Atqc "SELECT 1 FROM pg_user WHERE usename='{}'"
         '''.format(get_pg_bin_dir(version), host, port, owner, user), env=env, capture=True)
 
 
@@ -277,7 +278,7 @@ def postgresql_physical_replication_slot_resource(purpose, version, host, port, 
 
 def postgresql_physical_replication_slot_existed(version, host, port, owner, slot_name, env):
     return '1' == shell_execute('''
-        {}/psql -h {} -p {} -U {} -d postgres -tAc "SELECT 1 FROM pg_replication_slots WHERE slot_name='{}' AND slot_type='physical'"
+        {}/psql -h {} -p {} -U {} -d postgres -Atqc "SELECT 1 FROM pg_replication_slots WHERE slot_name='{}' AND slot_type='physical'"
         '''.format(get_pg_bin_dir(version), host, port, owner, slot_name), env=env, capture=True)
 
 
