@@ -151,8 +151,10 @@ def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=True, lock=None, 
                 _retry = kwargs.pop('retry', None)
                 _retry_on = kwargs.pop('retry_on', None)
                 _retry_method = kwargs.pop('retry_method', None)
+                _d = f.delay
                 _func_wrapper = JobQueue.instance().task(_fn=f, queue=queue, hard_timeout=hard_timeout, unique=unique, lock=lock, lock_key=lock_key,
                                                          retry=retry, retry_on=retry_on, retry_method=retry_method, schedule=schedule, batch=batch)
+                _func_wrapper.delay = _d
                 return JobQueue.instance().delay(_func_wrapper, args=args, kwargs=kwargs, queue=_queue, hard_timeout=_hard_timeout, unique=_unique, lock=_lock,
                                                  lock_key=_lock_key, when=_when, retry=_retry, retry_on=_retry_on, retry_method=_retry_method)
             return _delay_inner
@@ -163,7 +165,6 @@ def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=True, lock=None, 
             mod = inspect.getmodule(frm[0])
             if mod.__name__ == 'tasktiger.worker' or JobQueue.instance().config['ALWAYS_EAGER']:
                 # ALWAYS_EAGER means sync and async call, tasktiger.worker means async call
-                LOGGER.info('worker call')
                 if args and isinstance(args[0], dict) and 'a' in args[0] and 'k' in args[0]:
                     a = [from_json(a) for a in args[0]['a']]
                     k = {k: from_json(v) for k, v in args[0]['k'].items()}
