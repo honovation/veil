@@ -90,6 +90,7 @@ def postgresql_cluster_upgrading_resource(purpose, old_version, new_version, hos
         return
     if installed:
         return
+    force_checkpoint_and_wal_switch_before_upgrading(purpose, old_version, host, port, owner, owner_password)
     upgrade_postgresql_cluster(purpose, old_version, new_version, owner, owner_password, check_only=True)
     if not confirm_postgresql_cluster_upgrading(old_version, new_version):
         raise Exception('user canceled upgrading postgresql')
@@ -135,6 +136,16 @@ def upgrade_postgresql_cluster(purpose, old_version, new_version, owner, owner_p
     )
     shell_execute('sudo su {pg_data_owner_os} -c "{pg_upgrade_command}"'.format(pg_data_owner_os=CURRENT_USER, pg_upgrade_command=pg_upgrade_command),
                   capture=True)
+
+
+def force_checkpoint_and_wal_switch_before_upgrading(purpose, version, host, port, owner, owner_password):
+    LOGGER.warn('Force checkpoint and wal switch before upgrading')
+    pg_data_dir = get_pg_data_dir(purpose, version)
+    with postgresql_server_running(version, pg_data_dir, owner):
+        env = os.environ.copy()
+        env['PGPASSWORD'] = owner_password
+        shell_execute('{}/psql -h {} -p {} -U {} -d postgres -c "CHECKPOINT; SELECT PG_SWITCH_WAL();"'.format(
+            get_pg_bin_dir(version), host, port, owner), env=env, capture=True, debug=True)
 
 
 def vacuum_upgraded_postgresql_cluster(purpose, version, host, port, owner, owner_password):
