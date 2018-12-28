@@ -29,7 +29,7 @@ def postgresql_server_resource(config):
         postgresql_apt_repository_resource(),
         os_package_resource(name='postgresql-{}'.format(config.version)),
         os_service_auto_starting_resource(name='postgresql', state='not_installed'),
-        postgresql_cluster_resource(purpose=config.purpose, version=config.version, owner=config.owner, owner_password=config.owner_password),
+        postgresql_cluster_resource(purpose=config.purpose, version=config.version, owner=config.owner, owner_password=config.owner_password, disable_data_checksums=config.get('disable_data_checksums', False)),
         directory_resource(path=pg_config_dir),
         file_resource(
             path=pg_config_dir / 'postgresql.conf',
@@ -190,7 +190,7 @@ def display_postgresql_cluster_post_upgrade_instructions():
 
 
 @atomic_installer
-def postgresql_cluster_resource(purpose, version, owner, owner_password):
+def postgresql_cluster_resource(purpose, version, owner, owner_password, disable_data_checksums=False):
     pg_data_dir = get_pg_data_dir(purpose, version)
     installed = pg_data_dir.exists()
     dry_run_result = get_dry_run_result()
@@ -205,15 +205,17 @@ def postgresql_cluster_resource(purpose, version, owner, owner_password):
     old_permission = shell_execute("stat -c '%a' {}".format(pg_data_dir.parent), capture=True)
     shell_execute('chmod 0777 {}'.format(pg_data_dir.parent), capture=True)
     install_resource(file_resource(path='/tmp/pg-{}-owner-password'.format(purpose), content=owner_password))
+    data_checksums_opt = '' if disable_data_checksums else '--data-checksums'
+    pg_bin_dir = get_pg_bin_dir(version)
     initdb_command = (
         '{pg_bin_dir}/initdb '
-        '--data-checksums '
+        '{data_checksums_opt} '
         '-E UTF-8 '
         '--locale=C.UTF-8 '
         '-A md5 '
         '-U {pg_data_owner} '
         '--pwfile=/tmp/pg-{purpose}-owner-password '
-        '{pg_data_dir}'.format(pg_data_owner=owner, pg_bin_dir=get_pg_bin_dir(version), pg_data_dir=pg_data_dir, purpose=purpose)
+        '{pg_data_dir}'.format(data_checksums_opt=data_checksums_opt, pg_data_owner=owner, pg_bin_dir=pg_bin_dir, pg_data_dir=pg_data_dir, purpose=purpose)
     )
     try:
         shell_execute('sudo su {pg_data_owner_os} -c "{initdb_command}"'.format(pg_data_owner_os=CURRENT_USER, initdb_command=initdb_command), capture=True)
