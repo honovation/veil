@@ -17,6 +17,7 @@ def pgbarman_resource(config):
                                          barman_server_home=VEIL_BARMAN_DIR / config.server_name, is_prod=VEIL_ENV.is_prod)
     resources = [
         postgresql_apt_repository_resource(),
+        os_package_resource(name='postgresql-client'),
         os_package_resource(name='barman'),
         directory_resource(path=BARMAN_CONF_PATH),
         directory_resource(path=VEIL_BARMAN_DIR / config.server_name),
