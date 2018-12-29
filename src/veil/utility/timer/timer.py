@@ -24,9 +24,9 @@ class Timer(object):
                 'crontab_expression': self.crontab_expression
             })
             while True:
-                now = get_current_timestamp()
-                next_run = croniter(self.crontab_expression, now).get_next()
-                delta = next_run - now
+                now = get_current_time_in_client_timezone()
+                next_run = croniter(self.crontab_expression, start_time=now).get_next()
+                delta = next_run - convert_datetime_to_timestamp(now)
                 LOGGER.info('timer sleep: wake up after %(delta)s seconds', {
                     'delta': delta
                 })
