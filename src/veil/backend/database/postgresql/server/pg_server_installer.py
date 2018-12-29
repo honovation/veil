@@ -139,15 +139,12 @@ def upgrade_postgresql_cluster(purpose, old_version, new_version, owner, owner_p
 
 
 def prepare_before_upgrading(purpose, version, host, port, owner, owner_password):
-    LOGGER.warn('Prepare (reindex, force checkpoint and wal switch) before upgrading')
+    LOGGER.warn('Prepare (force checkpoint and wal switch) before upgrading')
     pg_data_dir = get_pg_data_dir(purpose, version)
     with postgresql_server_running(version, pg_data_dir, owner):
         env = os.environ.copy()
         env['PGPASSWORD'] = owner_password
         pg_bin_dir = get_pg_bin_dir(version)
-        # reindex
-        shell_execute('{}/reindexdb -h {} -p {} -U {} -a'.format(pg_bin_dir, host, port, owner), env=env, capture=True,
-                      debug=True)
         # force checkpoint and wal switch
         shell_execute('{}/psql -h {} -p {} -U {} -d postgres -c "CHECKPOINT; SELECT PG_SWITCH_WAL();"'.format(
             pg_bin_dir, host, port, owner), env=env, capture=True, debug=True)
