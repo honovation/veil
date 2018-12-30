@@ -133,10 +133,11 @@ class ControllableWorker(Worker):
 
 def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=True, lock=None, lock_key=None, retry=True, retry_on=(Exception, ),
          retry_method=exponential(60, 2, 5), schedule=None, batch=False):
-
     retry_on = retry_on + ALWAYS_RETRY_ON
 
     def wrapper(func):
+        job_queue = JobQueue.instance()
+
         record_dynamic_dependency_provider(get_loading_component_name(), 'job', queue)
 
         def _delay(f, when=None):
@@ -147,44 +148,46 @@ def task(queue=DEFAULT_QUEUE_NAME, hard_timeout=3 * 60, unique=True, lock=None, 
                 _unique = kwargs.pop('unique', None)
                 _lock = kwargs.pop('lock', None)
                 _lock_key = kwargs.pop('lock_key', None)
-                _when = kwargs.pop('when', when)
+                _when = kwargs.pop('when', None) or when
                 _retry = kwargs.pop('retry', None)
                 _retry_on = kwargs.pop('retry_on', None)
                 _retry_method = kwargs.pop('retry_method', None)
-                _d = f.delay
-                _func_wrapper = JobQueue.instance().task(_fn=f, queue=queue, hard_timeout=hard_timeout, unique=unique, lock=lock, lock_key=lock_key,
-                                                         retry=retry, retry_on=retry_on, retry_method=retry_method, schedule=schedule, batch=batch)
-                _func_wrapper.delay = _d
-                return JobQueue.instance().delay(_func_wrapper, args=args, kwargs=kwargs, queue=_queue, hard_timeout=_hard_timeout, unique=_unique, lock=_lock,
-                                                 lock_key=_lock_key, when=_when, retry=_retry, retry_on=_retry_on, retry_method=_retry_method)
+                return job_queue.delay(f, args=args, kwargs=kwargs, queue=_queue, hard_timeout=_hard_timeout, unique=_unique, lock=_lock, lock_key=_lock_key,
+                                       when=_when, retry=_retry, retry_on=_retry_on, retry_method=_retry_method)
+
             return _delay_inner
 
-        @functools.wraps(func)
-        def func_wrapper(*args, **kwargs):
-            frm = inspect.stack()[1]
-            mod = inspect.getmodule(frm[0])
-            if mod.__name__ == 'tasktiger.worker' or JobQueue.instance().config['ALWAYS_EAGER']:
-                # ALWAYS_EAGER means sync and async call, tasktiger.worker means async call
-                if args and isinstance(args[0], dict) and 'a' in args[0] and 'k' in args[0]:
-                    a = [from_json(a) for a in args[0]['a']]
-                    k = {k: from_json(v) for k, v in args[0]['k'].items()}
+        def _wrap(f):
+            @functools.wraps(f)
+            def func_wrapper(*_args, **_kwargs):
+                frm = inspect.stack()[1]
+                mod = inspect.getmodule(frm[0])
+                if mod.__name__ == 'tasktiger.worker' or job_queue.config['ALWAYS_EAGER']:
+                    # ALWAYS_EAGER means sync and async call, tasktiger.worker means async call
+                    if _args and isinstance(_args[0], dict) and 'a' in _args[0] and 'k' in _args[0]:
+                        a = [from_json(a) for a in _args[0]['a']]
+                        k = {k: from_json(v) for k, v in _args[0]['k'].items()}
+                    else:
+                        a = _args
+                        k = _kwargs
+                    expired_at = k.pop('expired_at', None)
+                    current_time = get_current_time()
+                    if expired_at and expired_at <= current_time:
+                        LOGGER.debug('ignore expired task: %(expired_at)s, %(current)s', {'expired_at': expired_at, 'current': current_time})
+                        return
                 else:
-                    a = args
-                    k = kwargs
-                expired_at = k.pop('expired_at', None)
-                current_time = get_current_time()
-                if expired_at and expired_at <= current_time:
-                    LOGGER.debug('ignore expired task: %(expired_at)s, %(current)s', {'expired_at': expired_at, 'current': current_time})
-                    return
-            else:
-                a = args
-                k = kwargs
-            return func(*a, **k)
+                    a = _args
+                    k = _kwargs
+                return f(*a, **k)
 
-        func_wrapper.delay = _delay(func_wrapper)
-        func_wrapper.delay_after = _delay(func_wrapper, when=ENQUEUE_AFTER_TIMEDELTA)
+            _func_wrapper = job_queue.task(queue=queue, hard_timeout=hard_timeout, unique=unique, lock=lock, lock_key=lock_key, retry=retry, retry_on=retry_on,
+                                           retry_method=retry_method, schedule=schedule, batch=batch)(func_wrapper)
+            _func_wrapper.delay = _delay(_func_wrapper)
+            _func_wrapper.delay_after = _delay(_func_wrapper, when=ENQUEUE_AFTER_TIMEDELTA)
 
-        return func_wrapper
+            return _func_wrapper
+
+        return _wrap(func)
 
     return wrapper
 
