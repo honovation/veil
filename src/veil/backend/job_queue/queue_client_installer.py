@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 from veil.profile.installer import *
+from veil_installer import *
 
 _config = None
 
@@ -16,6 +17,8 @@ def load_queue_client_config():
 
 
 def queue_client_config():
+    if is_installing():
+        return DictObject(host='', port='')
     global _config
     if _config is None:
         _config = load_queue_client_config()

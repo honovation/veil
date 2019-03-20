@@ -9,6 +9,7 @@ with veil_component.init_component(__name__):
     from .installer import add_application_sub_resource
     from .installer import get_executing_installer
     from .installer import is_upgrading
+    from .installer import is_installing
     from .installer import is_downloading_while_dry_run
     from .installer import to_resource_code
     from .component_installer import component_resource
@@ -27,6 +28,7 @@ with veil_component.init_component(__name__):
         add_application_sub_resource.__name__,
         get_executing_installer.__name__,
         is_upgrading.__name__,
+        is_installing.__name__,
         is_downloading_while_dry_run.__name__,
         to_resource_code.__name__,
         # from component_installer
